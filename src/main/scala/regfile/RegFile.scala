@@ -7,10 +7,6 @@ import chisel3.util._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-//import examples._
-
-
-
 
 class RegFileIO [T<: Data] (gen: T) extends Bundle {
   val raddr1 = Input(UInt(5.W))

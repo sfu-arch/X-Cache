@@ -16,36 +16,42 @@ import dataflow._
 
 class DataflowTests (DF: DataFlow) extends PeekPokeTester(DF)  {
 
-  poke(DF.io.In1.bits,3)
-  poke(DF.io.In2.bits,4)
-  poke(DF.io.In3.bits,5)
-  poke(DF.io.In1.valid,1)
-  poke(DF.io.In2.valid,0)
-  poke(DF.io.In3.valid,0)
-  poke(DF.io.Out1.ready,1)
 
+  for( t <- 0 to 10 ){
 
-  for {
-   i <- 0 to 20
- }
- {
-  println(s"io.out.bits.c: ${peek(DF.io.Out1.bits)}, io.out.bits.valid: ${peek(DF.io.Out1.valid)} state: ${peek(DF.io.Out1.bits)} should be ${3+4-5}")
-  step(1)    
-  if (i == 3)
-  {
-    poke(DF.io.In2.valid,1)
-  }
-  if( i == 8)
-  {
-    poke(DF.io.In3.valid,1)
-  }
-  if (i == 10)
-  {
+    val rdn1 = rnd.nextInt(32)
+    val rdn2 = rnd.nextInt(32)
+    val rdn3 = rnd.nextInt(32)
+    println(s"In1: ${rdn1}, In2: ${rdn2}, In3: ${rdn3}")
+
+    poke(DF.io.In1.bits,rdn1)
+    poke(DF.io.In2.bits,rdn2)
+    poke(DF.io.In3.bits,rdn3)
     poke(DF.io.In1.valid,0)
     poke(DF.io.In2.valid,0)
     poke(DF.io.In3.valid,0)
+    poke(DF.io.Out1.ready,1)
+
+    step(1)
+    println(s"Output is: ${peek(DF.io.Out1.bits)}, Valid bit: ${peek(DF.io.Out1.valid)} Res should be ${rdn1+rdn2-rdn3}")
+
+    poke(DF.io.In1.valid,1)
+    poke(DF.io.In2.valid,1)
+    poke(DF.io.In3.valid,1)
+
+    step(1)
+    println(s"Output is: ${peek(DF.io.Out1.bits)}, Valid bit: ${peek(DF.io.Out1.valid)} Res should be ${3+4-5}")
+    step(1)
+
+    println(s"Output is: ${peek(DF.io.Out1.bits)}, Valid bit: ${peek(DF.io.Out1.valid)} Res should be ${3+4-5}")
+    step(1)
+    println(s"Output is: ${peek(DF.io.Out1.bits)}, Valid bit: ${peek(DF.io.Out1.valid)} Res should be ${3+4-5}")
+    step(1)
+    println(s"Output is: ${peek(DF.io.Out1.bits)}, Valid bit: ${peek(DF.io.Out1.valid)} Res should be ${3+4-5}")
+    
+    expect(DF.io.Out1.bits, rdn1+rdn2-rdn3)
   }
-}
+
 }
 
 

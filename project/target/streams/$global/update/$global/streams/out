@@ -1,4 +1,4 @@
-[0m[[0minfo[0m] [0mUpdating {file:/home/amirali/git/dataflow-lib/project/}dataflow-lib-build...[0m
+[0m[[0minfo[0m] [0mUpdating {file:/home/amiralis/git/dataflow-lib/project/}dataflow-lib-build...[0m
 [0m[[0mdebug[0m] [0m:: resolving dependencies :: default#dataflow-lib-build;0.1-SNAPSHOT[0m
 [0m[[0mdebug[0m] [0m	confs: [compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool][0m
 [0m[[0mdebug[0m] [0m	validate = true[0m
@@ -16,7 +16,7 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies for default#dataflow-lib-build;0.1-SNAPSHOT [provided][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies default#dataflow-lib-build;0.1-SNAPSHOT->org.scala-lang#scala-library;2.10.6 [provided->default(compile)][0m
 [0m[[0minfo[0m] [0mResolving org.scala-lang#scala-library;2.10.6 ...[0m
-[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@39779e4b[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@19d8b741[0m
 [0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang#scala-library;2.10.6[0m
 [0m[[0mdebug[0m] [0m	found org.scala-lang#scala-library;2.10.6 in sbt-chain[0m
 [0m[[0mdebug[0m] [0m	[2.10.6] org.scala-lang#scala-library;2.10.6[0m
@@ -2221,19 +2221,19 @@
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-sbt#apply-macro;0.13.11!apply-macro.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#jline;2.10.6!jline.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.fusesource.jansi#jansi;1.4!jansi.jar[0m
-[0m[[0mdebug[0m] [0m:: resolution report :: resolve 2836ms :: artifacts dl 49ms[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT compile produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-compile.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT runtime produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-runtime.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT test produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-test.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT provided produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-provided.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT optional produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-optional.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT compile-internal produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-compile-internal.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT runtime-internal produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-runtime-internal.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT test-internal produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-test-internal.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT plugin produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-plugin.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT sources produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-sources.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT docs produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-docs.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT pom produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-pom.xml[0m
-[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT scala-tool produced in /home/amirali/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-scala-tool.xml[0m
-[0m[[0mdebug[0m] [0m	resolve done (2836ms resolve - 49ms download)[0m
+[0m[[0mdebug[0m] [0m:: resolution report :: resolve 4719ms :: artifacts dl 145ms[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT compile produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-compile.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT runtime produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-runtime.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT test produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-test.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT provided produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-provided.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT optional produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-optional.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT compile-internal produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-compile-internal.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT runtime-internal produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-runtime-internal.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT test-internal produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-test-internal.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT plugin produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-plugin.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT sources produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-sources.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT docs produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-docs.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT pom produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-pom.xml[0m
+[0m[[0mdebug[0m] [0m	report for default#dataflow-lib-build;0.1-SNAPSHOT scala-tool produced in /home/amiralis/git/dataflow-lib/project/target/resolution-cache/reports/default-dataflow-lib-build-scala-tool.xml[0m
+[0m[[0mdebug[0m] [0m	resolve done (4719ms resolve - 145ms download)[0m
 [0m[[0minfo[0m] [0mDone updating.[0m
