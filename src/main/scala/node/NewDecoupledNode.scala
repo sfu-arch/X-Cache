@@ -64,8 +64,8 @@ class NewDecoupledNode(val xLen: Int, val opCode: Int, val ID: Int) extends Modu
   }
   when(state === s_valid){
     io.OutIO.valid   := true.B
-    io.LeftIO.ready  := false.B
-    io.RightIO.ready := false.B
+    io.LeftIO.ready  := true.B
+    io.RightIO.ready := true.B
   }
 
 
