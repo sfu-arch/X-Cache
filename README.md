@@ -64,3 +64,14 @@ This is the release version of chisel-template. If you have bug fixes or
 changes you would like to see incorporated in this repo, please checkout
 the master branch and submit pull requests against it.
 
+
+
+
+
+### To Run individual test cases
+```sh
+sbt 
+```
+```sh
+sbt test:run-main utils.Launcher StoreNode
+```
