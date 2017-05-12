@@ -7,10 +7,12 @@ import chisel3.testers._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec} 
 
-import examples._
+//import examples._
 import config._
 import util._
-import interface._
+import interfaces._
+import muxes._
+import regfile._
 
 
 
