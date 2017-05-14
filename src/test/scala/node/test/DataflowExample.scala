@@ -17,7 +17,7 @@ import dataflow._
 class DataflowTests (DF: DataFlow) extends PeekPokeTester(DF)  {
 
 
-  for( t <- 0 to 10 ){
+  for( t <- 0 to 1 ){
 
     val rdn1 = rnd.nextInt(32)
     val rdn2 = rnd.nextInt(32)

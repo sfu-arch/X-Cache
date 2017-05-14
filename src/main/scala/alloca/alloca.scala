@@ -36,13 +36,14 @@ class  CentralStack(implicit p: Parameters) extends Stack()(p) {
   // Regfile. Convert to vector if you want multiple stacks.
   // val RegfileIOs = new RegFile().io
   val SP     = RegInit(1.U(16.W))
+
   val allocaReg    = Reg(init  = 1.U, next=SP)
  
-  val s_init :: s_input :: s_exe  :: Nil = Enum(3)
+  //val s_init :: s_input :: s_exe  :: Nil = Enum(3)
  
   // State bits for running state machines.
   // No alloc state as you dont need a state machine
-  val alloca_state = Reg(init = s_init)
+  //val alloca_state = Reg(init = s_init)
 
   // Connect up Ins with Arbiters and Outputs with Demux
   for (i <- 0 until 10) {
@@ -60,38 +61,14 @@ class  CentralStack(implicit p: Parameters) extends Stack()(p) {
   allocaArbiter.io.out.ready := true.B
   allocaRespDeMux.io.input.ptr := allocaReg
 
+  // Choosen signal doesn't need to assing in the when block
+  allocaRespDeMux.io.sel := allocaArbiter.io.chosen
+
   when (allocaArbiter.io.out.fire())
   {
-    allocaRespDeMux.io.sel := allocaArbiter.io.chosen
     SP := SP + allocaArbiter.io.out.bits.size
   }
+
+
 }
 
-// Tester.
-// class StackTester(stack: CentralStack)(implicit p: config.Parameters) extends PeekPokeTester(stack)  {
-
-//     poke(stack.io.AllocaIn(0).valid,1.U)
-//     poke(stack.io.AllocaIn(0).bits.size,10.U)
-//     poke(stack.io.AllocaIn(1).valid,1.U)
-//     poke(stack.io.AllocaIn(1).bits.size,20.U)
-
-    
-//     println(s"io.in.bits: io.out.bits: ${peek(stack.io.AllocaIn(0))} io.out.bits: ${peek(stack.io.AllocaOut(0))}")
-//     step(1)
-//     println(s"io.in.bits: io.out.bits: ${peek(stack.io.AllocaIn(0))} io.out.bits: ${peek(stack.io.AllocaOut(0))}")
-//     poke(stack.io.AllocaIn(0).valid,0.U)
-//     step(1)
-//     println(s"io.in.bits: io.out.bits: ${peek(stack.io.AllocaIn(1))} io.out.bits: ${peek(stack.io.AllocaOut(1))}")
-// }
-
-
-
-
-// class StackTests extends  FlatSpec with Matchers {
-//   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-//  it should "compute gcd excellently" in {
-//     chisel3.iotesters.Driver(() => new CentralStack) { c =>
-//       new StackTester(c)
-//     } should be(true)
-//   }
-// }
