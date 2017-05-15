@@ -4,28 +4,28 @@ package regfile
 
 import chisel3._
 import chisel3.util._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
-import org.scalatest.{Matchers, FlatSpec}
+import config._
 
 
-class RegFileIO [T<: Data] (gen: T) extends Bundle {
+
+class RegFileIO(implicit p: Parameters) extends CoreBundle()(p) {
   val raddr1 = Input(UInt(5.W))
-  val rdata1 = Output(gen)
+  val rdata1 = Output(UInt(xlen.W))
   val wen    = Input(Bool())
   val waddr  = Input(UInt(5.W))
-  val wdata  = Input(gen)
-
-  override def cloneType: this.type = new RegFileIO(gen).asInstanceOf[this.type]
-
-
+  val wdata  = Input(UInt(xlen.W))
 }
 
-class RegFile[T <: Data](gen: T, size: Int) extends Module {
-  val io = IO(new RegFileIO(gen))
-  val regs = SyncReadMem(size, gen)
-  io.rdata1 := Mux(io.raddr1.orR, regs(io.raddr1), 0.U)
-  // io.rdata2 := Mux(io.raddr2.orR, regs(io.raddr2), 0.U)
-  when(io.wen & io.waddr.orR) {
+
+abstract class AbstractRFile(implicit val p: Parameters) extends Module with CoreParams {
+   val io = IO(new RegFileIO)
+}
+
+class RFile(size: Int)(implicit p: Parameters) extends AbstractRFile()(p) { 
+   val regs = SyncReadMem(size, UInt(xlen.W))
+   io.rdata1 := Mux(io.raddr1.orR, regs(io.raddr1), 0.U)
+   // io.rdata2 := Mux(io.raddr2.orR, regs(io.raddr2), 0.U)
+   when(io.wen & io.waddr.orR) {
     regs(io.waddr) := io.wdata
   }
 }
