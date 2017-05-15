@@ -37,7 +37,7 @@ class  newCentralStack(implicit p: Parameters) extends newStack()(p) {
   // Regfile. Convert to vector if you want multiple stacks.
   // val RegfileIOs = new RegFile().io
   val rc = Wire(UInt(16.W))
-  val SP = RegNext(rc, 1.U(16.W))
+  val SP = RegInit(1.U(16.W))
 
   // Connect up Ins with Arbiters and Outputs with Demux
   for (i <- 0 until 10) {
@@ -50,9 +50,21 @@ class  newCentralStack(implicit p: Parameters) extends newStack()(p) {
   //Arbiter is always ready
   allocaArbiter.io.out.ready := true.B
 
-  allocaRespDeMux.io.sel := allocaArbiter.io.chosen
+  //Put a mux for updating the SP register choosing between
+  //either new value or old SP value
+  val muxRes = Mux(allocaArbiter.io.out.valid, rc, SP) 
+  SP := muxRes
+
+
+  //Compute the new address
   rc  := SP + allocaArbiter.io.out.bits.size
-  allocaRespDeMux.io.input.ptr := rc
+
+  //Connect Arbitter's choosen signal to Demux's select signal
+  allocaRespDeMux.io.sel := allocaArbiter.io.chosen
+
+  //Pass the new address to demux
+  allocaRespDeMux.io.input.ptr := muxRes
+
 
 
 }

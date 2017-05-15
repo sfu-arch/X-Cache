@@ -61,8 +61,8 @@ class AllocaNode(implicit p: Parameters, val ID: Int) extends Alloca()(p) {
     .otherwise{ state := s_init}
   }
   when (state === s_req){
-    state := s_valid
     when(io.VResp){ state := s_valid }
+    .otherwise{ state := s_req }
   }
   when (state === s_valid){
     state := s_init
