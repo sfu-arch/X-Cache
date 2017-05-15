@@ -66,6 +66,7 @@ class SingleGEP(val xLen: Int, val opCode: Int, val ID: Int) extends Module {
   }
   when (state === s_valid){
     state := s_init
+    token := token + 1.U
   }
  
 }

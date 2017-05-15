@@ -5,6 +5,15 @@ import chisel3._
 import chisel3.util._
 import config._
 
+// Alloca instruction gets only number of bytes need to be allocated
+class AllocaIn(implicit p: Parameters) extends CoreBundle()(p) {
+ val size = UInt((xlen-10).W)
+}
+
+// Alloca instruction returns base address of stack
+class AllocaOut(implicit p: Parameters) extends CoreBundle()(p) {
+ val address = UInt((xlen-10).W)
+}
 
 // Maximum of 16MB Stack Array.
 // alloca indicates id of stack object and returns address back. 
@@ -17,7 +26,8 @@ class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) {
 // ptr is the address returned back to the alloca call. 
 // Valid and Data flipped. 
 class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) {
- val ptr = UInt((xlen-10).W)
+ val ptr    = UInt((xlen-10).W)
+ val valid  = Bool()
 }
 
 // Read interface into Scratchpad stack
