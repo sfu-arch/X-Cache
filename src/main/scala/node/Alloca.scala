@@ -20,6 +20,7 @@ abstract class Alloca(implicit val p: Parameters) extends Module with CoreParams
     val sizeIn      = Decoupled(new AllocaIn())
     val AllocaReq   = Decoupled(new AllocaReq())
     val AllocaResp  = Flipped(new AllocaResp())
+    val VResp       = Input(Bool())
     val addressOut  = Flipped(Decoupled(new AllocaOut()))
    })
 }
@@ -31,11 +32,11 @@ class AllocaNode(implicit p: Parameters, val ID: Int) extends Alloca()(p) {
 
   // States of the combinatorial logic
   val s_init :: s_req :: s_valid :: Nil = Enum(3)
-  val state = Reg(init = s_init)
+  val state = RegInit(init = s_init)
 
   // Extra information
-  val token  = Reg(init = 0.U)
-  val nodeID = Reg(init = ID.asUInt())
+  val token  = RegInit(init = 0.U)
+  val nodeID = RegInit(init = ID.asUInt())
 
 
   //Implimenting Alloca state machine
@@ -60,7 +61,8 @@ class AllocaNode(implicit p: Parameters, val ID: Int) extends Alloca()(p) {
     .otherwise{ state := s_init}
   }
   when (state === s_req){
-    when(io.AllocaResp.valid){ state := s_valid }
+    state := s_valid
+    when(io.VResp){ state := s_valid }
   }
   when (state === s_valid){
     state := s_init

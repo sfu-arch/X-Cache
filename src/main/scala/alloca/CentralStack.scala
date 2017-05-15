@@ -48,8 +48,8 @@ class  CentralStack(implicit p: Parameters) extends Stack()(p) {
   // Connect up Ins with Arbiters and Outputs with Demux
   for (i <- 0 until 10) {
     io.AllocaIn(i) <> allocaArbiter.io.in(i)
-    io.AllocaOut(i).ptr <> allocaRespDeMux.io.outputs(i)
-    io.AllocaOut(i).valid <> allocaRespDeMux.io.valids(i)
+    io.AllocaOut(i)   <> allocaRespDeMux.io.outputs(i)
+    //io.AllocaOut(i).valid := allocaRespDeMux.io.valids(i)
   }
   val x = SP
   printf(p"SP: $x")

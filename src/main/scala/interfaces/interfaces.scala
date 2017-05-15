@@ -16,18 +16,18 @@ class AllocaOut(implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 // Maximum of 16MB Stack Array.
-// alloca indicates id of stack object and returns address back. 
+// alloca indicates id of stack object and returns address back.
 // Can be any of the 4MB regions
 class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) {
  val node = UInt(16.W)
  val size = UInt((xlen-10).W)
 }
 
-// ptr is the address returned back to the alloca call. 
-// Valid and Data flipped. 
+// ptr is the address returned back to the alloca call.
+// Valid and Data flipped.
 class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) {
  val ptr    = UInt((xlen-10).W)
- val valid  = Bool()
+ //val valid  = Bool()
 }
 
 // Read interface into Scratchpad stack

@@ -17,3 +17,4 @@ class ParameterizedBundle(implicit p: Parameters) extends Bundle {
     }
   }
 }
+

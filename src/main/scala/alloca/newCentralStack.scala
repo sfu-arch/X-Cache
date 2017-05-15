@@ -16,14 +16,15 @@ import interfaces._
 
 //TODO uncomment if you remove StackCentral.scala file
 //
-//abstract class Stack(implicit val p: Parameters) extends Module with CoreParams {
-  //val io = IO(new Bundle {
-  //val AllocaIn   = Vec(10,Flipped(Decoupled(new AllocaReq())))
-  //val AllocaOut  = Vec(10,new AllocaResp())
-   //})
-//}
+abstract class newStack(implicit val p: Parameters) extends Module with CoreParams {
+  val io = IO(new Bundle {
+  val AllocaIn   = Vec(10,Flipped(Decoupled(new AllocaReq())))
+  val AllocaOut  = Vec(10,new AllocaResp())
+  val Valids     = Vec(10,Bool())
+   })
+}
 
-class  newCentralStack(implicit p: Parameters) extends Stack()(p) {
+class  newCentralStack(implicit p: Parameters) extends newStack()(p) {
 
   // All arbiters are in here since they need to connect up with the regfile.
 
@@ -40,9 +41,9 @@ class  newCentralStack(implicit p: Parameters) extends Stack()(p) {
 
   // Connect up Ins with Arbiters and Outputs with Demux
   for (i <- 0 until 10) {
-    io.AllocaIn(i) <> allocaArbiter.io.in(i)
-    io.AllocaOut(i).ptr <> allocaRespDeMux.io.outputs(i)
-    io.AllocaOut(i).valid <> allocaRespDeMux.io.valids(i)
+    io.AllocaIn(i)    <> allocaArbiter.io.in(i)
+    io.AllocaOut(i)   <> allocaRespDeMux.io.outputs(i)
+    io.Valids(i)      <> allocaRespDeMux.io.valids(i)
   }
 
 

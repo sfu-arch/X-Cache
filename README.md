@@ -75,3 +75,10 @@ sbt
 ```sh
 sbt test:run-main utils.Launcher StoreNode
 ```
+
+
+### To check the code's style
+
+```
+sbt scalastyle
+```

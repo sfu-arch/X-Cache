@@ -59,3 +59,4 @@ private class PartialParameters(f: (View, View, View) => PartialFunction[Any,Any
     if (g.isDefinedAt(pname)) g.apply(pname) else tail.find(pname, site)
   }
 }
+
