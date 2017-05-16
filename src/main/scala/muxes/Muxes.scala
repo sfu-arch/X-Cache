@@ -6,13 +6,18 @@ import chisel3.Module
 
 class Demux[T <: Data](gen: T, n: Int) extends Module {
   val io = IO(new Bundle {
+    val en = Input(Bool())
     val input = Input(gen)
     val sel = Input(UInt(width = log2Up(n)))
     val outputs = Output(Vec(n,gen))
     val valids  = Output(Vec(n,Bool()))
     })
   val x = io.sel
-  io.valids := Vec(Seq.fill(n){false.B})
-  io.valids(x) := true.B
-  io.outputs(x) := io.input
- }
+  when(io.en) {
+    io.valids := Vec(Seq.fill(n){false.B})
+    io.valids(x) := true.B
+    io.outputs(x) := io.input
+  }.otherwise {
+    io.valids := Vec(Seq.fill(n){false.B})
+  }
+}
