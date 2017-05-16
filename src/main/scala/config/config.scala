@@ -1,13 +1,11 @@
 package config
 
-package config
-
 
 import chisel3._
 import chisel3.util._
 import config._
 import util._
-import examples._
+//import examples._
 import regfile._
 
 case object XLEN extends Field[Int]

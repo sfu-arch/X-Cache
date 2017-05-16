@@ -7,11 +7,11 @@ import chisel3.testers._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec} 
 
-import examples._
 import regfile._
 import config._
 import util._
-import interface._
+import interfaces._
+import muxes._
 
 
 abstract class AbstractArbiter(NReads: Int, NWrites: Int)(implicit val p: Parameters) extends Module with CoreParams{
@@ -97,7 +97,7 @@ class  CentralizedStackRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit p:
   // Feed regfile output port to Write Demux port. Only need to send valid back to operation.
   // In reality redundant as arbiter ready signal already indicates write acquired write port.
   // This signal guarantees the data has propagated to the Registerfile
-  WriteRespDeMux.io.input.valid   := 1.U
+  //WriteRespDeMux.io.input.valid   := 1.U
   WriteRespDeMux.io.sel := WriteOutputChosen
   WriteRespDeMux.io.en := WriteOutputValid
 
