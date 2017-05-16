@@ -26,7 +26,7 @@ abstract class LoadIO(val NumMemOP :Int = 1, val ID :Int = 0)(implicit val p: Pa
 
     //Memory interface
     val memReq  = Decoupled(new ReadReq())
-    val memResp = Decoupled(new ReadResp())
+    val memResp = Flipped(Decoupled(new ReadResp()))
 
     //val memLDIO = new MemLdIO(xlen)
 
@@ -46,7 +46,7 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   val data_reg = RegInit(0.U(xlen.W))
 
   // Status Register - If src mem-ops done execution
-  val in3_done_reg = RegInit(init = false.B)
+  val in3_done_reg = RegInit(false.B)
 
   // Initialization registers to send ready signals
   // to all inputs to accept input nodes
@@ -117,12 +117,12 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   }
 
   //Once the request is sent to memory, be ready to receive the response back
-  when(memresp_ready_reg ) {
+  when(memresp_ready_reg) {
 
-//    printf("\n Memresp_Ready_reg is true \n")
+    //printf("\n Memresp_Ready_reg is true \n")
     io.memResp.ready := true.B
   }
-    .otherwise( io.memResp.valid := false.B)
+    .otherwise( io.memResp.ready := false.B)
 
   when( io.memResp.ready && io.memResp.valid) {
     data_resp_valid := true.B
