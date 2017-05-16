@@ -14,97 +14,116 @@ import util._
 import interface._
 
 
-
-abstract class AbstractBus(implicit val p: Parameters) extends Module with CoreParams {
+abstract class AbstractArbiter(NReads: Int, NWrites: Int)(implicit val p: Parameters) extends Module with CoreParams{
   val io = IO(new Bundle {
-  val ReadIn    = Vec(10,Flipped(Decoupled(new ReadReq())))
-  val ReadOut   = Vec(10,Output(new ReadResp()))
+  val ReadIn    = Vec(NReads,Flipped(Decoupled(new ReadReq())))
+  val ReadOut   = Vec(NReads,Output(new ReadResp()))
+  val WriteIn   = Vec(NWrites,Flipped(Decoupled(new WriteReq())))
+  val WriteOut  = Vec(NWrites,Output(new WriteResp()))
   })
 }
 
 
+// Size   : Size of Register file to be allocated and managed
+// NReads  : Number of static reads to be connected. Controls size of arbiter and Demux
+// NWrites : Number of static writes to be connected. Controls size of arbiter and Demux
 
-class  CentralBus(implicit p: Parameters) extends AbstractBus()(p) {
-  // implicit val p = tileParams
-  // All arbiters are in here since they need to connect up with the regfile.
-  // Alternatively pass in as a parameter
+class  CentralizedStackRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit p: Parameters) extends AbstractArbiter(NReads,NWrites)(p) { 
 
-  // Parameters. 10 is the number of alloca nodes in the ll file
-  val ReadReqArbiter  = Module(new RRArbiter(new ReadReq,10));
-  val ReadRespDeMux   = Module(new Demux(new ReadResp,10));
+  val RegFile     = Module(new RFile(Size)(p))
 
+  // -------------------------- Read Arbiter Logic -----------------------------------------
+  // Parameters. 10 is the number of loads assigned to the stack segment in the ll file
+  val ReadReqArbiter  = Module(new RRArbiter(new ReadReq(),NReads));
+  val ReadRespDeMux   = Module(new Demux(new ReadResp(),NReads));
 
-  // Regfile. Convert to vector if you want multiple stacks.
-  // val RegFile     = p(BuildRFile)(p)
-  val RegFile     = Module(new RFile(32)(p))
+  // Arbiter output latches
+  val ReadArbiterReg   = Reg(new ReadReq(), next = ReadReqArbiter.io.out.bits)
+  val ReadInputChosen  = Reg(UInt(width=log2Up(NReads)),next=ReadReqArbiter.io.chosen)
+  val ReadInputValid   = Reg(init  = false.B,next=ReadReqArbiter.io.out.valid)
+  
+  // Demux input latches. chosen and valid delayed by 1 cycle for RFile read to return
+  val ReadOutputChosen = Reg(UInt(width=log2Up(NReads)), init = 0.U, next = ReadInputChosen)
+  val ReadOutputValid  = Reg(init = false.B, next = ReadInputValid)
 
-  val ArbiterReg   = Reg(new ReadReq(), next = ReadReqArbiter.io.out.bits)
-  val InputChosen  = Reg(UInt(width=4),next=ReadReqArbiter.io.chosen)
-  val InputValid   = Reg(init  = false.B,next=ReadReqArbiter.io.out.valid)
-  val OutputChosen = Reg(UInt(width=4), init = 0.U, next = InputChosen)
-  val OutputValid  = Reg(init = false.B, next = InputValid)
-
-
-  // Connect up Ins with Arbiters
-  for (i <- 0 until 10) {
+  // Connect up Read ins with arbiters
+  for (i <- 0 until NReads) {
     io.ReadIn(i) <> ReadReqArbiter.io.in(i)
     io.ReadOut(i) <> ReadRespDeMux.io.outputs(i)
   }
+
+  // Activate arbiter
   ReadReqArbiter.io.out.ready := true.B
-  
-  // Wire up inports to RegFile
-  RegFile.io.raddr1 := ArbiterReg.address
+
+  // Feed arbiter output to Regfile input port. 
+  RegFile.io.raddr1 := ReadArbiterReg.address
+  // Feed Regfile output port to Demux port
   ReadRespDeMux.io.input.data   := RegFile.io.rdata1
 
-  // Wire up outports to Regfile
-  ReadRespDeMux.io.sel := OutputChosen
-  ReadRespDeMux.io.en := OutputValid
-
-  // RegFile.io.wen := true.B
-  // RegFile.io.waddr := 20.U
-  // RegFile.io.wdata := 100.U
-
-  //  val x =  ReadRespDeMux.io.input.data
-  //  val z =  ReadRespDeMux.io.valids
-
-  //  printf(p"$ArbiterReg  data: $x $z \n")
+  ReadRespDeMux.io.sel := ReadOutputChosen
+  ReadRespDeMux.io.en := ReadOutputValid
 
 
-   // switch (state) {
-   //  is(s_init) {
-   //    ReadRespDeMux.io.en := true.B
-   //    done := false.B
-   //    state := s_input
-   //  }
-   //  is(s_input) {
-   //   ReadRespDeMux.io.en := false.B
-   //   when(validRead)
-   //   {   
-   //     chosen := ReadReqArbiter.io.chosen
-   //     state := s_exe
-   //   }
-   //  }
-   //  is (s_exe){
-   //   done  := true.B
-   //   validRead := false.B
-   //   state := s_init
-   //  }
-   //  }
+
+
+  // -------------------------- Write Arbiter Logic -----------------------------------------
+  // Parameters. 10 is the number of loads assigned to the stack segment in the ll file
+  val WriteReqArbiter  = Module(new RRArbiter(new WriteReq(),NWrites));
+  val WriteRespDeMux   = Module(new Demux(new WriteResp(),NWrites));
+
+  // Arbiter output latches
+  val WriteArbiterReg   = Reg(new WriteReq(), next = WriteReqArbiter.io.out.bits)
+  val WriteInputChosen  = Reg(UInt(width=log2Up(NWrites)),next=WriteReqArbiter.io.chosen)
+  val WriteInputValid   = Reg(init  = false.B,next=WriteReqArbiter.io.out.valid)
+  
+  // Demux input latches. chosen and valid delayed by 1 cycle for RFile Write to return
+  val WriteOutputChosen = Reg(UInt(width=log2Up(NWrites)), init = 0.U, next = WriteInputChosen)
+  val WriteOutputValid  = Reg(init = false.B, next = WriteInputValid)
+
+  // Connect up Write ins with arbiters
+  for (i <- 0 until NWrites) {
+    io.WriteIn(i) <> WriteReqArbiter.io.in(i)
+    io.WriteOut(i) <> WriteRespDeMux.io.outputs(i)
+  }
+
+  // Activate arbiter.   // Feed write  arbiter output to Regfile input port. 
+  WriteReqArbiter.io.out.ready := true.B
+
+  RegFile.io.wen := WriteInputValid
+  RegFile.io.waddr := WriteArbiterReg.address
+  RegFile.io.wdata := WriteArbiterReg.data
+  RegFile.io.wmask := WriteArbiterReg.mask
+
+  // Feed regfile output port to Write Demux port. Only need to send valid back to operation.
+  // In reality redundant as arbiter ready signal already indicates write acquired write port.
+  // This signal guarantees the data has propagated to the Registerfile
+  WriteRespDeMux.io.input.valid   := 1.U
+  WriteRespDeMux.io.sel := WriteOutputChosen
+  WriteRespDeMux.io.en := WriteOutputValid
+
 }
 
 
-// class BusTester(bus: CentralBus)(implicit p: config.Parameters) extends PeekPokeTester(bus)  {
+// class ArbiterTester (bus: CentralizedStackRegFile)(implicit p: config.Parameters) extends PeekPokeTester(bus)  {
 //     // val dut = Module(AbstractBus)
 
-    
+
+//     poke(bus.io.WriteIn(0).valid,0.U)
+
+//     poke(bus.io.WriteIn(1).bits.address,15.U)
+//     poke(bus.io.WriteIn(1).valid,1.U)
+//     poke(bus.io.WriteIn(1).bits.data,1500.U)
+
 //     poke(bus.io.ReadIn(0).valid,1.U)
 //     poke(bus.io.ReadIn(0).bits.address,15.U)
 //     poke(bus.io.ReadIn(1).valid,1.U)
 //     poke(bus.io.ReadIn(1).bits.address,20.U)
 
+
 //     for (i <- 2 to 9)
 //     {
 //       poke(bus.io.ReadIn(i).valid,0.U)
+//       poke(bus.io.WriteIn(i).valid,0.U)
 //     } 
 
 
@@ -125,12 +144,11 @@ class  CentralBus(implicit p: Parameters) extends AbstractBus()(p) {
   
 // }
 
-// class BusTests extends  FlatSpec with Matchers {
+// class ArbiterTests extends  FlatSpec with Matchers {
 //   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
 //   it should "compute gcd excellently" in {
-//     chisel3.iotesters.Driver(() => new CentralBus(Write = false.B)) { c =>
-//       new BusTester(c)
+//     chisel3.iotesters.Driver(() => new CentralizedStackRegFile(Size=32, NReads=32, NWrites=32)) { c =>
+//       new ArbiterTester(c)
 //     } should be(true)
 //   }
 // }
-

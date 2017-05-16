@@ -7,13 +7,13 @@ import chisel3.util._
 import config._
 
 
-
 class RegFileIO(implicit p: Parameters) extends CoreBundle()(p) {
   val raddr1 = Input(UInt(5.W))
   val rdata1 = Output(UInt(xlen.W))
   val wen    = Input(Bool())
   val waddr  = Input(UInt(5.W))
   val wdata  = Input(UInt(xlen.W))
+  val wmask  = Input(UInt((xlen/8).W))
 }
 
 
@@ -22,50 +22,13 @@ abstract class AbstractRFile(implicit val p: Parameters) extends Module with Cor
 }
 
 class RFile(size: Int)(implicit p: Parameters) extends AbstractRFile()(p) { 
-   val regs = SyncReadMem(size, UInt(xlen.W))
-   io.rdata1 := Mux(io.raddr1.orR, regs(io.raddr1), 0.U)
+   val regs = SyncReadMem(size,Vec(xlen/8, Bits(width=8)))
+   // SyncReadMem(size, UInt(xlen.W))
+   // I am reading a vector of bytes and then converting to a UInt before returning it.
+   io.rdata1 := Mux(io.raddr1.orR,regs.read(io.raddr1).toBits, 0.U)
    // io.rdata2 := Mux(io.raddr2.orR, regs(io.raddr2), 0.U)
    when(io.wen & io.waddr.orR) {
-    regs(io.waddr) := io.wdata
+    // I am writing a vector of bytes. Need to also feed the bytemask. 
+    regs.write(io.waddr, Vec.tabulate(xlen/8)(i => io.wdata(8*(i+1)-1,8*i)))
   }
 }
-
-// class ScratchPadIO (Size: Int, Xlen: Int) extends RegFileIO(UInt(width=Xlen))  {
-  
-
-//    // Specifies the stack object that needs to be accessed and the byte within it
-//   // There are a total of 32 stack objects possible. 2^5.
-//   val SID  = Input(UInt(width = log2Ceil(Size)))
-
-//   // This specifies the byte address within the scratchpad
-// }
-
-
-// // Size. Maximum number of stack objects of a certain size.
-// // Entries. Number of entries in 
-
-// class ScratchPad(Size: Int, Entries: Int, Width: Int) extends Module {
-
-//   val io = IO(new ScratchPadIO(Size = Size, Xlen = Width))
-
-//   // This is a single scratchpad. Need to specify a vector of these. 
-//   // Parameterize the number of entries
-//   // Alignment we will have to be careful as we want to specify appropriate byte masks
-  
-
-
-//   // [AUTO] This declaration has to be auto generated based on number of stack objects
-  
-//   val RegFileIOs = Vec.fill(Size)(Module(new RegFile(UInt(width = Width), Size)).io)
-
-//   val SIDx = io.SID
-
-//   RegFileIOs(SIDx).raddr1  := io.raddr1
-//   io.rdata1 := RegFileIOs(SIDx).rdata1 
-//   RegFileIOs(SIDx).wen  := io.wen
-//   RegFileIOs(SIDx).waddr  := io.waddr
-//   RegFileIOs(SIDx).wdata  := io.wdata
-
-//    // printf(p"\n RegFileIOs = $RegFileIOs") 
-  
-//  }
