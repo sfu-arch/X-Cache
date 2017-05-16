@@ -37,7 +37,7 @@ class  CentralStack(implicit p: Parameters) extends Stack()(p) {
   // val RegfileIOs = new RegFile().io
   val SP     = RegInit(1.U(16.W))
 
-  val allocaReg    = Reg(init  = 1.U, next=SP)
+  val allocaReg    = RegNext(SP,init  = 1.U)
  
   //val s_init :: s_input :: s_exe  :: Nil = Enum(3)
  
