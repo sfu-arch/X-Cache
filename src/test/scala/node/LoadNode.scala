@@ -28,21 +28,21 @@ class LoadNodeTests(c: LoadNode) extends PeekPokeTester(c) {
 
     //Memory is always ready to receive the memory requests
     //TODO make them as single signal
-    poke(c.io.memLDIO.Memreq_addr.ready, true)
+    poke(c.io.memReq.ready, true)
 
-    if(peek(c.io.memLDIO.Memreq_addr.valid) == 1 ) {
+    if(peek(c.io.memReq.valid) == 1 ) {
 
-      println(s"t: ${t}  io.memLDIO.Memreq_addr: ${peek(c.io.memLDIO.Memreq_addr.bits)} ")
+      println(s"t: ${t}  io.memLDIO.Memreq_addr: ${peek(c.io.memReq.bits.address)} ")
 
 
       //      step (1)
       //      step (1)
       step (1)
       //since response is available atleast next cycle onwards
-      if(peek(c.io.memLDIO.Memresp_data.ready) == true ) {
-        poke(c.io.memLDIO.Memresp_data.valid, true)
+      if(peek(c.io.memResp.ready) == true ) {
+        poke(c.io.memResp.valid, true)
 
-        println(s"t: ${t}  io.Memresp_ack_ready: ${peek(c.io.memLDIO.Memresp_data.ready)}")
+        println(s"t: ${t}  io.Memresp_ack_ready: ${peek(c.io.memResp.ready)}")
       }
 
     }

@@ -7,7 +7,6 @@ import chisel3.testers._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec} 
 
-//import examples._
 import muxes._
 import config._
 import util._
@@ -32,11 +31,11 @@ class AllocaNode(implicit p: Parameters, val ID: Int) extends Alloca()(p) {
 
   // States of the combinatorial logic
   val s_init :: s_req :: s_valid :: Nil = Enum(3)
-  val state = RegInit(init = s_init)
+  val state = RegInit(s_init)
 
   // Extra information
-  val token  = RegInit(init = 0.U)
-  val nodeID = RegInit(init = ID.asUInt())
+  val token  = RegInit(0.U)
+  val nodeID = RegInit(ID.asUInt())
 
 
   //Implimenting Alloca state machine

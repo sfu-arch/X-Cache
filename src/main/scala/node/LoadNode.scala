@@ -11,12 +11,10 @@ import org.scalacheck.Prop.False
 import config._
 import interfaces._
 
-class MemLdIO (xLen : Int) extends Bundle {
-  val Memreq_addr = Decoupled(UInt(xLen.W))
-  val Memresp_data = Flipped(Decoupled(UInt(xLen.W)))
-}
 
-abstract class LoadIO(val NumMemOP :Int = 1)(implicit val p: Parameters) extends Module with CoreParams{
+//TODO parametrize NumMemOp and ID
+//
+abstract class LoadIO(val NumMemOP :Int = 1, val ID :Int = 0)(implicit val p: Parameters) extends Module with CoreParams{
 
   val io = IO(new Bundle {
     // gepAddr: The calculated address comming from GEP node
@@ -26,16 +24,21 @@ abstract class LoadIO(val NumMemOP :Int = 1)(implicit val p: Parameters) extends
     // using Handshaking protocols
     val predMemOp = Vec(NumMemOP, Flipped(Decoupled(UInt(1.W))))
 
-    val memLDIO = new MemLdIO(xlen)
+    //Memory interface
+    val memReq  = Decoupled(new ReadReq())
+    val memResp = Decoupled(new ReadResp())
+
+    //val memLDIO = new MemLdIO(xlen)
 
     val memOpAck = Decoupled(UInt(1.W)) //TODO 0 bits
-    //Decoupled = ready(I), valid(O), bits(O) 
   
   })
 }
 
 
 class LoadNode(implicit p: Parameters) extends LoadIO()(p){
+
+  val nodeID_reg = RegInit(ID.U)
 
   val addr_reg       = RegInit(0.U(xlen.W))
   val addr_valid_reg = RegInit(false.B)
@@ -53,7 +56,7 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
 
   //Mem ready for response
   val memresp_ready_reg = RegInit(false.B)
-  val data_resp_valid = RegInit(false.B  )
+  val data_resp_valid   = RegInit(false.B)
 
 
 
@@ -97,15 +100,17 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
 
   //-----------------------------------
   when(addr_valid_reg) {
-    io.memLDIO.Memreq_addr.enq(true.B)
+    io.memReq.bits.address := addr_reg
+    io.memReq.bits.node := nodeID_reg
+    io.memReq.valid := true.B
   }
-    .otherwise( io.memLDIO.Memreq_addr.noenq())
+    .otherwise( io.memReq.valid := false.B)
 
 
   //Rules for Sending address and data to Memory
   // Note memLDIO.Memreq_addr.ready and Memreq_data.ready are connected
   // Store Node cannot send the data to memory unless all its predecessors are done: in3 in this case
-  when(io.memLDIO.Memreq_addr.fire() && in3_done_reg ) {
+  when(io.memReq.ready && io.memReq.valid && in3_done_reg ) {
     memresp_ready_reg := true.B
     addr_valid_reg := false.B
     printf("\n Mem Request Sent \n")
@@ -115,13 +120,13 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   when(memresp_ready_reg ) {
 
 //    printf("\n Memresp_Ready_reg is true \n")
-    io.memLDIO.Memresp_data.ready := true.B
+    io.memResp.ready := true.B
   }
-    .otherwise( io.memLDIO.Memresp_data.nodeq())
+    .otherwise( io.memResp.valid := false.B)
 
-  when( io.memLDIO.Memresp_data.fire()) {
+  when( io.memResp.ready && io.memResp.valid) {
     data_resp_valid := true.B
-    data_reg := io.memLDIO.Memresp_data.bits
+    data_reg := io.memResp.bits.data
 
     printf("\n Mem Response Received \n")
 
