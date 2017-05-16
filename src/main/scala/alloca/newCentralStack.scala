@@ -14,7 +14,6 @@ import util._
 import interfaces._
 
 
-//TODO uncomment if you remove StackCentral.scala file
 //
 abstract class newStack(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {

@@ -7,11 +7,11 @@ import chisel3.util._
 /* A new Bus for GEPs.
  * It should include Base address and Number of byte.
  */
-//class DecoupledGEPAddr(val xLen: Int) extends Bundle {
-  //override def cloneType = new DecoupledNodeOut(xLen = xLen).asInstanceOf[this.type]
-  //val Index       = Output(UInt(xLen.W))
-  //val NumByte     = Output(UInt(xLen.W))
-//}
+class DecoupledGEPAddr(val xLen: Int) extends Bundle {
+  override def cloneType = new DecoupledNodeOut(xLen = xLen).asInstanceOf[this.type]
+  val Index       = Output(UInt(xLen.W))
+  val NumByte     = Output(UInt(xLen.W))
+}
 
 
 class TwoGEP(val xLen: Int, val opCode: Int, val ID: Int) extends Module {

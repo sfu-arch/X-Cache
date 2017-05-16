@@ -8,28 +8,39 @@ import chisel3._
 import chisel3.util._
 import org.scalacheck.Prop.False
 
+import config._
+import interfaces._
+
 class MemLdIO (xLen : Int) extends Bundle {
   val Memreq_addr = Decoupled(UInt(xLen.W))
   val Memresp_data = Flipped(Decoupled(UInt(xLen.W)))
 }
 
-class LoadIO(xLen: Int ) extends MemLdIO(xLen) {
-  val In1 = Flipped(Decoupled(UInt(xLen.W)))
-  //Bool data from other memory ops
-  // using Handshaking protocols
-  val In3 = Flipped(Decoupled(UInt(0.W)))
-  val Out1 = Decoupled(UInt(1.W)) //TODO 0 bits
-  //Decoupled = ready(I), valid(O), bits(O)
+abstract class LoadIO(val NumMemOP :Int = 1)(implicit val p: Parameters) extends Module with CoreParams{
+
+  val io = IO(new Bundle {
+    // gepAddr: The calculated address comming from GEP node
+    val gepAddr = Flipped(Decoupled(UInt(xlen.W)))
+
+    //Bool data from other memory ops
+    // using Handshaking protocols
+    val predMemOp = Vec(NumMemOP, Flipped(Decoupled(UInt(1.W))))
+
+    val memLDIO = new MemLdIO(xlen)
+
+    val memOpAck = Decoupled(UInt(1.W)) //TODO 0 bits
+    //Decoupled = ready(I), valid(O), bits(O) 
+  
+  })
 }
 
 
-class LoadNode (xLen: Int) extends Module {
-  val io = IO(new LoadIO(xLen))
+class LoadNode(implicit p: Parameters) extends LoadIO()(p){
 
-  val addr_reg = RegInit(init = 0.U(xLen.W))
-  val addr_valid_reg = RegInit(init = false.B)
+  val addr_reg       = RegInit(0.U(xlen.W))
+  val addr_valid_reg = RegInit(false.B)
 
-  val data_reg = RegInit(init = 0.U(xLen.W))
+  val data_reg = RegInit(0.U(xlen.W))
 
   // Status Register - If src mem-ops done execution
   val in3_done_reg = RegInit(init = false.B)
@@ -51,50 +62,50 @@ class LoadNode (xLen: Int) extends Module {
   //Initialization
   when(init1_reg) {
 
-    io.In1.ready := true.B
+    io.gepAddr.ready := true.B
   }
-    .otherwise( io.In1.nodeq())
+    .otherwise( io.gepAddr.nodeq())
 
   when(init3_reg) {
-    io.In3.ready := true.B
+    io.predMemOp(0).ready := true.B
   }
 
-    .otherwise( io.In3.nodeq())
+    .otherwise( io.predMemOp(0).nodeq())
 
 
 
 
 
   //-----------------------------------
-  //Rules for In1
-  when(io.In1.fire()) {
-    printf("\n In1. fire \n")
+  //Rules for gepAddr
+  when(io.gepAddr.fire()) {
+    printf("\n gepAddr. fire \n")
     addr_valid_reg := true.B
-    addr_reg := io.In1.bits
+    addr_reg := io.gepAddr.bits
     init1_reg := false.B
   }
 
 
 
-  //Rules for In3
-  when(io.In3.fire()) {
+  //Rules for predMemOp
+  when(io.predMemOp(0).fire()) {
 
-    printf("\n In3. fire \n")
+    printf("\n predMemOp. fire \n")
     in3_done_reg := true.B
     init3_reg := false.B
   }
 
   //-----------------------------------
   when(addr_valid_reg) {
-    io.Memreq_addr.enq(true.B)
+    io.memLDIO.Memreq_addr.enq(true.B)
   }
-    .otherwise( io.Memreq_addr.noenq())
+    .otherwise( io.memLDIO.Memreq_addr.noenq())
 
 
   //Rules for Sending address and data to Memory
-  // Note Memreq_addr.ready and Memreq_data.ready are connected
+  // Note memLDIO.Memreq_addr.ready and Memreq_data.ready are connected
   // Store Node cannot send the data to memory unless all its predecessors are done: in3 in this case
-  when(io.Memreq_addr.fire() && in3_done_reg ) {
+  when(io.memLDIO.Memreq_addr.fire() && in3_done_reg ) {
     memresp_ready_reg := true.B
     addr_valid_reg := false.B
     printf("\n Mem Request Sent \n")
@@ -104,13 +115,13 @@ class LoadNode (xLen: Int) extends Module {
   when(memresp_ready_reg ) {
 
 //    printf("\n Memresp_Ready_reg is true \n")
-    io.Memresp_data.ready := true.B
+    io.memLDIO.Memresp_data.ready := true.B
   }
-    .otherwise( io.Memresp_data.nodeq())
+    .otherwise( io.memLDIO.Memresp_data.nodeq())
 
-  when( io.Memresp_data.fire()) {
+  when( io.memLDIO.Memresp_data.fire()) {
     data_resp_valid := true.B
-    data_reg := io.Memresp_data.bits
+    data_reg := io.memLDIO.Memresp_data.bits
 
     printf("\n Mem Response Received \n")
 
@@ -127,12 +138,12 @@ class LoadNode (xLen: Int) extends Module {
   //-----------------------------------
   // Once data_valid_reg is true -> set MEMIO->OUT->VALID and DATA
   // Once MEMIO->IN->sends ack (i.e READY == TRUE)
-  // When the ack is received && all Inputs from other memory ops are true set Out1 := true
+  // When the ack is received && all Inputs from other memory ops are true set memOpAck := true
   // For the time being just send output when data_valid is true
   //-----------------------------------
-  //  when( io.Out1.ready && data_valid_reg && in3_done_reg ) {
-  //    io.Out1.valid := true.B
-  ////    io.Out1.bits := 1.U
+  //  when( io.memOpAck.ready && data_valid_reg && in3_done_reg ) {
+  //    io.memOpAck.valid := true.B
+  ////    io.memOpAck.bits := 1.U
   //  }
 
   //-----------------------------------
@@ -140,8 +151,8 @@ class LoadNode (xLen: Int) extends Module {
   // and ack is received from memory and next node is ready
   // then send Output as valid
 
-  when(io.Out1.ready && data_resp_valid ) {
-    io.Out1.enq(1.U)
+  when(io.memOpAck.ready && data_resp_valid ) {
+    io.memOpAck.enq(1.U)
 
     //In Case of pipelining StoreNode
     //    //TODO Once you know you need to reset StoreNode
@@ -149,7 +160,7 @@ class LoadNode (xLen: Int) extends Module {
     //    init1_reg := true.B
     //    init3_reg := true.B
   }
-    .otherwise( io.Out1.noenq())
+    .otherwise( io.memOpAck.noenq())
 
 
 }

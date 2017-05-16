@@ -52,7 +52,8 @@ class  CentralStack(implicit p: Parameters) extends Stack()(p) {
     //io.AllocaOut(i).valid := allocaRespDeMux.io.valids(i)
   }
   val x = SP
-  printf(p"SP: $x")
+
+  printf(p"SP: $x \n")
   // Actions. When fire. set ready to false and then 
   // set it to true once the function unit completes
   // The SP should be available only a cycle later since 

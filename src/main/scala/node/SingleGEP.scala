@@ -3,64 +3,57 @@ package node
 import chisel3._
 import chisel3.util._
 
-
-/* A new Bus for GEPs.
- * It should include Base address and Number of byte.
- */
-class DecoupledGEPAddr(val xLen: Int) extends Bundle {
-  override def cloneType = new DecoupledNodeOut(xLen = xLen).asInstanceOf[this.type]
-  val Index       = Output(UInt(xLen.W))
-  val NumByte     = Output(UInt(xLen.W))
-}
+import config._
+import interfaces._
 
 
-class SingleGEP(val xLen: Int, val opCode: Int, val ID: Int) extends Module {
+abstract class GEPIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     // Inputs should be fed only when Ready is HIGH
     // Inputs are always latched.
     // If Ready is LOW; Do not change the inputs as this will cause a bug
-    val Address     = Flipped(Decoupled(UInt(xLen.W)))
-    val Index       = Flipped(Decoupled(new DecoupledGEPAddr((xLen))))
+    val baseAddress  = Flipped(Decoupled(UInt(xlen.W)))
+    val index        = Flipped(Decoupled(UInt(xlen.W)))
 
     // The interface has to be prepared to latch the output on every cycle as long as ready is enabled
     // The output will appear only for one cycle and it has to be latched. 
     // The output WILL NOT BE HELD (not matter the state of ready/valid)
     // Ready simply ensures that no subsequent valid output will appear until Ready is HIGH
-    //val OutIO = Decoupled(new DecoupledNodeOut(xLen))
-    val OutIO = Decoupled(UInt(xLen.W))
-    })
+    val outAddr = Decoupled(UInt(xlen.W))
+   })
+}
 
+class SingleGEP(implicit p: Parameters, val numbyte: Int, val ID: Int) extends GEPIO()(p){
 
   // Input 
-  val BAOperand     = Reg (UInt(xLen.W),next=io.Address.bits)
-  val IndexOperand  = Reg (UInt(xLen.W),next=io.Index.bits.Index)
-  val NByteOperand  = Reg (UInt(xLen.W),next=io.Index.bits.NumByte)
+  val baseOperand_R    = RegNext(io.baseAddress.bits, init = 0.U(xlen.W))
+  val indexOperand_R   = RegNext(io.index.bits, init = 0.U(xlen.W))
 
   //Instantiate ALU with selected code
-  io.OutIO.bits := BAOperand + (IndexOperand*NByteOperand)
+  io.outAddr.bits := baseOperand_R + (indexOperand_R * numbyte.U)
 
   // States of the combinatorial logic
   val s_init :: s_valid :: Nil = Enum(2)
-  val state = Reg(init = s_init)
+  val state = RegInit(s_init)
 
   // Extra information
-  val token  = Reg(init = 0.U)
-  val nodeID = Reg(init = ID.asUInt())
+  val token  = RegInit(0.U)
+  val nodeID = RegInit(ID.asUInt())
 
   when (state === s_init){
-    io.OutIO.valid    := false.B
-    io.Address.ready  := true.B
-    io.Index.ready    := true.B
+    io.outAddr.valid     := false.B
+    io.baseAddress.ready := true.B
+    io.index.ready       := true.B
   }
   when(state === s_valid){
-    io.OutIO.valid    := true.B
-    io.Address.ready  := false.B
-    io.Index.ready    := false.B
+    io.outAddr.valid      := true.B
+    io.baseAddress.ready  := false.B
+    io.index.ready        := false.B
   }
   
   when (state === s_init){
-    when(io.Address.valid && io.Index.valid &&
-      io.OutIO.ready) { state := s_valid}
+    when(io.baseAddress.valid && io.index.valid &&
+      io.outAddr.ready) { state := s_valid}
     .otherwise{ state := s_init}
 
   }
