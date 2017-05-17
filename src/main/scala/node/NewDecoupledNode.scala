@@ -40,7 +40,7 @@ class NewDecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters)
 
   // Extra information
   val token  = RegInit(0.U)
-  val nodeID = RegInit(ID.asUInt())
+  val nodeID = RegInit(ID.U)
 
 
   //Instantiate ALU with selected code
@@ -68,21 +68,26 @@ class NewDecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters)
   io.LeftIO.ready   := ~LeftValid
   io.RightIO.ready  := ~RightValid
 
+  //Latch Left input if it's fire
   when(io.LeftIO.fire()){
     LeftOperand := io.LeftIO.bits
     LeftValid   := io.LeftIO.valid
   }
 
+  //Latch Righ input if it's fire
   when(io.RightIO.fire()){
     RightOperand := io.RightIO.bits
     RightValid   := io.RightIO.valid
   }
 
+  //Reset the latches if we make sure that 
+  //consumer has consumed the output
   when(outValid && io.OutIO.ready){
     RightOperand := 0.U
     LeftOperand  := 0.U
     RightValid   := false.B
     LeftValid    := false.B
+    token := token + 1.U
   }
 
 }
