@@ -71,6 +71,21 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
 //    .otherwise(  m0.io.predMemOp(0).valid := false.B )
 
 
+//when (io.gepAddr.ready) {
+//  printf("\n StDF IO gepReady \n")
+//}
+//
+//  when (io.gepAddr.valid) {
+//  printf("\n StDF IO valid \n")
+//}
+//
+// when (m0.io.gepAddr.ready) {
+//  printf("\n StDF m0.IO gepReady \n")
+//}
+//
+//  when (m0.io.gepAddr.valid) {
+//  printf("\n StDF m0.IO valid \n")
+//}
 
 
 

@@ -95,16 +95,17 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   //-----------------------------------
   //Rules for gepAddr
-  when(io.gepAddr.fire()) {
+  when(io.gepAddr.fire() && init1_reg && !ack_reg) {
     printf("\n gepAddr. fire \n")
     addr_valid_reg := true.B
     addr_reg := io.gepAddr.bits
     init1_reg := false.B
   }
+//    .otherwise(init1_reg := true.B)
 
 
   //Rules for inData
-  when(io.inData.fire()) {
+  when(io.inData.fire() && !ack_reg && init2_reg) {
 
     printf("\n inData. fire \n")
     data_valid_reg := true.B
@@ -112,18 +113,22 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
     init2_reg := false.B
   }
 
+//    .otherwise(init2_reg := true.B)
+
+
 
   //Rules for predMemOp(0)
-  when(io.predMemOp(0).fire()) {
+  when(io.predMemOp(0).fire() && !ack_reg &&  init3_reg) {
 
     printf("\n predMemOp(0). fire \n")
     in3_done_reg := true.B
     init3_reg := false.B
   }
 
+
   //-----------------------------------
 
-  when(data_valid_reg && addr_valid_reg) {
+  when(data_valid_reg && addr_valid_reg && !ack_reg) {
 
     io.memReq.valid := true.B
     io.memReq.bits.address := addr_reg
@@ -136,12 +141,13 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   //Rules for Sending address and data to Memory
   // Store Node cannot send the data to memory unless all its predecessors are done: in3 in this case
-  when(io.memReq.ready && io.memReq.valid  && in3_done_reg ) {
+  when(io.memReq.ready && io.memReq.valid && data_valid_reg && addr_valid_reg  && in3_done_reg  && !ack_reg) {
     memresp_ready_reg := true.B
     addr_valid_reg := false.B
     data_valid_reg := false.B
     printf("\n Mem Request Sent \n")
   }
+    .otherwise(memresp_ready_reg := false.B)
 
   //Once the request is sent to memory, be ready to receive the response back
 //  when(memresp_ready_reg ) {
@@ -191,13 +197,14 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   //TODO In Case of pipelining StoreNode
   //TODO Once you know you need to reset StoreNode Uncomment below rule
-  //  when(io.memOpAck.fire()) {
-  //
-  //        ack_reg := false.B
-  //        init1_reg := true.B
-  //        init2_reg := true.B
-  //        init3_reg := true.B
-  //  }
+    when(io.memOpAck.fire() && ack_reg) {
+      printf("\n\n --------- Iteration over ------------- \n\n")
+
+          ack_reg := false.B
+          init1_reg := true.B
+          init2_reg := true.B
+          init3_reg := true.B
+    }
 
 
 }
