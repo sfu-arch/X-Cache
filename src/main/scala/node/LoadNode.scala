@@ -164,13 +164,14 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   }
     .otherwise( io.memOpAck.valid := false.B)
 
-  when(io.memOpAck.ready && io.memOpAck.valid) {
-    //In Case of pipelining StoreNode
-    //    //TODO Once you know you need to reset StoreNode
-        data_resp_valid := false.B
-        init1_reg := true.B
-        init3_reg := true.B
-
-  }
+  //TODO In Case of pipelining StoreNode
+  //TODO Once you know you need to reset StoreNode
+  //TODO Uncomment the below rule
+  //  when(io.memOpAck.ready && io.memOpAck.valid) {
+  //        data_resp_valid := false.B
+  //        init1_reg := true.B
+  //        init3_reg := true.B
+  //
+  //  }
 
 }

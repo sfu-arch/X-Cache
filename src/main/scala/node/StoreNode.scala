@@ -184,15 +184,15 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
   }
     .otherwise( io.memOpAck.valid := false.B)
 
-  when(io.memOpAck.fire()) {
-
-    //In Case of pipelining StoreNode
-    //    //TODO Once you know you need to reset StoreNode
-        ack_reg := false.B
-        init1_reg := true.B
-        init2_reg := true.B
-        init3_reg := true.B
-  }
+  //TODO In Case of pipelining StoreNode
+  //TODO Once you know you need to reset StoreNode Uncomment below rule
+  //  when(io.memOpAck.fire()) {
+  //
+  //        ack_reg := false.B
+  //        init1_reg := true.B
+  //        init2_reg := true.B
+  //        init3_reg := true.B
+  //  }
 
 
 }
