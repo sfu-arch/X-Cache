@@ -55,7 +55,7 @@ class  CentralizedStackRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit p:
 
   // Connect up Read ins with arbiters
   for (i <- 0 until NReads) {
-    io.ReadIn(i)     <> ReadReqArbiter.io.in(i)
+    ReadReqArbiter.io.in(i) <> io.ReadIn(i)
     io.ReadOut(i)    <> ReadRespDeMux.io.outputs(i)
     //io.ReadValids(i) <> ReadRespDeMux.io.valids(i)
   }
@@ -90,7 +90,7 @@ class  CentralizedStackRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit p:
 
   // Connect up Write ins with arbiters
   for (i <- 0 until NWrites) {
-    io.WriteIn(i) <> WriteReqArbiter.io.in(i)
+    WriteReqArbiter.io.in(i) <> io.WriteIn(i)
     io.WriteOut(i) <> WriteRespDeMux.io.outputs(i)
   }
 
