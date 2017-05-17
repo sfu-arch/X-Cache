@@ -32,7 +32,7 @@ class IndexCounter(implicit val p: Parameters) extends Module with CoreParams{
     val maxN  = Input(xlen.U)
     val indx  = Output(xlen.U)
   })
-    val in_reg = RegInit(0.U(xlen.W))
+    val in_reg = RegInit(0.U(10.W))
 
     io.indx := in_reg
 
@@ -47,17 +47,15 @@ class IndexCounter(implicit val p: Parameters) extends Module with CoreParams{
  * @param inData    An array of input data
  */
 
-class InputRegFile (implicit p: Parameters, val inData : Array[UInt]) extends InRegFile()(p){
+class InputRegFile (val inData : Array[UInt])(implicit p: Parameters) extends InRegFile()(p){
 
   val ROM    = Vec(inData)
-
-  val initValids = Seq.fill(inData.size){true.B}
-  val Valids = RegInit(Vec(initValids))
+  val Valids = Reg(init = Vec(Seq.fill(inData.size)(true.B)))
 
   val counter = Module(new IndexCounter())
 
   counter.io.inc  := io.Data.ready
-  counter.io.maxN := inData.size.U
+  counter.io.maxN := inData.size.U - 1.U
 
   io.Data.bits  := ROM(counter.io.indx)
   io.Data.valid := Valids(counter.io.indx)
@@ -66,5 +64,6 @@ class InputRegFile (implicit p: Parameters, val inData : Array[UInt]) extends In
   when(io.Data.ready){
     Valids(counter.io.indx) := false.B
   }
+
 }
 

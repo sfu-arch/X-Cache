@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package regfile
+package dataflow
 
 import chisel3._
 import chisel3.util._
@@ -22,12 +22,13 @@ import interfaces._
 // Tester.
 class nDataFlowTester(df: newDataFlow)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
-  poke(df.io.resultReady, true.B)
+  poke(df.io.resultReady, false.B)
   println(s" ")
   println(s"Node output: ${peek(df.io.result)}")
   println(s"Node valid : ${peek(df.io.resultValid)}")
   println(s" ")
   step(1)
+  poke(df.io.resultReady, true.B)
   println(s"Node output: ${peek(df.io.result)}")
   println(s"Node valid : ${peek(df.io.resultValid)}")
   println(s" ")

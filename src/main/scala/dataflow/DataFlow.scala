@@ -16,13 +16,13 @@ class DataFlow(xLen: Int) extends Module {
   })
 
 
-  val m0 = Module(new NewDecoupledNode(xLen, 0, 0))
-  m0.io.LeftIO  <> io.In1
-  m0.io.RightIO <> io.In2
+  //val m0 = Module(new NewDecoupledNode(xLen, 0, 0))
+  //m0.io.LeftIO  <> io.In1
+  //m0.io.RightIO <> io.In2
 
-  val m1 = Module(new NewDecoupledNode(xLen, 1, 1))
-  m1.io.LeftIO <> m0.io.OutIO
-  m1.io.RightIO <> io.In3
+  //val m1 = Module(new NewDecoupledNode(xLen, 1, 1))
+  //m1.io.LeftIO <> m0.io.OutIO
+  //m1.io.RightIO <> io.In3
 
-  io.Out1 <> m1.io.OutIO
+  //io.Out1 <> m1.io.OutIO
 }

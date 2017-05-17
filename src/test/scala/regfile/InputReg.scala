@@ -46,7 +46,7 @@ class InRegTester(regFile: InputRegFile)(implicit p: config.Parameters) extends 
 class regFileTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "InReg tester" in {
-     chisel3.iotesters.Driver(() => new InputRegFile()(p,Array(3.U, 4.U, 5.U))) { c =>
+     chisel3.iotesters.Driver(() => new InputRegFile(Array(3.U, 4.U, 5.U))(p)) { c =>
        new InRegTester(c)
      } should be(true)
    }
