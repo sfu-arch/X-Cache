@@ -25,7 +25,8 @@ abstract class StoreIO(val NumMemOP :Int = 1, val ID :Int = 0, val mask :Int = 1
 
     //Memory interface
     val memReq  = Decoupled(new WriteReq())
-    val memResp = Flipped(Decoupled(new WriteResp()))
+//    val memResp = Flipped(Decoupled(new WriteResp()))
+    val memResp = Flipped(new WriteResp())
 
   })
 }
@@ -47,10 +48,14 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
   // Initialization registers to send ready signals
   // to all inputs to accept input nodes
   val init1_reg = RegInit(true.B)
+  io.gepAddr.ready := init1_reg
+
   val init2_reg = RegInit(true.B)
+  io.inData.ready := init2_reg
 
   //TODO Make init3_reg a Vector of registers activated based on input predMemOp
   val init3_reg = RegInit(true.B)
+  io.predMemOp(0).ready := init3_reg
 
 
   //Mem ready for response
@@ -66,23 +71,23 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
   //  }
 
   //Initialization
-  when(init1_reg) {
+//  when(init1_reg) {
+//
+//    io.gepAddr.ready := true.B
+//  }
+//    .otherwise( io.gepAddr.nodeq())
+//
+//  when(init2_reg) {
+//    io.inData.ready := true.B
+//  }
+//
+//    .otherwise( io.inData.nodeq())
 
-    io.gepAddr.ready := true.B
-  }
-    .otherwise( io.gepAddr.nodeq())
-
-  when(init2_reg) {
-    io.inData.ready := true.B
-  }
-
-    .otherwise( io.inData.nodeq())
-
-  when(init3_reg) {
-    io.predMemOp(0).ready := true.B
-  }
-
-    .otherwise( io.predMemOp(0).nodeq())
+//  when(init3_reg) {
+//    io.predMemOp(0).ready := true.B
+//  }
+//
+//    .otherwise( io.predMemOp(0).nodeq())
 
 
 
@@ -130,7 +135,6 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
     .otherwise( io.memReq.valid := false.B)
 
   //Rules for Sending address and data to Memory
-  // Note Memreq_addr.ready and Memreq_data.ready are connected
   // Store Node cannot send the data to memory unless all its predecessors are done: in3 in this case
   when(io.memReq.ready && io.memReq.valid  && in3_done_reg ) {
     memresp_ready_reg := true.B
@@ -140,14 +144,15 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
   }
 
   //Once the request is sent to memory, be ready to receive the response back
-  when(memresp_ready_reg ) {
+//  when(memresp_ready_reg ) {
+//
+////    printf("\n Memresp_Ready_reg is true \n")
+//    io.memResp.ready := true.B
+//  }
+//    .otherwise( io.memResp.ready := false.B )
 
-//    printf("\n Memresp_Ready_reg is true \n")
-    io.memResp.ready := true.B
-  }
-    .otherwise( io.memResp.ready := false.B )
-
-  when( io.memResp.valid && io.memResp.ready) {
+//  when( io.memResp.valid && io.memResp.ready) {
+    when( io.memResp.valid && memresp_ready_reg && !ack_reg ) {
     ack_reg := true.B
 
     printf("\n Mem Response Received \n")
