@@ -23,10 +23,11 @@ abstract class AbstractArbiter(NReads: Int, NWrites: Int)(implicit val p: Parame
   })
 }
 
-
-// Size   : Size of Register file to be allocated and managed
-// NReads  : Number of static reads to be connected. Controls size of arbiter and Demux
-// NWrites : Number of static writes to be connected. Controls size of arbiter and Demux
+/**
+* @param Size    : Size of Register file to be allocated and managed
+* @param NReads  : Number of static reads to be connected. Controls size of arbiter and Demux
+* @param NWrites : Number of static writes to be connected. Controls size of arbiter and Demux
+*/
 
 class  CentralizedStackRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit p: Parameters) extends AbstractArbiter(NReads,NWrites)(p) { 
 
