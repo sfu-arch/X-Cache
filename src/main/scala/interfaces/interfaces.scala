@@ -40,7 +40,8 @@ class ReadReq(implicit p: Parameters) extends CoreBundle()(p) {
 
 //  data : data returned from scratchpad
 class ReadResp(implicit p: Parameters) extends CoreBundle()(p) {
- val data = UInt(xlen.W)
+ val data  = UInt(xlen.W)
+ val valid = Bool()
 }
 
 // Write interface into scratchpad.

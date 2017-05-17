@@ -13,11 +13,17 @@ import util._
 import interfaces._
 import muxes._
 
-
+//XXX
+//TODO put VEC insid Outputs
+//OUTPUT(VECXXX)
+//
+//TODO Make readOut and readValid as a bundle
+//
 abstract class AbstractArbiter(NReads: Int, NWrites: Int)(implicit val p: Parameters) extends Module with CoreParams{
   val io = IO(new Bundle {
   val ReadIn    = Vec(NReads,Flipped(Decoupled(new ReadReq())))
   val ReadOut   = Vec(NReads,Output(new ReadResp()))
+  //val ReadValids= Vec(NReads,Output(Bool()))
   val WriteIn   = Vec(NWrites,Flipped(Decoupled(new WriteReq())))
   val WriteOut  = Vec(NWrites,Output(new WriteResp()))
   })
@@ -49,8 +55,9 @@ class  CentralizedStackRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit p:
 
   // Connect up Read ins with arbiters
   for (i <- 0 until NReads) {
-    io.ReadIn(i) <> ReadReqArbiter.io.in(i)
-    io.ReadOut(i) <> ReadRespDeMux.io.outputs(i)
+    io.ReadIn(i)     <> ReadReqArbiter.io.in(i)
+    io.ReadOut(i)    <> ReadRespDeMux.io.outputs(i)
+    //io.ReadValids(i) <> ReadRespDeMux.io.valids(i)
   }
 
   // Activate arbiter
