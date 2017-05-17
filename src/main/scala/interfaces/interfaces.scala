@@ -61,8 +61,3 @@ class WriteResp (implicit p: Parameters) extends CoreBundle()(p) {
   val valid =  Bool()
 }
 
-class GepAddr(implicit p: Parameters) extends CoreBundle()(p){
-  val baseAddress = UInt(xlen.W)
-  val index       = UInt(xlen.W)
-}
-
