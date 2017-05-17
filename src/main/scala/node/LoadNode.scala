@@ -40,10 +40,10 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
 
   val nodeID_reg = RegInit(ID.U)
 
+  //Address comes from GEP instruction
   val addr_reg       = RegInit(0.U(xlen.W))
   val addr_valid_reg = RegInit(false.B)
 
-  val data_reg = RegInit(0.U(xlen.W))
 
   // Status Register - If src mem-ops done execution
   val in3_done_reg = RegInit(false.B)
@@ -51,12 +51,15 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   // Initialization registers to send ready signals
   // to all inputs to accept input nodes
   val init1_reg = RegInit(true.B)
+  //TODO Make init3_reg a Vector of registers activated based on input predMemOp
   val init3_reg = RegInit(true.B)
+//  val predMemOp_reg = RegInit(Vec(NumMemOP, Flipped(Decoupled(UInt(1.W))))
 
 
   //Mem ready for response
   val memresp_ready_reg = RegInit(false.B)
   val data_resp_valid   = RegInit(false.B)
+  val data_reg = RegInit(0.U(xlen.W))
 
 
 
@@ -156,16 +159,18 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   // and ack is received from memory and next node is ready
   // then send Output as valid
 
-  when(io.memOpAck.ready && data_resp_valid ) {
+  when( data_resp_valid ) {
     io.memOpAck.enq(1.U)
+  }
+    .otherwise( io.memOpAck.valid := false.B)
 
+  when(io.memOpAck.ready && io.memOpAck.valid) {
     //In Case of pipelining StoreNode
     //    //TODO Once you know you need to reset StoreNode
-    //    data_resp_valid := false.B
-    //    init1_reg := true.B
-    //    init3_reg := true.B
-  }
-    .otherwise( io.memOpAck.noenq())
+        data_resp_valid := false.B
+        init1_reg := true.B
+        init3_reg := true.B
 
+  }
 
 }

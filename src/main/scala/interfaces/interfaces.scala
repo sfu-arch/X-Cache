@@ -57,7 +57,8 @@ class WriteReq (implicit p: Parameters) extends CoreBundle()(p) {
 
 // Explicitly indicate done flag
 class WriteResp (implicit p: Parameters) extends CoreBundle()(p) {
-  val done =  Bool()
+  val done  =  Bool()
+  val valid =  Bool()
 }
 
 // Mem predecessor interface
