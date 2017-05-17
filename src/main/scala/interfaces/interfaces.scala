@@ -61,9 +61,8 @@ class WriteResp (implicit p: Parameters) extends CoreBundle()(p) {
   val valid =  Bool()
 }
 
-// Mem predecessor interface
-//class MemOpAck(implicit p: Parameters) extends CoreBundle()(p) {
-  //val ready =  Bool()
-  //val valid =  Bool()
-//}
+class GepAddr(implicit p: Parameters) extends CoreBundle()(p){
+  val baseAddress = UInt(xlen.W)
+  val index       = UInt(xlen.W)
+}
 
