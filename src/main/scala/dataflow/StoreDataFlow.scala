@@ -25,6 +25,7 @@ class RvIO(implicit  val p: Parameters) extends Bundle with CoreParams{
 abstract class StoreDFIO()(implicit val p: Parameters) extends Module with CoreParams{
 
     val io = IO(new Bundle{
+      val testReady = Output(Bool())
     val gepAddr   = Flipped(new RvIO())
     val predMemOp = Flipped(new RvIO())
     val inData    = Flipped(new RvIO())
@@ -48,44 +49,24 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
   m0.io.inData        <> io.inData
   io.memOpAck         <> m0.io.memOpAck
 
-//  io.gepAddr.ready := true.B
-//  io.predMemOp.ready := true.B
-//  io.inData.ready := true.B
-//
-//  when(io.gepAddr.fire() && m0.io.gepAddr.fire()) {
-//    m0.io.gepAddr.valid  := io.gepAddr.valid
-//    m0.io.gepAddr.bits := io.gepAddr.bits
-//  }
-//    .otherwise(  m0.io.gepAddr.valid := false.B )
-//
-//  when(io.inData.fire() && m0.io.inData.fire()) {
-//    m0.io.inData.valid  := io.inData.valid
-//    m0.io.inData.bits := io.inData.bits
-//  }
-//    .otherwise(  m0.io.inData.valid := false.B )
-//
-//   when(io.predMemOp.fire() && m0.io.predMemOp(0).fire()) {
-//    m0.io.predMemOp(0).valid  := io.predMemOp.valid
-//    m0.io.predMemOp(0).bits := io.predMemOp.bits
-//  }
-//    .otherwise(  m0.io.predMemOp(0).valid := false.B )
+//  io.testReady := m0.io.gepT
 
 
-//when (io.gepAddr.ready) {
-//  printf("\n StDF IO gepReady \n")
-//}
-//
-//  when (io.gepAddr.valid) {
-//  printf("\n StDF IO valid \n")
-//}
-//
-// when (m0.io.gepAddr.ready) {
-//  printf("\n StDF m0.IO gepReady \n")
-//}
-//
-//  when (m0.io.gepAddr.valid) {
-//  printf("\n StDF m0.IO valid \n")
-//}
+
+when (io.gepAddr.ready) {
+  printf("\n StDF IO gepReady \n")
+}
+
+  when (io.gepAddr.valid) {
+  printf("\n StDF IO valid \n")
+}
+
+ when (m0.io.gepAddr.ready) {
+  printf("\n StDF m0.IO gepReady \n")
+}
+  when (m0.io.gepAddr.valid) {
+  printf("\n StDF m0.IO valid \n")
+}
 
 
 

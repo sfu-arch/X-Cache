@@ -16,20 +16,24 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
 
     //IF ready is set
     // send address
-    println(s"GepAddr: ${c.io.gepAddr.ready}")
+
+    poke(c.io.gepAddr.valid,true)
+    poke(c.io.gepAddr.bits,12)
+    step(1)
+    println(s"GepAddr: ${peek(c.io.gepAddr.ready)}")
+    println(s"GEPTETS: ${peek(c.io.testReady)}")
+    println(s"GepValid: ${peek(c.io.gepAddr.valid)}")
 
 
-    if(peek(c.io.gepAddr.ready) == 1) {
+//    if(peek(c.io.gepAddr.ready) == 1) {
       printf("\n rule1 fired \n")
-      poke(c.io.gepAddr.valid,true)
-      poke(c.io.gepAddr.bits,12)
-    }
+//    }
 
-    if(peek(c.io.inData.ready) == 1) {
+//    if(peek(c.io.inData.ready) == 1) {
       printf("\n rule2 fired \n")
       poke(c.io.inData.valid,true)
       poke(c.io.inData.bits,12)
-    }
+//    }
 
 
 
