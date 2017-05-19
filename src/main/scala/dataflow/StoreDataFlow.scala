@@ -24,9 +24,13 @@ class RvIO(implicit  val p: Parameters) extends Bundle with CoreParams{
 
 abstract class StoreDFIO()(implicit val p: Parameters) extends Module with CoreParams{
 
-    val io = IO(new Bundle{
-      val testReady = Output(Bool())
-    val gepAddr   = Flipped(new RvIO())
+  val io = IO(new Bundle{
+    val testReady = Output(Bool())
+    //    val gepAddr   = Flipped(new RvIO())
+    val gepAddr_ready = Output(Bool())
+    val gepAddr_valid = Input(Bool())
+    val gepAddr_bits = Input (UInt(xlen.W))
+
     val predMemOp = Flipped(new RvIO())
     val inData    = Flipped(new RvIO())
 
@@ -39,12 +43,14 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
 
   val m0 = Module(new StoreNode())
 
-  val m1 = Module(new CentralizedStackRegFile(Size=32, NReads=1, NWrites=1))
+//  val m1 = Module(new CentralizedStackRegFile(Size=32, NReads=1, NWrites=1))
 
-  m1.io.WriteIn(0) <> m0.io.memReq
-  m0.io.memResp <> m1.io.WriteOut(0)
+//  m1.io.WriteIn(0) <> m0.io.memReq
+//  m0.io.memResp <> m1.io.WriteOut(0)
 
-  m0.io.gepAddr       <> io.gepAddr
+  io.gepAddr_ready      := m0.io.gepAddr.ready
+  m0.io.gepAddr.valid   := io.gepAddr_valid
+  m0.io.gepAddr.bits    := io.gepAddr_bits
   m0.io.predMemOp(0)  <> io.predMemOp
   m0.io.inData        <> io.inData
   io.memOpAck         <> m0.io.memOpAck
@@ -53,11 +59,11 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
 
 
 
-when (io.gepAddr.ready) {
+when (io.gepAddr_ready) {
   printf("\n StDF IO gepReady \n")
 }
 
-  when (io.gepAddr.valid) {
+  when (io.gepAddr_valid) {
   printf("\n StDF IO valid \n")
 }
 

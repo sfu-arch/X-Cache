@@ -12,28 +12,29 @@ import config._
 
 
 class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
-  for (t <- 0 until 12) {
+  for (t <- 0 until 100) {
 
     //IF ready is set
     // send address
 
-    poke(c.io.gepAddr.valid,true)
-    poke(c.io.gepAddr.bits,12)
-    step(1)
-    println(s"GepAddr: ${peek(c.io.gepAddr.ready)}")
-    println(s"GEPTETS: ${peek(c.io.testReady)}")
-    println(s"GepValid: ${peek(c.io.gepAddr.valid)}")
+
+    println(s"t: ${t} GepAddr: ${peek(c.io.gepAddr_ready)}")
+    //    println(s"GEPTETS: ${peek(c.io.testReady)}")
+    println(s"t: ${t} GepValid: ${peek(c.io.gepAddr_valid)}")
 
 
-//    if(peek(c.io.gepAddr.ready) == 1) {
+    if(peek(c.io.gepAddr_ready) == 1 && t>2) {
+      poke(c.io.gepAddr_valid,true)
+      poke(c.io.gepAddr_bits,12)
+
       printf("\n rule1 fired \n")
-//    }
+    }
 
-//    if(peek(c.io.inData.ready) == 1) {
+    if(peek(c.io.inData.ready) == 1 && t>2) {
       printf("\n rule2 fired \n")
       poke(c.io.inData.valid,true)
       poke(c.io.inData.bits,12)
-//    }
+    }
 
 
 
@@ -61,41 +62,41 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
 
 
     //at some clock - send src mem-op is done executing
-    if(t > 4) {
-      if (peek(c.io.predMemOp.ready) == 1) {
-        poke(c.io.predMemOp.valid, true)
-        println("\n predmemOP rule fired \n")
-        //        poke(c.io.predMemOp(0).bits, 24)
-      }
-      else
-        poke(c.io.predMemOp.valid, false)
-
-    }
-    else {
-
-      poke(c.io.predMemOp.valid, false)
-    }
-
-
-    //poke for output after clock 7
-    if(t>7) {
-      poke(c.io.memOpAck.ready, true)
-      println(s"t: ${t} io.memOpAck.valid ${peek(c.io.memOpAck.valid)} io.memOpAck.ready: ${peek(c.io.memOpAck.ready)}")
-    }
-
-    //    println(s"t: ${t} io.gepAddr.bits: ${peek(c.io.gepAddr.bits)}, io.gepAddr.valid: ${peek(c.io.gepAddr.valid)} io.gepAddr.ready: " +
-    //      s"${peek(c.io.In1.ready)}")
+    //    if(t > 4) {
+    //      if (peek(c.io.predMemOp.ready) == 1) {
+    //        poke(c.io.predMemOp.valid, true)
+    //        println("\n predmemOP rule fired \n")
+    //        //        poke(c.io.predMemOp(0).bits, 24)
+    //      }
+    //      else
+    //        poke(c.io.predMemOp.valid, false)
+    //
+    //    }
+    //    else {
+    //
+    //      poke(c.io.predMemOp.valid, false)
+    //    }
     //
     //
-    //    println(s"t: ${t} io.In2.bits: ${peek(c.io.In2.bits)}, io.In2.valid: ${peek(c.io.In2.valid)} io.In2.ready: " +
-    //      s"${peek(c.io.In2.ready)}")
-
-    //    println(s"t: ${t} io.predMemOp(0).valid: ${peek(c.io.predMemOp(0).valid)} io.predMemOp(0).ready: " +
-    //      s"${peek(c.io.predMemOp(0).ready)}")
-
-
-    if(peek(c.io.predMemOp.valid) ==1)
-      println(s"t: ${t}  io.predMemOp(0).valid: ${peek(c.io.predMemOp.valid)}  io.predMemOp(0).ready: ${peek(c.io.predMemOp.ready)}  ")
+    //    //poke for output after clock 7
+    //    if(t>7) {
+    //      poke(c.io.memOpAck.ready, true)
+    //      println(s"t: ${t} io.memOpAck.valid ${peek(c.io.memOpAck.valid)} io.memOpAck.ready: ${peek(c.io.memOpAck.ready)}")
+    //    }
+    //
+    //    //    println(s"t: ${t} io.gepAddr.bits: ${peek(c.io.gepAddr.bits)}, io.gepAddr.valid: ${peek(c.io.gepAddr.valid)} io.gepAddr.ready: " +
+    //    //      s"${peek(c.io.In1.ready)}")
+    //    //
+    //    //
+    //    //    println(s"t: ${t} io.In2.bits: ${peek(c.io.In2.bits)}, io.In2.valid: ${peek(c.io.In2.valid)} io.In2.ready: " +
+    //    //      s"${peek(c.io.In2.ready)}")
+    //
+    //    //    println(s"t: ${t} io.predMemOp(0).valid: ${peek(c.io.predMemOp(0).valid)} io.predMemOp(0).ready: " +
+    //    //      s"${peek(c.io.predMemOp(0).ready)}")
+    //
+    //
+    //    if(peek(c.io.predMemOp.valid) ==1)
+    //      println(s"t: ${t}  io.predMemOp(0).valid: ${peek(c.io.predMemOp.valid)}  io.predMemOp(0).ready: ${peek(c.io.predMemOp.ready)}  ")
 
     step(1)
 
