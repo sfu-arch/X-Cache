@@ -12,29 +12,32 @@ import config._
 
 
 class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
-  for (t <- 0 until 100) {
+  for (t <- 0 until 10) {
 
     //IF ready is set
     // send address
 
 
-    println(s"t: ${t} GepAddr: ${peek(c.io.gepAddr_ready)}")
-    //    println(s"GEPTETS: ${peek(c.io.testReady)}")
-    println(s"t: ${t} GepValid: ${peek(c.io.gepAddr_valid)}")
+    println(s"t: ${t} GepAddr: ${peek(c.io.gepAddr.ready)}")
+    println(s"t: ${t} GepValid: ${peek(c.io.gepAddr.valid)}")
 
 
-    if(peek(c.io.gepAddr_ready) == 1 && t>2) {
-      poke(c.io.gepAddr_valid,true)
-      poke(c.io.gepAddr_bits,12)
+    if(peek(c.io.gepAddr.ready) == 1 && t>2) {
+      poke(c.io.gepAddr.valid,true)
+      poke(c.io.gepAddr.bits,12)
 
       printf("\n rule1 fired \n")
     }
+    else
+      poke(c.io.gepAddr.valid,false)
 
-    if(peek(c.io.inData.ready) == 1 && t>2) {
+    if(peek(c.io.inData.ready) == 1 && t>3) {
       printf("\n rule2 fired \n")
       poke(c.io.inData.valid,true)
       poke(c.io.inData.bits,12)
     }
+    else
+      poke(c.io.inData.valid,false)
 
 
 
@@ -62,20 +65,20 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
 
 
     //at some clock - send src mem-op is done executing
-    //    if(t > 4) {
-    //      if (peek(c.io.predMemOp.ready) == 1) {
-    //        poke(c.io.predMemOp.valid, true)
-    //        println("\n predmemOP rule fired \n")
-    //        //        poke(c.io.predMemOp(0).bits, 24)
-    //      }
-    //      else
-    //        poke(c.io.predMemOp.valid, false)
-    //
-    //    }
-    //    else {
-    //
-    //      poke(c.io.predMemOp.valid, false)
-    //    }
+    if(t > 4) {
+      if (peek(c.io.predMemOp.ready) == 1) {
+        poke(c.io.predMemOp.valid, true)
+        println("\n predmemOP rule fired \n")
+        //        poke(c.io.predMemOp(0).bits, 24)
+      }
+      else
+        poke(c.io.predMemOp.valid, false)
+
+    }
+    else {
+
+      poke(c.io.predMemOp.valid, false)
+    }
     //
     //
     //    //poke for output after clock 7

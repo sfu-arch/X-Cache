@@ -121,9 +121,9 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   //Once the request is sent to memory, be ready to receive the response back
   ack_reg := io.memResp.valid & memresp_ready_reg
+  val resp_fire = io.memResp.valid & memresp_ready_reg
 
-
-  when( io.memResp.valid && memresp_ready_reg) {
+  when( resp_fire) {
 
     printf(p"\n ------------------- Mem Response Received ---------------------\n")
     //Reset other registers
