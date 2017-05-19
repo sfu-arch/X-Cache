@@ -32,7 +32,7 @@ class StoreNodeTests(c: StoreNode) extends PeekPokeTester(c) {
     //Memory is always ready to receive the memory requests
     //TODO make them as single signal
     poke(c.io.memReq.ready, true)
-//    poke(c.io.Memreq_data.ready, true)
+    //    poke(c.io.Memreq_data.ready, true)
     //When StoreNode requests the data print the contents
 
     if(peek(c.io.memReq.valid) == 1 ) {
@@ -46,11 +46,10 @@ class StoreNodeTests(c: StoreNode) extends PeekPokeTester(c) {
       //      step (1)
       step (1)
       //since response is available atleast next cycle onwards
-      if(peek(c.io.memResp.ready) == true ) {
-        poke(c.io.memResp.valid, true)
-
-        println(s"t: ${t}  io.Memresp_ack_ready: ${peek(c.io.memResp.ready)}")
-      }
+      //      if(peek(c.io.memResp.ready) == true ) {
+      poke(c.io.memResp.valid, true)
+      println(s"t: ${t}  io.Memresp_ack_valid: ${peek(c.io.memResp.valid)}")
+      //      }
 
     }
 
@@ -108,7 +107,7 @@ class StoreNodeTests(c: StoreNode) extends PeekPokeTester(c) {
 
 class StoreNodeTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
- it should "Store Node tester" in {
+  it should "Store Node tester" in {
     chisel3.iotesters.Driver(() => new StoreNode()) { c =>
       new StoreNodeTests(c)
     } should be(true)

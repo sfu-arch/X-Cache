@@ -16,17 +16,24 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
 
     //IF ready is set
     // send address
-    if(peek(c.io.gepAddr.ready) == 1) {
-      //      printf("\n rule1 fired \n")
-      poke(c.io.gepAddr.valid,true)
-      poke(c.io.gepAddr.bits,12)
-    }
 
-    if(peek(c.io.inData.ready) == 1) {
-      //      printf("\n rule1 fired \n")
+    poke(c.io.gepAddr.valid,true)
+    poke(c.io.gepAddr.bits,12)
+    step(1)
+    println(s"GepAddr: ${peek(c.io.gepAddr.ready)}")
+    println(s"GEPTETS: ${peek(c.io.testReady)}")
+    println(s"GepValid: ${peek(c.io.gepAddr.valid)}")
+
+
+//    if(peek(c.io.gepAddr.ready) == 1) {
+      printf("\n rule1 fired \n")
+//    }
+
+//    if(peek(c.io.inData.ready) == 1) {
+      printf("\n rule2 fired \n")
       poke(c.io.inData.valid,true)
       poke(c.io.inData.bits,12)
-    }
+//    }
 
 
 
@@ -36,18 +43,18 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
 
     //if(peek(c.io.memReq.valid) == 1 ) {
 
-      //println(s"t: ${t}  io.memLDIO.Memreq_addr: ${peek(c.io.memReq.bits.address)} ")
+    //println(s"t: ${t}  io.memLDIO.Memreq_addr: ${peek(c.io.memReq.bits.address)} ")
 
 
-      ////      step (1)
-      ////      step (1)
-      //step (1)
-      ////since response is available atleast next cycle onwards
-      //if(peek(c.io.memResp.ready) == true ) {
-        //poke(c.io.memResp.valid, true)
+    ////      step (1)
+    ////      step (1)
+    //step (1)
+    ////since response is available atleast next cycle onwards
+    //if(peek(c.io.memResp.ready) == true ) {
+    //poke(c.io.memResp.valid, true)
 
-        //println(s"t: ${t}  io.Memresp_ack_ready: ${peek(c.io.memResp.ready)}")
-      //}
+    //println(s"t: ${t}  io.Memresp_ack_ready: ${peek(c.io.memResp.ready)}")
+    //}
 
     //}
 
@@ -57,6 +64,7 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
     if(t > 4) {
       if (peek(c.io.predMemOp.ready) == 1) {
         poke(c.io.predMemOp.valid, true)
+        println("\n predmemOP rule fired \n")
         //        poke(c.io.predMemOp(0).bits, 24)
       }
       else
@@ -97,7 +105,7 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
 
 class StoreDFTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
- it should "Store Node tester" in {
+  it should "Store Node tester" in {
     chisel3.iotesters.Driver(() => new StoreDataFlow()) { c =>
       new StoreDFTests(c)
     } should be(true)
