@@ -29,7 +29,6 @@ abstract class StoreDFIO()(implicit val p: Parameters) extends Module with CoreP
     val gepAddr   = Flipped(new RvIO())
     val predMemOp = Flipped(new RvIO())
     val inData    = Flipped(new RvIO())
-
     val memOpAck  = Decoupled(UInt(1.W)) //TODO 0 bits
 
   })
@@ -38,16 +37,14 @@ abstract class StoreDFIO()(implicit val p: Parameters) extends Module with CoreP
 class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
 
   val m0 = Module(new StoreNode())
-
   val m1 = Module(new CentralizedStackRegFile(Size=32, NReads=1, NWrites=1))
 
+  //TODO : Connect using Registers - else it makes a combinational loop
   m1.io.WriteIn(0) <> m0.io.memReq
   m0.io.memResp <> m1.io.WriteOut(0)
 
-//  m0.io.predMemOp(0)  <> io.predMemOp
-//  m0.io.inData        <> io.inData
-//  io.memOpAck         <> m0.io.memOpAck
 
+  // TODO : Figure out why does not work without Registers
   // ----  GEP ADDR ------
   val gepAddr_ready_reg = RegInit(false.B)
   val gepAddr_valid_reg = RegInit(false.B)

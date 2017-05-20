@@ -41,29 +41,6 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
 
 
 
-    //Memory is always ready to receive the memory requests
-    //TODO make them as single signal
-    //poke(c.io.memReq.ready, true)
-
-    //if(peek(c.io.memReq.valid) == 1 ) {
-
-    //println(s"t: ${t}  io.memLDIO.Memreq_addr: ${peek(c.io.memReq.bits.address)} ")
-
-
-    ////      step (1)
-    ////      step (1)
-    //step (1)
-    ////since response is available atleast next cycle onwards
-    //if(peek(c.io.memResp.ready) == true ) {
-    //poke(c.io.memResp.valid, true)
-
-    //println(s"t: ${t}  io.Memresp_ack_ready: ${peek(c.io.memResp.ready)}")
-    //}
-
-    //}
-
-
-
     //at some clock - send src mem-op is done executing
     if(t > 4) {
       if (peek(c.io.predMemOp.ready) == 1) {
@@ -79,27 +56,6 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
 
       poke(c.io.predMemOp.valid, false)
     }
-    //
-    //
-    //    //poke for output after clock 7
-    //    if(t>7) {
-    //      poke(c.io.memOpAck.ready, true)
-    //      println(s"t: ${t} io.memOpAck.valid ${peek(c.io.memOpAck.valid)} io.memOpAck.ready: ${peek(c.io.memOpAck.ready)}")
-    //    }
-    //
-    //    //    println(s"t: ${t} io.gepAddr.bits: ${peek(c.io.gepAddr.bits)}, io.gepAddr.valid: ${peek(c.io.gepAddr.valid)} io.gepAddr.ready: " +
-    //    //      s"${peek(c.io.In1.ready)}")
-    //    //
-    //    //
-    //    //    println(s"t: ${t} io.In2.bits: ${peek(c.io.In2.bits)}, io.In2.valid: ${peek(c.io.In2.valid)} io.In2.ready: " +
-    //    //      s"${peek(c.io.In2.ready)}")
-    //
-    //    //    println(s"t: ${t} io.predMemOp(0).valid: ${peek(c.io.predMemOp(0).valid)} io.predMemOp(0).ready: " +
-    //    //      s"${peek(c.io.predMemOp(0).ready)}")
-    //
-    //
-    //    if(peek(c.io.predMemOp.valid) ==1)
-    //      println(s"t: ${t}  io.predMemOp(0).valid: ${peek(c.io.predMemOp.valid)}  io.predMemOp(0).ready: ${peek(c.io.predMemOp.ready)}  ")
 
     step(1)
 
