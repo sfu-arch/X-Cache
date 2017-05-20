@@ -2,89 +2,89 @@ package node
 
 import chisel3._
 import chisel3.util._
+import chisel3.Module
+import chisel3.testers._
+import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+import org.scalatest.{Matchers, FlatSpec} 
 
+import muxes._
+import config._
+import util._
+import interfaces._
 
-/**
-  * Implements a Decoupled Node that used decoupledIO for both input and output
-  */
-
-class DecoupledNodeOut(val xLen: Int) extends Bundle {
-  override def cloneType = new DecoupledNodeOut(xLen = xLen).asInstanceOf[this.type]
-  val data  = Output(UInt(xLen.W))
-  val state = Output(UInt(xLen.W))
-}
-
-class DecoupledNode(val xLen: Int, val opCode: Int) extends Module {
+abstract class Node()(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     // Inputs should be fed only when Ready is HIGH
     // Inputs are always latched.
     // If Ready is LOW; Do not change the inputs as this will cause a bug
-    val LeftIO   = Flipped(Decoupled(UInt(xLen.W)))
-    val RightIO  = Flipped(Decoupled(UInt(xLen.W))) 
+    val LeftIO   = Flipped(Decoupled(UInt(xlen.W)))
+    val RightIO  = Flipped(Decoupled(UInt(xlen.W))) 
 
     // The interface has to be prepared to latch the output on every cycle as long as ready is enabled
     // The output will appear only for one cycle and it has to be latched. 
     // The output WILL NOT BE HELD (not matter the state of ready/valid)
     // Ready simply ensures that no subsequent valid output will appear until Ready is HIGH
-    //val OutIO = Decoupled(new DecoupledNodeOut(xLen))
-    val OutIO = Decoupled(UInt(xLen.W))
+    //val OutIO = Decoupled(new DecoupledNodeOut(xlen))
+    val OutIO = Decoupled(UInt(xlen.W))
+
     })
+
+}
+
+
+class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends Node()(p){
+
+  // Extra information
+  val token  = RegInit(0.U)
+  val nodeID = RegInit(ID.U)
 
 
   //Instantiate ALU with selected code
-  val FU = Module(new ALU(xLen, opCode))
+  val FU = Module(new ALU(xlen, opCode))
 
   // Input 
-  val LeftOperand   = Reg (UInt(xLen.W),next=io.LeftIO.bits)
-  val RightOperand  = Reg (UInt(xLen.W),next=io.RightIO.bits)
+  //val RightOperand  = RegInit(0.U(xlen.W))
+  val LeftOperand   = RegInit(0.U(xlen.W))
+  val RightOperand  = RegInit(0.U(xlen.W))
 
-  val validLeft   = Reg(init  = false.B,next=io.LeftIO.valid)
-  val validRight  = Reg(init  = false.B,next=io.RightIO.valid)
-  val done        = Reg(init  = false.B)
+  val LeftValid  = RegInit(false.B)
+  val RightValid = RegInit(false.B)
 
-  // States of the combinatorial logic
-  val s_init :: s_input :: s_exe  :: Nil = Enum(3)
-  val state = Reg(init = s_init)
+  val outValid   = LeftValid & RightValid
 
-
-  io.LeftIO.ready   := !validLeft
-  io.RightIO.ready  := !validRight
-
-  io.OutIO.valid :=  done
+  io.OutIO.valid := outValid
 
   // Connect operands to ALU.
   FU.io.in1 := LeftOperand
   FU.io.in2 := RightOperand
 
- // Connect output to ALU
+  // Connect output to ALU
   io.OutIO.bits:= FU.io.out
 
-  //io.OutIO.bits.state:= state
+  io.LeftIO.ready   := ~LeftValid
+  io.RightIO.ready  := ~RightValid
 
-
-  switch (state){
-    is(s_init) {
-      done := false.B
-      state := s_input
-    }
-    is (s_input){
-      when(validLeft && validRight)
-      {
-        state := s_exe
-      }
-    }
-    // Execution completed state.
-    // Set done to true to set io.out.ready
-    // The valid bits need to be set to false here to enable the ALU to read the data in the next cycle itself
-    // 
-    is (s_exe){ 
-      when(io.OutIO.ready){
-        done  := true.B
-        validLeft := false.B
-        validRight := false.B
-        state := s_init
-      }
-    }
+  //Latch Left input if it's fire
+  when(io.LeftIO.fire()){
+    LeftOperand := io.LeftIO.bits
+    LeftValid   := io.LeftIO.valid
   }
+
+  //Latch Righ input if it's fire
+  when(io.RightIO.fire()){
+    RightOperand := io.RightIO.bits
+    RightValid   := io.RightIO.valid
+  }
+
+  //Reset the latches if we make sure that 
+  //consumer has consumed the output
+  when(outValid && io.OutIO.ready){
+    RightOperand := 0.U
+    LeftOperand  := 0.U
+    RightValid   := false.B
+    LeftValid    := false.B
+    token := token + 1.U
+  }
+
 }
 

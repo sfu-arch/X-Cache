@@ -73,7 +73,7 @@ the master branch and submit pull requests against it.
 sbt 
 ```
 ```sh
-sbt test:run-main utils.Launcher StoreNode
+sbt "test-only <PACKAGE_NAME>.<TesterName>"
 ```
 
 

@@ -61,17 +61,3 @@ class WriteResp (implicit p: Parameters) extends CoreBundle()(p) {
   val valid =  Bool()
 }
 
-// Mem predecessor interface
-//class MemOpAck(implicit p: Parameters) extends CoreBundle()(p) {
-  //val ready =  Bool()
-  //val valid =  Bool()
-//}
-
-//class RvIO (implicit p: Parameters) extends CoreBundle()(p) {
-class RvIO(implicit  val p: Parameters) extends Bundle with CoreParams{
-  override def cloneType = new RvIO().asInstanceOf[this.type]
-
-  val ready = Input(Bool())
-  val valid = Output(Bool())
-  val bits  = Output(UInt(xlen.W))
-}
