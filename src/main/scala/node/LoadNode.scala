@@ -27,7 +27,7 @@ abstract class LoadIO(val NumMemOP :Int = 1, val ID :Int = 0)
 
     //Memory interface
     val memReq  = Decoupled(new ReadReq())
-    val memResp = Flipped(Decoupled(new ReadResp()))
+    val memResp = Flipped(new ReadResp())
 
     //val memLDIO = new MemLdIO(xlen)
 
@@ -113,7 +113,7 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   when( resp_fire) {
 
     data_resp_valid := true.B
-    data_reg := io.memResp.bits.data
+    data_reg := io.memResp.data
     printf(p"\n ------------------- Mem Response Received ---------------------\n")
     //Reset other registers
     memresp_ready_reg := false.B
