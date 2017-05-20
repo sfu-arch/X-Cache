@@ -72,20 +72,20 @@ class LoadDataFlow(implicit p: Parameters) extends LoadDFIO()(p){
 
 
 
-  when (io.gepAddr.ready) {
-    printf("\n LdDF IO gepReady \n")
-  }
-
-  when (io.gepAddr.valid) {
-    printf("\n LdDF IO valid \n")
-  }
-
-  when (m0.io.gepAddr.ready) {
-    printf("\n LdDF m0.IO gepReady \n")
-  }
-  when (m0.io.gepAddr.valid) {
-    printf("\n LdDF m0.IO valid \n")
-  }
+//  when (io.gepAddr.ready) {
+//    printf("\n LdDF IO gepReady \n")
+//  }
+//
+//  when (io.gepAddr.valid) {
+//    printf("\n LdDF IO valid \n")
+//  }
+//
+//  when (m0.io.gepAddr.ready) {
+//    printf("\n LdDF m0.IO gepReady \n")
+//  }
+//  when (m0.io.gepAddr.valid) {
+//    printf("\n LdDF m0.IO valid \n")
+//  }
 
 
 }

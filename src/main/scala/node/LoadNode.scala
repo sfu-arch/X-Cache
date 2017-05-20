@@ -32,7 +32,7 @@ abstract class LoadIO(val NumMemOP :Int = 1, val ID :Int = 0)
     //val memLDIO = new MemLdIO(xlen)
 
     val memOpAck = Decoupled(UInt(1.W)) //TODO 0 bits
-  
+
   })
 }
 
@@ -65,8 +65,8 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   io.gepAddr.ready      := ~init1_reg
   io.predMemOp(0).ready := ~init3_reg
 
-  printf( p"\n LdNODE: gepAddrValid ${io.gepAddr.valid} \n")
-  printf( p"\n LdNODE: gepAddrReady ${io.gepAddr.ready} \n")
+  //  printf( p"\n LdNODE: gepAddrValid ${io.gepAddr.valid} \n")
+  //  printf( p"\n LdNODE: gepAddrReady ${io.gepAddr.ready} \n")
 
   //---------------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
     printf(p"\n ------------------ Mem Request Sent ------------------------- \n")
   }
 
-    //Once the request is sent to memory, be ready to receive the response back
+  //Once the request is sent to memory, be ready to receive the response back
   val resp_fire = io.memResp.valid & memresp_ready_reg
 
   when( resp_fire) {
