@@ -38,6 +38,7 @@ class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) ex
   val token  = RegInit(0.U)
   val nodeID = RegInit(ID.U)
 
+  var aa
 
   //Instantiate ALU with selected code
   val FU = Module(new ALU(xlen, opCode))

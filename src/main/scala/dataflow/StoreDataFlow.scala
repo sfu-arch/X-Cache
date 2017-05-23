@@ -29,7 +29,9 @@ abstract class StoreDFIO()(implicit val p: Parameters) extends Module with CoreP
     val gepAddr   = Flipped(new RvIO())
     val predMemOp = Flipped(new RvIO())
     val inData    = Flipped(new RvIO())
-    val memOpAck  = Decoupled(UInt(1.W)) //TODO 0 bits
+    //val memOpAck  = Decoupled(UInt(1.W)) //TODO 0 bits
+    val memOpAck  = new RvAckIO() //TODO 0 bits
+
 
   })
 }
@@ -90,6 +92,20 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
   predMemOp_bits_reg     := io.predMemOp.bits
   m0.io.predMemOp(0).bits   := predMemOp_bits_reg
 
+
+
+    //val memOpAck  = (new RvAckIO())) //TODO 0 bits
+  //----- memOpAck -----------
+  val memOpAck_ready_reg    = RegInit(false.B)
+  val memOpAck_valid_reg    = RegInit(false.B)
+
+
+  m0.io.memOpAck.ready := memOpAck_ready_reg
+  memOpAck_ready_reg := io.memOpAck.ready
+
+
+  io.memOpAck.valid := memOpAck_valid_reg
+  memOpAck_valid_reg := m0.io.memOpAck.valid
 
 
 

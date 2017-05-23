@@ -21,11 +21,13 @@ abstract class StoreIO(val NumMemOP :Int = 1, val ID :Int = 0, val mask :Int = 1
     //Bool data from other memory ops
     // using Handshaking protocols
     val predMemOp = Vec(NumMemOP, Flipped(Decoupled(UInt(1.W))))
-    val memOpAck = Decoupled(UInt(1.W)) //TODO 0 bits
+    //val memOpAck = Decoupled(UInt(1.W)) //TODO 0 bits
+    val memOpAck  = new RvAckIO() //TODO 0 bits
 
     //Memory interface
     val memReq  = Decoupled(new WriteReq())
-    val memResp = Flipped(new WriteResp())
+    val memResp = Input(new WriteResp())
+    //val memResp = Flipped(new WriteResp())
 
   })
 }
@@ -112,11 +114,11 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   when(io.memReq.fire()) {
 
+    printf(p"\n ------------------ Mem Request Sent ------------------------- \n")
     memresp_ready_reg := true.B
     addr_valid_reg := false.B
     data_valid_reg := false.B
     in3_done_reg := false.B
-    printf(p"\n ------------------ Mem Request Sent ------------------------- \n")
   }
 
   //Once the request is sent to memory, be ready to receive the response back
@@ -124,8 +126,8 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   when( resp_fire) {
 
-    ack_reg := true.B
     printf(p"\n ------------------- Mem Response Received ---------------------\n")
+    ack_reg := true.B
     //Reset other registers
     memresp_ready_reg := false.B
   }
@@ -139,11 +141,13 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
 
   io.memOpAck.valid := ack_reg
-  io.memOpAck.bits := 1.U
+  //io.memOpAck.bits := 1.U
 
   //TODO In Case of pipelining StoreNode
   //TODO Once you know you need to reset StoreNode Uncomment below rule
-  when(io.memOpAck.fire()) {
+  val memopack_fire = io.memOpAck.ready & io.memOpAck.valid
+
+  when(memopack_fire) {
 
     ack_reg := false.B
     init1_reg := false.B

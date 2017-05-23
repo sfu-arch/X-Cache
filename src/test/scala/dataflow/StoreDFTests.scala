@@ -12,7 +12,7 @@ import config._
 
 
 class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
-  for (t <- 0 until 10) {
+  for (t <- 0 until 15) {
 
     //IF ready is set
     // send address
@@ -20,6 +20,7 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
 
     println(s"t: ${t} GepAddr: ${peek(c.io.gepAddr.ready)}")
     println(s"t: ${t} GepValid: ${peek(c.io.gepAddr.valid)}")
+    println(s"t: ${t} ACK:      ${peek(c.io.memOpAck)}")
 
 
     if(peek(c.io.gepAddr.ready) == 1 && t>2) {

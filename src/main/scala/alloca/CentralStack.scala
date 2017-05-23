@@ -1,17 +1,17 @@
 package alloca
 
 import chisel3._
-import chisel3.util._
+import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import chisel3.Module
 import chisel3.testers._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+import chisel3.util._
 import org.scalatest.{Matchers, FlatSpec} 
 
 //import examples._
-import muxes._
 import config._
-import util._
 import interfaces._
+import muxes._
+import util._
 
 
 
