@@ -18,8 +18,8 @@ import interfaces._
 abstract class newStack(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
   val AllocaIn   = Vec(10,Flipped(Decoupled(new AllocaReq())))
-  val AllocaOut  = Vec(10,new AllocaResp())
-  val Valids     = Vec(10,Bool())
+  val AllocaOut  = Vec(10,Output(new AllocaResp()))
+  val Valids     = Vec(10,Output(Bool()))
    })
 }
 
@@ -49,9 +49,13 @@ class  newCentralStack(implicit p: Parameters) extends newStack()(p) {
   //Arbiter is always ready
   allocaArbiter.io.out.ready := true.B
 
+  //Make demux always enable
+  allocaRespDeMux.io.en := true.B
+
   //Put a mux for updating the SP register choosing between
   //either new value or old SP value
   val muxRes = Mux(allocaArbiter.io.out.valid, rc, SP) 
+
   SP := muxRes
 
 

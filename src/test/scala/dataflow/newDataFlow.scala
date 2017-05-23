@@ -49,6 +49,8 @@ class nDataFlowTester(df: newDataFlow)(implicit p: config.Parameters) extends Pe
   println(s"Node valid : ${peek(df.io.resultValid)}")
   println(s" ")
   step(1)
+  poke(df.io.resultReady, false.B)
+  println(s" ")
   println(s"Node output: ${peek(df.io.result)}")
   println(s"Node valid : ${peek(df.io.resultValid)}")
   println(s" ")
@@ -69,6 +71,7 @@ class nDataFlowTester(df: newDataFlow)(implicit p: config.Parameters) extends Pe
   println(s"Node valid : ${peek(df.io.resultValid)}")
   println(s" ")
   step(1)
+  poke(df.io.resultReady, true.B)
 
   println(s"Node output: ${peek(df.io.result)}")
   println(s"Node valid : ${peek(df.io.resultValid)}")

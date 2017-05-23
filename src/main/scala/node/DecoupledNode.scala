@@ -42,14 +42,15 @@ class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) ex
   //Instantiate ALU with selected code
   val FU = Module(new ALU(xlen, opCode))
 
-  // Input 
-  //val RightOperand  = RegInit(0.U(xlen.W))
+  // Input data
   val LeftOperand   = RegInit(0.U(xlen.W))
   val RightOperand  = RegInit(0.U(xlen.W))
 
+  //Input valid signals
   val LeftValid  = RegInit(false.B)
   val RightValid = RegInit(false.B)
 
+  //output valid signal
   val outValid   = LeftValid & RightValid
 
   io.OutIO.valid := outValid

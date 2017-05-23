@@ -30,7 +30,7 @@ import interfaces._
 
      poke(stack.io.AllocaIn(1).valid,1.U)
      poke(stack.io.AllocaIn(1).bits.size,20.U)
-     poke(stack.io.AllocaIn(0).bits.node,5.U)
+     poke(stack.io.AllocaIn(1).bits.node,5.U)
 
     
      println(s"io.in.bits idx:0 : io.out.bits: ${peek(stack.io.AllocaIn(0))} io.out: ${peek(stack.io.AllocaOut(0))}, valid: ${peek(stack.io.Valids(0))}")

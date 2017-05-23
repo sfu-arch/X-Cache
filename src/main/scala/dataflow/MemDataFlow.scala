@@ -27,10 +27,8 @@ class MemDataFlow(implicit p: Parameters) extends MemDFIO()(p){
   val m1 = Module(new CentralizedStackRegFile(Size=32, NReads=1, NWrites=1))
 
   m0.io.memReq  <> m1.io.ReadIn(0)
-  //m0.io.memResp.ready := true.B
   m0.io.memResp.valid := m1.io.ReadOut(0).valid
   m0.io.memResp.bits.data  := m1.io.ReadOut(0).data
-  //m0.io.memResp <> m1.io.ReadOut(0)
 
   m0.io.gepAddr       <> io.gepAddr
   m0.io.predMemOp(0)  <> io.predMemOp
