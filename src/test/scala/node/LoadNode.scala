@@ -37,11 +37,7 @@ class LoadNodeTests(c: LoadNode) extends PeekPokeTester(c) {
       //      step (1)
       step (1)
       //since response is available atleast next cycle onwards
-      if(peek(c.io.memResp.ready) == true ) {
         poke(c.io.memResp.valid, true)
-
-        println(s"t: ${t}  io.Memresp_ack_ready: ${peek(c.io.memResp.ready)}")
-      }
 
     }
 

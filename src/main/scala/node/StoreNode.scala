@@ -15,7 +15,7 @@ abstract class StoreIO(val NumMemOP :Int = 1, val ID :Int = 0, val mask :Int = 1
                       )(implicit val p: Parameters) extends Module with CoreParams{
 
   val io = IO(new Bundle {
-    // gepAddr: The calculated address comming from GEP node
+    // gepAddr: The calculated address coming from GEP node
     val gepAddr = Flipped(Decoupled(UInt(xlen.W)))
     val inData = Flipped(Decoupled(UInt(xlen.W)))
     //Bool data from other memory ops
@@ -25,164 +25,133 @@ abstract class StoreIO(val NumMemOP :Int = 1, val ID :Int = 0, val mask :Int = 1
 
     //Memory interface
     val memReq  = Decoupled(new WriteReq())
-    //    val memResp = Flipped(Decoupled(new WriteResp()))
     val memResp = Flipped(new WriteResp())
-
-    val gepTest = Output(Bool())
 
   })
 }
 
 
-class StoreNode(implicit p: Parameters) extends StoreIO()(p) {
+class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   val nodeID_reg = RegInit(ID.U)
   val mask_reg = RegInit(mask.U)
-  val addr_reg = RegInit(init = 0.U(xlen.W))
-  val addr_valid_reg = RegInit(init = false.B)
+  val addr_reg = RegInit(0.U(xlen.W))
+  val addr_valid_reg = RegInit(false.B)
 
-  val data_reg = RegInit(init = 0.U(xlen.W))
-  val data_valid_reg = RegInit(init = false.B)
+  val data_reg = RegInit(0.U(xlen.W))
+  val data_valid_reg = RegInit(false.B)
 
   // Status Register - If src mem-ops done execution
-  val in3_done_reg = RegInit(init = false.B)
+  val in3_done_reg = RegInit(false.B)
 
   // Initialization registers to send ready signals
   // to all inputs to accept input nodes
-  val init1_reg = RegInit(true.B)
-
-  io.gepTest := init1_reg
-
-  val init2_reg = RegInit(true.B)
+  val init1_reg = RegInit(false.B)
+  val init2_reg = RegInit(false.B)
 
   //TODO Make init3_reg a Vector of registers activated based on input predMemOp
-  val init3_reg = RegInit(true.B)
+  val init3_reg = RegInit(false.B)
+
 
   //Mem ready for response
   val memresp_ready_reg = RegInit(false.B)
-  val ack_reg = RegInit(false.B)
-
-  val test_reg = RegNext(io.gepAddr.valid, init = false.B)
-  io.gepAddr.ready := ~test_reg
+  val ack_reg = RegInit(false.B  )
 
 
 
-  //---------------------
-  io.gepAddr.ready       := init1_reg
-  io.inData.ready         := init2_reg
-  io.predMemOp(0).ready   := init3_reg
+  //Initialization
+  io.gepAddr.ready      := ~init1_reg
+  io.inData.ready       := ~init2_reg
+  io.predMemOp(0).ready := ~init3_reg
 
 
-  when(test_reg){
-    printf("\n ################# TEST ###########\n")
+
+  printf( p"\n StNODE: gepAddrValid ${io.gepAddr.valid} \n")
+  printf( p"\n StNODE: gepAddrReady ${io.gepAddr.ready} \n")
+
+  //-----------------------------------
+  //Rules for gepAddr
+  when(io.gepAddr.fire()) {
+    printf(p"\n --------------- gepAddr. fire  --------------------\n")
+    addr_valid_reg := true.B
+    addr_reg := io.gepAddr.bits
+    init1_reg := true.B
   }
 
-  //  //-----------------------------------
 
-  //Rules for gepAddr
-//  when(io.gepAddr.fire() ) {
-//    printf("\n #################### gepAddr. fire \n")
-//    addr_valid_reg := true.B
-//    addr_reg := io.gepAddr.bits
-//    init1_reg := false.B
-//  }
-
-  printf(p"\n init1_reg = $init1_reg \n")
-  printf(p"\n gepAddr_ready = ${io.gepAddr.ready} \n")
-  printf(p"\n gepAddr_valid = ${io.gepAddr.valid} \n")
   //Rules for inData
-  when(io.inData.fire() ) {
+  when(io.inData.fire()) {
 
-    printf("\n ###################### inData. fire \n")
+    printf(p"\n --------------- inData. fire  -------------------\n")
     data_valid_reg := true.B
     data_reg := io.inData.bits
-    init2_reg := false.B
+    init2_reg := true.B
   }
-
-
 
 
   //Rules for predMemOp(0)
   when(io.predMemOp(0).fire()) {
 
-    printf("\n ##################### predMemOp(0). fire \n")
+    printf(p"\n ---------------- predMemOp(0). fire -------------------\n")
     in3_done_reg := true.B
-    init3_reg := false.B
+    init3_reg := true.B
+  }
+
+  //-----------------------------------
+
+  //Rules for Sending address and data to Memory
+  // Note Memreq_addr.ready and Memreq_data.ready are connected
+  // Store Node cannot send the data to memory unless all its predecessors are done: in3 in this case
+
+  val mem_req_fire = data_valid_reg & addr_valid_reg & in3_done_reg & init1_reg & init2_reg & init3_reg
+  io.memReq.valid := mem_req_fire
+  io.memReq.bits.address := addr_reg
+  io.memReq.bits.node := nodeID_reg
+  io.memReq.bits.mask := mask_reg
+  io.memReq.bits.data := data_reg
+
+  when(io.memReq.fire()) {
+
+    memresp_ready_reg := true.B
+    addr_valid_reg := false.B
+    data_valid_reg := false.B
+    in3_done_reg := false.B
+    printf(p"\n ------------------ Mem Request Sent ------------------------- \n")
+  }
+
+  //Once the request is sent to memory, be ready to receive the response back
+  val resp_fire = io.memResp.valid & memresp_ready_reg
+
+  when( resp_fire) {
+
+    ack_reg := true.B
+    printf(p"\n ------------------- Mem Response Received ---------------------\n")
+    //Reset other registers
+    memresp_ready_reg := false.B
   }
 
 
-//  //-----------------------------------
-//
-//  when(data_valid_reg && addr_valid_reg  && in3_done_reg && !init1_reg && !init2_reg && !init3_reg) {
-//
-//    printf(" \n data and addr is valid also in3_done \n")
-//
-//    io.memReq.valid := true.B
-//    io.memReq.bits.address := addr_reg
-//    io.memReq.bits.node := nodeID_reg
-//    io.memReq.bits.mask := mask_reg
-//    io.memReq.bits.data := data_reg
-//  }
-//    .otherwise( io.memReq.valid := false.B)
-//
-//  //Rules for Sending address and data to Memory
-//  // Store Node cannot send the data to memory unless all its predecessors are done: in3 in this case
-//  when(io.memReq.ready && io.memReq.valid ) {
-//    memresp_ready_reg := true.B
-//    addr_valid_reg := false.B
-//    data_valid_reg := false.B
-//    in3_done_reg := false.B
-//    printf("\n Mem Request Sent \n")
-//  }
-//
-//  //Once the request is sent to memory, be ready to receive the response back
-//
-//  when( io.memResp.valid && memresp_ready_reg ) {
-//    ack_reg := true.B
-//
-//    printf("\n Mem Response Received \n")
-//
-//    //Reset other registers
-//    memresp_ready_reg := false.B
-//
-//  }
-//
-//
-//
-//
-//
-//  //-----------------------------------
-//  // Once data_valid_reg is true -> set MEMIO->OUT->VALID and DATA
-//  // Once MEMIO->IN->sends ack (i.e READY == TRUE)
-//  // When the ack is received && all Inputs from other memory ops are true set memOpAck := true
-//  // For the time being just send output when data_valid is true
-//  //-----------------------------------
-//  //  when( io.memOpAck.ready && data_valid_reg && in3_done_reg ) {
-//  //    io.memOpAck.valid := true.B
-//  ////    io.memOpAck.bits := 1.U
-//  //  }
-//
-//  //-----------------------------------
-//  //when all source memops are done executing - in3_done_reg
-//  // and ack is received from memory and next node is ready
-//  // then send Output as valid
-//
-//  when(ack_reg ) {
-//    //keep sending valid && bits
-//    io.memOpAck.enq(1.U)
-//  }
-//    .otherwise( io.memOpAck.valid := false.B)
-//
-//  //TODO In Case of pipelining StoreNode
-//  //TODO Once you know you need to reset StoreNode Uncomment below rule
-//  when(io.memOpAck.fire() && ack_reg) {
-//    printf("\n\n --------- Iteration over ------------- \n\n")
-//
-//    ack_reg := false.B
-//    init1_reg := true.B
-//    init2_reg := true.B
-//    init3_reg := true.B
-//  }
+
+  //-----------------------------------
+  //when all source memops are done executing - in3_done_reg
+  // and ack is received from memory and next node is ready
+  // then send Output as valid
+
+
+  io.memOpAck.valid := ack_reg
+  io.memOpAck.bits := 1.U
+
+  //TODO In Case of pipelining StoreNode
+  //TODO Once you know you need to reset StoreNode Uncomment below rule
+  when(io.memOpAck.fire()) {
+
+    ack_reg := false.B
+    init1_reg := false.B
+    init2_reg := false.B
+    init3_reg := false.B
+
+    printf(p"\n ------------------- Iteration Over ---------------------\n")
+  }
 
 
 }

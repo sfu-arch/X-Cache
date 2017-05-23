@@ -1,7 +1,7 @@
 package dataflow
 
 /**
-  * Created by nvedula on 17/5/17.
+  * Created by nvedula on 19/5/17.
   */
 
 import chisel3._
@@ -9,39 +9,30 @@ import chisel3.util._
 
 import node._
 import config._
-import interfaces._
 import arbiters._
+import interfaces._
 
 
-////class RvIO (implicit p: Parameters) extends CoreBundle()(p) {
-//class RvIO(implicit  val p: Parameters) extends Bundle with CoreParams{
-//  override def cloneType = new RvIO().asInstanceOf[this.type]
-//
-//  val ready = Input(Bool())
-//  val valid = Output(Bool())
-//  val bits  = Output(UInt(xlen.W))
-//}
 
-abstract class StoreDFIO()(implicit val p: Parameters) extends Module with CoreParams{
+abstract class LoadDFIO()(implicit val p: Parameters) extends Module with CoreParams{
 
   val io = IO(new Bundle{
 
     val gepAddr   = Flipped(new RvIO())
     val predMemOp = Flipped(new RvIO())
-    val inData    = Flipped(new RvIO())
     val memOpAck  = Decoupled(UInt(1.W)) //TODO 0 bits
 
   })
 }
 
-class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
+class LoadDataFlow(implicit p: Parameters) extends LoadDFIO()(p){
 
-  val m0 = Module(new StoreNode())
+  val m0 = Module(new LoadNode())
   val m1 = Module(new CentralizedStackRegFile(Size=32, NReads=1, NWrites=1))
 
   //TODO : Connect using Registers - else it makes a combinational loop
-  m1.io.WriteIn(0) <> m0.io.memReq
-  m0.io.memResp <> m1.io.WriteOut(0)
+  m1.io.ReadIn(0) <> m0.io.memReq
+  m0.io.memResp <> m1.io.ReadOut(0)
 
 
   // TODO : Figure out why does not work without Registers
@@ -58,21 +49,6 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
 
   gepAddr_bits_reg := io.gepAddr.valid
   m0.io.gepAddr.valid := gepAddr_valid_reg
-
-  //----- inDATA -----------
-  val inData_ready_reg    = RegInit(false.B)
-  val inData_valid_reg    = RegInit(false.B)
-  val inData_bits_reg     = RegInit(0.U(xlen.W))
-
-
-  io.inData.ready     := inData_ready_reg
-  inData_ready_reg    := m0.io.inData.ready
-
-  inData_valid_reg    := io.inData.valid
-  m0.io.inData.valid  := inData_valid_reg
-
-  inData_bits_reg     := io.inData.bits
-  m0.io.inData.bits   := inData_bits_reg
 
 
   //----- predMemOP -----------
@@ -96,20 +72,20 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
 
 
 
-  when (io.gepAddr.ready) {
-    printf("\n StDF IO gepReady \n")
-  }
-
-  when (io.gepAddr.valid) {
-    printf("\n StDF IO valid \n")
-  }
-
-  when (m0.io.gepAddr.ready) {
-    printf("\n StDF m0.IO gepReady \n")
-  }
-  when (m0.io.gepAddr.valid) {
-    printf("\n StDF m0.IO valid \n")
-  }
+//  when (io.gepAddr.ready) {
+//    printf("\n LdDF IO gepReady \n")
+//  }
+//
+//  when (io.gepAddr.valid) {
+//    printf("\n LdDF IO valid \n")
+//  }
+//
+//  when (m0.io.gepAddr.ready) {
+//    printf("\n LdDF m0.IO gepReady \n")
+//  }
+//  when (m0.io.gepAddr.valid) {
+//    printf("\n LdDF m0.IO valid \n")
+//  }
 
 
 }
