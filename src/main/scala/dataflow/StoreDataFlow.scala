@@ -45,6 +45,9 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
   m1.io.WriteIn(0) <> m0.io.memReq
   m0.io.memResp <> m1.io.WriteOut(0)
 
+  val wireTest = m1.io.WriteIn(0)
+  printf(p"Write In:  ${wireTest}\n")
+
 
   // TODO : Figure out why does not work without Registers
   // ----  GEP ADDR ------
@@ -109,23 +112,24 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
 
 
 
+  printf( p"WriteOut: ${m1.io.WriteOut(0)} \n" )
 
 
 
-  when (io.gepAddr.ready) {
-    printf("\n StDF IO gepReady \n")
-  }
+  //when (io.gepAddr.ready) {
+    //printf("\n StDF IO gepReady \n")
+  //}
 
-  when (io.gepAddr.valid) {
-    printf("\n StDF IO valid \n")
-  }
+  //when (io.gepAddr.valid) {
+    //printf("\n StDF IO valid \n")
+  //}
 
-  when (m0.io.gepAddr.ready) {
-    printf("\n StDF m0.IO gepReady \n")
-  }
-  when (m0.io.gepAddr.valid) {
-    printf("\n StDF m0.IO valid \n")
-  }
+  //when (m0.io.gepAddr.ready) {
+    //printf("\n StDF m0.IO gepReady \n")
+  //}
+  //when (m0.io.gepAddr.valid) {
+    //printf("\n StDF m0.IO valid \n")
+  //}
 
 
 }
