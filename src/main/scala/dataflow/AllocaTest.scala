@@ -43,9 +43,6 @@ class AllocaTest(implicit p: Parameters) extends AllocaTestIO()(p){
   printf(p"Alloca  resp:  ${m0.io.allocaresp}\n")
   m0.io.allocaresp.valid := m1.io.Valids(0)
 
-  //m0.io.sizeIn <> reg1.io.Data
-  //m0.io.RightIO <> reg2.io.Data
-
 
   m0.io.addressout.ready := io.resultReady
   io.result := m0.io.addressout.bits
