@@ -29,8 +29,7 @@ abstract class StoreDFIO()(implicit val p: Parameters) extends Module with CoreP
     val gepAddr   = Flipped(new RvIO())
     val predMemOp = Flipped(new RvIO())
     val inData    = Flipped(new RvIO())
-    //val memOpAck  = Decoupled(UInt(1.W)) //TODO 0 bits
-    val memOpAck  = new RvAckIO() //TODO 0 bits
+    val memOpAck  = new RvAckIO()
 
 
   })
@@ -45,8 +44,6 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
   m1.io.WriteIn(0) <> m0.io.memReq
   m0.io.memResp <> m1.io.WriteOut(0)
 
-  val wireTest = m1.io.WriteIn(0)
-  printf(p"Write In:  ${wireTest}\n")
 
 
   // TODO : Figure out why does not work without Registers
@@ -97,7 +94,7 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
 
 
 
-    //val memOpAck  = (new RvAckIO())) //TODO 0 bits
+    //val memOpAck  = (new RvAckIO()))
   //----- memOpAck -----------
   val memOpAck_ready_reg    = RegInit(false.B)
   val memOpAck_valid_reg    = RegInit(false.B)
@@ -111,7 +108,7 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
   memOpAck_valid_reg := m0.io.memOpAck.valid
 
 
-
+  printf(p"Write In:  ${m1.io.WriteIn(0)}\n")
   printf( p"WriteOut: ${m1.io.WriteOut(0)} \n" )
 
 

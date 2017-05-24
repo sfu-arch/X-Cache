@@ -20,8 +20,7 @@ abstract class LoadDFIO()(implicit val p: Parameters) extends Module with CorePa
 
     val gepAddr   = Flipped(new RvIO())
     val predMemOp = Flipped(new RvIO())
-    val memOpAck  = Decoupled(UInt(1.W)) //TODO 0 bits
-
+    val memOpAck  = new RvAckIO()
   })
 }
 
@@ -47,8 +46,8 @@ class LoadDataFlow(implicit p: Parameters) extends LoadDFIO()(p){
   gepAddr_valid_reg := io.gepAddr.valid
   m0.io.gepAddr.valid := gepAddr_valid_reg
 
-  gepAddr_bits_reg := io.gepAddr.valid
-  m0.io.gepAddr.valid := gepAddr_valid_reg
+  gepAddr_bits_reg := io.gepAddr.bits
+  m0.io.gepAddr.bits := gepAddr_bits_reg
 
 
   //----- predMemOP -----------
@@ -66,6 +65,24 @@ class LoadDataFlow(implicit p: Parameters) extends LoadDFIO()(p){
   predMemOp_bits_reg     := io.predMemOp.bits
   m0.io.predMemOp(0).bits   := predMemOp_bits_reg
 
+
+
+    //val memOpAck  = (new RvAckIO()))
+  //----- memOpAck -----------
+  val memOpAck_ready_reg    = RegInit(false.B)
+  val memOpAck_valid_reg    = RegInit(false.B)
+
+
+  m0.io.memOpAck.ready := memOpAck_ready_reg
+  memOpAck_ready_reg := io.memOpAck.ready
+
+
+  io.memOpAck.valid := memOpAck_valid_reg
+  memOpAck_valid_reg := m0.io.memOpAck.valid
+
+
+  printf(p"ReadIn:  ${m1.io.ReadIn(0)}\n")
+  printf( p"ReadOut: ${m1.io.ReadOut(0)} \n" )
 
 
 

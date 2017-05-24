@@ -10,36 +10,49 @@ import org.scalatest.{Matchers, FlatSpec}
 import config._
 
 
-class LdDFTests(c: LoadDataFlow) extends PeekPokeTester(c) {
-  for (t <- 0 until 12) {
+class LoadDFTests(c: LoadDataFlow) extends PeekPokeTester(c) {
+  for (t <- 0 until 20) {
 
-    //IF ready is set
+   //IF ready is set
     // send address
 
 
-    println(s"t: ${t} GepAddr: ${peek(c.io.gepAddr.ready)}")
-    println(s"t: ${t} GepValid: ${peek(c.io.gepAddr.valid)}")
+    if(peek(c.io.gepAddr.valid) == 1 && peek(c.io.gepAddr.ready) == 1 ) {
+      printf(s"t: ${t} GepAddr.ready: ${peek(c.io.gepAddr.ready)} \n")
+      printf(s"t: ${t} GepAddr.valid: ${peek(c.io.gepAddr.valid)} \n")
+      printf(s"t: ${t} GepAddr.bits: ${peek(c.io.gepAddr.bits)} \n")
+    }
 
+    if(peek(c.io.memOpAck.valid) == 1) {
+      printf(s"t: ${t} ACK:      ${peek(c.io.memOpAck)} \n")
+    }
+
+    //To run single Iteration
+    poke(c.io.memOpAck.ready,false)
 
     if(peek(c.io.gepAddr.ready) == 1 && t>2) {
       poke(c.io.gepAddr.valid,true)
       poke(c.io.gepAddr.bits,12)
 
-      printf("\n rule1 fired \n")
+      printf(s"\n ---- GepAddr Fired --- \n")
+
     }
     else
+    {
       poke(c.io.gepAddr.valid,false)
+    }
+
 
 
     //at some clock - send src mem-op is done executing
     if(t > 4) {
       if (peek(c.io.predMemOp.ready) == 1) {
         poke(c.io.predMemOp.valid, true)
-        println("\n predmemOP rule fired \n")
-        //        poke(c.io.predMemOp(0).bits, 24)
+        printf("\n --- predmemOP Fired --- \n")
       }
-      else
+      else {
         poke(c.io.predMemOp.valid, false)
+      }
 
     }
     else {
@@ -48,25 +61,17 @@ class LdDFTests(c: LoadDataFlow) extends PeekPokeTester(c) {
     }
 
     step(1)
+    printf(s"t: ${t} ----------------------------------- \n")
 
 
   }
 }
 
-//class LoadNodeTester extends ChiselFlatSpec {
-  //behavior of "LoadNode"
-  //backends foreach {backend =>
-    //it should s"correctly find decoupled behaviour -  $backend" in {
-      //Driver(() => new LoadNode(32), backend)((c) => new LoadNodeTests(c)) should be (true)
-    //}
-  //}
-//}
-
-class LdDFTester extends  FlatSpec with Matchers {
+class LoadDFTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
  it should "Load Node tester" in {
     chisel3.iotesters.Driver(() => new LoadDataFlow()) { c =>
-      new LdDFTests(c)
+      new LoadDFTests(c)
     } should be(true)
   }
 }

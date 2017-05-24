@@ -27,11 +27,11 @@ abstract class LoadIO(val NumMemOP :Int = 1, val ID :Int = 0)
 
     //Memory interface
     val memReq  = Decoupled(new ReadReq())
-    val memResp = Flipped(new ReadResp())
+    val memResp = Input(Flipped(new ReadResp()))
 
-    //val memLDIO = new MemLdIO(xlen)
 
-    val memOpAck = Decoupled(UInt(1.W)) //TODO 0 bits
+    val memOpAck  = new RvAckIO()
+    //    val memOpAck = Decoupled(UInt(1.W)) //TODO 0 bits
 
   })
 }
@@ -71,9 +71,14 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   //---------------------------------------------------------------------------------
 
   //-----------------------------------
+
+  printf(p"Ld Node: GepAddr.valid: ${io.gepAddr.valid} " +
+    p" GepAddr.ready: ${io.gepAddr.ready} GepAddr.bits: ${io.gepAddr.bits} \n")
+  printf(p"Ld Node: addr_reg: ${addr_reg} \n")
+
   //Rules for gepAddr
   when(io.gepAddr.fire()) {
-    printf(p"\n --------------- gepAddr. fire  --------------------\n")
+    //    printf(p"\n --------------- gepAddr. fire  --------------------\n")
     addr_valid_reg := true.B
     addr_reg := io.gepAddr.bits
     init1_reg := true.B
@@ -83,7 +88,7 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   //Rules for predMemOp(0)
   when(io.predMemOp(0).fire()) {
 
-    printf(p"\n ---------------- predMemOp(0). fire -------------------\n")
+    //    printf(p"\n ---------------- predMemOp(0). fire -------------------\n")
     in3_done_reg := true.B
     init3_reg := true.B
   }
@@ -99,12 +104,14 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
   io.memReq.bits.address := addr_reg
   io.memReq.bits.node := nodeID_reg
 
+
+
   when(io.memReq.fire()) {
 
     memresp_ready_reg := true.B
     addr_valid_reg := false.B
     in3_done_reg := false.B
-    printf(p"\n ------------------ Mem Request Sent ------------------------- \n")
+    //    printf(p"\n ------------------ Mem Request Sent ------------------------- \n")
   }
 
   //Once the request is sent to memory, be ready to receive the response back
@@ -114,7 +121,7 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
 
     data_resp_valid := true.B
     data_reg := io.memResp.data
-    printf(p"\n ------------------- Mem Response Received ---------------------\n")
+    //    printf(p"\n ------------------- Mem Response Received ---------------------\n")
     //Reset other registers
     memresp_ready_reg := false.B
   }
@@ -128,17 +135,19 @@ class LoadNode(implicit p: Parameters) extends LoadIO()(p){
 
 
   io.memOpAck.valid := data_resp_valid
-  io.memOpAck.bits := 1.U
+  //  io.memOpAck.bits := 1.U
 
   //TODO In Case of pipelining StoreNode
   //TODO Once you know you need to reset StoreNode Uncomment below rule
-  when(io.memOpAck.fire()) {
+
+  val memopack_fire = io.memOpAck.ready & io.memOpAck.valid
+  when(memopack_fire) {
 
     data_resp_valid := false.B
     init1_reg := false.B
     init3_reg := false.B
 
-    printf(p"\n ------------------- Iteration Over ---------------------\n")
+    //    printf(p"\n ------------------- Iteration Over ---------------------\n")
   }
 
 

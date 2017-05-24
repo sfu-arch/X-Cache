@@ -18,17 +18,30 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
     // send address
 
 
-    println(s"t: ${t} GepAddr: ${peek(c.io.gepAddr.ready)}")
-    println(s"t: ${t} GepValid: ${peek(c.io.gepAddr.valid)}")
-    println(s"t: ${t} ACK:      ${peek(c.io.memOpAck)}")
+    if(peek(c.io.gepAddr.valid) == 1 && peek(c.io.gepAddr.ready) == 1 ) {
+      printf(s"t: ${t} GepAddr.ready: ${peek(c.io.gepAddr.ready)} \n")
+      printf(s"t: ${t} GepAddr.valid: ${peek(c.io.gepAddr.valid)} \n")
+    }
 
+    if(peek(c.io.inData.valid) == 1 && peek(c.io.inData.ready) == 1) {
+      printf(s"t: ${t} inData.ready: ${peek(c.io.inData.ready)} \n")
+      printf(s"t: ${t} inData.valid: ${peek(c.io.inData.valid)} \n")
+      printf(s"t: ${t} inData.data: ${peek(c.io.inData.bits)} \n")
+    }
+
+    if(peek(c.io.memOpAck.valid) == 1) {
+      printf(s"t: ${t} ACK:      ${peek(c.io.memOpAck)} \n")
+    }
+
+    //To run single Iteration
     poke(c.io.memOpAck.ready,false)
 
     if(peek(c.io.gepAddr.ready) == 1 && t>2) {
       poke(c.io.gepAddr.valid,true)
       poke(c.io.gepAddr.bits,12)
 
-      printf("\n rule1 fired \n")
+      printf(s"\n ---- GepAddr Fired --- \n")
+
     }
     else
     {
@@ -36,12 +49,14 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
     }
 
     if(peek(c.io.inData.ready) == 1 && t>3) {
-      printf("\n rule2 fired \n")
+
+      printf(s"\n --- inData Fired --- \n")
       poke(c.io.inData.valid,true)
       poke(c.io.inData.bits,12)
     }
-    else
-      poke(c.io.inData.valid,false)
+    else {
+      poke(c.io.inData.valid, false)
+    }
 
 
 
@@ -49,11 +64,11 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
     if(t > 4) {
       if (peek(c.io.predMemOp.ready) == 1) {
         poke(c.io.predMemOp.valid, true)
-        println("\n predmemOP rule fired \n")
-        //        poke(c.io.predMemOp(0).bits, 24)
+        printf("\n --- predmemOP Fired --- \n")
       }
-      else
+      else {
         poke(c.io.predMemOp.valid, false)
+      }
 
     }
     else {
@@ -62,6 +77,7 @@ class StoreDFTests(c: StoreDataFlow) extends PeekPokeTester(c) {
     }
 
     step(1)
+    printf(s"t: ${t} ----------------------------------- \n")
 
   }
 }

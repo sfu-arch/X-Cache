@@ -22,12 +22,11 @@ abstract class StoreIO(val NumMemOP :Int = 1, val ID :Int = 0, val mask :Int = 1
     // using Handshaking protocols
     val predMemOp = Vec(NumMemOP, Flipped(Decoupled(UInt(1.W))))
     //val memOpAck = Decoupled(UInt(1.W)) //TODO 0 bits
-    val memOpAck  = new RvAckIO() //TODO 0 bits
+    val memOpAck  = new RvAckIO()
 
     //Memory interface
     val memReq  = Decoupled(new WriteReq())
     val memResp = Input(new WriteResp())
-    //val memResp = Flipped(new WriteResp())
 
   })
 }
@@ -68,13 +67,13 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
 
 
-  printf( p"\n StNODE: gepAddrValid ${io.gepAddr.valid} \n")
-  printf( p"\n StNODE: gepAddrReady ${io.gepAddr.ready} \n")
+  //  printf( p"\n StNODE: gepAddrValid ${io.gepAddr.valid} \n")
+  //  printf( p"\n StNODE: gepAddrReady ${io.gepAddr.ready} \n")
 
   //-----------------------------------
   //Rules for gepAddr
   when(io.gepAddr.fire()) {
-    printf(p"\n --------------- gepAddr. fire  --------------------\n")
+    //    printf(p"\n --------------- gepAddr. fire  --------------------\n")
     addr_valid_reg := true.B
     addr_reg := io.gepAddr.bits
     init1_reg := true.B
@@ -84,7 +83,7 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
   //Rules for inData
   when(io.inData.fire()) {
 
-    printf(p"\n --------------- inData. fire  -------------------\n")
+    //    printf(p"\n --------------- inData. fire  -------------------\n")
     data_valid_reg := true.B
     data_reg := io.inData.bits
     init2_reg := true.B
@@ -94,7 +93,7 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
   //Rules for predMemOp(0)
   when(io.predMemOp(0).fire()) {
 
-    printf(p"\n ---------------- predMemOp(0). fire -------------------\n")
+    //    printf(p"\n ---------------- predMemOp(0). fire -------------------\n")
     in3_done_reg := true.B
     init3_reg := true.B
   }
@@ -114,7 +113,7 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   when(io.memReq.fire()) {
 
-    printf(p"\n ------------------ Mem Request Sent ------------------------- \n")
+    //    printf(p"\n ------------------ Mem Request Sent ------------------------- \n")
     memresp_ready_reg := true.B
     addr_valid_reg := false.B
     data_valid_reg := false.B
@@ -126,7 +125,7 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   when( resp_fire) {
 
-    printf(p"\n ------------------- Mem Response Received ---------------------\n")
+    //    printf(p"\n ------------------- Mem Response Received ---------------------\n")
     ack_reg := true.B
     //Reset other registers
     memresp_ready_reg := false.B
@@ -154,7 +153,7 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
     init2_reg := false.B
     init3_reg := false.B
 
-    printf(p"\n ------------------- Iteration Over ---------------------\n")
+    //    printf(p"\n ------------------- Iteration Over ---------------------\n")
   }
 
 
