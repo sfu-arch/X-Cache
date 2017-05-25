@@ -62,7 +62,6 @@ class WriteResp (implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 
-//class RvIO (implicit p: Parameters) extends CoreBundle()(p) {
 class RvIO(implicit  val p: Parameters) extends Bundle with CoreParams{
   override def cloneType = new RvIO().asInstanceOf[this.type]
 
@@ -71,10 +70,17 @@ class RvIO(implicit  val p: Parameters) extends Bundle with CoreParams{
   val bits  = Output(UInt(xlen.W))
 }
 
-//class RvIO (implicit p: Parameters) extends CoreBundle()(p) {
 class RvAckIO(implicit  val p: Parameters) extends Bundle with CoreParams{
   override def cloneType = new RvAckIO().asInstanceOf[this.type]
 
   val ready = Input(Bool())
   val valid = Output(Bool())
+}
+
+//class RelayNode output
+class RelayOutput(implicit  val p: Parameters) extends Bundle with CoreParams{
+  override def cloneType = new RelayOutput().asInstanceOf[this.type]
+
+  val DataNode  = Decoupled(UInt(xlen.W))
+  val TokenNode = Input(UInt(tlen.W))
 }

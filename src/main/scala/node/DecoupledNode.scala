@@ -1,16 +1,16 @@
 package node
 
 import chisel3._
-import chisel3.util._
+import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import chisel3.Module
 import chisel3.testers._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+import chisel3.util._
 import org.scalatest.{Matchers, FlatSpec} 
 
-import muxes._
 import config._
-import util._
 import interfaces._
+import muxes._
+import util._
 
 abstract class Node()(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
@@ -25,7 +25,9 @@ abstract class Node()(implicit val p: Parameters) extends Module with CoreParams
     // The output WILL NOT BE HELD (not matter the state of ready/valid)
     // Ready simply ensures that no subsequent valid output will appear until Ready is HIGH
     //val OutIO = Decoupled(new DecoupledNodeOut(xlen))
-    val OutIO = Decoupled(UInt(xlen.W))
+    val OutIO   = Decoupled(UInt(xlen.W))
+
+    val TokenIO = Output(UInt(tlen.W))
 
     })
 
@@ -35,7 +37,7 @@ abstract class Node()(implicit val p: Parameters) extends Module with CoreParams
 class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends Node()(p){
 
   // Extra information
-  val token  = RegInit(0.U)
+  val token_reg  = RegInit(0.U(tlen.W))
   val nodeID = RegInit(ID.U)
 
   //Instantiate ALU with selected code
@@ -64,6 +66,8 @@ class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) ex
   io.LeftIO.ready   := ~LeftValid
   io.RightIO.ready  := ~RightValid
 
+  io.TokenIO := token_reg
+
   //Latch Left input if it's fire
   when(io.LeftIO.fire()){
     LeftOperand := io.LeftIO.bits
@@ -83,7 +87,7 @@ class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) ex
     LeftOperand  := 0.U
     RightValid   := false.B
     LeftValid    := false.B
-    token := token + 1.U
+    token_reg := token_reg + 1.U
   }
 
 }
