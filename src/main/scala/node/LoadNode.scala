@@ -14,7 +14,7 @@ import interfaces._
 
 //TODO parametrize NumMemOp and ID
 //
-abstract class LoadIO(val NumMemOP :Int = 1, val ID :Int = 0)
+abstract class LoadIO(val NumMemOP :Int = 2, val ID :Int = 0)
                      (implicit val p: Parameters) extends Module with CoreParams{
 
   val io = IO(new Bundle {
