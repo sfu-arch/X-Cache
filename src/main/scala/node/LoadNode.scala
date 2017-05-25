@@ -99,12 +99,8 @@ class   LoadNode(implicit p: Parameters) extends LoadIO()(p){
   //Rules for Sending address and data to Memory
   // Note Memreq_addr.ready and Memreq_data.ready are connected
   // Store Node cannot send the data to memory unless all its predecessors are done: in3 in this case
-  // XOR 00 0, 10 1,
-  val test_reg = RegInit(0.U(NumMemOP.W))
-  val predMemOp_bool = init3_reg.asUInt() ^ test_reg
-  val predMemOpDone_bool = in3_done_reg.asUInt() ^ test_reg
 
-  val mem_req_fire = addr_valid_reg &  init1_reg & predMemOp_bool & predMemOpDone_bool
+  val mem_req_fire = addr_valid_reg &  init1_reg & in3_done_reg.asUInt.andR & init1_reg.asUInt.andR
   io.memReq.valid := mem_req_fire
   io.memReq.bits.address := addr_reg
   io.memReq.bits.node := nodeID_reg
