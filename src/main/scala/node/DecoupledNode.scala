@@ -27,8 +27,6 @@ abstract class NodeSingle()(implicit val p: Parameters) extends Module with Core
     //val OutIO = Decoupled(new DecoupledNodeOut(xlen))
     val OutIO   = Decoupled(UInt(xlen.W))
 
-    val TokenIO = Output(UInt(tlen.W))
-
     })
 
 }
@@ -55,6 +53,63 @@ abstract class NodeTwo(implicit val p: Parameters) extends Module with CoreParam
     })
 
 }
+
+class DecoupledNodeSingle(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeSingle()(p){
+
+  // Extra information
+  val token_reg  = RegInit(0.U(tlen.W))
+  val nodeID = RegInit(ID.U)
+
+  //Instantiate ALU with selected code
+  val FU = Module(new ALU(xlen, opCode))
+
+  // Input data
+  val LeftOperand   = RegInit(0.U(xlen.W))
+  val RightOperand  = RegInit(0.U(xlen.W))
+
+  //Input valid signals
+  val LeftValid  = RegInit(false.B)
+  val RightValid = RegInit(false.B)
+
+  //output valid signal
+  val outValid   = LeftValid & RightValid
+
+  io.OutIO.valid  := outValid
+
+  // Connect operands to ALU.
+  FU.io.in1 := LeftOperand
+  FU.io.in2 := RightOperand
+
+  // Connect output to ALU
+  io.OutIO.bits:= FU.io.out
+
+  io.LeftIO.ready   := ~LeftValid
+  io.RightIO.ready  := ~RightValid
+
+  //Latch Left input if it's fire
+  when(io.LeftIO.fire()){
+    LeftOperand := io.LeftIO.bits
+    LeftValid   := io.LeftIO.valid
+  }
+
+  //Latch Righ input if it's fire
+  when(io.RightIO.fire()){
+    RightOperand := io.RightIO.bits
+    RightValid   := io.RightIO.valid
+  }
+
+  //Reset the latches if we make sure that 
+  //consumer has consumed the output
+  when(outValid && io.OutIO.ready ){
+    RightOperand := 0.U
+    LeftOperand  := 0.U
+    RightValid   := false.B
+    LeftValid    := false.B
+    token_reg := token_reg + 1.U
+  }
+
+}
+
 
 
 class DecoupledNodeTwo(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeTwo()(p){
