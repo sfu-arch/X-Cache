@@ -12,7 +12,7 @@ import interfaces._
 import muxes._
 import util._
 
-abstract class Node()(implicit val p: Parameters) extends Module with CoreParams {
+abstract class NodeSingle()(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     // Inputs should be fed only when Ready is HIGH
     // Inputs are always latched.
@@ -34,7 +34,30 @@ abstract class Node()(implicit val p: Parameters) extends Module with CoreParams
 }
 
 
-class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends Node()(p){
+
+abstract class NodeTwo(implicit val p: Parameters) extends Module with CoreParams {
+  val io = IO(new Bundle {
+    // Inputs should be fed only when Ready is HIGH
+    // Inputs are always latched.
+    // If Ready is LOW; Do not change the inputs as this will cause a bug
+    val LeftIO   = Flipped(Decoupled(UInt(xlen.W)))
+    val RightIO  = Flipped(Decoupled(UInt(xlen.W))) 
+
+    // The interface has to be prepared to latch the output on every cycle as long as ready is enabled
+    // The output will appear only for one cycle and it has to be latched. 
+    // The output WILL NOT BE HELD (not matter the state of ready/valid)
+    // Ready simply ensures that no subsequent valid output will appear until Ready is HIGH
+    //val OutIO = Decoupled(new DecoupledNodeOut(xlen))
+    val OutIoFirst   = Decoupled(UInt(xlen.W))
+    val OutIoSecond  = Decoupled(UInt(xlen.W))
+
+
+    })
+
+}
+
+
+class DecoupledNodeTwo(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeTwo()(p){
 
   // Extra information
   val token_reg  = RegInit(0.U(tlen.W))
@@ -54,19 +77,19 @@ class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) ex
   //output valid signal
   val outValid   = LeftValid & RightValid
 
-  io.OutIO.valid := outValid
+  io.OutIoFirst.valid  := outValid
+  io.OutIoSecond.valid := outValid
 
   // Connect operands to ALU.
   FU.io.in1 := LeftOperand
   FU.io.in2 := RightOperand
 
   // Connect output to ALU
-  io.OutIO.bits:= FU.io.out
+  io.OutIoFirst.bits:= FU.io.out
+  io.OutIoSecond.bits:= FU.io.out
 
   io.LeftIO.ready   := ~LeftValid
   io.RightIO.ready  := ~RightValid
-
-  io.TokenIO := token_reg
 
   //Latch Left input if it's fire
   when(io.LeftIO.fire()){
@@ -82,7 +105,7 @@ class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) ex
 
   //Reset the latches if we make sure that 
   //consumer has consumed the output
-  when(outValid && io.OutIO.ready){
+  when(outValid && io.OutIoFirst.ready && io.OutIoSecond.ready){
     RightOperand := 0.U
     LeftOperand  := 0.U
     RightValid   := false.B
