@@ -54,6 +54,16 @@ abstract class NodeTwo(implicit val p: Parameters) extends Module with CoreParam
 
 }
 
+
+/**
+ * Decoupled node with single input
+ * Decoupled node do the computation base on the inputs.
+ * Inputs for computation nodes are decoupled so that the node
+ * should follow the ready/valid handshaking signalling.
+ *
+ * @param opCode  Opcode code comming from doc
+ * @param ID      Node ID from dot graph file
+ */
 class DecoupledNodeSingle(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeSingle()(p){
 
   // Extra information
