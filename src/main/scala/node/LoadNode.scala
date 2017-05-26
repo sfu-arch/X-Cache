@@ -46,12 +46,9 @@ class   LoadNode(implicit p: Parameters) extends LoadIO()(p){
   // to all inputs to accept input nodes
   val init1_reg = RegInit(false.B)
 
-  //TODO Make init3_reg a Vector of registers activated based on input predMemOp
-  //  val init3_reg = RegInit(false.B)
   val init3_reg = RegInit(Vec(Seq.fill(NumMemOP)(false.B)))
 
   // Status Register - If src mem-ops done execution
-  //  val in3_done_reg = RegInit(false.B)
   val in3_done_reg = RegInit(Vec(Seq.fill(NumMemOP)(false.B)))
 
 
@@ -113,7 +110,7 @@ class   LoadNode(implicit p: Parameters) extends LoadIO()(p){
     addr_valid_reg := false.B
 
     for(i <- 0 until NumMemOP) {
-      in3_done_reg(0) := false.B
+      in3_done_reg(i) := false.B
     }
     //    printf(p"\n ------------------ Mem Request Sent ------------------------- \n")
   }

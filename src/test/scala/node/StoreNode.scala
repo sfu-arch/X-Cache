@@ -75,6 +75,40 @@ class StoreNodeTests(c: StoreNode) extends PeekPokeTester(c) {
       poke(c.io.predMemOp(0).valid, false)
     }
 
+    //at some clock - send src mem-op is done executing
+    if (t == 4) {
+      if (peek(c.io.predMemOp(1).ready) == 1) {
+        poke(c.io.predMemOp(1).valid, true)
+        printf(s"\n t:${t} predMemOp(1) Fire \n")
+      }
+      else {
+        poke(c.io.predMemOp(1).valid, false)
+      }
+
+    }
+    else {
+
+      poke(c.io.predMemOp(1).valid, false)
+    }
+
+
+    //at some clock - send src mem-op is done executing
+    if (t > 6) {
+      if (peek(c.io.predMemOp(2).ready) == 1) {
+        poke(c.io.predMemOp(2).valid, true)
+        printf(s"\n t:${t} predMemOp(2) Fire \n")
+      }
+      else {
+        poke(c.io.predMemOp(2).valid, false)
+      }
+
+    }
+    else {
+
+      poke(c.io.predMemOp(2).valid, false)
+    }
+
+
 
     //poke for output after clock 7
     if (t > 7) {
