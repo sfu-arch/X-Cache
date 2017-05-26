@@ -12,7 +12,6 @@ import config._
 
 
 class LoadNodeTests(c: LoadNode) extends PeekPokeTester(c) {
-  for (t <- 0 until 12) {
     var is_k = false
     for (t <- 0 until 12) {
 
@@ -68,9 +67,25 @@ class LoadNodeTests(c: LoadNode) extends PeekPokeTester(c) {
 
       }
       else {
-
         poke(c.io.predMemOp(0).valid, false)
       }
+
+      if (t > 5) {
+        if (peek(c.io.predMemOp(1).ready) == 1) {
+          poke(c.io.predMemOp(1).valid, true)
+          printf(s"\n t:${t} predMemOp(1) Fire \n")
+        }
+        else {
+          poke(c.io.predMemOp(1).valid, false)
+        }
+
+      }
+      else {
+        poke(c.io.predMemOp(1).valid, false)
+      }
+
+
+
 
 
       //poke for output after clock 7
@@ -108,8 +123,6 @@ class LoadNodeTests(c: LoadNode) extends PeekPokeTester(c) {
       step(1)
     }
 
-
-  }
 }
 
 //class LoadNodeTester extends ChiselFlatSpec {
