@@ -34,8 +34,9 @@ class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) {
 //  address: Word aligned address to read from
 //  node : dataflow node id to return data to
 class ReadReq(implicit p: Parameters) extends CoreBundle()(p) {
- val address  = UInt(xlen.W)
- val node     = UInt(16.W)
+  val address  = UInt(xlen.W)
+  val node     = UInt(16.W)
+  val mask    = UInt ((xlen/8).W)
 }
 
 //  data : data returned from scratchpad
@@ -54,6 +55,16 @@ class WriteReq (implicit p: Parameters) extends CoreBundle()(p) {
   val mask    = UInt ((xlen/8).W)
   val node    = UInt (16.W)
 }
+
+class ArbiterReq (implicit p: Parameters) extends CoreBundle()(p) {
+  val wen     = Bool()
+  val address = UInt ((xlen-10).W)
+  val data    = UInt (xlen.W)
+  val mask    = UInt ((xlen/8).W)
+  val node    = UInt (16.W)
+}
+
+
 
 // Explicitly indicate done flag
 class WriteResp (implicit p: Parameters) extends CoreBundle()(p) {
