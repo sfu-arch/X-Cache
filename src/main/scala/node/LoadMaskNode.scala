@@ -35,7 +35,8 @@ trait MemoryOpConstants
   
 import Constants._
 
-abstract class LoadMaskIO(NumPredMemOps :Int = 1, val ID :Int = 0)(implicit val p: Parameters) extends Module with CoreParams{
+abstract class LoadMaskIO(NumPredMemOps :Int = 1, NumSuccMemOps :Int = 1,
+  val ID :Int = 0)(implicit val p: Parameters) extends Module with CoreParams{
 
   val io = IO(new Bundle {
     // gepAddr: The calculated address comming from GEP node
@@ -59,7 +60,7 @@ abstract class LoadMaskIO(NumPredMemOps :Int = 1, val ID :Int = 0)(implicit val 
 }
 
 
-class LoadMaskNode(NumPredMemOps: Int)(implicit p: Parameters) extends LoadMaskIO(NumPredMemOps)(p){
+class LoadMaskNode(NumPredMemOps: Int, NumSuccMemOps: Int)(implicit p: Parameters) extends LoadMaskIO(NumPredMemOps)(p){
 
 
 
@@ -97,9 +98,9 @@ class LoadMaskNode(NumPredMemOps: Int)(implicit p: Parameters) extends LoadMaskI
   for (i <- 0 until NumPredMemOps) {
     io.PredMemOp(i).ready := ~predValid(i)
     when(io.PredMemOp(i).fire()) {
-    predValid(i) := io.PredMemOp(i).valid      
+      predValid(i) := io.PredMemOp(i).valid      
+    }
   }
-}
 
 
   //Latch GEP input if it's fire
@@ -115,11 +116,11 @@ class LoadMaskNode(NumPredMemOps: Int)(implicit p: Parameters) extends LoadMaskI
   val inputValid   = GepValid & predValidInt.andR
   io.MemReq.valid := ReqValid
  
- val s_init :: s_SENDING :: s_RECEIVING  :: s_Done :: Nil = Enum(4)
- val state = Reg(init = s_init)
-
- val data = Fill(4,0xffbe.U)
- val type_word = MT_W
+  val s_init :: s_SENDING :: s_RECEIVING  :: s_Done :: Nil = Enum(4)
+  val state = Reg(init = s_init)
+  
+  val data = Fill(4,0xffbe.U)
+  val type_word = MT_W
 
 
   // Now I need a state machine to drive this. This would make it a lot easier when sending multiple requests.
@@ -174,6 +175,7 @@ class LoadMaskNode(NumPredMemOps: Int)(implicit p: Parameters) extends LoadMaskI
 
 
   printf(p"State: $state, ${io.MemResp.valid}")
+}
 
 
 
@@ -222,6 +224,19 @@ object ReadByteMask
    }
 }
 
+object Typ2BitMask
+{
+   def apply(sel: UInt): UInt = 
+   {
+      val mask = Mux(sel === MT_H.asUInt || sel === MT_HU.asUInt, Fill(16,1.U),
+                 Mux(sel === MT_B.asUInt || sel === MT_BU.asUInt, Fill(8,1.U),
+                 Mux(sel === MT_W.asUInt || sel === MT_WU.asUInt, Fill(32,1.U),
+                                                    Fill(64,1.U))))
+      return mask
+   }
+}
+
+
 object ReadBitMask
 {
    def apply(sel: UInt, address: UInt): UInt = 
@@ -236,39 +251,32 @@ object ReadBitMask
 
 object Typ2ByteMask
 {
-   def apply(sel: UInt): UInt = 
+   def apply(sel: UInt): UInt =
    {
-      val mask = Mux(sel === MT_H || sel === MT_HU, Fill(2,1.U),
-                 Mux(sel === MT_B || sel === MT_BU, Fill(1,1.U),
-                 Mux(sel === MT_W || sel === MT_WU, Fill(4,1.U),
+      val mask = Mux(sel === MT_H.asUInt || sel === MT_HU.asUInt, Fill(2,1.U),
+                 Mux(sel === MT_B.asUInt || sel === MT_BU.asUInt, Fill(1,1.U),
+                 Mux(sel === MT_W.asUInt || sel === MT_WU.asUInt, Fill(4,1.U),
                                                     Fill(8,1.U))))
-}
-
-object Typ2BitMask
-{
-   def apply(sel: UInt): UInt = 
-   {
-      val mask = Mux(sel === MT_H || sel === MT_HU, Fill(16,1.U),
-                 Mux(sel === MT_B || sel === MT_BU, Fill(8,1.U),
-                 Mux(sel === MT_W || sel === MT_WU, Fill(32,1.U),
-                                                    Fill(64,1.U))))
       return mask
-   }
 }
 
-object Data2Sign
-{
-   def apply(data: Bits, typ: Bits) : Bits =
-   {
-      val out = Mux(typ === MT_H,  Cat(Fill(xlen-16, data(15)),  data(15,0)),
-                Mux(typ === MT_HU, Cat(Fill(xlen-16, UInt(0x0)), data(15,0)),
-                Mux(typ === MT_B,  Cat(Fill(xlen-8, data(7)),    data(7,0)),
-                Mux(typ === MT_BU, Cat(Fill(xlen-8, UInt(0x0)), data(7,0)), 
-                                    data(xlen-1,0)))))
+/**
+ * @todo fix the xlen parameter for the apply value
+ */
+//object Data2Sign
+//{
+   //def apply(data: Bits, typ: Bits) : Bits =
+   //{
+     ////@todo check whether casting Bits to UInt doesn't introduce bug
+      //val out = Mux(typ.asUInt === MT_H,  Cat(Fill(xlen-16, data(15)),  data(15,0)),
+                //Mux(typ.asUInt === MT_HU, Cat(Fill(xlen-16, UInt(0x0)), data(15,0)),
+                //Mux(typ.asUInt === MT_B,  Cat(Fill(xlen-8, data(7)),    data(7,0)),
+                //Mux(typ.asUInt === MT_BU, Cat(Fill(xlen-8, UInt(0x0)), data(7,0)), 
+                                    //data(xlen-1,0)))))
       
-      return out
-   }
-}
+      //return out
+   //}
+//}
 
 
 
