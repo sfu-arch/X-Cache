@@ -1,5 +1,40 @@
 Chisel Project Template
 =======================
+
+### List of available Nodes:
+
+1.  Decoupled node (All the ALU)
+2.  Alloca
+3.  Branch
+4.  GEP
+5.  PHI
+6.  ST
+7.  LD
+8.  Relay
+
+
+### List of nodes need to build:
+
+1.  CMP
+2.  control/BasicBlock
+
+
+### To Run individual test cases
+```sh
+sbt 
+```
+```sh
+sbt "test-only <PACKAGE_NAME>.<TesterName>"
+```
+
+
+### To check the code's style
+
+```
+sbt scalastyle
+```
+
+
 ```sh
 sbt test
 ```
@@ -68,17 +103,3 @@ the master branch and submit pull requests against it.
 
 
 
-### To Run individual test cases
-```sh
-sbt 
-```
-```sh
-sbt "test-only <PACKAGE_NAME>.<TesterName>"
-```
-
-
-### To check the code's style
-
-```
-sbt scalastyle
-```
