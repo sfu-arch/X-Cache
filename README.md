@@ -1,29 +1,18 @@
 Chisel Project Template
 =======================
 
-### List of available Nodes:
+### List of Nodes:
 
-<!--- [x] Completed task-->
-<!--- [ ] Incomplete task-->
-    <!--- [ ] Sub-task 1-->
-    <!--- [x] Sub-task 2-->
-    <!--- [ ] Sub-task 3-->
-
-
-- [ ]  Decoupled node (All the ALU)
-- [ ]  Alloca
-- [ ]  Branch
-- [ ]  GEP
-- [ ]  PHI
-- [ ]  ST
-- [ ]  LD
-- [ ]  Relay
-
-
-### List of nodes need to build:
-
-1.  CMP
-2.  control/BasicBlock
+- [x]  Decoupled node (All the ALU)
+- [x]  Alloca
+- [x]  Branch
+- [x]  GEP
+- [x]  PHI
+- [x]  ST
+- [x]  LD
+- [x]  Relay
+- [ ]  CMP
+- [ ]  control/BasicBlock
 
 
 ### To Run individual test cases
