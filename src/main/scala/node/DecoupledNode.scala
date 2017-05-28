@@ -12,7 +12,7 @@ import interfaces._
 import muxes._
 import util._
 
-abstract class NodeSingleIO()(implicit val p: Parameters) extends Module with CoreParams {
+abstract class NodeSingleIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     // Inputs should be fed only when Ready is HIGH
     // Inputs are always latched.
