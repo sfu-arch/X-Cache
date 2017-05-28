@@ -20,6 +20,10 @@ object CmpOpCode {
   val length  = 11.U
 }
 
+
+/**
+ * This way you can not pick our operation correctly!!
+ */
 object CustomCMP {
   /** @param key a key to search for
     * @param default a default value if nothing is found
@@ -40,18 +44,18 @@ class UCMP(val xlen: Int, val opCode: Int) extends Module {
     val out = Output(UInt(xlen.W))
   })
 
+  printf(p"OPCODE: ${opCode}\n")
 
-  val aluOp = Array(
+  val cmpOp = Array(
       CmpOpCode.EQ  -> (io.in1 === io.in2),
       CmpOpCode.NE  -> (io.in1 =/= io.in2),
       CmpOpCode.UGT -> (io.in1  >  io.in2),
       CmpOpCode.UGE -> (io.in1  >=  io.in2),
       CmpOpCode.ULT -> (io.in1  <  io.in2),
       CmpOpCode.ULE -> (io.in1  <= io.in2)
-
     )
 
-  io.out := CustomCMP(aluOp(opCode))
+  io.out := CustomCMP(cmpOp(opCode))
 
 }
 

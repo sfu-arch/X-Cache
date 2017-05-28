@@ -28,15 +28,17 @@ class cmpTester(df: IcmpNode)(implicit p: config.Parameters) extends PeekPokeTes
   poke(df.io.RightIO.bits, 7.U)
   poke(df.io.RightIO.valid, false.B)
 
-  println(s"Node Rinput : ${peek(df.io.LeftIO)}")
-  println(s"Node Linput : ${peek(df.io.RightIO)}")
+  poke(df.io.OutIO.ready, false.B)
+
+  println(s"Node Linput : ${peek(df.io.LeftIO)}")
+  println(s"Node Rinput : ${peek(df.io.RightIO)}")
   println(s"Node output : ${peek(df.io.OutIO)}")
   println(s"")
 
   step(1)
 
-  println(s"Node Rinput : ${peek(df.io.LeftIO)}")
-  println(s"Node Linput : ${peek(df.io.RightIO)}")
+  println(s"Node Linput : ${peek(df.io.LeftIO)}")
+  println(s"Node Rinput : ${peek(df.io.RightIO)}")
   println(s"Node output : ${peek(df.io.OutIO)}")
   println(s"")
 
@@ -44,17 +46,22 @@ class cmpTester(df: IcmpNode)(implicit p: config.Parameters) extends PeekPokeTes
 
   poke(df.io.LeftIO.valid, true.B)
   poke(df.io.RightIO.valid, true.B)
-  println(s"Node Rinput : ${peek(df.io.LeftIO)}")
-  println(s"Node Linput : ${peek(df.io.RightIO)}")
+  println(s"Node Linput : ${peek(df.io.LeftIO)}")
+  println(s"Node Rinput : ${peek(df.io.RightIO)}")
   println(s"Node output : ${peek(df.io.OutIO)}")
   println(s"")
 
   step(1)
-  println(s"Node Rinput : ${peek(df.io.LeftIO)}")
-  println(s"Node Linput : ${peek(df.io.RightIO)}")
+  println(s"Node Linput : ${peek(df.io.LeftIO)}")
+  println(s"Node Rinput : ${peek(df.io.RightIO)}")
   println(s"Node output : ${peek(df.io.OutIO)}")
   println(s"")
 
+  step(1)
+  println(s"Node Linput : ${peek(df.io.LeftIO)}")
+  println(s"Node Rinput : ${peek(df.io.RightIO)}")
+  println(s"Node output : ${peek(df.io.OutIO)}")
+  println(s"")
  }
 
 
@@ -63,7 +70,7 @@ class cmpTester(df: IcmpNode)(implicit p: config.Parameters) extends PeekPokeTes
 class cmpTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new IcmpNode(4)(p)) { c =>
+     chisel3.iotesters.Driver(() => new IcmpNode(1)(p)) { c =>
        new cmpTester(c)
      } should be(true)
    }

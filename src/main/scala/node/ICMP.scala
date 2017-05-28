@@ -53,8 +53,6 @@ abstract class IcmpIO(implicit val p: Parameters) extends Module with CoreParams
 //abstract class IcmpIO[T <: Data](gen: T)(implicit val p: Parameters) extends Module with CoreParams {
 class IcmpNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends IcmpIO()(p){
 
-  //TODO WHY RESULT is unpredictable
-  //
   // Extra information
   val token_reg = RegInit(0.U(tlen.W))
   val nodeID    = RegInit(ID.U)
