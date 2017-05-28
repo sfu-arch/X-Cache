@@ -66,7 +66,8 @@ class  newCentralStack(implicit p: Parameters) extends newStack()(p) {
   allocaRespDeMux.io.sel := allocaArbiter.io.chosen
 
   //Pass the new address to demux
-  allocaRespDeMux.io.input.ptr := muxRes
+  allocaRespDeMux.io.input.ptr := SP
+  //allocaRespDeMux.io.input.ptr := muxRes
 
 
 

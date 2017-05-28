@@ -12,13 +12,16 @@ import interfaces._
 import muxes._
 import util._
 
-abstract class NodeSingle()(implicit val p: Parameters) extends Module with CoreParams {
+abstract class NodeSingleIO()(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     // Inputs should be fed only when Ready is HIGH
     // Inputs are always latched.
     // If Ready is LOW; Do not change the inputs as this will cause a bug
-    val LeftIO   = Flipped(Decoupled(UInt(xlen.W)))
-    val RightIO  = Flipped(Decoupled(UInt(xlen.W))) 
+    val LeftIO    = Flipped(Decoupled(UInt(xlen.W)))
+    val RightIO   = Flipped(Decoupled(UInt(xlen.W))) 
+
+    //Predicate bit comming from basic block bits
+    val PredicateIN = Input(Bool())
 
     // The interface has to be prepared to latch the output on every cycle as long as ready is enabled
     // The output will appear only for one cycle and it has to be latched. 
@@ -27,19 +30,24 @@ abstract class NodeSingle()(implicit val p: Parameters) extends Module with Core
     //val OutIO = Decoupled(new DecoupledNodeOut(xlen))
     val OutIO   = Decoupled(UInt(xlen.W))
 
+    val PredicateOUT = Output(Bool())
+
     })
 
 }
 
 
 
-abstract class NodeTwo(implicit val p: Parameters) extends Module with CoreParams {
+abstract class NodeTwoIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     // Inputs should be fed only when Ready is HIGH
     // Inputs are always latched.
     // If Ready is LOW; Do not change the inputs as this will cause a bug
     val LeftIO   = Flipped(Decoupled(UInt(xlen.W)))
     val RightIO  = Flipped(Decoupled(UInt(xlen.W))) 
+
+    //Predicate bit comming from basic block bits
+    val PredicateIN = Input(Bool())
 
     // The interface has to be prepared to latch the output on every cycle as long as ready is enabled
     // The output will appear only for one cycle and it has to be latched. 
@@ -48,6 +56,8 @@ abstract class NodeTwo(implicit val p: Parameters) extends Module with CoreParam
     //val OutIO = Decoupled(new DecoupledNodeOut(xlen))
     val OutIoFirst   = Decoupled(UInt(xlen.W))
     val OutIoSecond  = Decoupled(UInt(xlen.W))
+
+    val PredicateOUT = Output(Bool())
 
 
     })
@@ -64,11 +74,13 @@ abstract class NodeTwo(implicit val p: Parameters) extends Module with CoreParam
  * @param opCode  Opcode code comming from doc
  * @param ID      Node ID from dot graph file
  */
-class DecoupledNodeSingle(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeSingle()(p){
+class DecoupledNodeSingle(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeSingleIO()(p){
 
   // Extra information
   val token_reg  = RegInit(0.U(tlen.W))
   val nodeID = RegInit(ID.U)
+
+  io.PredicateOUT := io.PredicateIN
 
   //Instantiate ALU with selected code
   val FU = Module(new ALU(xlen, opCode))
@@ -122,11 +134,13 @@ class DecoupledNodeSingle(val opCode: Int, val ID: Int = 0)(implicit p: Paramete
 
 
 
-class DecoupledNodeTwo(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeTwo()(p){
+class DecoupledNodeTwo(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeTwoIO()(p){
 
   // Extra information
   val token_reg  = RegInit(0.U(tlen.W))
   val nodeID = RegInit(ID.U)
+
+  io.PredicateOUT := io.PredicateIN
 
   //Instantiate ALU with selected code
   val FU = Module(new ALU(xlen, opCode))
