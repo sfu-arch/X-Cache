@@ -3,14 +3,21 @@ Chisel Project Template
 
 ### List of available Nodes:
 
-1.  Decoupled node (All the ALU)
-2.  Alloca
-3.  Branch
-4.  GEP
-5.  PHI
-6.  ST
-7.  LD
-8.  Relay
+<!--- [x] Completed task-->
+<!--- [ ] Incomplete task-->
+    <!--- [ ] Sub-task 1-->
+    <!--- [x] Sub-task 2-->
+    <!--- [ ] Sub-task 3-->
+
+
+- [ ]  Decoupled node (All the ALU)
+- [ ]  Alloca
+- [ ]  Branch
+- [ ]  GEP
+- [ ]  PHI
+- [ ]  ST
+- [ ]  LD
+- [ ]  Relay
 
 
 ### List of nodes need to build:
