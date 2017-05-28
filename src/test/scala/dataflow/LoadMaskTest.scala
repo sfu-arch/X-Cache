@@ -15,7 +15,7 @@ import config._
 
 
 
-class LoadDFTests (c: LoadMaskNode)(implicit p: config.Parameters) extends PeekPokeTester(c) {
+class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends PeekPokeTester(c) {
   poke(c.io.PredMemOp(0).valid,false.B)
   poke(c.io.PredMemOp(1).valid,false.B)
   poke(c.io.Gep.valid,false.B)
@@ -57,11 +57,11 @@ class LoadDFTests (c: LoadMaskNode)(implicit p: config.Parameters) extends PeekP
   //}
 //}
 
-class LoadDFTester extends  FlatSpec with Matchers {
+class LoadMaskTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
  it should "Load Node tester" in {
     chisel3.iotesters.Driver(() => new LoadMaskNode(NumPredMemOps = 2)) { c =>
-      new LoadDFTests(c)
+      new LoadMaskTests(c)
     } should be(true)
   }
 }

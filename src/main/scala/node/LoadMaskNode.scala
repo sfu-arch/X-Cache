@@ -60,7 +60,7 @@ abstract class LoadMaskIO(NumPredMemOps :Int = 1, NumSuccMemOps :Int = 1,
 }
 
 
-class LoadMaskNode(NumPredMemOps: Int, NumSuccMemOps: Int)(implicit p: Parameters) extends LoadMaskIO(NumPredMemOps)(p){
+class LoadMaskNode(NumPredMemOps: Int = 1, NumSuccMemOps: Int = 1)(implicit p: Parameters) extends LoadMaskIO(NumPredMemOps)(p){
 
 
 
