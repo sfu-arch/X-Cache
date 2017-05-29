@@ -5,13 +5,14 @@ Chisel Project Template
 
 - [x]  Decoupled node (All the ALU)
 - [x]  Alloca
-- [x]  Branch
+- [x]  CBranch
+- [x]  UBranch
 - [x]  GEP
 - [x]  PHI
 - [x]  ST
 - [x]  LD
 - [x]  Relay
-- [ ]  CMP
+- [x]  CMP (All the comparision opeartions)
 - [ ]  control/BasicBlock
 
 

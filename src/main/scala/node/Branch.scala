@@ -18,21 +18,33 @@ import util._
  * @param BasicB1 Activition basic block 1
  */
 
-abstract class BranchNodeIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class UBranchNodeIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
 
-    val CmpIn   = Flipped(Decoupled(Bool()))
+    val PredicateIN = Input(Bool())
 
-    val OutIO   = Output(UInt(2.W))
+    val PredicateOUT = Output(Bool())
+
   })
 }
 
-class BranchNode(val ID: Int = 0)(implicit p : Parameters) extends BranchNodeIO()(p){
+abstract class CBranchNodeIO(implicit val p: Parameters) extends Module with CoreParams {
+  val io = IO(new Bundle {
+
+    val CmpIn   = Flipped(Decoupled(Bool()))
+    val PredicateIN = Input(Bool())
+
+    val OutIO   = Output(UInt(2.W))
+    val PredicateOUT = Output(Bool())
+  })
+}
+class CBranchNode(val ID: Int = 0)(implicit p : Parameters) extends CBranchNodeIO()(p){
 
   // Extra information
   val token_reg = RegInit(0.U(tlen.W))
   val nodeID    = RegInit(ID.U)
 
+  io.PredicateOUT := io.PredicateIN
 
   // Input data
   val operand_reg = Reg(UInt(2.W))
@@ -62,3 +74,16 @@ class BranchNode(val ID: Int = 0)(implicit p : Parameters) extends BranchNodeIO(
 
 
 }
+
+
+class UBranchNode(val ID: Int = 0)(implicit p : Parameters) extends UBranchNodeIO()(p){
+
+  // Extra information
+  val token_reg = RegInit(0.U(tlen.W))
+  val nodeID    = RegInit(ID.U)
+
+  io.PredicateOUT := io.PredicateIN
+
+}
+
+

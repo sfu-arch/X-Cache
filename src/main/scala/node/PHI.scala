@@ -34,17 +34,22 @@ abstract class PhiIO(NumProd: Int)(implicit val p: Parameters) extends Module wi
 
     val Predicates    = Vec(NumProd, Input(Bool()))
 
+    val PredicateIN = Input(Bool())
+
     // The interface has to be prepared to latch the output on every cycle as long as ready is enabled
     // The output will appear only for one cycle and it has to be latched. 
     // The output WILL NOT BE HELD (not matter the state of ready/valid)
     // Ready simply ensures that no subsequent valid output will appear until Ready is HIGH
     val OutIO = Decoupled(UInt(xlen.W))
+
+    val PredicateOUT = Output(Bool())
     })
 
 }
 
 class PhiNode(val NumProd: Int = 2)(implicit p : Parameters) extends PhiIO(NumProd)(p){
 
+  io.PredicateOUT := io.PredicateIN
 
   var array_in_bit = Array(0.U -> 0.U)
   //Generate an array of input bits

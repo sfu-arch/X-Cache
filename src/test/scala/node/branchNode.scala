@@ -20,7 +20,7 @@ import interfaces._
 
 
 // Tester.
-class BranchTester(df: BranchNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class BranchTester(df: CBranchNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.CmpIn.valid, false.B)
   poke(df.io.CmpIn.bits, false.B)
@@ -58,7 +58,7 @@ class BranchTester(df: BranchNode)(implicit p: config.Parameters) extends PeekPo
 class BrTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new BranchNode(0)(p)) { c =>
+     chisel3.iotesters.Driver(() => new CBranchNode(0)(p)) { c =>
        new BranchTester(c)
      } should be(true)
    }
