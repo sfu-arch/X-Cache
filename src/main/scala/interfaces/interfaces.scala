@@ -72,6 +72,7 @@ class RvIO(implicit  val p: Parameters) extends Bundle with CoreParams{
 
 class RvAckIO(implicit  val p: Parameters) extends Bundle with CoreParams{
   override def cloneType = new RvAckIO().asInstanceOf[this.type]
+  def fire(): Bool = ready && valid
 
   val ready = Input(Bool())
   val valid = Output(Bool())

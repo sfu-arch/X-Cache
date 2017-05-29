@@ -14,7 +14,6 @@ import org.scalatest.{Matchers, FlatSpec}
 import config._
 
 
-
 class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends PeekPokeTester(c) {
   poke(c.io.PredMemOp(0).valid,false.B)
   poke(c.io.PredMemOp(1).valid,false.B)
