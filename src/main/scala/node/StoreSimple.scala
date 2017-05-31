@@ -149,13 +149,20 @@ class StoreSimpleNode(NumPredMemOps :Int = 1, NumSuccMemOps : Int = 1, NumOuts:I
   //  Check if address is valid and data has arrive and predecessors have completed. 
   val mem_req_fire = addr_valid_R & pred_valid_R.asUInt.andR & data_valid_R
   // If idle, and mem-req is ready to fire. Fire it to memory system! Deactivate if state changes
-  io.memReq.valid := (state === s_idle) & mem_req_fire
+  // io.memReq.valid := (state === s_idle) & mem_req_fire
 
   // Outgoing Address Req -> 
   io.memReq.bits.address := addr_reg
   io.memReq.bits.node := nodeID_reg
   io.memReq.bits.data := data_R
   io.memReq.bits.Typ  := Typ
+
+  // ACTION: Memory Request
+  // -> Send memory request
+  when((state === s_idle) && (mem_req_fire))
+  {
+    io.memReq.valid := true.B
+  }
 
   //  ACTION: Arbitration ready
   //   <- Incoming memory arbitration  

@@ -20,6 +20,7 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
     poke(c.io.Out(0).ready,true)
 
     for (t <- 0 until 20) {
+             step(1)
 
     
 
@@ -42,7 +43,7 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
         poke(c.io.memResp.data,t)
         poke(c.io.memResp.valid,true)
       }
-       step(1)
+       printf(s"t: ${t}  io.Out: ${peek(c.io.Out(0))} \n")
       // //Response is before request -- so that it is true in the next cycle
       // //NOte: Response should be received atleast after a cycle of memory request
       // // Otherwise it is undefined behaviour
