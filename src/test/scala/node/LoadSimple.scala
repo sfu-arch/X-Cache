@@ -21,19 +21,18 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
 
     for (t <- 0 until 20) {
 
-     step(1)
+    
 
       //IF ready is set
       // send address
       if (peek(c.io.GepAddr.ready) == 1) {
-        printf(s"\n t: ${t} gepAddr Fire \n")
         poke(c.io.GepAddr.valid, true)
         poke(c.io.GepAddr.bits, 12)
       }
-      
-      if((peek(c.io.memReq.valid) == 1) && (t > 4))
+     
+       if((peek(c.io.memReq.valid) == 1) && (t > 4))
       {
-        printf(s"Valid:${peek(c.io.memReq.valid)}")
+     
         poke(c.io.memReq.ready,true)
       }
 
@@ -43,7 +42,7 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
         poke(c.io.memResp.data,t)
         poke(c.io.memResp.valid,true)
       }
-
+       step(1)
       // //Response is before request -- so that it is true in the next cycle
       // //NOte: Response should be received atleast after a cycle of memory request
       // // Otherwise it is undefined behaviour

@@ -53,6 +53,7 @@ class WriteReq (implicit p: Parameters) extends CoreBundle()(p) {
   val data    = UInt (xlen.W)
   val mask    = UInt ((xlen/8).W)
   val node    = UInt (16.W)
+  val Typ     = UInt (8.W)
 }
 
 // Explicitly indicate done flag

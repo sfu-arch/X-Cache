@@ -13,18 +13,14 @@ import interfaces._
 
 trait MemoryOpConstants 
 {
-   val MT_X  = Bits(0, 3)
-   val MT_B  = Bits(1, 3)
-   val MT_H  = Bits(2, 3)
-   val MT_W  = Bits(3, 3)
-   val MT_D  = Bits(4, 3)
-   val MT_BU = Bits(5, 3)
-   val MT_HU = Bits(6, 3)
-   val MT_WU = Bits(7, 3)
-
-   val M_X   = Bits("b0", 1)
-   val M_XRD = Bits("b0", 1) // int load
-   val M_XWR = Bits("b1", 1) // int store
+   val MT_X  = 0.U(3.W)
+   val MT_B  = 1.U(3.W)
+   val MT_H  = 2.U(3.W)
+   val MT_W  = 3.U(3.W)
+   val MT_D  = 4.U(3.W)
+   val MT_BU = 5.U(3.W)
+   val MT_HU = 6.U(3.W)
+   val MT_WU = 7.U(3.W)
 }
 
   object Constants  extends MemoryOpConstants 
@@ -85,7 +81,7 @@ class LoadMaskNode(NumPredMemOps: Int = 1, NumSuccMemOps: Int = 1)(implicit p: P
 
   // Is the request valid and request to memory
   val ReqValid     = RegInit(false.B)
-  val ReqAddress   = RegNext((GepOperand >> log2Up(xlen/8)) << log2Up(xlen/8), 0.U(xlen.W))
+  val ReqAddress   = RegNext((GepOperand >> log2Ceil(xlen/8)) << log2Ceil(xlen/8), 0.U(xlen.W))
 
 
   // Incoming data valid and daata operand.
