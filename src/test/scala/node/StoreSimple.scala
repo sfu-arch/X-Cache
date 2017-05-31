@@ -37,9 +37,7 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
       
       if((peek(c.io.memReq.valid) == 1) && (t > 4))
       {
-        printf(s"\n t: ${t} gepAddr Fire \n")
         poke(c.io.memReq.ready,true)
-
       }
 
       if (t > 5 && peek(c.io.memReq.ready) == 1)
@@ -48,7 +46,10 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
         // poke(c.io.memResp.data,t)
         poke(c.io.memResp.valid,true)
       }
+          printf(s"t: ${t}  io.Out: ${peek(c.io.Out(0))} \n")
     }
+
+
 }
 
 import Constants._

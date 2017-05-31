@@ -26,26 +26,23 @@ abstract class LoadSimpleIO(val NumPredMemOps :Int = 1, val NumSuccMemOps : Int 
                      (implicit val p: Parameters) extends Module with CoreParams{
 
   val io = IO(new Bundle {
+    // Node specific IO
     // GepAddr: The calculated address comming from GEP node
     val GepAddr = Flipped(Decoupled(UInt(xlen.W)))
 
-    
-
-
-
-    //Bool data from other memory ops
-    // using Handshaking protocols
-    // The valid and ready signals cannot be floating.
-    val PredMemOp = Vec(NumPredMemOps, Flipped(new RvAckIO()))
-    val SuccMemOp = Vec(NumSuccMemOps, new RvAckIO())
-
-    //Memory interface
     // Memory request
     val memReq  = Decoupled(new ReadReq())
+
     // Memory response.
-    // Response should always be delayed by atleast one cycle
     val memResp = Input(Flipped(new ReadResp()))
 
+    
+    // Generic Pipeline IO
+    // Predecessor Ordering
+    val PredMemOp = Vec(NumPredMemOps, Flipped(new RvAckIO()))
+    // Successor Ordering
+    val SuccMemOp = Vec(NumSuccMemOps, new RvAckIO())
+    // Output IO
     val Out   = Vec(NumOuts, Decoupled(UInt(xlen.W))) 
     })
 
@@ -158,7 +155,7 @@ class LoadSimpleNode(NumPredMemOps :Int = 1, NumSuccMemOps : Int = 1, NumOuts:In
   }
 
   // Wire up Outputs
-  for (i <- 0 until NumSuccMemOps) {
+  for (i <- 0 until NumOuts) {
      io.Out(i).bits  := data_R
    }
 
