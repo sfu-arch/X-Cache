@@ -153,12 +153,6 @@ class DecoupledNodeTwo(val opCode: Int, val ID: Int = 0)(implicit p: Parameters)
   val LeftValid  = RegInit(false.B)
   val RightValid = RegInit(false.B)
 
-  //output valid signal
-  val outValid   = LeftValid & RightValid
-
-  io.OutIoFirst.valid  := outValid
-  io.OutIoSecond.valid := outValid
-
   // Connect operands to ALU.
   FU.io.in1 := LeftOperand
   FU.io.in2 := RightOperand
@@ -182,7 +176,16 @@ class DecoupledNodeTwo(val opCode: Int, val ID: Int = 0)(implicit p: Parameters)
     RightValid   := io.RightIO.valid
   }
 
-  //Reset the latches if we make sure that 
+  /**
+    * @todo Add predicate bit here
+    */
+  //output valid signal
+  val outValid   = LeftValid & RightValid
+
+  io.OutIoFirst.valid  := outValid
+  io.OutIoSecond.valid := outValid
+
+  //Reset the latches if we make sure that
   //consumer has consumed the output
   when(outValid && io.OutIoFirst.ready && io.OutIoSecond.ready){
     RightOperand := 0.U
