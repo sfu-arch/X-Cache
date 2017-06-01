@@ -50,22 +50,24 @@ class CBranchNode(val ID: Int = 0)(implicit p : Parameters) extends CBranchNodeI
   val operand_reg = Reg(UInt(2.W))
 
   //Branch node is always ready to accept data
-  io.CmpIn.ready := true.B
+  //TODO decide how to fire cmp
+  io.CmpIn.ready := false.B
+  //io.CmpIn.ready := true.B
 
   /**
    * Combination of bits and valid signal from CmpIn whill result the output value:
    *    valid == 0  ->  output = 0
-   *    valid == 1  ->  cmp = false then 1
-   *    valid == 1  ->  cmp = true  then 2
+   *    valid == 1  ->  cmp = true  then 1
+   *    valid == 1  ->  cmp = false then 2
    */
 
   when(io.CmpIn.valid === false.B){
     io.OutIO := 0.U
 
-    } .elsewhen(io.CmpIn.valid === true.B && io.CmpIn.bits === false.B){
+    } .elsewhen(io.CmpIn.valid === true.B && io.CmpIn.bits === true.B){
       io.OutIO := 1.U
 
-    } .elsewhen(io.CmpIn.valid === true.B && io.CmpIn.bits === true.B){
+    } .elsewhen(io.CmpIn.valid === true.B && io.CmpIn.bits === false.B){
       io.OutIO := 2.U
 
     } .otherwise {

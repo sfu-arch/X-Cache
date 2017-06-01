@@ -75,9 +75,9 @@ class PhiNode(val NumProd: Int = 2)(implicit p : Parameters) extends PhiIO(NumPr
   val rs_data  = MuxLookup(io.Predicates.asUInt, 0.U, array_in_bit)
   val rs_valid = MuxLookup(io.Predicates.asUInt, false.B, array_in_valid)
 
-  printf(p"Predicates: ${io.Predicates}\n")
-  printf(p"Valid : ${io.Predicates.asUInt}\n")
-  printf(p"Result: ${rs_data}\n")
+  //printf(p"Predicates: ${io.Predicates}\n")
+  //printf(p"Valid : ${io.Predicates.asUInt}\n")
+  //printf(p"Result: ${rs_data}\n")
 
   io.OutIO.bits := rs_data
   io.OutIO.valid:= rs_valid

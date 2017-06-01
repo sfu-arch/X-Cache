@@ -66,8 +66,8 @@ class IcmpNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends
   val LeftOperand   = RegInit(0.U(xlen.W))
   val RightOperand  = RegInit(0.U(xlen.W))
 
-  printf(p"LeftOP : ${LeftOperand}\n")
-  printf(p"RightOP: ${RightOperand}\n")
+  //printf(p"LeftOP : ${LeftOperand}\n")
+  //printf(p"RightOP: ${RightOperand}\n")
 
   //Input valid signals
   val LeftValid  = RegInit(false.B)
@@ -85,12 +85,12 @@ class IcmpNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends
   // Connect output to ALU
   io.OutIO.bits:= FU.io.out
 
-  printf(p"FU output: ${FU.io.out}\n")
+  //printf(p"FU output: ${FU.io.out}\n")
 
-  printf(p"opCode: ${opCode}\n")
+  //printf(p"opCode: ${opCode}\n")
 
   val gt = LeftOperand === RightOperand
-  printf(p"TEST :  ${gt}\n")
+  //printf(p"TEST :  ${gt}\n")
 
   io.LeftIO.ready   := ~LeftValid
   io.RightIO.ready  := ~RightValid

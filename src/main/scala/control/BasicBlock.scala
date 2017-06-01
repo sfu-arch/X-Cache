@@ -29,10 +29,11 @@ abstract class BasicBlockIO(val fanIN : Int, val numInst : Int )(implicit val p:
     val Active        = Vec(fanIN,   Input(Bool()))
 
     //Activiation signal for all the consequence instructions
-    val InsVec        = Vec(numInst, Output(Bool()))
+    //val InsVec        = Vec(numInst, Output(Bool()))
+    val InsVec = Output(Bool())
 
     //Preciation output bit
-    val PredicateOut  = Output(Bool())
+    val PredicateOUT  = Output(Bool())
   })
 }
 
@@ -44,15 +45,17 @@ class BasicBlockCtrl(fanIN : Int = 1, numInst : Int = 1, var BID : Int = 0)(impl
   val nodeID      = RegInit(BID.U)
 
   //Check whether at least of the fan-ins is activated
-  val fanNumber = fanIN.asUInt.orR
+  val fanNumber = io.Active.asUInt.orR
 
-  io.PredicateOut := fanNumber
+  io.PredicateOUT := fanNumber
 
   //If orR's result is true then activate all the instructions
   when(fanNumber){
-    io.InsVec := Vec(Seq.fill(numInst){true.B})
+    //io.InsVec := Vec(Seq.fill(numInst){true.B})
+    io.InsVec := true.B
     token_reg := token_reg + 1.U
     }.otherwise{
-      io.InsVec := Vec(Seq.fill(numInst){false.B})
+      io.InsVec := false.B
+      //io.InsVec := Vec(Seq.fill(numInst){false.B})
     }
 }

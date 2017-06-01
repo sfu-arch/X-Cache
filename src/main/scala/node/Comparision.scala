@@ -44,7 +44,7 @@ class UCMP(val xlen: Int, val opCode: Int) extends Module {
     val out = Output(UInt(xlen.W))
   })
 
-  printf(p"OPCODE: ${opCode}\n")
+  //printf(p"OPCODE: ${opCode}\n")
 
   val cmpOp = Array(
       CmpOpCode.EQ  -> (io.in1 === io.in2),
