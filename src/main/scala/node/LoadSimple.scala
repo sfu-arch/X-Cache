@@ -19,13 +19,7 @@ import Constants._
 //  2. Handshaking has to be done with registers.
 //////////
 
-
-//TODO parametrize NumPredMemOps and ID
-//
-abstract class LoadSimpleIO(val NumPredMemOps :Int = 1, val NumSuccMemOps : Int = 1, val NumOuts : Int = 1, val Typ:UInt = MT_W, val ID :Int = 0)
-                     (implicit val p: Parameters) extends Module with CoreParams{
-
-  val io = IO(new Bundle {
+class LoadSimpleIO()(implicit p: Parameters) extends HandShakingIO {
     // Node specific IO
     // GepAddr: The calculated address comming from GEP node
     val GepAddr = Flipped(Decoupled(UInt(xlen.W)))
@@ -36,17 +30,14 @@ abstract class LoadSimpleIO(val NumPredMemOps :Int = 1, val NumSuccMemOps : Int 
     // Memory response.
     val memResp = Input(Flipped(new ReadResp()))
 
-    
-    // Generic Pipeline IO
-    // Predecessor Ordering
-    val PredMemOp = Vec(NumPredMemOps, Flipped(new RvAckIO()))
-    // Successor Ordering
-    val SuccMemOp = Vec(NumSuccMemOps, new RvAckIO())
-    // Output IO
-    val Out   = Vec(NumOuts, Decoupled(UInt(xlen.W))) 
-    })
+}
 
-   // Extra information
+class HandShaking (val NumPredMemOps :Int = 1, val NumSuccMemOps : Int = 1, val NumOuts : Int = 1, val ID :Int = 0) (implicit val p: Parameters) 
+ extends Module with CoreParams {
+
+  lazy val io = IO(new HandShakingIO(NumPredMemOps,NumSuccMemOps,NumOuts))
+
+  // Extra information
   val token  = RegInit(0.U)
   val nodeID_R = RegInit(ID.U)
 
@@ -126,10 +117,15 @@ abstract class LoadSimpleIO(val NumPredMemOps :Int = 1, val NumSuccMemOps : Int 
   }
 }
 
+class LoadSimpleNode(NumPredMemOps :Int = 1, 
+                NumSuccMemOps : Int = 1, 
+                NumOuts:Int = 1, 
+                Typ:UInt = MT_W, ID :Int)
+                (implicit p: Parameters) 
+              extends HandShaking(NumPredMemOps,NumSuccMemOps,NumOuts,ID)(p) {
 
-class LoadSimpleNode(NumPredMemOps :Int = 1, NumSuccMemOps : Int = 1, NumOuts:Int = 1, Typ:UInt = MT_W, ID :Int)(implicit p: Parameters) extends LoadSimpleIO(NumPredMemOps,NumSuccMemOps,NumOuts,Typ,ID)(p){
+  override lazy val io = IO(new LoadSimpleIO())
 
- 
   // OP Inputs
   val addr_R = RegInit(0.U(xlen.W))
   val addr_valid_R = RegInit(false.B)
@@ -211,6 +207,6 @@ class LoadSimpleNode(NumPredMemOps :Int = 1, NumSuccMemOps : Int = 1, NumOuts:In
 
     }
   }
-   printf(p"State: ${state} Output: ${io.Out(0)} Valid: ${out_valid_R} \n")    
-}
+   printf(p"State: ${state} Output: ${io.Out(0)} Valid: ${out_valid_R} \n")  
 
+}

@@ -86,3 +86,14 @@ class RelayOutput(implicit  val p: Parameters) extends Bundle with CoreParams{
   val DataNode  = Decoupled(UInt(xlen.W))
   val TokenNode = Input(UInt(tlen.W))
 }
+
+class HandShakingIO(val NumPredMemOps :Int = 1, val NumSuccMemOps : Int = 1, val NumOuts : Int = 1)(implicit val p: Parameters) extends Bundle with CoreParams{
+  override def cloneType = new HandShakingIO().asInstanceOf[this.type]
+  // Generic Pipeline IO
+ // Predecessor Ordering
+ val PredMemOp = Vec(NumPredMemOps, Flipped(new RvAckIO()))
+ // Successor Ordering
+ val SuccMemOp = Vec(NumSuccMemOps, new RvAckIO())
+ // Output IO
+ val Out   = Vec(NumOuts, Decoupled(UInt(xlen.W)))
+}
