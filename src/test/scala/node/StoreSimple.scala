@@ -57,7 +57,7 @@ import Constants._
 class StoreSimpleNodeTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Store Node tester" in {
-    chisel3.iotesters.Driver(() => new StoreSimpleNode(NumPredMemOps=1,NumSuccMemOps=1,NumOuts=2,Typ=MT_W,ID=1)) { c =>
+    chisel3.iotesters.Driver(() => new StoreSimpleNode(NumPredMemOps=1,NumSuccMemOps=2,NumOuts=2,Typ=MT_W,ID=1)) { c =>
       new StoreSimpleNodeTests(c)
     } should be(true)
   }
