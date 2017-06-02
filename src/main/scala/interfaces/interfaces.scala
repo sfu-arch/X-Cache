@@ -5,6 +5,13 @@ import chisel3._
 import chisel3.util._
 import config._
 
+/*==============================================================================
+=            Notes 
+           1. AVOID DECLARING IOs, DECLARE BUNDLES. Create IOs within your node.
+           2.             =
+==============================================================================*/
+
+
 
 
 // Maximum of 16MB Stack Array.
@@ -76,6 +83,7 @@ class RvIO (implicit p: Parameters) extends CoreBundle()(p) {
  * @param p : implicit
  * 
  */
+// TO BE RETIRED
 class RvAckIO (implicit p: Parameters) extends CoreBundle()(p) {
   override def cloneType = new RvAckIO().asInstanceOf[this.type]
   def fire(): Bool = ready && valid
