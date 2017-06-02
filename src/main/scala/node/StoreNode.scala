@@ -9,9 +9,9 @@ import org.scalacheck.Prop.False
 import config._
 import interfaces._
 
-//TODO parametrize NumMemOp, ID, and mask
+//TODO parametrize NumPredMemOp, ID, and mask
 
-abstract class StoreIO(val NumMemOP :Int = 3, val ID :Int = 0, val mask :Int = 1
+abstract class StoreIO(val NumPredMemOp :Int = 3, val ID :Int = 0, val mask :Int = 1
                       )(implicit val p: Parameters) extends Module with CoreParams{
 
   val io = IO(new Bundle {
@@ -20,8 +20,8 @@ abstract class StoreIO(val NumMemOP :Int = 3, val ID :Int = 0, val mask :Int = 1
     val inData = Flipped(Decoupled(UInt(xlen.W)))
     //Bool data from other memory ops
     // using Handshaking protocols
-    val predMemOp = Vec(NumMemOP, Flipped(Decoupled(UInt(1.W))))
-    //val memOpAck = Decoupled(UInt(1.W)) //TODO 0 bits
+    val predMemOp = Vec(NumPredMemOp, Flipped(Decoupled(UInt(1.W))))
+    //TODO memOpAck will become a vector based on the Number of successor MemOps
     val memOpAck  = new RvAckIO()
 
     //Memory interface
@@ -53,8 +53,8 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 //  // Status Register - If src mem-ops done execution
 //  val in3_done_reg = RegInit(false.B)
 
-  val init3_reg = RegInit(Vec(Seq.fill(NumMemOP)(false.B)))
-  val in3_done_reg = RegInit(Vec(Seq.fill(NumMemOP)(false.B)))
+  val init3_reg = RegInit(Vec(Seq.fill(NumPredMemOp)(false.B)))
+  val in3_done_reg = RegInit(Vec(Seq.fill(NumPredMemOp)(false.B)))
 
 
 
@@ -68,7 +68,7 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
   io.gepAddr.ready      := ~init1_reg
   io.inData.ready       := ~init2_reg
   //  io.predMemOp(0).ready := ~init3_reg
-  for( w <- 0 until NumMemOP) {
+  for( w <- 0 until NumPredMemOp) {
     io.predMemOp(w).ready := ~init3_reg(w)
   }
 
@@ -100,7 +100,7 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
 
   //Rules for predMemOp(0)
 
-  for( i <- 0 until NumMemOP) {
+  for( i <- 0 until NumPredMemOp) {
     when(io.predMemOp(i).fire()) {
 
       //    printf(p"\n ---------------- predMemOp(0). fire -------------------\n")
@@ -129,7 +129,7 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
     addr_valid_reg := false.B
     data_valid_reg := false.B
 
-    for( w <- 0 until NumMemOP) {
+    for( w <- 0 until NumPredMemOp) {
       in3_done_reg(w) := false.B
     }
   }
@@ -166,7 +166,7 @@ class StoreNode(implicit p: Parameters) extends StoreIO()(p){
     init1_reg := false.B
     init2_reg := false.B
 
-    for( w <- 0 until NumMemOP) {
+    for( w <- 0 until NumPredMemOp) {
       init3_reg(w) := false.B
     }
 
