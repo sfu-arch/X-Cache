@@ -18,8 +18,8 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
     poke(c.io.memResp.valid,false)
     poke(c.io.SuccMemOp(0).ready,true)
     poke(c.io.Out(0).ready,true)
-    poke(c.io.SuccMemOp(1).ready,false)
-    poke(c.io.Out(1).ready,false)
+    poke(c.io.SuccMemOp(1).ready,true)
+    poke(c.io.Out(1).ready,true)
 
 
     for (t <- 0 until 20) {

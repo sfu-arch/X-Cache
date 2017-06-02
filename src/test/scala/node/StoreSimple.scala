@@ -33,7 +33,7 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
         poke(c.io.GepAddr.valid, true)
         poke(c.io.GepAddr.bits.data, 12)
         poke(c.io.inData.valid, true)
-        poke(c.io.inData.bits, 50)
+        poke(c.io.inData.bits, t+1)
       }
       
       if((peek(c.io.memReq.valid) == 1) && (t > 4))
