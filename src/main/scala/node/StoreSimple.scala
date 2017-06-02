@@ -12,6 +12,9 @@ import config._
 import interfaces._
 import Constants._
 
+import utility.UniformPrintfs
+
+
 // Design Doc
 //////////
 /// DRIVER ///
@@ -40,7 +43,12 @@ class StoreSimpleIO(NumPredMemOps :Int,
     val memResp = Input(Flipped(new WriteResp()))
 }
 
-
+/**
+ * @brief Store Node. Implements store operations
+ * @details [long description]
+ * 
+ * @param NumPredMemOps [Number of predicate memory operations]
+ */
 class StoreSimpleNode(NumPredMemOps :Int, 
                 NumSuccMemOps : Int, 
                 NumOuts:Int, 
@@ -50,6 +58,9 @@ class StoreSimpleNode(NumPredMemOps :Int,
 
   // Set up StoreSimpleIO
   override lazy val io = IO(new StoreSimpleIO(NumPredMemOps,NumSuccMemOps,NumOuts))
+  
+
+
 
   // OP Inputs
   val addr_R = RegInit(0.U(xlen.W))
@@ -63,15 +74,16 @@ class StoreSimpleNode(NumPredMemOps :Int,
   val s_idle :: s_RECEIVING  :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
- 
+
+   // Printf Debugging
+   override val printfSigil = "Store ID: " + ID
+   // printfInfo("State : %x", state)
+
+
   //Initialization READY-VALIDs for GepAddr and Predecessor memory ops
   io.GepAddr.ready      := ~addr_valid_R
   io.inData.ready       := ~data_valid_R
 
-
-
-   // ACTIONS
-  printf(p"State: ${state} Output: ${io.Out(0)}\n")    
 
   // ACTION: GepAddr
   when(io.GepAddr.fire()) {
@@ -94,9 +106,7 @@ class StoreSimpleNode(NumPredMemOps :Int,
 
   // ACTION:  Memory request
   //  Check if address is valid and data has arrive and predecessors have completed. 
-  val mem_req_fire = addr_valid_R & pred_valid_R.asUInt.andR & data_valid_R
-  // If idle, and mem-req is ready to fire. Fire it to memory system! Deactivate if state changes
-  // io.memReq.valid := (state === s_idle) & mem_req_fire
+  val mem_req_fire = addr_valid_R & IsPredFire() & data_valid_R
 
   // Outgoing Address Req -> 
   io.memReq.bits.address := addr_R
@@ -112,23 +122,17 @@ class StoreSimpleNode(NumPredMemOps :Int,
   }
 
   //  ACTION: Arbitration ready
-  //   <- Incoming memory arbitration  
   when((state === s_idle) && (io.memReq.ready === true.B))
   {
     state := s_RECEIVING
   }
  
-   // printf(p"State: ${state} Output: ${io.Out(0)}\n")    
-
-  // Data detected only one cycle later. 
-  // Memory should supply only one cycle after arbitration.
   //  ACTION:  <- Incoming Data  
   when(state === s_RECEIVING && io.memResp.valid)
   {
-    // printf(p"s_RECEIVING: Mem Resp: ${io.memResp.data} \n")    
+    // Set output to valid
     FireSucc()
     FireOut()
-    // Move to Done state
     state := s_Done
   }
 
@@ -138,7 +142,7 @@ class StoreSimpleNode(NumPredMemOps :Int,
   {
     // When successors are complete and outputs are ready you can reset.
     // data already valid and would be latched in this cycle.
-    val complete = succ_ready_R.asUInt.andR & out_ready_R.asUInt.andR
+    val complete = IsSuccFire() & IsOutFire()
     when(complete)
     {
       // Clear all the valid states.

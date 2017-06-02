@@ -7,10 +7,19 @@ import org.scalacheck.Prop.False
 import config._
 import interfaces._
 import Constants._
+import utility.UniformPrintfs
 
-
+/**
+ * @brief Handshaking between data nodes. 
+ * @details Sets up base registers and hand shaking registers
+ * @param NumPredMemOps Number of parents
+ * @param NumSuccMemOps Number of successors
+ * @param NumOuts Number of outputs
+ * @param ID Node id
+ * @return Module
+ */
 class HandShaking (val NumPredMemOps :Int, val NumSuccMemOps : Int, val NumOuts : Int, val ID :Int) (implicit val p: Parameters) 
- extends Module with CoreParams {
+ extends Module with CoreParams  with UniformPrintfs {
 
   lazy val io = IO(new HandShakingIO(NumPredMemOps,NumSuccMemOps,NumOuts))
 
@@ -29,6 +38,7 @@ class HandShaking (val NumPredMemOps :Int, val NumSuccMemOps : Int, val NumOuts 
   val out_valid_R  =  RegInit(Vec(Seq.fill(NumOuts)(false.B)))
 
 ////////////////////////////////////  WIRING /////////////////////////////////
+  
 
   // Wire up Successors READYs and VALIDs
   for (i <- 0 until NumSuccMemOps) {

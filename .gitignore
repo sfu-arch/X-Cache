@@ -2,3 +2,4 @@ test_run_dir/*
 target/*
 project/*
 src/target/*
+tags
