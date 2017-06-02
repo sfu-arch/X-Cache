@@ -20,8 +20,7 @@ import Constants._
 //////////
 
 class LoadSimpleIO(NumPredMemOps: Int,
-  NumSuccMemOps: Int,
-  NumOuts: Int)(implicit p: Parameters) 
+  NumSuccMemOps: Int, NumOuts: Int)(implicit p: Parameters) 
   extends HandShakingIO(NumPredMemOps, NumSuccMemOps, NumOuts) {
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
@@ -42,15 +41,18 @@ class LoadSimpleNode(NumPredMemOps: Int,
   override val printfSigil = "Store ID: " + ID
   // printfInfo("State : %x", state)
 
-/*=============================================
-=            Registers                        =
-=============================================*/
+  /*===========================================*
+   *          Defining Registers               *
+   *===========================================*/
   // OP Inputs
-  val addr_R = RegInit(DataBundle.default)
+  /*
+   * @todo What is defalut value return by databundle?
+   */
+  val addr_R        = RegInit(DataBundle.default)
 
   // Memory Response
-  val data_R = RegInit(0.U(xlen.W))
-  val data_valid_R = RegInit(0.U(xlen.W))
+  val data_R        = RegInit(0.U(xlen.W))
+  val data_valid_R  = RegInit(0.U(xlen.W))
 
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
@@ -58,14 +60,15 @@ class LoadSimpleNode(NumPredMemOps: Int,
 
   val ReqValid = RegInit(false.B)
 
-/*================================================
-=            Latch inputs. Wire up output            =
-================================================*/
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
 
   io.GepAddr.ready := ~addr_R.valid
+
   when(io.GepAddr.fire()) {
     addr_R.valid := io.GepAddr.valid
-    addr_R.data := io.GepAddr.bits.data
+    addr_R.data  := io.GepAddr.bits.data
     addr_R.predicate := io.GepAddr.bits.predicate
   }
 
@@ -74,15 +77,15 @@ class LoadSimpleNode(NumPredMemOps: Int,
     io.Out(i).bits := data_R
   }
 
-/*=============================================
-=            ACTIONS (possibly dangerous)     =
-=============================================*/
+  /*============================================*
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
 
   // ACTION:  Memory request
   //  Check if address is valid and predecessors have completed. 
-  val mem_req_fire = addr_R.valid & IsPredValid()
-  io.memReq.bits.address := addr_R.data
-  io.memReq.bits.node := nodeID_R
+  val mem_req_fire         = addr_R.valid & IsPredValid()
+  io.memReq.bits.address  := addr_R.data
+  io.memReq.bits.node     := nodeID_R
 
   // ACTION: Outgoing Address Req -> 
   when((state === s_idle) && (mem_req_fire)) {

@@ -18,7 +18,9 @@ import utility.UniformPrintfs
  * @param ID Node id
  * @return Module
  */
-class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: Int, val ID: Int)(implicit val p: Parameters)
+
+class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: Int, val ID: Int)
+                 (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
   lazy val io = IO(new HandShakingIO(NumPredMemOps, NumSuccMemOps, NumOuts))
@@ -27,16 +29,16 @@ class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: I
   =            Registers            =
   =================================*/
   // Extra information
-  val token = RegInit(0.U)
-  val nodeID_R = RegInit(ID.U)
+  val token     = RegInit(0.U)
+  val nodeID_R  = RegInit(ID.U)
 
-  // Predessor Handshaking
+  // Predecessor Handshaking
   val pred_valid_R = RegInit(Vec(Seq.fill(NumPredMemOps)(false.B)))
 
   // Successor Handshaking. Registers needed
   val succ_ready_R = RegInit(Vec(Seq.fill(NumSuccMemOps)(false.B)))
   val succ_valid_R = RegInit(Vec(Seq.fill(NumSuccMemOps)(false.B)))
-  // Output Handshaking  
+  // Output Handshaking
   val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
   val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
 
@@ -80,10 +82,13 @@ class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: I
   // Fire Predecessors
   def ValidPred() = {
     pred_valid_R := Fill(NumPredMemOps, 1.U).toBools
+    //pred_valid_R := Vec(Seq.fill(NumPredMemOps){true.B})
   }
   // Clear predessors
   def InvalidPred() = {
     pred_valid_R := Fill(NumPredMemOps, 0.U).toBools
+    //pred_valid_R := Vec(Seq.fill(NumPredMemOps){false.B})
+  }
   }
   // Successors
   def IsSuccReady(): Bool = {
@@ -91,9 +96,11 @@ class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: I
   }
   def ValidSucc() = {
     succ_valid_R := Fill(NumSuccMemOps, 1.U).toBools
+    //succ_valid_R := Vec(Seq.fill(NumSuccMemOps, true.B))
   }
   def InvalidSucc() = {
     succ_valid_R := Fill(NumSuccMemOps, 0.U).toBools
+    //succ_valid_R := Vec(Seq.fill(NumSuccMemOps, false.B))
   }
   // OUTs
   def IsOutReady(): Bool = {
@@ -101,8 +108,10 @@ class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: I
   }
   def ValidOut() = {
     out_valid_R := Fill(NumOuts, 1.U).toBools
+    //out_valid_R := Vec(Seq.fill(NumOuts, true.B))
   }
   def InvalidOut() = {
     out_valid_R := Fill(NumOuts, 0.U).toBools
+    //out_valid_R := Vec(Seq.fill(NumOuts, false.B))
   }
 }
