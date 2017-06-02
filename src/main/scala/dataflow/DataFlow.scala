@@ -37,13 +37,13 @@ class newDataFlow(implicit p: Parameters) extends myDataFlow()(p){
   val reg7 = Module(new InputRegFile(Array(6.U, 1.U, 4.U, 8.U))(p))
   val reg8 = Module(new InputRegFile(Array(9.U, 2.U, 5.U, 8.U))(p))
 
-  val m0 = Module(new DecoupledNode(0, 0)(p))
-  val m1 = Module(new DecoupledNode(0, 1)(p))
-  val m2 = Module(new DecoupledNode(0, 2)(p))
-  val m3 = Module(new DecoupledNode(0, 3)(p))
-  val m4 = Module(new DecoupledNode(0, 4)(p))
-  val m5 = Module(new DecoupledNode(0, 5)(p))
-  val m6 = Module(new DecoupledNode(0, 6)(p))
+  val m0 = Module(new DecoupledNodeSingle(0, 0)(p))
+  val m1 = Module(new DecoupledNodeSingle(0, 1)(p))
+  val m2 = Module(new DecoupledNodeSingle(0, 2)(p))
+  val m3 = Module(new DecoupledNodeSingle(0, 3)(p))
+  val m4 = Module(new DecoupledNodeSingle(0, 4)(p))
+  val m5 = Module(new DecoupledNodeSingle(0, 5)(p))
+  val m6 = Module(new DecoupledNodeSingle(0, 6)(p))
 
 
   m0.io.LeftIO  <> reg1.io.Data

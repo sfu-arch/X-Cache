@@ -12,9 +12,12 @@ class Demux[T <: Data](gen: T, n: Int) extends Module {
     val outputs = Output(Vec(n,gen))
     val valids  = Output(Vec(n,Bool()))
     })
+
   val x = io.sel
+
+  io.valids := Vec(Seq.fill(n){false.B})
+
   when(io.en) {
-    io.valids := Vec(Seq.fill(n){false.B})
     io.valids(x) := true.B
     io.outputs(x) := io.input
   }.otherwise {
