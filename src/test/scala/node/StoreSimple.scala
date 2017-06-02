@@ -18,6 +18,7 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
     poke(c.io.memReq.ready,false)
     poke(c.io.memResp.valid,false)
     poke(c.io.SuccMemOp(0).ready,true)
+    poke(c.io.SuccMemOp(1).ready,false)
     poke(c.io.Out(0).ready,true)
     poke(c.io.Out(1).ready,true)
 
@@ -30,9 +31,9 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
       if (peek(c.io.GepAddr.ready) == 1) {
        
         poke(c.io.GepAddr.valid, true)
-        poke(c.io.GepAddr.bits, 12)
+        poke(c.io.GepAddr.bits.data, 12)
         poke(c.io.inData.valid, true)
-        poke(c.io.inData.bits, t+1)
+        poke(c.io.inData.bits, 50)
       }
       
       if((peek(c.io.memReq.valid) == 1) && (t > 4))
@@ -47,10 +48,16 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
         poke(c.io.memResp.valid,true)
       }
           printf(s"t: ${t}  io.Out: ${peek(c.io.Out(0))} \n")
+
+          if (t == 14)
+        poke(c.io.SuccMemOp(1).ready,true)
+
+
     }
 
 
 }
+
 
 import Constants._
 

@@ -18,6 +18,9 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
     poke(c.io.memResp.valid,false)
     poke(c.io.SuccMemOp(0).ready,true)
     poke(c.io.Out(0).ready,true)
+    poke(c.io.SuccMemOp(1).ready,false)
+    poke(c.io.Out(1).ready,false)
+
 
     for (t <- 0 until 20) {
              step(1)
@@ -28,7 +31,7 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
       // send address
       if (peek(c.io.GepAddr.ready) == 1) {
         poke(c.io.GepAddr.valid, true)
-        poke(c.io.GepAddr.bits, 12)
+        poke(c.io.GepAddr.bits.data, 12)
       }
      
        if((peek(c.io.memReq.valid) == 1) && (t > 4))
@@ -123,7 +126,7 @@ import Constants._
 class LoadSimpleNodeTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Load Node tester" in {
-    chisel3.iotesters.Driver(() => new LoadSimpleNode(NumPredMemOps=1,NumSuccMemOps=1,NumOuts=1,Typ=MT_W,ID=1)) { c =>
+    chisel3.iotesters.Driver(() => new LoadSimpleNode(NumPredMemOps=1,NumSuccMemOps=2,NumOuts=2,Typ=MT_W,ID=1)) { c =>
       new LoadSimpleNodeTests(c)
     } should be(true)
   }

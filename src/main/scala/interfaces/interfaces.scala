@@ -11,7 +11,7 @@ import config._
 // alloca indicates id of stack object and returns address back.
 // Can be any of the 4MB regions. Size is over provisioned
 class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) {
- val node = UInt(16.W)
+ val node = UInt(glen.W)
  val size = UInt(xlen.W)
 }
 
@@ -27,7 +27,7 @@ class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) {
 //  node : dataflow node id to return data to
 class ReadReq(implicit p: Parameters) extends CoreBundle()(p) {
  val address  = UInt(xlen.W)
- val node     = UInt(16.W)
+ val node     = UInt(glen.W)
 }
 
 //  data : data returned from scratchpad
@@ -49,7 +49,7 @@ class WriteReq (implicit p: Parameters) extends CoreBundle()(p) {
   val address = UInt ((xlen-10).W)
   val data    = UInt (xlen.W)
   val mask    = UInt ((xlen/8).W)
-  val node    = UInt (16.W)
+  val node    = UInt (glen.W)
   val Typ     = UInt (8.W)
 }
 
@@ -60,7 +60,7 @@ class WriteResp (implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 
-class RvIO (implicit  val p: Parameters) extends Bundle with CoreParams{
+class RvIO (implicit p: Parameters) extends CoreBundle()(p) {
   override def cloneType = new RvIO().asInstanceOf[this.type]
 
   val ready = Input(Bool())
@@ -70,19 +70,31 @@ class RvIO (implicit  val p: Parameters) extends Bundle with CoreParams{
 
 /**
  * RvAckIO
- * 
- * 
+ * RvAckIO for ordering and serializing ops in the dataflow
+ * @note 3 fields
+ * ready, valid and token(32.W)
  * @param p : implicit
- * @return RvAckIO for ordering and serializing ops in the dataflow
+ * 
  */
-class RvAckIO (implicit  val p: Parameters) extends Bundle with CoreParams{
+class RvAckIO (implicit p: Parameters) extends CoreBundle()(p) {
   override def cloneType = new RvAckIO().asInstanceOf[this.type]
   def fire(): Bool = ready && valid
 
   val ready = Input(Bool())
   val valid = Output(Bool())
-  val token = Output(UInt(32.W))
 }
+
+
+
+// object RvAckIO {
+//    def default(implicit p: Parameters): RvAckIO = {
+//     val wire = Wire(new RvAckIOIO)
+//     wire.valid := false.B
+//     wire.ready := false.B
+//     wire.predicate := false.B
+//     wire
+//   }
+// }
 
 //class RelayNode output
 class RelayOutput (implicit p: Parameters) extends CoreBundle()(p){
@@ -93,6 +105,7 @@ class RelayOutput (implicit p: Parameters) extends CoreBundle()(p){
 }
 
 
+
 /**
  * Data bundle between dataflow nodes.
  * @note 2 fields 
@@ -101,17 +114,19 @@ class RelayOutput (implicit p: Parameters) extends CoreBundle()(p){
  * @param p : implicit
  * @return 
  */
-class DataIO (implicit p: Parameters) extends CoreBundle()(p){
+class DataBundle (implicit p: Parameters) extends CoreBundle()(p){
   // Data packet
   val data = UInt((xlen.W))
   val predicate = Bool()
+  val valid     = Bool()
 }
 
-object DataIO {
-   def default(implicit p: Parameters): DataIO = {
-    val wire = Wire(new DataIO)
-    wire.data := 0.U
+object DataBundle {
+   def default(implicit p: Parameters): DataBundle = {
+    val wire = Wire(new DataBundle)
+    wire.data      := 0.U
     wire.predicate := false.B
+    wire.valid     := false.B
     wire
   }
 }
@@ -127,7 +142,7 @@ object DataIO {
  * @param NumOuts       Number of outputs
  * 
  */
-class HandShakingIO(val NumPredMemOps :Int, val NumSuccMemOps : Int, val NumOuts : Int)(implicit p: Parameters) extends CoreBundle()(p){
+class HandShakingIO (val NumPredMemOps :Int, val NumSuccMemOps : Int, val NumOuts : Int)(implicit p: Parameters) extends CoreBundle()(p){
  // Predecessor Ordering
  val PredMemOp = Vec(NumPredMemOps, Flipped(new RvAckIO()))
  // Successor Ordering

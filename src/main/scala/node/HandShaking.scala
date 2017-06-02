@@ -71,35 +71,37 @@ class HandShaking (val NumPredMemOps :Int, val NumSuccMemOps : Int, val NumOuts 
 
 ////////////////////////////////////  Actions and Checks /////////////////////////////////
   // Check if Predecssors have fired
-  def IsPredFire(): Bool = { 
+  def IsPredValid(): Bool = { 
     pred_valid_R.asUInt.andR 
   }
   // Fire Predecessors
-  def FirePred() = { 
+  def ValidPred() = { 
     pred_valid_R :=  Fill(NumPredMemOps,1.U).toBools
   }
   // Clear predessors
-  def ClearPred() = { 
+  def InvalidPred() = { 
     pred_valid_R :=  Fill(NumPredMemOps,0.U).toBools
   }
   // Successors
-  def IsSuccFire(): Bool = { 
-    succ_valid_R.asUInt.andR
+  def IsSuccReady(): Bool = { 
+    printf(p"$succ_ready_R")
+    succ_ready_R.asUInt.andR
   }
-  def FireSucc() = { 
+  def ValidSucc() = { 
     succ_valid_R :=  Fill(NumSuccMemOps,1.U).toBools
   }
-  def ClearSucc() = { 
+  def InvalidSucc() = { 
     succ_valid_R :=  Fill(NumSuccMemOps,0.U).toBools
   }
   // OUTs
-   def IsOutFire(): Bool = { 
-    out_valid_R.asUInt.andR
+   def IsOutReady(): Bool = {
+       printf(p"$out_ready_R") 
+    out_ready_R.asUInt.andR
   }
-  def FireOut()  = {
+  def ValidOut()  = {
    out_valid_R  :=  Fill(NumOuts,1.U).toBools
   }
-  def ClearOut()  = {
+  def InvalidOut()  = {
    out_valid_R  :=  Fill(NumOuts,0.U).toBools
   }
 }
