@@ -13,7 +13,7 @@ import muxes._
 import mmu._
 
 
-class Arbiter(NReads: Int, NWrites: Int)(implicit val p: Parameters) extends
+class MemoryController(NReads: Int, NWrites: Int)(implicit val p: Parameters) extends
   Module with CoreParams{
   val io = IO(new Bundle {
     val ReadIn    = Vec(NReads,Flipped(Decoupled(new ReadReq())))
@@ -52,10 +52,10 @@ class Arbiter(NReads: Int, NWrites: Int)(implicit val p: Parameters) extends
   //----------------------------------------------------------------------------------------
   // Connection between Read Arbiter and mmu
 
-  mmu.io.readReq.bits.in <> readArbiter.io.out.bits
-  mmu.io.readReq.bits.chosen <> readArbiter.io.chosen
-  mmu.io.readReq.ready <> readArbiter.io.out.ready
-  mmu.io.readReq.valid <> readArbiter.io.out.valid
+  mmu.io.readReq.in.bits <> readArbiter.io.out.bits
+  mmu.io.readReq.chosen <> readArbiter.io.chosen
+  mmu.io.readReq.in.ready <> readArbiter.io.out.ready
+  mmu.io.readReq.in.valid <> readArbiter.io.out.valid
 
   //----------------------------------------------------------------------------------------
   // ReadResponse - Connection between mmu and readDemux
@@ -63,10 +63,12 @@ class Arbiter(NReads: Int, NWrites: Int)(implicit val p: Parameters) extends
   // ToDo mmu.io.readResponse.ready signal unused
   // Once decided --> need to fix ready
 
-  readDemux.io.sel        := mmu.io.readResp.bits.chosen
-  readDemux.io.en         := mmu.io.readResp.valid
-  readDemux.io.input.data := mmu.io.readResp.bits.out
-  mmu.io.readResp.ready := true.B
+  readDemux.io.sel        := mmu.io.readResp.chosen
+  //TODO ReadResponse valid is redundant
+  // mmu.io.readResp.out.bits.valid is un used
+  readDemux.io.en         := mmu.io.readResp.out.valid
+  readDemux.io.input.data := mmu.io.readResp.out.bits.data
+  mmu.io.readResp.out.ready := true.B
 
 
   //----------------------------------------------------------------------------------------

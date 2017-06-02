@@ -92,7 +92,7 @@ class RvAckIO (implicit  val p: Parameters) extends Bundle with CoreParams{
 
   val ready = Input(Bool())
   val valid = Output(Bool())
-  val token = Output(UInt(32.W))
+  val token = Output(UInt(xlen.W))
 }
 
 //class RelayNode output
