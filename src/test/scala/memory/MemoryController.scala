@@ -15,11 +15,30 @@ class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) 
 
   for (t <- 0 until 12) {
 
-//    poke(c.io.ReadIn(readidx).valid,  false)
-    poke(c.io.ReadIn(readidx).valid, true)
-    poke(c.io.ReadIn(readidx).bits.address, 34)
-    poke(c.io.ReadIn(readidx).bits.node, 4)
-    poke(c.io.ReadIn(readidx).bits.mask, 0)
+    if(t<11) {
+      poke(c.io.ReadIn(1).valid, false)
+      poke(c.io.ReadIn(2).valid, false)
+
+      //-------------------------------------------
+
+      poke(c.io.ReadIn(readidx).valid, true)
+      poke(c.io.ReadIn(readidx).bits.address, 34)
+      poke(c.io.ReadIn(readidx).bits.node, 3)
+      poke(c.io.ReadIn(readidx).bits.mask, 3)
+
+      //-------------------------------------------
+      poke(c.io.ReadIn(0).valid, true)
+      poke(c.io.ReadIn(0).bits.address, 43)
+      poke(c.io.ReadIn(0).bits.node, 0)
+      poke(c.io.ReadIn(0).bits.mask, 0)
+    }
+    else {
+      poke(c.io.ReadIn(readidx).valid, false)
+      poke(c.io.ReadIn(0).valid, false)
+      poke(c.io.ReadIn(1).valid, false)
+      poke(c.io.ReadIn(2).valid, false)
+
+    }
 
     //    //TODO Create separate Test case for Demux
     //    // To test Demux
@@ -34,8 +53,9 @@ class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) 
     //    }
 
     printf(s"t: ${t} ---------------------------- \n")
-    printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(readidx))} chosen: 0 \n")
-    printf(s"t: ${t}  io.ReadIn: ${peek(c.io.ReadIn(readidx))} chosen: ${readidx} \n")
+    printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(readidx))} chosen: ${readidx} \n")
+    printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(0))} chosen: 0 \n")
+//    printf(s"t: ${t}  io.ReadIn: ${peek(c.io.ReadIn(readidx))} chosen: ${readidx} \n")
     step(1)
 
   }

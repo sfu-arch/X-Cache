@@ -43,8 +43,6 @@ object ReadReqDataBundle {
 }
 
 
-
-
 class MmuInIO[T <: Data](gen: T, n: Int) extends Bundle {
 
   override def cloneType = new MmuInIO(gen,n).asInstanceOf[this.type]
