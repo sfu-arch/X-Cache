@@ -31,7 +31,7 @@ class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: I
   // Extra information
   val token = RegInit(0.U)
   val nodeID_R = RegInit(ID.U)
-  val enable   = RegInit(false.B)
+  val enable   = RegInit(true.B)
 
   // Predecessor Handshaking
   val pred_valid_R = RegInit(Vec(Seq.fill(NumPredMemOps)(false.B)))
@@ -76,6 +76,10 @@ class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: I
   /*=====================================
   =            Helper Checks            =
   =====================================*/
+  def Isenable(): Bool = {
+    enable
+  }
+
   // Check if Predecssors have fired
   def IsPredValid(): Bool = {
     pred_valid_R.asUInt.andR
@@ -94,19 +98,19 @@ class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: I
     succ_ready_R.asUInt.andR
   }
   def ValidSucc() = {
-    succ_valid_R := Vec(Seq.fill(NumSuccMemOps, true.B))
+    succ_valid_R := Vec(Seq.fill(NumSuccMemOps){true.B})
   }
   def InvalidSucc() = {
-    succ_valid_R := Vec(Seq.fill(NumSuccMemOps, false.B))
+    succ_valid_R := Vec(Seq.fill(NumSuccMemOps){false.B})
   }
   // OUTs
   def IsOutReady(): Bool = {
     out_ready_R.asUInt.andR
   }
   def ValidOut() = {
-    out_valid_R := Vec(Seq.fill(NumOuts, true.B))
+    out_valid_R := Vec(Seq.fill(NumOuts){true.B})
   }
   def InvalidOut() = {
-    out_valid_R := Vec(Seq.fill(NumOuts, false.B))
+    out_valid_R := Vec(Seq.fill(NumOuts){false.B})
   }
 }
