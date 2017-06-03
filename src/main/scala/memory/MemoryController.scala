@@ -64,9 +64,10 @@ class MemoryController(NReads: Int, NWrites: Int)(implicit val p: Parameters) ex
   // Once decided --> need to fix ready
 
   readDemux.io.sel        := mmu.io.readResp.chosen
-  //TODO ReadResponse valid is redundant
-  // mmu.io.readResp.out.bits.valid is un used
-  readDemux.io.en         := mmu.io.readResp.out.valid
+  // TODO ReadResponse valid is redundant
+  // Todo mmu.io.readResp.out.bits.valid is unused
+  readDemux.io.en         := mmu. io.readResp.out.valid
+//    readDemux.io.en := false.B
   readDemux.io.input.data := mmu.io.readResp.out.bits.data
   mmu.io.readResp.out.ready := true.B
 
@@ -75,7 +76,9 @@ class MemoryController(NReads: Int, NWrites: Int)(implicit val p: Parameters) ex
   // Connection between readDemux and ReadOut
 
   for (i <- 0 until NReads) {
-    io.ReadOut(i) <> readDemux.io.outputs(i)
+//    io.ReadOut(i) <> readDemux.io.outputs(i)
+    io.ReadOut(i).valid <> readDemux.io.valids(i)
+    io.ReadOut(i).data <> readDemux.io.outputs(i).data
   }
 
 

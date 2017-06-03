@@ -100,8 +100,8 @@ class MMU(NReads: Int, NWrites: Int)(implicit p: Parameters) extends MmuIO(NRead
   io.readResp.out.bits.valid := read_req_R.valid
 
   //Todo -> data <= address ; address is passed as data
-//  io.readResp.out.bits.data := read_req_R.bits
-  io.readResp.out.bits.data := 12.U
+  io.readResp.out.bits.data := read_req_R.bits.address
+  //  io.readResp.out.bits.data := 12.U
 
 
 
@@ -112,6 +112,7 @@ class MMU(NReads: Int, NWrites: Int)(implicit p: Parameters) extends MmuIO(NRead
     read_req_R.valid := false.B
   }
 
+  print(p" \n mem_contrl: ${read_req_R.valid} \n")
 
 
 }
