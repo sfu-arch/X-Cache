@@ -28,17 +28,17 @@ class MemoryControllerTests2(c: MemoryController)(implicit p: config.Parameters)
 
       poke(c.io.ReadIn(3).bits.address, 33)
       poke(c.io.ReadIn(3).bits.node, 3)
-      poke(c.io.ReadIn(3).bits.mask, 3)
+      // poke(c.io.ReadIn(3).bits.mask, 3)
 
       //-------------------------------------------
       poke(c.io.ReadIn(2).bits.address, 22)
       poke(c.io.ReadIn(2).bits.node, 2)
-      poke(c.io.ReadIn(2).bits.mask, 2)
+      // poke(c.io.ReadIn(2).bits.mask, 2)
 
       //-------------------------------------------
       poke(c.io.ReadIn(1).bits.address, 11)
       poke(c.io.ReadIn(1).bits.node, 1)
-      poke(c.io.ReadIn(1).bits.mask, 1)
+      // poke(c.io.ReadIn(1).bits.mask, 1)
     }
     else {
       poke(c.io.ReadIn(0).valid, false)

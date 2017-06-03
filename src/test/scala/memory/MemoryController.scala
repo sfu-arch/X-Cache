@@ -24,13 +24,13 @@ class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) 
       poke(c.io.ReadIn(readidx).valid, true)
       poke(c.io.ReadIn(readidx).bits.address, 34)
       poke(c.io.ReadIn(readidx).bits.node, 3)
-      poke(c.io.ReadIn(readidx).bits.mask, 3)
+      // poke(c.io.ReadIn(readidx).bits.mask, 3)
 
       //-------------------------------------------
       poke(c.io.ReadIn(0).valid, true)
       poke(c.io.ReadIn(0).bits.address, 43)
       poke(c.io.ReadIn(0).bits.node, 0)
-      poke(c.io.ReadIn(0).bits.mask, 0)
+      // poke(c.io.ReadIn(0).bits.mask, 0)
     }
     else {
       poke(c.io.ReadIn(readidx).valid, false)

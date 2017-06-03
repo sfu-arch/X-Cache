@@ -21,7 +21,7 @@ class ArbiterTestTests(c: ArbiterTest)(implicit p: config.Parameters) extends Pe
       poke(c.io.ReadIn(2).valid, false)
       poke(c.io.ReadIn(readidx).bits.address, 34)
       poke(c.io.ReadIn(readidx).bits.node, 4)
-      poke(c.io.ReadIn(readidx).bits.mask, 1)
+      // poke(c.io.ReadIn(readidx).bits.mask, 1)
 //      poke(c.io.ready, true)
     }
     else {
