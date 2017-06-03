@@ -11,16 +11,21 @@ class Demux[T <: Data](gen: T, n: Int) extends Module {
     val sel = Input(UInt(width = log2Up(n)))
     val outputs = Output(Vec(n,gen))
     val valids  = Output(Vec(n,Bool()))
-    })
+  })
 
   val x = io.sel
 
-  io.valids := Vec(Seq.fill(n){false.B})
-
   when(io.en) {
-    io.valids(x) := true.B
+
+    for (i <- 0 until n) {
+      io.valids(i) := false.B
+    }
+
     io.outputs(x) := io.input
-  }.otherwise {
-    io.valids := Vec(Seq.fill(n){false.B})
+    //TODO Fix the hack, Chisel overwrites the last statement
+    io.valids(x) := true.B
   }
+    .otherwise {
+      io.valids := Vec(Seq.fill(n){false.B})
+    }
 }
