@@ -89,7 +89,7 @@ class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: I
     pred_valid_R := Fill(NumPredMemOps, 0.U).toBools
     //pred_valid_R := Vec(Seq.fill(NumPredMemOps){false.B})
   }
-  }
+  //}
   // Successors
   def IsSuccReady(): Bool = {
     succ_ready_R.asUInt.andR
