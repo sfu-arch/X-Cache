@@ -14,15 +14,25 @@ class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) 
   var readidx= 3
   for (t <- 0 until 12) {
 //    printf("Memory Controller \n")
-    if(t ==1) {
-      poke(c.io.ReadIn(readidx).bits.address, 34)
-      poke(c.io.ReadIn(readidx).bits.node, 4)
-      poke(c.io.ReadIn(readidx).bits.mask, 0)
-      poke(c.io.ReadIn(readidx).valid, true)
+//    if(t ==1) {
+//      poke(c.io.ReadIn(readidx).bits.address, 34)
+//      poke(c.io.ReadIn(readidx).bits.node, 4)
+//      poke(c.io.ReadIn(readidx).bits.mask, 0)
+//      poke(c.io.ReadIn(readidx).valid, true)
+//    }
+
+    if(t==1) {
+      poke(c.io.en,true)
+      poke(c.io.sel,readidx)
+      poke(c.io.input.data, 13)
+      poke(c.io.input.valid, 1)
+    }
+    else {
+      poke(c.io.en, false)
     }
 
     printf(s"t: ${t} ---------------------------- \n")
-    printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(0))} chosen: 0 \n")
+    printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(readidx))} chosen: 0 \n")
 //    printf(s"t: ${t}  io.ReadIn: ${peek(c.io.ReadIn(readidx))} chosen: ${readidx} \n")
     step(1)
 

@@ -8,24 +8,24 @@ class Demux[T <: Data](gen: T, n: Int) extends Module {
   val io = IO(new Bundle {
     val en = Input(Bool())
     val input = Input(gen)
-    val sel = Input(UInt(log2Ceil(n).W))
+    val sel = Input(UInt(width = log2Up(n)))
     val outputs = Output(Vec(n,gen))
     val valids  = Output(Vec(n,Bool()))
   })
 
   val x = io.sel
 
-
   when(io.en) {
-    io.outputs(x) := io.input
 
     for (i <- 0 until n) {
       io.valids(i) := false.B
     }
-    //TODO : Hack chisel takes only the last statement
-    //So earlier  io.valids(x) := 0 will be overwritten
+
+    io.outputs(x) := io.input
+    //TODO Fix the hack, Chisel overwrites the last statement
     io.valids(x) := true.B
-  }.otherwise {
-    io.valids := Vec(Seq.fill(n){false.B})
   }
+    .otherwise {
+      io.valids := Vec(Seq.fill(n){false.B})
+    }
 }

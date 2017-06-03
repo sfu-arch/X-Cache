@@ -20,6 +20,11 @@ class MemoryController(NReads: Int, NWrites: Int)(implicit val p: Parameters) ex
     val ReadOut   = Vec(NReads,Output(new ReadResp()))
     val WriteIn   = Vec(NWrites,Flipped(Decoupled(new WriteReq())))
     val WriteOut  = Vec(NWrites,Output(new WriteResp()))
+
+    val input = Input(new ReadResp())
+    val sel = Input(UInt(log2Ceil(NReads).W))
+    val en = Input(Bool())
+
   })
 
   //----------------------------------------------------------------------------------------
@@ -57,26 +62,33 @@ class MemoryController(NReads: Int, NWrites: Int)(implicit val p: Parameters) ex
   mmu.io.readReq.in.ready <> readArbiter.io.out.ready
   mmu.io.readReq.in.valid <> readArbiter.io.out.valid
 
-  //----------------------------------------------------------------------------------------
-  // ReadResponse - Connection between mmu and readDemux
-  // ToDo  Note Demux is not handshaking signal
-  // ToDo mmu.io.readResponse.ready signal unused
-  // Once decided --> need to fix ready
+//  //----------------------------------------------------------------------------------------
+//  // ReadResponse - Connection between mmu and readDemux
+//  // ToDo  Note Demux is not handshaking signal
+//  // ToDo mmu.io.readResponse.ready signal unused
+//  // Once decided --> need to fix ready
+//
+//  readDemux.io.sel        := mmu.io.readResp.chosen
+//  // TODO ReadResponse valid is redundant
+//  // Todo mmu.io.readResp.out.bits.valid is unused
+//  readDemux.io.en         := mmu. io.readResp.out.valid
+//  //    readDemux.io.en := false.B
+//  readDemux.io.input:= mmu.io.readResp.out.bits
+//  mmu.io.readResp.out.ready := true.B
+//
+//  //-----------------------------------------------------------------------------------------
+  //  // Testing Demux
+    readDemux.io.sel  := io.sel
+    readDemux.io.en   := io.en
+    readDemux.io.input := io.input
 
-  readDemux.io.sel        := mmu.io.readResp.chosen
-  // TODO ReadResponse valid is redundant
-  // Todo mmu.io.readResp.out.bits.valid is unused
-  readDemux.io.en         := mmu. io.readResp.out.valid
-//    readDemux.io.en := false.B
-  readDemux.io.input.data := mmu.io.readResp.out.bits.data
-  mmu.io.readResp.out.ready := true.B
 
 
   //----------------------------------------------------------------------------------------
   // Connection between readDemux and ReadOut
 
   for (i <- 0 until NReads) {
-//    io.ReadOut(i) <> readDemux.io.outputs(i)
+    //    io.ReadOut(i) <> readDemux.io.outputs(i)
     io.ReadOut(i).valid <> readDemux.io.valids(i)
     io.ReadOut(i).data <> readDemux.io.outputs(i).data
   }
