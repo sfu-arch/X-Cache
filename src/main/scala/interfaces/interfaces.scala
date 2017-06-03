@@ -46,7 +46,7 @@ class ReadResp(implicit p: Parameters) extends CoreBundle()(p) {
 /**
  * Write request to memory
  * @param p [description]
- * @return [description]
+ * @return  [description]
  */
 // 
 // Word aligned to write to
@@ -124,7 +124,7 @@ class RelayOutput (implicit p: Parameters) extends CoreBundle()(p){
  */
 class DataBundle (implicit p: Parameters) extends CoreBundle()(p){
   // Data packet
-  val data = UInt((xlen.W))
+  val data      = UInt((xlen.W))
   val predicate = Bool()
   val valid     = Bool()
 }
