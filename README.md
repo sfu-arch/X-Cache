@@ -15,6 +15,10 @@ Chisel Project Template
 - [x]  CMP (All the comparision opeartions)
 - [ ]  control/BasicBlock
 
+### Current Status
+- Alloca tests failing (allocaTests)
+- StackTests failing 
+- simpleDF tests failing (reason: issue with AllocaIn; male-female connection)
 
 ### To Run individual test cases
 ```sh
