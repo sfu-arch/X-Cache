@@ -151,10 +151,12 @@ object DataBundle {
  * 
  */
 class HandShakingIO (val NumPredMemOps :Int, val NumSuccMemOps : Int, val NumOuts : Int)(implicit p: Parameters) extends CoreBundle()(p){
- // Predecessor Ordering
- val PredMemOp = Vec(NumPredMemOps, Flipped(new RvAckIO()))
- // Successor Ordering
- val SuccMemOp = Vec(NumSuccMemOps, new RvAckIO())
- // Output IO
- val Out   = Vec(NumOuts, Decoupled(UInt(xlen.W)))
+  // Predicate enable
+  val enable    = Flipped(Decoupled(Bool()))
+  // Predecessor Ordering
+  val PredMemOp = Vec(NumPredMemOps, Flipped(new RvAckIO()))
+  // Successor Ordering
+  val SuccMemOp = Vec(NumSuccMemOps, new RvAckIO())
+  // Output IO
+  val Out   = Vec(NumOuts, Decoupled(DataBundle.default))
 }

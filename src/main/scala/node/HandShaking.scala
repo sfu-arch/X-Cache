@@ -29,6 +29,7 @@ class HandShaking(val NumPredMemOps: Int, val NumSuccMemOps: Int, val NumOuts: I
   // Extra information
   val token = RegInit(0.U)
   val nodeID_R = RegInit(ID.U)
+  val enable   = RegInit(false.B)
 
   // Predessor Handshaking
   val pred_valid_R = RegInit(Vec(Seq.fill(NumPredMemOps)(false.B)))

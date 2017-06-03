@@ -49,8 +49,7 @@ class LoadSimpleNode(NumPredMemOps: Int,
   val addr_R = RegInit(DataBundle.default)
 
   // Memory Response
-  val data_R = RegInit(0.U(xlen.W))
-  val data_valid_R = RegInit(0.U(xlen.W))
+  val data_R = RegInit(DataBundle.default)
 
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
@@ -64,15 +63,22 @@ class LoadSimpleNode(NumPredMemOps: Int,
 
   io.GepAddr.ready := ~addr_R.valid
   when(io.GepAddr.fire()) {
-    addr_R.valid := io.GepAddr.valid
-    addr_R.data := io.GepAddr.bits.data
-    addr_R.predicate := io.GepAddr.bits.predicate
+    addr_R := io.GepAddr.bits
+    addr_R.valid := true.B
   }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
   }
+
+/*============================================
+=            Predicate Evaluation            =
+============================================*/
+
+
+  val action = addr_R.predicate & Isenable()
+
 
 /*=============================================
 =            ACTIONS (possibly dangerous)     =
@@ -100,7 +106,8 @@ class LoadSimpleNode(NumPredMemOps: Int,
   //  ACTION:  <- Incoming Data  
   when(state === s_RECEIVING && io.memResp.valid) {
     // Set data output registers 
-    data_R := io.memResp.data
+    data_R.data := io.memResp.data
+    data_R.valid := true.B
     ValidSucc()
     ValidOut()
     // Completion state.
@@ -120,8 +127,8 @@ class LoadSimpleNode(NumPredMemOps: Int,
       // Clear all the valid states.
       // Reset address
       addr_R.valid := false.B
-      // Reset data.
-      data_valid_R := false.B
+      // Reset data 
+      data_R := DataBundle.default
       // Reset state.
       state := s_idle
       // indicate completion to predecessors. 
