@@ -149,6 +149,7 @@ class StoreSimpleNode(NumPredMemOps: Int,
       data_R := DataBundle.default
       // Clear all other state
       InvalidPred()
+      ResetSuccAndOutReadys()
       // Reset state.
       state := s_idle
 
