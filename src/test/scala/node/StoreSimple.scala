@@ -36,7 +36,7 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
         poke(c.io.inData.bits.predicate,false)
         poke(c.io.inData.bits.valid,true)
       }
-      
+
       if((peek(c.io.memReq.valid) == 1) && (t > 4))
       {
         poke(c.io.memReq.ready,true)
