@@ -29,13 +29,14 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
       //IF ready is set
       // send address
       if (peek(c.io.GepAddr.ready) == 1) {
-       
         poke(c.io.GepAddr.valid, true)
         poke(c.io.GepAddr.bits.data, 12)
         poke(c.io.inData.valid, true)
-        poke(c.io.inData.bits, t+1)
+        poke(c.io.inData.bits.data, t+1)
+        poke(c.io.inData.bits.predicate,false)
+        poke(c.io.inData.bits.valid,true)
       }
-      
+
       if((peek(c.io.memReq.valid) == 1) && (t > 4))
       {
         poke(c.io.memReq.ready,true)

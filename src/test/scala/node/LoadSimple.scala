@@ -13,7 +13,7 @@ import config._
 
 class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
     poke(c.io.GepAddr.valid,false)
-    poke(c.io.PredMemOp(0).valid,true)
+    poke(c.io.PredMemOp(0).valid,false)
     poke(c.io.memReq.ready,false)
     poke(c.io.memResp.valid,false)
     poke(c.io.SuccMemOp(0).ready,true)
@@ -25,7 +25,7 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
     for (t <- 0 until 20) {
              step(1)
 
-    
+
 
       //IF ready is set
       // send address
@@ -33,10 +33,9 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
         poke(c.io.GepAddr.valid, true)
         poke(c.io.GepAddr.bits.data, 12)
       }
-     
+
        if((peek(c.io.memReq.valid) == 1) && (t > 4))
       {
-     
         poke(c.io.memReq.ready,true)
       }
 
@@ -107,7 +106,7 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
       //   poke(c.io.predMemOp(1).valid, false)
       // }
 
-   
+
     }
 
 }

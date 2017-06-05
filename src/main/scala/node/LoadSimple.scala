@@ -21,7 +21,7 @@ import Constants._
 
 class LoadSimpleIO(NumPredMemOps: Int,
   NumSuccMemOps: Int,
-  NumOuts: Int)(implicit p: Parameters) 
+  NumOuts: Int)(implicit p: Parameters)
   extends HandShakingIO(NumPredMemOps, NumSuccMemOps, NumOuts) {
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
@@ -39,8 +39,8 @@ class LoadSimpleNode(NumPredMemOps: Int,
 
   override lazy val io = IO(new LoadSimpleIO(NumPredMemOps, NumSuccMemOps, NumOuts))
   // Printf debugging
-  override val printfSigil = "Store ID: " + ID
-  // printfInfo("State : %x", state)
+  override val printfSigil = "Load ID: " + ID
+
 
 /*=============================================
 =            Registers                        =
@@ -49,14 +49,13 @@ class LoadSimpleNode(NumPredMemOps: Int,
   val addr_R = RegInit(DataBundle.default)
 
   // Memory Response
-  val data_R = RegInit(0.U(xlen.W))
-  val data_valid_R = RegInit(0.U(xlen.W))
+  val data_R = RegInit(DataBundle.default)
 
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
-  val ReqValid = RegInit(false.B)
+
 
 /*================================================
 =            Latch inputs. Wire up output            =
@@ -64,9 +63,8 @@ class LoadSimpleNode(NumPredMemOps: Int,
 
   io.GepAddr.ready := ~addr_R.valid
   when(io.GepAddr.fire()) {
-    addr_R.valid := io.GepAddr.valid
-    addr_R.data := io.GepAddr.bits.data
-    addr_R.predicate := io.GepAddr.bits.predicate
+    addr_R := io.GepAddr.bits
+    addr_R.valid := true.B
   }
 
   // Wire up Outputs
@@ -74,44 +72,51 @@ class LoadSimpleNode(NumPredMemOps: Int,
     io.Out(i).bits := data_R
   }
 
+  /*============================================
+=            Predicate Evaluation            =
+============================================*/
+
+  val action = addr_R.predicate & Isenable()
+
 /*=============================================
 =            ACTIONS (possibly dangerous)     =
 =============================================*/
 
   // ACTION:  Memory request
-  //  Check if address is valid and predecessors have completed. 
+  //  Check if address is valid and predecessors have completed.
   val mem_req_fire = addr_R.valid & IsPredValid()
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.node := nodeID_R
-
-  // ACTION: Outgoing Address Req -> 
+  io.memReq.valid     := false.B
+  // ACTION: Outgoing Address Req ->
   when((state === s_idle) && (mem_req_fire)) {
     io.memReq.valid := true.B
   }
 
   //  ACTION: Arbitration ready
-  //   <- Incoming memory arbitration  
-  when((state === s_idle) && (io.memReq.ready === true.B)) {
+  //   <- Incoming memory arbitration
+  when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
     state := s_RECEIVING
   }
 
-  // Data detected only one cycle later. 
+  // Data detected only one cycle later.
   // Memory should supply only one cycle after arbitration.
-  //  ACTION:  <- Incoming Data  
+  //  ACTION:  <- Incoming Data
   when(state === s_RECEIVING && io.memResp.valid) {
-    // Set data output registers 
-    data_R := io.memResp.data
+    // Set data output registers
+    data_R.data := io.memResp.data
+    data_R.valid := true.B
     ValidSucc()
     ValidOut()
     // Completion state.
     state := s_Done
   }
 
-/*===========================================
+  /*===========================================
 =            Output Handshaking and Reset   =
 ===========================================*/
 
-  //  ACTION: <- Check Out READY and Successors READY 
+  //  ACTION: <- Check Out READY and Successors READY
   when(state === s_Done) {
     // When successors are complete and outputs are ready you can reset.
     // data already valid and would be latched in this cycle.
@@ -119,15 +124,17 @@ class LoadSimpleNode(NumPredMemOps: Int,
     when(complete) {
       // Clear all the valid states.
       // Reset address
-      addr_R.valid := false.B
-      // Reset data.
-      data_valid_R := false.B
+      addr_R := DataBundle.default
+      // Reset data
+      data_R := DataBundle.default
       // Reset state.
       state := s_idle
-      // indicate completion to predecessors. 
+      // indicate completion to predecessors.
       InvalidPred()
       // Clear all other state.
 
     }
   }
+  printfInfo("State : %x Data_R: %x",state, data_R.data)
+
 }

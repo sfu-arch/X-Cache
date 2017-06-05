@@ -6,10 +6,14 @@ import chisel3.util._
 import config._
 
 /*==============================================================================
-=            Notes 
+=            Notes
            1. AVOID DECLARING IOs, DECLARE BUNDLES. Create IOs within your node.
            2.             =
 ==============================================================================*/
+
+trait ValidT extends Bundle{
+ val valid = Bool()
+}
 
 
 
@@ -24,7 +28,7 @@ class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) {
 
 // ptr is the address returned back to the alloca call.
 // Valid and Data flipped.
-class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) {
+class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
  val ptr    = UInt(xlen.W)
  //val valid  = Bool()
 }
@@ -38,19 +42,18 @@ class ReadReq(implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 //  data : data returned from scratchpad
-class ReadResp(implicit p: Parameters) extends CoreBundle()(p) {
+class ReadResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
  val data  = UInt(xlen.W)
- val valid = Bool()
 }
 
 /**
  * Write request to memory
  * @param p [description]
- * @return [description]
+ * @return  [description]
  */
-// 
+//
 // Word aligned to write to
-// Node performing the write 
+// Node performing the write
 // Mask indicates which bytes to update.
 class WriteReq (implicit p: Parameters) extends CoreBundle()(p) {
   val address = UInt ((xlen-10).W)
@@ -61,9 +64,8 @@ class WriteReq (implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 // Explicitly indicate done flag
-class WriteResp (implicit p: Parameters) extends CoreBundle()(p) {
+class WriteResp (implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val done  =  Bool()
-  val valid =  Bool()
 }
 
 
@@ -76,12 +78,30 @@ class RvIO (implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 /**
+ * @note Implements ordering between dataflow ops.
+ * @param predicate : predicate bit indicating if operations can continue
+ *
+ */
+class AckBundle (implicit p: Parameters) extends CoreBundle()(p) {
+  val token = UInt(tlen.W)
+  val predicate = Bool()
+}
+
+object AckBundle {
+   def default(implicit p: Parameters): AckBundle = {
+    val wire = Wire(new AckBundle)
+    wire.token      := 0.U
+    wire.predicate := false.B
+    wire
+  }
+}
+/**
  * RvAckIO
  * RvAckIO for ordering and serializing ops in the dataflow
  * @note 3 fields
  * ready, valid and token(32.W)
  * @param p : implicit
- * 
+ *
  */
 // TO BE RETIRED
 class RvAckIO (implicit p: Parameters) extends CoreBundle()(p) {
@@ -91,8 +111,6 @@ class RvAckIO (implicit p: Parameters) extends CoreBundle()(p) {
   val ready = Input(Bool())
   val valid = Output(Bool())
 }
-
-
 
 // object RvAckIO {
 //    def default(implicit p: Parameters): RvAckIO = {
@@ -112,19 +130,17 @@ class RelayOutput (implicit p: Parameters) extends CoreBundle()(p){
   val TokenNode = Input(UInt(tlen.W))
 }
 
-
-
 /**
  * Data bundle between dataflow nodes.
- * @note 2 fields 
- *  data : U(xlen.W) 
+ * @note 2 fields
+ *  data : U(xlen.W)
  *  predicate : Bool
  * @param p : implicit
- * @return 
+ * @return
  */
 class DataBundle (implicit p: Parameters) extends CoreBundle()(p){
   // Data packet
-  val data = UInt((xlen.W))
+  val data      = UInt((xlen.W))
   val predicate = Bool()
   val valid     = Bool()
 }
@@ -137,24 +153,4 @@ object DataBundle {
     wire.valid     := false.B
     wire
   }
-}
-
-/**
- * Handshaking IO.
- * @note IO Bundle for Handshaking
- * PredMemOp: Vector of RvAckIOs
- * SuccMemOp: Vector of RvAckIOs
- * Out      : Vector of Outputs
- * @param NumPredMemOps  Number of parents
- * @param NumSuccMemOps  Number of successors
- * @param NumOuts       Number of outputs
- * 
- */
-class HandShakingIO (val NumPredMemOps :Int, val NumSuccMemOps : Int, val NumOuts : Int)(implicit p: Parameters) extends CoreBundle()(p){
- // Predecessor Ordering
- val PredMemOp = Vec(NumPredMemOps, Flipped(new RvAckIO()))
- // Successor Ordering
- val SuccMemOp = Vec(NumSuccMemOps, new RvAckIO())
- // Output IO
- val Out   = Vec(NumOuts, Decoupled(UInt(xlen.W)))
 }

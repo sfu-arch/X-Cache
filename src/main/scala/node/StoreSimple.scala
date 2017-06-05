@@ -18,19 +18,19 @@ import utility.UniformPrintfs
 //////////
 /// DRIVER ///
 /// 1. Memory response only available atleast 1 cycle after request
-//  2. Need registers for pipeline handshaking e.g., _valid, 
-// _ready need to latch ready and valid signals. 
+//  2. Need registers for pipeline handshaking e.g., _valid,
+// _ready need to latch ready and valid signals.
 //////////
 
 class StoreSimpleIO(NumPredMemOps: Int,
   NumSuccMemOps: Int,
-  NumOuts: Int)(implicit p: Parameters) 
+  NumOuts: Int)(implicit p: Parameters)
   extends HandShakingIO(NumPredMemOps, NumSuccMemOps, NumOuts) {
   // Node specific IO
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
   // Store data.
-  val inData = Flipped(Decoupled(UInt(xlen.W)))
+  val inData = Flipped(Decoupled(new DataBundle))
   // Memory request
   val memReq = Decoupled(new WriteReq())
   // Memory response.
@@ -53,7 +53,7 @@ class StoreSimpleNode(NumPredMemOps: Int,
   override lazy val io = IO(new StoreSimpleIO(NumPredMemOps, NumSuccMemOps, NumOuts))
 
   // Printf debugging
-  override val printfSigil = "Store ID: " + ID
+  override val printfSigil = "Store ID: " + ID + " "
 
 /*=============================================
 =            Register declarations            =
@@ -61,36 +61,34 @@ class StoreSimpleNode(NumPredMemOps: Int,
 
   // OP Inputs
   val addr_R = RegInit(DataBundle.default)
+  val data_R = RegInit(DataBundle.default)
 
-  val data_R = RegInit(0.U(xlen.W))
-  val data_valid_R = RegInit(false.B)
 
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
+  val ReqValid = RegInit(false.B)
 /*================================================
 =            Latch inputs. Set output            =
 ================================================*/
 
   //Initialization READY-VALIDs for GepAddr and Predecessor memory ops
   io.GepAddr.ready := ~addr_R.valid
-  io.inData.ready := ~data_valid_R
+  io.inData.ready := ~data_R.valid
 
   // ACTION: GepAddr
   io.GepAddr.ready := ~addr_R.valid
   when(io.GepAddr.fire()) {
-    addr_R.valid := io.GepAddr.valid
-    addr_R.data := io.GepAddr.bits.data
-    addr_R.predicate := io.GepAddr.bits.predicate
+    addr_R := io.GepAddr.bits
+    addr_R.valid := true.B
   }
 
   // ACTION: inData
   when(io.inData.fire()) {
     // Latch the data
     data_R := io.inData.bits
-    // Set data valid
-    data_valid_R := true.B
+    data_R.valid := true.B
   }
 
   // Wire up Outputs
@@ -103,14 +101,15 @@ class StoreSimpleNode(NumPredMemOps: Int,
 =============================================*/
 
   // ACTION:  Memory request
-  //  Check if address is valid and data has arrive and predecessors have completed. 
-  val mem_req_fire = addr_R.valid & IsPredValid() & data_valid_R
+  //  Check if address is valid and data has arrive and predecessors have completed.
+  val mem_req_fire = addr_R.valid & IsPredValid() & data_R.valid
 
-  // Outgoing Address Req -> 
+  // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.node := nodeID_R
-  io.memReq.bits.data := data_R
+  io.memReq.bits.data := data_R.data
   io.memReq.bits.Typ := Typ
+  io.memReq.valid    := false.B
 
   // ACTION: Memory Request
   // -> Send memory request
@@ -119,11 +118,12 @@ class StoreSimpleNode(NumPredMemOps: Int,
   }
 
   //  ACTION: Arbitration ready
-  when((state === s_idle) && (io.memReq.ready === true.B)) {
+  when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
+    // ReqValid := false.B
     state := s_RECEIVING
   }
 
-  //  ACTION:  <- Incoming Data  
+  //  ACTION:  <- Incoming Data
   when(state === s_RECEIVING && io.memResp.valid) {
     // Set output to valid
     ValidSucc()
@@ -135,7 +135,7 @@ class StoreSimpleNode(NumPredMemOps: Int,
 =            Output Handshaking and Reset   =
 ===========================================*/
 
-  //  ACTION: <- Check Out READY and Successors READY 
+  //  ACTION: <- Check Out READY and Successors READY
   when(state === s_Done) {
     // When successors are complete and outputs are ready you can reset.
     // data already valid and would be latched in this cycle.
@@ -144,15 +144,17 @@ class StoreSimpleNode(NumPredMemOps: Int,
     when(complete) {
       // Clear all the valid states.
       // Reset address
-      addr_R.valid := false.B
+      addr_R := DataBundle.default
       // Reset data.
-      data_valid_R := false.B
+      data_R := DataBundle.default
       // Clear all other state
       InvalidPred()
+      ResetSuccAndOutReadys()
       // Reset state.
       state := s_idle
 
     }
   }
-}
+  printfInfo("State : %x Data_R %x  MemReq %x MemResp Valid %x \n", state, data_R.data, io.memReq.valid, io.memResp.valid)
 
+}
