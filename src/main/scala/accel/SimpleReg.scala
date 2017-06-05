@@ -7,20 +7,20 @@ import junctions._
 import config._
 
 /**
-  * The SimpleReg class creates a set of memory mapped configuration and status registers
-  * accessible via a Nasti (AXI4) slave interface.  Each register is the native width of
-  * the Nasti data bus.
+  * The SimpleReg class creates a set of memory mapped configuration and status
+  * registers accessible via a Nasti (AXI4) slave interface.  Each register is
+  * the native width of the Nasti data bus.
   *
-  * The control registers are read/write access.  The content of the control registers
-  * is output on io.ctrl interface.
+  * The control registers are read/write access.  The content of the control
+  * registers is output on io.ctrl interface.
   *
-  * The status registers are read only. The status registers are non-latching and reflect
-  * the live state of the io.stat interface.
+  * The status registers are read only. The status registers are non-latching
+  * and reflect the live state of the io.stat interface.
   *
-  * The registers are mapped into two banks of 'N' size where N is the the nearest power
-  * of two larger than the max(cNum, sNum).  The control register bank is mapped into
-  * the lower address range and the status registers follow.  E.g. for 3 control registers
-  * and 2 status registers:
+  * The registers are mapped into two banks of 'N' size where N is the the
+  * nearest power of two larger than the max(cNum, sNum).  The control
+  * register bank is mapped into the lower address range and the status
+  * registers follow.  E.g. for 3 control registers and 2 status registers:
   *
   * Base Address -> Ctrl Reg 0
   *                 Ctrl Reg 1
@@ -32,9 +32,10 @@ import config._
   *                 Unused
   *
   *
-  * @Note Since the control registers are readable, unused register bits will not be
-  *      automatically removed.  Pack the registers efficiently to save logic.  Unused
-  *      status register bits will automatically be removed from the final logic.
+  * @Note Since the control registers are readable, unused register bits will
+  * not be automatically removed.  Pack the registers efficiently to save
+  * logic.  Unused status register bits will automatically be removed from
+  * the final logic.
   *
   * @param cNum The number of configuration registers
   * @param sNum The number of status registers
@@ -58,8 +59,8 @@ abstract class SimpleRegIO(cNum : Int, sNum: Int)(implicit val p: Parameters) ex
 
 class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleRegIO(cNum,sNum)(p) {
 
-  val ctrlBank = Vec(Seq.fill(cNum) {RegInit(0.U(xlen.W))})
-  val statBank = Vec(Seq.fill(sNum) {RegInit(0.U(xlen.W))})
+  val ctrlBank = RegInit(Vec(Seq.fill(cNum)(0.asUInt(xlen.W))))
+  val statBank = RegInit(Vec(Seq.fill(sNum)(0.asUInt(xlen.W))))
   val wordSelBits = log2Ceil(xlen/8)
   val regSelBits = log2Ceil(math.max(cNum, sNum))
 
@@ -78,11 +79,13 @@ class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleReg
   
   // register bank write
   val doWrite = writeReadyReg && io.nasti.w.valid && writeAddrReadyReg && io.nasti.aw.valid
-  val writeRegSelect = writeAddrReg(regSelBits+wordSelBits, wordSelBits)
-  val writeBankSelect = writeAddrReg(1+regSelBits+wordSelBits, regSelBits+wordSelBits)
+  val writeRegSelect = writeAddrReg(regSelBits+wordSelBits-1, wordSelBits)
+  val writeBankSelect = writeAddrReg(regSelBits+wordSelBits)
 
   // note that we write the entire word (no byte select using write strobe)
-  when (writeBankSelect === 0.U && doWrite) { ctrlBank(writeRegSelect) := io.nasti.w.bits.data }
+  when (writeBankSelect === 0.U && doWrite) { 
+    ctrlBank(writeRegSelect) := io.nasti.w.bits.data 
+  }
   
   // write response generation
   io.nasti.b.bits.resp   := 0.U        // always OK
@@ -112,9 +115,9 @@ class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleReg
   io.nasti.r.bits.id := io.nasti.ar.bits.id
   
   // register bank read
-  val readRegSelect = readAddrReg(regSelBits+wordSelBits, wordSelBits)
-  val readBankSelect = readAddrReg(1+regSelBits+wordSelBits, regSelBits+wordSelBits)
-  val outputReg = RegInit(0.U(32.W))
+  val readRegSelect = readAddrReg(regSelBits+wordSelBits-1, wordSelBits)
+  val readBankSelect = readAddrReg(regSelBits+wordSelBits)
+  val outputReg = RegInit(0.U(xlen.W))
   statBank := io.stat
   when (readBankSelect === 0.U ) {
     outputReg := ctrlBank(readRegSelect)

@@ -9,7 +9,7 @@ import junctions._
 
 class AcceleratorConfig extends Config((site, here, up) => {
     // Core
-    case XLEN => 32
+    case XLEN => 64
     case TLEN => 32
     case GLEN => 16
     case Trace => true
