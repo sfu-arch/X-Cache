@@ -1,5 +1,5 @@
 package arbiters
-
+import scala.math._
 import chisel3._
 import chisel3.util._
 import chisel3.Module
@@ -46,18 +46,17 @@ class  CentralizedStackRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit p:
 
   // Arbiter output latches
   val ReadArbiterReg   = Reg(new ReadReq(), next = ReadReqArbiter.io.out.bits)
-  val ReadInputChosen  = Reg(UInt(width=log2Up(NReads)),next=ReadReqArbiter.io.chosen)
-  val ReadInputValid   = Reg(init  = false.B,next=ReadReqArbiter.io.out.valid)
+  val ReadInputChosen  = RegNext(init = 0.U(max(1,log2Ceil(NReads)).W),next=ReadReqArbiter.io.chosen)
+  val ReadInputValid   = RegNext(init  = false.B,next=ReadReqArbiter.io.out.valid)
 
   // Demux input latches. chosen and valid delayed by 1 cycle for RFile read to return
-  val ReadOutputChosen = Reg(UInt(width=log2Up(NReads)), init = 0.U, next = ReadInputChosen)
-  val ReadOutputValid  = Reg(init = false.B, next = ReadInputValid)
+  val ReadOutputChosen = RegNext(init = 0.U(max(1,log2Ceil(NReads)).W), next = ReadInputChosen)
+  val ReadOutputValid  = RegNext(init = false.B, next = ReadInputValid)
 
   // Connect up Read ins with arbiters
   for (i <- 0 until NReads) {
     ReadReqArbiter.io.in(i) <> io.ReadIn(i)
-    io.ReadOut(i).data    <> ReadRespDeMux.io.outputs(i).data
-    io.ReadOut(i).valid := ReadRespDeMux.io.valids(i)
+    io.ReadOut(i) <> ReadRespDeMux.io.outputs(i)
   }
 
   // Activate arbiter
@@ -79,18 +78,17 @@ class  CentralizedStackRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit p:
 
   // Arbiter output latches
   val WriteArbiterReg   = Reg(new WriteReq(), next = WriteReqArbiter.io.out.bits)
-  val WriteInputChosen  = Reg(UInt(width=log2Up(NWrites)),next=WriteReqArbiter.io.chosen)
-  val WriteInputValid   = Reg(init  = false.B,next=WriteReqArbiter.io.out.valid)
+  val WriteInputChosen  = RegNext(init = 0.U(max(1,log2Ceil(NWrites)).W),next=WriteReqArbiter.io.chosen)
+  val WriteInputValid   = RegNext(init  = false.B,next=WriteReqArbiter.io.out.valid)
 
   // Demux input latches. chosen and valid delayed by 1 cycle for RFile Write to return
-  val WriteOutputChosen = Reg(UInt(width=log2Up(NWrites)), init = 0.U, next = WriteInputChosen)
-  val WriteOutputValid  = Reg(init = false.B, next = WriteInputValid)
+  val WriteOutputChosen = RegNext(init = 0.U(max(1,log2Ceil(NWrites)).W), next = WriteInputChosen)
+  val WriteOutputValid  = RegNext(init = false.B, next = WriteInputValid)
 
   // Connect up Write ins with arbiters
   for (i <- 0 until NWrites) {
     WriteReqArbiter.io.in(i) <> io.WriteIn(i)
-    io.WriteOut(i).done := WriteRespDeMux.io.outputs(i).done
-    io.WriteOut(i).valid := WriteRespDeMux.io.valids(i)
+    io.WriteOut(i) <> WriteRespDeMux.io.outputs(i)
   }
 
   // Activate arbiter.   // Feed write  arbiter output to Regfile input port.

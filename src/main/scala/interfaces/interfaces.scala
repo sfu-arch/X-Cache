@@ -11,6 +11,10 @@ import config._
            2.             =
 ==============================================================================*/
 
+trait ValidT extends Bundle{
+ val valid = Bool()
+}
+
 
 
 
@@ -24,7 +28,7 @@ class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) {
 
 // ptr is the address returned back to the alloca call.
 // Valid and Data flipped.
-class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) {
+class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
  val ptr    = UInt(xlen.W)
  //val valid  = Bool()
 }
@@ -38,9 +42,8 @@ class ReadReq(implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 //  data : data returned from scratchpad
-class ReadResp(implicit p: Parameters) extends CoreBundle()(p) {
+class ReadResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
  val data  = UInt(xlen.W)
- val valid = Bool()
 }
 
 /**
@@ -61,9 +64,8 @@ class WriteReq (implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 // Explicitly indicate done flag
-class WriteResp (implicit p: Parameters) extends CoreBundle()(p) {
+class WriteResp (implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val done  =  Bool()
-  val valid =  Bool()
 }
 
 
