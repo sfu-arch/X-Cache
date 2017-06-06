@@ -22,7 +22,7 @@ class RegFileIO(size: Int)(implicit p: Parameters) extends CoreBundle()(p) {
   val raddr1 = Input(UInt(max(1,log2Ceil(size)).W))
   val rdata1 = Output(UInt(xlen.W))
   val wen    = Input(Bool())
-  val waddr  = Input(UInt(5.W))
+  val waddr  = Input(UInt(max(1,log2Ceil(size)).W))
   val wdata  = Input(UInt(xlen.W))
   val wmask  = Input(UInt((xlen/8).W))
 }
