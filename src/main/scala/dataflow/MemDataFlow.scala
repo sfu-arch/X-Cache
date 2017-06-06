@@ -33,45 +33,59 @@ class MemDataFlow(implicit p: Parameters) extends MemDFIO()(p){
 
   RF.io.WriteIn(0) <> m0.io.memReq
   m0.io.memResp    <> RF.io.WriteOut(0)
-  
+
   RF.io.ReadIn(0)  <> m1.io.memReq
   m1.io.memResp    <> RF.io.ReadOut(0)
-  
+
   RF.io.ReadIn(1)  <> m2.io.memReq
   m2.io.memResp    <> RF.io.ReadOut(1)
-  
+
   // m0.io.SuccOp(0) := true.B
   // m0.io.SuccOp(1) := true.B
   // m1.io.SuccOp(0) := true.B
-  m1.io.PredOp(0).valid := true.B
-  m1.io.SuccOp(0).ready := true.B
-  m0.io.SuccOp(0).ready := true.B
-  m0.io.SuccOp(1).ready := true.B
-  m2.io.PredOp(0).valid := true.B
-  m2.io.PredOp(1).valid := true.B
+  // m1.io.PredOp(0).valid := true.B
+  // m1.io.SuccOp(0).ready := true.B
+  // m0.io.SuccOp(0).ready := true.B
+  // m0.io.SuccOp(1).ready := true.B
+  // m2.io.PredOp(0).valid := true.B
+  // m2.io.PredOp(1).valid := true.B
 
-  // m1.io.PredOp(0) <> m0.io.SuccOp(0)
-  // m2.io.PredOp(0) <> m0.io.SuccOp(1)
-  // m2.io.PredOp(1) <> m1.io.SuccOp(0)
+  m1.io.PredOp(0) <> m0.io.SuccOp(0)
+  m2.io.PredOp(0) <> m0.io.SuccOp(1)
+  m2.io.PredOp(1) <> m1.io.SuccOp(0)
 
-  m0.io.GepAddr.bits.data := 12.U
-  m0.io.inData.bits.data := counter
-  m0.io.GepAddr.valid := true.B
-  m0.io.inData.valid := true.B
-  m0.io.PredOp(0).valid := true.B
-  m0.io.Out(0).ready := true.B
-
-
-  m1.io.GepAddr.bits.data := 12.U
-  m1.io.GepAddr.valid := true.B
-  m1.io.Out(0).ready := true.B
+  m0.io.enable.bits  := true.B
+  m0.io.enable.valid := false.B
+  m1.io.enable.bits  := true.B
+  m1.io.enable.valid := true.B
+  m2.io.enable.bits  := true.B
+  m2.io.enable.valid := true.B
 
 
 
-  m2.io.GepAddr.bits.data := 12.U
-  m2.io.GepAddr.valid := true.B
-  m2.io.SuccOp(0).ready := true.B
-  m2.io.Out(0).ready := true.B
+  m0.io.GepAddr.bits.data      := 12.U
+  m0.io.GepAddr.valid          := true.B
+  m0.io.GepAddr.bits.predicate := true.B
+  m0.io.inData.bits.data       := counter
+  m0.io.inData.valid           := true.B
+  m0.io.inData.bits.predicate  := true.B
+  
+  m0.io.PredOp(0).valid        := true.B
+  m0.io.Out(0).ready           := true.B
+
+
+  m1.io.GepAddr.bits.data      := 12.U
+  m1.io.GepAddr.valid          := true.B
+  m1.io.GepAddr.bits.predicate := true.B
+  m1.io.Out(0).ready           := true.B
+
+
+
+  m2.io.GepAddr.bits.data      := 12.U
+  m2.io.GepAddr.valid          := true.B
+  m2.io.GepAddr.bits.predicate := true.B
+  m2.io.SuccOp(0).ready        := true.B
+  m2.io.Out(0).ready           := true.B
 
 
   //m0.io.memResp.data  := m1.io.ReadOut(0).data

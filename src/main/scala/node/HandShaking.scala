@@ -60,7 +60,10 @@ class HandShaking(val NumPredOps: Int,
   // Extra information
   val token = RegInit(0.U)
   val nodeID_R = RegInit(ID.U)
-  val enable = RegInit(true.B)
+
+  // Enable
+  val enable_R = RegInit(true.B)
+  val enable_valid_R = RegInit(false.B)
 
   // Predecessor Handshaking
   val pred_valid_R = RegInit(Vec(Seq.fill(NumPredOps)(false.B)))
@@ -108,11 +111,24 @@ class HandShaking(val NumPredOps: Int,
     }
   }
 
+  // Wire up enable READY and VALIDs
+  io.enable.ready := ~enable_valid_R
+  when(io.enable.fire()) {
+    enable_valid_R  := io.enable.valid
+    enable_R := io.enable.bits
+  }
+
   /*=====================================
   =            Helper Checks            =
   =====================================*/
-  def Isenable(): Bool = {
-    enable
+  def IsEnable(): Bool = {
+    enable_R
+  }
+  def IsEnableValid(): Bool = {
+    enable_valid_R 
+  }
+  def ResetEnable() = {
+    enable_valid_R := false.B
   }
 
   // Check if Predecssors have fired
@@ -149,6 +165,7 @@ class HandShaking(val NumPredOps: Int,
   }
   def ResetSuccAndOutReadys() = {
     succ_ready_R := Vec(Seq.fill(NumSuccOps) { false.B })
-    out_ready_R := Vec(Seq.fill(NumOuts) { true.B })
+    out_ready_R := Vec(Seq.fill(NumOuts) { false.B })
+    enable_valid_R := false.B
   }
 }

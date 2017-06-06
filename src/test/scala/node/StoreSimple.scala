@@ -13,14 +13,16 @@ import config._
 
 class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
     poke(c.io.GepAddr.valid,false)
+    poke(c.io.enable.valid,false)
     poke(c.io.inData.valid,false)
     poke(c.io.PredOp(0).valid,true)
     poke(c.io.memReq.ready,false)
     poke(c.io.memResp.valid,false)
+
+
     poke(c.io.SuccOp(0).ready,true)
-    poke(c.io.SuccOp(1).ready,false)
-    poke(c.io.Out(0).ready,true)
-    poke(c.io.Out(1).ready,true)
+    poke(c.io.Out(0).ready,false)
+
 
     for (t <- 0 until 20) {
 
@@ -31,10 +33,13 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
       if (peek(c.io.GepAddr.ready) == 1) {
         poke(c.io.GepAddr.valid, true)
         poke(c.io.GepAddr.bits.data, 12)
+        poke(c.io.GepAddr.bits.predicate, true)
         poke(c.io.inData.valid, true)
         poke(c.io.inData.bits.data, t+1)
-        poke(c.io.inData.bits.predicate,false)
+        poke(c.io.inData.bits.predicate,true)
         poke(c.io.inData.bits.valid,true)
+        poke(c.io.enable.bits,true)
+        poke(c.io.enable.valid,true)
       }
 
       if((peek(c.io.memReq.valid) == 1) && (t > 4))
@@ -50,10 +55,6 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
       }
           printf(s"t: ${t}  io.Out: ${peek(c.io.Out(0))} \n")
 
-          if (t == 14)
-        poke(c.io.SuccOp(1).ready,true)
-
-
     }
 
 
@@ -65,7 +66,7 @@ import Constants._
 class StoreSimpleNodeTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Store Node tester" in {
-    chisel3.iotesters.Driver(() => new StoreSimpleNode(NumPredOps=1,NumSuccOps=2,NumOuts=2,Typ=MT_W,ID=1)) { c =>
+    chisel3.iotesters.Driver(() => new StoreSimpleNode(NumPredOps=1,NumSuccOps=1,NumOuts=1,Typ=MT_W,ID=1)) { c =>
       new StoreSimpleNodeTests(c)
     } should be(true)
   }

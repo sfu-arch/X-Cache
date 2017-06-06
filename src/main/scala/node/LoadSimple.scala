@@ -41,7 +41,6 @@ class LoadSimpleNode(NumPredOps: Int,
   // Printf debugging
   override val printfSigil = "Load ID: " + ID
 
-
 /*=============================================
 =            Registers                        =
 =============================================*/
@@ -55,7 +54,12 @@ class LoadSimpleNode(NumPredOps: Int,
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
+/*============================================
+=            Predicate Evaluation            =
+============================================*/
 
+  val predicate = addr_R.predicate & IsEnable()
+  val start = addr_R.valid & IsPredValid & IsEnableValid()
 
 /*================================================
 =            Latch inputs. Wire up output            =
@@ -70,49 +74,51 @@ class LoadSimpleNode(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
+    io.Out(i).bits.predicate := predicate
   }
 
-  /*============================================
-=            Predicate Evaluation            =
-============================================*/
-
-  val action = addr_R.predicate & Isenable()
+  when(start & predicate) {
 
 /*=============================================
 =            ACTIONS (possibly dangerous)     =
 =============================================*/
 
-  // ACTION:  Memory request
-  //  Check if address is valid and predecessors have completed.
-  val mem_req_fire = addr_R.valid & IsPredValid()
-  io.memReq.bits.address := addr_R.data
-  io.memReq.bits.node := nodeID_R
-  io.memReq.valid     := false.B
-  // ACTION: Outgoing Address Req ->
-  when((state === s_idle) && (mem_req_fire)) {
-    io.memReq.valid := true.B
-  }
+    // ACTION:  Memory request
+    //  Check if address is valid and predecessors have completed.
+    val mem_req_fire = addr_R.valid & IsPredValid()
+    io.memReq.bits.address := addr_R.data
+    io.memReq.bits.node := nodeID_R
+    io.memReq.valid := false.B
+    // ACTION: Outgoing Address Req ->
+    when((state === s_idle) && (mem_req_fire)) {
+      io.memReq.valid := true.B
+    }
 
-  //  ACTION: Arbitration ready
-  //   <- Incoming memory arbitration
-  when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
-    state := s_RECEIVING
-  }
+    //  ACTION: Arbitration ready
+    //   <- Incoming memory arbitration
+    when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
+      state := s_RECEIVING
+    }
 
-  // Data detected only one cycle later.
-  // Memory should supply only one cycle after arbitration.
-  //  ACTION:  <- Incoming Data
-  when(state === s_RECEIVING && io.memResp.valid) {
-    // Set data output registers
-    data_R.data := io.memResp.data
-    data_R.valid := true.B
+    // Data detected only one cycle later.
+    // Memory should supply only one cycle after arbitration.
+    //  ACTION:  <- Incoming Data
+    when(state === s_RECEIVING && io.memResp.valid) {
+      // Set data output registers
+      data_R.data := io.memResp.data
+      data_R.valid := true.B
+      ValidSucc()
+      ValidOut()
+      // Completion state.
+      state := s_Done
+    }
+  }.elsewhen(start & ~predicate) {
     ValidSucc()
     ValidOut()
-    // Completion state.
     state := s_Done
   }
-
-  /*===========================================
+/*===========================================
+}
 =            Output Handshaking and Reset   =
 ===========================================*/
 
@@ -128,15 +134,15 @@ class LoadSimpleNode(NumPredOps: Int,
       // Reset data
       data_R := DataBundle.default
       // Reset state.
-      state := s_idle
-      // indicate completion to predecessors.
       InvalidPred()
-      // Clear all other state.
-
+      ResetSuccAndOutReadys()
+      // Reset state.
+      state := s_idle
     }
   }
   printfInfo("State : %x, Out: %x Succ Mem Op [", state, io.Out(0).bits.data)
   for (i <- 0 until NumSuccOps) {
-  printf(p"${io.SuccOp(i).valid},")}
+    printf(p"${io.SuccOp(i).valid},")
+  }
   printf("]")
 }

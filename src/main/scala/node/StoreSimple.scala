@@ -63,12 +63,19 @@ class StoreSimpleNode(NumPredOps: Int,
   val addr_R = RegInit(DataBundle.default)
   val data_R = RegInit(DataBundle.default)
 
-
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
   val ReqValid = RegInit(false.B)
+
+/*============================================
+=            Predicate Evaluation            =
+============================================*/
+
+  val predicate = addr_R.predicate & data_R.predicate & IsEnable()
+  val start  = addr_R.valid & data_R.valid & IsPredValid() & IsEnableValid()
+
 /*================================================
 =            Latch inputs. Set output            =
 ================================================*/
@@ -94,8 +101,10 @@ class StoreSimpleNode(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
+    io.Out(i).bits.predicate := predicate
   }
 
+when (start & predicate) {
 /*=============================================
 =            ACTIONS (possibly dangerous)     =
 =============================================*/
@@ -130,7 +139,11 @@ class StoreSimpleNode(NumPredOps: Int,
     ValidOut()
     state := s_Done
   }
-
+}.elsewhen(start & ~predicate){
+  ValidSucc()
+  ValidOut()
+  state := s_Done
+}
 /*===========================================
 =            Output Handshaking and Reset   =
 ===========================================*/
@@ -155,6 +168,7 @@ class StoreSimpleNode(NumPredOps: Int,
 
     }
   }
+  // Trace detail.
   printfInfo("State : %x, Out: %x Succ Mem Op [", state, io.Out(0).bits.data)
   for (i <- 0 until NumSuccOps) {
   printf(p"${io.SuccOp(i).valid},")}
