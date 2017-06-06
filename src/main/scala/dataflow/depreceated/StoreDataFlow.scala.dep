@@ -27,7 +27,7 @@ abstract class StoreDFIO()(implicit val p: Parameters) extends Module with CoreP
   val io = IO(new Bundle{
 
     val gepAddr   = Flipped(new RvIO())
-    val predMemOp = Flipped(new RvIO())
+    val PredOp = Flipped(new RvIO())
     val inData    = Flipped(new RvIO())
     val memOpAck  = new RvAckIO()
 
@@ -77,20 +77,20 @@ class StoreDataFlow(implicit p: Parameters) extends StoreDFIO()(p){
   m0.io.inData.bits   := inData_bits_reg
 
 
-  //----- predMemOP -----------
-  val predMemOp_ready_reg    = RegInit(false.B)
-  val predMemOp_valid_reg    = RegInit(false.B)
-  val predMemOp_bits_reg     = RegInit(0.U(xlen.W))
+  //----- PredOp -----------
+  val PredOp_ready_reg    = RegInit(false.B)
+  val PredOp_valid_reg    = RegInit(false.B)
+  val PredOp_bits_reg     = RegInit(0.U(xlen.W))
 
 
-  io.predMemOp.ready     := predMemOp_ready_reg
-  predMemOp_ready_reg    := m0.io.predMemOp(0).ready
+  io.PredOp.ready     := PredOp_ready_reg
+  PredOp_ready_reg    := m0.io.PredOp(0).ready
 
-  predMemOp_valid_reg    := io.predMemOp.valid
-  m0.io.predMemOp(0).valid  := predMemOp_valid_reg
+  PredOp_valid_reg    := io.PredOp.valid
+  m0.io.PredOp(0).valid  := PredOp_valid_reg
 
-  predMemOp_bits_reg     := io.predMemOp.bits
-  m0.io.predMemOp(0).bits   := predMemOp_bits_reg
+  PredOp_bits_reg     := io.PredOp.bits
+  m0.io.PredOp(0).bits   := PredOp_bits_reg
 
 
 

@@ -19,10 +19,10 @@ import Constants._
 //  2. Handshaking has to be done with registers.
 //////////
 
-class LoadSimpleIO(NumPredMemOps: Int,
-  NumSuccMemOps: Int,
+class LoadSimpleIO(NumPredOps: Int,
+  NumSuccOps: Int,
   NumOuts: Int)(implicit p: Parameters)
-  extends HandShakingIO(NumPredMemOps, NumSuccMemOps, NumOuts) {
+  extends HandShakingIO(NumPredOps, NumSuccOps, NumOuts) {
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
   // Memory request
@@ -31,13 +31,13 @@ class LoadSimpleIO(NumPredMemOps: Int,
   val memResp = Input(Flipped(new ReadResp()))
 }
 
-class LoadSimpleNode(NumPredMemOps: Int,
-  NumSuccMemOps: Int,
+class LoadSimpleNode(NumPredOps: Int,
+  NumSuccOps: Int,
   NumOuts: Int,
   Typ: UInt = MT_W, ID: Int)(implicit p: Parameters)
-  extends HandShaking(NumPredMemOps, NumSuccMemOps, NumOuts, ID)(p) {
+  extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(p) {
 
-  override lazy val io = IO(new LoadSimpleIO(NumPredMemOps, NumSuccMemOps, NumOuts))
+  override lazy val io = IO(new LoadSimpleIO(NumPredOps, NumSuccOps, NumOuts))
   // Printf debugging
   override val printfSigil = "Load ID: " + ID
 
@@ -136,7 +136,7 @@ class LoadSimpleNode(NumPredMemOps: Int,
     }
   }
   printfInfo("State : %x, Out: %x Succ Mem Op [", state, io.Out(0).bits.data)
-  for (i <- 0 until NumSuccMemOps) {
-  printf(p"${io.SuccMemOp(i).valid},")}
+  for (i <- 0 until NumSuccOps) {
+  printf(p"${io.SuccOp(i).valid},")}
   printf("]")
 }

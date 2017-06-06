@@ -46,18 +46,18 @@ class LoadDFTests(c: LoadDataFlow) extends PeekPokeTester(c) {
 
     //at some clock - send src mem-op is done executing
     if(t > 4) {
-      if (peek(c.io.predMemOp.ready) == 1) {
-        poke(c.io.predMemOp.valid, true)
-        printf("\n --- predmemOP Fired --- \n")
+      if (peek(c.io.PredOp.ready) == 1) {
+        poke(c.io.PredOp.valid, true)
+        printf("\n --- PredOp Fired --- \n")
       }
       else {
-        poke(c.io.predMemOp.valid, false)
+        poke(c.io.PredOp.valid, false)
       }
 
     }
     else {
 
-      poke(c.io.predMemOp.valid, false)
+      poke(c.io.PredOp.valid, false)
     }
 
     step(1)

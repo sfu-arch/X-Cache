@@ -42,7 +42,7 @@ class simpleLoadTester(df: LoadSimpleNode)(implicit p: config.Parameters) extend
   println(s"OUTPUT: ${peek(df.io.Out(0))}")
 
   //Hanshaking Inputs:
-  poke(df.io.PredMemOp(0).valid, true.B)
+  poke(df.io.PredOp(0).valid, true.B)
   poke(df.io.GepAddr.valid, true.B)
   poke(df.io.GepAddr.bits.data, 10.U)
   poke(df.io.GepAddr.bits.predicate, true.B)

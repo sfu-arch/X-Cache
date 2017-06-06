@@ -22,10 +22,10 @@ import utility.UniformPrintfs
 // _ready need to latch ready and valid signals.
 //////////
 
-class StoreSimpleIO(NumPredMemOps: Int,
-  NumSuccMemOps: Int,
+class StoreSimpleIO(NumPredOps: Int,
+  NumSuccOps: Int,
   NumOuts: Int)(implicit p: Parameters)
-  extends HandShakingIO(NumPredMemOps, NumSuccMemOps, NumOuts) {
+  extends HandShakingIO(NumPredOps, NumSuccOps, NumOuts) {
   // Node specific IO
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
@@ -41,16 +41,16 @@ class StoreSimpleIO(NumPredMemOps: Int,
  * @brief Store Node. Implements store operations
  * @details [long description]
  *
- * @param NumPredMemOps [Number of predicate memory operations]
+ * @param NumPredOps [Number of predicate memory operations]
  */
-class StoreSimpleNode(NumPredMemOps: Int,
-  NumSuccMemOps: Int,
+class StoreSimpleNode(NumPredOps: Int,
+  NumSuccOps: Int,
   NumOuts: Int,
   Typ: UInt = MT_W, ID: Int)(implicit p: Parameters)
-  extends HandShaking(NumPredMemOps, NumSuccMemOps, NumOuts, ID)(p) {
+  extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(p) {
 
   // Set up StoreSimpleIO
-  override lazy val io = IO(new StoreSimpleIO(NumPredMemOps, NumSuccMemOps, NumOuts))
+  override lazy val io = IO(new StoreSimpleIO(NumPredOps, NumSuccOps, NumOuts))
 
   // Printf debugging
   override val printfSigil = "Store ID: " + ID + " "
@@ -156,7 +156,7 @@ class StoreSimpleNode(NumPredMemOps: Int,
     }
   }
   printfInfo("State : %x, Out: %x Succ Mem Op [", state, io.Out(0).bits.data)
-  for (i <- 0 until NumSuccMemOps) {
-  printf(p"${io.SuccMemOp(i).valid},")}
+  for (i <- 0 until NumSuccOps) {
+  printf(p"${io.SuccOp(i).valid},")}
   printf("]\n")
 }

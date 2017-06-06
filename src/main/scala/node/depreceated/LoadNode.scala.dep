@@ -23,7 +23,7 @@ abstract class LoadIO(val NumMemOP :Int = 2, val ID :Int = 0)
 
     //Bool data from other memory ops
     // using Handshaking protocols
-    val predMemOp = Vec(NumMemOP, Flipped(Decoupled(UInt(1.W))))
+    val PredOp = Vec(NumMemOP, Flipped(Decoupled(UInt(1.W))))
 
     //Memory interface
     val memReq  = Decoupled(new ReadReq())
@@ -60,9 +60,9 @@ class   LoadNode(implicit p: Parameters) extends LoadIO()(p){
 
   //Initialization
   io.gepAddr.ready      := ~init1_reg
-//  io.predMemOp(0).ready := ~init3_reg
+//  io.PredOp(0).ready := ~init3_reg
   for( w <- 0 until NumMemOP) {
-    io.predMemOp(w).ready := ~init3_reg(w)
+    io.PredOp(w).ready := ~init3_reg(w)
   }
 
   //---------------------------------------------------------------------------------
@@ -81,11 +81,11 @@ class   LoadNode(implicit p: Parameters) extends LoadIO()(p){
   }
 
 
-  //Rules for predMemOp(0)
+  //Rules for PredOp(0)
   for( i <- 0 until NumMemOP) {
-    when(io.predMemOp(i).fire()) {
+    when(io.PredOp(i).fire()) {
 
-      //    printf(p"\n ---------------- predMemOp(0). fire -------------------\n")
+      //    printf(p"\n ---------------- PredOp(0). fire -------------------\n")
       in3_done_reg(i) := true.B
       init3_reg(i) := true.B
     }

@@ -15,8 +15,8 @@ import config._
 
 
 class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends PeekPokeTester(c) {
-  poke(c.io.PredMemOp(0).valid,false.B)
-  poke(c.io.PredMemOp(1).valid,false.B)
+  poke(c.io.PredOp(0).valid,false.B)
+  poke(c.io.PredOp(1).valid,false.B)
   poke(c.io.Gep.valid,false.B)
   poke(c.io.MemReq.ready,false.B)
   poke(c.io.MemReq.valid,false.B)
@@ -40,8 +40,8 @@ class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends Pee
 
       println(s"\n rule1 fired ${peek(c.io.MemReq.valid)} \n")
       poke(c.io.Gep.valid,true.B)
-      poke(c.io.PredMemOp(0).valid,true.B)
-      poke(c.io.PredMemOp(1).valid,true.B)
+      poke(c.io.PredOp(0).valid,true.B)
+      poke(c.io.PredOp(1).valid,true.B)
       poke(c.io.Gep.bits,10.U)
 
   }
@@ -59,7 +59,7 @@ class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends Pee
 class LoadMaskTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
  it should "Load Node tester" in {
-    chisel3.iotesters.Driver(() => new LoadMaskNode(NumPredMemOps = 2)) { c =>
+    chisel3.iotesters.Driver(() => new LoadMaskNode(NumPredOps = 2)) { c =>
       new LoadMaskTests(c)
     } should be(true)
   }

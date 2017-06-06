@@ -19,8 +19,8 @@ abstract class MemDFIO()(implicit val p: Parameters) extends Module with CorePar
 class MemDataFlow(implicit p: Parameters) extends MemDFIO()(p){
 
 
-  //class LoadSimpleNode(NumPredMemOps: Int,
-    //NumSuccMemOps: Int,
+  //class LoadSimpleNode(NumPredOps: Int,
+    //NumSuccOps: Int,
     //NumOuts: Int,
     //Typ: UInt = MT_W, ID: Int)(implicit p: Parameters)
 
@@ -40,25 +40,25 @@ class MemDataFlow(implicit p: Parameters) extends MemDFIO()(p){
   RF.io.ReadIn(1)  <> m2.io.memReq
   m2.io.memResp    <> RF.io.ReadOut(1)
   
-  // m0.io.SuccMemOp(0) := true.B
-  // m0.io.SuccMemOp(1) := true.B
-  // m1.io.SuccMemOp(0) := true.B
-  m1.io.PredMemOp(0).valid := true.B
-  m1.io.SuccMemOp(0).ready := true.B
-  m0.io.SuccMemOp(0).ready := true.B
-  m0.io.SuccMemOp(1).ready := true.B
-  m2.io.PredMemOp(0).valid := true.B
-  m2.io.PredMemOp(1).valid := true.B
+  // m0.io.SuccOp(0) := true.B
+  // m0.io.SuccOp(1) := true.B
+  // m1.io.SuccOp(0) := true.B
+  m1.io.PredOp(0).valid := true.B
+  m1.io.SuccOp(0).ready := true.B
+  m0.io.SuccOp(0).ready := true.B
+  m0.io.SuccOp(1).ready := true.B
+  m2.io.PredOp(0).valid := true.B
+  m2.io.PredOp(1).valid := true.B
 
-  // m1.io.PredMemOp(0) <> m0.io.SuccMemOp(0)
-  // m2.io.PredMemOp(0) <> m0.io.SuccMemOp(1)
-  // m2.io.PredMemOp(1) <> m1.io.SuccMemOp(0)
+  // m1.io.PredOp(0) <> m0.io.SuccOp(0)
+  // m2.io.PredOp(0) <> m0.io.SuccOp(1)
+  // m2.io.PredOp(1) <> m1.io.SuccOp(0)
 
   m0.io.GepAddr.bits.data := 12.U
   m0.io.inData.bits.data := counter
   m0.io.GepAddr.valid := true.B
   m0.io.inData.valid := true.B
-  m0.io.PredMemOp(0).valid := true.B
+  m0.io.PredOp(0).valid := true.B
   m0.io.Out(0).ready := true.B
 
 
@@ -70,13 +70,13 @@ class MemDataFlow(implicit p: Parameters) extends MemDFIO()(p){
 
   m2.io.GepAddr.bits.data := 12.U
   m2.io.GepAddr.valid := true.B
-  m2.io.SuccMemOp(0).ready := true.B
+  m2.io.SuccOp(0).ready := true.B
   m2.io.Out(0).ready := true.B
 
 
   //m0.io.memResp.data  := m1.io.ReadOut(0).data
 
   //m0.io.gepAddr       <> io.gepAddr
-  //m0.io.predMemOp(0)  <> io.predMemOp
+  //m0.io.PredOp(0)  <> io.PredOp
   //io.memOpAck         <> m0.io.memOpAck
 }

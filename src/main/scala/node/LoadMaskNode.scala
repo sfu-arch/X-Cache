@@ -31,7 +31,7 @@ trait MemoryOpConstants
   
 import Constants._
 
-abstract class LoadMaskIO(NumPredMemOps :Int = 1, NumSuccMemOps :Int = 1,
+abstract class LoadMaskIO(NumPredOps :Int = 1, NumSuccOps :Int = 1,
   val ID :Int = 0)(implicit val p: Parameters) extends Module with CoreParams{
 
   val io = IO(new Bundle {
@@ -42,7 +42,7 @@ abstract class LoadMaskIO(NumPredMemOps :Int = 1, NumSuccMemOps :Int = 1,
     // using Handshaking protocols
     // predValid has to be size of atleast 1 and a true has to be wired to it
     // even if no predecessors exist.
-    val PredMemOp = Vec(NumPredMemOps, Flipped(Decoupled(UInt(1.W))))
+    val PredOp = Vec(NumPredOps, Flipped(Decoupled(UInt(1.W))))
 
     //Memory interface
     val MemReq    = Decoupled(new ReadReq())
@@ -51,12 +51,12 @@ abstract class LoadMaskIO(NumPredMemOps :Int = 1, NumSuccMemOps :Int = 1,
     // Data outs.
 
     // Successor Memory Op
-    val SuccMemOp = Vec(NumPredMemOps, Decoupled(UInt(1.W))) 
+    val SuccOp = Vec(NumPredOps, Decoupled(UInt(1.W))) 
     })
 }
 
 
-class LoadMaskNode(NumPredMemOps: Int = 1, NumSuccMemOps: Int = 1)(implicit p: Parameters) extends LoadMaskIO(NumPredMemOps)(p){
+class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Parameters) extends LoadMaskIO(NumPredOps)(p){
 
 
 
@@ -70,8 +70,8 @@ class LoadMaskNode(NumPredMemOps: Int = 1, NumSuccMemOps: Int = 1)(implicit p: P
   val GepValid     = RegInit(false.B)
 
   // predessor memory ops. whether they are valid.
-  val predValid =  RegInit(Vec(Seq.fill(NumPredMemOps)(false.B)))
-  val succValid =  RegInit(Vec(Seq.fill(NumSuccMemOps)(false.B)))
+  val predValid =  RegInit(Vec(Seq.fill(NumPredOps)(false.B)))
+  val succValid =  RegInit(Vec(Seq.fill(NumSuccOps)(false.B)))
 
   // Mask for final ANDing and output of data
   val bitmask  = RegInit(0.U((2*xlen).W))
@@ -91,10 +91,10 @@ class LoadMaskNode(NumPredMemOps: Int = 1, NumSuccMemOps: Int = 1)(implicit p: P
  
 
   // Latch predecessor valid signals.
-  for (i <- 0 until NumPredMemOps) {
-    io.PredMemOp(i).ready := ~predValid(i)
-    when(io.PredMemOp(i).fire()) {
-      predValid(i) := io.PredMemOp(i).valid      
+  for (i <- 0 until NumPredOps) {
+    io.PredOp(i).ready := ~predValid(i)
+    when(io.PredOp(i).fire()) {
+      predValid(i) := io.PredOp(i).valid      
     }
   }
 

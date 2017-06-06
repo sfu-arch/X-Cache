@@ -62,51 +62,51 @@ class StoreNodeTests(c: StoreNode) extends PeekPokeTester(c) {
 
     //at some clock - send src mem-op is done executing
     if (t > 4) {
-      if (peek(c.io.predMemOp(0).ready) == 1) {
-        poke(c.io.predMemOp(0).valid, true)
-        printf(s"\n t:${t} predMemOp(0) Fire \n")
+      if (peek(c.io.PredOp(0).ready) == 1) {
+        poke(c.io.PredOp(0).valid, true)
+        printf(s"\n t:${t} PredOp(0) Fire \n")
       }
       else {
-        poke(c.io.predMemOp(0).valid, false)
+        poke(c.io.PredOp(0).valid, false)
       }
 
     }
     else {
 
-      poke(c.io.predMemOp(0).valid, false)
+      poke(c.io.PredOp(0).valid, false)
     }
 
     //at some clock - send src mem-op is done executing
     if (t == 4) {
-      if (peek(c.io.predMemOp(1).ready) == 1) {
-        poke(c.io.predMemOp(1).valid, true)
-        printf(s"\n t:${t} predMemOp(1) Fire \n")
+      if (peek(c.io.PredOp(1).ready) == 1) {
+        poke(c.io.PredOp(1).valid, true)
+        printf(s"\n t:${t} PredOp(1) Fire \n")
       }
       else {
-        poke(c.io.predMemOp(1).valid, false)
+        poke(c.io.PredOp(1).valid, false)
       }
 
     }
     else {
 
-      poke(c.io.predMemOp(1).valid, false)
+      poke(c.io.PredOp(1).valid, false)
     }
 
 
     //at some clock - send src mem-op is done executing
     if (t > 6) {
-      if (peek(c.io.predMemOp(2).ready) == 1) {
-        poke(c.io.predMemOp(2).valid, true)
-        printf(s"\n t:${t} predMemOp(2) Fire \n")
+      if (peek(c.io.PredOp(2).ready) == 1) {
+        poke(c.io.PredOp(2).valid, true)
+        printf(s"\n t:${t} PredOp(2) Fire \n")
       }
       else {
-        poke(c.io.predMemOp(2).valid, false)
+        poke(c.io.PredOp(2).valid, false)
       }
 
     }
     else {
 
-      poke(c.io.predMemOp(2).valid, false)
+      poke(c.io.PredOp(2).valid, false)
     }
 
 
@@ -134,14 +134,14 @@ class StoreNodeTests(c: StoreNode) extends PeekPokeTester(c) {
     //      s"io.inData.valid: ${peek(c.io.inData.valid)} io.inData.ready: " +
     //      s"${peek(c.io.inData.ready)} \n")
     //
-    //    printf(s"t: ${t} io.predMemOp(0).valid: ${peek(c.io.predMemOp(0).valid)} " +
-    //      s"io.predMemOp(0).ready: " +
-    //      s"${peek(c.io.predMemOp(0).ready)}")
+    //    printf(s"t: ${t} io.PredOp(0).valid: ${peek(c.io.PredOp(0).valid)} " +
+    //      s"io.PredOp(0).ready: " +
+    //      s"${peek(c.io.PredOp(0).ready)}")
 
 
-    if (peek(c.io.predMemOp(0).valid) == 1) {
-      printf(s"t: ${t}  io.predMemOp(0).valid: ${peek(c.io.predMemOp(0).valid)} " +
-        s" io.predMemOp(0).ready: ${peek(c.io.predMemOp(0).ready)} \n ")
+    if (peek(c.io.PredOp(0).valid) == 1) {
+      printf(s"t: ${t}  io.PredOp(0).valid: ${peek(c.io.PredOp(0).valid)} " +
+        s" io.PredOp(0).ready: ${peek(c.io.PredOp(0).ready)} \n ")
     }
     step(1)
   }

@@ -13,12 +13,12 @@ import config._
 
 class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
     poke(c.io.GepAddr.valid,false)
-    poke(c.io.PredMemOp(0).valid,false)
+    poke(c.io.PredOp(0).valid,false)
     poke(c.io.memReq.ready,false)
     poke(c.io.memResp.valid,false)
-    poke(c.io.SuccMemOp(0).ready,true)
+    poke(c.io.SuccOp(0).ready,true)
     poke(c.io.Out(0).ready,true)
-    poke(c.io.SuccMemOp(1).ready,true)
+    poke(c.io.SuccOp(1).ready,true)
     poke(c.io.Out(1).ready,true)
 
 
@@ -79,31 +79,31 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
 
       // //at some clock - send src mem-op is done executing
       // if (t > 4) {
-      //   if (peek(c.io.predMemOp(0).ready) == 1) {
-      //     poke(c.io.predMemOp(0).valid, true)
-      //     printf(s"\n t:${t} predMemOp(0) Fire \n")
+      //   if (peek(c.io.PredOp(0).ready) == 1) {
+      //     poke(c.io.PredOp(0).valid, true)
+      //     printf(s"\n t:${t} PredOp(0) Fire \n")
       //   }
       //   else {
-      //     poke(c.io.predMemOp(0).valid, false)
+      //     poke(c.io.PredOp(0).valid, false)
       //   }
 
       // }
       // else {
-      //   poke(c.io.predMemOp(0).valid, false)
+      //   poke(c.io.PredOp(0).valid, false)
       // }
 
       // if (t > 5) {
-      //   if (peek(c.io.predMemOp(1).ready) == 1) {
-      //     poke(c.io.predMemOp(1).valid, true)
-      //     printf(s"\n t:${t} predMemOp(1) Fire \n")
+      //   if (peek(c.io.PredOp(1).ready) == 1) {
+      //     poke(c.io.PredOp(1).valid, true)
+      //     printf(s"\n t:${t} PredOp(1) Fire \n")
       //   }
       //   else {
-      //     poke(c.io.predMemOp(1).valid, false)
+      //     poke(c.io.PredOp(1).valid, false)
       //   }
 
       // }
       // else {
-      //   poke(c.io.predMemOp(1).valid, false)
+      //   poke(c.io.PredOp(1).valid, false)
       // }
 
 
@@ -125,7 +125,7 @@ import Constants._
 class LoadSimpleNodeTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Load Node tester" in {
-    chisel3.iotesters.Driver(() => new LoadSimpleNode(NumPredMemOps=1,NumSuccMemOps=2,NumOuts=2,Typ=MT_W,ID=1)) { c =>
+    chisel3.iotesters.Driver(() => new LoadSimpleNode(NumPredOps=1,NumSuccOps=2,NumOuts=2,Typ=MT_W,ID=1)) { c =>
       new LoadSimpleNodeTests(c)
     } should be(true)
   }
