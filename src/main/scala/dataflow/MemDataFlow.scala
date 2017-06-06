@@ -55,7 +55,7 @@ class MemDataFlow(implicit p: Parameters) extends MemDFIO()(p){
   m2.io.PredOp(1) <> m1.io.SuccOp(0)
 
   m0.io.enable.bits  := true.B
-  m0.io.enable.valid := false.B
+  m0.io.enable.valid := true.B
   m1.io.enable.bits  := true.B
   m1.io.enable.valid := true.B
   m2.io.enable.bits  := true.B

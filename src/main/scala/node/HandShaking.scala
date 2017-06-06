@@ -163,9 +163,10 @@ class HandShaking(val NumPredOps: Int,
   def InvalidOut() = {
     out_valid_R := Vec(Seq.fill(NumOuts) { false.B })
   }
-  def ResetSuccAndOutReadys() = {
-    succ_ready_R := Vec(Seq.fill(NumSuccOps) { false.B })
-    out_ready_R := Vec(Seq.fill(NumOuts) { false.B })
-    enable_valid_R := false.B
+  def Reset() = {
+  	pred_valid_R   := Vec(Seq.fill(NumPredOps) { false.B })
+  	succ_ready_R   := Vec(Seq.fill(NumSuccOps) { false.B })
+  	out_ready_R    := Vec(Seq.fill(NumOuts) { false.B })
+  	enable_valid_R := false.B
   }
 }

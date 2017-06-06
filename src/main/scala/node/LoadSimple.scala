@@ -134,8 +134,7 @@ class LoadSimpleNode(NumPredOps: Int,
       // Reset data
       data_R := DataBundle.default
       // Reset state.
-      InvalidPred()
-      ResetSuccAndOutReadys()
+      Reset()
       // Reset state.
       state := s_idle
     }

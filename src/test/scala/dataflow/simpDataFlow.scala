@@ -27,7 +27,7 @@ class simpleDFTester(df: MemDataFlow)(implicit p: config.Parameters) extends Pee
   // println(s"Node output: ${peek(df.io.result)}")
   // println(s"Node valid : ${peek(df.io.resultValid)}")
   // println(s" ")
-  for (i <- 0 until 20)
+  for (i <- 0 until 50)
   {
   step(1)
   }
