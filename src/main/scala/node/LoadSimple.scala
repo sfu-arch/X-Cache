@@ -135,6 +135,8 @@ class LoadSimpleNode(NumPredMemOps: Int,
 
     }
   }
-  printfInfo("State : %x Data_R: %x",state, data_R.data)
-
+  printfInfo("State : %x, Out: %x Succ Mem Op [", state, io.Out(0).bits.data)
+  for (i <- 0 until NumSuccMemOps) {
+  printf(p"${io.SuccMemOp(i).valid},")}
+  printf("]")
 }
