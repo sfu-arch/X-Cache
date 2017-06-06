@@ -59,7 +59,8 @@ abstract class SimpleRegIO(cNum : Int, sNum: Int)(implicit val p: Parameters) ex
 
 class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleRegIO(cNum,sNum)(p) {
 
-  val ctrlBank = RegInit(Vec(Seq.fill(cNum)(0.asUInt(xlen.W))))
+  val ctrlBank = RegInit(Vec(Seq.fill(cNum)(Vec(Seq.fill(xlen/8)(0.asUInt(8.W))))))
+//  val ctrlBank = RegInit(Vec(Seq.fill(cNum,xlen/8)(0.asUInt(xlen.W))))
   val statBank = RegInit(Vec(Seq.fill(sNum)(0.asUInt(xlen.W))))
   val wordSelBits = log2Ceil(xlen/8)
   val regSelBits = log2Ceil(math.max(cNum, sNum))
@@ -83,8 +84,14 @@ class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleReg
   val writeBankSelect = writeAddrReg(regSelBits+wordSelBits)
 
   // note that we write the entire word (no byte select using write strobe)
-  when (writeBankSelect === 0.U && doWrite) { 
-    ctrlBank(writeRegSelect) := io.nasti.w.bits.data 
+  when (writeBankSelect === 0.U && doWrite) {
+    for (i <- 0 to xlen/8-1) {
+      when (io.nasti.w.bits.strb(i) === 1.U) {
+	// Reverse the indexing so that we can use Cat() to build
+	// 64 bit words with the correct ordering.
+	ctrlBank(writeRegSelect)(xlen/8-1-i) :=  io.nasti.w.bits.data(8*i+7,8*i)
+      }
+    }
   }
   
   // write response generation
@@ -120,14 +127,15 @@ class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleReg
   val outputReg = RegInit(0.U(xlen.W))
   statBank := io.stat
   when (readBankSelect === 0.U ) {
-    outputReg := ctrlBank(readRegSelect)
+    outputReg := Cat(ctrlBank(readRegSelect))
   } .otherwise {
     outputReg := statBank(readRegSelect)
   }
   io.nasti.r.bits.data := outputReg
 
   // Connect registers to output bus
-  io.ctrl := ctrlBank
-
+  for(i <- 0 to cNum-1) {
+    io.ctrl(i) := Cat(ctrlBank(i))
+  }
 }
 
