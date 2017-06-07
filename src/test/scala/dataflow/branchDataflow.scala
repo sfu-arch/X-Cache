@@ -20,21 +20,18 @@ import control._
 
 
 // Tester.
-class simpleLDTester(df: MemDataFlow)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class simpleBranchTester(df: simpleDataFlow)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
-  // poke(df.io.resultReady, false.B)
-  // println(s" ")
-  // println(s"Node output: ${peek(df.io.result)}")
-  // println(s"Node valid : ${peek(df.io.resultValid)}")
-  // println(s" ")
-  for (i <- 0 until 50)
-  {
+  poke(df.io.resultReady, false.B)
+  println(s" ")
+  println(s"Node output: ${peek(df.io.result)}")
+  println(s"Node valid : ${peek(df.io.resultValid)}")
+  println(s" ")
   step(1)
-  }
-  // poke(df.io.resultReady, true.B)
-  // println(s"Node output: ${peek(df.io.result)}")
-  // println(s"Node valid : ${peek(df.io.resultValid)}")
-  // println(s" ")
+  poke(df.io.resultReady, true.B)
+  println(s"Node output: ${peek(df.io.result)}")
+  println(s"Node valid : ${peek(df.io.resultValid)}")
+  println(s" ")
 
   // println(s"Node output: ${peek(df.io.result)}")
   // println(s"Node valid : ${peek(df.io.resultValid)}")
@@ -117,11 +114,11 @@ class simpleLDTester(df: MemDataFlow)(implicit p: config.Parameters) extends Pee
 
 
 
-class simpleLDTests extends  FlatSpec with Matchers {
+class simpleBranchTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new MemDataFlow()(p)) { c =>
-       new simpleLDTester(c)
+     chisel3.iotesters.Driver(() => new simpleDataFlow()(p)) { c =>
+       new simpleBranchTester(c)
      } should be(true)
    }
  }

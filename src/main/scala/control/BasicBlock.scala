@@ -22,40 +22,41 @@ import util._
  * @param InsVec  Output signal for activating child instructions inside each basic block
  * @param PredicateOut single bit to activate rest of the basic blocks
  */
-abstract class BasicBlockIO(val fanIN : Int, val numInst : Int )(implicit val p: Parameters) extends Module with CoreParams {
+abstract class BasicBlockIO(val fanIN : Int)(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle{
 
     //Input activate signals
     val Active        = Vec(fanIN,   Input(Bool()))
 
     //Activiation signal for all the consequence instructions
-    //val InsVec        = Vec(numInst, Output(Bool()))
-    val InsVec = Output(Bool())
+    val PredicateOut = Output(Bool())
 
     //Preciation output bit
-    val PredicateOUT  = Output(Bool())
+    //val PredicateOUT  = Output(Bool())
   })
 }
 
 
-class BasicBlockCtrl(fanIN : Int = 1, numInst : Int = 1, var BID : Int = 0)(implicit p: Parameters)extends BasicBlockIO(fanIN, numInst)(p){
+class BasicBlockCtrl(fanIN : Int = 1, var BID : Int = 0)
+                    (implicit p: Parameters)extends BasicBlockIO(fanIN)(p){
 
   // Extra information
   val token_reg   = RegInit(0.U(tlen.W))
   val nodeID      = RegInit(BID.U)
 
   //Check whether at least of the fan-ins is activated
-  val fanNumber = io.Active.asUInt.orR
 
-  io.PredicateOUT := fanNumber
+  val fanIN_R = RegNext(next = io.Active, init = Vec(Seq.fill(fanIN){false.B}))
+
+  val fanNumber = fanIN_R.asUInt.orR
+
+  //io.PredicateOUT := fanNumber
 
   //If orR's result is true then activate all the instructions
   when(fanNumber){
-    //io.InsVec := Vec(Seq.fill(numInst){true.B})
-    io.InsVec := true.B
+    io.PredicateOut := true.B
     token_reg := token_reg + 1.U
     }.otherwise{
-      io.InsVec := false.B
-      //io.InsVec := Vec(Seq.fill(numInst){false.B})
+      io.PredicateOut := false.B
     }
 }

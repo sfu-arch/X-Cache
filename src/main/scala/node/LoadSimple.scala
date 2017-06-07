@@ -39,7 +39,7 @@ class LoadSimpleNode(NumPredOps: Int,
 
   override lazy val io = IO(new LoadSimpleIO(NumPredOps, NumSuccOps, NumOuts))
   // Printf debugging
-  override val printfSigil = "Load ID: " + ID
+  override val printfSigil = "Load ID: " + ID + " "
 
 /*=============================================
 =            Registers                        =
@@ -140,8 +140,9 @@ class LoadSimpleNode(NumPredOps: Int,
     }
   }
   printfInfo("State : %x, Out: %x Succ Mem Op [", state, io.Out(0).bits.data)
+
   for (i <- 0 until NumSuccOps) {
     printf(p"${io.SuccOp(i).valid},")
   }
-  printf("]")
+  printf("]\n")
 }
