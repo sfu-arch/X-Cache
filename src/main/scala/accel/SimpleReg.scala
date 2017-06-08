@@ -17,20 +17,21 @@ import config._
   * The status registers are read only. The status registers are non-latching
   * and reflect the live state of the io.stat interface.
   *
-  * The registers are mapped into two banks of 'N' size where N is the the
-  * nearest power of two larger than the max(cNum, sNum).  The control
-  * register bank is mapped into the lower address range and the status
-  * registers follow.  E.g. for 3 control registers and 2 status registers:
+  * The registers are mapped into two banks: control and status.
+  * The control register bank is mapped into the lower address range starting
+  * at the base offset of the accelerator slave interface.  The status registers
+  * are mapped starting at the base address + 2048. E.g. for 3 control registers
+  * and 2 status registers:
   *
   * Base Address -> Ctrl Reg 0
   *                 Ctrl Reg 1
   *                 Ctrl Reg 2
   *                 Unused
-  *                 Stat Reg 0
+  *                 ...
+  * Base+2048    -> Stat Reg 0
   *                 Stat Reg 1
   *                 Unused
   *                 Unused
-  *
   *
   * @Note Since the control registers are readable, unused register bits will
   * not be automatically removed.  Pack the registers efficiently to save
@@ -60,10 +61,10 @@ abstract class SimpleRegIO(cNum : Int, sNum: Int)(implicit val p: Parameters) ex
 class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleRegIO(cNum,sNum)(p) {
 
   val ctrlBank = RegInit(Vec(Seq.fill(cNum)(Vec(Seq.fill(xlen/8)(0.asUInt(8.W))))))
-//  val ctrlBank = RegInit(Vec(Seq.fill(cNum,xlen/8)(0.asUInt(xlen.W))))
   val statBank = RegInit(Vec(Seq.fill(sNum)(0.asUInt(xlen.W))))
   val wordSelBits = log2Ceil(xlen/8)
   val regSelBits = log2Ceil(math.max(cNum, sNum))
+  val bankSelBit = 11
 
   // register for write address channel ready signal
   val writeAddrReadyReg = RegInit(false.B)
@@ -81,7 +82,7 @@ class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleReg
   // register bank write
   val doWrite = writeReadyReg && io.nasti.w.valid && writeAddrReadyReg && io.nasti.aw.valid
   val writeRegSelect = writeAddrReg(regSelBits+wordSelBits-1, wordSelBits)
-  val writeBankSelect = writeAddrReg(regSelBits+wordSelBits)
+  val writeBankSelect = writeAddrReg(bankSelBit)
 
   // note that we write the entire word (no byte select using write strobe)
   when (writeBankSelect === 0.U && doWrite) {
@@ -123,7 +124,7 @@ class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleReg
   
   // register bank read
   val readRegSelect = readAddrReg(regSelBits+wordSelBits-1, wordSelBits)
-  val readBankSelect = readAddrReg(regSelBits+wordSelBits)
+  val readBankSelect = readAddrReg(bankSelBit)
   val outputReg = RegInit(0.U(xlen.W))
   statBank := io.stat
   when (readBankSelect === 0.U ) {

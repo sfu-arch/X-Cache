@@ -9,7 +9,7 @@ import junctions._
 
 class AcceleratorConfig extends Config((site, here, up) => {
     // Core
-    case XLEN => 64
+    case XLEN => 32
     case TLEN => 32
     case GLEN => 16
     case Trace => true
@@ -21,8 +21,8 @@ class AcceleratorConfig extends Config((site, here, up) => {
     // NastiIO
     case NastiKey => new NastiParameters(
       idBits   = 12,
-      dataBits = 64,
-      addrBits = here(XLEN))
+      dataBits = 32,
+      addrBits = 32)
   }
 )
 
