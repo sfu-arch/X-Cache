@@ -38,6 +38,14 @@ object CustomAlu {
 }
 
 
+/**
+ * ALU class supports all the computation operations exist in LLVM
+ * to use the class you only need to specify the length of inputs
+ * and opCode of your alu.
+ *
+ * @param opCode  opcode which indicates ALU operation
+ * @param xlen    bit width of the inputs
+ */
 class ALU (val xlen: Int, val opCode: Int) extends Module {
   val io = IO(new Bundle {
     val in1 = Input(UInt(width=xlen))

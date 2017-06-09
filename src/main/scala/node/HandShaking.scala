@@ -147,6 +147,9 @@ class HandShakingNPS(val NumOuts: Int,
     def IsOutReady(): Bool = {
       out_ready_R.asUInt.andR
     }
+    def IsOutValid(): Bool = {
+      out_valid_R.asUInt.andR
+    }
     def ValidOut() = {
       out_valid_R := Vec(Seq.fill(NumOuts) { true.B })
     }
