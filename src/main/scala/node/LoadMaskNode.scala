@@ -171,106 +171,29 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
 
  }
 
- val ArbiterReady    = RegInit(true.B)
- var prev     = Seq.fill(0){Module(new RRArbiter(UInt(32.W), 4)).io}
- var toplevel = Seq.fill(0){Module(new RRArbiter(UInt(32.W), 4)).io}
- var x = 20
- var y = (x + 4 - 1)/4
- while (y > 0) {
-  val arbiters = Seq.fill(y){Module(new RRArbiter(UInt(32.W),4)).io}
-  if (prev.length != 0)  {
-     // println("Y:"+y +" Prev:"+ prev.length)
-    for (i <- 0 until arbiters.length*4) {
-      if (i < prev.length) {
-        arbiters(i/4).in(i-((i/4)*4)) <>  prev(i).out
-      }else {
-       arbiters(i/4).in(i-((i/4)*4)).valid := false.B
-      }
-    }
+ val MuxEnable = RegInit(false.B)
+ MuxEnable := true.B
+ val Tree = Module(new ArbiterTree(BaseSize = 2, NumOps = 4, UInt(32.W)))
+ val MuxTree = Module(new DeMuxTree(BaseSize = 2, NumOps = 16, new ReadResp()))
+ MuxTree.io.enable := MuxEnable
+ when (Tree.io.out.fire())
+ {
+  MuxEnable := true.B  //MuxEnable
   }
-
-  if (prev.length == 0) {
-    toplevel = arbiters
-    for (i <- 0 until arbiters.length*4) {
-      if (i < x) {
-        arbiters(i/4).in(i-((i/4)*4)).bits :=  i.U;
-        arbiters(i/4).in(i-((i/4)*4)).valid := true.B;
-        }else {
-         arbiters(i/4).in(i-((i/4)*4)).valid := false.B;
-        }
-    }
-  }
-    prev = arbiters
-    if (y == 1) {
-      y = 0
-    } 
-    else {
-      y = (y + 4 -1)/4
-    }
-  }
-
- prev(0).out.ready := ArbiterReady
- when (state === s_Done) 
- {ArbiterReady := false.B}.otherwise{ArbiterReady := true.B}
- // printf(p"Chosen:  ${prev(0).chosen} Out: ${prev(0).out} \n")
-
-
-
- val Tree = Module(new ArbiterTree(BaseSize = 4, NumOps = 2, UInt(32.W)))
- val MuxTree = Module(new DeMuxTree(BaseSize = 32, NumOps = 100, new ReadResp()))
- MuxTree.io.enable := true.B
- MuxTree.io.input.data := 500.U
- MuxTree.io.input.RouteID := 10.U
+ MuxTree.io.input.data := 500.U+Tree.io.out.bits
+ MuxTree.io.input.RouteID := Tree.io.out.bits
 
  Tree.io.in(0).bits := 0.U
  Tree.io.in(0).valid := true.B
  Tree.io.in(1).bits := 1.U
  Tree.io.in(1).valid := true.B
- // Tree.io.in(2).bits := 2.U
- // Tree.io.in(2).valid := true.B
- // Tree.io.in(3).bits := 3.U
- // Tree.io.in(3).valid := false.B
+ Tree.io.in(2).bits := 2.U
+ Tree.io.in(2).valid := true.B
+ Tree.io.in(3).bits := 3.U
+ Tree.io.in(3).valid := true.B
  Tree.io.out.ready := true.B
- // printf(p"Tree Out: ${Tree.io.out} \n")
+ printf(p"Tree Out: ${Tree.io.out} \n")
  printf(p"\n MuxTree Out: ${MuxTree.io.outputs} \n")
-
-
- // val L1_1 = Module(new RRArbiter(UInt(32.W),2))
- // val L1_2 = Module(new RRArbiter(UInt(32.W),2))
- // val L1_3   = Module(new RRArbiter(UInt(32.W),2))
- // val L2_1   = Module(new RRArbiter(UInt(32.W),2))
- // val L2_2   = Module(new RRArbiter(UInt(32.W),2))
- // val L3_1   = Module(new RRArbiter(UInt(32.W),2))
-
-
- // L2_1.io.in(0) <> L1_1.io.out
- // L2_1.io.in(1) <> L1_2.io.out
- // L2_2.io.in(0) <> L1_3.io.out
- // L3_1.io.in(0) <> L2_1.io.out
- // L3_1.io.in(1) <> L2_2.io.out
-
- // L3_1.io.out.ready := true.B
- 
- // L1_1.io.in(0).bits := 1.U
- // L1_1.io.in(0).valid := true.B
- // L1_2.io.in(1).bits := 2.U
- // L1_2.io.in(1).valid := true.B
-
- // L1_2.io.in(0).bits := 3.U
- // L1_2.io.in(0).valid := true.B
- // L1_2.io.in(1).bits := 4.U
- // L1_2.io.in(1).valid := true.B
-
- // L1_3.io.in(0).bits := 5.U
- // L1_3.io.in(0).valid := true.B
-
-
-
- // printf(p"Arbiters Chosen : ${L2_2.io.out},${L2_2.io.chosen}\n")
-
-
-
-
 
   // val y = PriorityEncoder(0x4.U.toBools)
   //  printf("Priority: %x",y)

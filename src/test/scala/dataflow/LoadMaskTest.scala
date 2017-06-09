@@ -25,7 +25,7 @@ class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends Pee
 
 
 
-  for (t <- 0 until 3) {
+  for (t <- 0 until 10) {
     step(1)
     //IF ready is set
     // send address

@@ -15,6 +15,7 @@ trait ValidT extends CoreBundle(){
  val valid = Bool()
 }
 
+
 trait RouteID extends CoreBundle(){
  val RouteID = UInt(glen.W)
 }
@@ -48,6 +49,16 @@ class ReadResp(implicit p: Parameters) extends CoreBundle()(p)
 with ValidT 
 with RouteID {
  val data  = UInt(xlen.W)
+}
+
+object ReadResp {
+   def default(implicit p: Parameters): ReadResp = {
+    val wire = Wire(new ReadResp)
+    wire.data      := 0.U
+    wire.RouteID   := 0.U
+    wire.valid     := false.B
+    wire
+  }
 }
 
 /**
