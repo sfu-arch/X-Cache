@@ -11,11 +11,13 @@ import config._
            2.             =
 ==============================================================================*/
 
-trait ValidT extends Bundle{
+trait ValidT extends CoreBundle(){
  val valid = Bool()
 }
 
-
+trait RouteID extends CoreBundle(){
+ val RouteID = UInt(glen.W)
+}
 
 
 // Maximum of 16MB Stack Array.
@@ -42,7 +44,9 @@ class ReadReq(implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 //  data : data returned from scratchpad
-class ReadResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
+class ReadResp(implicit p: Parameters) extends CoreBundle()(p) 
+with ValidT 
+with RouteID {
  val data  = UInt(xlen.W)
 }
 
@@ -64,7 +68,9 @@ class WriteReq (implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 // Explicitly indicate done flag
-class WriteResp (implicit p: Parameters) extends CoreBundle()(p) with ValidT {
+class WriteResp (implicit p: Parameters) extends CoreBundle()(p) 
+with ValidT 
+with RouteID {
   val done  =  Bool()
 }
 

@@ -24,9 +24,9 @@ class MemDataFlow(implicit p: Parameters) extends MemDFIO()(p){
     //NumOuts: Int,
     //Typ: UInt = MT_W, ID: Int)(implicit p: Parameters)
 
-  val m0 = Module(new StoreSimpleNode(1,2,1,ID=0)(p))
-  val m1 = Module(new LoadSimpleNode(1,1,1,ID=1)(p))
-  val m2 = Module(new LoadSimpleNode(2,1,1,ID=2)(p))
+  val m0 = Module(new StoreSimpleNode(1,2,1,ID=0))
+  val m1 = Module(new LoadSimpleNode(1,1,1,ID=1))
+  val m2 = Module(new LoadSimpleNode(2,1,1,ID=2))
   val counter = RegInit(400.U(32.W))
   counter := counter + 500.U
   val RF = Module(new CentralizedStackRegFile(Size=32, NReads=2, NWrites=1))
