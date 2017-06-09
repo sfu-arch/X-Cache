@@ -16,8 +16,6 @@ trait ValidT extends Bundle{
 }
 
 
-
-
 // Maximum of 16MB Stack Array.
 // alloca indicates id of stack object and returns address back.
 // Can be any of the 4MB regions. Size is over provisioned
@@ -83,18 +81,19 @@ class RvIO (implicit p: Parameters) extends CoreBundle()(p) {
  *
  */
 class AckBundle (implicit p: Parameters) extends CoreBundle()(p) {
-  val token = UInt(tlen.W)
+  val token     = UInt(tlen.W)
   val predicate = Bool()
 }
 
 object AckBundle {
    def default(implicit p: Parameters): AckBundle = {
-    val wire = Wire(new AckBundle)
-    wire.token      := 0.U
+    val wire        = Wire(new AckBundle)
+    wire.token     := 0.U
     wire.predicate := false.B
     wire
   }
 }
+
 /**
  * RvAckIO
  * RvAckIO for ordering and serializing ops in the dataflow
