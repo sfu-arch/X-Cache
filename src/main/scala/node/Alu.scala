@@ -5,34 +5,41 @@ import chisel3.util._
 
 
 /**
- * List of operations which we can support
+ * List of compute operations which we can support
  */
 object AluOpCode {
-  val Add                   = 1.U
-  val Sub                   = 2.U
-  val AND                   = 3.U
-  val OR                    = 4.U
-  val XOR                   = 5.U
-  val XNOR                  = 6.U
-  val ShiftLeft             = 7.U
-  val ShiftRightLogical     = 8.U
-  val ShiftRightArithmetic  = 9.U
-  val SetLessThan           = 10.U
-  val SetLessThanUnsigned   = 11.U
-  val PassA                 = 12.U
-  val PassB                 = 13.U 
+  val Add                   = 1
+  val Sub                   = 2
+  val AND                   = 3
+  val OR                    = 4
+  val XOR                   = 5
+  val XNOR                  = 6
+  val ShiftLeft             = 7
+  val ShiftRightLogical     = 8
+  val ShiftRightArithmetic  = 9
+  val SetLessThan           = 10
+  val SetLessThanUnsigned   = 11
+  val PassA                 = 12
+  val PassB                 = 13 
   val length = 13
 }
 
 
-object CustomAlu {
-  /** @param key a key to search for
-    * @param default a default value if nothing is found
-    * @param mapping a sequence to search of keys and values
-    * @return the value found or the default if not
-    */
-  def apply[S <: UInt, T <: Data] (mapping: (S, T)): T = {
-    var res = mapping._2
+/** @param key a key to search for
+  * @param default a default value if nothing is found
+  * @param mapping a sequence to search of keys and values
+  * @return the value found or the default if not
+  */
+object AluGenerator {
+  def apply[S <: Int, T <: Data] (key: S, mapping: Seq[(S, T)]): T = {
+
+    //Assign default to first element
+    var res= mapping(0)._2
+    for((k,v) <- mapping){
+      if(k == key)
+        res = v
+    }
+
     res
   }
 }
@@ -48,9 +55,9 @@ object CustomAlu {
  */
 class ALU (val xlen: Int, val opCode: Int) extends Module {
   val io = IO(new Bundle {
-    val in1 = Input(UInt(width=xlen))
-    val in2 = Input(UInt(width=xlen))
-    val out = Output(UInt(width=xlen))
+    val in1 = Input(UInt(xlen.W))
+    val in2 = Input(UInt(xlen.W))
+    val out = Output(UInt(xlen.W))
   })
 
 
@@ -72,7 +79,7 @@ class ALU (val xlen: Int, val opCode: Int) extends Module {
       AluOpCode.PassB -> io.in2
     )
 
-  io.out := CustomAlu(aluOp(opCode))
+  io.out := AluGenerator(opCode, aluOp)
 
 }
 
