@@ -54,13 +54,13 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
     
       io.LeftIO.ready := ~left_R.valid
       when(io.LeftIO.fire()) {
-        left_R       := io.LeftIO.bits
+        left_R.data  := io.LeftIO.bits.data
         left_R.valid := true.B
       }
 
       io.RightIO.ready := ~right_R.valid
       when(io.RightIO.fire()) {
-        right_R       := io.RightIO.bits
+        right_R.data  := io.RightIO.bits.data
         right_R.valid := true.B
       }
 
@@ -68,12 +68,12 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
       //Instantiate ALU with selected code
       val FU = Module(new ALU(xlen, opCode))
 
-      FU.io.in1 := left_R
-      FU.io.in2 := right_R
+      FU.io.in1 := left_R.data
+      FU.io.in2 := right_R.data
     
       // Wire up Outputs
       for (i <- 0 until NumOuts) {
-        io.Out(i).bits := data_R
+        io.Out(i).bits.data      := data_R.data
         io.Out(i).bits.predicate := predicate
       }
     
@@ -81,10 +81,10 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
     /*============================================*
      *            ACTIONS (possibly dangerous)    *
      *============================================*/
-    when(start & predicate) {
+    when(start && predicate) {
       data_R := FU.io.out
       ValidOut()
-    }.elsewhen(start & ~predicate) {
+    }.elsewhen(start && ~predicate) {
       ValidOut()
     }
 
@@ -100,6 +100,10 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
       // Reset output
       Reset()
     }
+
+  printfInfo("\n")
+  printf(p"Left; ${left_R}\n")
+  printf(p"Right, ${right_R}\n")
 
 
   }
