@@ -25,7 +25,7 @@ import utility.UniformPrintfs
 class StoreSimpleIO(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int)(implicit p: Parameters)
-  extends HandShakingIO(NumPredOps, NumSuccOps, NumOuts) {
+  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts) {
   // Node specific IO
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))

@@ -22,7 +22,7 @@ import Constants._
 class LoadSimpleIO(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int)(implicit p: Parameters)
-  extends HandShakingIO(NumPredOps, NumSuccOps, NumOuts) {
+  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts) {
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
   // Memory request
