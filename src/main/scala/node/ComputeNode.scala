@@ -40,6 +40,9 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
 
       // Output register
       val data_R = RegInit(0.U(xlen.W))
+
+      val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+      val state  = RegInit(s_idle)
     
     /*==========================================*
      *           Predicate Evaluation           *
@@ -52,39 +55,55 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
      *            Latch inputs. Wire up output       *
      *===============================================*/
     
+      // Predicate register
+      val pred_R = RegInit(init=false.B)
+
+      //printfInfo("start: %x\n", start)
+
       io.LeftIO.ready := ~left_R.valid
       when(io.LeftIO.fire()) {
+        //printfInfo("Latch left data\n")
+        state := s_LATCH
         left_R.data  := io.LeftIO.bits.data
         left_R.valid := true.B
+        left_R.predicate := io.LeftIO.bits.predicate
       }
 
       io.RightIO.ready := ~right_R.valid
       when(io.RightIO.fire()) {
+        //printfInfo("Latch right data\n")
+        state := s_LATCH
         right_R.data  := io.RightIO.bits.data
         right_R.valid := true.B
+        right_R.predicate := io.RightIO.bits.predicate
       }
 
-
-      //Instantiate ALU with selected code
-      val FU = Module(new ALU(xlen, opCode))
-
-      FU.io.in1 := left_R.data
-      FU.io.in2 := right_R.data
-    
       // Wire up Outputs
       for (i <- 0 until NumOuts) {
-        io.Out(i).bits.data      := data_R.data
-        io.Out(i).bits.predicate := predicate
+        io.Out(i).bits.data      := data_R
+        io.Out(i).bits.predicate := pred_R 
       }
     
     
     /*============================================*
      *            ACTIONS (possibly dangerous)    *
      *============================================*/
-    when(start && predicate) {
-      data_R := FU.io.out
+
+      //Instantiate ALU with selected code
+      val FU = Module(new ALU(xlen, opCode))
+
+      FU.io.in1 := left_R.data
+      FU.io.in2 := right_R.data
+
+    when(start & predicate) {
+      state := s_COMPUTE
+      data_R:= FU.io.out
+      pred_R:= predicate
       ValidOut()
-    }.elsewhen(start && ~predicate) {
+    }.elsewhen(start & ~predicate) {
+      //printfInfo("Start sending data to output INVALID\n")
+      state := s_COMPUTE
+      pred_R:= predicate
       ValidOut()
     }
 
@@ -92,18 +111,29 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
      *            Output Handshaking and Reset  *
      *==========================================*/
 
-    val complete = IsOutValid() && IsOutReady()
-    when(complete){
+
+    val out_ready_W = out_ready_R.asUInt.andR
+    val out_valid_W = out_valid_R.asUInt.andR
+
+    //printfInfo("out_ready: %x\n", out_ready_W)
+    //printfInfo("out_valid: %x\n", out_valid_W)
+
+    //printfInfo(" Start restarting\n")
+    when(out_ready_W & out_valid_W){
+      //printfInfo("Start restarting output \n")
       // Reset data
       left_R  := DataBundle.default
       right_R := DataBundle.default
       // Reset output
-      Reset()
+      data_R:= 0.U
+  	  out_ready_R := Vec(Seq.fill(NumOuts) { false.B })
+      //Reset state
+      state := s_idle
+      //Restart predicate bit
+      pred_R := false.B
     }
 
-  printfInfo("\n")
-  printf(p"Left; ${left_R}\n")
-  printf(p"Right, ${right_R}\n")
+  printfInfo(" State: %x\n", state)
 
 
   }

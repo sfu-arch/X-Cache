@@ -32,8 +32,6 @@ import utility.UniformPrintfs
  * @note Type1
  * Handshaking IO with no ordering.
  * @note IO Bundle for Handshaking
- * @param NumPredOps  Number of parents
- * @param NumSuccOps  Number of successors
  * @param NumOuts       Number of outputs
  *
  */
@@ -115,9 +113,10 @@ class HandShakingNPS(val NumOuts: Int,
     // Wire up OUT READYs and VALIDs
     for (i <- 0 until NumOuts) {
       io.Out(i).valid := out_valid_R(i)
+      out_ready_R(i) := io.Out(i).ready
       when(io.Out(i).fire()) {
         // Detecting when to reset
-        out_ready_R(i) := io.Out(i).ready
+        //out_ready_R(i) := io.Out(i).ready
         // Propagating output
         out_valid_R(i) := false.B
       }
