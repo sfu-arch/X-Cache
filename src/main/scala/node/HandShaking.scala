@@ -89,7 +89,7 @@ class HandShakingCtrlIO(val NumOuts: Int)
   (implicit p: Parameters)
     extends CoreBundle()(p) {
       // Output IO
-      val Out    = Vec(NumOuts   , Decoupled(DataBundle.default))
+      val Out    = Vec(NumOuts   , Decoupled(Bool()))
 }
 
 /**
@@ -328,7 +328,7 @@ class HandShakingCtrl(val NumOuts: Int,
   (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
-    lazy val io = IO(new HandShakingIONPS(NumOuts))
+    lazy val io = IO(new HandShakingCtrlIO(NumOuts))
 
     /*=================================
     =            Registers            =
