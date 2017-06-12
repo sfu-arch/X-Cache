@@ -15,14 +15,17 @@ import config._
 
 
 class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends PeekPokeTester(c) {
-  poke(c.io.PredOp(0).valid,false.B)
-  poke(c.io.PredOp(1).valid,false.B)
-  poke(c.io.Gep.valid,false.B)
   poke(c.io.MemReq.ready,false.B)
   poke(c.io.MemReq.valid,false.B)
   poke(c.io.MemResp.valid,false.B)
+  poke(c.io.Gep.valid,true.B)
+  poke(c.io.PredOp(0).valid,true.B)
+  poke(c.io.PredOp(1).valid,true.B)
+  poke(c.io.Gep.bits,10.U)
 
-  for (t <- 0 until 12) {
+
+
+  for (t <- 0 until 10) {
     step(1)
     //IF ready is set
     // send address
@@ -32,17 +35,12 @@ class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends Pee
       poke(c.io.MemReq.ready,true.B)
     } 
 
-    if (t == 6)
+    if (t > 6)
     {
-      poke(c.io.MemResp.bits.data, 0x0eddbeef.U)
+      poke(c.io.MemResp.bits.data, (0xfeddbeeeL).U)
       poke(c.io.MemResp.valid,true.B)
     }
 
-      println(s"\n rule1 fired ${peek(c.io.MemReq.valid)} \n")
-      poke(c.io.Gep.valid,true.B)
-      poke(c.io.PredOp(0).valid,true.B)
-      poke(c.io.PredOp(1).valid,true.B)
-      poke(c.io.Gep.bits,10.U)
 
   }
 }

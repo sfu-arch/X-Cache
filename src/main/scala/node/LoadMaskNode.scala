@@ -1,4 +1,4 @@
-package node
+  package node
 
 /**
   * Created by nvedula on 15/5/17.
@@ -7,9 +7,11 @@ package node
 import chisel3._
 import chisel3.util._
 import org.scalacheck.Prop.False
-
+import scala.util.control.Breaks._
+import arbiters._
 import config._
 import interfaces._
+import muxes._
 
 trait MemoryOpConstants 
 {
@@ -115,7 +117,6 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
   val s_init :: s_SENDING :: s_RECEIVING  :: s_Done :: Nil = Enum(4)
   val state = Reg(init = s_init)
   
-  val data = Fill(4,0xffbe.U)
   val type_word = MT_W
 
 
@@ -135,11 +136,11 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
     // Generate send mask
     // Generate the based load addresses
 
-  }.elsewhen((state === s_SENDING) && (sendbytemask =/= 0.asUInt(64.W))) {
+  }.elsewhen((state === s_SENDING) && (sendbytemask =/= 0.asUInt(16.W))) {
      printf("Requesting data %x", sendbytemask)
      ReqValid := 1.U          
     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
-    when(io.MemReq.ready === true.B) {
+    when(io.MemReq.ready === true.B && ReqValid === 1.U) {
       // Next word to be fetched
       ReqAddress   := ReqAddress + 1.U
       // Shift right by word length on machine. 
@@ -156,7 +157,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
    // Increment ptr to next entry in linebuffer (for next read)
    ptr := ptr + 1.U
    // Check if more data needs to be sent 
-   val y = (sendbytemask === 0.asUInt(64.W))
+   val y = (sendbytemask === 0.asUInt(16.W))
    state := Mux(y,s_Done,s_SENDING)
 
   }.elsewhen (state === s_Done) {
@@ -164,13 +165,41 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
    // AND with bitmask, shift and output data.
    // Set valid to true.
    // 
+   state := s_init
    val z = linebuffer.asUInt
-   printf("linebuffer %x", z)
+   printf("linebuffer %x", (z & bitmask) >> Cat(GepOperand(1,0),UInt(0,3)))
 
  }
 
+ val MuxEnable = RegInit(false.B)
+ MuxEnable := true.B
+ val Tree = Module(new ArbiterTree(BaseSize = 2, NumOps = 4, UInt(32.W)))
+ val MuxTree = Module(new DeMuxTree(BaseSize = 2, NumOps = 16, new ReadResp()))
+ MuxTree.io.enable := MuxEnable
+ when (Tree.io.out.fire())
+ {
+  MuxEnable := true.B  //MuxEnable
+  }
+ MuxTree.io.input.data := 500.U+Tree.io.out.bits
+ MuxTree.io.input.RouteID := Tree.io.out.bits
 
-  printf(p"State: $state, ${io.MemResp.valid}")
+ Tree.io.in(0).bits := 0.U
+ Tree.io.in(0).valid := true.B
+ Tree.io.in(1).bits := 1.U
+ Tree.io.in(1).valid := true.B
+ Tree.io.in(2).bits := 2.U
+ Tree.io.in(2).valid := true.B
+ Tree.io.in(3).bits := 3.U
+ Tree.io.in(3).valid := true.B
+ Tree.io.out.ready := true.B
+ printf(p"Tree Out: ${Tree.io.out} \n")
+ printf(p"\n MuxTree Out: ${MuxTree.io.outputs} \n")
+
+  // val y = PriorityEncoder(0x4.U.toBools)
+  //  printf("Priority: %x",y)
+
+
+  // printf(p"State: $state, ${io.MemResp.valid}")
 }
 
 

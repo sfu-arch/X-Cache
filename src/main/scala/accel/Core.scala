@@ -12,7 +12,7 @@ import config._
   *
   * @param p Project parameters. Only xlen is used to specify register and
   *          data bus width.
-  * 
+  *
   * @note io.ctrl  A control register (from SimpleReg block) to start test
   * @note io.addr  A control register containing the physical address for
   *                the test
@@ -47,18 +47,18 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
   val (s_idle :: s_write_req :: s_write_resp :: s_read_req :: s_read_resp :: s_done :: Nil) = Enum(6)
   val state = RegInit(init = s_idle)
   val stall = !io.cache.resp.valid
- 
+
   switch (state) {
     // Idle
     is (s_idle) {
       req_addr := io.addr(31,0)
       word_count := 0.U
       when (io.ctrl(0) === 1.U) {
-	when(io.ctrl(1) === 1.U) {
-          state := s_read_req
-	} .otherwise {
-          state := s_write_req
-	}
+	       when(io.ctrl(1) === 1.U) {
+           state := s_read_req
+         } .otherwise {
+           state := s_write_req
+         }
       }
     }
     // Write
@@ -66,15 +66,13 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
       state := s_write_resp
     }
     is (s_write_resp) {
-      when(!stall) {
-	word_count := word_count + 1.U
-	req_addr := req_addr + dataBytes.U
+        word_count := word_count + 1.U
+        req_addr := req_addr + dataBytes.U
         when (word_count < io.len) {
           state := s_write_req
         } .otherwise {
           state := s_done
         }
-      }
     }
     // Read
     is (s_read_req) {
@@ -82,8 +80,8 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
     }
     is (s_read_resp) {
       when(!stall) {
-	word_count := word_count + 1.U
-	req_addr := req_addr + dataBytes.U
+        word_count := word_count + 1.U
+        req_addr := req_addr + dataBytes.U
         when (word_count < io.len) {
           state := s_read_req
         } .otherwise {
@@ -98,7 +96,7 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
   }
 
   io.cache.req.valid     := (state === s_read_req || state === s_write_req ||
-			     state === s_read_resp || state === s_write_resp)
+			                       state === s_read_resp || state === s_write_resp)
   io.cache.req.bits.addr := req_addr
   io.cache.req.bits.data := write_data
 
