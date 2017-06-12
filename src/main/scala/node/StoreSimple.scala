@@ -10,8 +10,7 @@ import org.scalacheck.Prop.False
 
 import config._
 import interfaces._
-import Constants._
-
+import utility.Constants._
 import utility.UniformPrintfs
 
 // Design Doc

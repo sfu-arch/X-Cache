@@ -11,6 +11,8 @@ import regfile._
 case object XLEN extends Field[Int]
 case object TLEN extends Field[Int]
 case object GLEN extends Field[Int]
+case object MSHRLEN extends Field[Int]
+
 case object Trace extends Field[Boolean]
 case object BuildRFile extends Field[Parameters => AbstractRFile]
 
@@ -20,6 +22,7 @@ abstract trait CoreParams {
   val xlen = p(XLEN)
   val tlen = p(TLEN)
   val glen = p(GLEN) 
+  val mshrlen = p(mshrlen)
 }
 
 abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundle()(p) with CoreParams
@@ -30,6 +33,7 @@ class MiniConfig extends Config((site, here, up) => {
     case XLEN => 32
     case TLEN => 32
     case GLEN => 16
+    case MSHRLEN => 8
     case Trace => true
     case BuildRFile    => (p: Parameters) => Module(new RFile(32)(p))
 

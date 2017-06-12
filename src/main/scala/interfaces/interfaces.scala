@@ -4,6 +4,7 @@ package interfaces
 import chisel3._
 import chisel3.util._
 import config._
+import utility.Constants._
 
 /*==============================================================================
 =            Notes
@@ -37,10 +38,24 @@ class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
 // Read interface into Scratchpad stack
 //  address: Word aligned address to read from
 //  node : dataflow node id to return data to
-class ReadReq(implicit p: Parameters) extends CoreBundle()(p) {
+class ReadReq(implicit p: Parameters) extends CoreBundle()(p) with RouteID {
  val address  = UInt(xlen.W)
  val node     = UInt(glen.W)
+ val Typ     = UInt (8.W)
+
 }
+
+object ReadReq {
+   def default(implicit p: Parameters): ReadReq = {
+    val wire = Wire(new ReadReq)
+    wire.address   := 0.U
+    wire.node      := 0.U
+    wire.RouteID   := 0.U
+    wire.Typ       := MT_W
+    wire
+  }
+}
+
 
 //  data : data returned from scratchpad
 class ReadResp(implicit p: Parameters) extends CoreBundle()(p) 

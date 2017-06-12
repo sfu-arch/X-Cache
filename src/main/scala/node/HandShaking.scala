@@ -6,6 +6,7 @@ import org.scalacheck.Prop.False
 
 import config._
 import interfaces._
+import utility._
 import Constants._
 import utility.UniformPrintfs
 

@@ -9,7 +9,7 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupl
 import org.scalatest.{Matchers, FlatSpec}
 
 import config._
-
+import utility._
 
 class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
     poke(c.io.GepAddr.valid,false)

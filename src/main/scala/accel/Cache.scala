@@ -7,18 +7,19 @@ import chisel3.util._
 
 import junctions._
 import config._
+import interfaces._
 
 case object NWays extends Field[Int]
 case object NSets extends Field[Int]
 case object CacheBlockBytes extends Field[Int]
 
-class CacheReq(implicit p: Parameters) extends CoreBundle()(p) {
+class CacheReq(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val addr = UInt(xlen.W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen/8).W)
 }
 
-class CacheResp(implicit p: Parameters) extends CoreBundle()(p) {
+class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val data = UInt(xlen.W)
 }
 

@@ -18,12 +18,13 @@ extends Module with CoreParams {
 class ArbiterTree[T <: Data](BaseSize: Int, NumOps: Int, gen: T)(implicit val p: Parameters) 
 extends AbstractArbiterTree(NumOps, gen)(p) {
   require(NumOps > 0)
+  require(isPow2(BaseSize))
   val ArbiterReady = RegInit(true.B)
-  var prev = Seq.fill(0) { Module(new RRArbiter(UInt(32.W), 4)).io }
-  var toplevel = Seq.fill(0) { Module(new RRArbiter(UInt(32.W), 4)).io }
+  var prev = Seq.fill(0) { Module(new RRArbiter(gen,4)).io }
+  var toplevel = Seq.fill(0) { Module(new RRArbiter(gen,4)).io }
   var Arbiters_per_Level = (NumOps + BaseSize - 1) / BaseSize
   while (Arbiters_per_Level > 0) {
-    val arbiters = Seq.fill(Arbiters_per_Level) { Module(new RRArbiter(UInt(32.W), BaseSize)).io }
+    val arbiters = Seq.fill(Arbiters_per_Level) { Module(new RRArbiter(gen, BaseSize)).io }
     if (prev.length != 0) {
       for (i <- 0 until arbiters.length * BaseSize) {
         if (i < prev.length) {
