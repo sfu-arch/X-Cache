@@ -38,7 +38,7 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p){
   val m1 = Module(new CBranchNode(ID = 1))
 
   val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = 1)(p))
-  val m3 = Module(new UBranchNode(ID = 3)(p))
+  //val m3 = Module(new UBranchNode(ID = 3)(p))
 
   //Wiring
   //predicate signal
