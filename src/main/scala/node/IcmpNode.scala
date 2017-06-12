@@ -12,7 +12,7 @@ import interfaces._
 import muxes._
 import util._
 
-class ComputeNodeIO(NumOuts: Int)
+class IcmpNodeIO(NumOuts: Int)
   (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts) {
     // LeftIO: Left input data for computation
@@ -22,7 +22,7 @@ class ComputeNodeIO(NumOuts: Int)
     val RightIO = Flipped(Decoupled(new DataBundle))
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
+class IcmpNode(NumOuts: Int, ID: Int, opCode: Int)
   (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(p) {
     override lazy val io = IO(new ComputeNodeIO(NumOuts))
@@ -90,7 +90,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
      *============================================*/
 
       //Instantiate ALU with selected code
-      val FU = Module(new ALU(xlen, opCode))
+      val FU = Module(new UCMP(xlen, opCode))
 
       FU.io.in1 := left_R.data
       FU.io.in2 := right_R.data
@@ -115,12 +115,8 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
     val out_ready_W = out_ready_R.asUInt.andR
     val out_valid_W = out_valid_R.asUInt.andR
 
-    printf(p"ID: ${ID}, left: ${left_R}\n")
-    printf(p"ID: ${ID}, right: ${right_R}\n")
-    printf(p"ID: ${ID}, enable: ${io.enable}\n")
-    printf(p"ID: ${ID}, out valid: ${out_valid_R}\n")
-    printfInfo("out_ready: %x\n", out_ready_W)
-    printfInfo("out_valid: %x\n", out_valid_W)
+    //printfInfo("out_ready: %x\n", out_ready_W)
+    //printfInfo("out_valid: %x\n", out_valid_W)
 
     //printfInfo(" Start restarting\n")
     when(out_ready_W & out_valid_W){
@@ -137,7 +133,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
       pred_R := false.B
     }
 
-  printfInfo(" State: %x\n", state)
+  //printfInfo(" State: %x\n", state)
 
 
   }

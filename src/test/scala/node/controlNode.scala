@@ -21,7 +21,7 @@ import interfaces._
 
 
 // Tester.
-class controlTester(df: BasicBlock)
+class controlTester(df: BasicBlockNode)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.predicateIn(0).valid, false.B)
@@ -49,6 +49,8 @@ class controlTester(df: BasicBlock)
 
   println(s"Output 0: ${peek(df.io.Out(0))}")
   println(s"Output 1: ${peek(df.io.Out(1))}")
+
+
 //  for( i <- 0 until 10){
 //    println(s"Output 0: ${peek(df.io.Out(0))}")
 //    println(s"Output 1: ${peek(df.io.Out(1))}")
@@ -62,8 +64,8 @@ class controlTester(df: BasicBlock)
 
 class ControlTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new BasicBlock(NumInputs = 1, NumOuts = 2, BID = 0)) {
+  it should "BasicBlock tester" in {
+     chisel3.iotesters.Driver(() => new BasicBlockNode(NumInputs = 1, NumOuts = 2, BID = 0)) {
        c => new controlTester(c)
      } should be(true)
    }

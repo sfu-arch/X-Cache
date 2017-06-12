@@ -21,7 +21,7 @@ class BasicBlockIO(NumInputs: Int, NumOuts: Int)
 
 }
 
-class BasicBlock(NumInputs: Int,
+class BasicBlockNode(NumInputs: Int,
                  NumOuts: Int, BID: Int)
   (implicit p: Parameters)
   extends HandShakingCtrl(NumOuts, BID)(p) {
@@ -50,7 +50,7 @@ class BasicBlock(NumInputs: Int,
      *            Latch inputs. Wire up output       *
      *===============================================*/
     
-      printfInfo("start: %x\n", start)
+      //printfInfo("start: %x\n", start)
 
       val pred_R = RegInit(init=false.B)
 
@@ -107,7 +107,7 @@ class BasicBlock(NumInputs: Int,
       pred_R := false.B
     }
 
-  printfInfo(" State: %x\n", state)
+  //printfInfo(" State: %x\n", state)
 
 
   }
