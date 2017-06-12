@@ -55,7 +55,7 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p){
   m1.io.enable <> b0_entry.io.Out(1)
 
   m2.io.enable <> b1_then.io.Out(0)
-  m3.io.enable <> b1_then.io.Out(1)
+  //m3.io.enable <> b1_then.io.Out(1)
 
   io.pred <> b1_then.io.Out(0)
 
