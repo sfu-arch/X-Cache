@@ -20,6 +20,8 @@ Chisel Project Template
 - StackTests failing 
 - simpleDF tests failing (reason: issue with AllocaIn; male-female connection)
 
+-`TODO`: Fix ready signal for handshaking
+
 ### To Run individual test cases
 ```sh
 sbt 

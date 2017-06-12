@@ -7,31 +7,39 @@ import chisel3.util._
  * List of comparision operations
  */
 object CmpOpCode {
-  val EQ      = 1.U
-  val NE      = 2.U
-  val UGT     = 3.U
-  val UGE     = 4.U
-  val ULT     = 5.U
-  val ULE     = 6.U
-  val SGT     = 7.U
-  val SGE     = 8.U
-  val SLT     = 9.U
-  val SLE     = 10.U
-  val length  = 11.U
+  val EQ      = 1
+  val NE      = 2
+  val UGT     = 3
+  val UGE     = 4
+  val ULT     = 5
+  val ULE     = 6
+  val SGT     = 7
+  val SGE     = 8
+  val SLT     = 9
+  val SLE     = 10
+  val length  = 11
 }
 
 
 /**
  * This way you can not pick our operation correctly!!
+ * @param key a key to search for
+ * @param default a default value if nothing is found
+ * @param mapping a sequence to search of keys and values
+ * @return the value found or the default if not
+ *
  */
-object CustomCMP {
-  /** @param key a key to search for
-    * @param default a default value if nothing is found
-    * @param mapping a sequence to search of keys and values
-    * @return the value found or the default if not
-    */
-  def apply[S <: UInt, T <: Data] (mapping: (S, T)): T = {
-    var res = mapping._2
+object CMPGenerator{
+  def apply[S <: Int, T <: Data] (key : S, mapping: Seq[(S, T)]): T = {
+    
+    //Default value for mapping
+    var res = mapping(0)._2
+
+    for((k,v) <- mapping){
+      if(k == key)
+        res = v
+    }
+
     res
   }
 }
@@ -55,7 +63,7 @@ class UCMP(val xlen: Int, val opCode: Int) extends Module {
       CmpOpCode.ULE -> (io.in1  <= io.in2)
     )
 
-  io.out := CustomCMP(cmpOp(opCode))
+  io.out := CMPGenerator(opCode, cmpOp)
 
 }
 
@@ -76,7 +84,7 @@ class SCMP(val xlen: Int, val opCode: Int) extends Module {
 
     )
 
-  io.out := CustomCMP(aluOp(opCode))
+  io.out := CMPGenerator(opCode, aluOp)
 
 }
 

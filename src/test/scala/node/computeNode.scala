@@ -20,7 +20,7 @@ import interfaces._
 
 
 // Tester.
-class cmpTester(df: IcmpNode)
+class computeTester(df: ComputeNode)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.LeftIO.bits.data, 9.U)
@@ -90,11 +90,11 @@ class cmpTester(df: IcmpNode)
 
 
 
-class cmpTests extends  FlatSpec with Matchers {
+class CompTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new IcmpNode(NumOuts = 1, ID = 0, opCode = 2)) {
-       c => new cmpTester(c)
+     chisel3.iotesters.Driver(() => new ComputeNode(NumOuts = 1, ID = 0, opCode = 1)) {
+       c => new computeTester(c)
      } should be(true)
    }
  }

@@ -118,7 +118,6 @@ class LoadSimpleNode(NumPredOps: Int,
     state := s_Done
   }
 /*===========================================
-}
 =            Output Handshaking and Reset   =
 ===========================================*/
 

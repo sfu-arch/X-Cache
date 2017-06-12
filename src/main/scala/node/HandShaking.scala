@@ -25,6 +25,9 @@ import utility.UniformPrintfs
  *  3)  There is ordering + vectorized input
  *    @note HandshakingIO
  *
+ *  4)  Control handshaking -> merge input and enable
+ *    @note HandshakingCtrl
+ *
  */
 
 
@@ -32,8 +35,6 @@ import utility.UniformPrintfs
  * @note Type1
  * Handshaking IO with no ordering.
  * @note IO Bundle for Handshaking
- * @param NumPredOps  Number of parents
- * @param NumSuccOps  Number of successors
  * @param NumOuts       Number of outputs
  *
  */
@@ -78,6 +79,20 @@ class HandShakingIOPS(val NumPredOps: Int,
 
 
 /**
+ * @note Type4
+ * Handshaking IO with no ordering for control nodes
+ * @note IO Bundle for Handshaking
+ * @param NumOuts       Number of outputs
+ *
+ */
+class HandShakingCtrlIO(val NumOuts: Int)
+  (implicit p: Parameters)
+    extends CoreBundle()(p) {
+      // Output IO
+      val Out    = Vec(NumOuts   , Decoupled(Bool()))
+}
+
+/**
  * @brief Handshaking between data nodes with no ordering.
  * @details Sets up base registers and hand shaking registers
  * @param NumOuts Number of outputs
@@ -115,9 +130,10 @@ class HandShakingNPS(val NumOuts: Int,
     // Wire up OUT READYs and VALIDs
     for (i <- 0 until NumOuts) {
       io.Out(i).valid := out_valid_R(i)
+      out_ready_R(i) := io.Out(i).ready
       when(io.Out(i).fire()) {
         // Detecting when to reset
-        out_ready_R(i) := io.Out(i).ready
+        //out_ready_R(i) := io.Out(i).ready
         // Propagating output
         out_valid_R(i) := false.B
       }
@@ -146,6 +162,9 @@ class HandShakingNPS(val NumOuts: Int,
     // OUTs
     def IsOutReady(): Bool = {
       out_ready_R.asUInt.andR
+    }
+    def IsOutValid(): Bool = {
+      out_valid_R.asUInt.andR
     }
     def ValidOut() = {
       out_valid_R := Vec(Seq.fill(NumOuts) { true.B })
@@ -295,4 +314,68 @@ class HandShaking(val NumPredOps: Int,
   	enable_valid_R := false.B
   }
 }
+
+/**
+ * @brief Handshaking between control nodes.
+ * @details Sets up base registers and hand shaking registers
+ * @param NumOuts Number of outputs
+ * @param BID     Basic block id
+ * @return        Module
+ */
+
+class HandShakingCtrl(val NumOuts: Int,
+  val BID: Int)
+  (implicit val p: Parameters)
+  extends Module with CoreParams with UniformPrintfs {
+
+    lazy val io = IO(new HandShakingCtrlIO(NumOuts))
+
+    /*=================================
+    =            Registers            =
+    =================================*/
+    // Extra information
+    val token     = RegInit(0.U)
+    val nodeID_R  = RegInit(BID.U)
+
+    // Output Handshaking
+    val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
+    val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
+
+
+    /*============================*
+     *           Wiring           *
+     *============================*/
+
+    // Wire up OUT READYs and VALIDs
+    for (i <- 0 until NumOuts) {
+      io.Out(i).valid := out_valid_R(i)
+      out_ready_R(i) := io.Out(i).ready
+      when(io.Out(i).fire()) {
+        // Propagating output
+        out_valid_R(i) := false.B
+      }
+    }
+
+    /*===================================*
+     *            Helper Checks          *
+     *===================================*/
+    // OUTs
+    def IsOutReady(): Bool = {
+      out_ready_R.asUInt.andR
+    }
+    def IsOutValid(): Bool = {
+      out_valid_R.asUInt.andR
+    }
+    def ValidOut() = {
+      out_valid_R := Vec(Seq.fill(NumOuts) { true.B })
+    }
+    def InvalidOut() = {
+      out_valid_R := Vec(Seq.fill(NumOuts) { false.B })
+    }
+    def Reset() = {
+    	out_ready_R    := Vec(Seq.fill(NumOuts) { false.B })
+    }
+}
+
+
 
