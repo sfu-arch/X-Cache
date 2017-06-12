@@ -22,7 +22,7 @@ abstract trait CoreParams {
   val xlen = p(XLEN)
   val tlen = p(TLEN)
   val glen = p(GLEN) 
-  val mshrlen = p(mshrlen)
+  val mshrlen = p(MSHRLEN)
 }
 
 abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundle()(p) with CoreParams

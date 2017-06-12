@@ -68,103 +68,103 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p){
   val s_idle :: s_Input :: s_SENDING :: s_RECEIVING  :: s_Done :: Nil = Enum(5)
   val state = RegInit(s_idle)
 
-  // Check if entry free. 
-  io.free := (state === s_idle) 
-  io.NodeReq.ready := (state === s_idle)
-  io.done := (state === s_Done)
-  when(io.NodeReq.fire()) {
-    request_R := io.NodeReq.bits
-    // Calculate things to start the sending process
-    // Base word address
-    ReqAddress     := (io.NodeReq.bits.address >> log2Ceil(xlen_bytes)) << log2Ceil(xlen_bytes)
-    // Bitmask of data  for final ANDing
-    bitmask        := ReadBitMask(io.NodeReq.Typ,io.NodeReq.address)
-    // Bytemask of bytes within words that need to be fetched.
-    sendbytemask   := ReadByteMask(io.NodeReq.Typ,io.NodeReq.address)
-    // Next State
-    state := s_SENDING
-  }
+  // // Check if entry free. 
+  // io.free := (state === s_idle) 
+  // io.NodeReq.ready := (state === s_idle)
+  // io.done := (state === s_Done)
+  // when(io.NodeReq.fire()) {
+  //   request_R := io.NodeReq.bits
+  //   // Calculate things to start the sending process
+  //   // Base word address
+  //   ReqAddress     := (io.NodeReq.bits.address >> log2Ceil(xlen_bytes)) << log2Ceil(xlen_bytes)
+  //   // Bitmask of data  for final ANDing
+  //   bitmask        := ReadBitMask(io.NodeReq.Typ,io.NodeReq.address)
+  //   // Bytemask of bytes within words that need to be fetched.
+  //   sendbytemask   := ReadByteMask(io.NodeReq.Typ,io.NodeReq.address)
+  //   // Next State
+  //   state := s_SENDING
+  // }
 
-  printf("\nMSHR %d: Inputs are Ready %d", ID, request_R.address)  
-  // when(start && state === s_idle) 
-  // {
+  // printf("\nMSHR %d: Inputs are Ready %d", ID, request_R.address)  
+  // // when(start && state === s_idle) 
+  // // {
 
-    printf(p"State : $state")
-  //   // bitmask        := ReadBitMask(type_word,GepOperand)
-  //   // Two masks needed for keeping track of what is sent and received. 
-  //   // Could also use count. Going from mask to word count is difficult
-  //   // We simply use shifts in the mask to indicate if we have requested all words required
-  //   // sendbytemask   := ReadByteMask(type_word,GepOperand)
+  //   printf(p"State : $state")
+  // //   // bitmask        := ReadBitMask(type_word,GepOperand)
+  // //   // Two masks needed for keeping track of what is sent and received. 
+  // //   // Could also use count. Going from mask to word count is difficult
+  // //   // We simply use shifts in the mask to indicate if we have requested all words required
+  // //   // sendbytemask   := ReadByteMask(type_word,GepOperand)
   
-  //    state      := s_SENDING
+  // //    state      := s_SENDING
+  // //   // Set the state to send
+  // //   // Generate send mask
+  // //   // Generate the based load addresses
+
+  // // }
+  // io.output.valid := 0.U
+  // io.MemReq.valid := 0.U
+
+  // when((state === s_SENDING) && (sendbytemask =/= 0.asUInt(16.W))) {
+  //    printf("Requesting data %x", sendbytemask)
+  //    io.MemReq.valid := 1.U          
+  //    // io.MemReq.ready means arbitration succeeded and memory op has been passed on
+  //    when(io.MemReq.fire()) {
+  //     // Next word to be fetched
+  //     ReqAddress   := ReqAddress + 1.U
+  //     // Shift right by word length on machine. 
+  //     sendbytemask := sendbytemask >> (xlen/8) 
+  //     // Move to receiving data
+  //     state := s_RECEIVING
+  //   }
+  // }
+
+  // when ((state === s_RECEIVING) && (io.MemResp.valid === true.B)) {
+  //  // Received data; concatenate into linebuffer 
+  //  linebuffer(ptr) := io.MemResp.bits.data
+  //  // Increment ptr to next entry in linebuffer (for next read)
+  //  ptr := ptr + 1.U
+  //  // Check if more data needs to be sent 
+  //  val y = (sendbytemask === 0.asUInt(16.W))
+  //  state := Mux(y,s_Done,s_SENDING)
+  // }
+
+
+  // when(state === s_SENDING) 
+  // {
+    
+    
   //   // Set the state to send
   //   // Generate send mask
   //   // Generate the based load addresses
 
+  // }.elsewhen((state === s_SENDING) && (sendbytemask =/= 0.asUInt(16.W))) {
+
+
+
   // }
-  io.output.valid := 0.U
-  io.MemReq.valid := 0.U
+  // when ((state === s_SENDING) && (count =/= 0.U))
+  // {
+  //   count := count - 1.U
+  // }
 
-  when((state === s_SENDING) && (sendbytemask =/= 0.asUInt(16.W))) {
-     printf("Requesting data %x", sendbytemask)
-     io.MemReq.valid := 1.U          
-     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
-     when(io.MemReq.fire()) {
-      // Next word to be fetched
-      ReqAddress   := ReqAddress + 1.U
-      // Shift right by word length on machine. 
-      sendbytemask := sendbytemask >> (xlen/8) 
-      // Move to receiving data
-      state := s_RECEIVING
-    }
-  }
-
-  when ((state === s_RECEIVING) && (io.MemResp.valid === true.B)) {
-   // Received data; concatenate into linebuffer 
-   linebuffer(ptr) := io.MemResp.bits.data
-   // Increment ptr to next entry in linebuffer (for next read)
-   ptr := ptr + 1.U
-   // Check if more data needs to be sent 
-   val y = (sendbytemask === 0.asUInt(16.W))
-   state := Mux(y,s_Done,s_SENDING)
-  }
-
-
-  when(state === s_SENDING) 
-  {
-    
-    
-    // Set the state to send
-    // Generate send mask
-    // Generate the based load addresses
-
-  }.elsewhen((state === s_SENDING) && (sendbytemask =/= 0.asUInt(16.W))) {
-
-
-
-  }
-  when ((state === s_SENDING) && (count =/= 0.U))
-  {
-    count := count - 1.U
-  }
-
-  when ((state === s_SENDING) && (count === 0.U))
-  {
-    state := s_Done
-  }
-  when (state === s_Done)
-  {
-    io.output.valid := 1.U
-    io.output.bits.data := request_R.address
-    io.output.bits.RouteID := request_R.RouteID
-    io.output.bits.valid   := true.B
-    // request_R.address
-    when (io.output.fire())
-    {
-      state := s_idle
-      count := 5.U
-    }
-  }
+  // when ((state === s_SENDING) && (count === 0.U))
+  // {
+  //   state := s_Done
+  // }
+  // when (state === s_Done)
+  // {
+  //   io.output.valid := 1.U
+  //   io.output.bits.data := request_R.address
+  //   io.output.bits.RouteID := request_R.RouteID
+  //   io.output.bits.valid   := true.B
+  //   // request_R.address
+  //   when (io.output.fire())
+  //   {
+  //     state := s_idle
+  //     count := 5.U
+  //   }
+  // }
 
 }
   // abstract class ReadMMU(Nops: Int)(implicit p: Parameters) 
@@ -204,7 +204,7 @@ class MemoryController()(implicit val p: Parameters) extends
    // Memory request
 
    // Memory response Demux
-   val memresp_demux = Module(new Demux(MemResp, MLP))
+   // val memresp_demux = Module(new Demux(MemResp, MLP))
 
 
 
