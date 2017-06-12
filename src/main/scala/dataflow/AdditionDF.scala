@@ -31,14 +31,14 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p){
   //BasicBlock
   val b0_entry = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 2, BID = 0)(p))
   val b1_then  = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 1, BID = 1)(p))
-//  val b2_end   = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 2, BID = 2)(p))
+  val b2_end   = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 2, BID = 2)(p))
 
   //Compute
   val m0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = 1)(p))
   val m1 = Module(new CBranchNode(ID = 1))
 
   val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = 1)(p))
-//  val m3 = Module(new UBranchNode(ID = 3)(p))
+  val m3 = Module(new UBranchNode(ID = 3)(p))
 
   //Wiring
   //predicate signal
@@ -55,6 +55,7 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p){
   m1.io.enable <> b0_entry.io.Out(1)
 
   m2.io.enable <> b1_then.io.Out(0)
+  m3.io.enable <> b1_then.io.Out(1)
 
   io.pred <> b1_then.io.Out(0)
 
@@ -65,7 +66,7 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p){
 
 
   //Constant
-  m0.io.RightIO.bits.data       := 10.U
+  m0.io.RightIO.bits.data       := 9.U
   m0.io.RightIO.bits.predicate  := true.B
   m0.io.RightIO.bits.valid      := true.B
   m0.io.RightIO.valid           := true.B
