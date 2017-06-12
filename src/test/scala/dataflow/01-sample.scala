@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package node
+package dataflow
 
 import chisel3._
 import chisel3.util._
@@ -20,41 +20,49 @@ import interfaces._
 
 
 // Tester.
-class cmpTester(df: IcmpNode)
+class sample01Tester(df: AddDF)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
-  poke(df.io.LeftIO.bits.data, 9.U)
-  poke(df.io.LeftIO.valid, false.B)
-  poke(df.io.LeftIO.bits.predicate, false.B)
+  poke(df.io.Data0.bits.data, 10.U)
+  poke(df.io.Data0.valid, false.B)
+  poke(df.io.Data0.bits.predicate, false.B)
 
-  poke(df.io.RightIO.bits.data, 5.U)
-  poke(df.io.RightIO.valid, false.B)
-  poke(df.io.RightIO.bits.predicate, false.B)
+  //poke(df.io.RightIO.bits.data, 5.U)
+  //poke(df.io.RightIO.valid, false.B)
+  //poke(df.io.RightIO.bits.predicate, false.B)
 
-  poke(df.io.enable.bits , false.B)
-  poke(df.io.enable.valid, false.B)
-  poke(df.io.Out(0).ready, false.B)
-  println(s"Output: ${peek(df.io.Out(0))}\n")
+  //poke(df.io.enable.bits , false.B)
+  //poke(df.io.enable.valid, false.B)
+  //poke(df.io.result.ready, false.B)
+  
+  println(s"Output: ${peek(df.io.result)}\n")
+  println(s"Pred  : ${peek(df.io.pred)}\n")
 
 
   step(1)
 
-  poke(df.io.enable.bits , true.B)
-  poke(df.io.enable.valid, true.B)
-  poke(df.io.Out(0).ready, true.B)
+  poke(df.io.Data0.valid, true.B)
+  poke(df.io.Data0.bits.predicate, true.B)
+  poke(df.io.result.ready, true.B)
 
 
-  poke(df.io.LeftIO.valid, true.B)
-  poke(df.io.RightIO.valid, true.B)
-  poke(df.io.LeftIO.bits.predicate, true.B)
-  poke(df.io.RightIO.bits.predicate, true.B)
+  //poke(df.io.enable.bits , true.B)
+  //poke(df.io.enable.valid, true.B)
+  //poke(df.io.Out(0).ready, true.B)
 
-  println(s"Output: ${peek(df.io.Out(0))}\n")
-  step(1)
+
+  //poke(df.io.LeftIO.valid, true.B)
+  //poke(df.io.RightIO.valid, true.B)
+  //poke(df.io.LeftIO.bits.predicate, true.B)
+  //poke(df.io.RightIO.bits.predicate, true.B)
+
+  //println(s"Output: ${peek(df.io.Out(0))}\n")
+  //step(1)
 
 
   for( i <- 0 until 10){
-    println(s"Output: ${peek(df.io.Out(0))}\n")
+    println(s"Output: ${peek(df.io.result)}\n")
+    println(s"Pred  : ${peek(df.io.pred)}\n")
     step(1)
   }
 //  poke(df.io.CmpIn.valid, false.B)
@@ -90,11 +98,11 @@ class cmpTester(df: IcmpNode)
 
 
 
-class cmpTests extends  FlatSpec with Matchers {
+class Sample01Tests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new IcmpNode(NumOuts = 1, ID = 0, opCode = 2)) {
-       c => new cmpTester(c)
+  it should "Dataflow sample 01 tester" in {
+     chisel3.iotesters.Driver(() => new AddDF()(p)) {
+       c => new sample01Tester(c)
      } should be(true)
    }
  }

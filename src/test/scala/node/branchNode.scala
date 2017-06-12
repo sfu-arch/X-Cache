@@ -22,34 +22,37 @@ import interfaces._
 // Tester.
 class BranchTester(df: CBranchNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
-  poke(df.io.CmpIn.valid, false.B)
-  poke(df.io.CmpIn.bits, false.B)
+  poke(df.io.CmpIO.bits.data, 9.U)
+  poke(df.io.CmpIO.valid, false.B)
+  poke(df.io.CmpIO.bits.predicate, false.B)
 
-  println(s"Node input : ${peek(df.io.CmpIn)}")
-  println(s"Node output: ${peek(df.io.OutIO)}")
+  poke(df.io.enable.bits , false.B)
+  poke(df.io.enable.valid, false.B)
+  poke(df.io.Out(0).ready, false.B)
+  println(s"Output: ${peek(df.io.Out(0))}\n")
+  println(s"Output: ${peek(df.io.Out(1))}\n")
 
-  step(1)
-
-  poke(df.io.CmpIn.bits, true.B)
-  println(s"Node input : ${peek(df.io.CmpIn)}")
-  println(s"Node output: ${peek(df.io.OutIO)}")
-
-  poke(df.io.CmpIn.valid, true.B)
-  step(1)
-  println(s"Node input : ${peek(df.io.CmpIn)}")
-  println(s"Node output: ${peek(df.io.OutIO)}")
 
   step(1)
-  println(s"Node input : ${peek(df.io.CmpIn)}")
-  println(s"Node output: ${peek(df.io.OutIO)}")
+
+  poke(df.io.enable.bits , true.B)
+  poke(df.io.enable.valid, true.B)
+  poke(df.io.Out(0).ready, true.B)
+
+
+  poke(df.io.CmpIO.valid, true.B)
+  poke(df.io.CmpIO.bits.predicate, true.B)
+
+  println(s"Output: ${peek(df.io.Out(0))}\n")
+  println(s"Output: ${peek(df.io.Out(1))}\n")
   step(1)
 
-  poke(df.io.CmpIn.bits, false.B)
-  println(s"Node input : ${peek(df.io.CmpIn)}")
-  println(s"Node output: ${peek(df.io.OutIO)}")
-  step(1)
-  println(s"Node input : ${peek(df.io.CmpIn)}")
-  println(s"Node output: ${peek(df.io.OutIO)}")
+
+  for( i <- 0 until 10){
+    println(s"Output: ${peek(df.io.Out(0))}\n")
+    println(s"Output: ${peek(df.io.Out(1))}\n")
+    step(1)
+  }
  }
 
 
@@ -58,8 +61,8 @@ class BranchTester(df: CBranchNode)(implicit p: config.Parameters) extends PeekP
 class BrTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new CBranchNode(0)(p)) { c =>
-       new BranchTester(c)
+     chisel3.iotesters.Driver(() => new CBranchNode(ID = 0)) {
+       c => new BranchTester(c)
      } should be(true)
    }
  }
