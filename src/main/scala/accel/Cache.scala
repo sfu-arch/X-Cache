@@ -29,9 +29,10 @@ class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
   val resp  = Valid(new CacheResp)
 }
 
-class CacheModuleIO(implicit p: Parameters) extends ParameterizedBundle()(p) {
+class CacheModuleIO(implicit p: Parameters) extends CoreBundle()(p) {
   val cpu   = new CacheIO
   val nasti = new NastiIO
+  val stat  = Output(UInt(xlen.W))
 }
 
 trait CacheParams extends CoreParams with HasNastiParameters {
@@ -133,6 +134,9 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   // read data
   io.nasti.r.ready := state === s_REFILL
   when(io.nasti.r.fire()) { refill_buf(read_count) := io.nasti.r.bits.data }
+
+  // Dump state
+  io.stat := state.asUInt()
 
   // write addr
   io.nasti.aw.bits := NastiWriteAddressChannel(

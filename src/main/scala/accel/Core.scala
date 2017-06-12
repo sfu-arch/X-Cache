@@ -48,17 +48,20 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
   val state = RegInit(init = s_idle)
   val stall = !io.cache.resp.valid
 
+  val start_reg = RegNext(init=false.B,next=io.ctrl(0));
+
   switch (state) {
     // Idle
     is (s_idle) {
       req_addr := io.addr(31,0)
       word_count := 0.U
-      when (io.ctrl(0) === 1.U) {
-	       when(io.ctrl(1) === 1.U) {
-           state := s_read_req
-         } .otherwise {
-           state := s_write_req
-         }
+      // Start on a rising edge of start bit
+      when (io.ctrl(0) === true.B && start_reg === false.B) {
+        when(io.ctrl(1) === true.B) {
+          state := s_read_req
+        } .otherwise {
+          state := s_write_req
+        }
       }
     }
     // Write
@@ -66,13 +69,13 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
       state := s_write_resp
     }
     is (s_write_resp) {
-        word_count := word_count + 1.U
-        req_addr := req_addr + dataBytes.U
-        when (word_count < io.len) {
-          state := s_write_req
-        } .otherwise {
-          state := s_done
-        }
+      word_count := word_count + 1.U
+      req_addr := req_addr + dataBytes.U
+      when (word_count < io.len) {
+        state := s_write_req
+      } .otherwise {
+        state := s_done
+      }
     }
     // Read
     is (s_read_req) {
@@ -96,7 +99,7 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
   }
 
   io.cache.req.valid     := (state === s_read_req || state === s_write_req ||
-			                       state === s_read_resp || state === s_write_resp)
+                             state === s_read_resp || state === s_write_resp)
   io.cache.req.bits.addr := req_addr
   io.cache.req.bits.data := write_data
 
@@ -113,6 +116,5 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
 //  val bitshift = Cat(byteshift, 0.U(3.W))
   val read_data = io.cache.resp.bits.data
 
-  assert(!io.cache.resp.valid || read_data === expected_data,
-    s"MemTest Core got wrong data")
+  assert(!io.cache.resp.valid || read_data === expected_data, s"MemTest Core got wrong data")
 }
