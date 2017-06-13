@@ -69,12 +69,14 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
       state := s_write_resp
     }
     is (s_write_resp) {
-      word_count := word_count + 1.U
-      req_addr := req_addr + dataBytes.U
-      when (word_count < io.len) {
-        state := s_write_req
-      } .otherwise {
-        state := s_done
+      when(!stall) {
+	word_count := word_count + 1.U
+	req_addr := req_addr + dataBytes.U
+	when (word_count < io.len) {
+          state := s_write_req
+	} .otherwise {
+          state := s_done
+	}
       }
     }
     // Read
