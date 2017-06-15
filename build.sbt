@@ -1,4 +1,6 @@
-name := "chisel-module-template"
+name := "dataflow-lib"
+
+organization := "sfu-arch"
 
 version := "1.0"
 

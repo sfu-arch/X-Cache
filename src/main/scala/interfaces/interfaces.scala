@@ -176,6 +176,7 @@ class DataBundle (implicit p: Parameters) extends CoreBundle()(p){
   val valid     = Bool()
 }
 
+
 object DataBundle {
    def default(implicit p: Parameters): DataBundle = {
     val wire = Wire(new DataBundle)
@@ -185,3 +186,24 @@ object DataBundle {
     wire
   }
 }
+
+/**
+  * Control bundle between branch and
+  * basicblock nodes
+  *
+  * control  : Bool
+  */
+class ControlBundle (implicit  p: Parameters) extends CoreBundle()(p){
+  //Control packet
+  val control   =   Bool()
+}
+
+object ControlBundle{
+   def default(implicit p: Parameters): ControlBundle = {
+    val wire = Wire(new ControlBundle)
+    wire.control := false.B
+    wire
+  }
+}
+
+

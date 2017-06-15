@@ -80,12 +80,12 @@ class LoadSimpleNode(NumPredOps: Int,
     io.Out(i).bits.predicate := predicate
   }
 
-  when(start & predicate) {
 
 /*=============================================
 =            ACTIONS (possibly dangerous)     =
 =============================================*/
 
+  when(start & predicate) {
     // ACTION:  Memory request
     //  Check if address is valid and predecessors have completed.
     val mem_req_fire = addr_R.valid & IsPredValid()
