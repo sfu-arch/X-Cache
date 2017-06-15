@@ -33,7 +33,7 @@ class MiniConfig extends Config((site, here, up) => {
     case XLEN => 32
     case TLEN => 32
     case GLEN => 16
-    case MSHRLEN => 8
+    case MSHRLEN => 1
     case Trace => true
     case BuildRFile    => (p: Parameters) => Module(new RFile(32)(p))
 
