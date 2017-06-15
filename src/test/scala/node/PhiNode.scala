@@ -20,66 +20,62 @@ import interfaces._
 
 
 // Tester.
-class PhiTester(df: PhiNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class PhiTester(df: PhiNodeNew)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
-  poke(df.io.DataIn(0).valid, false.B)
-  poke(df.io.DataIn(1).valid, false.B)
+  poke(df.io.InData(0).valid, false.B)
+  poke(df.io.InData(0).bits.valid, true.B)
+  poke(df.io.InData(0).bits.predicate, true.B)
+  poke(df.io.InData(0).bits.data, 5.U)
 
-  poke(df.io.Predicates(0), false.B)
-  poke(df.io.Predicates(1), false.B)
+  poke(df.io.InData(1).valid, false.B)
+  poke(df.io.InData(1).bits.valid, true.B)
+  poke(df.io.InData(1).bits.predicate, true.B)
+  poke(df.io.InData(1).bits.data, 3.U)
 
-  poke(df.io.DataIn(0).bits , 5.U)
-  poke(df.io.DataIn(1).bits , 3.U)
-  //poke(df.io.CmpIn.bits, false.B)
+  poke(df.io.enable.bits, true.B)
+  poke(df.io.enable.valid, false.B)
+
+  poke(df.io.Mask.valid, false.B)
+  poke(df.io.Mask.bits, 2.U)
+
+  poke(df.io.Out(0).ready, false.B)
 
   println()
-  println(s"Node input 0: ${peek(df.io.DataIn(0))}")
-  println(s"Node input 1: ${peek(df.io.DataIn(1))}")
-  println(s"Node output : ${peek(df.io.OutIO)}")
-
+  println(s"Node input 0: ${peek(df.io.InData(0))}")
+  println(s"Node input 1: ${peek(df.io.InData(1))}")
+  println(s"Node output : ${peek(df.io.Out(0))}")
   step(1)
 
-  poke(df.io.DataIn(0).valid, false.B)
-  poke(df.io.DataIn(1).valid, true.B)
+  poke(df.io.InData(0).valid, true.B)
+  poke(df.io.InData(1).valid, true.B)
+  poke(df.io.enable.valid, true.B)
+  poke(df.io.Mask.valid, true.B)
+  poke(df.io.Out(0).ready, true.B)
 
-  poke(df.io.Predicates(0), true.B)
-  poke(df.io.Predicates(1), false.B)
-
-  poke(df.io.OutIO.ready, true.B)
   println()
-  println(s"Node input 0: ${peek(df.io.DataIn(0))}")
-  println(s"Node input 1: ${peek(df.io.DataIn(1))}")
-  println(s"Node output : ${peek(df.io.OutIO)}")
+  println(s"Node input 0: ${peek(df.io.InData(0))}")
+  println(s"Node input 1: ${peek(df.io.InData(1))}")
+  println(s"Node output : ${peek(df.io.Out(0))}")
   step(1)
 
-  poke(df.io.Predicates(0), false.B)
-  poke(df.io.Predicates(1), true.B)
+
   println()
-  println(s"Node input 0: ${peek(df.io.DataIn(0))}")
-  println(s"Node input 1: ${peek(df.io.DataIn(1))}")
-  println(s"Node output : ${peek(df.io.OutIO)}")
+  println(s"Node input 0: ${peek(df.io.InData(0))}")
+  println(s"Node input 1: ${peek(df.io.InData(1))}")
+  println(s"Node output : ${peek(df.io.Out(0))}")
   step(1)
 
-  //poke(df.io.CmpIn.bits, true.B)
-  //println(s"Node input : ${peek(df.io.CmpIn)}")
-  //println(s"Node output: ${peek(df.io.OutIO)}")
+  println()
+  println(s"Node input 0: ${peek(df.io.InData(0))}")
+  println(s"Node input 1: ${peek(df.io.InData(1))}")
+  println(s"Node output : ${peek(df.io.Out(0))}")
+  step(1)
 
-  //poke(df.io.CmpIn.valid, true.B)
-  //step(1)
-  //println(s"Node input : ${peek(df.io.CmpIn)}")
-  //println(s"Node output: ${peek(df.io.OutIO)}")
-
-  //step(1)
-  //println(s"Node input : ${peek(df.io.CmpIn)}")
-  //println(s"Node output: ${peek(df.io.OutIO)}")
-  //step(1)
-
-  //poke(df.io.CmpIn.bits, false.B)
-  //println(s"Node input : ${peek(df.io.CmpIn)}")
-  //println(s"Node output: ${peek(df.io.OutIO)}")
-  //step(1)
-  //println(s"Node input : ${peek(df.io.CmpIn)}")
-  //println(s"Node output: ${peek(df.io.OutIO)}")
+  println()
+  println(s"Node input 0: ${peek(df.io.InData(0))}")
+  println(s"Node input 1: ${peek(df.io.InData(1))}")
+  println(s"Node output : ${peek(df.io.Out(0))}")
+  step(1)
  }
 
 
@@ -88,7 +84,7 @@ class PhiTester(df: PhiNode)(implicit p: config.Parameters) extends PeekPokeTest
 class PHITests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new PhiNode(2)(p)) { c =>
+     chisel3.iotesters.Driver(() => new PhiNodeNew(NumInputs = 2, NumOuts = 1, ID = 0)(p)) { c =>
        new PhiTester(c)
      } should be(true)
    }

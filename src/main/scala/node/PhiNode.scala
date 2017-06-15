@@ -105,15 +105,11 @@ class PhiNodeNew(NumInputs: Int,
   //Instantiating a MUX
   val sel = OHToUInt(mask_R)
 
-  //Generate input array
-  var input_array = Array(0.U -> in_data_R(0))
-  for (i <- 1 until NumInputs) {
-    input_array +: Array(i.U -> in_data_R(i))
-  }
+  printfInfo("sel: %x\n", sel)
 
   when(start & predicate) {
     state := s_COMPUTE
-    data_R := MuxLookup(sel, 0.U, input_array)
+    data_R := in_data_R(sel).data
     pred_R := predicate
     ValidOut()
   }.elsewhen(start & ~predicate) {
