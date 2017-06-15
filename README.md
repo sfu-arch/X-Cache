@@ -13,7 +13,7 @@ Chisel Project Template
 - [x]  LD
 - [x]  Relay
 - [x]  CMP (All the comparision opeartions)
-- [ ]  control/BasicBlock
+- [x]  control/BasicBlock
 
 ### Current Status
 - Alloca tests failing (allocaTests)
