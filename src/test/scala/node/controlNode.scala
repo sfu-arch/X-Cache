@@ -35,9 +35,9 @@ class controlTester(df: BasicBlockNode)
 
   poke(df.io.predicateIn(0).bits.control, false.B)
   poke(df.io.predicateIn(0).valid, true.B)
-  poke(df.io.predicateIn(1).bits.control, true.B)
+  poke(df.io.predicateIn(1).bits.control, false.B)
   poke(df.io.predicateIn(1).valid, true.B)
-  poke(df.io.predicateIn(2).bits.control, false.B)
+  poke(df.io.predicateIn(2).bits.control, true.B)
   poke(df.io.predicateIn(2).valid, true.B)
 
   poke(df.io.Out(0).ready, true.B)
@@ -58,6 +58,7 @@ class controlTester(df: BasicBlockNode)
   println(s"Output 0: ${peek(df.io.Out(0))}")
   println(s"Output 1: ${peek(df.io.Out(1))}")
   println(s"Mask   0: ${peek(df.io.MaskBB(0))}")
+
 
 
   //  for( i <- 0 until 10){

@@ -135,6 +135,9 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
       state := s_idle
       //Restart predicate bit
       pred_R := false.B
+
+      //Reset output
+      Reset()
     }
 
   printfInfo(" State: %x\n", state)

@@ -137,6 +137,8 @@ class BasicBlockNode(NumInputs: Int,
   printfInfo("mask_ready: %x\n", mask_ready_W)
   printfInfo("mask_valid: %x\n", mask_valid_W)
 
+//  printfInfo("Mask convert: %x\n", OHToUInt(predicate_in_R))
+
   when(out_ready_W & out_valid_W &
     mask_ready_W & mask_ready_W) {
     //printfInfo("Start restarting output \n")
