@@ -11,43 +11,9 @@ import config._
 
 class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) extends PeekPokeTester(c) {
 
-	var readidx = 0
-	poke(c.io.ReadIn(0).bits.address, 10)
-	poke(c.io.ReadIn(0).bits.RouteID, 0)
-	poke(c.io.ReadIn(0).bits.Typ,2)
-	poke(c.io.ReadIn(0).valid,1)
-	poke(c.io.ReadIn(1).bits.address, 10)
-	poke(c.io.ReadIn(1).bits.RouteID, 1)
-	poke(c.io.ReadIn(1).bits.Typ,2)
-	poke(c.io.ReadIn(1).valid,1)
-	var req  = false
-	var tag  = peek(c.io.CacheReq.bits.tag)	
-	var reqT = 0
-    // in_arb.io.in(0).bits.RouteID := 0.U
-    // in_arb.io.in(0).bits.Typ := MT_W
-    // in_arb.io.in(0).valid := true.B
-	poke(c.io.CacheReq.ready,1)
-	poke(c.io.CacheResp.valid,false)
-	for (t <- 0 until 12) {
-		if((peek(c.io.CacheReq.valid) == 1) && (peek(c.io.CacheReq.ready) == 1)) {
-			printf(s"t: ${t} ---------------------------- \n")
-			req  = true
-			tag  = peek(c.io.CacheReq.bits.tag)
-			reqT = t
-		}
-		if ((req == true) && (t > reqT))
-		{
-			poke(c.io.CacheResp.valid,true)
-			poke(c.io.CacheResp.bits.data, 0xdeadbeefL)
-			printf("Tag:%d",tag)
-			poke(c.io.CacheResp.bits.tag,peek(c.io.CacheReq.bits.tag))
-			req = false
-		}
-		if (req == true) {
-			poke(c.io.CacheReq.ready,false)
-		} else {
-			poke(c.io.CacheReq.ready,true)
-		}
+//   var readidx= 3
+
+  for (t <- 0 until 12) {
 
 //     if(t<11) {
 //       poke(c.io.ReadIn(1).valid, false)
@@ -100,7 +66,7 @@ class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) 
 class MemoryControllerTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Memory Controller tester" in {
-    chisel3.iotesters.Driver(() => new MemoryController(NumOps=2)(p)) {
+    chisel3.iotesters.Driver(() => new MemoryController()(p)) {
       c => new MemoryControllerTests(c)
     } should be(true)
   }

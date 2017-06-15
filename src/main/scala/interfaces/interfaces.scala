@@ -38,8 +38,7 @@ class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
 // Read interface into Scratchpad stack
 //  address: Word aligned address to read from
 //  node : dataflow node id to return data to
-class ReadReq(implicit p: Parameters) extends CoreBundle()(p) 
-with RouteID {
+class ReadReq(implicit p: Parameters) extends CoreBundle()(p) with RouteID {
  val address  = UInt(xlen.W)
  val node     = UInt(glen.W)
  val Typ     = UInt (8.W)
@@ -59,9 +58,9 @@ object ReadReq {
 
 
 //  data : data returned from scratchpad
-class ReadResp(implicit p: Parameters) 
-  extends ValidT 
-  with RouteID {
+class ReadResp(implicit p: Parameters) extends CoreBundle()(p) 
+with ValidT 
+with RouteID {
  val data  = UInt(xlen.W)
 }
 
@@ -84,7 +83,7 @@ object ReadResp {
 // Word aligned to write to
 // Node performing the write
 // Mask indicates which bytes to update.
-class WriteReq (implicit p: Parameters) extends RouteID {
+class WriteReq (implicit p: Parameters) extends CoreBundle()(p) {
   val address = UInt ((xlen-10).W)
   val data    = UInt (xlen.W)
   val mask    = UInt ((xlen/8).W)
@@ -93,9 +92,9 @@ class WriteReq (implicit p: Parameters) extends RouteID {
 }
 
 // Explicitly indicate done flag
-class WriteResp (implicit p: Parameters) 
-  extends ValidT 
-  with RouteID {
+class WriteResp (implicit p: Parameters) extends CoreBundle()(p) 
+with ValidT 
+with RouteID {
   val done  =  Bool()
 }
 
