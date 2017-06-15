@@ -21,7 +21,7 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
   val Mask = Flipped(Decoupled(UInt(NumInputs.W)))
 }
 
-class PhiNodeNew(NumInputs: Int,
+class PhiNode(NumInputs: Int,
                  NumOuts: Int,
                  ID: Int)
                 (implicit p: Parameters)
