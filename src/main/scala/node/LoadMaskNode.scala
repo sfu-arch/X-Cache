@@ -109,11 +109,11 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
   {
     printf("Inputs are Ready %d", GepOperand)
 
-    bitmask        := ReadBitMask(type_word,GepOperand)
+    bitmask        := ReadBitMask(type_word,GepOperand,xlen)
     // Two masks needed for keeping track of what is sent and received. 
     // Could also use count. Going from mask to word count is difficult
     // We simply use shifts in the mask to indicate if we have requested all words required
-    sendbytemask   := ReadByteMask(type_word,GepOperand)
+    sendbytemask   := ReadByteMask(type_word,GepOperand,xlen)
   
     state      := s_SENDING
     // Set the state to send

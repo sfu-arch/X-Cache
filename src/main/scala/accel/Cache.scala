@@ -17,12 +17,12 @@ class CacheReq(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val addr = UInt(xlen.W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen/8).W)
-  val tag  = UInt(mshrlen.W)
+  val tag  = UInt((List(1,rdmshrlen,wrmshrlen).max).W)
 }
 
 class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val data = UInt(xlen.W)
-  val tag  = UInt(mshrlen.W)
+  val tag  = UInt((List(1,rdmshrlen,wrmshrlen).max).W)
 }
 
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {

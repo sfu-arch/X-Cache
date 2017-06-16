@@ -20,6 +20,7 @@ import utility.UniformPrintfs
 /// DRIVER ///
 /// 1. Memory response only available atleast 1 cycle after request
 //  2. Handshaking has to be done with registers.
+// @todo : This node will only receive one word. To handle doubles. Change handshaking logic
 //////////
 
 class LoadSimpleIO(NumPredOps: Int,

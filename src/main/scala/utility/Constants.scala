@@ -1,7 +1,14 @@
+/*==================================================
+=            Errata MT_D accesses not supported     =
+===================================================*/
+
 package utility
 
 import chisel3._
-
+/**
+ * @todo   MT_D double access not supported yet.
+ * 
+ */
 trait MemoryOpConstants 
 {
    val MT_X  = 0.U(3.W)
