@@ -14,12 +14,12 @@ class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) 
 	var readidx = 0
 	poke(c.io.ReadIn(0).bits.address, 9)
 	poke(c.io.ReadIn(0).bits.RouteID, 0)
-	poke(c.io.ReadIn(0).bits.Typ,1)
+	poke(c.io.ReadIn(0).bits.Typ,5)
 	poke(c.io.ReadIn(0).valid,1)
-	poke(c.io.ReadIn(1).bits.address, 8)
-	poke(c.io.ReadIn(1).bits.RouteID, 1)
-	poke(c.io.ReadIn(1).bits.Typ,1)
-	poke(c.io.ReadIn(1).valid,1)
+	// poke(c.io.ReadIn(1).bits.address, 8)
+	// poke(c.io.ReadIn(1).bits.RouteID, 1)
+	// poke(c.io.ReadIn(1).bits.Typ,1)
+	// poke(c.io.ReadIn(1).valid,1)
 	var req  = false
 	var tag  = peek(c.io.CacheReq.bits.tag)	
 	var reqT = 0
@@ -100,7 +100,7 @@ class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) 
 class MemoryControllerTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Memory Controller tester" in {
-    chisel3.iotesters.Driver(() => new MemoryController(NumOps=2,BaseSize=2)(p)) {
+    chisel3.iotesters.Driver(() => new MemoryController(NumOps=1,BaseSize=2)(p)) {
       c => new MemoryControllerTests(c)
     } should be(true)
   }

@@ -36,9 +36,9 @@ class MiniConfig extends Config((site, here, up) => {
     case TLEN => 32
     case GLEN => 16
     // Size of read MSHR table bits 
-    case RDMSHRLEN => 1
+    case RDMSHRLEN => 0
     // Size of write MSHR table bits 
-    case WRMSHRLEN => 1
+    case WRMSHRLEN => 0
     case Trace => true
     case BuildRFile    => (p: Parameters) => Module(new RFile(32)(p))
 

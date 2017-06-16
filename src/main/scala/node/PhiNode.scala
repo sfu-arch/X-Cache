@@ -12,31 +12,34 @@ import interfaces._
 import muxes._
 import util._
 
-class ComputeNodeIO(NumOuts: Int)
-                   (implicit p: Parameters)
+class PhiNodeIO(NumInputs: Int, NumOuts: Int)
+               (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts) {
-  // LeftIO: Left input data for computation
-  val LeftIO = Flipped(Decoupled(new DataBundle))
 
-  // RightIO: Right input data for computation
-  val RightIO = Flipped(Decoupled(new DataBundle))
+  val InData = Vec(NumInputs, Flipped(Decoupled(new DataBundle)))
+
+  val Mask = Flipped(Decoupled(UInt(NumInputs.W)))
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
-                 (implicit p: Parameters)
+class PhiNode(NumInputs: Int,
+                 NumOuts: Int,
+                 ID: Int)
+                (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(p) {
-  override lazy val io = IO(new ComputeNodeIO(NumOuts))
+  override lazy val io = IO(new PhiNodeIO(NumInputs, NumOuts))
   // Printf debugging
-  override val printfSigil = "Node ID: " + ID + " "
+  override val printfSigil = "Node(PHI) ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
-  // OP Inputs
-  val left_R = RegInit(DataBundle.default)
+  // Data Inputs
+  val in_data_R = RegInit(Vec(Seq.fill(NumInputs)(DataBundle.default)))
 
-  // Memory Response
-  val right_R = RegInit(DataBundle.default)
+  // Mask Input
+  val mask_R = RegInit(0.U(NumInputs.W))
+  val mask_valid_R = RegInit(false.B)
+
 
   // Output register
   val data_R = RegInit(0.U(xlen.W))
@@ -48,62 +51,82 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val predicate = left_R.predicate & right_R.predicate & IsEnable()
-  val start = left_R.valid & right_R.valid & IsEnableValid()
+  val acc_predicate = Vec(Seq.fill(NumInputs)(false.B))
+  for(i <- 0 until NumInputs){
+    acc_predicate(i) := in_data_R(i).predicate
+  }
+
+  val acc_start = Vec(Seq.fill(NumInputs)(false.B))
+  for(i <- 0 until NumInputs){
+    acc_start(i) := in_data_R(i).valid
+  }
+
+  var predicate = acc_predicate.asUInt.andR & IsEnable()
+  var start = mask_valid_R & acc_start.asUInt.andR & IsEnableValid()
+
+  //  val predicate = left_R.predicate & right_R.predicate & IsEnable()
+  //  val start = left_R.valid & right_R.valid & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
   // Predicate register
-  val pred_R = RegInit(init = false.B)
+  val pred_R = RegInit(false.B)
+  val valid_R = RegInit(false.B)
 
   //printfInfo("start: %x\n", start)
 
-  io.LeftIO.ready := ~left_R.valid
-  when(io.LeftIO.fire()) {
-    //printfInfo("Latch left data\n")
+  //wire up mask
+  io.Mask.ready := ~mask_valid_R
+  when(io.Mask.fire()) {
     state := s_LATCH
-    left_R.data := io.LeftIO.bits.data
-    left_R.valid := true.B
-    left_R.predicate := io.LeftIO.bits.predicate
+    mask_R := io.Mask.bits
+    mask_valid_R := true.B
   }
 
-  io.RightIO.ready := ~right_R.valid
-  when(io.RightIO.fire()) {
-    //printfInfo("Latch right data\n")
-    state := s_LATCH
-    right_R.data := io.RightIO.bits.data
-    right_R.valid := true.B
-    right_R.predicate := io.RightIO.bits.predicate
+
+  //Wire up inputs
+  for (i <- 0 until NumInputs) {
+    io.InData(i).ready := ~in_data_R(i).valid
+    when(io.InData(i).fire()) {
+      //printfInfo("Latch left data\n")
+      state := s_LATCH
+      in_data_R(i).data := io.InData(i).bits.data
+      in_data_R(i).valid := true.B
+      in_data_R(i).predicate := io.InData(i).bits.predicate
+    }
+
   }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R
     io.Out(i).bits.predicate := pred_R
+    io.Out(i).bits.valid := valid_R
   }
 
 
   /*============================================*
-   *            ACTIONS (possibly dangerous)    *
+   *            ACTIONS                         *
    *============================================*/
 
-  //Instantiate ALU with selected code
-  val FU = Module(new ALU(xlen, opCode))
+  //Instantiating a MUX
+  val sel = OHToUInt(mask_R)
 
-  FU.io.in1 := left_R.data
-  FU.io.in2 := right_R.data
+  printfInfo("sel: %x\n", sel)
 
   when(start & predicate) {
     state := s_COMPUTE
-    data_R := FU.io.out
+    data_R := in_data_R(sel).data
     pred_R := predicate
+    valid_R := true.B
     ValidOut()
   }.elsewhen(start & ~predicate) {
     //printfInfo("Start sending data to output INVALID\n")
     state := s_COMPUTE
     pred_R := predicate
+    valid_R := true.B
     ValidOut()
   }
 
@@ -115,13 +138,10 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
   val out_ready_W = out_ready_R.asUInt.andR
   val out_valid_W = out_valid_R.asUInt.andR
 
-  printf(p"ID: ${ID}, left: ${left_R}\n")
-  printf(p"ID: ${ID}, right: ${right_R}\n")
-  printf(p"ID: ${ID}, enable: ${io.enable}\n")
-  printf(p"ID: ${ID}, out valid: ${out_valid_R(0)}\n")
-  printf(p"ID: ${ID}, out: ${data_R}\n")
-  //  printfInfo(s"Left: ${left_R}\n")
-  //  printfInfo(s"Left: ${right_R}\n")
+  //  printf(p"ID: ${ID}, left: ${left_R}\n")
+  //  printf(p"ID: ${ID}, right: ${right_R}\n")
+  //  printf(p"ID: ${ID}, enable: ${io.enable}\n")
+  //  printf(p"ID: ${ID}, out valid: ${out_valid_R}\n")
   printfInfo("out_ready: %x\n", out_ready_W)
   printfInfo("out_valid: %x\n", out_valid_W)
 
@@ -129,8 +149,12 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
   when(out_ready_W & out_valid_W) {
     //printfInfo("Start restarting output \n")
     // Reset data
-    left_R := DataBundle.default
-    right_R := DataBundle.default
+    mask_R := 0.U
+    mask_valid_R := false.B
+
+    for (i <- 0 until NumInputs) {
+      in_data_R(i) := DataBundle.default
+    }
     // Reset output
     data_R := 0.U
     out_ready_R := Vec(Seq.fill(NumOuts) {

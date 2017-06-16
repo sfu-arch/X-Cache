@@ -60,7 +60,7 @@ class sample01Tester(df: AddDF)
   //step(1)
 
 
-  for( i <- 0 until 10){
+  for( i <- 0 until 20){
     println(s"Output: ${peek(df.io.result)}\n")
     println(s"Pred  : ${peek(df.io.pred)}\n")
     step(1)
