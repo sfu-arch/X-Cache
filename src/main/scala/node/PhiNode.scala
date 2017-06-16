@@ -51,12 +51,19 @@ class PhiNode(NumInputs: Int,
    *           Predicate Evaluation           *
    *==========================================*/
 
-  var predicate = IsEnable()
-  var start = mask_valid_R & IsEnableValid()
-  for (i <- 0 until NumInputs) {
-    predicate = predicate & in_data_R(i).predicate
-    start = start & in_data_R(i).valid
+  val acc_predicate = Vec(Seq.fill(NumInputs)(false.B))
+  for(i <- 0 until NumInputs){
+    acc_predicate(i) := in_data_R(i).predicate
   }
+
+  val acc_start = Vec(Seq.fill(NumInputs)(false.B))
+  for(i <- 0 until NumInputs){
+    acc_start(i) := in_data_R(i).valid
+  }
+
+  var predicate = acc_predicate.asUInt.andR & IsEnable()
+  var start = mask_valid_R & acc_start.asUInt.andR & IsEnableValid()
+
   //  val predicate = left_R.predicate & right_R.predicate & IsEnable()
   //  val start = left_R.valid & right_R.valid & IsEnableValid()
 
@@ -66,6 +73,7 @@ class PhiNode(NumInputs: Int,
 
   // Predicate register
   val pred_R = RegInit(false.B)
+  val valid_R = RegInit(false.B)
 
   //printfInfo("start: %x\n", start)
 
@@ -95,6 +103,7 @@ class PhiNode(NumInputs: Int,
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R
     io.Out(i).bits.predicate := pred_R
+    io.Out(i).bits.valid := valid_R
   }
 
 
@@ -111,11 +120,13 @@ class PhiNode(NumInputs: Int,
     state := s_COMPUTE
     data_R := in_data_R(sel).data
     pred_R := predicate
+    valid_R := true.B
     ValidOut()
   }.elsewhen(start & ~predicate) {
     //printfInfo("Start sending data to output INVALID\n")
     state := s_COMPUTE
     pred_R := predicate
+    valid_R := true.B
     ValidOut()
   }
 
