@@ -43,13 +43,19 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
   val m4 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4))
   val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = 1)(p))
 
-  //Wiring
-  //predicate signal
+
+  /**
+    * Wireing control signals from BasicBlock nodes
+    * to their child
+    */
 
   //Grounding entry BasicBlock
-  b0_entry.io.predicateIn(0).bits.control := true.B
+  b0_entry.io.predicateIn(0).bits:= ControlBundle.Activate
   b0_entry.io.predicateIn(0).valid := true.B
 
+  /**
+    * @todo make these connections as a bulk connection
+    */
   //Connecting m1 to b1_then BasicBlock
   m1.io.Out(0).ready := b1_then.io.predicateIn(0).ready
   b1_then.io.predicateIn(0).bits.control := m1.io.Out(1).bits.data.orR.toBool
@@ -66,6 +72,9 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
   b2_end.io.predicateIn(1).valid := m3.io.Out(0).valid
 
 
+  /**
+    * Wireing enable signals to the instructions
+    */
   //Wiring enable signals
   m0.io.enable <> b0_entry.io.Out(0)
   m1.io.enable <> b0_entry.io.Out(1)
@@ -73,27 +82,33 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
   m2.io.enable <> b1_then.io.Out(0)
   m3.io.enable <> b1_then.io.Out(1)
 
-  //Connect PHI node
   m4.io.enable <> b2_end.io.Out(0)
+  m5.io.enable <> b2_end.io.Out(1)
+
+  /**
+    * Connecting PHI nodes
+    */
+  //Connect PHI node
   m4.io.InData(0) <> m2.io.Out(0)
   m4.io.InData(1) <> m2.io.Out(0)
   m4.io.Mask <> b2_end.io.MaskBB(0)
 
-  //Connecting add
-  m5.io.enable <> b2_end.io.Out(1)
-  m5.io.LeftIO <> m4.io.Out(0)
 
-
-  //DEBUG
-  io.pred <> b1_then.io.Out(0)
-
+  /**
+    * Connecting Dataflow signals
+    */
   //dataflow signal
   m0.io.LeftIO <> io.Data0
   m1.io.CmpIO <> m0.io.Out(0)
   m2.io.LeftIO <> io.Data0
 
+  //Connecting add
+  m5.io.LeftIO <> m4.io.Out(0)
 
-  //Constant
+
+  /**
+    * Wireing constants
+   */
   m0.io.RightIO.bits.data := 9.U
   m0.io.RightIO.bits.predicate := true.B
   m0.io.RightIO.bits.valid := true.B
@@ -111,5 +126,8 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
 
   //Output
   io.result <> m5.io.Out(0)
+
+  //DEBUG
+  io.pred <> b1_then.io.Out(0)
 
 }

@@ -210,6 +210,10 @@ object ControlBundle {
     wire.control := false.B
     wire
   }
+
+  def Activate(implicit p : Parameters): ControlBundle = {
+    val wire = Wire(new ControlBundle)
+    wire.control := true.B
+    wire
+  }
 }
-
-
