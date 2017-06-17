@@ -23,7 +23,7 @@ import utility.UniformPrintfs
 // @todo : This node will only receive one word. To handle doubles. Change handshaking logic
 //////////
 
-class LoadSimpleIO(NumPredOps: Int,
+class LoadIO(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int)(implicit p: Parameters)
   extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts) {
@@ -35,13 +35,13 @@ class LoadSimpleIO(NumPredOps: Int,
   val memResp = Input(Flipped(new ReadResp()))
 }
 
-class LoadSimpleNode(NumPredOps: Int,
+class LoadNode(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int,
-  Typ: UInt = MT_W, ID: Int)(implicit p: Parameters)
+  Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit p: Parameters)
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(p) {
 
-  override lazy val io = IO(new LoadSimpleIO(NumPredOps, NumSuccOps, NumOuts))
+  override lazy val io = IO(new LoadIO(NumPredOps, NumSuccOps, NumOuts))
   // Printf debugging
   override val printfSigil = "Load ID: " + ID + " "
 
@@ -91,8 +91,10 @@ class LoadSimpleNode(NumPredOps: Int,
     //  Check if address is valid and predecessors have completed.
     val mem_req_fire = addr_R.valid & IsPredValid()
     io.memReq.bits.address := addr_R.data
-    io.memReq.bits.node := nodeID_R
-    io.memReq.valid := false.B
+    io.memReq.bits.node    := nodeID_R
+    io.memReq.bits.Typ     := Typ
+    io.memReq.bits.RouteID := RouteID.U
+    io.memReq.valid        := false.B
     // ACTION: Outgoing Address Req ->
     when((state === s_idle) && (mem_req_fire)) {
       io.memReq.valid := true.B

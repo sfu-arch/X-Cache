@@ -20,7 +20,7 @@ import control._
 
 
 // Tester.
-class simpleLoadTester(df: LoadSimpleNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class simpleLoadTester(df: LoadNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.GepAddr.valid, false.B)
   poke(df.io.memResp.valid, false.B)
@@ -126,7 +126,7 @@ class simpleLoadTester(df: LoadSimpleNode)(implicit p: config.Parameters) extend
 class simpleLoadTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Simple load tester" in {
-     chisel3.iotesters.Driver(() => new LoadSimpleNode(1,1,1,ID=0)(p)) { c =>
+     chisel3.iotesters.Driver(() => new LoadNode(1,1,1,ID=0,RouteID=0)(p)) { c =>
        new simpleLoadTester(c)
      } should be(true)
    }

@@ -112,7 +112,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
   }
 
   // printf("\nMSHR %d: Inputs are Ready %d", ID, request_R.address)   
-  printf("\n MSHR %d State :%d RouteID %d ", ID, state, request_R.RouteID)
+  // printf("\n MSHR %d State :%d RouteID %d ", ID, state, request_R.RouteID)
   // printf("\n  linebuffer %x & bitmask: %x", linebuffer.asUInt, bitmask)
 
 /*===========================================================

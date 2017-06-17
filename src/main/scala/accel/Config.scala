@@ -15,6 +15,8 @@ class AcceleratorConfig extends Config((site, here, up) => {
     case Trace => true
     
     // Cache
+    case RDMSHRLEN => 0
+    case WRMSHRLEN => 0
     case NWays => 1 // TODO: set-associative
     case NSets => 256 
     case CacheBlockBytes => 4 * (here(XLEN) >> 3) // 4 x 32 bits = 16B

@@ -11,7 +11,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import config._
 import utility._
 
-class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
+class LoadNodeTests(c: LoadNode) extends PeekPokeTester(c) {
     poke(c.io.GepAddr.valid,false)
     poke(c.io.PredOp(0).valid,true)
     poke(c.io.memReq.ready,false)
@@ -122,11 +122,11 @@ class LoadSimpleNodeTests(c: LoadSimpleNode) extends PeekPokeTester(c) {
 
 import Constants._
 
-class LoadSimpleNodeTester extends  FlatSpec with Matchers {
+class LoadNodeTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Load Node tester" in {
-    chisel3.iotesters.Driver(() => new LoadSimpleNode(NumPredOps=1,NumSuccOps=1,NumOuts=1,Typ=MT_W,ID=1)) { c =>
-      new LoadSimpleNodeTests(c)
+    chisel3.iotesters.Driver(() => new LoadNode(NumPredOps=1,NumSuccOps=1,NumOuts=1,Typ=MT_W,ID=1,RouteID=0)) { c =>
+      new LoadNodeTests(c)
     } should be(true)
   }
 }

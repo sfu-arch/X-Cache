@@ -11,7 +11,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import config._
 import utility._
 
-class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
+class StoreNodeTests(c: StoreNode) extends PeekPokeTester(c) {
     poke(c.io.GepAddr.valid,false)
     poke(c.io.enable.valid,false)
     poke(c.io.inData.valid,false)
@@ -63,11 +63,11 @@ class StoreSimpleNodeTests(c: StoreSimpleNode) extends PeekPokeTester(c) {
 
 import Constants._
 
-class StoreSimpleNodeTester extends  FlatSpec with Matchers {
+class StoreNodeTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Store Node tester" in {
-    chisel3.iotesters.Driver(() => new StoreSimpleNode(NumPredOps=1,NumSuccOps=1,NumOuts=1,Typ=MT_W,ID=1)) { c =>
-      new StoreSimpleNodeTests(c)
+    chisel3.iotesters.Driver(() => new StoreNode(NumPredOps=1,NumSuccOps=1,NumOuts=1,Typ=MT_W,ID=1,RouteID=0)) { c =>
+      new StoreNodeTests(c)
     } should be(true)
   }
 }

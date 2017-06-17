@@ -21,7 +21,7 @@ import utility.UniformPrintfs
 // _ready need to latch ready and valid signals.
 //////////
 
-class StoreSimpleIO(NumPredOps: Int,
+class StoreIO(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int)(implicit p: Parameters)
   extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts) {
@@ -42,14 +42,14 @@ class StoreSimpleIO(NumPredOps: Int,
  *
  * @param NumPredOps [Number of predicate memory operations]
  */
-class StoreSimpleNode(NumPredOps: Int,
+class StoreNode(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int,
-  Typ: UInt = MT_W, ID: Int)(implicit p: Parameters)
+  Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit p: Parameters)
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(p) {
 
-  // Set up StoreSimpleIO
-  override lazy val io = IO(new StoreSimpleIO(NumPredOps, NumSuccOps, NumOuts))
+  // Set up StoreIO
+  override lazy val io = IO(new StoreIO(NumPredOps, NumSuccOps, NumOuts))
 
   // Printf debugging
   override val printfSigil = "Store ID: " + ID + " "
@@ -114,10 +114,11 @@ when (start & predicate) {
 
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
-  io.memReq.bits.node := nodeID_R
-  io.memReq.bits.data := data_R.data
-  io.memReq.bits.Typ := Typ
-  io.memReq.valid    := false.B
+  io.memReq.bits.node    := nodeID_R
+  io.memReq.bits.data    := data_R.data
+  io.memReq.bits.Typ     := Typ
+  io.memReq.bits.RouteID := RouteID.U
+  io.memReq.valid        := false.B
 
   // ACTION: Memory Request
   // -> Send memory request

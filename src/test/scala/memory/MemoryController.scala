@@ -14,7 +14,7 @@ class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) 
 	var readidx = 0
 	poke(c.io.ReadIn(0).bits.address, 9)
 	poke(c.io.ReadIn(0).bits.RouteID, 0)
-	poke(c.io.ReadIn(0).bits.Typ,5)
+	poke(c.io.ReadIn(0).bits.Typ,4)
 	poke(c.io.ReadIn(0).valid,1)
 	// poke(c.io.ReadIn(1).bits.address, 8)
 	// poke(c.io.ReadIn(1).bits.RouteID, 1)

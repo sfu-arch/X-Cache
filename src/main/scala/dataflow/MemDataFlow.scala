@@ -19,14 +19,14 @@ abstract class MemDFIO()(implicit val p: Parameters) extends Module with CorePar
 class MemDataFlow(implicit p: Parameters) extends MemDFIO()(p){
 
 
-  //class LoadSimpleNode(NumPredOps: Int,
+  //class LoadNode(NumPredOps: Int,
     //NumSuccOps: Int,
     //NumOuts: Int,
     //Typ: UInt = MT_W, ID: Int)(implicit p: Parameters)
 
-  val m0 = Module(new StoreSimpleNode(1,2,1,ID=0))
-  val m1 = Module(new LoadSimpleNode(1,1,1,ID=1))
-  val m2 = Module(new LoadSimpleNode(2,1,1,ID=2))
+  val m0 = Module(new StoreNode(1,2,1,ID=0,RouteID=0))
+  val m1 = Module(new LoadNode(1,1,1,ID=1,RouteID=0))
+  val m2 = Module(new LoadNode(2,1,1,ID=2,RouteID=1))
   val counter = RegInit(400.U(32.W))
   counter := counter + 500.U
   val RF = Module(new CentralizedStackRegFile(Size=32, NReads=2, NWrites=1))
@@ -61,6 +61,7 @@ class MemDataFlow(implicit p: Parameters) extends MemDFIO()(p){
   m2.io.enable.bits  := true.B
   m2.io.enable.valid := true.B
 
+  // printf(p"RouteID : ${m2.io.memReq.bits.RouteID}")
 
 
   m0.io.GepAddr.bits.data      := 12.U
