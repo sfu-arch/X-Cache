@@ -19,6 +19,8 @@ trait MemoryOpConstants
    val MT_BU = 5.U(3.W)
    val MT_HU = 6.U(3.W)
    val MT_WU = 7.U(3.W)
+   // Maximum size of access type
+   val MT_MAX_SIZE = 2
 }
 
   object Constants  extends MemoryOpConstants 

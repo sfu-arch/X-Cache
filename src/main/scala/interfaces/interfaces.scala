@@ -39,8 +39,8 @@ class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
 // Read interface into Scratchpad stack
 //  address: Word aligned address to read from
 //  node : dataflow node id to return data to
-class ReadReq(implicit p: Parameters) extends CoreBundle()(p)
-  with RouteID {
+class ReadReq(implicit p: Parameters) 
+  extends RouteID {
   val address = UInt(xlen.W)
   val node = UInt(glen.W)
   val Typ = UInt(8.W)
@@ -86,12 +86,26 @@ object ReadResp {
 // Word aligned to write to
 // Node performing the write
 // Mask indicates which bytes to update.
-class WriteReq(implicit p: Parameters) extends RouteID {
+class WriteReq(implicit p: Parameters) 
+extends RouteID {
   val address = UInt((xlen - 10).W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen / 8).W)
   val node = UInt(glen.W)
   val Typ = UInt(8.W)
+}
+
+object WriteReq {
+  def default(implicit p: Parameters): WriteReq = {
+    val wire = Wire(new WriteReq)
+    wire.address := 0.U
+    wire.data    := 0.U
+    wire.mask    := 0.U
+    wire.node    := 0.U
+    wire.RouteID := 0.U
+    wire.Typ     := MT_W
+    wire
+  }
 }
 
 // Explicitly indicate done flag
