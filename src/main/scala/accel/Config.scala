@@ -12,6 +12,7 @@ class AcceleratorConfig extends Config((site, here, up) => {
     case XLEN => 32
     case TLEN => 32
     case GLEN => 16
+    case MSHRLEN => 1
     case Trace => true
     
     // Cache

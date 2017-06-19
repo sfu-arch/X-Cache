@@ -26,6 +26,10 @@ abstract class CoreIO(implicit val p: Parameters) extends Module with CoreParams
 {
   val io = IO(
     new Bundle {
+      val start  = Input(Bool())
+      val init   = Input(Bool())
+      val ready  = Output(Bool())
+      val done   = Output(Bool())
       val ctrl   = Input(UInt(xlen.W))
       val addr   = Input(UInt(xlen.W))
       val len    = Input(UInt(xlen.W))
@@ -48,16 +52,14 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
   val state = RegInit(init = s_idle)
   val stall = !io.cache.resp.valid
 
-  val start_reg = RegNext(init=false.B,next=io.ctrl(0));
-
   switch (state) {
     // Idle
     is (s_idle) {
       req_addr := io.addr(31,0)
       word_count := 0.U
       // Start on a rising edge of start bit
-      when (io.ctrl(0) === true.B && start_reg === false.B) {
-        when(io.ctrl(1) === true.B) {
+      when (io.start) {
+        when(io.ctrl(0) === true.B) {
           state := s_read_req
         } .otherwise {
           state := s_write_req
@@ -70,13 +72,13 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
     }
     is (s_write_resp) {
       when(!stall) {
-	word_count := word_count + 1.U
-	req_addr := req_addr + dataBytes.U
-	when (word_count < io.len) {
+        word_count := word_count + 1.U
+        req_addr := req_addr + dataBytes.U
+        when (word_count < io.len) {
           state := s_write_req
-	} .otherwise {
+        } .otherwise {
           state := s_done
-	}
+        }
       }
     }
     // Read
@@ -96,12 +98,14 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
     }
     // Done
     is (s_done) {
-      state := s_idle
+      when(io.init) {
+        state := s_idle
+      }
     }
   }
 
   io.cache.req.valid     := (state === s_read_req || state === s_write_req ||
-                             state === s_read_resp || state === s_write_resp)
+    state === s_read_resp || state === s_write_resp)
   io.cache.req.bits.addr := req_addr
   io.cache.req.bits.data := write_data
 
@@ -111,11 +115,11 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
     io.cache.req.bits.mask := 0.U(dataBytes.W)
   }
 
-  io.stat := state.asUInt()
+  // Reflect state machine status to processor
+  io.done  := (state === s_done)
+  io.ready := (state === s_idle)
+  io.stat  := state.asUInt()
 
-//  val full_addr = req_addr + (word_count << log2Up(dataBytes).U)
-//  val byteshift = full_addr(log2Up(dataBytes) - 1, 0)
-//  val bitshift = Cat(byteshift, 0.U(3.W))
   val read_data = io.cache.resp.bits.data
 
   assert(!io.cache.resp.valid || read_data === expected_data, s"MemTest Core got wrong data")
