@@ -8,6 +8,7 @@ import chisel3.util._
 import junctions._
 import config._
 import interfaces._
+import NastiConstants._
 
 case object NWays extends Field[Int]
 case object NSets extends Field[Int]
@@ -133,6 +134,9 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   io.nasti.ar.bits := NastiReadAddressChannel(
     0.U, Cat(tag_reg, idx_reg) << blen.U, log2Ceil(nastiXDataBits/8).U, (dataBeats-1).U)
   io.nasti.ar.valid := false.B
+  io.nasti.ar.bits.prot := AXPROT(false, false, true)
+  io.nasti.ar.bits.user := 0x1f.U
+  io.nasti.ar.bits.cache := 0xf.U
   // read data
   io.nasti.r.ready := state === s_REFILL
   when(io.nasti.r.fire()) { refill_buf(read_count) := io.nasti.r.bits.data }
@@ -144,6 +148,9 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   io.nasti.aw.bits := NastiWriteAddressChannel(
     0.U, Cat(rmeta.tag, idx_reg) << blen.U, log2Ceil(nastiXDataBits/8).U, (dataBeats-1).U)
   io.nasti.aw.valid := false.B
+  io.nasti.aw.bits.prot := AXPROT(false, false, true)
+  io.nasti.aw.bits.user := 0x1f.U
+  io.nasti.aw.bits.cache := 0xf.U
   // write data
   io.nasti.w.bits := NastiWriteDataChannel(
     Vec.tabulate(dataBeats)(i => read((i+1)*nastiXDataBits-1, i*nastiXDataBits))(write_count),
