@@ -1,5 +1,4 @@
-Chisel Project Template
-=======================
+# Chisel Project Template
 
 ### List of Nodes:
 
@@ -22,7 +21,7 @@ Chisel Project Template
 
 -`TODO`: Fix ready signal for handshaking
 
-### Publish the repository
+# Publish the repository
 The publish-local command will publish to the local Ivy repository.
 By default, this is in ${user.home}/.ivy2/local.
 Other projects on the same machine can then list the project as a dependency.
