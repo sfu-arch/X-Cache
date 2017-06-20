@@ -28,7 +28,7 @@ By default, this is in ${user.home}/.ivy2/local.
 Other projects on the same machine can then list the project as a dependency.
 For example, if the SBT project you are publishing has configuration parameters like:
 
-```sbt
+```scala
 name := 'dataflow-lib'
 organization := 'sfu-arch'
 version := '0.1-SNAPSHOT'
@@ -36,7 +36,7 @@ version := '0.1-SNAPSHOT'
 
 Then another project can depend on it:
 
-```sbt
+```scala
 libraryDependencies += "sfu-arch" %% "dataflow-lib" % "0.1-SNAPSHOT"
 ```
 
