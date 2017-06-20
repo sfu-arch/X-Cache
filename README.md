@@ -22,6 +22,28 @@ Chisel Project Template
 
 -`TODO`: Fix ready signal for handshaking
 
+### Publish the repository
+The publish-local command will publish to the local Ivy repository.
+By default, this is in ${user.home}/.ivy2/local.
+Other projects on the same machine can then list the project as a dependency.
+For example, if the SBT project you are publishing has configuration parameters like:
+
+```sbt
+name := 'dataflow-lib'
+organization := 'sfu-arch'
+version := '0.1-SNAPSHOT'
+```
+
+Then another project can depend on it:
+
+```sbt
+libraryDependencies += "sfu-arch" %% "dataflow-lib" % "0.1-SNAPSHOT"
+```
+
+The version number you select must end with **SNAPSHOT**, or you must change the version number each time you publish.
+Ivy maintains a cache, and it stores even local projects in that cache.
+If Ivy already has a version cached, it will not check the local repository for updates, unless the version number matches a changing pattern, and SNAPSHOT is one such pattern.
+
 ### To Run individual test cases
 ```sh
 sbt 
