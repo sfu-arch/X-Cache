@@ -1,6 +1,6 @@
-name := "dataflow-lib"
+name := "dataflowLib"
 
-organization := "sfu-arch"
+organization := "sfu.arch"
 
 version := "0.1-SNAPSHOT"
 
