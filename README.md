@@ -29,15 +29,15 @@ Other projects on the same machine can then list the project as a dependency.
 For example, if the SBT project you are publishing has configuration parameters like:
 
 ```scala
-name := 'dataflow-lib'
-organization := 'sfu-arch'
+name := 'dataflowLib'
+organization := 'sfu.arch'
 version := '0.1-SNAPSHOT'
 ```
 
 Then another project can depend on it:
 
 ```scala
-libraryDependencies += "sfu-arch" %% "dataflow-lib" % "0.1-SNAPSHOT"
+libraryDependencies += "sfu.arch" %% "dataflowLib" % "0.1-SNAPSHOT"
 ```
 
 The version number you select must end with **SNAPSHOT**, or you must change the version number each time you publish.
