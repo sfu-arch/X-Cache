@@ -1,69 +1,100 @@
 // package memory
 
-// /**
-//   * Created by vnaveen0 on 3/6/17.
-//   */
+// // /**
+// //   * Created by vnaveen0 on 2/6/17.
+// //   */
 
-// import chisel3.iotesters.PeekPokeTester
+// import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+// import org.scalatest.{Matchers, FlatSpec}
+
 // import config._
-// import org.scalatest.{FlatSpec, Matchers}
 
-// class MemoryControllerTests2(c: MemoryController)(implicit p: config.Parameters) extends PeekPokeTester(c) {
+// class ReadNMemoryControllerTests(c: ReadNMemoryController)(implicit p: config.Parameters) extends PeekPokeTester(c) {
 
-
-//   for (t <- 0 until 12) {
-
-//     if(t>3) {
-
-//       for( i <- 0 until 4) {
-//         if(peek(c.io.ReadIn(i).ready) == 1 && (i==1 || i == 2 || i==3)) {
-//           poke(c.io.ReadIn(i).valid, true)
-//         }
-//         else {
-//           poke(c.io.ReadIn(i).valid, false)
-//         }
-//       }
-
-//       //-------------------------------------------
-
-//       poke(c.io.ReadIn(3).bits.address, 33)
-//       poke(c.io.ReadIn(3).bits.node, 3)
-//       // poke(c.io.ReadIn(3).bits.mask, 3)
-
-//       //-------------------------------------------
-//       poke(c.io.ReadIn(2).bits.address, 22)
-//       poke(c.io.ReadIn(2).bits.node, 2)
-//       // poke(c.io.ReadIn(2).bits.mask, 2)
-
-//       //-------------------------------------------
-//       poke(c.io.ReadIn(1).bits.address, 11)
-//       poke(c.io.ReadIn(1).bits.node, 1)
-//       // poke(c.io.ReadIn(1).bits.mask, 1)
-//     }
-//     else {
-//       poke(c.io.ReadIn(0).valid, false)
-//       poke(c.io.ReadIn(1).valid, false)
-//       poke(c.io.ReadIn(2).valid, false)
-//       poke(c.io.ReadIn(3).valid, false)
-
-//     }
+// 	var readidx = 0
+// 	poke(c.io.ReadIn(0).bits.address, 9)
+// 	poke(c.io.ReadIn(0).bits.RouteID, 0)
+// 	poke(c.io.ReadIn(0).bits.Typ,4)
+// 	poke(c.io.ReadIn(0).valid,1)
+// 	poke(c.io.ReadIn(1).bits.address, 8)
+// 	poke(c.io.ReadIn(1).bits.RouteID, 1)
+// 	poke(c.io.ReadIn(1).bits.Typ,1)
+// 	poke(c.io.ReadIn(1).valid,1)
+// 	for (t <- 2 until 7) {
+// 		poke(c.io.ReadIn(t).valid,0)
+// 	}
 
 
-//     printf(s"t: ${t} ---------------------------- \n")
+// 	var req  = false
+// 	var tag  = peek(c.io.CacheReq.bits.tag)	
+// 	var reqT = 0
+//     // in_arb.io.in(0).bits.RouteID := 0.U
+//     // in_arb.io.in(0).bits.Typ := MT_W
+//     // in_arb.io.in(0).valid := true.B
+// 	poke(c.io.CacheReq.ready,1)
+// 	poke(c.io.CacheResp.valid,false)
+// 	for (t <- 0 until 12) {
+// 		if((peek(c.io.CacheReq.valid) == 1) && (peek(c.io.CacheReq.ready) == 1)) {
+// 			printf(s"t: ${t} ---------------------------- \n")
+// 			req  = true
+// 			tag  = peek(c.io.CacheReq.bits.tag)
+// 			reqT = t
+// 		}
+// 		if ((req == true) && (t > reqT))
+// 		{
+// 			poke(c.io.CacheResp.valid,true)
+// 			poke(c.io.CacheResp.bits.data, 0xdeadbeefL)
+// 			printf("Tag:%d",tag)
+// 			poke(c.io.CacheResp.bits.tag,peek(c.io.CacheReq.bits.tag))
+// 			req = false
+// 		}
+// 		if (req == true) {
+// 			poke(c.io.CacheReq.ready,false)
+// 		} else {
+// 			poke(c.io.CacheReq.ready,true)
+// 		}
 
-//     printf(s"t: ${t}  io.ReadIn: ${peek(c.io.ReadIn(1))} chosen: 1 \n")
-//     printf(s"t: ${t}  io.ReadIn: ${peek(c.io.ReadIn(2))} chosen: 2 \n")
-//     printf(s"t: ${t}  io.ReadIn: ${peek(c.io.ReadIn(3))} chosen: 3 \n")
+// //     if(t<11) {
+// //       poke(c.io.ReadIn(1).valid, false)
+// //       poke(c.io.ReadIn(2).valid, false)
 
+// //       //-------------------------------------------
 
+// //       poke(c.io.ReadIn(readidx).valid, true)
+// //       poke(c.io.ReadIn(readidx).bits.address, 34)
+// //       poke(c.io.ReadIn(readidx).bits.node, 3)
+// //       // poke(c.io.ReadIn(readidx).bits.mask, 3)
 
-//     printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(1))} chosen: 1 \n")
-//     printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(2))} chosen: 2 \n")
-//     printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(3))} chosen: 3 \n")
+// //       //-------------------------------------------
+// //       poke(c.io.ReadIn(0).valid, true)
+// //       poke(c.io.ReadIn(0).bits.address, 43)
+// //       poke(c.io.ReadIn(0).bits.node, 0)
+// //       // poke(c.io.ReadIn(0).bits.mask, 0)
+// //     }
+// //     else {
+// //       poke(c.io.ReadIn(readidx).valid, false)
+// //       poke(c.io.ReadIn(0).valid, false)
+// //       poke(c.io.ReadIn(1).valid, false)
+// //       poke(c.io.ReadIn(2).valid, false)
 
-//     printf(s"t: ${t} ######################### \n")
-//     printf(s"t: ${t}  io.testReadReq: ${peek(c.io.testReadReq)} \n")
+// //     }
 
+// //     //    //TODO Create separate Test case for Demux
+// //     //    // To test Demux
+// //     //    if(t==1) {
+// //     //      poke(c.io.en,true)
+// //     //      poke(c.io.sel,readidx)
+// //     //      poke(c.io.input.data, 13)
+// //     //      poke(c.io.input.valid, 1)
+// //     //    }
+// //     //    else {
+// //     //      poke(c.io.en, false)
+// //     //    }
+
+// //     printf(s"t: ${t} ---------------------------- \n")
+// //     printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(readidx))} chosen: ${readidx} \n")
+// //     printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(0))} chosen: 0 \n")
+// // //    printf(s"t: ${t}  io.ReadIn: ${peek(c.io.ReadIn(readidx))} chosen: ${readidx} \n")
 //     step(1)
 
 //   }
@@ -71,11 +102,11 @@
 // }
 
 
-// class MemoryControllerTester2 extends  FlatSpec with Matchers {
+// class ReadNMemoryControllerTester extends  FlatSpec with Matchers {
 //   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
 //   it should "Memory Controller tester" in {
-//     chisel3.iotesters.Driver(() => new MemoryController(NReads = 4, NWrites = 1)(p)) {
-//       c => new MemoryControllerTests2(c)
+//     chisel3.iotesters.Driver(() => new ReadNMemoryController(NumOps=8,BaseSize=2)(p)) {
+//       c => new ReadNMemoryControllerTests(c)
 //     } should be(true)
 //   }
 // }

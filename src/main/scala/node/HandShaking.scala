@@ -248,13 +248,13 @@ class HandShaking(val NumPredOps: Int,
   val enable_valid_R = RegInit(false.B)
 
   // Predecessor Handshaking
-  val pred_valid_R = RegInit(Vec(Seq.fill(NumPredOps)(false.B)))
-  val pred_bundle_R = RegInit(Vec(Seq.fill(NumPredOps)(AckBundle.default)))
+  val pred_valid_R  = Seq.fill(NumPredOps)(RegInit(false.B))
+  val pred_bundle_R = Seq.fill(NumPredOps)(RegInit(AckBundle.default))
 
   // Successor Handshaking. Registers needed
-  val succ_ready_R = RegInit(Vec(Seq.fill(NumSuccOps)(false.B)))
-  val succ_valid_R = RegInit(Vec(Seq.fill(NumSuccOps)(false.B)))
-  val succ_bundle_R = RegInit(Vec(Seq.fill(NumSuccOps)(AckBundle.default)))
+  val succ_ready_R  = Seq.fill(NumSuccOps)(RegInit(false.B))
+  val succ_valid_R  = Seq.fill(NumSuccOps)(RegInit(false.B))
+  val succ_bundle_R = Seq.fill(NumSuccOps)(RegInit(AckBundle.default))
 
   // Output Handshaking
   val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
@@ -305,8 +305,8 @@ class HandShaking(val NumPredOps: Int,
   =            Helper Checks            =
   =====================================*/
   def IsEnable(): Bool = {
-    enable_R
-  }
+   return enable_R
+ }
 
   def IsEnableValid(): Bool = {
     enable_valid_R
@@ -318,38 +318,44 @@ class HandShaking(val NumPredOps: Int,
 
   // Check if Predecssors have fired
   def IsPredValid(): Bool = {
-    pred_valid_R.asUInt.andR
+   if (NumPredOps == 0) {
+     return true.B
+     } else {
+      Vec(pred_valid_R).asUInt.andR
+    }
   }
 
   // Fire Predecessors
   def ValidPred(): Unit = {
-    pred_valid_R := Vec(Seq.fill(NumPredOps) {
-      true.B
-    })
+    pred_valid_R.map { _ := true.B }
+    // pred_valid_R := Seq.fill(NumPredOps) {
+    //   true.B
+    // }
   }
 
   // Clear predessors
   def InvalidPred(): Unit = {
-    pred_valid_R := Vec(Seq.fill(NumPredOps) {
-      false.B
-    })
+    pred_valid_R.foreach { _ := false.B }
+    // pred_valid_R := Vec(Seq.fill(NumPredOps) {
+    //   false.B
+    // })
   }
 
   // Successors
   def IsSuccReady(): Bool = {
-    succ_ready_R.asUInt.andR
+    if (NumSuccOps == 0) {
+      return true.B
+    } else {
+      Vec(succ_ready_R).asUInt.andR
+    }
   }
 
   def ValidSucc(): Unit = {
-    succ_valid_R := Vec(Seq.fill(NumSuccOps) {
-      true.B
-    })
+    succ_valid_R.foreach { _ := true.B }
   }
 
   def InvalidSucc(): Unit = {
-    succ_valid_R := Vec(Seq.fill(NumSuccOps) {
-      false.B
-    })
+    succ_valid_R.foreach { _ := false.B }
   }
 
   // OUTs
@@ -370,12 +376,10 @@ class HandShaking(val NumPredOps: Int,
   }
 
   def Reset(): Unit = {
-    pred_valid_R := Vec(Seq.fill(NumPredOps) {
-      false.B
-    })
-    succ_ready_R := Vec(Seq.fill(NumSuccOps) {
-      false.B
-    })
+    pred_valid_R.foreach { _ := false.B }
+
+    succ_ready_R.foreach { _ := false.B }
+   
     out_ready_R := Vec(Seq.fill(NumOuts) {
       false.B
     })

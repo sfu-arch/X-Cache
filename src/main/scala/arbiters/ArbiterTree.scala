@@ -24,7 +24,7 @@ extends AbstractArbiterTree(NumOps, gen)(p) {
   var toplevel = Seq.fill(0) { Module(new RRArbiter(gen,4)).io }
   var Arbiters_per_Level = (NumOps + BaseSize - 1) / BaseSize
   while (Arbiters_per_Level > 0) {
-    val arbiters = Seq.fill(Arbiters_per_Level) { Module(new RRArbiter(gen, BaseSize)).io }
+    val arbiters = Seq.fill(Arbiters_per_Level) { Module(new LockingRRArbiter(gen, BaseSize, count=1)).io }
     if (prev.length != 0) {
       for (i <- 0 until arbiters.length * BaseSize) {
         if (i < prev.length) {

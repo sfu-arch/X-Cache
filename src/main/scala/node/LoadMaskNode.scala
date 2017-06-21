@@ -50,6 +50,8 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
   val token  = RegInit(0.U)
   val nodeID = RegInit(ID.U)
 
+  val counter = RegInit(1.U)
+
 
   // Gep address passed into load
   val GepOperand   = RegInit(0.U(xlen.W))
@@ -155,29 +157,29 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
 
  }
 
- val MuxEnable = RegInit(false.B)
- MuxEnable := true.B
- val Tree = Module(new ArbiterTree(BaseSize = 2, NumOps = 4, UInt(32.W)))
- val MuxTree = Module(new DeMuxTree(BaseSize = 2, NumOps = 16, new ReadResp()))
- MuxTree.io.enable := MuxEnable
- when (Tree.io.out.fire())
- {
-  MuxEnable := true.B  //MuxEnable
-  }
- MuxTree.io.input.data := 500.U+Tree.io.out.bits
- MuxTree.io.input.RouteID := Tree.io.out.bits
+ // val MuxEnable = RegInit(false.B)
+ // MuxEnable := true.B
+ val Tree = Module(new ArbiterTree(BaseSize = 2, NumOps = 8, UInt(32.W)))
+ // val MuxTree = Module(new DeMuxTree(BaseSize = 2, NumOps = 16, new ReadResp()))
+ // MuxTree.io.enable := MuxEnable
+ // when (Tree.io.out.fire())
+ // {
+ //  MuxEnable := true.B  //MuxEnable
+ //  }
+ // MuxTree.io.input.data := 500.U+Tree.io.out.bits
+ // MuxTree.io.input.RouteID := Tree.io.out.bits
 
  Tree.io.in(0).bits := 0.U
- Tree.io.in(0).valid := true.B
+ Tree.io.in(0).valid := (counter === 1.U)
  Tree.io.in(1).bits := 1.U
  Tree.io.in(1).valid := true.B
  Tree.io.in(2).bits := 2.U
  Tree.io.in(2).valid := true.B
  Tree.io.in(3).bits := 3.U
  Tree.io.in(3).valid := true.B
- Tree.io.out.ready := true.B
+ Tree.io.out.ready := (state =/= s_init)
  printf(p"Tree Out: ${Tree.io.out} \n")
- printf(p"\n MuxTree Out: ${MuxTree.io.outputs} \n")
+ // printf(p"\n MuxTree Out: ${MuxTree.io.outputs} \n")
 
   // val y = PriorityEncoder(0x4.U.toBools)
   //  printf("Priority: %x",y)
