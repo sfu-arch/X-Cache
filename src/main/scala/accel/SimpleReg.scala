@@ -33,7 +33,7 @@ import config._
   *                 Unused
   *                 Unused
   *
-  * @Note Since the control registers are readable, unused register bits will
+  * @note Since the control registers are readable, unused register bits will
   * not be automatically removed.  Pack the registers efficiently to save
   * logic.  Unused status register bits will automatically be removed from
   * the final logic.
