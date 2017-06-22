@@ -82,7 +82,7 @@ class DecoupledNodeSingle(val opCode: String, val ID: Int = 0)(implicit p: Param
   io.PredicateOUT := io.PredicateIN
 
   //Instantiate ALU with selected code
-  val FU = Module(new ALU(xlen, opCode))
+  val FU = Module(new UALU(xlen, opCode))
 
   // Input data
   val LeftOperand = RegInit(0.U(xlen.W))
@@ -141,7 +141,7 @@ class DecoupledNodeTwo(val opCode: String, val ID: Int = 0)(implicit p: Paramete
   io.PredicateOUT := io.PredicateIN
 
   //Instantiate ALU with selected code
-  val FU = Module(new ALU(xlen, opCode))
+  val FU = Module(new UALU(xlen, opCode))
 
   // Input data
   val LeftOperand = RegInit(0.U(xlen.W))

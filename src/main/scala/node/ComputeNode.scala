@@ -90,7 +90,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *============================================*/
 
   //Instantiate ALU with selected code
-  val FU = Module(new ALU(xlen, opCode))
+  val FU = Module(new UALU(xlen, opCode))
 
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data

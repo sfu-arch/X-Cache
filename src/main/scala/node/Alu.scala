@@ -70,7 +70,7 @@ object AluGenerator {
   * @param opCode opcode which indicates ALU operation
   * @param xlen   bit width of the inputs
   */
-class ALU(val xlen: Int, val opCode: String) extends Module {
+class UALU(val xlen: Int, val opCode: String) extends Module {
   val io = IO(new Bundle {
     val in1 = Input(UInt(xlen.W))
     val in2 = Input(UInt(xlen.W))
@@ -104,4 +104,43 @@ class ALU(val xlen: Int, val opCode: String) extends Module {
 }
 
 
+
+/**
+  * SALU class supports all the computation operations exist in LLVM
+  * to use the class you only need to specify the length of inputs
+  * and opCode of your alu.
+  *
+  * @param opCode opcode which indicates ALU operation
+  * @param xlen   bit width of the inputs
+  */
+class SALU(val xlen: Int, val opCode: String) extends Module {
+  val io = IO(new Bundle {
+    val in1 = Input(SInt(xlen.W))
+    val in2 = Input(SInt(xlen.W))
+    val out = Output(SInt(xlen.W))
+  })
+    val aluOp = Array(
+    AluOpCode.Add -> (io.in1 + io.in2),
+    AluOpCode.Sub -> (io.in1 - io.in2),
+    AluOpCode.And -> (io.in1 & io.in2),
+    AluOpCode.Or -> (io.in1 | io.in2),
+    AluOpCode.Xor -> (io.in1 ^ io.in2),
+    AluOpCode.Xnor -> (~(io.in1 ^ io.in2)),
+    AluOpCode.ShiftLeft -> (io.in1 << io.in2(4, 0)),
+    AluOpCode.ShiftRightLogical -> (io.in1 >> io.in2(4, 0)),
+
+    //BUG ALERT does not convert back to UInt properly !????
+    AluOpCode.ShiftRightArithmetic -> (io.in1.asSInt >> io.in2(4, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+    AluOpCode.SetLessThan -> (io.in1.asSInt < io.in2.asSInt),
+    AluOpCode.SetLessThanUnsigned -> (io.in1 < io.in2),
+    AluOpCode.PassA -> io.in1,
+    AluOpCode.PassB -> io.in2
+  )
+
+  assert(!AluOpCode.opMap.get(opCode).isEmpty, "Wrong ALU OP!")
+
+  io.out := AluGenerator(AluOpCode.opMap(opCode), aluOp)
+
+
+}
 
