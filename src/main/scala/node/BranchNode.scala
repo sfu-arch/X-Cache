@@ -93,8 +93,8 @@ class CBranchNode(ID: Int)
     */
   when(start & predicate) {
     state := s_COMPUTE
-    data0_R := cmp_R.data.asUInt.orR
-    data1_R := ~cmp_R.data.asUInt.orR
+    data0_R := ~cmp_R.data.asUInt.orR
+    data1_R := cmp_R.data.asUInt.orR
     pred_R := predicate
     ValidOut()
   }.elsewhen(start & ~predicate) {
@@ -139,8 +139,8 @@ class CBranchNode(ID: Int)
 
 class UBranchNode(ID: Int)
                  (implicit p: Parameters)
-  extends HandShakingNPS(NumOuts = 1, ID)(p) {
-  override lazy val io = IO(new HandShakingIONPS(NumOuts = 1)(p))
+  extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
+  override lazy val io = IO(new HandShakingCtrlIONPS(NumOuts = 1)(p))
   // Printf debugging
   override val printfSigil = "Node (CBR) ID: " + ID + " "
 
@@ -172,19 +172,9 @@ class UBranchNode(ID: Int)
   val pred_R = RegInit(false.B)
   val valid_R = RegInit(false.B)
 
-  //io.CmpIO.ready := ~cmp_R.valid
-  //when(io.CmpIO.fire()) {
-  ////printfInfo("Latch left data\n")
-  //state := s_LATCH
-  //cmp_R.data  := io.CmpIO.bits.data
-  //cmp_R.valid := true.B
-  //cmp_R.predicate := io.CmpIO.bits.predicate
-  //}
 
   // Wire up Outputs
-  io.Out(0).bits.data := data_R
-  io.Out(0).bits.predicate := pred_R
-  io.Out(0).bits.valid := valid_R
+  io.Out(0).bits.control := data_R.orR.toBool
 
   //printf(p"cmp_R: ${cmp_R}\n")
 

@@ -54,21 +54,17 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
   b0_entry.io.predicateIn(0).valid := true.B
 
   /**
-    * @todo make these connections as a bulk connection
+    * Connecting basic blocks to predicate instructions
     */
-  //Connecting m1 to b1_then BasicBlock
-  b1_then.io.predicateIn(0) <> m1.io.Out(1)
+  //Connecting m1 to b1_then
+  b1_then.io.predicateIn(0) <> m1.io.Out(0)
 
   //Connecting m1 to b2_end
-  b2_end.io.predicateIn(0) <> m1.io.Out(0)
-
+  b2_end.io.predicateIn(0) <> m1.io.Out(1)
 
   //Connecting m3 to b2_end
-//  m3.io.Out(0) <> b2_end.io.predicateIn(1)
-//  b2_end.io.predicateIn(1) <> m3.io.Out(0)
-  m3.io.Out(0).ready := b2_end.io.predicateIn(1).ready
-  b2_end.io.predicateIn(1).bits.control := m3.io.Out(0).bits.data.orR.toBool
-  b2_end.io.predicateIn(1).valid := m3.io.Out(0).valid
+  b2_end.io.predicateIn(1) <> m3.io.Out(0)
+
 
 
   /**
