@@ -34,14 +34,14 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
   val b2_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2)(p))
 
   //Compute
-  val m0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = 1)(p))
+  val m0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "EQ")(p))
   val m1 = Module(new CBranchNode(ID = 1))
 
-  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = 1)(p))
+  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(p))
   val m3 = Module(new UBranchNode(ID = 3)(p))
 
   val m4 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4))
-  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = 1)(p))
+  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(p))
 
 
   /**
@@ -57,16 +57,15 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
     * @todo make these connections as a bulk connection
     */
   //Connecting m1 to b1_then BasicBlock
-  m1.io.Out(0).ready := b1_then.io.predicateIn(0).ready
-  b1_then.io.predicateIn(0).bits.control := m1.io.Out(1).bits.data.orR.toBool
-  b1_then.io.predicateIn(0).valid := m1.io.Out(0).valid
+  b1_then.io.predicateIn(0) <> m1.io.Out(1)
 
   //Connecting m1 to b2_end
-  m1.io.Out(1).ready := b2_end.io.predicateIn(0).ready
-  b2_end.io.predicateIn(0).bits.control := m1.io.Out(0).bits.data.orR.toBool
-  b2_end.io.predicateIn(0).valid := m1.io.Out(1).valid
+  b2_end.io.predicateIn(0) <> m1.io.Out(0)
+
 
   //Connecting m3 to b2_end
+//  m3.io.Out(0) <> b2_end.io.predicateIn(1)
+//  b2_end.io.predicateIn(1) <> m3.io.Out(0)
   m3.io.Out(0).ready := b2_end.io.predicateIn(1).ready
   b2_end.io.predicateIn(1).bits.control := m3.io.Out(0).bits.data.orR.toBool
   b2_end.io.predicateIn(1).valid := m3.io.Out(0).valid

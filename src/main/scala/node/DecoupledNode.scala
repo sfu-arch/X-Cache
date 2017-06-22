@@ -73,7 +73,7 @@ abstract class NodeTwoIO(implicit val p: Parameters) extends Module with CorePar
   * @param opCode Opcode code comming from doc
   * @param ID     Node ID from dot graph file
   */
-class DecoupledNodeSingle(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeSingleIO()(p) {
+class DecoupledNodeSingle(val opCode: String, val ID: Int = 0)(implicit p: Parameters) extends NodeSingleIO()(p) {
 
   // Extra information
   val token_reg = RegInit(0.U(tlen.W))
@@ -132,7 +132,7 @@ class DecoupledNodeSingle(val opCode: Int, val ID: Int = 0)(implicit p: Paramete
 }
 
 
-class DecoupledNodeTwo(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends NodeTwoIO()(p) {
+class DecoupledNodeTwo(val opCode: String, val ID: Int = 0)(implicit p: Parameters) extends NodeTwoIO()(p) {
 
   // Extra information
   val token_reg = RegInit(0.U(tlen.W))

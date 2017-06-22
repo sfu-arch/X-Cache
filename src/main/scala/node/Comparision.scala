@@ -18,6 +18,19 @@ object CmpOpCode {
   val SLT     = 9
   val SLE     = 10
   val length  = 11
+
+  val CompMap = Map(
+  "EQ" -> EQ,
+  "NE" -> NE,
+  "UGT" -> UGT,
+  "UGE" -> UGE,
+  "ULT" -> ULT,
+  "ULE" -> ULE,
+  "SGT" -> SGT,
+  "SGE" -> SGE,
+  "SLT" -> SLT,
+  "SLE" -> SLE
+  )
 }
 
 
@@ -45,7 +58,7 @@ object CMPGenerator{
 }
 
 
-class UCMP(val xlen: Int, val opCode: Int) extends Module {
+class UCMP(val xlen: Int, val opCode: String) extends Module {
   val io = IO(new Bundle {
     val in1 = Input(UInt(xlen.W))
     val in2 = Input(UInt(xlen.W))
@@ -63,12 +76,13 @@ class UCMP(val xlen: Int, val opCode: Int) extends Module {
       CmpOpCode.ULE -> (io.in1  <= io.in2)
     )
 
-  io.out := CMPGenerator(opCode, cmpOp)
+  assert(!CmpOpCode.CompMap.get(opCode).isEmpty, "Wrong CMP OP!")
+  io.out := CMPGenerator(CmpOpCode.CompMap(opCode), cmpOp)
 
 }
 
 
-class SCMP(val xlen: Int, val opCode: Int) extends Module {
+class SCMP(val xlen: Int, val opCode: String) extends Module {
   val io = IO(new Bundle {
     val in1 = Input(SInt(xlen.W))
     val in2 = Input(SInt(xlen.W))
@@ -84,7 +98,10 @@ class SCMP(val xlen: Int, val opCode: Int) extends Module {
 
     )
 
-  io.out := CMPGenerator(opCode, aluOp)
+
+  assert(!CmpOpCode.CompMap.get(opCode).isEmpty, "Wrong CMP OP!")
+
+  io.out := CMPGenerator(CmpOpCode.CompMap(opCode), aluOp)
 
 }
 

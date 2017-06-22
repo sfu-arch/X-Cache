@@ -22,7 +22,7 @@ class ComputeNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle))
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
+class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
