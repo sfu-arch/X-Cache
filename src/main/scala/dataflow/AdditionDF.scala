@@ -89,11 +89,11 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
   val m0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "EQ")(p))
   val m1 = Module(new CBranchNode(ID = 1))
 
-  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(p))
+  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false)(p))
   val m3 = Module(new UBranchNode(ID = 3)(p))
 
   val m4 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4)(p))
-  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(p))
+  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(sign = false)(p))
 
   /**
     * Instantiating parameters
