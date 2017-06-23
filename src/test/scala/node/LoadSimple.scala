@@ -13,7 +13,7 @@ import utility._
 
 class LoadNodeTests(c: LoadNode) extends PeekPokeTester(c) {
     poke(c.io.GepAddr.valid,false)
-    poke(c.io.PredOp(0).valid,true)
+    poke(c.io.PredOp(0).valid,false)
     poke(c.io.memReq.ready,false)
     poke(c.io.memResp.valid,false)
     poke(c.io.SuccOp(0).ready,true)
@@ -28,7 +28,7 @@ class LoadNodeTests(c: LoadNode) extends PeekPokeTester(c) {
       // send address
       if (peek(c.io.GepAddr.ready) == 1) {
         poke(c.io.GepAddr.valid, true)
-        poke(c.io.GepAddr.bits.predicate,false)
+        poke(c.io.GepAddr.bits.predicate,true)
         poke(c.io.GepAddr.bits.data, 12)
         poke(c.io.enable.valid,true)
         poke(c.io.enable.bits,true)

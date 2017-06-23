@@ -20,11 +20,11 @@ extends AbstractArbiterTree(NumOps, gen)(p) {
   require(NumOps > 0)
   require(isPow2(BaseSize))
   val ArbiterReady = RegInit(true.B)
-  var prev = Seq.fill(0) { Module(new RRArbiter(gen,4)).io }
-  var toplevel = Seq.fill(0) { Module(new RRArbiter(gen,4)).io }
+  var prev = Seq.fill(0) { Module(new LockingRRArbiter(gen,4,count=Typ_SZ)).io }
+  var toplevel = Seq.fill(0) { Module(new LockingRRArbiter(gen,4,count=Typ_SZ)).io }
   var Arbiters_per_Level = (NumOps + BaseSize - 1) / BaseSize
   while (Arbiters_per_Level > 0) {
-    val arbiters = Seq.fill(Arbiters_per_Level) { Module(new LockingRRArbiter(gen, BaseSize, count=1)).io }
+    val arbiters = Seq.fill(Arbiters_per_Level) { Module(new LockingRRArbiter(gen, BaseSize, count=Typ_SZ)).io }
     if (prev.length != 0) {
       for (i <- 0 until arbiters.length * BaseSize) {
         if (i < prev.length) {

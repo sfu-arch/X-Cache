@@ -115,15 +115,6 @@ class WriteResp(implicit p: Parameters)
   val done = Bool()
 }
 
-
-class RvIO(implicit p: Parameters) extends CoreBundle()(p) {
-  override def cloneType = new RvIO().asInstanceOf[this.type]
-
-  val ready = Input(Bool())
-  val valid = Output(Bool())
-  val bits = Output(UInt(xlen.W))
-}
-
 /**
   * @note Implements ordering between dataflow ops.
   * @param predicate : predicate bit indicating if operations can continue
@@ -143,34 +134,6 @@ object AckBundle {
   }
 }
 
-/**
-  * RvAckIO
-  * RvAckIO for ordering and serializing ops in the dataflow
-  *
-  * @note 3 fields
-  *       ready, valid and token(32.W)
-  * @param p : implicit
-  *
-  */
-// TO BE RETIRED
-class RvAckIO(implicit p: Parameters) extends CoreBundle()(p) {
-  override def cloneType = new RvAckIO().asInstanceOf[this.type]
-
-  def fire(): Bool = ready && valid
-
-  val ready = Input(Bool())
-  val valid = Output(Bool())
-}
-
-// object RvAckIO {
-//    def default(implicit p: Parameters): RvAckIO = {
-//     val wire = Wire(new RvAckIOIO)
-//     wire.valid := false.B
-//     wire.ready := false.B
-//     wire.predicate := false.B
-//     wire
-//   }
-// }
 
 //class RelayNode output
 class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
