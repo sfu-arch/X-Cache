@@ -22,7 +22,7 @@ class IcmpNodeIO(NumOuts: Int)
     val RightIO = Flipped(Decoupled(new DataBundle))
 }
 
-class IcmpNode(NumOuts: Int, ID: Int, opCode: Int)
+class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
   (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(p) {
     override lazy val io = IO(new ComputeNodeIO(NumOuts))

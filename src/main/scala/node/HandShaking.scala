@@ -53,6 +53,14 @@ class HandShakingIONPS(val NumOuts: Int)
   val Out = Vec(NumOuts, Decoupled(DataBundle.default))
 }
 
+class HandShakingCtrlIONPS(val NumOuts: Int)
+                      (implicit p: Parameters)
+  extends CoreBundle()(p) {
+  // Predicate enable
+  val enable = Flipped(Decoupled(Bool()))
+  // Output IO
+  val Out = Vec(NumOuts, Decoupled(ControlBundle.default))
+}
 
 /**
   * @note Type2
@@ -215,6 +223,103 @@ class HandShakingNPS(val NumOuts: Int,
     enable_valid_R := false.B
   }
 }
+/**
+  * @brief Handshaking between data nodes with no ordering.
+  * @details Sets up base registers and hand shaking registers
+  * @param NumOuts Number of outputs
+  * @param ID      Node id
+  * @return Module
+  */
+
+class HandShakingCtrlNPS(val NumOuts: Int,
+                     val ID: Int)
+                    (implicit val p: Parameters)
+  extends Module with CoreParams with UniformPrintfs {
+
+  lazy val io = IO(new HandShakingCtrlIONPS(NumOuts))
+
+  /*=================================
+  =            Registers            =
+  =================================*/
+  // Extra information
+  val token = RegInit(0.U)
+  val nodeID_R = RegInit(ID.U)
+
+  // Enable
+  val enable_R = RegInit(true.B)
+  val enable_valid_R = RegInit(false.B)
+
+  // Output Handshaking
+  val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
+  val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
+
+
+  /*============================*
+   *           Wiring           *
+   *============================*/
+
+  // Wire up OUT READYs and VALIDs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).valid := out_valid_R(i)
+    when(io.Out(i).fire()) {
+      // Detecting when to reset
+      out_ready_R(i) := io.Out(i).ready
+      // Propagating output
+      out_valid_R(i) := false.B
+    }
+  }
+
+  // Wire up enable READY and VALIDs
+  io.enable.ready := ~enable_valid_R
+  when(io.enable.fire()) {
+    enable_valid_R := io.enable.valid
+    enable_R := io.enable.bits
+  }
+
+  /*===================================*
+   *            Helper Checks          *
+   *===================================*/
+  def IsEnable(): Bool = {
+    enable_R
+  }
+
+  def IsEnableValid(): Bool = {
+    enable_valid_R
+  }
+
+  def ResetEnable(): Unit = {
+    enable_valid_R := false.B
+  }
+
+  // OUTs
+  def IsOutReady(): Bool = {
+    out_ready_R.asUInt.andR
+  }
+
+  def IsOutValid(): Bool = {
+    out_valid_R.asUInt.andR
+  }
+
+  def ValidOut(): Unit = {
+    out_valid_R := Vec(Seq.fill(NumOuts) {
+      true.B
+    })
+  }
+
+  def InvalidOut(): Unit = {
+    out_valid_R := Vec(Seq.fill(NumOuts) {
+      false.B
+    })
+  }
+
+  def Reset(): Unit = {
+    out_ready_R := Vec(Seq.fill(NumOuts) {
+      false.B
+    })
+    enable_valid_R := false.B
+  }
+}
+
 
 
 /**

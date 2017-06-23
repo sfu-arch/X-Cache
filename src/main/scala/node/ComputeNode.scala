@@ -14,15 +14,16 @@ import util._
 
 class ComputeNodeIO(NumOuts: Int)
                    (implicit p: Parameters)
-  extends HandShakingIONPS(NumOuts) {
-  // LeftIO: Left input data for computation
-  val LeftIO = Flipped(Decoupled(new DataBundle))
+extends HandShakingIONPS (NumOuts) {
+// LeftIO: Left input data for computation
+val LeftIO = Flipped (Decoupled (new DataBundle) )
 
-  // RightIO: Right input data for computation
-  val RightIO = Flipped(Decoupled(new DataBundle))
+// RightIO: Right input data for computation
+val RightIO = Flipped (Decoupled (new DataBundle) )
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
+class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
+                 (sign: Boolean)
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
@@ -90,7 +91,10 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: Int)
    *============================================*/
 
   //Instantiate ALU with selected code
-  val FU = Module(new ALU(xlen, opCode))
+  var FU = Module(new UALU(xlen, opCode))
+  if(sign){
+    val FU = Module(new SALU(xlen, opCode))
+  }
 
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
