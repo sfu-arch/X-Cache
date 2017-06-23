@@ -13,19 +13,21 @@ case object TLEN       extends Field[Int]
 case object GLEN       extends Field[Int]
 case object RDMSHRLEN  extends Field[Int]
 case object WRMSHRLEN  extends Field[Int]
-case object TYP        extends Field[Int]
+case object NLEN       extends Field[Int]
 case object TYPSZ      extends Field[Int]
+case object BEATS    extends Field[Int]
 case object Trace      extends Field[Boolean]
 case object BuildRFile extends Field[Parameters => AbstractRFile]
 
 
 abstract trait CoreParams {
   implicit val p: Parameters
-  val xlen = p(XLEN)
-  val tlen = p(TLEN)
-  val glen = p(GLEN)
-  val Typ_SZ = p(TYPSZ)
-  val DataTyp    = p(TYP)
+  val xlen    = p(XLEN)
+  val tlen    = p(TLEN)
+  val glen    = p(GLEN)
+  val Typ_SZ  = p(TYPSZ)
+  val nlen    = p(NLEN)
+  val Beats   = p(Typ_SZ)/p(nlen)
   val rdmshrlen = p(RDMSHRLEN)
   val wrmshrlen = p(WRMSHRLEN)
 }
@@ -43,9 +45,9 @@ class MiniConfig extends Config((site, here, up) => {
     // Size of write MSHR table bits 
     case WRMSHRLEN => 0
     // Specific Typ
-    case TYP => 1
+    case NLEN => 32
     // Max size of type memory system may see
-    case TYPSZ  => 2
+    case TYPSZ  => 64
     case Trace => true
     case BuildRFile    => (p: Parameters) => Module(new RFile(32)(p))
 
