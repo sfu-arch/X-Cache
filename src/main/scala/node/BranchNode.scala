@@ -15,12 +15,13 @@ import util._
 
 /**
   * @note
-  * For Conditional Branch output is always equalt to two!
+  * For Conditional Branch output is always equal to two!
+  * Since your branch output wire to two different basic block only
   */
 
 class CBranchNodeIO(NumOuts: Int = 2)
                    (implicit p: Parameters)
-  extends HandShakingIONPS(NumOuts) {
+  extends HandShakingCtrlIONPS(NumOuts) {
 
   // RightIO: Right input data for computation
   val CmpIO = Flipped(Decoupled(new DataBundle))
@@ -28,7 +29,7 @@ class CBranchNodeIO(NumOuts: Int = 2)
 
 class CBranchNode(ID: Int)
                  (implicit p: Parameters)
-  extends HandShakingNPS(2, ID)(p) {
+  extends HandShakingCtrlNPS(2, ID)(p) {
   override lazy val io = IO(new CBranchNodeIO())
   // Printf debugging
   override val printfSigil = "Node ID: " + ID + " "
@@ -72,11 +73,11 @@ class CBranchNode(ID: Int)
   }
 
   // Wire up Outputs
-  io.Out(0).bits.data := data0_R
-  io.Out(0).bits.predicate := pred_R
+  io.Out(0).bits.control := data0_R.orR.toBool
+//  io.Out(0).bits.predicate := pred_R
 
-  io.Out(1).bits.data := data1_R
-  io.Out(1).bits.predicate := pred_R
+  io.Out(1).bits.control := data1_R.orR.toBool
+//  io.Out(1).bits.predicate := pred_R
 
   //printf(p"cmp_R: ${cmp_R}\n")
 
@@ -92,8 +93,8 @@ class CBranchNode(ID: Int)
     */
   when(start & predicate) {
     state := s_COMPUTE
-    data0_R := cmp_R.data.asUInt.orR
-    data1_R := ~cmp_R.data.asUInt.orR
+    data0_R := ~cmp_R.data.asUInt.orR
+    data1_R := cmp_R.data.asUInt.orR
     pred_R := predicate
     ValidOut()
   }.elsewhen(start & ~predicate) {
@@ -138,8 +139,8 @@ class CBranchNode(ID: Int)
 
 class UBranchNode(ID: Int)
                  (implicit p: Parameters)
-  extends HandShakingNPS(NumOuts = 1, ID)(p) {
-  override lazy val io = IO(new HandShakingIONPS(NumOuts = 1)(p))
+  extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
+  override lazy val io = IO(new HandShakingCtrlIONPS(NumOuts = 1)(p))
   // Printf debugging
   override val printfSigil = "Node (CBR) ID: " + ID + " "
 
@@ -171,19 +172,9 @@ class UBranchNode(ID: Int)
   val pred_R = RegInit(false.B)
   val valid_R = RegInit(false.B)
 
-  //io.CmpIO.ready := ~cmp_R.valid
-  //when(io.CmpIO.fire()) {
-  ////printfInfo("Latch left data\n")
-  //state := s_LATCH
-  //cmp_R.data  := io.CmpIO.bits.data
-  //cmp_R.valid := true.B
-  //cmp_R.predicate := io.CmpIO.bits.predicate
-  //}
 
   // Wire up Outputs
-  io.Out(0).bits.data := data_R
-  io.Out(0).bits.predicate := pred_R
-  io.Out(0).bits.valid := valid_R
+  io.Out(0).bits.control := data_R.orR.toBool
 
   //printf(p"cmp_R: ${cmp_R}\n")
 

@@ -191,7 +191,7 @@ class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
   */
 class DataBundle(implicit p: Parameters) extends CoreBundle()(p) {
   // Data packet
-  val data = UInt((xlen.W))
+  val data = UInt(xlen.W)
   val predicate = Bool()
   val valid = Bool()
 }
@@ -228,6 +228,33 @@ object ControlBundle {
   def Activate(implicit p : Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := true.B
+    wire
+  }
+}
+
+
+
+/**
+  * Custom Data bundle between dataflow nodes.
+  * @param len number of bits
+  * @note 2 fields
+  *       data : U(len.W)
+  *       predicate : Bool
+  * @return
+  */
+class CustomDataBundle(len : Int)(implicit p: Parameters) extends  CoreBundle()(p){
+  // Data packet
+  val data = UInt(len.W)
+  val predicate = Bool()
+  val valid = Bool()
+}
+
+object CustomDataBundle {
+  def default(bitLen : Int)(implicit p : Parameters): CustomDataBundle = {
+    val wire = Wire(new CustomDataBundle(len = bitLen))
+    wire.data := 0.U
+    wire.predicate := false.B
+    wire.valid := false.B
     wire
   }
 }
