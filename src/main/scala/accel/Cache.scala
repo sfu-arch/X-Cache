@@ -28,7 +28,7 @@ class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
 
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())
-  val req   = Flipped(Valid(new CacheReq))
+  val req   = Flipped(Decoupled(new CacheReq))
   val resp  = Valid(new CacheResp)
 }
 
@@ -70,6 +70,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
   val cpu_data = Reg(io.cpu.req.bits.data.cloneType)
   val cpu_mask = Reg(io.cpu.req.bits.mask.cloneType)
+  val cpu_tag  = Reg(io.cpu.req.bits.tag.cloneType)
 
   // Counters
   require(dataBeats > 0)
@@ -100,10 +101,13 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val read = Mux(is_alloc_reg, refill_buf.toBits, Mux(ren_reg, rdata, rdata_buf))
 
   hit := v(idx_reg) && rmeta.tag === tag_reg 
+  cpu_tag := io.cpu.req.bits.tag
 
   // Read Mux
   io.cpu.resp.bits.data := Vec.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
+  io.cpu.resp.bits.tag  := cpu_tag
   io.cpu.resp.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_mask.orR
+  io.cpu.req.ready      := !is_idle
 
   when(io.cpu.resp.valid) { 
     addr_reg  := addr

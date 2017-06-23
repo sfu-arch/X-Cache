@@ -51,6 +51,7 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
   val (s_idle :: s_write_req :: s_write_resp :: s_read_req :: s_read_resp :: s_done :: Nil) = Enum(6)
   val state = RegInit(init = s_idle)
   val stall = !io.cache.resp.valid
+  val err_latch = Reg(Bool())
 
   switch (state) {
     // Idle
@@ -68,7 +69,9 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
     }
     // Write
     is (s_write_req) {
-      state := s_write_resp
+      when (io.cache.req.ready) {
+	state := s_write_resp
+      }
     }
     is (s_write_resp) {
       when(!stall) {
@@ -83,7 +86,9 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
     }
     // Read
     is (s_read_req) {
-      state := s_read_resp
+      when (io.cache.req.ready) {
+	state := s_read_resp 
+      }
     }
     is (s_read_resp) {
       when(!stall) {
@@ -108,6 +113,7 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
     state === s_read_resp || state === s_write_resp)
   io.cache.req.bits.addr := req_addr
   io.cache.req.bits.data := write_data
+  io.cache.req.bits.tag  := 1.U
 
   when (state === s_write_req || state === s_write_resp) {
     io.cache.req.bits.mask := ~0.U(dataBytes.W)
@@ -115,12 +121,15 @@ class Core(implicit p: Parameters) extends CoreIO()(p) {
     io.cache.req.bits.mask := 0.U(dataBytes.W)
   }
 
+  val read_data = io.cache.resp.bits.data
+  when (io.cache.resp.valid && io.cache.resp.bits.tag === 1.U && read_data =/= expected_data) {
+    err_latch := true.B
+  } 
+
   // Reflect state machine status to processor
   io.done  := (state === s_done)
   io.ready := (state === s_idle)
-  io.stat  := state.asUInt()
+  io.stat  := Cat(err_latch,state.asUInt())
 
-  val read_data = io.cache.resp.bits.data
 
-  assert(!io.cache.resp.valid || read_data === expected_data, s"MemTest Core got wrong data")
 }

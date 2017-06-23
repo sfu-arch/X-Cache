@@ -14,20 +14,23 @@ class NastiMasterReq(implicit p: Parameters) extends CoreBundle()(p) {
   val tag  = UInt(4.W)
 }
 
+object NastiMasterReq {
+  def apply(addr : UInt = 0.U, data: UInt = 0.U, read: UInt = 0.U,
+            mask: UInt = 0.U, tag: UInt = 0.U)(implicit p: Parameters): NastiMasterReq =
+  {
+    val w = Wire(new NastiMasterReq)
+    w.addr := addr
+    w.data := data
+    w.read := read
+    w.mask := mask
+    w.tag  := tag
+    w
+  }
+}
+
 class NastiMasterResp(implicit p: Parameters) extends CoreBundle()(p) {
   val data = UInt(xlen.W)
   val tag  = UInt(4.W)
-}
-
-abstract class NastiMasterIO()(implicit val p: Parameters) extends Module with CoreParams
-{
-  val io = IO(
-    new Bundle {
-      val req  = Decoupled(new NastiMasterReq())
-      val resp = Valid(new NastiMasterResp())
-      val nasti = new NastiIO()
-    }
-  )
 }
 
 object NastiMasterResp {
@@ -39,6 +42,18 @@ object NastiMasterResp {
     w
   }
 }
+
+abstract class NastiMasterIO()(implicit val p: Parameters) extends Module with CoreParams
+{
+  val io = IO(
+    new Bundle {
+      val req  = Flipped(Decoupled(new NastiMasterReq()))
+      val resp = Valid(new NastiMasterResp())
+      val nasti = new NastiIO()
+    }
+  )
+}
+
 
 class NastiMaster()(implicit p: Parameters) extends NastiMasterIO()(p) {
 
@@ -81,7 +96,7 @@ class NastiMaster()(implicit p: Parameters) extends NastiMasterIO()(p) {
           aw_r.len := 0.U
           aw_r.size := 2.U
         }
-        when(!io.nasti.ar.ready) {
+        when(!io.nasti.ar.ready && !io.nasti.aw.ready) {
           addrState   := sAWait
           req_ready_r := false.B
         }
@@ -91,7 +106,7 @@ class NastiMaster()(implicit p: Parameters) extends NastiMasterIO()(p) {
       }
     }
     is(sAWait) {
-      when(io.nasti.ar.ready) {
+      when(io.nasti.ar.ready || io.nasti.aw.ready) {
         addrState := sAIdle
         req_ready_r := true.B
         ar_valid_r := false.B
@@ -111,7 +126,6 @@ class NastiMaster()(implicit p: Parameters) extends NastiMasterIO()(p) {
   //-------------------------------------------------------------------
   switch(wState) {
     is(sIdle) {
-      io.req.ready := true.B
       when(io.req.valid) {
         when(!io.req.bits.read) {
           w_valid_r := true.B
@@ -119,19 +133,17 @@ class NastiMaster()(implicit p: Parameters) extends NastiMasterIO()(p) {
           w_r.id := io.req.bits.tag
           w_r.strb := io.req.bits.mask
           w_r.last := true.B
+          when(!io.nasti.w.ready) {
+            wState := sWait
+          }
         }
-        when(io.nasti.w.ready) {
-          addrState   := sWait
-        }
-      } .otherwise {
+      }.otherwise {
         w_valid_r := false.B
       }
     }
     is(sWait) {
-      when(!io.nasti.w.ready) {
+      when(io.nasti.w.ready) {
         wState := sIdle
-        req_ready_r := true.B
-        req_ready_r := false.B
         w_valid_r := false.B
       }
     }
