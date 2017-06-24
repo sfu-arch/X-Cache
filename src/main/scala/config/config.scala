@@ -27,7 +27,7 @@ abstract trait CoreParams {
   val glen    = p(GLEN)
   val Typ_SZ  = p(TYPSZ)
   val nlen    = p(NLEN)
-  val Beats   = p(Typ_SZ)/p(nlen)
+  val Beats   = p(TYPSZ)/p(NLEN)
   val rdmshrlen = p(RDMSHRLEN)
   val wrmshrlen = p(WRMSHRLEN)
 }
