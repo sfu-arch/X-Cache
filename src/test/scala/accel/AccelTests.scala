@@ -7,35 +7,64 @@ import chisel3.util._
 import chisel3.testers._
 import junctions._
 
+class Command extends Bundle {
+  val opCode = UInt()
+  val op0 = UInt()
+  val op1 = UInt()
+  val op2 = UInt()
+  val op3 = UInt()
+}
 
-class AccelTester(cache: => Cache)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
+object Command {
+  def apply(opCode: UInt, op0: UInt = 0.U, op1: UInt = 0.U, op2: UInt = 0.U, op3: UInt = 0.U): Command = {
+    val c = Wire(new Command)
+    c.opCode := opCode
+    c.op0 := op0
+    c.op1 := op1
+    c.op2 := op2
+    c.op3 := op3
+    c
+  }
+}
+
+class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
+
+  val nop_cmd :: rd_cmd :: wr_cmd :: Nil = Enum(3) // OpCodes
+
+  /* NastiMaster block to emulate CPU */
+  val hps = Module(new NastiMaster)
   /* Target Design */
-  val dut = Module(cache)
+  val dut = Module(accel)
+  /* Memory model interface */
   val dut_mem = Wire(new NastiIO)
-  // Throw nasti I/O into a queue (for some reason)
-  dut_mem.ar <> Queue(dut.io.nasti.ar, 32)
-  dut_mem.aw <> Queue(dut.io.nasti.aw, 32)
-  dut_mem.w <> Queue(dut.io.nasti.w, 32)
-  dut.io.nasti.b <> Queue(dut_mem.b, 32)
-  dut.io.nasti.r <> Queue(dut_mem.r, 32)
 
-  val size  = log2Up(nastiXDataBits / 8).U
-  val len   = (dataBeats - 1).U
+  // Connect CPU to DUT
+  dut.io.h2f <> hps.io.nasti
+
+  // Connect DUT Cache I/O to a queue for the memory model logic
+  dut_mem.ar <> Queue(dut.io.f2h.ar, 32)
+  dut_mem.aw <> Queue(dut.io.f2h.aw, 32)
+  dut_mem.w <> Queue(dut.io.f2h.w, 32)
+  dut.io.f2h.b <> Queue(dut_mem.b, 32)
+  dut.io.f2h.r <> Queue(dut_mem.r, 32)
+
+  val size = log2Ceil(nastiXDataBits / 8).U
+  val len = (dataBeats - 1).U
 
   /* Main Memory */
   val mem = Mem(1 << 20, UInt(nastiXDataBits.W))
-  val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: Nil = Enum(UInt(), 4)
+  val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: Nil = Enum(4)
   val memState = RegInit(sMemIdle)
   val (wCnt, wDone) = Counter(memState === sMemWrite && dut_mem.w.valid, dataBeats)
   val (rCnt, rDone) = Counter(memState === sMemRead && dut_mem.r.ready, dataBeats)
 
-  dut_mem.ar.ready  := false.B
-  dut_mem.aw.ready  := false.B
-  dut_mem.w.ready   := false.B
-  dut_mem.b.valid   := memState === sMemWrAck
-  dut_mem.b.bits    := NastiWriteResponseChannel(0.U)
-  dut_mem.r.valid   := memState === sMemRead
-  dut_mem.r.bits    := NastiReadDataChannel(0.U, mem((dut_mem.ar.bits.addr >> size) + rCnt), rDone)
+  dut_mem.ar.ready := false.B
+  dut_mem.aw.ready := false.B
+  dut_mem.w.ready := false.B
+  dut_mem.b.valid := memState === sMemWrAck
+  dut_mem.b.bits := NastiWriteResponseChannel(0.U)
+  dut_mem.r.valid := memState === sMemRead
+  dut_mem.r.bits := NastiReadDataChannel(0.U, mem((dut_mem.ar.bits.addr >> size) + rCnt), rDone)
 
   switch(memState) {
     is(sMemIdle) {
@@ -47,7 +76,7 @@ class AccelTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
     }
     is(sMemWrite) {
       assert(dut_mem.aw.bits.size === size)
-      assert(dut_mem.aw.bits.len  === len)
+      assert(dut_mem.aw.bits.len === len)
       when(dut_mem.w.valid) {
         mem((dut_mem.aw.bits.addr >> size) + wCnt) := dut_mem.w.bits.data
         printf("[write] mem[%x] <= %x\n", (dut_mem.aw.bits.addr >> size) + wCnt, dut_mem.w.bits.data)
@@ -75,92 +104,87 @@ class AccelTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
   }
 
   /* Tests */
-  val rnd = new scala.util.Random
-  def rand_tag = rnd.nextInt(1 << tlen).U(tlen.W)
-  def rand_idx = rnd.nextInt(1 << slen).U(slen.W)
-  def rand_off = (rnd.nextInt(1 << blen) & -4).U(blen.W)
-  def rand_data = (((0 until (nastiXDataBits / 8)) foldLeft BigInt(0))((r, i) =>
-  r | (BigInt(rnd.nextInt(0xff + 1)) << (8 * i)))).U(nastiXDataBits.W)
-  def rand_mask = 3.U((xlen/8).W) //(rnd.nextInt((1 << (xlen / 8)) - 1) + 1).U((xlen / 8).W)
-  def test(tag: UInt, idx: UInt, off: UInt, mask: UInt = 0.U((xlen / 8).W)) =
-    Cat(mask, Cat(Seq.fill(bBits / nastiXDataBits)(rand_data)), tag, idx, off)
+  val testVec = Seq(
+    Command(rd_cmd, "h_C000_0800".U, "h_0000_0002".U), // Read Init/Done status reg
+    Command(rd_cmd, "h_C000_0804".U, "h_0000_0000".U), // Read Unused
+    Command(rd_cmd, "h_C000_0808".U, "h_55AA_0001".U), // Read Version status reg
+    Command(rd_cmd, "h_C000_080C".U, "h_0000_0000".U), // Read Core status reg
+    Command(rd_cmd, "h_C000_0810".U, "h_0000_0000".U), // Read Cache status reg
+    Command(wr_cmd, "h_C000_0000".U, "h_0000_0002".U), // Set Init bit
+    Command(wr_cmd, "h_C000_0008".U, "h_0000_0000".U), // Set Read/Write bit to zero (write)
+    Command(wr_cmd, "h_C000_000C".U, "h_2000_0000".U), // Set address to 0x2000_0000
+//    Command(rd_cmd, "h_C000_000C".U, "h_2000_0000".U), // Read back address
+    Command(wr_cmd, "h_C000_0010".U, "h_0000_1000".U) // Set address to 0x2000_0000
+//    Command(rd_cmd, "h_C000_0010".U, "h_0000_1000".U), // Read back length
+//    Command(wr_cmd, "h_C000_0000".U, "h_0000_0001".U)  // Set start bit
+//    Command(nop_cmd)
+  )
 
-    val tags = Vector.fill(3)(rand_tag)
-    val idxs = Vector.fill(2)(rand_idx)
-    val offs = Vector.fill(6)(rand_off)
+  val sIdle :: sNastiReadReq :: sNastiReadResp:: sNastiWriteReq :: sDone :: Nil = Enum(5)
+  val testState = RegInit(sIdle)
+  val (testCnt, testDone) = Counter(testState === sDone, testVec.size)
+  val req_r = RegInit(NastiMasterReq())
+  val req_valid_r = RegInit(false.B)
 
-    val initAddr = for {
-      tag <- tags
-      idx <- idxs
-      off <- 0 until dataBeats
-    } yield Cat(tag, idx, off.U)
-    val initData = Seq.fill(initAddr.size)(rand_data)
-    val testVec  = Seq(
-      test(tags(0), idxs(0), offs(0), rand_mask), // #5: write hit
-      test(tags(0), idxs(0), offs(0)), // #0: read miss
-      test(tags(0), idxs(0), offs(1)), // #1: read hit
-      test(tags(1), idxs(0), offs(0)), // #2: read miss
-      test(tags(1), idxs(0), offs(2)), // #3: read hit
-      test(tags(1), idxs(0), offs(3)), // #4: read hit
-      test(tags(1), idxs(0), offs(4), rand_mask), // #5: write hit
-      test(tags(1), idxs(0), offs(4)), // #6: read hit
-      test(tags(2), idxs(0), offs(5)), // #7: read miss & write back
-      test(tags(0), idxs(1), offs(0), rand_mask), // #8: write miss
-      test(tags(0), idxs(1), offs(0)), // #9: read hit
-      test(tags(0), idxs(1), offs(1)), // #10: read hit
-      test(tags(1), idxs(1), offs(2), rand_mask), // #11: write miss & write back
-      test(tags(1), idxs(1), offs(3)), // #12: read hit
-      test(tags(2), idxs(1), offs(4)), // #13: read write back
-      test(tags(2), idxs(1), offs(5))  // #14: read hit
-    )
-
-    val sInit :: sStart :: sWait :: sDone :: Nil = Enum(UInt(), 4)
-    val state = RegInit(sInit)
-    val timeout = Reg(UInt(32.W))
-    val (initCnt, initDone) = Counter(state === sInit, initAddr.size)
-    val (testCnt, testDone) = Counter(state === sDone, testVec.size)
-    val mask = (Vec(testVec)(testCnt) >> (blen + slen + tlen + bBits))
-    val data = (Vec(testVec)(testCnt) >> (blen + slen + tlen))(bBits-1, 0)
-    val tag  = (Vec(testVec)(testCnt) >> (blen + slen).U)(tlen - 1, 0)
-    val idx  = (Vec(testVec)(testCnt) >> blen.U)(slen - 1, 0)
-    val off  = (Vec(testVec)(testCnt))(blen - 1, 0)
-    dut.io.cpu.req.bits.addr := Cat(tag, idx, off)
-    dut.io.cpu.req.bits.data := data
-    dut.io.cpu.req.bits.mask := mask
-    dut.io.cpu.req.valid     := state === sWait
-
-    switch(state) {
-      is(sInit) {
-        mem(Vec(initAddr)(initCnt)) := Vec(initData)(initCnt)
-        printf("[init] mem[%x] <= %x\n", Vec(initAddr)(initCnt), Vec(initData)(initCnt))
-        when(initDone) {
-          state := sStart
+  switch(testState) {
+    is(sIdle) {
+      switch(Vec(testVec)(testCnt).opCode){
+        is(rd_cmd) {
+          req_r.read := true.B
+          req_r.addr := Vec(testVec)(testCnt).op0
+          req_r.tag := testCnt % 16.U
+          req_valid_r := true.B
+          testState := sNastiReadReq
+        }
+        is(wr_cmd) {
+          req_r.read := false.B
+          req_r.addr := Vec(testVec)(testCnt).op0
+          req_r.data := Vec(testVec)(testCnt).op1
+          req_r.mask := Vec(testVec)(testCnt).op2
+          req_r.tag := testCnt % 16.U
+          req_valid_r := true.B
+          testState := sNastiWriteReq
+        }
+        is(nop_cmd) {
+          // Just chill in idle
+          testState := sIdle
         }
       }
-      is(sStart) {
-//        when(dut.io.cpu.req.ready) {
-          timeout := 0.U
-          state := sWait
-//        }
+    }
+    is(sNastiReadReq) {
+      when (hps.io.req.ready) {
+        req_valid_r := false.B
+        testState := sNastiReadResp
       }
-      is(sWait) {
-        timeout := timeout + 1.U
-        assert(timeout < 100.U)
-        when(dut.io.cpu.resp.valid) {
-          state := sDone
+    }
+    is(sNastiReadResp) {
+      when (hps.io.resp.valid && (hps.io.resp.bits.tag === testCnt % 16.U)) {
+        when (hps.io.resp.bits.data =/= Vec(testVec)(testCnt).op1) {
+          printf("Read fail. Expected: 0x%x. Received: 0x%x.", Vec(testVec)(testCnt).op1, hps.io.resp.bits.data)
+          assert(false.B)
         }
-      }
-      is(sDone) {
-        state := sStart
+        testState := sDone
       }
     }
-
-    when(testDone) { stop(); stop() } // from VendingMachine example...
-  }
-
-  class AccelTests extends org.scalatest.FlatSpec {
-    implicit val p = config.Parameters.root((new AcceleratorConfig).toInstance)
-    "Accel" should "pass" in {
-      assert(TesterDriver execute (() => new AccelTester(new Cache)))
+    is(sNastiWriteReq) {
+      req_valid_r := false.B
+      testState := sDone
+    }
+    is(sDone) {
+      testState := sIdle
     }
   }
+  hps.io.req.bits := req_r;
+  hps.io.req.valid := req_valid_r
+
+  when(testDone) {
+    stop(); stop()
+  }
+}
+
+class AccelTests extends org.scalatest.FlatSpec {
+  implicit val p = config.Parameters.root((new AcceleratorConfig).toInstance)
+  "Accel" should "pass" in {
+    assert(TesterDriver execute (() => new AccelTester(new Accelerator)))
+  }
+}
