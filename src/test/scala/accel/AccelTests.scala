@@ -29,24 +29,22 @@ object Command {
 
 class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
 
-  val nop_cmd :: rd_cmd :: wr_cmd :: poll_cmd :: Nil = Enum(4) // OpCodes
-
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
   /* Target Design */
   val dut = Module(accel)
   /* Memory model interface */
-  val dut_mem = Wire(new NastiIO)
+  val dutMem = Wire(new NastiIO)
 
   // Connect CPU to DUT
   dut.io.h2f <> hps.io.nasti
 
   // Connect DUT Cache I/O to a queue for the memory model logic
-  dut_mem.ar <> Queue(dut.io.f2h.ar, 32)
-  dut_mem.aw <> Queue(dut.io.f2h.aw, 32)
-  dut_mem.w <> Queue(dut.io.f2h.w, 32)
-  dut.io.f2h.b <> Queue(dut_mem.b, 32)
-  dut.io.f2h.r <> Queue(dut_mem.r, 32)
+  dutMem.ar <> Queue(dut.io.f2h.ar, 32)
+  dutMem.aw <> Queue(dut.io.f2h.aw, 32)
+  dutMem.w <> Queue(dut.io.f2h.w, 32)
+  dut.io.f2h.b <> Queue(dutMem.b, 32)
+  dut.io.f2h.r <> Queue(dutMem.r, 32)
 
   val size = log2Ceil(nastiXDataBits / 8).U
   val len = (dataBeats - 1).U
@@ -55,152 +53,149 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
   val mem = Mem(1 << 20, UInt(nastiXDataBits.W))
   val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: Nil = Enum(4)
   val memState = RegInit(sMemIdle)
-  val (wCnt, wDone) = Counter(memState === sMemWrite && dut_mem.w.valid, dataBeats)
-  val (rCnt, rDone) = Counter(memState === sMemRead && dut_mem.r.ready, dataBeats)
+  val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, dataBeats)
+  val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, dataBeats)
 
-  dut_mem.ar.ready := false.B
-  dut_mem.aw.ready := false.B
-  dut_mem.w.ready := false.B
-  dut_mem.b.valid := memState === sMemWrAck
-  dut_mem.b.bits := NastiWriteResponseChannel(0.U)
-  dut_mem.r.valid := memState === sMemRead
-  dut_mem.r.bits := NastiReadDataChannel(0.U, mem((dut_mem.ar.bits.addr >> size) + rCnt), rDone)
+  dutMem.ar.ready := false.B
+  dutMem.aw.ready := false.B
+  dutMem.w.ready := false.B
+  dutMem.b.valid := memState === sMemWrAck
+  dutMem.b.bits := NastiWriteResponseChannel(0.U)
+  dutMem.r.valid := memState === sMemRead
+  dutMem.r.bits := NastiReadDataChannel(0.U, mem((dutMem.ar.bits.addr >> size) + rCnt), rDone)
 
   switch(memState) {
     is(sMemIdle) {
-      when(dut_mem.aw.valid) {
+      when(dutMem.aw.valid) {
         memState := sMemWrite
-      }.elsewhen(dut_mem.ar.valid) {
+      }.elsewhen(dutMem.ar.valid) {
         memState := sMemRead
       }
     }
     is(sMemWrite) {
-      assert(dut_mem.aw.bits.size === size)
-      assert(dut_mem.aw.bits.len === len)
-      when(dut_mem.w.valid) {
-        mem((dut_mem.aw.bits.addr >> size) + wCnt) := dut_mem.w.bits.data
-        printf("[write] mem[%x] <= %x\n", (dut_mem.aw.bits.addr >> size) + wCnt, dut_mem.w.bits.data)
-        dut_mem.w.ready := true.B
+      assert(dutMem.aw.bits.size === size)
+      assert(dutMem.aw.bits.len === len)
+      when(dutMem.w.valid) {
+        mem((dutMem.aw.bits.addr >> size) + wCnt) := dutMem.w.bits.data
+        printf("[write] mem[%x] <= %x\n", (dutMem.aw.bits.addr >> size) + wCnt, dutMem.w.bits.data)
+        dutMem.w.ready := true.B
       }
       when(wDone) {
-        dut_mem.aw.ready := true.B
+        dutMem.aw.ready := true.B
         memState := sMemWrAck
       }
     }
     is(sMemWrAck) {
-      when(dut_mem.b.ready) {
+      when(dutMem.b.ready) {
         memState := sMemIdle
       }
     }
     is(sMemRead) {
-      when(dut_mem.r.ready) {
-        printf("[read] mem[%x] => %x\n", (dut_mem.ar.bits.addr >> size) + rCnt, dut_mem.r.bits.data)
+      when(dutMem.r.ready) {
+        printf("[read] mem[%x] => %x\n", (dutMem.ar.bits.addr >> size) + rCnt, dutMem.r.bits.data)
       }
       when(rDone) {
-        dut_mem.ar.ready := true.B
+        dutMem.ar.ready := true.B
         memState := sMemIdle
       }
     }
   }
 
   /* Tests */
+  val nopCmd :: rdCmd :: wrCmd :: pollCmd :: Nil = Enum(4) // OpCodes
   val testVec = Seq(
-    Command(rd_cmd, "h_C000_0800".U, "h_0000_0002".U), // Read Init/Done status reg
-    Command(rd_cmd, "h_C000_0804".U, "h_0000_0000".U), // Read Unused
-    Command(rd_cmd, "h_C000_0808".U, "h_55AA_0001".U), // Read Version status reg
-    Command(rd_cmd, "h_C000_080C".U, "h_0000_0000".U), // Read Core status reg
-    Command(rd_cmd, "h_C000_0810".U, "h_0000_0000".U), // Read Cache status reg
-    Command(wr_cmd, "h_C000_0000".U, "h_0000_0002".U, "h_FFFF_FFFF".U), // Set Init bit
-    Command(wr_cmd, "h_C000_0008".U, "h_0000_0000".U, "h_FFFF_FFFF".U), // Set Read/Write bit to zero (write)
-    Command(wr_cmd, "h_C000_000C".U, "h_2000_0000".U, "h_FFFF_FFFF".U), // Set address
-    Command(rd_cmd, "h_C000_000C".U, "h_2000_0000".U), // Read back address
-    Command(wr_cmd, "h_C000_0010".U, "h_0000_0400".U, "h_FFFF_FFFF".U), // Set test length
-    Command(rd_cmd, "h_C000_0010".U, "h_0000_0400".U), // Read back length
-    Command(wr_cmd, "h_C000_0000".U, "h_0000_0001".U, "h_FFFF_FFFF".U), // Set start bit
-    Command(poll_cmd, "h_C000_0800".U, "h_0000_0001".U), // Poll until done bit set
-    Command(nop_cmd)
+    //       Op,       Address,         Data,          Data Mask
+    Command(rdCmd, "h_C000_0800".U, "h_0000_0002".U, "h_0000_0003".U),   // Check Init/Done status reg
+    Command(rdCmd, "h_C000_0804".U, "h_0000_0000".U, "h_FFFF_FFFF".U),   // Read 'Unused' space
+    Command(rdCmd, "h_C000_0808".U, "h_55AA_0001".U, "h_FFFF_0000".U),   // Check Version status reg
+    Command(rdCmd, "h_C000_080C".U, "h_0000_0000".U, "h_FFFF_FFFF".U),   // Check Core status reg
+    Command(rdCmd, "h_C000_0810".U, "h_0000_0000".U, "h_FFFF_FFFF".U),   // Check Cache status reg
+    Command(wrCmd, "h_C000_0000".U, "h_0000_0002".U, "h_F".U),           // Set Init bit
+    Command(wrCmd, "h_C000_0008".U, "h_0000_0000".U, "h_F".U),           // Set Read/Write bit to zero (write)
+    Command(wrCmd, "h_C000_000C".U, "h_2000_0000".U, "h_F".U),           // Set address
+    Command(rdCmd, "h_C000_000C".U, "h_2000_0000".U, "h_FFFF_FFFF".U),   // Read back address
+    Command(wrCmd, "h_C000_0010".U, "h_0000_0400".U, "h_F".U),           // Set test length
+    Command(rdCmd, "h_C000_0010".U, "h_0000_0400".U, "h_FFFF_FFFF".U),   // Read back length
+    Command(wrCmd, "h_C000_0000".U, "h_0000_0001".U, "h_F".U),           // Set start bit
+    Command(pollCmd, "h_C000_0800".U, "h_0000_0001".U, "h_0000_0001".U), // Poll until done bit set
+    Command(nopCmd)
   )
 
-  val sIdle :: sNastiReadReq :: sNastiReadResp :: sNastiWriteReq :: sNastiPollReq :: sNastiPollResp :: sDone :: Nil = Enum(7)
+  val sIdle :: sNastiReadReq :: sNastiReadResp :: sNastiWriteReq :: sDone :: Nil = Enum(5)
   val testState = RegInit(sIdle)
   val (testCnt, testDone) = Counter(testState === sDone, testVec.size)
-  val req_r = RegInit(NastiMasterReq())
-  val req_valid_r = RegInit(false.B)
+  val req = RegInit(NastiMasterReq())
+  val reqValid = RegInit(false.B)
+  val pollingRead = RegInit(false.B)
 
   switch(testState) {
     is(sIdle) {
-      switch(Vec(testVec)(testCnt).opCode){
-        is(rd_cmd) {
-          req_r.read := true.B
-          req_r.addr := Vec(testVec)(testCnt).op0
-          req_r.tag := testCnt % 16.U
-          req_valid_r := true.B
+      switch(Vec(testVec)(testCnt).opCode) {
+        is(rdCmd) {
+          req.read := true.B
+          req.addr := Vec(testVec)(testCnt).op0
+          req.tag := testCnt % 16.U
+          reqValid := true.B
           testState := sNastiReadReq
+          pollingRead := false.B
         }
-        is(wr_cmd) {
-          req_r.read := false.B
-          req_r.addr := Vec(testVec)(testCnt).op0
-          req_r.data := Vec(testVec)(testCnt).op1
-          req_r.mask := Vec(testVec)(testCnt).op2
-          req_r.tag := testCnt % 16.U
-          req_valid_r := true.B
+        is(wrCmd) {
+          req.read := false.B
+          req.addr := Vec(testVec)(testCnt).op0
+          req.data := Vec(testVec)(testCnt).op1
+          req.mask := Vec(testVec)(testCnt).op2
+          req.tag := testCnt % 16.U
+          reqValid := true.B
           testState := sNastiWriteReq
         }
-        is(poll_cmd) {
-          req_r.read := true.B
-          req_r.addr := Vec(testVec)(testCnt).op0
-          req_r.tag := testCnt % 16.U
-          req_valid_r := true.B
-          testState := sNastiPollReq
+        is(pollCmd) {
+          req.read := true.B
+          req.addr := Vec(testVec)(testCnt).op0
+          req.tag := testCnt % 16.U
+          reqValid := true.B
+          testState := sNastiReadReq
+          pollingRead := true.B
         }
-        is(nop_cmd) {
+        is(nopCmd) {
           testState := sDone
         }
       }
     }
     is(sNastiReadReq) {
-      when (hps.io.req.ready) {
-        req_valid_r := false.B
+      when(hps.io.req.ready) {
+        reqValid := false.B
         testState := sNastiReadResp
       }
     }
     is(sNastiReadResp) {
-      when (hps.io.resp.valid && (hps.io.resp.bits.tag === testCnt % 16.U)) {
-        when (hps.io.resp.bits.data =/= Vec(testVec)(testCnt).op1) {
-          printf("Read fail. Expected: 0x%x. Received: 0x%x.", Vec(testVec)(testCnt).op1, hps.io.resp.bits.data)
-          assert(false.B)
-        }
-        testState := sDone
-      }
-    }
-    is(sNastiPollReq) {
-      when (hps.io.req.ready) {
-        req_valid_r := false.B
-        testState := sNastiPollResp
-      }
-    }
-    is(sNastiPollResp) {
-      when (hps.io.resp.valid && (hps.io.resp.bits.tag === testCnt % 16.U)) {
-        when (hps.io.resp.bits.data =/= Vec(testVec)(testCnt).op1) {
-          testState := sIdle
-        } .otherwise {
+      when(hps.io.resp.valid && (hps.io.resp.bits.tag === testCnt % 16.U)) {
+        when((hps.io.resp.bits.data & Vec(testVec)(testCnt).op1) =/= Vec(testVec)(testCnt).op1) {
+          when(!pollingRead) {
+            printf("Read fail. Expected: 0x%x. Received: 0x%x.", Vec(testVec)(testCnt).op1, hps.io.resp.bits.data)
+            assert(false.B)
+          }.otherwise {
+            testState := sIdle
+          }
+        }.otherwise {
           testState := sDone
+          pollingRead := false.B
         }
       }
     }
     is(sNastiWriteReq) {
-      req_valid_r := false.B
+      reqValid := false.B
       testState := sDone
     }
     is(sDone) {
       testState := sIdle
     }
   }
-  hps.io.req.bits := req_r;
-  hps.io.req.valid := req_valid_r
+  hps.io.req.bits := req;
+  hps.io.req.valid := reqValid
 
   when(testDone) {
-    stop(); stop()
+    stop();
+    stop()
   }
 }
 
