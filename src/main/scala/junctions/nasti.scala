@@ -21,7 +21,7 @@ trait HasNastiParameters {
   val nastiWIdBits = nastiExternal.idBits
   val nastiRIdBits = nastiExternal.idBits
   val nastiXIdBits = max(nastiWIdBits, nastiRIdBits)
-  val nastiXUserBits = 1
+  val nastiXUserBits = 5
   val nastiAWUserBits = nastiXUserBits
   val nastiWUserBits = nastiXUserBits
   val nastiBUserBits = nastiXUserBits

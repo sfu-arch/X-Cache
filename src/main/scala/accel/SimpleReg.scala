@@ -41,7 +41,7 @@ import config._
   * @param cNum The number of configuration registers
   * @param sNum The number of status registers
   * @param p    Implicit project parameters
-  * 
+  *
   * @note io.nasti A Nasti bus slave interface to a processor core
   * @note io.ctrl  A vector of 'cNum' control registers
   * @note io.stat  A vector of 'sNum' status registers
@@ -52,6 +52,10 @@ abstract class SimpleRegIO(cNum : Int, sNum: Int)(implicit val p: Parameters) ex
   val io = IO(
     new Bundle {
       val nasti = Flipped(new NastiIO())
+      val start = Output(Bool())
+      val init = Output(Bool())
+      val done = Input(Bool())
+      val ready = Input(Bool())
       val ctrl = Output(Vec(cNum,UInt(xlen.W)))
       val stat = Input(Vec(sNum,UInt(xlen.W)))
     }
@@ -60,10 +64,11 @@ abstract class SimpleRegIO(cNum : Int, sNum: Int)(implicit val p: Parameters) ex
 
 class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleRegIO(cNum,sNum)(p) {
 
-  val ctrlBank = RegInit(Vec(Seq.fill(cNum)(Vec(Seq.fill(xlen/8)(0.asUInt(8.W))))))
-  val statBank = RegInit(Vec(Seq.fill(sNum)(0.asUInt(xlen.W))))
+  val numCfg = if (xlen == 32) 2 else 1;
+  val ctrlBank = RegInit(Vec(Seq.fill(cNum+numCfg)(Vec(Seq.fill(xlen/8)(0.asUInt(8.W))))))
+  val statBank = RegInit(Vec(Seq.fill(sNum+numCfg)(0.asUInt(xlen.W))))
   val wordSelBits = log2Ceil(xlen/8)
-  val regSelBits = log2Ceil(math.max(cNum, sNum))
+  val regSelBits = log2Ceil(math.max(cNum+numCfg, sNum+numCfg))
   val bankSelBit = 11
 
   // register for write address channel ready signal
@@ -71,72 +76,76 @@ class SimpleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends SimpleReg
   val canDoWrite = io.nasti.aw.valid && io.nasti.w.valid && !writeAddrReadyReg
   writeAddrReadyReg := canDoWrite
   io.nasti.aw.ready := writeAddrReadyReg
-  
+
   // register for keeping write address
   val writeAddrReg = RegInit(0.U(32.W))
   when (canDoWrite) {writeAddrReg := io.nasti.aw.bits.addr}
-  
+
   val writeReadyReg = RegNext(canDoWrite, false.B)
   io.nasti.w.ready := writeReadyReg
-  
+
   // register bank write
   val doWrite = writeReadyReg && io.nasti.w.valid && writeAddrReadyReg && io.nasti.aw.valid
   val writeRegSelect = writeAddrReg(regSelBits+wordSelBits-1, wordSelBits)
   val writeBankSelect = writeAddrReg(bankSelBit)
 
-  // note that we write the entire word (no byte select using write strobe)
   when (writeBankSelect === 0.U && doWrite) {
-    for (i <- 0 to xlen/8-1) {
+    for (i <- 0 until xlen/8) {
       when (io.nasti.w.bits.strb(i) === 1.U) {
-	// Reverse the indexing so that we can use Cat() to build
-	// 64 bit words with the correct ordering.
-	ctrlBank(writeRegSelect)(xlen/8-1-i) :=  io.nasti.w.bits.data(8*i+7,8*i)
+        ctrlBank(writeRegSelect)(i) :=  io.nasti.w.bits.data(8*i+7,8*i)
       }
     }
+  } .otherwise {
+    ctrlBank(0) := Seq.fill(xlen / 8)(0.asUInt(8.W))
   }
-  
+  for(i <- 0 until cNum) {
+    io.ctrl(i) := Cat(ctrlBank(i+numCfg).reverse)
+  }
+  io.start := ctrlBank(0)(0)(0);
+  io.init  := ctrlBank(0)(0)(1);
+
   // write response generation
   io.nasti.b.bits.resp   := 0.U        // always OK
   val writeRespValidReg = RegInit(false.B)
   writeRespValidReg  := doWrite && !writeRespValidReg
   io.nasti.b.valid   := writeRespValidReg
   io.nasti.b.bits.id := io.nasti.aw.bits.id
-  
+
   // read address ready generation
   val readAddrReadyReg = RegInit(false.B)
   val canDoRead = !readAddrReadyReg && io.nasti.ar.valid
   readAddrReadyReg := canDoRead
   io.nasti.ar.ready := readAddrReadyReg
-  
+
   // read address latching
   val readAddrReg = RegInit(0.U(32.W))
   when (canDoRead) { readAddrReg := io.nasti.ar.bits.addr }
-  
+
   // read data valid and response generation
   val readValidReg = RegInit(false.B)
   val doRead = readAddrReadyReg && io.nasti.ar.valid && !readValidReg
   readValidReg := doRead
-  
+
   io.nasti.r.valid := readValidReg
   io.nasti.r.bits.last  := readValidReg
   io.nasti.r.bits.resp := 0.U    // always OK
   io.nasti.r.bits.id := io.nasti.ar.bits.id
-  
+
+  statBank(0):= Cat(io.ready, io.done)
+  for(i <- 0 until sNum) {
+    statBank(i+numCfg) := io.stat(i)
+  }
+
   // register bank read
   val readRegSelect = readAddrReg(regSelBits+wordSelBits-1, wordSelBits)
   val readBankSelect = readAddrReg(bankSelBit)
   val outputReg = RegInit(0.U(xlen.W))
-  statBank := io.stat
   when (readBankSelect === 0.U ) {
-    outputReg := Cat(ctrlBank(readRegSelect))
+    outputReg := Cat(ctrlBank(readRegSelect).reverse)
   } .otherwise {
     outputReg := statBank(readRegSelect)
   }
   io.nasti.r.bits.data := outputReg
 
-  // Connect registers to output bus
-  for(i <- 0 to cNum-1) {
-    io.ctrl(i) := Cat(ctrlBank(i))
-  }
 }
 

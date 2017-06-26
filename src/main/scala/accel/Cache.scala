@@ -8,6 +8,7 @@ import chisel3.util._
 import junctions._
 import config._
 import interfaces._
+import NastiConstants._
 
 case object NWays extends Field[Int]
 case object NSets extends Field[Int]
@@ -27,7 +28,7 @@ class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
 
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())
-  val req   = Flipped(Valid(new CacheReq))
+  val req   = Flipped(Decoupled(new CacheReq))
   val resp  = Valid(new CacheResp)
 }
 
@@ -69,6 +70,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
   val cpu_data = Reg(io.cpu.req.bits.data.cloneType)
   val cpu_mask = Reg(io.cpu.req.bits.mask.cloneType)
+  val cpu_tag  = Reg(io.cpu.req.bits.tag.cloneType)
 
   // Counters
   require(dataBeats > 0)
@@ -99,10 +101,13 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val read = Mux(is_alloc_reg, refill_buf.toBits, Mux(ren_reg, rdata, rdata_buf))
 
   hit := v(idx_reg) && rmeta.tag === tag_reg 
+  cpu_tag := io.cpu.req.bits.tag
 
   // Read Mux
   io.cpu.resp.bits.data := Vec.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
+  io.cpu.resp.bits.tag  := cpu_tag
   io.cpu.resp.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_mask.orR
+  io.cpu.req.ready      := !is_idle
 
   when(io.cpu.resp.valid) { 
     addr_reg  := addr
@@ -133,6 +138,9 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   io.nasti.ar.bits := NastiReadAddressChannel(
     0.U, Cat(tag_reg, idx_reg) << blen.U, log2Ceil(nastiXDataBits/8).U, (dataBeats-1).U)
   io.nasti.ar.valid := false.B
+  io.nasti.ar.bits.prot := AXPROT(false, false, true)
+  io.nasti.ar.bits.user := 0x1f.U
+  io.nasti.ar.bits.cache := 0xf.U
   // read data
   io.nasti.r.ready := state === s_REFILL
   when(io.nasti.r.fire()) { refill_buf(read_count) := io.nasti.r.bits.data }
@@ -144,6 +152,9 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   io.nasti.aw.bits := NastiWriteAddressChannel(
     0.U, Cat(rmeta.tag, idx_reg) << blen.U, log2Ceil(nastiXDataBits/8).U, (dataBeats-1).U)
   io.nasti.aw.valid := false.B
+  io.nasti.aw.bits.prot := AXPROT(false, false, true)
+  io.nasti.aw.bits.user := 0x1f.U
+  io.nasti.aw.bits.cache := 0xf.U
   // write data
   io.nasti.w.bits := NastiWriteDataChannel(
     Vec.tabulate(dataBeats)(i => read((i+1)*nastiXDataBits-1, i*nastiXDataBits))(write_count),

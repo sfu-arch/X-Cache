@@ -35,10 +35,15 @@ class Accelerator(implicit p: Parameters) extends AcceleratorIO()(p) {
 
   // Connect the first three control registers and one of the status
   // registers to the core logic block
-  core.io.ctrl <> regs.io.ctrl(0)
-  core.io.addr <> regs.io.ctrl(1)
-  core.io.len  <> regs.io.ctrl(2)
-  core.io.stat <> regs.io.stat(1)
+  core.io.init  <> regs.io.init
+  core.io.start <> regs.io.start
+  core.io.ctrl  <> regs.io.ctrl(0)
+  core.io.addr  <> regs.io.ctrl(1)
+  core.io.len   <> regs.io.ctrl(2)
+  core.io.stat  <> regs.io.stat(1)
+  core.io.ready <> regs.io.ready
+  core.io.done  <> regs.io.done
+
   // Connect the cache CPU interface to the core logic block
   core.io.cache <> cache.io.cpu
   cache.io.stat <> regs.io.stat(2)
