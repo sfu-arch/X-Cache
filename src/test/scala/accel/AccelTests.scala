@@ -29,7 +29,7 @@ object Command {
 
 class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
 
-  val nop_cmd :: rd_cmd :: wr_cmd :: Nil = Enum(3) // OpCodes
+  val nop_cmd :: rd_cmd :: wr_cmd :: poll_cmd :: Nil = Enum(4) // OpCodes
 
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
@@ -110,17 +110,18 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
     Command(rd_cmd, "h_C000_0808".U, "h_55AA_0001".U), // Read Version status reg
     Command(rd_cmd, "h_C000_080C".U, "h_0000_0000".U), // Read Core status reg
     Command(rd_cmd, "h_C000_0810".U, "h_0000_0000".U), // Read Cache status reg
-    Command(wr_cmd, "h_C000_0000".U, "h_0000_0002".U), // Set Init bit
-    Command(wr_cmd, "h_C000_0008".U, "h_0000_0000".U), // Set Read/Write bit to zero (write)
-    Command(wr_cmd, "h_C000_000C".U, "h_2000_0000".U), // Set address to 0x2000_0000
-//    Command(rd_cmd, "h_C000_000C".U, "h_2000_0000".U), // Read back address
-    Command(wr_cmd, "h_C000_0010".U, "h_0000_1000".U) // Set address to 0x2000_0000
-//    Command(rd_cmd, "h_C000_0010".U, "h_0000_1000".U), // Read back length
-//    Command(wr_cmd, "h_C000_0000".U, "h_0000_0001".U)  // Set start bit
-//    Command(nop_cmd)
+    Command(wr_cmd, "h_C000_0000".U, "h_0000_0002".U, "h_FFFF_FFFF".U), // Set Init bit
+    Command(wr_cmd, "h_C000_0008".U, "h_0000_0000".U, "h_FFFF_FFFF".U), // Set Read/Write bit to zero (write)
+    Command(wr_cmd, "h_C000_000C".U, "h_2000_0000".U, "h_FFFF_FFFF".U), // Set address
+    Command(rd_cmd, "h_C000_000C".U, "h_2000_0000".U), // Read back address
+    Command(wr_cmd, "h_C000_0010".U, "h_0000_0400".U, "h_FFFF_FFFF".U), // Set test length
+    Command(rd_cmd, "h_C000_0010".U, "h_0000_0400".U), // Read back length
+    Command(wr_cmd, "h_C000_0000".U, "h_0000_0001".U, "h_FFFF_FFFF".U), // Set start bit
+    Command(poll_cmd, "h_C000_0800".U, "h_0000_0001".U), // Poll until done bit set
+    Command(nop_cmd)
   )
 
-  val sIdle :: sNastiReadReq :: sNastiReadResp:: sNastiWriteReq :: sDone :: Nil = Enum(5)
+  val sIdle :: sNastiReadReq :: sNastiReadResp :: sNastiWriteReq :: sNastiPollReq :: sNastiPollResp :: sDone :: Nil = Enum(7)
   val testState = RegInit(sIdle)
   val (testCnt, testDone) = Counter(testState === sDone, testVec.size)
   val req_r = RegInit(NastiMasterReq())
@@ -145,9 +146,15 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
           req_valid_r := true.B
           testState := sNastiWriteReq
         }
+        is(poll_cmd) {
+          req_r.read := true.B
+          req_r.addr := Vec(testVec)(testCnt).op0
+          req_r.tag := testCnt % 16.U
+          req_valid_r := true.B
+          testState := sNastiPollReq
+        }
         is(nop_cmd) {
-          // Just chill in idle
-          testState := sIdle
+          testState := sDone
         }
       }
     }
@@ -164,6 +171,21 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
           assert(false.B)
         }
         testState := sDone
+      }
+    }
+    is(sNastiPollReq) {
+      when (hps.io.req.ready) {
+        req_valid_r := false.B
+        testState := sNastiPollResp
+      }
+    }
+    is(sNastiPollResp) {
+      when (hps.io.resp.valid && (hps.io.resp.bits.tag === testCnt % 16.U)) {
+        when (hps.io.resp.bits.data =/= Vec(testVec)(testCnt).op1) {
+          testState := sIdle
+        } .otherwise {
+          testState := sDone
+        }
       }
     }
     is(sNastiWriteReq) {
