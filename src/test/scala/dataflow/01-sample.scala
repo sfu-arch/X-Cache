@@ -20,7 +20,7 @@ import interfaces._
 
 
 // Tester.
-class sample01Tester(df: AddDF)
+class Sample01Tester(df: AddDF)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.Data0.bits.data, 10.U)
@@ -38,9 +38,10 @@ class sample01Tester(df: AddDF)
   println(s"Output: ${peek(df.io.result)}\n")
   println(s"Pred  : ${peek(df.io.pred)}\n")
 
-
+  println(s"t:-2 -------------------------")
   step(1)
 
+  println(s"t:-1 -------------------------\n")
   poke(df.io.Data0.valid, true.B)
   poke(df.io.Data0.bits.predicate, true.B)
   poke(df.io.result.ready, true.B)
@@ -64,6 +65,8 @@ class sample01Tester(df: AddDF)
     println(s"Output: ${peek(df.io.result)}\n")
     println(s"Pred  : ${peek(df.io.pred)}\n")
     step(1)
+
+    println(s"t:${i} -------------------------\n")
   }
 //  poke(df.io.CmpIn.valid, false.B)
 //  poke(df.io.CmpIn.bits, false.B)
@@ -102,7 +105,7 @@ class Sample01Tests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow sample 01 tester" in {
      chisel3.iotesters.Driver(() => new AddDF()(p)) {
-       c => new sample01Tester(c)
+       c => new Sample01Tester(c)
      } should be(true)
    }
  }

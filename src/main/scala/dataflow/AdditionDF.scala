@@ -59,7 +59,7 @@ object functionParam{
 
   val m4_phi_in = Map(
     "const1" -> 0,
-    "m3" -> 1
+    "m2" -> 1
   )
 
 }
@@ -139,9 +139,17 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
     * Connecting PHI nodes
     */
   //Connect PHI node
-  m4.io.InData(param.m4_phi_in("m3")) <> m2.io.Out(0)
-  m4.io.InData(param.m4_phi_in("const1")) <> io.Data0
+  m4.io.InData(param.m4_phi_in("m2")) <> m2.io.Out(0)
+//  m4.io.InData(param.m4_phi_in("const1")) <> io.Data0
+  m4.io.InData(param.m4_phi_in("const1")).bits.data := 0.U
+  m4.io.InData(param.m4_phi_in("const1")).bits.predicate := true.B
+  m4.io.InData(param.m4_phi_in("const1")).bits.valid := true.B
+  m4.io.InData(param.m4_phi_in("const1")).valid := true.B
+
+
+
   m4.io.Mask <> b2_end.io.MaskBB(0)
+//  m4.io.Mask <> b1_then.io.MaskBB(0)
 
 
   /**
@@ -167,7 +175,10 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
   m2.io.RightIO.bits.data := 5.U
   m2.io.RightIO.bits.predicate := true.B
   m2.io.RightIO.bits.valid := true.B
-  m2.io.RightIO.valid := true.B
+  m0.io.RightIO.bits.data := 9.U
+  m0.io.RightIO.bits.predicate := true.B
+  m0.io.RightIO.bits.valid := true.B
+  m0.io.RightIO.valid := true.B
 
   m5.io.RightIO.bits.data := 4.U
   m5.io.RightIO.bits.predicate := true.B
