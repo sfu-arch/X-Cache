@@ -110,6 +110,7 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
     Command(rdCmd, "h_C000_0808".U, "h_55AA_0001".U, "h_FFFF_0000".U),   // Check Version status reg
     Command(rdCmd, "h_C000_080C".U, "h_0000_0000".U, "h_FFFF_FFFF".U),   // Check Core status reg
     Command(rdCmd, "h_C000_0810".U, "h_0000_0000".U, "h_FFFF_FFFF".U),   // Check Cache status reg
+    // Start incrementing data write test
     Command(wrCmd, "h_C000_0000".U, "h_0000_0002".U, "h_F".U),           // Set Init bit
     Command(wrCmd, "h_C000_0008".U, "h_0000_0000".U, "h_F".U),           // Set Read/Write bit to zero (write)
     Command(wrCmd, "h_C000_000C".U, "h_2000_0000".U, "h_F".U),           // Set address
@@ -118,6 +119,13 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
     Command(rdCmd, "h_C000_0010".U, "h_0000_0400".U, "h_FFFF_FFFF".U),   // Read back length
     Command(wrCmd, "h_C000_0000".U, "h_0000_0001".U, "h_F".U),           // Set start bit
     Command(pollCmd, "h_C000_0800".U, "h_0000_0001".U, "h_0000_0001".U), // Poll until done bit set
+    Command(rdCmd, "h_C000_080C".U, "h_0000_0005".U, "h_0000_000F".U),   // Check Core status reg
+    // Start read back test
+    Command(wrCmd, "h_C000_0000".U, "h_0000_0002".U, "h_F".U),           // Set Init bit
+    Command(wrCmd, "h_C000_0008".U, "h_0000_0001".U, "h_F".U),           // Set Read/Write bit to one (read)
+    Command(wrCmd, "h_C000_0000".U, "h_0000_0001".U, "h_F".U),           // Set start bit
+    Command(pollCmd, "h_C000_0800".U, "h_0000_0001".U, "h_0000_0001".U), // Poll until done bit set
+    Command(rdCmd, "h_C000_080C".U, "h_0000_0005".U, "h_0000_000F".U),   // Check Core status reg
     Command(nopCmd)
   )
 
@@ -169,9 +177,11 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
     }
     is(sNastiReadResp) {
       when(hps.io.resp.valid && (hps.io.resp.bits.tag === testCnt % 16.U)) {
-        when((hps.io.resp.bits.data & Vec(testVec)(testCnt).op1) =/= Vec(testVec)(testCnt).op1) {
+        val expected = Vec(testVec)(testCnt).op1
+        val mask     = Vec(testVec)(testCnt).op2
+        when((hps.io.resp.bits.data & mask) =/= (expected & mask)) {
           when(!pollingRead) {
-            printf("Read fail. Expected: 0x%x. Received: 0x%x.", Vec(testVec)(testCnt).op1, hps.io.resp.bits.data)
+            printf("Read fail. Expected: 0x%x. Received: 0x%x.", expected, hps.io.resp.bits.data)
             assert(false.B)
           }.otherwise {
             testState := sIdle
