@@ -71,7 +71,8 @@ class  TypeStackFile(Size: Int, NReads: Int, NWrites: Int)(implicit val p: Param
     request_valid_R := false.B
   }
 
-  RegFile.io.raddr1 := 2.U
+  // RegFile.io.raddr1 := 2.U
+  RegFile.io.raddr1 := 1.U
 
   printf(p"RegFile Input: ${Hexadecimal(RegFile.io.rdata1)}")
 

@@ -50,11 +50,15 @@ class computeTester(df: ComputeNode)
   poke(df.io.RightIO.bits.predicate, true.B)
 
   println(s"Output: ${peek(df.io.Out(0))}\n")
+
+  println(s"t: -1\n -------------------------------------")
   step(1)
 
 
   for( i <- 0 until 10){
     println(s"Output: ${peek(df.io.Out(0))}\n")
+
+    println(s"t: ${i}\n -------------------------------------")
     step(1)
   }
 //  poke(df.io.CmpIn.valid, false.B)

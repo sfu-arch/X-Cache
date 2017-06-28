@@ -13,14 +13,15 @@ import arbiters._
 class TypeStackTests(c: TypeStackFile)(implicit p: config.Parameters) extends PeekPokeTester(c) {
 
 	// var readidx = 0
-	poke(c.io.WriteIn(0).bits.address, 9)
-	poke(c.io.WriteIn(0).bits.data, 0xdeadbee1L)
+	poke(c.io.WriteIn(0).bits.address, 8)
+	poke(c.io.WriteIn(0).bits.data, 0x1eadbeefdeadbeefL)
 	poke(c.io.WriteIn(0).bits.RouteID, 0)
 	poke(c.io.WriteIn(0).bits.Typ,4)
-	poke(c.io.WriteIn(0).bits.mask,3)
+	poke(c.io.WriteIn(0).bits.mask,192)
 	poke(c.io.WriteIn(0).valid,1)
 	for (t <- 0 until 20) {
-		poke(c.io.WriteIn(0).bits.data, 0xdeadbee1L+t)
+		poke(c.io.WriteIn(0).bits.data, 0x1eadbeefdeadbeefL)
+			poke(c.io.WriteIn(0).bits.mask,192)
 		step (1)
 
 	}

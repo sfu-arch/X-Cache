@@ -34,13 +34,13 @@ abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundl
 
 class MiniConfig extends Config((site, here, up) => {
     // Core
-    case XLEN => 32
+    case XLEN => 64
     case TLEN => 32
     case GLEN => 16
     // Size of read MSHR table bits 
     case RDMSHRLEN => 0
     // Size of write MSHR table bits 
-    case WRMSHRLEN => 2
+    case WRMSHRLEN => 0
     case TYPSZ  => 64
     // Max size of type memory system may see
     case Trace => true
