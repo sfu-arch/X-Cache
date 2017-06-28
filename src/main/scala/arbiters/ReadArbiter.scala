@@ -19,15 +19,7 @@ import muxes._
 //
 //TODO Make readOut and readValid as a bundle
 //
-abstract class AbstractArbiter(NReads: Int, NWrites: Int)(implicit val p: Parameters) extends Module with CoreParams{
-  val io = IO(new Bundle {
-  val ReadIn    = Vec(NReads,Flipped(Decoupled(new ReadReq())))
-  val ReadOut   = Vec(NReads,Output(new ReadResp()))
-  //val ReadValids= Vec(NReads,Output(Bool()))
-  val WriteIn   = Vec(NWrites,Flipped(Decoupled(new WriteReq())))
-  val WriteOut  = Vec(NWrites,Output(new WriteResp()))
-  })
-}
+
 
 /**
 * @param Size    : Size of Register file to be allocated and managed
@@ -35,9 +27,26 @@ abstract class AbstractArbiter(NReads: Int, NWrites: Int)(implicit val p: Parame
 * @param NWrites : Number of static writes to be connected. Controls size of arbiter and Demux
 */
 
-class  CentralizedStackRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit p: Parameters) extends AbstractArbiter(NReads,NWrites)(p) {
+class  WordRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit val p: Parameters) extends Module with CoreParams {
 
+  val io = IO(new Bundle {
+  val ReadIn    = Vec(NReads,Flipped(Decoupled(new ReadReq())))
+  val ReadOut   = Vec(NReads,Output(new ReadResp()))
+  //val ReadValids= Vec(NReads,Output(Bool()))
+  val WriteIn   = Vec(NWrites,Flipped(Decoupled(new WriteReq())))
+  val WriteOut  = Vec(NWrites,Output(new WriteResp()))
+  })
+
+  // Initialize a vector of register files (as wide as type).
   val RegFile     = Module(new RFile(Size)(p))
+
+  // Read in parallel after shifting.
+  // seq
+  // for (i <- 0 until Typ_SZ)
+  // {
+
+
+  // }
 
   // -------------------------- Read Arbiter Logic -----------------------------------------
   // Parameters. 10 is the number of loads assigned to the stack segment in the ll file

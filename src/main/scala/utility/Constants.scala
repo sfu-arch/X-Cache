@@ -21,10 +21,30 @@ trait MemoryOpConstants
    val MT_WU = 7.U(3.W)
    // Maximum size of access type
    val MT_MAX_SIZE = 2
+
+   object Margin extends Enumeration {
+      type Margin = Value;
+      val MT_X,MT_B,MT_H,MT_W,MT_D,MT_BU,MT_HU,MT_WU,MT_2x2=Value
+   }
+   import Margin._
+   var Type = scala.collection.mutable.Map
+                                          (MT_X -> 1, 
+                                           MT_B -> 1,
+                                           MT_H -> 1,
+                                           MT_W -> 1,
+                                           MT_D -> 2,
+                                           MT_BU ->1,
+                                           MT_HU ->1,
+                                           MT_WU -> 1,
+                                           MT_2x2 -> 4
+                                           )
+
+
 }
 
-  object Constants  extends MemoryOpConstants 
+object Constants extends MemoryOpConstants 
 {
 
 
 }
+

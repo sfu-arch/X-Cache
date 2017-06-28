@@ -46,6 +46,6 @@ class RFile(size: Int)(implicit p: Parameters) extends AbstractRFile(size)(p) {
    // io.rdata2 := Mux(io.raddr2.orR, regs(io.raddr2), 0.U)
    when(io.wen & io.waddr.orR) {
     // I am writing a vector of bytes. Need to also feed the bytemask.
-    regs.write(io.waddr, Vec.tabulate(xlen/8)(i => io.wdata(8*(i+1)-1,8*i)))
+    regs.write(io.waddr, Vec.tabulate(xlen/8)(i => io.wdata(8*(i+1)-1,8*i)),io.wmask.toBools)
   }
 }

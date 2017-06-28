@@ -56,9 +56,9 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
   // Data buffers for misaligned accesses
 
    // Mask for final ANDing and output of data
-  val bitmask = RegInit(0.U(((MT_MAX_SIZE+1) * xlen).W))
+  val bitmask = RegInit(0.U(((2) * xlen).W))
   // Send word mask for tracking how many words need to be read
-  val sendbytemask = RegInit(0.U(((MT_MAX_SIZE+1) * xlen/8).W))
+  val sendbytemask = RegInit(0.U(((2) * xlen/8).W))
 
   // Is the request valid and request to memory
   val ReqValid = RegInit(false.B)
@@ -66,8 +66,8 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
 
   // Incoming data valid and data operand.
   val DataValid = RegInit(false.B)
-  val ptr = RegInit(0.U(log2Ceil(MT_MAX_SIZE+1).W))
-  val linebuffer = RegInit(Vec(Seq.fill(MT_MAX_SIZE+1)(0.U(xlen.W))))
+  val ptr = RegInit(0.U(log2Ceil(2).W))
+  val linebuffer = RegInit(Vec(Seq.fill(2)(0.U(xlen.W))))
   val xlen_bytes = xlen / 8
   val output = Wire(0.U(xlen.W))
 
