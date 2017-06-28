@@ -165,7 +165,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
   }
 }
 
-class MemoryController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters) extends Module with CoreParams {
+class ReadMemoryController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val ReadIn = Vec(NumOps, Flipped(Decoupled(new ReadReq())))
     val ReadOut = Vec(NumOps, Output(new ReadResp()))
