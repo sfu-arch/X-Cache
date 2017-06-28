@@ -169,14 +169,17 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
   }
 }
 
-class WriteMemoryController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters) extends Module with CoreParams {
-  val io = IO(new Bundle {
+abstract class WController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters) extends Module with CoreParams {
+   val io = IO(new Bundle {
     val WriteIn = Vec(NumOps, Flipped(Decoupled(new WriteReq())))
     val WriteOut = Vec(NumOps, Output(new WriteResp()))
     val CacheReq = Decoupled(new CacheReq)
     val CacheResp = Flipped(Valid(new CacheResp))
   })
-  require(rdmshrlen >= 0)
+}
+
+class WriteMemoryController(NumOps: Int, BaseSize: Int)(implicit p: Parameters) extends WController(NumOps,BaseSize)(p) {
+  require(wrmshrlen >= 0)
   // Number of MLP entries
   val MLPSize = 1 << wrmshrlen
   // Input arbiter

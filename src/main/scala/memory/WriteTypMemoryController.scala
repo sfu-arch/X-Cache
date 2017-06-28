@@ -22,26 +22,6 @@ import accel._
 // Memory constants
 import Constants._
 
-abstract class WriteTypEntryIO()(implicit val p: Parameters)
-  extends Module
-  with CoreParams {
-
-  val io = IO(new Bundle {
-    // Read Request Type
-    val NodeReq = Flipped(Decoupled(Input(new WriteReq)))
-    val NodeResp = Decoupled(new WriteResp)
-
-    //Memory interface
-    val MemReq = Decoupled(new CacheReq)
-    val MemResp = Input(new CacheResp)
-
-    // val Output 
-    val output = Decoupled(new WriteResp)
-
-    val free = Output(Bool())
-    val done = Output(Bool())
-  })
-}
 /**
  * @brief Read Table Entry
  * @details [long description]
@@ -49,7 +29,7 @@ abstract class WriteTypEntryIO()(implicit val p: Parameters)
  * @param ID [Read table IDs]
  * @return [description]
  */
-class WriteTypTableEntry(id: Int)(implicit p: Parameters) extends WriteTypEntryIO()(p) {
+class WriteTypTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p) {
   val ID = RegInit(id.U)
   val request_R = RegInit(WriteReq.default)
   val request_valid_R = RegInit(false.B)
@@ -175,13 +155,8 @@ class WriteTypTableEntry(id: Int)(implicit p: Parameters) extends WriteTypEntryI
   }
 }
 
-class WriteNMemoryController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters) extends Module with CoreParams {
-  val io = IO(new Bundle {
-    val WriteIn = Vec(NumOps, Flipped(Decoupled(new WriteReq())))
-    val WriteOut = Vec(NumOps, Output(new WriteResp()))
-    val CacheReq = Decoupled(new CacheReq)
-    val CacheResp = Flipped(Valid(new CacheResp))
-  })
+class WriteNMemoryController(NumOps: Int, BaseSize: Int)(implicit p: Parameters) extends WController(NumOps,BaseSize)(p) {
+ 
   require(rdmshrlen >= 0)
   // Number of MLP entries
   val MLPSize = 1 << wrmshrlen

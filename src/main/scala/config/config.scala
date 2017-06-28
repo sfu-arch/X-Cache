@@ -34,7 +34,7 @@ abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundl
 
 class MiniConfig extends Config((site, here, up) => {
     // Core
-    case XLEN => 64
+    case XLEN => 32
     case TLEN => 32
     case GLEN => 16
     // Size of read MSHR table bits 

@@ -34,7 +34,7 @@ class  TypeStackFile(Size: Int, NReads: Int, NWrites: Int)(implicit val p: Param
     val WriteIn  = Vec(NWrites, Flipped(Decoupled(new WriteReq())))
     val WriteOut = Vec(NWrites, Output(new WriteResp()))
     val ReadIn   = Vec(NReads, Flipped(Decoupled(new ReadReq())))
-    val ReadOut  = Vec(NReads, Flipped(Decoupled(new ReadReq())))
+    val ReadOut  = Vec(NReads, Output(new ReadResp()))
   })
   require(Size > 0)
   require(isPow2(Size))

@@ -14,14 +14,14 @@ class TypeStackTests(c: TypeStackFile)(implicit p: config.Parameters) extends Pe
 
 	// var readidx = 0
 	poke(c.io.WriteIn(0).bits.address, 8)
-	poke(c.io.WriteIn(0).bits.data, 0x1eadbeefdeadbeefL)
+	poke(c.io.WriteIn(0).bits.data, 0xdeadbeefL)
 	poke(c.io.WriteIn(0).bits.RouteID, 0)
 	poke(c.io.WriteIn(0).bits.Typ,4)
-	poke(c.io.WriteIn(0).bits.mask,192)
+	poke(c.io.WriteIn(0).bits.mask,15)
 	poke(c.io.WriteIn(0).valid,1)
 	for (t <- 0 until 20) {
-		poke(c.io.WriteIn(0).bits.data, 0x1eadbeefdeadbeefL)
-			poke(c.io.WriteIn(0).bits.mask,192)
+		poke(c.io.WriteIn(0).bits.data, 0xdeadbeefL)
+			poke(c.io.WriteIn(0).bits.mask,7)
 		step (1)
 
 	}

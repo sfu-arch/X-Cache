@@ -19,7 +19,7 @@ class CacheReq(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val data    = UInt(xlen.W)
   val mask    = UInt((xlen/8).W)
   val tag     = UInt((List(1,rdmshrlen,wrmshrlen).max).W)
-  val iswrite = Bool(false)
+  val iswrite = Bool()
 }
 
 class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
