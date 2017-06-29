@@ -21,22 +21,6 @@ import config._
   * @note io.cache A Read/Write request interface to a memory cache block
   */
 
-//abstract class CoreIO(implicit val p: Parameters) extends Module with CoreParams {
-//  val io = IO(
-//    new Bundle {
-//      val start = Input(Bool())
-//      val init = Input(Bool())
-//      val ready = Output(Bool())
-//      val done = Output(Bool())
-//      val ctrl = Input(UInt(xlen.W))
-//      val addr = Input(UInt(xlen.W))
-//      val len = Input(UInt(xlen.W))
-//      val stat = Output(UInt(xlen.W))
-//      val cache = Flipped(new CacheIO)
-//    }
-//  )
-//}
-
 abstract class CoreDFIO(implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs
 {
   val io = IO(
