@@ -4,7 +4,7 @@ package accel
 
 import chisel3._
 import chisel3.util._
-
+import accel.coredf._
 import config._
 import junctions._
 
@@ -23,7 +23,8 @@ class Accelerator(implicit p: Parameters) extends AcceleratorIO()(p) {
   val sNum = 3        // # Status registers
 
   val regs    = Module(new SimpleReg(cNum, sNum))
-  val core    = Module(new Core())
+//  val core    = Module(new Core())
+  val core    = Module(new TestCore())
   val cache   = Module(new Cache)
 
   // Connect HPC AXI Master interface the control/status register block
