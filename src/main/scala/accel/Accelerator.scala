@@ -17,14 +17,15 @@ abstract class AcceleratorIO(implicit val p: Parameters) extends Module with Cor
   )
 }
 
-class Accelerator(implicit p: Parameters) extends AcceleratorIO()(p) {
+class Accelerator(coreDF: => CoreT) (implicit p: Parameters)extends AcceleratorIO()(p) {
 
   val cNum = 3        // # Control registers 
   val sNum = 3        // # Status registers
 
   val regs    = Module(new SimpleReg(cNum, sNum))
 //  val core    = Module(new Core())
-  val core    = Module(new TestCore())
+//  val core    = Module(new coreDF())
+  val core = Module(coreDF)
   val cache   = Module(new Cache)
 
   // Connect HPC AXI Master interface the control/status register block

@@ -31,25 +31,8 @@ import node.HandShaking
   * @note io.cache A Read/Write request interface to a memory cache block
   */
 
-abstract class CoreDFIO(implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs
-{
-  val io = IO(
-    new Bundle {
-      val start  = Input(Bool())
-      val init   = Input(Bool())
-      val ready  = Output(Bool())
-      val done   = Output(Bool())
-      val ctrl   = Input(UInt(xlen.W))
-      val addr   = Input(UInt(xlen.W))
-      val len    = Input(UInt(xlen.W))
-      val stat   = Output(UInt(xlen.W))
-//      val errstat   = Output(UInt(xlen.W)) TODO : Need to have a err signal with error codes
-      val cache  = Flipped(new CacheIO)
-    }
-  )
-}
 
-class TestCore(implicit p: Parameters) extends CoreDFIO()(p) {
+class TestCore(implicit p: Parameters) extends CoreT()(p) {
 
 
   val (s_idle :: s_busy :: s_done :: Nil) = Enum(3)
