@@ -102,12 +102,12 @@ class UnTypStore(NumPredOps: Int,
     io.Out(i).bits := data_R
     io.Out(i).bits.predicate := predicate
   }
+io.memReq.valid := false.B
 
-when (start & predicate) {
 /*=============================================
 =            ACTIONS (possibly dangerous)     =
 =============================================*/
-
+when (start & predicate) {
   // ACTION:  Memory request
   //  Check if address is valid and data has arrive and predecessors have completed.
   val mem_req_fire = addr_R.valid & IsPredValid() & data_R.valid
