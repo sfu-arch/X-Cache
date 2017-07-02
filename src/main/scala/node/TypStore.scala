@@ -105,7 +105,7 @@ class TypStore(NumPredOps: Int,
     io.Out(i).bits.predicate := predicate
   }
   val buffer = data_R.data.asTypeOf(Vec(Beats, UInt(xlen.W)))
-
+  io.memReq.valid := false.B
   when(start & predicate) {
     /*=============================================
 =            ACTIONS (possibly dangerous)     =
@@ -114,7 +114,7 @@ class TypStore(NumPredOps: Int,
     // ACTION:  Memory request
     //  Check if address is valid and data has arrive and predecessors have completed.
     val mem_req_fire = addr_R.valid & IsPredValid() & data_R.valid
-    io.memReq.valid := false.B
+   
 
     // ACTION: Memory Request
     // -> Send memory Requests
@@ -122,6 +122,7 @@ class TypStore(NumPredOps: Int,
       io.memReq.bits.address := addr_R.data
       io.memReq.bits.node := nodeID_R
       io.memReq.bits.data := buffer(sendptr)
+      io.memReq.bits.mask := 15.U
       io.memReq.bits.RouteID := RouteID.U
       io.memReq.valid := true.B
       // Arbitration ready. Move on to the next word
@@ -133,7 +134,6 @@ class TypStore(NumPredOps: Int,
         }
       }
     }
-
     //  ACTION:  <- Incoming Data
     when(state === s_RECEIVING && io.memResp.valid) {
       // Set output to valid
@@ -171,7 +171,7 @@ class TypStore(NumPredOps: Int,
     }
   }
   // Trace detail.
-  printfInfo("State : %x, linebuffer: %x", state, buffer.asUInt)
+  // printfInfo("Type Store State : %x, linebuffer: %x", state, buffer.asUInt)
   for (i <- 0 until NumSuccOps) {
     printf(p"${io.SuccOp(i).valid},")
   }

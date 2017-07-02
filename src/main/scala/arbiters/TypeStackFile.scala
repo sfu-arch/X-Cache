@@ -121,8 +121,10 @@ class TypeStackFile(ID: Int,
   /// Printf debugging
   override val printfSigil = "RFile: " + ID + " Type " + (Typ_SZ)
 
-  // printfInfo("\n RegFile %x", RegFile.io.rdata1)
-
+  RegFile.io.raddr1 := 3.U
+  printf(p"Regfile: ${RegFile.io.rdata1}")
+  printf(p"\n Cache Request ${WriteController.io.CacheReq}")
+   printf(p"Demux out:  ${io.WriteOut(0)}")
   // Read in parallel after shifting.
   // seq
   // for (i <- 0 until Typ_SZ)

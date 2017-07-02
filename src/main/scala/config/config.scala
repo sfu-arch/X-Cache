@@ -51,7 +51,7 @@ class MiniConfig extends Config((site, here, up) => {
     case WRMSHRLEN  => 0
     case TYPSZ      => 64
     case VERBOSITY  => "high"
-    case COMPONENTS => ""
+    case COMPONENTS => "WRMSHR"
     // Max size of type memory system may see
     case TRACE      => true
     case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))

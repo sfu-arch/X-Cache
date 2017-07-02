@@ -51,9 +51,10 @@ class WriteTypTableEntry
   // Incoming data valid and data operand.
   val DataValid = RegInit(false.B)
   // Can optimize to be a shift bit.
-  val inptr          = RegInit(0.U(log2Ceil(Beats+1).W))
-  val sendptr        = RegInit(0.U(log2Ceil(Beats+1).W))
-  val recvptr        = RegInit(0.U(log2Ceil(Beats+1).W))
+
+  val inptr          = RegInit(0.U((log2Ceil(Beats)+20).W))
+  val sendptr        = RegInit(0.U((log2Ceil(Beats)+1).W))
+  val recvptr        = RegInit(0.U((log2Ceil(Beats)+1).W))
   val linebuffer = RegInit(Vec(Seq.fill(Beats)(0.U(xlen.W))))
   val linemask   = RegInit(Vec(Seq.fill(Beats)(0.U((xlen/8).W))))
   val xlen_bytes = xlen / 8
@@ -159,14 +160,14 @@ class WriteTypTableEntry
   }
 
   override val printfSigil = "WR MSHR(" + ID + "," + Typ_SZ + ")"
-  if ((log == true) && (comp contains "MSHR")) {
+  if ((log == true) && (comp contains "WRMSHR")) {
     val x = RegInit(0.U(xlen.W))
     x     := x + 1.U
 
     verb match {
-      case "high"  => { printf(p"Time $x: Inptr: $inptr Sendptr: $sendptr  Recvptr: $recvptr linbuffer: $linebuffer.as.Uint") }
-      case "med"   => { printf(p"Time $x: Memresp: ${io.MemResp}") }
-      case "low"   => { printf(p"Time $x: $linebuffer") }
+      case "high"  => { printf(p"Wr MSHR Time $x: Inptr: $inptr Sendptr: $sendptr  Recvptr: $recvptr"); printf(p"linebuffer: ${linebuffer} nodereq: $io.NodeReq") }
+      case "med"   => { printf(p"Wr MSHR Time $x: Memresp: ${io.MemResp}") }
+      case "low"   => { printf(p"Wr MSHR Time $x: $linebuffer") }
     }
   }
 }
@@ -200,6 +201,7 @@ class WriteTypMemoryController
   // Wire up input with in_arb
   for (i <- 0 until NumOps) {
     in_arb.io.in(i) <> io.WriteIn(i)
+    io.WriteOut(i)   <> out_demux.io.outputs(i)
   }
 
 /*=============================================
@@ -225,7 +227,7 @@ class WriteTypMemoryController
     // val MSHR = Module(new WriteTableEntry(i))
     // Allocator wireup with table entries
     alloc_arb.io.in(i).valid := WriteTable(i).io.free
-    WriteTable(i).io.NodeReq.valid := alloc_arb.io.in(i).ready
+    WriteTable(i).io.NodeReq.valid := alloc_arb.io.in(i).fire() && in_arb.io.out.fire()
     WriteTable(i).io.NodeReq.bits := in_arb.io.out.bits
 
     // Table entries -> CacheReq arbiter.
@@ -255,6 +257,7 @@ class WriteTypMemoryController
   out_arb.io.out.ready := true.B
   out_demux.io.enable := out_arb.io.out.fire()
   out_demux.io.input := out_arb.io.out.bits
+
 
 
 }

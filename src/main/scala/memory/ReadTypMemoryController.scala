@@ -141,7 +141,7 @@ class ReadTypTableEntry
   }
   override val printfSigil = "Read MSHR: " + ID
  
-  printf(p"\n $printfSigil recvptr: $recvptr sendptr: $sendptr outptr: $outptr: linebuffer: ${Hexadecimal(linebuffer.asUInt)}")
+  // printf(p"\n $printfSigil recvptr: $recvptr sendptr: $sendptr outptr: $outptr: linebuffer: ${Hexadecimal(linebuffer.asUInt)}")
 }
 
 class ReadTypMemoryController
