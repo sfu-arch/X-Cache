@@ -14,7 +14,7 @@ import util._
 
 class IcmpNodeIO(NumOuts: Int)
   (implicit p: Parameters)
-  extends HandShakingIONPS(NumOuts) {
+  extends HandShakingIONPS(NumOuts)(new DataBundle) {
     // LeftIO: Left input data for computation
     val LeftIO  = Flipped(Decoupled(new DataBundle))
 

@@ -1,21 +1,38 @@
-// package memory
+package memory
 
 // // /**
 // //   * Created by vnaveen0 on 2/6/17.
 // //   */
 
-// import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
-// import org.scalatest.{Matchers, FlatSpec}
+import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+import org.scalatest.{Matchers, FlatSpec}
 
-// import config._
+import config._
 
-// class MemoryControllerTests(c: MemoryController)(implicit p: config.Parameters) extends PeekPokeTester(c) {
+class ReadTypMemoryControllerTests(c: ReadTypMemoryController)
+	(implicit p: config.Parameters) 
+	extends PeekPokeTester(c) {
 
 // 	var readidx = 0
-// 	poke(c.io.ReadIn(0).bits.address, 9)
-// 	poke(c.io.ReadIn(0).bits.RouteID, 0)
-// 	poke(c.io.ReadIn(0).bits.Typ,4)
-// 	poke(c.io.ReadIn(0).valid,1)
+	poke(c.io.ReadIn(0).bits.address, 8)
+	poke(c.io.ReadIn(0).bits.RouteID, 0)
+	poke(c.io.ReadIn(0).bits.Typ,4)
+	poke(c.io.ReadIn(0).valid,1)
+
+	poke(c.io.ReadIn(0).bits.address, 16)
+	poke(c.io.ReadIn(0).bits.RouteID, 0)
+	poke(c.io.ReadIn(0).bits.Typ,4)
+	poke(c.io.ReadIn(0).valid,1)
+
+	poke(c.io.CacheReq.ready,true)
+	poke(c.io.CacheResp.valid,false)
+
+	for (t <- 0 until 4) {
+
+		// printf(s"${c.io.CacheReq.bits}")
+		step(1)
+	}
+
 // 	// poke(c.io.ReadIn(1).bits.address, 8)
 // 	// poke(c.io.ReadIn(1).bits.RouteID, 1)
 // 	// poke(c.io.ReadIn(1).bits.Typ,1)
@@ -87,21 +104,21 @@
 // //     //    }
 
 // //     printf(s"t: ${t} ---------------------------- \n")
-// //     printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(readidx))} chosen: ${readidx} \n")
+// //     
 // //     printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(0))} chosen: 0 \n")
 // // //    printf(s"t: ${t}  io.ReadIn: ${peek(c.io.ReadIn(readidx))} chosen: ${readidx} \n")
 //     step(1)
 
 //   }
 
-// }
+}
 
 
-// class MemoryControllerTester extends  FlatSpec with Matchers {
-//   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-//   it should "Memory Controller tester" in {
-//     chisel3.iotesters.Driver(() => new MemoryController(NumOps=1,BaseSize=2)(p)) {
-//       c => new MemoryControllerTests(c)
-//     } should be(true)
-//   }
-// }
+class ReadTypMemoryControllerTester extends  FlatSpec with Matchers {
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  it should "Memory Controller tester" in {
+    chisel3.iotesters.Driver(() => new ReadTypMemoryController(NumOps=1,BaseSize=2)(p)) {
+      c => new ReadTypMemoryControllerTests(c)
+    } should be(true)
+  }
+}

@@ -21,15 +21,15 @@ import utility.UniformPrintfs
 // _ready need to latch ready and valid signals.
 //////////
 
-class StoreIO(NumPredOps: Int,
+class TypStoreIO(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int)(implicit p: Parameters)
-  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new DataBundle) {
+  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new TypBundle) {
   // Node specific IO
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
   // Store data.
-  val inData = Flipped(Decoupled(new DataBundle))
+  val inData = Flipped(Decoupled(new TypBundle))
   // Memory request
   val memReq = Decoupled(new WriteReq())
   // Memory response.
@@ -42,14 +42,15 @@ class StoreIO(NumPredOps: Int,
  *
  * @param NumPredOps [Number of predicate memory operations]
  */
-class UnTypStore(NumPredOps: Int,
+class TypStore(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int,
-  Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit p: Parameters)
-  extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new DataBundle)(p) {
+  ID: Int,
+  RouteID: Int)(implicit p: Parameters)
+  extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
 
   // Set up StoreIO
-  override lazy val io = IO(new StoreIO(NumPredOps, NumSuccOps, NumOuts))
+  override lazy val io = IO(new TypStoreIO(NumPredOps, NumSuccOps, NumOuts))
 
   // Printf debugging
   override val printfSigil = "Store ID: " + ID + " "
@@ -60,12 +61,13 @@ class UnTypStore(NumPredOps: Int,
 
   // OP Inputs
   val addr_R = RegInit(DataBundle.default)
-  val data_R = RegInit(DataBundle.default)
+  val data_R = RegInit(TypBundle.default)
 
   // State machine
-  val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
+  val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
   val state = RegInit(s_idle)
 
+  val sendptr        = RegInit(0.U(log2Ceil(Beats+1).W))
   val ReqValid = RegInit(false.B)
 
 /*============================================
@@ -102,6 +104,7 @@ class UnTypStore(NumPredOps: Int,
     io.Out(i).bits := data_R
     io.Out(i).bits.predicate := predicate
   }
+val buffer = data_R.data.asTypeOf(Vec(Beats, UInt(xlen.W)))
 
 when (start & predicate) {
 /*=============================================
@@ -111,25 +114,25 @@ when (start & predicate) {
   // ACTION:  Memory request
   //  Check if address is valid and data has arrive and predecessors have completed.
   val mem_req_fire = addr_R.valid & IsPredValid() & data_R.valid
-
-  // Outgoing Address Req ->
-  io.memReq.bits.address := addr_R.data
-  io.memReq.bits.node    := nodeID_R
-  io.memReq.bits.data    := data_R.data
-  io.memReq.bits.Typ     := Typ
-  io.memReq.bits.RouteID := RouteID.U
   io.memReq.valid        := false.B
 
-  // ACTION: Memory Request
-  // -> Send memory request
-  when((state === s_idle) && (mem_req_fire)) {
-    io.memReq.valid := true.B
-  }
 
-  //  ACTION: Arbitration ready
-  when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
-    // ReqValid := false.B
-    state := s_RECEIVING
+  // ACTION: Memory Request
+  // -> Send memory Requests
+  when((state === s_idle) && (mem_req_fire)) {
+    io.memReq.bits.address := addr_R.data
+    io.memReq.bits.node    := nodeID_R
+    io.memReq.bits.data    := buffer(sendptr)
+    io.memReq.bits.RouteID := RouteID.U
+    io.memReq.valid := true.B
+    // Arbitration ready. Move on to the next word
+    when(io.memReq.fire()){
+      sendptr := sendptr + 1.U
+    // If last word then move to next state. 
+      when(sendptr === (Beats-1).U) {
+        state := s_RECEIVING
+      }
+    }
   }
 
   //  ACTION:  <- Incoming Data
@@ -159,16 +162,17 @@ when (start & predicate) {
       // Reset address
       addr_R := DataBundle.default
       // Reset data.
-      data_R := DataBundle.default
+      data_R := TypBundle.default
+      // Clear ptrs
+      sendptr := 0.U
       // Clear all other state
       Reset()
       // Reset state.
       state := s_idle
-
     }
   }
   // Trace detail.
-  printfInfo("State : %x, Out: %x Succ Mem Op [", state, io.Out(0).bits.data)
+  printfInfo("State : %x, linebuffer: %x", state, buffer.asUInt)
   for (i <- 0 until NumSuccOps) {
   printf(p"${io.SuccOp(i).valid},")}
   printf("]\n")

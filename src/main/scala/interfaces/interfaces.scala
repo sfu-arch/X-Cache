@@ -170,6 +170,23 @@ object DataBundle {
   }
 }
 
+class TypBundle(implicit p: Parameters) extends CoreBundle()(p) {
+  // Type Packet
+  val data = UInt(Typ_SZ.W)
+  val predicate = Bool()
+  val valid = Bool()
+}
+
+
+object TypBundle {
+  def default(implicit p: Parameters): TypBundle = {
+    val wire = Wire(new TypBundle)
+    wire.data := 0.U
+    wire.predicate := false.B
+    wire.valid := false.B
+    wire
+  }
+}
 /**
   * Control bundle between branch and
   * basicblock nodes

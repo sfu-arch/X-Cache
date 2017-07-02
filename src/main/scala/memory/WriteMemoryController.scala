@@ -128,6 +128,7 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
     io.MemReq.bits.tag  := ID
     io.MemReq.bits.mask := sendbytemask(xlen/8-1,0)
     io.MemReq.valid     := 1.U
+    io.MemReq.bits.iswrite   := true.B
     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
     when(io.MemReq.fire()) {
       // Shift right by word length on machine.

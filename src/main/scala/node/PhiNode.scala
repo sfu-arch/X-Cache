@@ -14,7 +14,7 @@ import util._
 
 class PhiNodeIO(NumInputs: Int, NumOuts: Int)
                (implicit p: Parameters)
-  extends HandShakingIONPS(NumOuts) {
+  extends HandShakingIONPS(NumOuts)(new DataBundle) {
 
   val InData = Vec(NumInputs, Flipped(Decoupled(new DataBundle)))
 

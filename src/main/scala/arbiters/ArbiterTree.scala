@@ -53,8 +53,9 @@ extends AbstractArbiterTree(NumOps, gen)(p) {
       Arbiters_per_Level = (Arbiters_per_Level + BaseSize - 1) / BaseSize
     }
   }
+  if (NumOps > 0) {
   io.out <> prev(0).out
-
+  }
   object indexcalc {
     def apply(i: Int, BaseSize: Int): Int = {
       i - ((i / BaseSize) * BaseSize)

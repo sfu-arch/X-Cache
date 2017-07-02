@@ -21,7 +21,7 @@ import util._
 
 class CBranchNodeIO(NumOuts: Int = 2)
                    (implicit p: Parameters)
-  extends HandShakingCtrlIONPS(NumOuts) {
+  extends HandShakingIONPS(NumOuts)(new ControlBundle) {
 
   // RightIO: Right input data for computation
   val CmpIO = Flipped(Decoupled(new DataBundle))
@@ -140,7 +140,7 @@ class CBranchNode(ID: Int)
 class UBranchNode(ID: Int)
                  (implicit p: Parameters)
   extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
-  override lazy val io = IO(new HandShakingCtrlIONPS(NumOuts = 1)(p))
+  override lazy val io = IO(new HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p))
   // Printf debugging
   override val printfSigil = "Node (CBR) ID: " + ID + " "
 

@@ -49,6 +49,7 @@ abstract class AbstractDeMuxTree[T <: RouteID](Nops: Int, gen: T)(implicit p: Pa
 }
 
 class DeMuxTree[T <: RouteID with ValidT](BaseSize: Int, NumOps: Int, gen: T)(implicit val p: Parameters) extends AbstractDeMuxTree(NumOps, gen)(p) {
+  require(NumOps > 0)
   require(isPow2(BaseSize))
   var prev = Seq.fill(0) { Module(new Demux(gen, 4)).io }
   var toplevel = Seq.fill(0) { Module(new Demux(gen, 4)).io }

@@ -44,22 +44,13 @@ import utility.UniformPrintfs
   * @param NumOuts Number of outputs
   *
   */
-class HandShakingIONPS(val NumOuts: Int)
+class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)
                       (implicit p: Parameters)
   extends CoreBundle()(p) {
   // Predicate enable
   val enable = Flipped(Decoupled(Bool()))
   // Output IO
-  val Out = Vec(NumOuts, Decoupled(DataBundle.default))
-}
-
-class HandShakingCtrlIONPS(val NumOuts: Int)
-                      (implicit p: Parameters)
-  extends CoreBundle()(p) {
-  // Predicate enable
-  val enable = Flipped(Decoupled(Bool()))
-  // Output IO
-  val Out = Vec(NumOuts, Decoupled(ControlBundle.default))
+  val Out = Vec(NumOuts, Decoupled(gen))
 }
 
 /**
@@ -75,9 +66,9 @@ class HandShakingCtrlIONPS(val NumOuts: Int)
   *
   *
   */
-class HandShakingIOPS(val NumPredOps: Int,
+class HandShakingIOPS[T <: Data](val NumPredOps: Int,
                       val NumSuccOps: Int,
-                      val NumOuts: Int)
+                      val NumOuts: Int)(gen : T)
                      (implicit p: Parameters)
   extends CoreBundle()(p) {
   // Predicate enable
@@ -87,7 +78,7 @@ class HandShakingIOPS(val NumPredOps: Int,
   // Successor Ordering
   val SuccOp = Vec(NumSuccOps, Decoupled(new AckBundle()))
   // Output IO
-  val Out = Vec(NumOuts, Decoupled(DataBundle.default))
+  val Out = Vec(NumOuts, Decoupled(gen))
 }
 
 
@@ -140,7 +131,7 @@ class HandShakingNPS(val NumOuts: Int,
                     (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
-  lazy val io = IO(new HandShakingIONPS(NumOuts))
+  lazy val io = IO(new HandShakingIONPS(NumOuts)(new DataBundle))
 
   /*=================================
   =            Registers            =
@@ -236,7 +227,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
                     (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
-  lazy val io = IO(new HandShakingCtrlIONPS(NumOuts))
+  lazy val io = IO(new HandShakingIONPS(NumOuts)(new ControlBundle))
 
   /*=================================
   =            Registers            =
@@ -332,14 +323,14 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   * @return Module
   */
 
-class HandShaking(val NumPredOps: Int,
+class HandShaking[T <: Data](val NumPredOps: Int,
                   val NumSuccOps: Int,
                   val NumOuts: Int,
-                  val ID: Int)
+                  val ID: Int)(gen : T)
                  (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
-  lazy val io = IO(new HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts))
+  lazy val io = IO(new HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(gen))
 
   /*=================================
   =            Registers            =

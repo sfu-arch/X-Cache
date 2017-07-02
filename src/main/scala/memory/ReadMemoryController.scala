@@ -35,7 +35,7 @@ abstract class ReadEntryIO()(implicit val p: Parameters)
     val MemReq = Decoupled(new CacheReq)
     val MemResp = Input(new CacheResp)
 
-    // val Output 
+    // val Output
     val output = Decoupled(new ReadResp)
 
     val free = Output(Bool())
@@ -45,7 +45,7 @@ abstract class ReadEntryIO()(implicit val p: Parameters)
 /**
  * @brief Read Table Entry
  * @details [long description]
- * 
+ *
  * @param ID [Read table IDs]
  * @return [description]
  */
@@ -75,7 +75,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
   val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
   val state = RegInit(s_idle)
 
-// Check if entry free. 
+// Check if entry free.
 /*================================================
 =            Indicate Table State                =
 =================================================*/
@@ -111,7 +111,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
     state := s_SENDING
   }
 
-  // printf("\nMSHR %d: Inputs are Ready %d", ID, request_R.address)   
+  // printf("\nMSHR %d: Inputs are Ready %d", ID, request_R.address)
   // printf("\n MSHR %d State :%d RouteID %d ", ID, state, request_R.RouteID)
   // printf("\n  linebuffer %x & bitmask: %x", linebuffer.asUInt, bitmask)
 
@@ -137,11 +137,11 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
 =============================================================*/
 
   when((state === s_RECEIVING) && (io.MemResp.valid === true.B)) {
-    // Received data; concatenate into linebuffer 
+    // Received data; concatenate into linebuffer
     linebuffer(ptr) := io.MemResp.data
     // Increment ptr to next entry in linebuffer (for next read)
     ptr := ptr + 1.U
-    // Check if more data needs to be sent 
+    // Check if more data needs to be sent
     val y = (sendbytemask === 0.asUInt((xlen/4).W))
     state := Mux(y, s_Done, s_SENDING)
   }
@@ -153,7 +153,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
   when(state === s_Done) {
     output := (linebuffer.asUInt & bitmask) >> Cat(request_R.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))
     io.output.valid := 1.U
-    // @error: To handle doubles this has to change. 
+    // @error: To handle doubles this has to change.
     io.output.bits.data := Data2Sign(output,request_R.Typ)
     io.output.bits.RouteID := request_R.RouteID
     io.output.bits.valid := true.B
@@ -165,13 +165,23 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
   }
 }
 
-class ReadMemoryController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters) extends Module with CoreParams {
+abstract class RController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters) 
+extends Module with CoreParams {
   val io = IO(new Bundle {
     val ReadIn = Vec(NumOps, Flipped(Decoupled(new ReadReq())))
     val ReadOut = Vec(NumOps, Output(new ReadResp()))
     val CacheReq = Decoupled(new CacheReq)
     val CacheResp = Flipped(Valid(new CacheResp))
   })
+}
+
+
+class ReadMemoryController
+  (NumOps: Int,
+  BaseSize: Int)
+  (implicit p: Parameters)
+  extends RController(NumOps,BaseSize)(p) {
+
   require(rdmshrlen >= 0)
   // Number of MLP entries
   val MLPSize = 1 << rdmshrlen
@@ -230,7 +240,7 @@ class ReadMemoryController(NumOps: Int, BaseSize: Int)(implicit val p: Parameter
     // CacheResp -> Table entries Demux
     ReadTable(i).io.MemResp <> cacheresp_demux.io.outputs(i)
 
-    // Table entries -> Output arbiter 
+    // Table entries -> Output arbiter
     out_arb.io.in(i) <> ReadTable(i).io.output
   }
 
@@ -252,6 +262,6 @@ class ReadMemoryController(NumOps: Int, BaseSize: Int)(implicit val p: Parameter
   out_demux.io.enable := out_arb.io.out.fire()
   out_demux.io.input := out_arb.io.out.bits
 
-  printf(p"\n Demux Out: ${out_demux.io.outputs}")
+  // printf(p"\n Demux Out: ${out_demux.io.outputs}")
 
 }

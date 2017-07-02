@@ -26,7 +26,7 @@ import utility.UniformPrintfs
 class LoadIO(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int)(implicit p: Parameters)
-  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts) {
+  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new DataBundle) {
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
   // Memory request
@@ -35,11 +35,11 @@ class LoadIO(NumPredOps: Int,
   val memResp = Input(Flipped(new ReadResp()))
 }
 
-class LoadNode(NumPredOps: Int,
+class UnTypLoad(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int,
   Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit p: Parameters)
-  extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(p) {
+  extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new DataBundle)(p) {
 
   override lazy val io = IO(new LoadIO(NumPredOps, NumSuccOps, NumOuts))
   // Printf debugging

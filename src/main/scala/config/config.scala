@@ -14,7 +14,9 @@ case object GLEN       extends Field[Int]
 case object RDMSHRLEN  extends Field[Int]
 case object WRMSHRLEN  extends Field[Int]
 case object TYPSZ      extends Field[Int]
-case object Trace      extends Field[Boolean]
+case object VERBOSITY  extends Field[String]
+case object COMPONENTS extends Field[String]
+case object TRACE      extends Field[Boolean]
 case object BuildRFile extends Field[Parameters => AbstractRFile]
 
 
@@ -27,6 +29,12 @@ abstract trait CoreParams {
   val Beats   = Typ_SZ/xlen
   val rdmshrlen = p(RDMSHRLEN)
   val wrmshrlen = p(WRMSHRLEN)
+
+  // Debugging dumps
+  val log     = p(TRACE)
+  val verb    = p(VERBOSITY)
+  val comp    = p(COMPONENTS)
+
 }
 
 abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundle()(p) with CoreParams
@@ -34,17 +42,19 @@ abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundl
 
 class MiniConfig extends Config((site, here, up) => {
     // Core
-    case XLEN => 32
-    case TLEN => 32
-    case GLEN => 16
+    case XLEN       => 32
+    case TLEN       => 32
+    case GLEN       => 16
     // Size of read MSHR table bits 
-    case RDMSHRLEN => 0
+    case RDMSHRLEN  => 0
     // Size of write MSHR table bits 
-    case WRMSHRLEN => 0
-    case TYPSZ  => 64
+    case WRMSHRLEN  => 0
+    case TYPSZ      => 64
+    case VERBOSITY  => "high"
+    case COMPONENTS => ""
     // Max size of type memory system may see
-    case Trace => true
-    case BuildRFile    => (p: Parameters) => Module(new RFile(32)(p))
+    case TRACE      => true
+    case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))
 
   }
 )
