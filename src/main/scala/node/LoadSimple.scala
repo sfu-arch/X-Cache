@@ -81,7 +81,7 @@ class UnTypLoad(NumPredOps: Int,
     io.Out(i).bits.predicate := predicate
   }
 
-
+io.memReq.valid        := false.B
 /*=============================================
 =            ACTIONS (possibly dangerous)     =
 =============================================*/
@@ -94,7 +94,7 @@ class UnTypLoad(NumPredOps: Int,
     io.memReq.bits.node    := nodeID_R
     io.memReq.bits.Typ     := Typ
     io.memReq.bits.RouteID := RouteID.U
-    io.memReq.valid        := false.B
+    
     // ACTION: Outgoing Address Req ->
     when((state === s_idle) && (mem_req_fire)) {
       io.memReq.valid := true.B

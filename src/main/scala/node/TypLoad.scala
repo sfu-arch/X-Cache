@@ -21,36 +21,31 @@ import utility.UniformPrintfs
 // _ready need to latch ready and valid signals.
 //////////
 
-class TypStoreIO(NumPredOps: Int,
-  NumSuccOps: Int,
-  NumOuts: Int)(implicit p: Parameters)
-  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new TypBundle) {
+class TypLoadIO(NumPredOps: Int, NumSuccOps: Int, NumOuts: Int)(implicit p: Parameters) extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new TypBundle) {
   // Node specific IO
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
-  // Store data.
-  val inData = Flipped(Decoupled(new TypBundle))
   // Memory request
-  val memReq = Decoupled(new WriteReq())
+  val memReq = Decoupled(new ReadReq())
   // Memory response.
-  val memResp = Input(Flipped(new WriteResp()))
+  val memResp = Input(Flipped(new ReadResp()))
 }
-
 /**
  * @brief Store Node. Implements store operations
  * @details [long description]
  *
  * @param NumPredOps [Number of predicate memory operations]
  */
-class TypStore(NumPredOps: Int,
+class TypLoad(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int,
   ID: Int,
-  RouteID: Int)(implicit p: Parameters)
+  RouteID: Int)
+  (implicit p: Parameters)
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
 
   // Set up StoreIO
-  override lazy val io = IO(new TypStoreIO(NumPredOps, NumSuccOps, NumOuts))
+  override lazy val io = IO(new TypLoadIO(NumPredOps, NumSuccOps, NumOuts))
 
   // Printf debugging
   override val printfSigil = "Store ID: " + ID + " "
@@ -66,16 +61,15 @@ class TypStore(NumPredOps: Int,
   // State machine
   val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
   val state = RegInit(s_idle)
-
-  val sendptr = RegInit(0.U(log2Ceil(Beats + 1).W))
+  val recvptr = RegInit(0.U(log2Ceil(Beats + 1).W))
   val ReqValid = RegInit(false.B)
 
   /*============================================
 =            Predicate Evaluation            =
 ============================================*/
 
-  val predicate = addr_R.predicate & data_R.predicate & IsEnable()
-  val start = addr_R.valid & data_R.valid & IsPredValid() & IsEnableValid()
+  val predicate = addr_R.predicate & IsEnable()
+  val start = addr_R.valid & IsPredValid() & IsEnableValid()
 
   /*================================================
 =            Latch inputs. Set output            =
@@ -83,7 +77,6 @@ class TypStore(NumPredOps: Int,
 
   //Initialization READY-VALIDs for GepAddr and Predecessor memory ops
   io.GepAddr.ready := ~addr_R.valid
-  io.inData.ready := ~data_R.valid
 
   // ACTION: GepAddr
   io.GepAddr.ready := ~addr_R.valid
@@ -92,55 +85,56 @@ class TypStore(NumPredOps: Int,
     addr_R.valid := true.B
   }
 
-  // ACTION: inData
-  when(io.inData.fire()) {
-    // Latch the data
-    data_R := io.inData.bits
-    data_R.valid := true.B
-  }
-
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
     io.Out(i).bits.predicate := predicate
   }
-  val buffer = data_R.data.asTypeOf(Vec(Beats, UInt(xlen.W)))
+  // data_R.data     = buffer.
+  val linebuffer = RegInit(Vec(Seq.fill(Beats)(0.U(xlen.W))))
+ 
+  io.memReq.valid := false.B
 
   when(start & predicate) {
-    /*=============================================
-=            ACTIONS (possibly dangerous)     =
-=============================================*/
+  /*=============================================
+  =            ACTIONS (possibly dangerous)     =
+  =============================================*/
 
     // ACTION:  Memory request
     //  Check if address is valid and data has arrive and predecessors have completed.
-    val mem_req_fire = addr_R.valid & IsPredValid() & data_R.valid
-    io.memReq.valid := false.B
+    val mem_req_fire = addr_R.valid & IsPredValid()
+    io.memReq.bits.address := addr_R.data
+    io.memReq.bits.node := nodeID_R
+    io.memReq.bits.RouteID := RouteID.U
 
     // ACTION: Memory Request
     // -> Send memory Requests
     when((state === s_idle) && (mem_req_fire)) {
-      io.memReq.bits.address := addr_R.data
-      io.memReq.bits.node := nodeID_R
-      io.memReq.bits.data := buffer(sendptr)
-      io.memReq.bits.RouteID := RouteID.U
       io.memReq.valid := true.B
       // Arbitration ready. Move on to the next word
-      when(io.memReq.fire()) {
-        sendptr := sendptr + 1.U
-        // If last word then move to next state. 
-        when(sendptr === (Beats - 1).U) {
-          state := s_RECEIVING
-        }
-      }
+    }
+
+    //  ACTION: Arbitration ready
+    //   <- Incoming memory arbitration
+    when((state === s_idle) && io.memReq.fire()) {
+      state := s_RECEIVING
     }
 
     //  ACTION:  <- Incoming Data
-    when(state === s_RECEIVING && io.memResp.valid) {
-      // Set output to valid
+    when(state === s_RECEIVING && (io.memResp.valid === true.B) && (recvptr =/= (Beats).U)) {
+      linebuffer(recvptr) := io.memResp.data
+      recvptr := recvptr + 1.U
+    }
+
+    // Need to wait extra cycle for the last word to update the line buffer
+    when((state === s_RECEIVING) && (recvptr === (Beats).U)) {
+      data_R.data := linebuffer.asUInt
+      data_R.predicate := predicate
+      data_R.valid := true.B
       ValidSucc()
       ValidOut()
       state := s_Done
-    }
+      }
   }.elsewhen(start & ~predicate) {
     ValidSucc()
     ValidOut()
@@ -163,7 +157,7 @@ class TypStore(NumPredOps: Int,
       // Reset data.
       data_R := TypBundle.default
       // Clear ptrs
-      sendptr := 0.U
+      recvptr := 0.U
       // Clear all other state
       Reset()
       // Reset state.
@@ -171,7 +165,7 @@ class TypStore(NumPredOps: Int,
     }
   }
   // Trace detail.
-  printfInfo("State : %x, linebuffer: %x", state, buffer.asUInt)
+  printfInfo("State : %x, Data: %x Predicate: %x fire : %x", state, io.Out(0).bits.data, io.Out(0).bits.predicate, io.Out(0).fire())
   for (i <- 0 until NumSuccOps) {
     printf(p"${io.SuccOp(i).valid},")
   }

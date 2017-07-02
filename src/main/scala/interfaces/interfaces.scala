@@ -152,11 +152,10 @@ class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
   * @param p : implicit
   * @return
   */
-class DataBundle(implicit p: Parameters) extends CoreBundle()(p) {
+class DataBundle(implicit p: Parameters) extends ValidT {
   // Data packet
   val data = UInt(xlen.W)
   val predicate = Bool()
-  val valid = Bool()
 }
 
 
@@ -170,11 +169,10 @@ object DataBundle {
   }
 }
 
-class TypBundle(implicit p: Parameters) extends CoreBundle()(p) {
+class TypBundle(implicit p: Parameters) extends ValidT {
   // Type Packet
   val data = UInt(Typ_SZ.W)
   val predicate = Bool()
-  val valid = Bool()
 }
 
 
