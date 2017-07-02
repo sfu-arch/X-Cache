@@ -1,8 +1,12 @@
+package accel.coredf
+
+/**
+  * Created by vnaveen0 on 29/6/17.
+  */
+
 // See LICENSE for license details.
 
-package accel
-
-import accel.coredf.TestCore
+import accel._
 import chisel3._
 import chisel3.util._
 import chisel3.testers._
@@ -28,7 +32,7 @@ object Command {
   }
 }
 
-class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
+class AccelTester01(accel: => Accelerator)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
 
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
@@ -113,20 +117,18 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
     Command(rdCmd, "h_C000_0810".U, "h_0000_0000".U, "h_FFFF_FFFF".U),   // Check Cache status reg
     // Start incrementing data write test
     Command(wrCmd, "h_C000_0000".U, "h_0000_0002".U, "h_F".U),           // Set Init bit
-    Command(wrCmd, "h_C000_0008".U, "h_0000_0000".U, "h_F".U),           // Set Read/Write bit to zero (write)
-    Command(wrCmd, "h_C000_000C".U, "h_2000_0000".U, "h_F".U),           // Set address
-    Command(rdCmd, "h_C000_000C".U, "h_2000_0000".U, "h_FFFF_FFFF".U),   // Read back address
-    Command(wrCmd, "h_C000_0010".U, "h_0000_0400".U, "h_F".U),           // Set test length
-    Command(rdCmd, "h_C000_0010".U, "h_0000_0400".U, "h_FFFF_FFFF".U),   // Read back length
+    Command(wrCmd, "h_C000_0008".U, "h_0000_0004".U, "h_F".U),           // Ctrl(0) := Data0
+    Command(wrCmd, "h_C000_000C".U, "h_0000_0005".U, "h_F".U),           // Ctrl(1) := Data1
+    Command(rdCmd, "h_C000_000C".U, "h_0000_0005".U, "h_FFFF_FFFF".U),   // ReadBack Ctrl(1)
     Command(wrCmd, "h_C000_0000".U, "h_0000_0001".U, "h_F".U),           // Set start bit
     Command(pollCmd, "h_C000_0800".U, "h_0000_0001".U, "h_0000_0001".U), // Poll until done bit set
-    Command(rdCmd, "h_C000_080C".U, "h_0000_0005".U, "h_0000_000F".U),   // Check Core status reg
+    Command(rdCmd, "h_C000_080C".U, "h_0000_0009".U, "h_0000_000F".U),   // stat(1) Check Core status reg
     // Start read back test
     Command(wrCmd, "h_C000_0000".U, "h_0000_0002".U, "h_F".U),           // Set Init bit
-    Command(wrCmd, "h_C000_0008".U, "h_0000_0001".U, "h_F".U),           // Set Read/Write bit to one (read)
+    Command(wrCmd, "h_C000_0008".U, "h_0000_0003".U, "h_F".U),           // Ctrl(0) := Data0
     Command(wrCmd, "h_C000_0000".U, "h_0000_0001".U, "h_F".U),           // Set start bit
     Command(pollCmd, "h_C000_0800".U, "h_0000_0001".U, "h_0000_0001".U), // Poll until done bit set
-    Command(rdCmd, "h_C000_080C".U, "h_0000_0005".U, "h_0000_000F".U),   // Check Core status reg
+    Command(rdCmd, "h_C000_080C".U, "h_0000_0008".U, "h_0000_000F".U),   // Stat(1) Check Core status reg
     Command(nopCmd)
   )
 
@@ -210,9 +212,9 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
   }
 }
 
-class AccelTests extends org.scalatest.FlatSpec {
+class AccelTests01 extends org.scalatest.FlatSpec {
   implicit val p = config.Parameters.root((new AcceleratorConfig).toInstance)
   "Accel" should "pass" in {
-    assert(TesterDriver execute (() => new AccelTester(new Accelerator(new Core()))))
+    assert(TesterDriver execute (() => new AccelTester01(new Accelerator(new TestCore()))))
   }
 }

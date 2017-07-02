@@ -43,7 +43,7 @@ class Add01DF(implicit p: Parameters) extends Add01DFIO()(p) {
   //ALU will start only if the basic block enables adds
   m0.io.enable <> b0_entry.io.Out(0)
 
-  //IO connections
+//IO connections
 
   m0.io.LeftIO <> io.Data0
   m0.io.RightIO <> io.Data1
