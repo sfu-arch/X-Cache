@@ -47,8 +47,7 @@ class ReadTypTableEntry
   val outptr     = RegInit(0.U(log2Ceil(Beats+1).W))
   val sendptr    = RegInit(0.U(log2Ceil(Beats+1).W))
   val recvptr    = RegInit(0.U(log2Ceil(Beats+1).W))
-  val linebuffer = RegInit(Vec(Seq.fill(Beats)(0.U(xlen.W))))
-  val linemask   = RegInit(Vec(Seq.fill(Beats)(0.U((xlen/8).W))))
+  val linebuffer = Reg(init = Vec(Seq.fill(Beats)(0.U(xlen.W))))
   val xlen_bytes = xlen / 8
 
   // State machine
@@ -106,15 +105,15 @@ class ReadTypTableEntry
       sendptr := sendptr + 1.U
     }
   }
-/*============================================================
-=            Receiving values from cache response            =
-=============================================================*/
+
 
   when (io.MemResp.valid === true.B) {
-    // Check if more data needs to be sent
+     // Sending data; pick word from linebuffer
+    linebuffer(recvptr)  := io.MemResp.data
+    val g = io.MemResp.data
+    printf(p"g: $g")
+    // Increment to next word
     recvptr := recvptr + 1.U
-    // Sending data; pick word from linebuffer
-    linebuffer(recvptr)     := io.MemResp.data 
   }
     // val y  = (recvptr === (Beats-1).U)
     // state := Mux(y, s_Done, s_SENDING)
@@ -122,10 +121,10 @@ class ReadTypTableEntry
 /*============================================================
 =            Cleanup and send output                         =
 =============================================================*/
-
+  // Reg outputvalid = 
   when(outptr =/= recvptr) {
     // For the demux
-    io.output.valid := 1.U
+    io.output.valid        := 1.U
     io.output.bits.RouteID := request_R.RouteID
     io.output.bits.data    := linebuffer(outptr)
     // Output driver demux tree has forwarded output (may not have reached receiving node yet)
@@ -137,11 +136,13 @@ class ReadTypTableEntry
      sendptr         := 0.U
      recvptr         := 0.U
      request_valid_R := false.B
+     // linebuffer(0)   := 0.U
+     // linebuffer(1)   := 0.U
      }
   }
   override val printfSigil = "Read MSHR: " + ID
  
-  // printf(p"\n $printfSigil recvptr: $recvptr sendptr: $sendptr outptr: $outptr: linebuffer: ${Hexadecimal(linebuffer.asUInt)}")
+  printf(p"\n MSHR recvptr: $recvptr Memresp: ${io.MemResp} linebuffer: ${Hexadecimal(linebuffer(1))} ")
 }
 
 class ReadTypMemoryController
@@ -154,7 +155,7 @@ class ReadTypMemoryController
   // Number of MLP entries
   val MLPSize = 1 << rdmshrlen
   // Input arbiter
-  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq()))
+  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq(), Locks = 1))
   // MSHR allocator
   val alloc_arb = Module(new Arbiter(Bool(), MLPSize))
 
@@ -231,6 +232,6 @@ class ReadTypMemoryController
   out_demux.io.enable := out_arb.io.out.fire()
   out_demux.io.input := out_arb.io.out.bits
 
-  // printf(p"\n Demux output: ${out_demux.io.outputs}")
+  // printf(p"\n Demux output: ${cacheresp_demux.io.outputs}")
 
 }

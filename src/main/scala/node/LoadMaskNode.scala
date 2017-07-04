@@ -159,7 +159,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
 
  // val MuxEnable = RegInit(false.B)
  // MuxEnable := true.B
- val Tree = Module(new ArbiterTree(BaseSize = 2, NumOps = 8, UInt(32.W)))
+ val Tree = Module(new ArbiterTree(BaseSize = 2, NumOps = 8, UInt(32.W), Locks = 1))
  // val MuxTree = Module(new DeMuxTree(BaseSize = 2, NumOps = 16, new ReadResp()))
  // MuxTree.io.enable := MuxEnable
  // when (Tree.io.out.fire())

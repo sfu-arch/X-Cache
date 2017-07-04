@@ -21,6 +21,8 @@ import config._
 class RegFileIO(size: Int)(implicit p: Parameters) extends CoreBundle()(p) {
   val raddr1 = Input(UInt(max(1,log2Ceil(size)).W))
   val rdata1 = Output(UInt(xlen.W))
+  val raddr2 = Input(UInt(max(1,log2Ceil(size)).W))
+  val rdata2 = Output(UInt(xlen.W))
   val wen    = Input(Bool())
   val waddr  = Input(UInt(max(1,log2Ceil(size)).W))
   val wdata  = Input(UInt(xlen.W))
@@ -43,6 +45,7 @@ class RFile(size: Int)(implicit p: Parameters) extends AbstractRFile(size)(p) {
    // SyncReadMem(size, UInt(xlen.W))
    // I am reading a vector of bytes and then converting to a UInt before returning it.
    io.rdata1 := Mux(io.raddr1.orR,regs.read(io.raddr1).asUInt(), 0.U)
+   io.rdata2 := Mux(io.raddr2.orR,regs.read(io.raddr2).asUInt(), 0.U)
    // io.rdata2 := Mux(io.raddr2.orR, regs(io.raddr2), 0.U)
    when(io.wen & io.waddr.orR) {
     // I am writing a vector of bytes. Need to also feed the bytemask.

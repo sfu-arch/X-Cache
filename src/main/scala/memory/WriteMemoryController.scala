@@ -184,7 +184,7 @@ class WriteMemoryController(NumOps: Int, BaseSize: Int)(implicit p: Parameters) 
   // Number of MLP entries
   val MLPSize = 1 << wrmshrlen
   // Input arbiter
-  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new WriteReq()))
+  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new WriteReq(), Locks = 1))
   // MSHR allocator
   val alloc_arb = Module(new Arbiter(Bool(), MLPSize))
 

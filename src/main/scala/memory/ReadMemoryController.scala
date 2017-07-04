@@ -186,7 +186,7 @@ class ReadMemoryController
   // Number of MLP entries
   val MLPSize = 1 << rdmshrlen
   // Input arbiter
-  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq()))
+  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq(), Locks = 1))
   // MSHR allocator
   val alloc_arb = Module(new Arbiter(Bool(), MLPSize))
 

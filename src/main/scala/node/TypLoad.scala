@@ -48,7 +48,7 @@ class TypLoad(NumPredOps: Int,
   override lazy val io = IO(new TypLoadIO(NumPredOps, NumSuccOps, NumOuts))
 
   // Printf debugging
-  override val printfSigil = "Store ID: " + ID + " "
+  override val printfSigil = "Load ID: " + ID + " "
 
   /*=============================================
 =            Register declarations            =
@@ -165,9 +165,6 @@ class TypLoad(NumPredOps: Int,
     }
   }
   // Trace detail.
-  printfInfo("State : %x, Data: %x Predicate: %x fire : %x", state, io.Out(0).bits.data, io.Out(0).bits.predicate, io.Out(0).fire())
-  for (i <- 0 until NumSuccOps) {
-    printf(p"${io.SuccOp(i).valid},")
-  }
+  printf(p" State : ${state}, Data: ${Hexadecimal(io.Out(0).bits.data)}")
   printf("]\n")
 }

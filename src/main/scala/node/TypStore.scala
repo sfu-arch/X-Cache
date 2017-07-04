@@ -53,7 +53,7 @@ class TypStore(NumPredOps: Int,
   override lazy val io = IO(new TypStoreIO(NumPredOps, NumSuccOps, NumOuts))
 
   // Printf debugging
-  override val printfSigil = "Store ID: " + ID + " "
+  // override val printfSigil = "Store ID: " + ID + " "
 
   /*=============================================
 =            Register declarations            =
@@ -171,9 +171,18 @@ class TypStore(NumPredOps: Int,
     }
   }
   // Trace detail.
-  // printfInfo("Type Store State : %x, linebuffer: %x", state, buffer.asUInt)
-  for (i <- 0 until NumSuccOps) {
-    printf(p"${io.SuccOp(i).valid},")
+   override val printfSigil = "TYPSTORE" + Typ_SZ + "_" + ID + ":"
+  if (log == true) {
+    val x = RegInit(0.U(xlen.W))
+    x     := x + 1.U
+  
+
+    verb match {
+      case "high"  => { }
+      case "med"   => { }
+      case "low"   => {
+      // printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr.Valid\": %x, }} ",x, (addr_R.valid))
+       }
+    }
   }
-  printf("]\n")
 }

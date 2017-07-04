@@ -167,7 +167,7 @@ class WriteTypTableEntry
     verb match {
       case "high"  => { printf(p"Wr MSHR Time $x: Inptr: $inptr Sendptr: $sendptr  Recvptr: $recvptr"); printf(p"linebuffer: ${linebuffer} nodereq: $io.NodeReq") }
       case "med"   => { printf(p"Wr MSHR Time $x: Memresp: ${io.MemResp}") }
-      case "low"   => { printf(p"Wr MSHR Time $x: $linebuffer") }
+      case "low"   => { printf(p"Wr MSHR Time $x: $io.MemReq") }
     }
   }
 }
@@ -181,7 +181,7 @@ class WriteTypMemoryController
   // Number of MLP entries
   val MLPSize = 1 << wrmshrlen
   // Input arbiter
-  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new WriteReq()))
+  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new WriteReq(), Locks = Beats))
   // MSHR allocator
   val alloc_arb = Module(new LockingRRArbiter(Bool(),MLPSize,count=Beats))
 

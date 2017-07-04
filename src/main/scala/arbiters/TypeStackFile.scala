@@ -62,7 +62,7 @@ class TypeStackFile(ID: Int,
   val WriteValid   = RegNext(init  = false.B,next=WriteController.io.CacheReq.fire())
 
   val ReadReq     = RegNext(next = ReadController.io.CacheReq.bits)
-  val ReadValid   = RegNext(init  = false.B,next=ReadController.io.CacheReq.fire())
+  val ReadValid   = RegNext(init  = false.B, next=ReadController.io.CacheReq.fire())
 
   
   val xlen_bytes = xlen / 8
@@ -94,17 +94,16 @@ class TypeStackFile(ID: Int,
 /*==========================================
 =            Write Controller.             =
 ==========================================*/
- when(WriteController.io.CacheReq.fire()) {
-  RegFile.io.wen := true.B
+
+  RegFile.io.wen := WriteController.io.CacheReq.fire()
   RegFile.io.waddr := WriteController.io.CacheReq.bits.addr(wordindex + log2Ceil(Size) - 1, wordindex)
   RegFile.io.wdata := WriteController.io.CacheReq.bits.data
   RegFile.io.wmask := WriteController.io.CacheReq.bits.mask
-  }
 
-  when(WriteValid) {
-    WriteController.io.CacheResp.valid    := true.B
-    WriteController.io.CacheResp.bits.tag := WriteReq.tag
-  }
+  
+  WriteController.io.CacheResp.valid    := WriteValid
+  WriteController.io.CacheResp.bits.tag := WriteReq.tag
+
 
 /*==============================================
 =            Read Memory Controller            =
@@ -113,18 +112,18 @@ class TypeStackFile(ID: Int,
   when(ReadController.io.CacheReq.fire()) {
     RegFile.io.raddr1 := ReadController.io.CacheReq.bits.addr(wordindex + log2Ceil(Size) - 1, wordindex)
   }
-  when(ReadValid) {
-    ReadController.io.CacheResp.valid     := true.B
-    ReadController.io.CacheResp.bits.tag  := ReadReq.tag
-    ReadController.io.CacheResp.bits.data := RegFile.io.rdata1
-  }
+
+  ReadController.io.CacheResp.valid     := ReadValid
+  ReadController.io.CacheResp.bits.tag  := ReadReq.tag
+  ReadController.io.CacheResp.bits.data := RegFile.io.rdata1
+
   /// Printf debugging
   override val printfSigil = "RFile: " + ID + " Type " + (Typ_SZ)
 
-  RegFile.io.raddr1 := 3.U
-  printf(p"Regfile: ${RegFile.io.rdata1}")
-  printf(p"\n Cache Request ${WriteController.io.CacheReq}")
-   printf(p"Demux out:  ${io.WriteOut(0)}")
+
+  // printf(p"\n : ${ReadController.io.CacheReq.fire()} Tag: ${ReadReq.tag} ")
+  // printf(p"\n Cache Request ${WriteController.io.CacheReq}")
+  //  printf(p"Demux out:  ${io.WriteOut(0)}")
   // Read in parallel after shifting.
   // seq
   // for (i <- 0 until Typ_SZ)
