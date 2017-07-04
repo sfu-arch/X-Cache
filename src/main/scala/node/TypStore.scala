@@ -181,7 +181,9 @@ class TypStore(NumPredOps: Int,
       case "high"  => { }
       case "med"   => { }
       case "low"   => {
-      // printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr.Valid\": %x, }} ",x, (addr_R.valid))
+        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x, \"inData\": %x },\n",x, (addr_R.valid),(data_R.valid))
+        printf(`"\"State\": {\"State\": %x}",state)
+        printf("}")
        }
     }
   }
