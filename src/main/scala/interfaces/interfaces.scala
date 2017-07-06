@@ -36,7 +36,7 @@ object AllocaIO{
     temp_w.size := 0.U
     temp_w.numByte := 0.U
     temp_w.predicate := true.B
-    temp_w.valid := true.B
+    temp_w.valid := false.B
     temp_w
   }
 }

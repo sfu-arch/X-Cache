@@ -60,7 +60,7 @@ class Stack(NumOps: Int)
       * Send result to the Demux
       */
     out_demux.io.input.nodeID := in_arb.io.out.bits.nodeID
-    out_demux.io.input.ptr := new_sp
+    out_demux.io.input.ptr := SP
     out_demux.io.input.valid := true.B
     out_demux.io.input.RouteID := in_arb.io.out.bits.nodeID
     out_demux.io.sel := in_arb.io.out.bits.nodeID

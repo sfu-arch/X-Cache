@@ -17,19 +17,18 @@ class AllocaNodeIO(NumOuts: Int)
   extends HandShakingIONPS(NumOuts) {
   /**
     * @note requested size for address
-   */
+    */
   val allocaInputIO = Flipped(Decoupled(new AllocaIO()))
 
   /**
     * @note Alloca interface to talk with stack
     */
-  val allocaReqIO  = Decoupled(new AllocaReq())
+  val allocaReqIO = Decoupled(new AllocaReq())
   val allocaRespIO = Flipped(Decoupled(new AllocaResp()))
 
 }
 
 class AllocaNode(NumOuts: Int, ID: Int)
-                (NumByte: Int)
                 (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(p) {
   override lazy val io = IO(new AllocaNodeIO(NumOuts))
@@ -68,9 +67,9 @@ class AllocaNode(NumOuts: Int, ID: Int)
   io.allocaInputIO.ready := ~alloca_R.valid
 
   when(io.allocaInputIO.fire()) {
-    alloca_R.size:= io.allocaInputIO.bits.size
+    alloca_R.size := io.allocaInputIO.bits.size
     alloca_R.numByte := io.allocaInputIO.bits.numByte
-    alloca_R.valid := true.B
+    alloca_R.valid := io.allocaInputIO.bits.valid
     alloca_R.predicate := io.allocaInputIO.bits.predicate
   }
 
@@ -80,30 +79,35 @@ class AllocaNode(NumOuts: Int, ID: Int)
     io.Out(i).bits.predicate := predicate
   }
 
-  //Adding alloca req signaling
-  /**
-    * The send request is valid if only
-    * the valid and predicate of the input is valid
-    */
-  io.allocaReqIO.valid := alloca_R.valid & predicate
-
-  io.allocaReqIO.bits.nodeID := nodeID_R
-  io.allocaReqIO.bits.size := alloca_R.size
-  io.allocaReqIO.bits.numByte := alloca_R.numByte
-
-  //Adding alloca resp signaling
-  io.allocaRespIO.ready := alloca_R.valid
+  io.allocaReqIO.bits := AllocaReq.default
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
   when(start & predicate) {
+
+    /**
+      * The send request is valid if only
+      * the valid and predicate of the input is valid
+      */
+    //Adding alloca req signaling
+    io.allocaReqIO.valid := alloca_R.valid & predicate
+    io.allocaReqIO.bits.nodeID := nodeID_R
+    io.allocaReqIO.bits.size := alloca_R.size
+    io.allocaReqIO.bits.numByte := alloca_R.numByte
+    io.allocaReqIO.bits.valid := alloca_R.valid
+
+    //Adding alloca resp signaling
+    io.allocaRespIO.ready := alloca_R.valid
+
     when(io.allocaRespIO.fire){
+      alloca_R.valid := false.B
       data_R := io.allocaRespIO.bits.ptr
       pred_R := predicate
       ValidOut()
     }
+    //      io.allocaReqIO.valid := false.B
 
   }.elsewhen(start & ~predicate) {
     /**
@@ -132,5 +136,10 @@ class AllocaNode(NumOuts: Int, ID: Int)
       false.B
     })
   }
+
+  printf(p"Alloca reg: ${alloca_R}\n")
+  printf(p"Alloca input: ${io.allocaInputIO}\n")
+  printf(p"Alloca req:   ${io.allocaReqIO}\n")
+  printf(p"Alloca res:   ${io.allocaRespIO}\n")
 
 }
