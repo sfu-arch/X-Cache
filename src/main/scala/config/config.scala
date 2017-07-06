@@ -11,6 +11,7 @@ import regfile._
 case object XLEN extends Field[Int]
 case object TLEN extends Field[Int]
 case object GLEN extends Field[Int]
+case object ALEN extends Field[Int]
 case object RDMSHRLEN extends Field[Int]
 case object WRMSHRLEN extends Field[Int]
 
@@ -22,7 +23,8 @@ abstract trait CoreParams {
   implicit val p: Parameters
   val xlen = p(XLEN)
   val tlen = p(TLEN)
-  val glen = p(GLEN) 
+  val glen = p(GLEN)
+  val alen = p(ALEN)
   val rdmshrlen = p(RDMSHRLEN)
   val wrmshrlen = p(WRMSHRLEN)
 }
@@ -35,6 +37,7 @@ class MiniConfig extends Config((site, here, up) => {
     case XLEN => 32
     case TLEN => 32
     case GLEN => 16
+    case ALEN => 16
     // Size of read MSHR table bits 
     case RDMSHRLEN => 0
     // Size of write MSHR table bits 

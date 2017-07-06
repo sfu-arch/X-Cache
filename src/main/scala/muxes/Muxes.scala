@@ -84,7 +84,7 @@ class DeMuxTree[T <: RouteID with ValidT](BaseSize: Int, NumOps: Int, gen: T)(im
       toplevel = Demuxes
       for (i <- 0 until Demuxes.length * BaseSize) {
         if (i < NumOps) {
-          // println("Output["+i+"]"+"Source Demux["+i/BaseSize+","+indexcalc(i,BaseSize)+"]")
+          //println("Output["+i+"]"+"Source Demux["+i/BaseSize+","+indexcalc(i,BaseSize)+"]")
           io.outputs(i) <> Demuxes(i / BaseSize).outputs(indexcalc(i, BaseSize))
         }
       }
@@ -96,8 +96,8 @@ class DeMuxTree[T <: RouteID with ValidT](BaseSize: Int, NumOps: Int, gen: T)(im
       Muxes_Per_Level = (Muxes_Per_Level + BaseSize - 1) / BaseSize
     }
   }
-  // printf(p"Top Demuxes: ${toplevel(1).outputs}\n")
-  // printf(p"Bottom Demuxes: ${prev(0).outputs}\n")
+   //printf(p"Top Demuxes: ${toplevel(1).outputs}\n")
+   //printf(p"Bottom Demuxes: ${prev(0).outputs}\n")
 
   // println("z:"+z+","+(z+log2Ceil(BaseSize)-1))
   prev(0).input <> io.input
