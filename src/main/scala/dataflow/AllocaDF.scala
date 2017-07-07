@@ -61,19 +61,7 @@ class StackDF(implicit p: Parameters) extends StackDFIO()(p) {
     */
   //dataflow signal
   stack.io.InData(0) <> m0.io.allocaReqIO
-  stack.io.OutData(0).ready := m0.io.allocaRespIO.ready
-  m0.io.allocaRespIO.valid := stack.io.OutData(0).valid
-  printf(p"STACK OUT: ${stack.io.OutData(0)}\n")
-//  m0.io.allocaRespIO <> stack.io.OutData(0)
-//  m0.io.allocaRespIO.bits <> stack.io.OutData(0).bits
-//  m0.io.allocaRespIO.valid := stack.io.OutData(0).valid
-
-//  m0.io.LeftIO <> io.Data0
-//  m1.io.CmpIO <> m0.io.Out(0)
-//  m2.io.LeftIO <> io.Data0
-
-  //Connecting add
-//  m5.io.LeftIO <> m4.io.Out(0)
+  m0.io.allocaRespIO <> stack.io.OutData(0)
 
 
   /**

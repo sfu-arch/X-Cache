@@ -33,10 +33,10 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   /*===========================================*
    *            Registers                      *
    *===========================================*/
-  // OP Inputs
+  // Left Input
   val left_R = RegInit(DataBundle.default)
 
-  // Memory Response
+  // Right Input
   val right_R = RegInit(DataBundle.default)
 
   // Output register
@@ -104,7 +104,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     data_R := FU.io.out
     pred_R := predicate
     ValidOut()
-  }.elsewhen(start & ~predicate) {
+  }.elsewhen(start & !predicate) {
     //printfInfo("Start sending data to output INVALID\n")
     state := s_COMPUTE
     pred_R := predicate

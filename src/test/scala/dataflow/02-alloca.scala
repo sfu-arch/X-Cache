@@ -46,7 +46,7 @@ class Sample02Tester(df: StackDF)
   println(s"t:-1 -------------------------\n")
   poke(df.io.Data0.valid, true.B)
   poke(df.io.Data0.bits.predicate, true.B)
-  poke(df.io.result.ready, true.B)
+  poke(df.io.result.ready, false.B)
 
 
   //poke(df.io.enable.bits , true.B)
