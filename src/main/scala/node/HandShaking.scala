@@ -126,12 +126,12 @@ class HandShakingCtrlNoMaskIO(val NumInputs: Int,
   * @return Module
   */
 
-class HandShakingNPS(val NumOuts: Int,
-                     val ID: Int)
+class HandShakingNPS[T <: Data](val NumOuts: Int,
+                     val ID: Int)(gen: T)
                     (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
-  lazy val io = IO(new HandShakingIONPS(NumOuts)(new DataBundle))
+  lazy val io = IO(new HandShakingIONPS(NumOuts)(gen))
 
   /*=================================
   =            Registers            =

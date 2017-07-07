@@ -25,7 +25,7 @@ val RightIO = Flipped (Decoupled (new DataBundle) )
 class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
                  (sign: Boolean)
                  (implicit p: Parameters)
-  extends HandShakingNPS(NumOuts, ID)(p) {
+  extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Node ID: " + ID + " "
