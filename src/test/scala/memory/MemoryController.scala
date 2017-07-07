@@ -10,7 +10,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import config._
 
 class ReadTypMemoryControllerTests(c: ReadTypMemoryController)
-	(implicit p: config.Parameters) 
+	(implicit p: config.Parameters)
 	extends PeekPokeTester(c) {
 
 // 	var readidx = 0

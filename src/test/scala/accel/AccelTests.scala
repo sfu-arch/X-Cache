@@ -7,6 +7,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.testers._
 import junctions._
+import config._
 
 class Command extends Bundle {
   val opCode = UInt()
@@ -211,7 +212,7 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
 }
 
 class AccelTests extends org.scalatest.FlatSpec {
-  implicit val p = config.Parameters.root((new AcceleratorConfig).toInstance)
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   "Accel" should "pass" in {
     assert(TesterDriver execute (() => new AccelTester(new Accelerator(new Core()))))
   }

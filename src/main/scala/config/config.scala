@@ -7,6 +7,8 @@ import config._
 import util._
 //import examples._
 import regfile._
+import  junctions._
+import accel._
 
 case object XLEN       extends Field[Int]
 case object TLEN       extends Field[Int]
@@ -49,11 +51,24 @@ class MiniConfig extends Config((site, here, up) => {
     case RDMSHRLEN  => 0
     // Size of write MSHR table bits 
     case WRMSHRLEN  => 1
-    case TYPSZ      => 64
+    case TYPSZ      => 32
     case VERBOSITY  => "low"
     case COMPONENTS => ""
     // Max size of type memory system may see
     case TRACE      => true
     case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))
+
+    //-------------------------
+    // Cache
+    case RDMSHRLEN => 0
+    case WRMSHRLEN => 0
+    case NWays => 1 // TODO: set-associative
+    case NSets => 256
+    case CacheBlockBytes => 4 * (here(XLEN) >> 3) // 4 x 32 bits = 16B
+    // NastiIO
+    case NastiKey => new NastiParameters(
+      idBits   = 12,
+      dataBits = 32,
+      addrBits = 32)
   }
 )
