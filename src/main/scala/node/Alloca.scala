@@ -69,7 +69,7 @@ class AllocaNode(NumOuts: Int, ID: Int)
   when(io.allocaInputIO.fire()) {
     alloca_R.size := io.allocaInputIO.bits.size
     alloca_R.numByte := io.allocaInputIO.bits.numByte
-    alloca_R.valid := io.allocaInputIO.bits.valid
+    alloca_R.valid := true.B
     alloca_R.predicate := io.allocaInputIO.bits.predicate
   }
 
@@ -79,64 +79,202 @@ class AllocaNode(NumOuts: Int, ID: Int)
     io.Out(i).bits.predicate := predicate
   }
 
-  io.allocaReqIO.bits := AllocaReq.default
+  //  io.allocaReqIO.bits := AllocaReq.default
+
+  //Adding alloca resp signaling
+  //  io.allocaReqIO.valid := alloca_R.valid
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  when(start & predicate) {
+  val s_IDLE :: s_SEND :: s_OUT :: Nil = Enum(3)
+  val state = RegInit(s_IDLE)
 
+  /**
+    * State outputs
+    */
+  when(state === s_IDLE && !alloca_R.valid) {
+    io.allocaReqIO.bits := AllocaReq.default
+    io.allocaRespIO.ready := true.B
+    io.allocaReqIO.valid := false.B
+    data_R := 0.U
+
+    state := s_IDLE
+
+  }.elsewhen(state === s_IDLE && alloca_R.valid) {
+    io.allocaRespIO.ready := true.B
+    io.allocaReqIO.valid := true.B
+    data_R := 0.U
     /**
-      * The send request is valid if only
-      * the valid and predicate of the input is valid
+      * Send Alloca request
       */
-    //Adding alloca req signaling
-    io.allocaReqIO.valid := alloca_R.valid & predicate
     io.allocaReqIO.bits.nodeID := nodeID_R
     io.allocaReqIO.bits.size := alloca_R.size
     io.allocaReqIO.bits.numByte := alloca_R.numByte
     io.allocaReqIO.bits.valid := alloca_R.valid
 
-    //Adding alloca resp signaling
-    io.allocaRespIO.ready := alloca_R.valid
-
-    when(io.allocaRespIO.fire){
-      alloca_R.valid := false.B
+    /**
+      * Check if the response is ready in the same cycle
+      */
+    when(io.allocaReqIO.fire) {
+      alloca_resp_R <> io.allocaRespIO.bits
       data_R := io.allocaRespIO.bits.ptr
       pred_R := predicate
       ValidOut()
-    }
-    //      io.allocaReqIO.valid := false.B
+      /**
+        * Update the state
+        */
+      state := s_OUT
 
-  }.elsewhen(start & ~predicate) {
-    /**
-      * Send the request to the stack BUT make the predicate false
-      */
-    data_R := 0.U
+
+    }.otherwise {
+      /**
+        * Update the state
+        */
+      state := s_SEND
+
+    }
+  }
+
+  //  }
+  //  }.elsewhen(state === s_IDLE && alloca_R.valid &&  io.allocaRespIO.fire) {
+  //
+  //    alloca_resp_R <> io.allocaRespIO.bits
+  //    data_R := io.allocaRespIO.bits.ptr
+  //    pred_R := predicate
+  //    ValidOut()
+  //    /**
+  //      * Update the state
+  //      */
+  //    state := s_OUT
+  //
+  //  }
+
+  when(state === s_SEND && io.allocaRespIO.fire) {
+
+    alloca_resp_R <> io.allocaRespIO.bits
+    data_R := io.allocaRespIO.bits.ptr
     pred_R := predicate
     ValidOut()
+    /**
+      * Update the state
+      */
+    state := s_OUT
+
   }
+
+  //  when(state === s_SEND && !io.allocaRespIO.valid) {
+  //    io.allocaRespIO.ready := true.B
+  //    io.allocaReqIO.valid := true.B
+  //
+  //    io.allocaReqIO.bits.nodeID := nodeID_R
+  //    io.allocaReqIO.bits.size := alloca_R.size
+  //    io.allocaReqIO.bits.numByte := alloca_R.numByte
+  //    io.allocaReqIO.bits.valid := alloca_R.valid
+  //
+  //    /**
+  //      * Keep the same state
+  //      *
+  //      * @todo check if you need update anything
+  //      */
+  //    state := s_SEND
+  //  }.elsewhen(state === s_SEND && io.allocaRespIO.valid) {
+  //    io.allocaRespIO.ready := true.B
+  //    io.allocaReqIO.valid := false.B
+  //
+  //    alloca_resp_R <> io.allocaRespIO.bits
+  //    data_R := io.allocaRespIO.bits.ptr
+  //    pred_R := predicate
+  //    ValidOut()
+  //    /**
+  //      * Update the state
+  //      */
+  //    state := s_OUT
+  //  }
+
+  /**
+    * Output state
+    */
+
+  val out_ready_W = out_ready_R.asUInt.andR
+  val out_valid_W = out_valid_R.asUInt.andR
+  when((state === s_OUT) && (out_ready_W & out_valid_W)) {
+
+    io.allocaRespIO.ready := false.B
+    io.allocaReqIO.valid := false.B
+    alloca_R := AllocaIO.default
+    data_R := 0.U
+    pred_R := false.B
+
+    out_ready_R := Vec(Seq.fill(NumOuts) {
+      false.B
+    })
+
+    state := s_IDLE
+
+    Reset()
+  }.otherwise{
+
+    io.allocaRespIO.ready := false.B
+    io.allocaReqIO.valid := false.B
+
+    state := s_OUT
+
+  }
+
+
+  //  when(start & predicate) {
+  //
+  //    /**
+  //      * The send request is valid if only
+  //      * the valid and predicate of the input is valid
+  //      */
+  //    //Adding alloca req signaling
+  //    io.allocaReqIO.valid := alloca_R.valid & predicate
+  //    io.allocaReqIO.bits.nodeID := nodeID_R
+  //    io.allocaReqIO.bits.size := alloca_R.size
+  //    io.allocaReqIO.bits.numByte := alloca_R.numByte
+  //    io.allocaReqIO.bits.valid := alloca_R.valid
+  //
+  //
+  //    when(io.allocaRespIO.fire){
+  //      alloca_R.valid := false.B
+  //      data_R := io.allocaRespIO.bits.ptr
+  //      pred_R := predicate
+  //      ValidOut()
+  //    }
+  //    //      io.allocaReqIO.valid := false.B
+  //
+  //  }.elsewhen(start & ~predicate) {
+  //    /**
+  //      * Send the request to the stack BUT make the predicate false
+  //      */
+  //    data_R := 0.U
+  //    pred_R := predicate
+  //    ValidOut()
+  //  }
 
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
 
 
-  val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
+  //  val out_ready_W = out_ready_R.asUInt.andR
+  //  val out_valid_W = out_valid_R.asUInt.andR
+  //
+  //  when(out_ready_W & out_valid_W) {
+  //    // Reset data
+  //    alloca_R := AllocaIO.default
+  //    // Reset output
+  //    data_R := 0.U
+  //    pred_R := false.B
+  //    out_ready_R := Vec(Seq.fill(NumOuts) {
+  //      false.B
+  //    })
+  //  }
 
-  when(out_ready_W & out_valid_W) {
-    // Reset data
-    alloca_R := AllocaIO.default
-    // Reset output
-    data_R := 0.U
-    pred_R := false.B
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
-  }
-
+  printf(p"State: ${state}\n")
   printf(p"Alloca reg: ${alloca_R}\n")
   printf(p"Alloca input: ${io.allocaInputIO}\n")
   printf(p"Alloca req:   ${io.allocaReqIO}\n")

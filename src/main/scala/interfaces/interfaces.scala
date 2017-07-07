@@ -61,8 +61,7 @@ object AllocaReq{
 // ptr is the address returned back to the alloca call.
 // Valid and Data flipped.
 class AllocaResp(implicit p: Parameters)
-  extends ValidT
-  with RouteID {
+  extends ValidT {
   val ptr = UInt(xlen.W)
   val nodeID = UInt(alen.W)
 }
@@ -72,7 +71,6 @@ object AllocaResp{
     val wire = Wire(new AllocaResp)
     wire.ptr := 0.U
     wire.valid := false.B
-    wire.RouteID := 0.U
     wire
   }
 }

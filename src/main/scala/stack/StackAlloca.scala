@@ -23,53 +23,50 @@ class StackIO(NumOps: Int)
 class Stack(NumOps: Int)
            (implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs{
   override lazy val io = IO(new StackIO(NumOps))
-  // Printf debugging
 
   /**
     * Instantiating Arbiter module and connecting inputs to the output
     * @note we fix the base size to 8
     */
-  val in_arb = Module(new ArbiterTree(BaseSize = 8, NumOps = NumOps, new AllocaReq()))
+  val in_arbiter = Module(new Arbiter(new AllocaReq, NumOps))
   for( i <- 0 until NumOps){
-    in_arb.io.in(i) <> io.InData(i)
+    in_arbiter.io.in(i) <> io.InData(i)
   }
 
   /**
     * Instantiating Demux
     */
-  val out_demux = Module(new DeMuxTree(BaseSize = 8, NumOps = NumOps, new AllocaResp()))
-  out_demux.io.enable := true.B
+  val out_demux = Module(new Demux(new AllocaResp(), Nops = NumOps))
+  out_demux.io.en := true.B
   for( i <- 0 until NumOps){
     io.OutData(i).bits <> out_demux.io.outputs(i)
-    io.OutData(i).valid <> out_demux.io.outputs(i).valid
+    io.OutData(i).valid <> out_demux.io.valids(i)
   }
 
+  out_demux.io.sel := in_arbiter.io.chosen
 
   /**
-    * Stack pointer computation
+    * Arbiter's output is always ready
+    */
+  in_arbiter.io.out.ready := true.B
+
+  /**
+    * Stack pointer Update
+    */
+  val SP = RegInit(0.U)
+  val old_SP = RegInit(0.U)
+
+  when(in_arbiter.io.out.fire){
+    old_SP := SP
+    SP := SP + (in_arbiter.io.out.bits.numByte * in_arbiter.io.out.bits.size)
+  }
+
+  /**
+    * Connecting SP to the demux
     */
 
-  val SP = RegInit(0.U)
-  //Check if SP is grater than 16MB
-  assert(SP <= (1 << 24).U)
-
-  val new_sp = (in_arb.io.out.bits.numByte * in_arb.io.out.bits.size) + SP
-
-  when(in_arb.io.out.valid){
-    /**
-      * Send result to the Demux
-      */
-    out_demux.io.input.nodeID := in_arb.io.out.bits.nodeID
-    out_demux.io.input.ptr := SP
-    out_demux.io.input.valid := true.B
-    out_demux.io.input.RouteID := in_arb.io.out.bits.nodeID
-    out_demux.io.sel := in_arb.io.out.bits.nodeID
-
-    /**
-      * Update the stack pointer
-      */
-    SP := new_sp
-  }
+  out_demux.io.input.ptr := old_SP
+  out_demux.io.input.nodeID := in_arbiter.io.out.bits.nodeID
 
 }
 
