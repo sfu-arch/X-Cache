@@ -16,7 +16,7 @@ class Numbers(implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 class vec2(implicit p: Parameters) extends Numbers {
-  val data = Vec(2, UInt(16.W))
+  val data = Vec(2, UInt(xlen.W))
 }
 
 class mat2x2(implicit p: Parameters) extends Numbers {
@@ -55,15 +55,15 @@ object operation {
     implicit object vec2likeNumber extends OperatorLike[vec2] {
       def addition(l: vec2, r: vec2)(implicit p: Parameters): vec2 = {
         val x = Wire(new vec2)
-        x.data(0)(0) := l.data(0)(0) + r.data(0)(0)
-        x.data(0)(1) := l.data(0)(1) + r.data(0)(1)
+        x.data(0) := l.data(0) + r.data(0)
+        x.data(1) := l.data(1) + r.data(1)
         x
       }
 
       def subtraction(l: vec2, r: vec2)(implicit p: Parameters): vec2 = {
         val x = Wire(new vec2)
-        x.data(0)(0) := l.data(0)(0) - r.data(0)(0)
-        x.data(0)(1) := l.data(0)(1) - r.data(0)(1)
+        x.data(0) := l.data(0) - r.data(0)
+        x.data(1) := l.data(1) - r.data(1)
         x
       }
 
@@ -71,7 +71,7 @@ object operation {
   }
     def addition[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.addition(l, r)
     def subtraction[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.subtraction(l, r)
-  
+
 }
 
 import operation._
@@ -85,7 +85,6 @@ class OperatorModule[T <: Numbers: OperatorLike](gen: => T)(implicit val p: Para
 
   io.o.valid := io.a.valid && io.b.valid
   io.o.bits := addition(io.a.bits, io.b.bits)
-  printf(p"Left: ${io.a.bits} Right: ${io.b.bits} Output: ${io.o.bits}")
 }
 
 class TypComputeIO(NumOuts: Int)(implicit p: Parameters)
@@ -168,21 +167,21 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
   FU.io.b.bits := (right_R.data).asTypeOf(gen)
   data_R.data := (FU.io.o.bits).asTypeOf(UInt(Typ_SZ.W))
   pred_R := predicate
-
+  FU.io.a.valid := left_R.valid
+  FU.io.b.valid := right_R.valid
+  data_R.valid := FU.io.o.valid
   //  This is written like this to enable FUs that are dangerous in the future.
   // If you don't start up then no value passed into function
-  when(start & predicate) {
+  when(start & predicate & state =/= s_COMPUTE) {
     state := s_COMPUTE
-    FU.io.a.valid := left_R.valid
-    FU.io.b.valid := right_R.valid
-    data_R.valid := FU.io.o.valid
     // Next cycle it will become valid.
     ValidOut()
-  }.elsewhen(start & ~predicate) {
+  }.elsewhen(start & ~predicate & state =/= s_COMPUTE) {
+    state := s_COMPUTE
     ValidOut()
   }
 
-  when(IsOutValid() && IsOutReady()) {
+  when(IsOutReady() && state === s_COMPUTE) {
     left_R := TypBundle.default
     right_R := TypBundle.default
     data_R := TypBundle.default
@@ -190,5 +189,6 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
     state := s_idle
   }
 
-  printfInfo(" state: %x data_R : %x data_R.valid: %x \n", state, data_R.data, data_R.valid)
+  // printfInfo(" state: %x data_R : %x io.Out(0). %x: OutReady %x\n", state, data_R.data, io.Out(0).valid, IsOutReady())
+  printf(p"\n state: $state Compute Output: ${io.Out(0)}\n")
 }

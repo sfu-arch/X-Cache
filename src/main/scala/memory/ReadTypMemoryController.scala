@@ -138,9 +138,18 @@ class ReadTypTableEntry
      // linebuffer(1)   := 0.U
      }
   }
-  override val printfSigil = "Read MSHR: " + ID
- 
-  printf(p"\n MSHR recvptr: $recvptr Memresp: ${io.MemResp} linebuffer: ${Hexadecimal(linebuffer(1))} ")
+
+  override val printfSigil = "RD MSHR(" + ID + "," + Typ_SZ + ")"
+  if ((log == true) && (comp contains "RDMSHR")) {
+    val x = RegInit(0.U(xlen.W))
+    x     := x + 1.U
+
+    verb match {
+      case "high"  => { printf(p"Wr MSHR Time $x: Sendptr: $sendptr  Recvptr: $recvptr"); printf(p"linebuffer: ${linebuffer} nodereq: $io.NodeReq") }
+      case "med"   => { printf(p"Wr MSHR Time $x: Memresp: ${io.MemResp}") }
+      case "low"   => { printf(p"Wr MSHR Time $x: $io.MemReq") }
+    }
+  }
 }
 
 class ReadTypMemoryController
