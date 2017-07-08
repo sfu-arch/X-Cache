@@ -13,127 +13,129 @@ import muxes._
 import util._
 
 class IcmpNodeIO(NumOuts: Int)
-  (implicit p: Parameters)
+                (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts) {
-    // LeftIO: Left input data for computation
-    val LeftIO  = Flipped(Decoupled(new DataBundle))
+  // LeftIO: Left input data for computation
+  val LeftIO = Flipped(Decoupled(new DataBundle))
 
-    // RightIO: Right input data for computation
-    val RightIO = Flipped(Decoupled(new DataBundle))
+  // RightIO: Right input data for computation
+  val RightIO = Flipped(Decoupled(new DataBundle))
 }
 
 class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
-  (implicit p: Parameters)
+              (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(p) {
-    override lazy val io = IO(new ComputeNodeIO(NumOuts))
-    // Printf debugging
-    override val printfSigil = "Node ID: " + ID + " "
+  override lazy val io = IO(new ComputeNodeIO(NumOuts))
+  // Printf debugging
+  override val printfSigil = "Node ID: " + ID + " "
 
-    /*===========================================*
-     *            Registers                      *
-     *===========================================*/
-      // OP Inputs
-      val left_R  = RegInit(DataBundle.default)
-    
-      // Memory Response
-      val right_R = RegInit(DataBundle.default)
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+  // OP Inputs
+  val left_R = RegInit(DataBundle.default)
 
-      // Output register
-      val data_R = RegInit(0.U(xlen.W))
+  // Memory Response
+  val right_R = RegInit(DataBundle.default)
 
-      val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-      val state  = RegInit(s_idle)
-    
-    /*==========================================*
-     *           Predicate Evaluation           *
-     *==========================================*/
-    
-      val predicate = left_R.predicate & right_R.predicate & IsEnable()
-      val start     = left_R.valid & right_R.valid & IsEnableValid()
-    
-    /*===============================================*
-     *            Latch inputs. Wire up output       *
-     *===============================================*/
-    
-      // Predicate register
-      val pred_R = RegInit(init=false.B)
+  // Output register
+  val data_R = RegInit(0.U(xlen.W))
 
-      //printfInfo("start: %x\n", start)
+  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val state = RegInit(s_idle)
 
-      io.LeftIO.ready := ~left_R.valid
-      when(io.LeftIO.fire()) {
-        //printfInfo("Latch left data\n")
-        state := s_LATCH
-        left_R.data  := io.LeftIO.bits.data
-        left_R.valid := true.B
-        left_R.predicate := io.LeftIO.bits.predicate
-      }
+  /*==========================================*
+   *           Predicate Evaluation           *
+   *==========================================*/
 
-      io.RightIO.ready := ~right_R.valid
-      when(io.RightIO.fire()) {
-        //printfInfo("Latch right data\n")
-        state := s_LATCH
-        right_R.data  := io.RightIO.bits.data
-        right_R.valid := true.B
-        right_R.predicate := io.RightIO.bits.predicate
-      }
+  val predicate = left_R.predicate & right_R.predicate & IsEnable()
+  val start = left_R.valid & right_R.valid & IsEnableValid()
 
-      // Wire up Outputs
-      for (i <- 0 until NumOuts) {
-        io.Out(i).bits.data      := data_R
-        io.Out(i).bits.predicate := pred_R 
-      }
-    
-    
-    /*============================================*
-     *            ACTIONS (possibly dangerous)    *
-     *============================================*/
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
 
-      //Instantiate ALU with selected code
-      val FU = Module(new UCMP(xlen, opCode))
+  // Predicate register
+  val pred_R = RegInit(init = false.B)
 
-      FU.io.in1 := left_R.data
-      FU.io.in2 := right_R.data
+  //printfInfo("start: %x\n", start)
 
-    when(start & predicate) {
-      state := s_COMPUTE
-      data_R:= FU.io.out
-      pred_R:= predicate
-      ValidOut()
-    }.elsewhen(start & ~predicate) {
-      //printfInfo("Start sending data to output INVALID\n")
-      state := s_COMPUTE
-      pred_R:= predicate
-      ValidOut()
-    }
+  io.LeftIO.ready := ~left_R.valid
+  when(io.LeftIO.fire()) {
+    //printfInfo("Latch left data\n")
+    state := s_LATCH
+    left_R.data := io.LeftIO.bits.data
+    left_R.valid := true.B
+    left_R.predicate := io.LeftIO.bits.predicate
+  }
 
-    /*==========================================*
-     *            Output Handshaking and Reset  *
-     *==========================================*/
+  io.RightIO.ready := ~right_R.valid
+  when(io.RightIO.fire()) {
+    //printfInfo("Latch right data\n")
+    state := s_LATCH
+    right_R.data := io.RightIO.bits.data
+    right_R.valid := true.B
+    right_R.predicate := io.RightIO.bits.predicate
+  }
+
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.data := data_R
+    io.Out(i).bits.predicate := pred_R
+  }
 
 
-    val out_ready_W = out_ready_R.asUInt.andR
-    val out_valid_W = out_valid_R.asUInt.andR
+  /*============================================*
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
 
-    //printfInfo("out_ready: %x\n", out_ready_W)
-    //printfInfo("out_valid: %x\n", out_valid_W)
+  //Instantiate ALU with selected code
+  val FU = Module(new UCMP(xlen, opCode))
 
-    //printfInfo(" Start restarting\n")
-    when(out_ready_W & out_valid_W){
-      //printfInfo("Start restarting output \n")
-      // Reset data
-      left_R  := DataBundle.default
-      right_R := DataBundle.default
-      // Reset output
-      data_R:= 0.U
-  	  out_ready_R := Vec(Seq.fill(NumOuts) { false.B })
-      //Reset state
-      state := s_idle
-      //Restart predicate bit
-      pred_R := false.B
-    }
+  FU.io.in1 := left_R.data
+  FU.io.in2 := right_R.data
+
+  data_R := FU.io.out
+  pred_R := predicate
+
+  when(start & predicate) {
+    state := s_COMPUTE
+    ValidOut()
+  }.elsewhen(start & !predicate) {
+    //printfInfo("Start sending data to output INVALID\n")
+    state := s_COMPUTE
+    ValidOut()
+  }
+
+  /*==========================================*
+   *            Output Handshaking and Reset  *
+   *==========================================*/
+
+
+  val out_ready_W = out_ready_R.asUInt.andR
+  val out_valid_W = out_valid_R.asUInt.andR
+
+  //printfInfo("out_ready: %x\n", out_ready_W)
+  //printfInfo("out_valid: %x\n", out_valid_W)
+
+  //printfInfo(" Start restarting\n")
+  when(out_ready_W & out_valid_W) {
+    //printfInfo("Start restarting output \n")
+    // Reset data
+    left_R := DataBundle.default
+    right_R := DataBundle.default
+    // Reset output
+    data_R := 0.U
+    out_ready_R := Vec(Seq.fill(NumOuts) {
+      false.B
+    })
+    //Reset state
+    state := s_idle
+    //Restart predicate bit
+    pred_R := false.B
+  }
 
   //printfInfo(" State: %x\n", state)
 
 
-  }
+}

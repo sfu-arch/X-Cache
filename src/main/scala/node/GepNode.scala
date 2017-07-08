@@ -229,7 +229,6 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
 
   data_R := comp_addr_W
   pred_R := predicate
-  pred_R := predicate
 
   when(start & predicate) {
     ValidOut()

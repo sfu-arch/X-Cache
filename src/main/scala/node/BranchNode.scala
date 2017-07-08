@@ -91,16 +91,17 @@ class CBranchNode(ID: Int)
     * valid == 1  ->  cmp = true  then 1
     * valid == 1  ->  cmp = false then 2
     */
+
+  data0_R := ~cmp_R.data.asUInt.orR
+  data1_R := cmp_R.data.asUInt.orR
+  pred_R := predicate
+
   when(start & predicate) {
     state := s_COMPUTE
-    data0_R := ~cmp_R.data.asUInt.orR
-    data1_R := cmp_R.data.asUInt.orR
-    pred_R := predicate
     ValidOut()
-  }.elsewhen(start & ~predicate) {
+  }.elsewhen(start & !predicate) {
     //printfInfo("Start sending data to output INVALID\n")
     state := s_COMPUTE
-    pred_R := predicate
     ValidOut()
   }
 
@@ -187,19 +188,19 @@ class UBranchNode(ID: Int)
     * valid == 0  ->  output = 0
     * valid == 1  ->  cmp = true  then 1
     * valid == 1  ->  cmp = false then 2
+    * @note data_R value is equale to predicate bit
     */
+
+  data_R := predicate
+  pred_R := predicate
+  valid_R := true.B
+
   when(start & predicate) {
     state := s_COMPUTE
-    data_R := 1.U
-    pred_R := predicate
-    valid_R := true.B
     ValidOut()
-  }.elsewhen(start & ~predicate) {
+  }.elsewhen(start & !predicate) {
     //printfInfo("Start sending data to output INVALID\n")
     state := s_COMPUTE
-    data_R := 0.U
-    pred_R := predicate
-    valid_R := true.B
     ValidOut()
   }
 
