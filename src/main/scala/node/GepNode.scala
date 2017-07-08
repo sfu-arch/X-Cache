@@ -227,12 +227,13 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
   val comp_addr_W = base_addr_R.data +
     (idx1_R.data * numByte1.U) + (idx2_R.data * numByte2.U)
 
+  data_R := comp_addr_W
+  pred_R := predicate
+  pred_R := predicate
+
   when(start & predicate) {
-    data_R := comp_addr_W
-    pred_R := predicate
     ValidOut()
   }.elsewhen(start & !predicate) {
-    pred_R := predicate
     ValidOut()
   }
 
