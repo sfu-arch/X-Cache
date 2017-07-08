@@ -98,16 +98,15 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
 
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
+  data_R := FU.io.out
+  pred_R := predicate
 
   when(start & predicate) {
     state := s_COMPUTE
-    data_R := FU.io.out
-    pred_R := predicate
     ValidOut()
   }.elsewhen(start & !predicate) {
     //printfInfo("Start sending data to output INVALID\n")
     state := s_COMPUTE
-    pred_R := predicate
     ValidOut()
   }
 
