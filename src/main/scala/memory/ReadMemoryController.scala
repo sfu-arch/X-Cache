@@ -175,7 +175,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   }
 }
 
-abstract class RController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters)
+abstract class RController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit val p: Parameters)
 extends Module with CoreParams {
   val io = IO(new Bundle {
     val ReadIn = Vec(NumOps, Flipped(Decoupled(new ReadReq())))
@@ -188,13 +188,13 @@ extends Module with CoreParams {
 
 class ReadMemoryController
   (NumOps: Int,
-  BaseSize: Int)
+  BaseSize: Int, NumEntries: Int)
   (implicit p: Parameters)
-  extends RController(NumOps,BaseSize)(p) {
+  extends RController(NumOps,BaseSize,NumEntries)(p) {
 
-  require(rdmshrlen >= 0)
+  require(NumEntries >= 0)
   // Number of MLP entries
-  val MLPSize = 1 << rdmshrlen
+  val MLPSize = NumEntries
   // Input arbiter
   val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq(), Locks = 1))
   // MSHR allocator

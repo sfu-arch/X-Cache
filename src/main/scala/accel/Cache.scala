@@ -18,13 +18,13 @@ class CacheReq(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val addr    = UInt(xlen.W)
   val data    = UInt(xlen.W)
   val mask    = UInt((xlen/8).W)
-  val tag     = UInt((List(1,rdmshrlen,wrmshrlen).max).W)
+  val tag     = UInt((List(1,mshrlen).max).W)
   val iswrite = Bool()
 }
 
 class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val data = UInt(xlen.W)
-  val tag  = UInt((List(1,rdmshrlen,wrmshrlen).max).W)
+  val tag  = UInt((List(1,mshrlen).max).W)
 }
 
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
@@ -96,10 +96,10 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val off_reg  = addr_reg(blen-1, byteOffsetBits)
 
   val rmeta = metaMem.read(idx, ren)
-  val rdata = Cat((dataMem map (_.read(idx, ren).toBits)).reverse)
+  val rdata = Cat((dataMem map (_.read(idx, ren).asUInt)).reverse)
   val rdata_buf = RegEnable(rdata, ren_reg)
   val refill_buf = Reg(Vec(dataBeats, UInt(nastiXDataBits.W)))
-  val read = Mux(is_alloc_reg, refill_buf.toBits, Mux(ren_reg, rdata, rdata_buf))
+  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
   hit := v(idx_reg) && rmeta.tag === tag_reg 
   cpu_tag := io.cpu.req.bits.tag

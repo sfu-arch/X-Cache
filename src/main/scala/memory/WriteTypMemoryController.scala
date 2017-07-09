@@ -173,13 +173,13 @@ class WriteTypTableEntry
 }
 
 class WriteTypMemoryController
-  (NumOps: Int, BaseSize: Int)
+  (NumOps: Int, BaseSize: Int, NumEntries: Int)
   (implicit p: Parameters) 
-  extends WController(NumOps,BaseSize)(p) {
+  extends WController(NumOps,BaseSize,NumEntries)(p) {
   
-  require(rdmshrlen >= 0)
+  require(NumEntries >= 0)
   // Number of MLP entries
-  val MLPSize = 1 << wrmshrlen
+  val MLPSize = NumEntries
   // Input arbiter
   val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new WriteReq(), Locks = Beats))
   // MSHR allocator

@@ -101,7 +101,7 @@ class WriteMemoryControllerTests(c: WriteMemoryController)(implicit p: config.Pa
 class WriteMemoryControllerTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Memory Controller tester" in {
-    chisel3.iotesters.Driver(() => new WriteMemoryController(NumOps=1,BaseSize=2)(p)) {
+    chisel3.iotesters.Driver(() => new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2)(p)) {
       c => new WriteMemoryControllerTests(c)
     } should be(true)
   }

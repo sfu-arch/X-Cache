@@ -170,7 +170,7 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
   }
 }
 
-abstract class WController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters) extends Module with CoreParams {
+abstract class WController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit val p: Parameters) extends Module with CoreParams {
    val io = IO(new Bundle {
     val WriteIn = Vec(NumOps, Flipped(Decoupled(new WriteReq())))
     val WriteOut = Vec(NumOps, Output(new WriteResp()))
@@ -179,10 +179,10 @@ abstract class WController(NumOps: Int, BaseSize: Int)(implicit val p: Parameter
   })
 }
 
-class WriteMemoryController(NumOps: Int, BaseSize: Int)(implicit p: Parameters) extends WController(NumOps,BaseSize)(p) {
-  require(wrmshrlen >= 0)
+class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit p: Parameters) extends WController(NumOps,BaseSize,NumEntries)(p) {
+  require(NumEntries >= 0)
   // Number of MLP entries
-  val MLPSize = 1 << wrmshrlen
+  val MLPSize = NumEntries
   // Input arbiter
   val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new WriteReq(), Locks = 1))
   // MSHR allocator
