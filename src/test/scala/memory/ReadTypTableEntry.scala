@@ -88,6 +88,7 @@ class ReadTypTableEntryTests(c: ReadTypTableEntry)
       println(s"Sending Valid Response from Memory")
       poke(c.io.MemResp.data, 34)
       poke(c.io.MemResp.tag, 0)
+      poke(c.io.MemResp.valid, 1)
     }
 
     // memory again gets Ready at Clock 7 -> For First Address
