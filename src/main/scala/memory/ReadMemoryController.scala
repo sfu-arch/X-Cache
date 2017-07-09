@@ -4,7 +4,6 @@ package memory
 import chisel3._
 import chisel3.Module
 import chisel3.util._
-import org.scalacheck.Prop.False
 
 // Modules needed
 import arbiters._
@@ -14,158 +13,13 @@ import muxes._
 import config._
 import utility._
 import interfaces._
-import node._
 
 // Cache requests
 import accel._
 
-// Memory constants
-import Constants._
-
-abstract class ReadEntryIO()(implicit val p: Parameters)
-  extends Module
-  with CoreParams {
-
-  val io = IO(new Bundle {
-    // Read Request Type
-    val NodeReq = Flipped(Decoupled(Input(new ReadReq)))
-    val NodeResp = Decoupled(new ReadResp)
-
-    //Memory interface
-    val MemReq = Decoupled(new CacheReq)
-    val MemResp = Input(new CacheResp)
-
-    // val Output
-    val output = Decoupled(new ReadResp)
-
-    val free = Output(Bool())
-    val done = Output(Bool())
-  })
-}
-/**
- * @brief Read Table Entry
- * @details [long description]
- *
- * @param ID [Read table IDs]
- * @return [description]
- */
-class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) {
-  val ID = RegInit(id.U)
-  val request_R = RegInit(ReadReq.default)
-  val request_valid_R = RegInit(false.B)
-  // Data buffers for misaligned accesses
-
-   // Mask for final ANDing and output of data
-  val bitmask = RegInit(0.U(((2) * xlen).W))
-  // Send word mask for tracking how many words need to be read
-  val sendbytemask = RegInit(0.U(((2) * xlen/8).W))
-
-  // Is the request valid and request to memory
-  val ReqValid = RegInit(false.B)
-  val ReqAddress = RegInit(0.U(xlen.W))
-
-  // Incoming data valid and data operand.
-  val DataValid = RegInit(false.B)
-  val ptr = RegInit(0.U(log2Ceil(2).W))
-  val linebuffer = RegInit(Vec(Seq.fill(2)(0.U(xlen.W))))
-  val xlen_bytes = xlen / 8
-  val output = Wire(0.U(xlen.W))
-
-  // State machine
-  val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
-  val state = RegInit(s_idle)
-
-// Check if entry free.
-/*================================================
-=            Indicate Table State                =
-=================================================*/
 
 
-  // Table entry indicates free to outside world
-  io.free := (state === s_idle)
-  // Table entry ready to latch new requests
-  io.NodeReq.ready := (state === s_idle)
-  // Table entry to output demux
-  io.done := (state === s_Done)
-
-/*=================================================================
-=            Default values for external communication            =
-==================================================================*/
-  io.output.valid := 0.U
-  io.MemReq.valid := 0.U
-
-
-/*=======================================================
-=            Latch Inputs. Calculate masks              =
-========================================================*/
-  when(io.NodeReq.fire()) {
-    request_R := io.NodeReq.bits
-    // Calculate things to start the sending process
-    // Base word address
-    ReqAddress := (io.NodeReq.bits.address >> log2Ceil(xlen_bytes)) << log2Ceil(xlen_bytes)
-    // Bitmask of data  for final ANDing
-    bitmask := ReadBitMask(io.NodeReq.bits.Typ, io.NodeReq.bits.address,xlen)
-    // Bytemask of bytes within words that need to be fetched.
-    sendbytemask := ReadByteMask(io.NodeReq.bits.Typ, io.NodeReq.bits.address,xlen)
-    // Next State
-    state := s_SENDING
-  }
-
-  // printf("\nMSHR %d: Inputs are Ready %d", ID, request_R.address)
-  // printf("\n MSHR %d State :%d RouteID %d ", ID, state, request_R.RouteID)
-  // printf("\n  linebuffer %x & bitmask: %x", linebuffer.asUInt, bitmask)
-
-/*===========================================================
-=            Sending values to the cache request            =
-===========================================================*/
-
-  when((state === s_SENDING) && (sendbytemask =/= 0.asUInt((xlen/4).W))) {
-    io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
-    io.MemReq.bits.tag := ID
-    io.MemReq.valid := 1.U
-    // io.MemReq.ready means arbitration succeeded and memory op has been passed on
-    when(io.MemReq.fire()) {
-      // Shift right by word length on machine.
-      sendbytemask := sendbytemask >> (xlen / 8)
-      // Move to receiving data
-      state := s_RECEIVING
-    }
-  }
-
-/*============================================================
-=            Receiving values from cache response            =
-=============================================================*/
-
-  when((state === s_RECEIVING) && (io.MemResp.valid === true.B)) {
-    // Received data; concatenate into linebuffer
-    linebuffer(ptr) := io.MemResp.data
-    // Increment ptr to next entry in linebuffer (for next read)
-    ptr := ptr + 1.U
-    // Check if more data needs to be sent
-    val y = (sendbytemask === 0.asUInt((xlen/4).W))
-    state := Mux(y, s_Done, s_SENDING)
-  }
-
-/*============================================================
-=            Cleanup and send output                         =
-=============================================================*/
-
-  when(state === s_Done) {
-    output := (linebuffer.asUInt & bitmask) >> Cat(request_R.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))
-    io.output.valid := 1.U
-    // @error: To handle doubles this has to change.
-    io.output.bits.data := Data2Sign(output,request_R.Typ)
-    io.output.bits.RouteID := request_R.RouteID
-    io.output.bits.valid := true.B
-    // Output driver demux tree has forwarded output (may not have reached receiving node yet)
-    when(io.output.fire()) {
-      state := s_idle
-      request_valid_R := false.B
-    }
-  }
-}
-
-abstract class RController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters) 
+abstract class RController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters)
 extends Module with CoreParams {
   val io = IO(new Bundle {
     val ReadIn = Vec(NumOps, Flipped(Decoupled(new ReadReq())))
