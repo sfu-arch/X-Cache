@@ -27,7 +27,7 @@ class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val tag  = UInt((List(1,rdmshrlen,wrmshrlen).max).W)
 }
 
-class CacheRespT extends CacheResp() {
+class CacheRespT(implicit  p: Parameters) extends CacheResp()(p) {
   val isSt = Bool()
 }
 
