@@ -52,7 +52,7 @@ class MiniConfig extends Config((site, here, up) => {
     // Size of write MSHR table bits 
     case WRMSHRLEN  => 1
     case TYPSZ      => 32
-    case VERBOSITY  => "None"
+    case VERBOSITY  => "high"
     case COMPONENTS => "None"
     // Max size of type memory system may see
     case TRACE      => true

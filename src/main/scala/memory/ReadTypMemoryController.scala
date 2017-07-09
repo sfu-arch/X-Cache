@@ -150,6 +150,10 @@ class ReadTypTableEntry
       case "low"   => { printf(p"Wr MSHR Time $x: $io.MemReq") }
     }
   }
+
+
+  //  printf(p"-----------------------------------------------------\n")
+  printfInfo("  State: %x\n", state)
 }
 
 class ReadTypMemoryController
