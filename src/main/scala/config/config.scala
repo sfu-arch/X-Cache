@@ -48,7 +48,7 @@ class MiniConfig extends Config((site, here, up) => {
     case TLEN       => 32
     case GLEN       => 16
     // Size of read MSHR table bits 
-    case RDMSHRLEN  => 0
+    case RDMSHRLEN  => 1
     // Size of write MSHR table bits 
     case WRMSHRLEN  => 1
     case TYPSZ      => 32
@@ -60,8 +60,6 @@ class MiniConfig extends Config((site, here, up) => {
 
     //-------------------------
     // Cache
-    case RDMSHRLEN => 0
-    case WRMSHRLEN => 0
     case NWays => 1 // TODO: set-associative
     case NSets => 256
     case CacheBlockBytes => 4 * (here(XLEN) >> 3) // 4 x 32 bits = 16B
