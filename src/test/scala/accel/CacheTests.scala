@@ -6,6 +6,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.testers._
 import junctions._
+import config._
 
 class GoldCache(implicit val p: config.Parameters) extends Module with CacheParams {
   val io = IO(new Bundle {
@@ -291,7 +292,7 @@ class CacheTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
 }
 
 class CacheTests extends org.scalatest.FlatSpec {
-  implicit val p = config.Parameters.root((new AcceleratorConfig).toInstance)
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   "Cache" should "pass" in {
     assert(TesterDriver execute (() => new CacheTester(new Cache)))
   }

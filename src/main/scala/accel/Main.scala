@@ -9,7 +9,7 @@ import config._
 
 object Main extends App {
   val dir = new File(args(0)) ; dir.mkdirs
-  implicit val p = config.Parameters.root((new AcceleratorConfig).toInstance)
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(new  Core())))
 
   val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))

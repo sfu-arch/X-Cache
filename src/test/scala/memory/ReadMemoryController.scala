@@ -1,15 +1,15 @@
 package memory
 
-// // /**
-// //   * Created by vnaveen0 on 2/6/17.
-// //   */
+/**
+  * Created by vnaveen0 on 8/7/17.
+  */
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
 import config._
 
-class ReadTypMemoryControllerTests(c: ReadTypMemoryController)
+class ReadMemoryControllerTests(c: ReadMemoryController)
 	(implicit p: config.Parameters)
 	extends PeekPokeTester(c) {
 
@@ -38,7 +38,7 @@ class ReadTypMemoryControllerTests(c: ReadTypMemoryController)
 // 	// poke(c.io.ReadIn(1).bits.Typ,1)
 // 	// poke(c.io.ReadIn(1).valid,1)
 // 	var req  = false
-// 	var tag  = peek(c.io.CacheReq.bits.tag)	
+// 	var tag  = peek(c.io.CacheReq.bits.tag)
 // 	var reqT = 0
 //     // in_arb.io.in(0).bits.RouteID := 0.U
 //     // in_arb.io.in(0).bits.Typ := MT_W
@@ -104,7 +104,7 @@ class ReadTypMemoryControllerTests(c: ReadTypMemoryController)
 // //     //    }
 
 // //     printf(s"t: ${t} ---------------------------- \n")
-// //     
+// //
 // //     printf(s"t: ${t}  io.ReadOut: ${peek(c.io.ReadOut(0))} chosen: 0 \n")
 // // //    printf(s"t: ${t}  io.ReadIn: ${peek(c.io.ReadIn(readidx))} chosen: ${readidx} \n")
 //     step(1)
@@ -114,11 +114,11 @@ class ReadTypMemoryControllerTests(c: ReadTypMemoryController)
 }
 
 
-class ReadTypMemoryControllerTester extends  FlatSpec with Matchers {
+class ReadMemoryControllerTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Memory Controller tester" in {
-    chisel3.iotesters.Driver(() => new ReadTypMemoryController(NumOps=1,BaseSize=2)(p)) {
-      c => new ReadTypMemoryControllerTests(c)
+    chisel3.iotesters.Driver(() => new ReadMemoryController(NumOps=1,BaseSize=2)(p)) {
+      c => new ReadMemoryControllerTests(c)
     } should be(true)
   }
 }
