@@ -17,7 +17,7 @@ import interfaces._
 
 
 class TypeMemDataFlowTester(df: TypeMemDataFlow)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
-	for(t <- 0 until 200){
+	for(t <- 0 until 50){
 		step(1)
 	}
 

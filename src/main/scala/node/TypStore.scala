@@ -185,6 +185,7 @@ class TypStore(NumPredOps: Int,
         printf("\"State\": {\"State\": %x}",state)
         printf("}")
        }
+      case everythingElse => {}
     }
   }
 }

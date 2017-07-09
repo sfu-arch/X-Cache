@@ -25,7 +25,7 @@ class PhiNode(NumInputs: Int,
                  NumOuts: Int,
                  ID: Int)
                 (implicit p: Parameters)
-  extends HandShakingNPS(NumOuts, ID)(p) {
+  extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new PhiNodeIO(NumInputs, NumOuts))
   // Printf debugging
   override val printfSigil = "Node(PHI) ID: " + ID + " "

@@ -24,7 +24,7 @@ class IcmpNodeIO(NumOuts: Int)
 
 class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
   (implicit p: Parameters)
-  extends HandShakingNPS(NumOuts, ID)(p) {
+  extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
     override lazy val io = IO(new ComputeNodeIO(NumOuts))
     // Printf debugging
     override val printfSigil = "Node ID: " + ID + " "
