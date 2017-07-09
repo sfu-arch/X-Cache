@@ -52,8 +52,8 @@ class MiniConfig extends Config((site, here, up) => {
     // Size of write MSHR table bits 
     case WRMSHRLEN  => 1
     case TYPSZ      => 32
-    case VERBOSITY  => "None"
-    case COMPONENTS => "None"
+    case VERBOSITY  => "low"
+    case COMPONENTS => "RDMSHR"
     // Max size of type memory system may see
     case TRACE      => true
     case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))
