@@ -92,9 +92,21 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
 
 
     println(s" IO CacheReq Valid  ${peek(c.io.CacheReq.valid)}")
-    println(s" IO ReadResp Valid  ${peek(c.io.ReadCacheResp.valid)}")
-    println(s" IO WriteResp Valid  ${peek(c.io.WriteCacheResp.valid)}")
-    println(s" time :   ${time}")
+    if(peek(c.io.ReadCacheResp.valid) == 1) {
+
+      println(s"^^^^^^^^^^^^^^")
+      println(s"ReadCacheResp :  -------------")
+      println(s" IO ReadResp Valid  ${peek(c.io.ReadCacheResp)}")
+    }
+
+
+    if(peek(c.io.WriteCacheResp.valid) == 1) {
+
+      println(s"^^^^^^^^^^^^^^")
+      println(s"WriteCacheResp :  -------------")
+      println(s" IO WriteResp Valid  ${peek(c.io.WriteCacheResp)}")
+    }
+
 
 
     step(1)

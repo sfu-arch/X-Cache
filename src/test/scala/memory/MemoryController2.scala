@@ -28,7 +28,7 @@ class TypeStackTests(c: TypeStackFile)(implicit p: config.Parameters) extends Pe
 		poke(c.io.WriteIn(0).bits.data, 0xdeadbeefL+t)
 		poke(c.io.WriteIn(0).bits.mask,15)
 		step (1)
-		printf(s"Read out : ${peek(c.io.ReadOut(0))}")
+		printf(s"Read out : ${peek(c.io.ReadOut(0))} \n")
 	}
 }
 

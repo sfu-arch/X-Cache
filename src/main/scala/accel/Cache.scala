@@ -31,9 +31,6 @@ class CacheRespT(implicit p: Parameters) extends CacheResp() {
   val isSt = Bool()
 }
 
-class CacheRespT(implicit p: Parameters) extends CacheResp() {
-  val isSt = Bool()
-}
 
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())

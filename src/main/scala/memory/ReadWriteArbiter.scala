@@ -30,8 +30,8 @@ abstract class RWController(implicit val p: Parameters)
 //    val CacheResp = new CacheRespT
     val CacheResp = Flipped(new CacheRespT)
 
-    val ReadCacheResp = new CacheResp
-    val WriteCacheResp = new CacheResp
+    val ReadCacheResp = Valid(new CacheResp)
+    val WriteCacheResp = Valid(new CacheResp)
     val CacheReq = Decoupled(new CacheReq)
 
   })
@@ -77,8 +77,10 @@ class ReadWriteArbiter()
   //-----------------------------------
   // CacheResp -> Table entries Demux
   // cacheresp_demux.io.outputs.bits.isSt is an extra field not in Rd/WrCacheResp
-  io.ReadCacheResp <> cacheresp_demux.io.outputs(RdIdx)
-  io.WriteCacheResp <> cacheresp_demux.io.outputs(WrIdx)
+  io.ReadCacheResp.bits <> cacheresp_demux.io.outputs(RdIdx)
+  io.ReadCacheResp.valid := cacheresp_demux.io.outputs(RdIdx).valid
+  io.WriteCacheResp.bits <> cacheresp_demux.io.outputs(WrIdx)
+  io.WriteCacheResp.valid := cacheresp_demux.io.outputs(WrIdx).valid
 
   //-----------------------------------
   // Driver Circuit
