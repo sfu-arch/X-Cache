@@ -33,7 +33,7 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
     println(s"t = ${t} ------------------------- ")
 
     if(t > 1 ) {
-      poke(c.io.CacheReq.ready,1)
+      poke(c.io.CacheReq.ready,0)
     }
 
     if(t== 4) {
@@ -72,15 +72,11 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
       println(s" IO CacheReq isWrite  ${peek(c.io.CacheReq.bits.iswrite)}")
       println(s" IO CacheReq data     ${peek(c.io.CacheReq.bits.data)}")
       println(s" IO CacheReq tag      ${peek(c.io.CacheReq.bits.tag)}")
-      //      var isSt = c.io.CacheReq.bits.iswrite
-      //      val isSt = RegInit(false.B)
-      //      isSt := c.io.CacheReq.bits.iswrite
-      //      var tag = c.io.CacheReq.bits.tag
 
       time = t+1
     }
 
-    if(t == time ) {
+    if(time == t ) {
       println(s" Sending Response from Cache ")
 
       poke(c.io.CacheResp.data, 45)

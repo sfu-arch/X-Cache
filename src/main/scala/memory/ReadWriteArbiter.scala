@@ -27,8 +27,8 @@ abstract class RWController(implicit val p: Parameters)
   val io = IO(new Bundle {
     val ReadCacheReq = Flipped(Decoupled(new CacheReq))
     val WriteCacheReq = Flipped(Decoupled(new CacheReq))
-    val CacheResp = new CacheRespT
 //    val CacheResp = new CacheRespT
+    val CacheResp = Flipped(new CacheRespT)
 
     val ReadCacheResp = new CacheResp
     val WriteCacheResp = new CacheResp
@@ -52,7 +52,7 @@ class ReadWriteArbiter()
   // Memory response Demux
   val cacheresp_demux = Module(new Demux(new CacheResp, MLPSize))
 
-  override val printfSigil = "ReadWriteArbiter: io.RdResp.valid " + io.ReadCacheResp.valid + " "
+  override val printfSigil = "ReadWriteArbiter: "
 
   //-----------------------------------
   // Driver Circuit
@@ -89,6 +89,7 @@ class ReadWriteArbiter()
   cacheresp_demux.io.sel := io.CacheResp.isSt
   //-----------------------------------
 
+//  assert(!io.CacheResp.valid, " CACHE RESPONSE IS VALID ")
   printf(s" io.Cache Resp valid: %x isSt: %x  tag: %x \n", io.CacheResp.valid ,io.CacheResp.isSt, io.CacheResp.tag )
 
 }
