@@ -13,8 +13,7 @@ import accel._
 case object XLEN       extends Field[Int]
 case object TLEN       extends Field[Int]
 case object GLEN       extends Field[Int]
-case object RDMSHRLEN  extends Field[Int]
-case object WRMSHRLEN  extends Field[Int]
+case object MSHRLEN  extends Field[Int]
 case object TYPSZ      extends Field[Int]
 case object VERBOSITY  extends Field[String]
 case object COMPONENTS extends Field[String]
@@ -29,8 +28,7 @@ abstract trait CoreParams {
   val glen    = p(GLEN)
   val Typ_SZ  = p(TYPSZ)
   val Beats   = Typ_SZ/xlen
-  val rdmshrlen = p(RDMSHRLEN)
-  val wrmshrlen = p(WRMSHRLEN)
+  val mshrlen = p(MSHRLEN)
 
   // Debugging dumps
   val log     = p(TRACE)
@@ -47,12 +45,10 @@ class MiniConfig extends Config((site, here, up) => {
     case XLEN       => 32
     case TLEN       => 32
     case GLEN       => 16
-    // Size of read MSHR table bits 
-    case RDMSHRLEN  => 1
-    // Size of write MSHR table bits 
-    case WRMSHRLEN  => 1
-    case TYPSZ      => 32
-    case VERBOSITY  => "high"
+    // # Max bits of cache request tag. 
+    case MSHRLEN  => 8
+    case TYPSZ      => 64
+    case VERBOSITY  => "None"
     case COMPONENTS => "None"
     // Max size of type memory system may see
     case TRACE      => true

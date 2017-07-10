@@ -158,13 +158,13 @@ class ReadTypTableEntry
 
 class ReadTypMemoryController
   (NumOps: Int,
-  BaseSize: Int)
+  BaseSize: Int, NumEntries: Int)
   (implicit p: Parameters)
-  extends RController(NumOps,BaseSize)(p) {
+  extends RController(NumOps, BaseSize, NumEntries)(p) {
 
-  require(rdmshrlen >= 0)
+  require(NumEntries >= 0)
   // Number of MLP entries
-  val MLPSize = 1 << rdmshrlen
+  val MLPSize = NumEntries
   // Input arbiter
   val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq(), Locks = 1))
   // MSHR allocator

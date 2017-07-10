@@ -72,13 +72,10 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
   val state = RegInit(s_idle)
 
-  override val printfSigil = "ReadTableEntry: ID:" + id + " "
-
-  // Check if entry free.
-  /*================================================
-  =            Indicate Table State                =
-  =================================================*/
-
+ // Check if entry free.
+/*================================================
+=            Indicate Table State                =
+=================================================*/
 
   // Table entry indicates free to outside world
   io.free := (state === s_idle)
@@ -164,13 +161,21 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   }
 
 
+   override val printfSigil = "UnTyp RD MSHR(" + ID + ")"
+  if ((log == true) && (comp contains "RDMSHR")) {
+    val x = RegInit(0.U(xlen.W))
+    x     := x + 1.U
 
-  printf(p"-----------------------------------------------------\n")
-  printfInfo(" State: %x\n", state)
+    verb match {
+      case "high"  => { printf(p"\nUNTYP RD MSHR Time $x: Nodereq: $request_R "); printf(p"linebuffer: ${linebuffer}") }
+      case "med"   => { printf(p"\nUNTYP RD MSHR Time $x: $io.MemReq"); printf(p"linebuffer: ${linebuffer}") }
+      case "low"   => { printf(p"\nUNTYP RD MSHR Time $x: ") ; printf(p"Output bits : ${io.output.bits} Output Valid : ${io.output.valid}") }
+    }
+  }
 }
 
-abstract class RController(NumOps: Int, BaseSize: Int)(implicit val p: Parameters)
-  extends Module with CoreParams {
+abstract class RController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit val p: Parameters)
+extends Module with CoreParams {
   val io = IO(new Bundle {
     val ReadIn = Vec(NumOps, Flipped(Decoupled(new ReadReq())))
     val ReadOut = Vec(NumOps, Output(new ReadResp()))
@@ -181,14 +186,13 @@ abstract class RController(NumOps: Int, BaseSize: Int)(implicit val p: Parameter
 
 
 class ReadMemoryController
-(NumOps: Int,
- BaseSize: Int)
-(implicit p: Parameters)
-  extends RController(NumOps,BaseSize)(p) {
-
-  require(rdmshrlen >= 0)
+  (NumOps: Int,
+  BaseSize: Int, NumEntries: Int)
+  (implicit p: Parameters)
+  extends RController(NumOps,BaseSize,NumEntries)(p) {
+  require(NumEntries >= 0)
   // Number of MLP entries
-  val MLPSize = 1 << rdmshrlen
+  val MLPSize = NumEntries
   // Input arbiter
   val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq(), Locks = 1))
   // MSHR allocator

@@ -42,6 +42,7 @@ class ReadWriteArbiter()
   (implicit p: Parameters)
   extends RWController()(p) {
 
+  //ToDo : Need to remove this 
   val MLPSize = 2
   val RdIdx = 0
   val WrIdx = 1
