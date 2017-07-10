@@ -65,21 +65,9 @@ class UnifiedController (ID: Int,
   val cacheResp_R = RegInit(CacheRespT.default)
 
   // Initialize a vector of register files (as wide as type).
-//  val RegFile = Module(new RFile(Size)(p))
   val WriteController = Module(WControl)
   val ReadController = Module(RControl)
   val ReadWriteArbiter = Module(RWArbiter)
-
-  // Write registers
-  val WriteReq     = RegNext(next = WriteController.io.CacheReq.bits)
-  val WriteValid   = RegNext(init  = false.B,next=WriteController.io.CacheReq.fire())
-
-  val ReadReq     = RegNext(next = ReadController.io.CacheReq.bits)
-  val ReadValid   = RegNext(init  = false.B, next=ReadController.io.CacheReq.fire())
-
-
-  val xlen_bytes = xlen / 8
-  val wordindex = log2Ceil(xlen_bytes)
 
 /*================================================
 =            Wiring up input arbiters            =
@@ -98,10 +86,10 @@ class UnifiedController (ID: Int,
   }
 
   // Connect Read/Write Controllers to ReadWrite Arbiter
-  ReadController.io.CacheReq <> ReadWriteArbiter.io.ReadCacheReq
+  ReadWriteArbiter.io.ReadCacheReq <> ReadController.io.CacheReq
   ReadController.io.CacheResp <> ReadWriteArbiter.io.ReadCacheResp
 
-  WriteController.io.CacheReq <> ReadWriteArbiter.io.WriteCacheReq
+  ReadWriteArbiter.io.WriteCacheReq <> WriteController.io.CacheReq
   WriteController.io.CacheResp <> ReadWriteArbiter.io.WriteCacheResp
 
   // Connecting CacheReq/Resp
