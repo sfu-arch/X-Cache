@@ -27,12 +27,8 @@ class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val tag  = UInt((List(1,rdmshrlen,wrmshrlen).max).W)
 }
 
-class CacheRespT(implicit  p: Parameters) extends CoreBundle()(p) {
-
-  val data = UInt(xlen.W)
-  val tag  = UInt((List(1,rdmshrlen,wrmshrlen).max).W)
+class CacheRespT(implicit p: Parameters) extends CacheResp() {
   val isSt = Bool()
-  val valid = Bool()
 }
 
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {

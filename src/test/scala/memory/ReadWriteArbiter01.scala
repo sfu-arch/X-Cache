@@ -28,15 +28,15 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
 
 
 
-  var time =  0
+  var time =  -10
   for (t <- 0 until 10) {
     println(s"t = ${t} ------------------------- ")
 
     if(t > 1 ) {
-      poke(c.io.CacheReq.ready,0)
+      poke(c.io.CacheReq.ready,1)
     }
 
-    if(t== 4) {
+    if(t > 3 && t < 8) {
       if (peek(c.io.WriteCacheReq.ready) == 1) {
         println(s" WriteCacheReq Ready ")
         poke(c.io.WriteCacheReq.valid, 1)
@@ -45,11 +45,16 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
         poke(c.io.WriteCacheReq.bits.iswrite, 1)
         poke(c.io.WriteCacheReq.bits.tag, 1)
       }
-      else  {
+      else {
         poke(c.io.WriteCacheReq.valid, 0)
       }
+    }
+    else {
+      poke(c.io.WriteCacheReq.valid, 0)
+    }
 
 
+    if(t== 4) {
       if (peek(c.io.ReadCacheReq.ready) == 1) {
         println(s" ReadCacheReq Ready ")
         poke(c.io.ReadCacheReq.valid, 1)
@@ -63,7 +68,6 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
       }
     }
     else {
-      poke(c.io.WriteCacheReq.valid, 0)
       poke(c.io.ReadCacheReq.valid, 0)
     }
 
@@ -73,15 +77,13 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
       println(s" IO CacheReq data     ${peek(c.io.CacheReq.bits.data)}")
       println(s" IO CacheReq tag      ${peek(c.io.CacheReq.bits.tag)}")
 
+
       time = t+1
-    }
 
-    if(time == t ) {
       println(s" Sending Response from Cache ")
-
       poke(c.io.CacheResp.data, 45)
-      poke(c.io.CacheResp.isSt, 0)
-      poke(c.io.CacheResp.tag, 1)
+      poke(c.io.CacheResp.isSt, peek(c.io.CacheReq.bits.iswrite))
+      poke(c.io.CacheResp.tag, peek(c.io.CacheReq.bits.tag))
       poke(c.io.CacheResp.valid, 1)
     }
     else {
@@ -93,6 +95,7 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
     println(s" IO ReadResp Valid  ${peek(c.io.ReadCacheResp.valid)}")
     println(s" IO WriteResp Valid  ${peek(c.io.WriteCacheResp.valid)}")
     println(s" time :   ${time}")
+
 
     step(1)
   }

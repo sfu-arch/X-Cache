@@ -1,18 +1,14 @@
-package memory
+package memory.deprecated
 
 /**
   * Created by vnaveen0 on 9/7/17.
   */
 
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
-import org.scalatest.{Matchers, FlatSpec}
 import chisel3._
-import chisel3.util._
 import chisel3.testers._
-import junctions._
+import chisel3.util._
 import config._
-
-import config._
+import memory.ReadWriteArbiter
 
 class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Parameters)
   extends BasicTester {
