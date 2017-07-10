@@ -81,9 +81,9 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
       time = t+1
 
       println(s" Sending Response from Cache ")
-      poke(c.io.CacheResp.data, 45)
-      poke(c.io.CacheResp.isSt, peek(c.io.CacheReq.bits.iswrite))
-      poke(c.io.CacheResp.tag, peek(c.io.CacheReq.bits.tag))
+      poke(c.io.CacheResp.bits.data, 45)
+      poke(c.io.CacheResp.bits.isSt, peek(c.io.CacheReq.bits.iswrite))
+      poke(c.io.CacheResp.bits.tag, peek(c.io.CacheReq.bits.tag))
       poke(c.io.CacheResp.valid, 1)
     }
     else {

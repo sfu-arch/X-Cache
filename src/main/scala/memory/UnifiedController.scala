@@ -41,7 +41,7 @@ import utility.UniformPrintfs
 class UnifiedController (ID: Int,
   Size: Int,
   NReads: Int,
-  NWrites: Int)(WControl: => WriteMemoryController)(RControl: => ReadMemoryController)(RWArbiter: => ReadWriteArbiter )(implicit val p: Parameters)
+  NWrites: Int)(WControl: => WriteTypMemoryController)(RControl: => ReadTypMemoryController)(RWArbiter: => ReadWriteArbiter )(implicit val p: Parameters)
   extends Module
   with CoreParams
   with UniformPrintfs {
@@ -53,7 +53,7 @@ class UnifiedController (ID: Int,
     val ReadOut = Vec(NReads, Output(new ReadResp()))
 
     //orig
-    val CacheResp = Flipped(new CacheRespT)
+    val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
 
   })
@@ -64,9 +64,11 @@ class UnifiedController (ID: Int,
 /*====================================
  =            Declarations            =
  ====================================*/
+  val cacheReq_R = RegInit(CacheReq.default)
+  val cacheResp_R = RegInit(CacheRespT.default)
 
   // Initialize a vector of register files (as wide as type).
-  val RegFile = Module(new RFile(Size)(p))
+//  val RegFile = Module(new RFile(Size)(p))
   val WriteController = Module(WControl)
   val ReadController = Module(RControl)
   val ReadWriteArbiter = Module(RWArbiter)
@@ -98,41 +100,56 @@ class UnifiedController (ID: Int,
     io.ReadOut(i) <> ReadController.io.ReadOut(i)
   }
 
+  // Connect Read/Write Controllers to ReadWrite Arbiter
+  ReadController.io.CacheReq <> ReadWriteArbiter.io.ReadCacheReq
+  ReadController.io.CacheResp <> ReadWriteArbiter.io.ReadCacheResp
 
-//  //-- Connect to RW Arbiter
-//  WriteController.io.CacheReq.ready := true.B
-//  ReadController.io.CacheReq.ready := true.B
-//
-//
-//  WriteController.io.CacheResp.valid := false.B
-//  ReadController.io.CacheResp.valid := false.B
+  WriteController.io.CacheReq <> ReadWriteArbiter.io.WriteCacheReq
+  WriteController.io.CacheResp <> ReadWriteArbiter.io.WriteCacheResp
 
-/*==========================================
-//=            Write Controller.             =
-//==========================================*/
-//
-//  RegFile.io.wen := WriteController.io.CacheReq.fire()
-//  RegFile.io.waddr := WriteController.io.CacheReq.bits.addr(wordindex + log2Ceil(Size) - 1, wordindex)
-//  RegFile.io.wdata := WriteController.io.CacheReq.bits.data
-//  RegFile.io.wmask := WriteController.io.CacheReq.bits.mask
-//
-//
-//  WriteController.io.CacheResp.valid    := WriteValid
-//  WriteController.io.CacheResp.bits.tag := WriteReq.tag
-//
-//
-///*==============================================
-//=            Read Memory Controller            =
-//==============================================*/
-//
-//  when(ReadController.io.CacheReq.fire()) {
-//    RegFile.io.raddr1 := ReadController.io.CacheReq.bits.addr(wordindex + log2Ceil(Size) - 1, wordindex)
-//  }
-//
-//  ReadController.io.CacheResp.valid     := ReadValid
-//  ReadController.io.CacheResp.bits.tag  := ReadReq.tag
-//  ReadController.io.CacheResp.bits.data := RegFile.io.rdata1
+  // Connecting CacheReq/Resp
+  val (sIdle :: sReq :: sResp :: sDone :: Nil) = Enum(4)
+  val state = RegInit(init = sIdle)
 
+  switch(state) {
+    is(sIdle){
+      when(ReadWriteArbiter.io.CacheReq.fire()) {
+        cacheReq_R := ReadWriteArbiter.io.CacheReq.bits
+        state := sReq
+      }
+    }
+
+    is(sReq) {
+
+      ReadWriteArbiter.io.CacheReq.ready := false.B
+      when(io.CacheReq.fire()) {
+        state := sResp
+      }
+    }
+
+    is(sResp){
+      when(io.CacheResp.valid){
+        cacheResp_R := io.CacheResp.bits
+        state := sDone
+      }
+    }
+
+    is(sDone) {
+      when(ReadWriteArbiter.io.CacheResp.fire()) {
+        state := sIdle
+      }
+    }
+  }
+
+  ReadWriteArbiter.io.CacheReq.ready := state === sIdle
+  io.CacheReq.valid  := state === sReq
+  io.CacheReq.bits  := cacheReq_R
+
+  ReadWriteArbiter.io.CacheResp.valid := state === sDone
+  ReadWriteArbiter.io.CacheResp.bits := cacheResp_R
+
+
+  //--------------------------
 
   //------------------------------------------------------------------------------------
   /// Printf debugging

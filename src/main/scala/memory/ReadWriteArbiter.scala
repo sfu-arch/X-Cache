@@ -28,7 +28,7 @@ abstract class RWController(implicit val p: Parameters)
     val ReadCacheReq = Flipped(Decoupled(new CacheReq))
     val WriteCacheReq = Flipped(Decoupled(new CacheReq))
 //    val CacheResp = new CacheRespT
-    val CacheResp = Flipped(new CacheRespT)
+    val CacheResp = Flipped(Valid(new CacheRespT))
 
     val ReadCacheResp = Valid(new CacheResp)
     val WriteCacheResp = Valid(new CacheResp)
@@ -86,13 +86,13 @@ class ReadWriteArbiter()
   // Driver Circuit
   // Cache response Demux
   cacheresp_demux.io.en := io.CacheResp.valid
-  cacheresp_demux.io.input := io.CacheResp
+  cacheresp_demux.io.input := io.CacheResp.bits
   //Note RdIdx == 0 , so is isSt for Loads
   //ToDO this could be dangerous - fix this
-  cacheresp_demux.io.sel := io.CacheResp.isSt
+  cacheresp_demux.io.sel := io.CacheResp.bits.isSt
   //-----------------------------------
 
 //  assert(!io.CacheResp.valid, " CACHE RESPONSE IS VALID ")
-  printf(s" io.Cache Resp valid: %x isSt: %x  tag: %x \n", io.CacheResp.valid ,io.CacheResp.isSt, io.CacheResp.tag )
+  printf(s" io.Cache Resp valid: %x isSt: %x  tag: %x \n", io.CacheResp.valid ,io.CacheResp.bits.isSt, io.CacheResp.bits.tag )
 
 }

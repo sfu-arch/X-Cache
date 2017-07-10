@@ -1,6 +1,7 @@
 package memory
 
 // Generic Packages
+import arbiters.ArbiterTree
 import chisel3._
 import chisel3.Module
 import chisel3.util._
@@ -9,7 +10,7 @@ import org.scalacheck.Prop.False
 // Modules needed
 import arbiters._
 import muxes._
-
+import arbiters._
 // Config
 import config._
 import utility._
