@@ -72,7 +72,6 @@ class PhiNode(NumInputs: Int,
    *===============================================*/
 
   // Predicate register
-  val pred_R = RegInit(false.B)
   val valid_R = RegInit(false.B)
 
   //printfInfo("start: %x\n", start)
@@ -102,7 +101,7 @@ class PhiNode(NumInputs: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R
-    io.Out(i).bits.predicate := pred_R
+    io.Out(i).bits.predicate := predicate
     io.Out(i).bits.valid := valid_R
   }
 
@@ -117,7 +116,6 @@ class PhiNode(NumInputs: Int,
   printfInfo("sel: %x\n", sel)
 
   data_R := in_data_R(sel).data
-  pred_R := predicate
   valid_R := true.B
 
   when(start & predicate) {
@@ -133,19 +131,7 @@ class PhiNode(NumInputs: Int,
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-
-  val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
-
-  //  printf(p"ID: ${ID}, left: ${left_R}\n")
-  //  printf(p"ID: ${ID}, right: ${right_R}\n")
-  //  printf(p"ID: ${ID}, enable: ${io.enable}\n")
-  //  printf(p"ID: ${ID}, out valid: ${out_valid_R}\n")
-  printfInfo("out_ready: %x\n", out_ready_W)
-  printfInfo("out_valid: %x\n", out_valid_W)
-
-  //printfInfo(" Start restarting\n")
-  when(out_ready_W & out_valid_W) {
+   when(IsOutReady()) {
     //printfInfo("Start restarting output \n")
     // Reset data
     mask_R := 0.U
@@ -156,19 +142,11 @@ class PhiNode(NumInputs: Int,
     }
     // Reset output
     data_R := 0.U
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
     //Reset state
     state := s_idle
-    //Restart predicate bit
-    pred_R := false.B
-
     //Reset output
     Reset()
   }
 
   printfInfo(" State: %x\n", state)
-
-
 }

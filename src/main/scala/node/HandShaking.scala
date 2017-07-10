@@ -191,11 +191,11 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
 
   // OUTs
   def IsOutReady(): Bool = {
-    out_ready_R.asUInt.andR
+    out_ready_R.asUInt.andR | out_ready_W.asUInt.andR
   }
 
   def IsOutValid(): Bool = {
-    out_valid_R.asUInt.andR | out_ready_W.asUInt.andR
+    out_valid_R.asUInt.andR 
   }
 
   def ValidOut(): Unit = {

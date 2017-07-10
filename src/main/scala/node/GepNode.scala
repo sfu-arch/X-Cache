@@ -70,11 +70,6 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  // Predicate register
-  val pred_R = RegInit(init = false.B)
-
-  //printfInfo("start: %x\n", start)
-
   io.baseAddress.ready := ~base_addr_R.valid
   when(io.baseAddress.fire()) {
     //printfInfo("Latch left data\n")
@@ -94,7 +89,7 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R
-    io.Out(i).bits.predicate := pred_R
+    io.Out(i).bits.predicate := predicate
   }
 
 
@@ -109,10 +104,8 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
 
   when(start & predicate) {
     data_R := comp_addr_W
-    pred_R := predicate
     ValidOut()
   }.elsewhen(start & !predicate) {
-    pred_R := predicate
     ValidOut()
   }
 
@@ -120,25 +113,14 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-
-  val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
-
-  when(out_ready_W & out_valid_W) {
+  when(IsOutReady()) {
     //printfInfo("Start restarting output \n")
     // Reset data
-
     base_addr_R := DataBundle.default
     idx1_R := DataBundle.default
 
     // Reset output
     data_R := 0.U
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
-    //Reset state
-    //Restart predicate bit
-    pred_R := false.B
 
     //Reset output
     Reset()
@@ -182,11 +164,6 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  // Predicate register
-  val pred_R = RegInit(init = false.B)
-
-  //printfInfo("start: %x\n", start)
-
   io.baseAddress.ready := ~base_addr_R.valid
   when(io.baseAddress.fire()) {
     //printfInfo("Latch left data\n")
@@ -214,7 +191,7 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R
-    io.Out(i).bits.predicate := pred_R
+    io.Out(i).bits.predicate := predicate
   }
 
 
@@ -228,39 +205,23 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
     (idx1_R.data * numByte1.U) + (idx2_R.data * numByte2.U)
 
   data_R := comp_addr_W
-  pred_R := predicate
-
-  when(start & predicate) {
-    ValidOut()
-  }.elsewhen(start & !predicate) {
-    ValidOut()
-  }
+    
+  ValidOut()
 
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
 
 
-  val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
-
-  when(out_ready_W & out_valid_W) {
+  when(IsOutReady()) {
     //printfInfo("Start restarting output \n")
     // Reset data
 
     base_addr_R := DataBundle.default
     idx1_R := DataBundle.default
     idx2_R := DataBundle.default
-
     // Reset output
     data_R := 0.U
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
-    //Reset state
-    //Restart predicate bit
-    pred_R := false.B
-
     //Reset output
     Reset()
   }
