@@ -8,20 +8,20 @@ import chisel3.Module
 import config._
 import interfaces._
 
-class Demux[T <: ValidT](gen: T, n: Int) extends Module {
+class Demux[T <: ValidT](gen: T, Nops: Int) extends Module {
   val io = IO(new Bundle {
     val en = Input(Bool())
     val input = Input(gen)
-    val sel = Input(UInt(max(1, log2Ceil(n)).W))
-    val outputs = Output(Vec(n, gen))
-    val valids = Output(Vec(n, Bool()))
+    val sel = Input(UInt(max(1, log2Ceil(Nops)).W))
+    val outputs = Output(Vec(Nops, gen))
+    val valids = Output(Vec(Nops, Bool()))
     val outputvalid = Output(Bool())
   })
 
   val x = io.sel
 
   when(io.en) {
-    for (i <- 0 until n) {
+    for (i <- 0 until Nops) {
       io.outputs(i).valid := false.B
       io.valids(i) := false.B
     }
@@ -29,8 +29,8 @@ class Demux[T <: ValidT](gen: T, n: Int) extends Module {
     io.outputs(x).valid := true.B
     io.valids(x) := true.B
   }.otherwise {
-    io.valids := Vec(Seq.fill(n) { false.B })
-    for (i <- 0 until n) {
+    io.valids := Vec(Seq.fill(Nops) { false.B })
+    for (i <- 0 until Nops) {
       io.outputs(i).valid := false.B
       io.valids(i) := false.B
     }
@@ -85,7 +85,7 @@ class DeMuxTree[T <: RouteID with ValidT](BaseSize: Int, NumOps: Int, gen: T)(im
       toplevel = Demuxes
       for (i <- 0 until Demuxes.length * BaseSize) {
         if (i < NumOps) {
-          // println("Output["+i+"]"+"Source Demux["+i/BaseSize+","+indexcalc(i,BaseSize)+"]")
+          //println("Output["+i+"]"+"Source Demux["+i/BaseSize+","+indexcalc(i,BaseSize)+"]")
           io.outputs(i) <> Demuxes(i / BaseSize).outputs(indexcalc(i, BaseSize))
         }
       }
@@ -97,8 +97,8 @@ class DeMuxTree[T <: RouteID with ValidT](BaseSize: Int, NumOps: Int, gen: T)(im
       Muxes_Per_Level = (Muxes_Per_Level + BaseSize - 1) / BaseSize
     }
   }
-  // printf(p"Top Demuxes: ${toplevel(1).outputs}\n")
-  // printf(p"Bottom Demuxes: ${prev(0).outputs}\n")
+   //printf(p"Top Demuxes: ${toplevel(1).outputs}\n")
+   //printf(p"Bottom Demuxes: ${prev(0).outputs}\n")
 
   // println("z:"+z+","+(z+log2Ceil(BaseSize)-1))
   prev(0).input <> io.input

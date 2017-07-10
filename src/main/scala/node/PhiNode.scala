@@ -116,17 +116,16 @@ class PhiNode(NumInputs: Int,
 
   printfInfo("sel: %x\n", sel)
 
+  data_R := in_data_R(sel).data
+  pred_R := predicate
+  valid_R := true.B
+
   when(start & predicate) {
     state := s_COMPUTE
-    data_R := in_data_R(sel).data
-    pred_R := predicate
-    valid_R := true.B
     ValidOut()
-  }.elsewhen(start & ~predicate) {
+  }.elsewhen(start & !predicate) {
     //printfInfo("Start sending data to output INVALID\n")
     state := s_COMPUTE
-    pred_R := predicate
-    valid_R := true.B
     ValidOut()
   }
 
