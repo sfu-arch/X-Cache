@@ -154,6 +154,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
     io.output.bits.data := Data2Sign(output,request_R.Typ)
     io.output.bits.RouteID := request_R.RouteID
     io.output.bits.valid := true.B
+    ptr := 0.U
     // Output driver demux tree has forwarded output (may not have reached receiving node yet)
     when(io.output.fire()) {
       state := s_idle
@@ -216,6 +217,7 @@ class ReadMemoryController
   // Wire up input with in_arb
   for (i <- 0 until NumOps) {
     in_arb.io.in(i) <> io.ReadIn(i)
+    io.ReadOut(i)   <> out_demux.io.outputs(i)
   }
 
 /*=============================================
@@ -241,7 +243,7 @@ class ReadMemoryController
     // val MSHR = Module(new ReadTableEntry(i))
     // Allocator wireup with table entries
     alloc_arb.io.in(i).valid := ReadTable(i).io.free
-    ReadTable(i).io.NodeReq.valid := alloc_arb.io.in(i).ready
+    ReadTable(i).io.NodeReq.valid := alloc_arb.io.in(i).fire()
     ReadTable(i).io.NodeReq.bits := in_arb.io.out.bits
 
     // Table entries -> CacheReq arbiter.
@@ -272,6 +274,6 @@ class ReadMemoryController
   out_demux.io.enable := out_arb.io.out.fire()
   out_demux.io.input := out_arb.io.out.bits
 
-  // printf(p"\n Demux Out: ${out_demux.io.outputs}")
+  // printf(p"\n Read Demux Out: ${out_demux.io.outputs}")
 
 }

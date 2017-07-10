@@ -64,6 +64,13 @@ class ReadResp(implicit p: Parameters)
   extends ValidT
     with RouteID {
   val data = UInt(xlen.W)
+
+  override def toPrintable: Printable = {
+    p"ReadResp {\n" +
+    p"  valid  : ${valid}\n" +
+    p"  RouteID: ${RouteID}\n" +
+    p"  data   : 0x${Hexadecimal(data)} }"
+  }
 }
 
 object ReadResp {

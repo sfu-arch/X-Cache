@@ -123,7 +123,7 @@ class TypeStackFile(ID: Int,
 
   // printf(p"\n : ${ReadController.io.CacheReq.fire()} Tag: ${ReadReq.tag} ")
   // printf(p"\n Cache Request ${WriteController.io.CacheReq}")
-  //  printf(p"Demux out:  ${io.WriteOut(0)}")
+   // printf(p"Demux out:  ${io.WriteOut(0)}")
   // Read in parallel after shifting.
   // seq
   // for (i <- 0 until Typ_SZ)

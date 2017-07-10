@@ -99,12 +99,12 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
 
-  when(start & predicate) {
+  when(start & predicate & state =/= s_COMPUTE) {
     state := s_COMPUTE
     data_R := FU.io.out
     pred_R := predicate
     ValidOut()
-  }.elsewhen(start & ~predicate) {
+  }.elsewhen(start & ~predicate & state =/= s_COMPUTE) {
     //printfInfo("Start sending data to output INVALID\n")
     state := s_COMPUTE
     pred_R := predicate
@@ -115,23 +115,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-
-  val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
-
-  printf(p"ID: ${ID}, left: ${left_R}\n")
-  printf(p"ID: ${ID}, right: ${right_R}\n")
-  printf(p"ID: ${ID}, enable: ${io.enable}\n")
-  printf(p"ID: ${ID}, out valid: ${out_valid_R(0)}\n")
-  printf(p"ID: ${ID}, out: ${data_R}\n")
-  //  printfInfo(s"Left: ${left_R}\n")
-  //  printfInfo(s"Left: ${right_R}\n")
-  printfInfo("out_ready: %x\n", out_ready_W)
-  printfInfo("out_valid: %x\n", out_valid_W)
-
-  //printfInfo(" Start restarting\n")
-  when(out_ready_W & out_valid_W) {
-    //printfInfo("Start restarting output \n")
+  when(IsOutReady() & (state === s_COMPUTE)) {
     // Reset data
     left_R := DataBundle.default
     right_R := DataBundle.default
@@ -144,7 +128,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     state := s_idle
     //Restart predicate bit
     pred_R := false.B
-
     //Reset output
     Reset()
   }

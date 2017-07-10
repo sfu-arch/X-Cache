@@ -118,7 +118,7 @@ io.memReq.valid        := false.B
       // Completion state.
       state := s_Done
     }
-  }.elsewhen(start & ~predicate) {
+  }.elsewhen(start & ~predicate & state =/= s_Done) {
     ValidSucc()
     ValidOut()
     state := s_Done
@@ -144,10 +144,5 @@ io.memReq.valid        := false.B
       state := s_idle
     }
   }
-  printfInfo("State : %x, Out: %x Succ Mem Op [", state, io.Out(0).bits.data)
-
-  for (i <- 0 until NumSuccOps) {
-    printf(p"${io.SuccOp(i).valid},")
-  }
-  printf("]\n")
+  printfInfo("State : %x, Out: %x ", state, io.Out(0).valid)
 }

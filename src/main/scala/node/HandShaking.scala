@@ -148,6 +148,8 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
   val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
 
+  // Wire
+  val out_ready_W   = Wire(Vec(Seq.fill(NumOuts)(false.B)))
 
   /*============================*
    *           Wiring           *
@@ -156,6 +158,7 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   // Wire up OUT READYs and VALIDs
   for (i <- 0 until NumOuts) {
     io.Out(i).valid := out_valid_R(i)
+    out_ready_W(i)  := io.Out(i).ready
     when(io.Out(i).fire()) {
       // Detecting when to reset
       out_ready_R(i) := io.Out(i).ready
@@ -192,7 +195,7 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   }
 
   def IsOutValid(): Bool = {
-    out_valid_R.asUInt.andR
+    out_valid_R.asUInt.andR | out_ready_W.asUInt.andR
   }
 
   def ValidOut(): Unit = {
@@ -244,6 +247,8 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
   val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
 
+  // Wire
+  // val out_ready_W   = Wire(Vec(Seq.fill(NumOuts)(false.B)))
 
   /*============================*
    *           Wiring           *
@@ -284,7 +289,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
 
   // OUTs
   def IsOutReady(): Bool = {
-    out_ready_R.asUInt.andR
+    out_ready_R.asUInt.andR 
   }
 
   def IsOutValid(): Bool = {
@@ -307,6 +312,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
     out_ready_R := Vec(Seq.fill(NumOuts) {
       false.B
     })
+    InvalidOut()
     enable_valid_R := false.B
   }
 }
@@ -356,6 +362,9 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
   val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
 
+  // Wire
+  val out_ready_W   = Wire(Vec(Seq.fill(NumOuts)(false.B)))
+  val succ_ready_W  = Seq.fill(NumSuccOps)(Wire(false.B))
 
   /*==============================
   =            Wiring            =
@@ -364,6 +373,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   for (i <- 0 until NumSuccOps) {
     io.SuccOp(i).valid := succ_valid_R(i)
     io.SuccOp(i).bits := succ_bundle_R(i)
+    succ_ready_W(i)  := io.SuccOp(i).ready
     when(io.SuccOp(i).fire()) {
       succ_ready_R(i) := io.SuccOp(i).ready
       succ_valid_R(i) := false.B
@@ -373,6 +383,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   // Wire up OUT READYs and VALIDs
   for (i <- 0 until NumOuts) {
     io.Out(i).valid := out_valid_R(i)
+    out_ready_W(i)  := io.Out(i).ready
     when(io.Out(i).fire()) {
       // Detecting when to reset
       out_ready_R(i) := io.Out(i).ready
@@ -442,7 +453,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
     if (NumSuccOps == 0) {
       return true.B
     } else {
-      Vec(succ_ready_R).asUInt.andR
+      Vec(succ_ready_R).asUInt.andR | Vec(succ_ready_W).asUInt.andR
     }
   }
 
@@ -456,7 +467,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
 
   // OUTs
   def IsOutReady(): Bool = {
-    out_ready_R.asUInt.andR
+    out_ready_R.asUInt.andR | out_ready_W.asUInt.andR
   }
 
   def ValidOut(): Unit = {
@@ -479,6 +490,8 @@ class HandShaking[T <: Data](val NumPredOps: Int,
     out_ready_R := Vec(Seq.fill(NumOuts) {
       false.B
     })
+    InvalidOut()
+    InvalidSucc()
     enable_valid_R := false.B
   }
 }
@@ -589,6 +602,7 @@ class HandShakingCtrlMask(val NumInputs: Int,
     out_ready_R := Vec(Seq.fill(NumOuts) {
       false.B
     })
+    InvalidOut()
 
     mask_ready_R := Vec(Seq.fill(NumPhi) {
       false.B
@@ -669,6 +683,7 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
     out_ready_R := Vec(Seq.fill(NumOuts) {
       false.B
     })
+    InvalidOut()
   }
 
 }

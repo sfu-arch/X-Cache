@@ -78,7 +78,7 @@ Load1.io.GepAddr.bits.data      := 16.U
 Load1.io.GepAddr.bits.predicate := true.B
 Load1.io.GepAddr.valid          := true.B
 
-Load1.io.enable.bits  := true.B
+Load1.io.enable.bits  := false.B
 Load1.io.enable.valid := true.B
 Load1.io.Out(0).ready := true.B
 

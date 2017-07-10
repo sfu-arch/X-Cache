@@ -80,7 +80,7 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
 =            Indicate Table State                =
 =================================================*/
 
-
+  // printf(p"\n State: $state Request: ${request_R} MemReq: ${io.MemReq}")
   // Table entry indicates free to outside world
   io.free := (state === s_idle)
   // Table entry ready to latch new requests
@@ -108,14 +108,14 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
     // Bytemask of bytes within words that need to be fetched.
     sendbytemask := ReadByteMask(io.NodeReq.bits.Typ, io.NodeReq.bits.address,xlen)
     // Move data to line buffer. 
-    linebuffer := (io.NodeReq.bits.data << Cat(io.NodeReq.bits.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))).asTypeOf(Vec(3, UInt(xlen.W))) 
+    linebuffer := (io.NodeReq.bits.data << Cat(io.NodeReq.bits.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))).asTypeOf(Vec(2, UInt(xlen.W))) 
     // Next State
     state := s_SENDING
   }
 
 
 
-   printf(p"\n MSHR $ID State: $state CacheReq ${io.MemReq}")
+   // printf(p"\n MSHR $ID State: $state CacheReq ${io.MemReq}")
 
 /*===========================================================
 =            Sending values to the cache request            =
@@ -157,6 +157,7 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
   when(state === s_Done) {
     // For the demux
     io.output.valid := 1.U
+    ptr := 0.U
     // Valid write 
     // @todo: (done and valid are redundant. Need to cleanup at some point in the future) 
     io.output.bits.done    := true.B
@@ -204,6 +205,7 @@ class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implici
   // Wire up input with in_arb
   for (i <- 0 until NumOps) {
     in_arb.io.in(i) <> io.WriteIn(i)
+    io.WriteOut(i)   <> out_demux.io.outputs(i)
   }
 
 /*=============================================
@@ -229,7 +231,7 @@ class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implici
     // val MSHR = Module(new WriteTableEntry(i))
     // Allocator wireup with table entries
     alloc_arb.io.in(i).valid := WriteTable(i).io.free
-    WriteTable(i).io.NodeReq.valid := alloc_arb.io.in(i).ready
+    WriteTable(i).io.NodeReq.valid := alloc_arb.io.in(i).fire()
     WriteTable(i).io.NodeReq.bits := in_arb.io.out.bits
 
     // Table entries -> CacheReq arbiter.
@@ -259,7 +261,5 @@ class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implici
   out_arb.io.out.ready := true.B
   out_demux.io.enable := out_arb.io.out.fire()
   out_demux.io.input := out_arb.io.out.bits
-
-  printf(p"\n Demux Out: ${out_demux.io.outputs}")
 
 }

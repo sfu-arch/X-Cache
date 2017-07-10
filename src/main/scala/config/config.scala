@@ -13,7 +13,7 @@ import accel._
 case object XLEN       extends Field[Int]
 case object TLEN       extends Field[Int]
 case object GLEN       extends Field[Int]
-case object MSHRLEN  extends Field[Int]
+case object MSHRLEN    extends Field[Int]
 case object TYPSZ      extends Field[Int]
 case object VERBOSITY  extends Field[String]
 case object COMPONENTS extends Field[String]
