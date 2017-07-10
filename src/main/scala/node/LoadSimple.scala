@@ -144,5 +144,5 @@ io.memReq.valid        := false.B
       state := s_idle
     }
   }
-  printfInfo("State : %x, Out: %x ", state, io.Out(0).valid)
+  printfInfo("State : %x, Out: %x ", state, io.Out(0).bits.data)
 }

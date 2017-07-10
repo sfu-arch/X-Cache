@@ -139,7 +139,7 @@ when (start & predicate) {
     ValidOut()
     state := s_Done
   }
-}.elsewhen(start & ~predicate){
+}.elsewhen(start & ~predicate & state =/= s_Done){
   ValidSucc()
   ValidOut()
   state := s_Done
