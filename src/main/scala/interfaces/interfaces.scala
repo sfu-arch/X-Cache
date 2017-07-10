@@ -18,28 +18,65 @@ val valid = Bool ()
 
 
 trait RouteID extends CoreBundle() {
-val RouteID = UInt (glen.W)
+  val RouteID = UInt (glen.W)
 }
 
 // Maximum of 16MB Stack Array.
+
+class AllocaIO(implicit p: Parameters) extends CoreBundle()(p){
+  val size = UInt(xlen.W)
+  val numByte = UInt(xlen.W)
+  val predicate = Bool()
+  val valid = Bool()
+}
+
+object AllocaIO{
+  def default(implicit p: Parameters): AllocaIO= {
+    val temp_w = Wire(new AllocaIO)
+    temp_w.size := 0.U
+    temp_w.numByte := 0.U
+    temp_w.predicate := true.B
+    temp_w.valid := false.B
+    temp_w
+  }
+}
+
 // alloca indicates id of stack object and returns address back.
 // Can be any of the 4MB regions. Size is over provisioned
-class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) {
-  val node = UInt(glen.W)
+class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) with RouteID {
   val size = UInt(xlen.W)
+  val node = UInt(glen.W)
+  val numByte = UInt(xlen.W)
+}
+object AllocaReq{
+  def default(implicit p: Parameters): AllocaReq= {
+    val wire = Wire(new AllocaReq)
+    wire.size := 0.U
+    wire.numByte := 0.U
+    wire
+  }
 }
 
 // ptr is the address returned back to the alloca call.
 // Valid and Data flipped.
-class AllocaResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
+class AllocaResp(implicit p: Parameters)
+  extends ValidT with RouteID {
   val ptr = UInt(xlen.W)
-  //val valid  = Bool()
+}
+
+object AllocaResp{
+  def default(implicit p: Parameters): AllocaResp= {
+    val wire = Wire(new AllocaResp)
+    wire.ptr := 0.U
+    wire.valid := false.B
+    wire
+  }
 }
 
 // Read interface into Scratchpad stack
 //  address: Word aligned address to read from
 //  node : dataflow node id to return data to
-class ReadReq(implicit p: Parameters) 
+class ReadReq(implicit p: Parameters)
   extends RouteID {
   val address = UInt(xlen.W)
   val node = UInt(glen.W)
@@ -93,8 +130,8 @@ object ReadResp {
 // Word aligned to write to
 // Node performing the write
 // Mask indicates which bytes to update.
-class WriteReq(implicit p: Parameters) 
-extends RouteID {
+class WriteReq(implicit p: Parameters)
+  extends RouteID {
   val address = UInt((xlen - 10).W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen / 8).W)
@@ -106,11 +143,11 @@ object WriteReq {
   def default(implicit p: Parameters): WriteReq = {
     val wire = Wire(new WriteReq)
     wire.address := 0.U
-    wire.data    := 0.U
-    wire.mask    := 0.U
-    wire.node    := 0.U
+    wire.data := 0.U
+    wire.mask := 0.U
+    wire.node := 0.U
     wire.RouteID := 0.U
-    wire.Typ     := MT_W
+    wire.Typ := MT_W
     wire
   }
 }
@@ -210,7 +247,7 @@ object ControlBundle {
     wire
   }
 
-  def Activate(implicit p : Parameters): ControlBundle = {
+  def Activate(implicit p: Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := true.B
     wire
@@ -218,16 +255,16 @@ object ControlBundle {
 }
 
 
-
 /**
   * Custom Data bundle between dataflow nodes.
+  *
   * @param len number of bits
   * @note 2 fields
   *       data : U(len.W)
   *       predicate : Bool
   * @return
   */
-class CustomDataBundle(len : Int)(implicit p: Parameters) extends  CoreBundle()(p){
+class CustomDataBundle(len: Int)(implicit p: Parameters) extends CoreBundle()(p) {
   // Data packet
   val data = UInt(len.W)
   val predicate = Bool()
@@ -235,7 +272,7 @@ class CustomDataBundle(len : Int)(implicit p: Parameters) extends  CoreBundle()(
 }
 
 object CustomDataBundle {
-  def default(bitLen : Int)(implicit p : Parameters): CustomDataBundle = {
+  def default(bitLen: Int)(implicit p: Parameters): CustomDataBundle = {
     val wire = Wire(new CustomDataBundle(len = bitLen))
     wire.data := 0.U
     wire.predicate := false.B

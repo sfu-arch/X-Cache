@@ -1,39 +1,42 @@
 package node
 
 import chisel3._
-import chisel3.iotesters.{ ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester }
+import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import chisel3.Module
 import chisel3.testers._
 import chisel3.util._
-import org.scalatest.{ Matchers, FlatSpec }
+import org.scalatest.{Matchers, FlatSpec}
 
 import config._
 import interfaces._
 import muxes._
 import util._
 
-class IcmpNodeIO(NumOuts: Int)(implicit p: Parameters)
-  extends HandShakingIONPS(NumOuts)(new DataBundle) {
-  // LeftIO: Left input data for computation
-  val LeftIO = Flipped(Decoupled(new DataBundle))
+class IcmpNodeIO(NumOuts: Int)
+                   (implicit p: Parameters)
+extends HandShakingIONPS (NumOuts)(new DataBundle) {
+// LeftIO: Left input data for computation
+val LeftIO = Flipped (Decoupled (new DataBundle) )
 
-  // RightIO: Right input data for computation
-  val RightIO = Flipped(Decoupled(new DataBundle))
+// RightIO: Right input data for computation
+val RightIO = Flipped (Decoupled (new DataBundle) )
 }
 
-class IcmpNode(NumOuts: Int, ID: Int, opCode: String)(implicit p: Parameters)
+class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
+                 (sign: Boolean)
+                 (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Node ID: " + ID + " "
 
   /*===========================================*
-     *            Registers                      *
-     *===========================================*/
-  // OP Inputs
+   *            Registers                      *
+   *===========================================*/
+  // Left Input
   val left_R = RegInit(DataBundle.default)
 
-  // Memory Response
+  // Right Input
   val right_R = RegInit(DataBundle.default)
 
   // Output register
@@ -43,15 +46,15 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)(implicit p: Parameters)
   val state = RegInit(s_idle)
 
   /*==========================================*
-     *           Predicate Evaluation           *
-     *==========================================*/
+   *           Predicate Evaluation           *
+   *==========================================*/
 
   val predicate = left_R.predicate & right_R.predicate & IsEnable()
   val start = left_R.valid & right_R.valid & IsEnableValid()
 
   /*===============================================*
-     *            Latch inputs. Wire up output       *
-     *===============================================*/
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
 
   // Predicate register
   val pred_R = RegInit(init = false.B)
@@ -82,45 +85,50 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)(implicit p: Parameters)
     io.Out(i).bits.predicate := pred_R
   }
 
+
   /*============================================*
-     *            ACTIONS (possibly dangerous)    *
-     *============================================*/
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
 
   //Instantiate ALU with selected code
-  val FU = Module(new UCMP(xlen, opCode))
-
+  var FU = Module(new UCMP(xlen, opCode))
+ 
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
+  data_R := FU.io.out
+  pred_R := predicate
 
-  when(start & predicate & (state =/= s_COMPUTE)) {
+  when(start & predicate & state =/= s_COMPUTE) {
     state := s_COMPUTE
-    data_R := FU.io.out
-    pred_R := predicate
     ValidOut()
-  }.elsewhen(start & ~predicate & (state =/= s_COMPUTE)) {
+  }.elsewhen(start & ~predicate & state =/= s_COMPUTE) {
     //printfInfo("Start sending data to output INVALID\n")
     state := s_COMPUTE
-    pred_R := predicate
     ValidOut()
   }
 
   /*==========================================*
-     *            Output Handshaking and Reset  *
-     *==========================================*/
+   *            Output Handshaking and Reset  *
+   *==========================================*/
 
-  // val out_ready_W = out_ready_R.asUInt.andR
-  // val out_valid_W = out_valid_R.asUInt.andR
-
-  when((state === s_COMPUTE) & IsOutReady()) {
-   // Reset data
+  when(IsOutReady() & (state === s_COMPUTE)) {
+    // Reset data
     left_R := DataBundle.default
     right_R := DataBundle.default
     // Reset output
     data_R := 0.U
-    out_ready_R := Vec(Seq.fill(NumOuts) { false.B })
+    out_ready_R := Vec(Seq.fill(NumOuts) {
+      false.B
+    })
     //Reset state
     state := s_idle
     //Restart predicate bit
     pred_R := false.B
+    //Reset output
+    Reset()
   }
+
+  printfInfo(" State: %x\n", state)
+
+
 }
