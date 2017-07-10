@@ -89,9 +89,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
 
   //Instantiate ALU with selected code
   var FU = Module(new UALU(xlen, opCode))
-  if(sign){
-    val FU = Module(new SALU(xlen, opCode))
-  }
 
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
@@ -121,7 +118,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     })
     //Reset state
     state := s_idle
-    //Restart predicate bit
     //Reset output
     Reset()
   }
