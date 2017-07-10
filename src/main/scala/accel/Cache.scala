@@ -27,6 +27,10 @@ class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val tag  = UInt((List(1,mshrlen).max).W)
 }
 
+class CacheRespT(implicit p: Parameters) extends CacheResp() {
+  val isSt = Bool()
+}
+
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())
   val req   = Flipped(Decoupled(new CacheReq))

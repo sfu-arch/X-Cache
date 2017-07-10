@@ -20,7 +20,7 @@ import accel._
 
 abstract class ReadEntryIO()(implicit val p: Parameters)
   extends Module
-  with CoreParams {
+    with CoreParams {
 
   val io = IO(new Bundle {
     // Read Request Type
@@ -39,12 +39,12 @@ abstract class ReadEntryIO()(implicit val p: Parameters)
   })
 }
 /**
- * @brief Read Table Entry
- * @details [long description]
- *
- * @param ID [Read table IDs]
- * @return [description]
- */
+  * @brief Read Table Entry
+  * @details [long description]
+  *
+  * @param ID [Read table IDs]
+  * @return [description]
+  */
 class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) with UniformPrintfs {
 
   val ID = RegInit(id.U)
@@ -52,7 +52,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   val request_valid_R = RegInit(false.B)
   // Data buffers for misaligned accesses
 
-   // Mask for final ANDing and output of data
+  // Mask for final ANDing and output of data
   val bitmask = RegInit(0.U(((2) * xlen).W))
   // Send word mask for tracking how many words need to be read
   val sendbytemask = RegInit(0.U(((2) * xlen/8).W))
@@ -77,7 +77,6 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
 =            Indicate Table State                =
 =================================================*/
 
-
   // Table entry indicates free to outside world
   io.free := (state === s_idle)
   // Table entry ready to latch new requests
@@ -85,16 +84,16 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   // Table entry to output demux
   io.done := (state === s_Done)
 
-/*=================================================================
-=            Default values for external communication            =
-==================================================================*/
+  /*=================================================================
+  =            Default values for external communication            =
+  ==================================================================*/
   io.output.valid := 0.U
   io.MemReq.valid := 0.U
 
 
-/*=======================================================
-=            Latch Inputs. Calculate masks              =
-========================================================*/
+  /*=======================================================
+  =            Latch Inputs. Calculate masks              =
+  ========================================================*/
   when(io.NodeReq.fire()) {
     request_R := io.NodeReq.bits
     // Calculate things to start the sending process
@@ -112,9 +111,9 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   // printf("\n MSHR %d State :%d RouteID %d ", ID, state, request_R.RouteID)
   // printf("\n  linebuffer %x & bitmask: %x", linebuffer.asUInt, bitmask)
 
-/*===========================================================
-=            Sending values to the cache request            =
-===========================================================*/
+  /*===========================================================
+  =            Sending values to the cache request            =
+  ===========================================================*/
 
   when((state === s_SENDING) && (sendbytemask =/= 0.asUInt((xlen/4).W))) {
     io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
@@ -129,9 +128,9 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
     }
   }
 
-/*============================================================
-=            Receiving values from cache response            =
-=============================================================*/
+  /*============================================================
+  =            Receiving values from cache response            =
+  =============================================================*/
 
   when((state === s_RECEIVING) && (io.MemResp.valid === true.B)) {
     // Received data; concatenate into linebuffer
@@ -143,9 +142,9 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
     state := Mux(y, s_Done, s_SENDING)
   }
 
-/*============================================================
-=            Cleanup and send output                         =
-=============================================================*/
+  /*============================================================
+  =            Cleanup and send output                         =
+  =============================================================*/
 
   when(state === s_Done) {
     output := (linebuffer.asUInt & bitmask) >> Cat(request_R.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))
@@ -191,7 +190,6 @@ class ReadMemoryController
   BaseSize: Int, NumEntries: Int)
   (implicit p: Parameters)
   extends RController(NumOps,BaseSize,NumEntries)(p) {
-
   require(NumEntries >= 0)
   // Number of MLP entries
   val MLPSize = NumEntries
@@ -209,18 +207,18 @@ class ReadMemoryController
   val out_arb = Module(new RRArbiter(new ReadResp, MLPSize))
   val out_demux = Module(new DeMuxTree(BaseSize = BaseSize, NumOps = NumOps, new ReadResp()))
 
-/*=====================================================================
-=            Wire up incoming reads from nodes to ReadMSHR            =
-=====================================================================*/
+  /*=====================================================================
+  =            Wire up incoming reads from nodes to ReadMSHR            =
+  =====================================================================*/
 
   // Wire up input with in_arb
   for (i <- 0 until NumOps) {
     in_arb.io.in(i) <> io.ReadIn(i)
   }
 
-/*=============================================
-=           Declare Read Table                =
-=============================================*/
+  /*=============================================
+  =           Declare Read Table                =
+  =============================================*/
 
   // Create ReadTable
   val ReadTable = for (i <- 0 until MLPSize) yield {
@@ -228,14 +226,14 @@ class ReadMemoryController
     read_entry
   }
 
-/*=========================================================================
-=            Wire up arbiters and demux to read table entries
-             1. Allocator arbiter
-             2. Output arbiter
-             3. Output demux
-             4. Cache request arbiter
-             5. Cache response demux                                                             =
-=========================================================================*/
+  /*=========================================================================
+  =            Wire up arbiters and demux to read table entries
+               1. Allocator arbiter
+               2. Output arbiter
+               3. Output demux
+               4. Cache request arbiter
+               5. Cache response demux                                                             =
+  =========================================================================*/
 
   for (i <- 0 until MLPSize) {
     // val MSHR = Module(new ReadTableEntry(i))
@@ -275,3 +273,4 @@ class ReadMemoryController
   // printf(p"\n Demux Out: ${out_demux.io.outputs}")
 
 }
+

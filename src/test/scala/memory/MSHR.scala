@@ -30,6 +30,10 @@ class ReadTableEntryTests(c: ReadTableEntry)
 
   for (t <- 0 until 10) {
 
+    poke(c.io.NodeReq.valid, 0)
+
+
+
     println(s"t : ${t} ----------------------------")
     println(s"NodeReq.R: ${peek(c.io.NodeReq.ready)}")
     println(s"free : ${peek(c.io.free)}")
