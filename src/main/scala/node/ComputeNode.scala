@@ -56,9 +56,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  // Predicate register
-  val pred_R = RegInit(init = false.B)
-
   //printfInfo("start: %x\n", start)
 
   io.LeftIO.ready := ~left_R.valid
@@ -82,7 +79,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R
-    io.Out(i).bits.predicate := pred_R
+    io.Out(i).bits.predicate := predicate 
   }
 
 
@@ -99,7 +96,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
   data_R := FU.io.out
-  pred_R := predicate
 
   when(start & predicate & state =/= s_COMPUTE) {
     state := s_COMPUTE
@@ -126,7 +122,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     //Reset state
     state := s_idle
     //Restart predicate bit
-    pred_R := false.B
     //Reset output
     Reset()
   }

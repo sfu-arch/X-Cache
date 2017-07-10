@@ -64,8 +64,6 @@ class PhiNode(NumInputs: Int,
   var predicate = acc_predicate.asUInt.andR & IsEnable()
   var start = mask_valid_R & acc_start.asUInt.andR & IsEnableValid()
 
-  //  val predicate = left_R.predicate & right_R.predicate & IsEnable()
-  //  val start = left_R.valid & right_R.valid & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -118,11 +116,10 @@ class PhiNode(NumInputs: Int,
   data_R := in_data_R(sel).data
   valid_R := true.B
 
-  when(start & predicate) {
+  when(start & predicate & state =/= s_COMPUTE) {
     state := s_COMPUTE
     ValidOut()
-  }.elsewhen(start & !predicate) {
-    //printfInfo("Start sending data to output INVALID\n")
+  }.elsewhen(start & !predicate =/= s_COMPUTE) {
     state := s_COMPUTE
     ValidOut()
   }
@@ -131,7 +128,7 @@ class PhiNode(NumInputs: Int,
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-   when(IsOutReady()) {
+   when(IsOutReady() & (state === s_COMPUTE)) {
     //printfInfo("Start restarting output \n")
     // Reset data
     mask_R := 0.U

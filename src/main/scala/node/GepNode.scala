@@ -59,6 +59,9 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
   // Output register
   val data_R = RegInit(0.U(xlen.W))
 
+  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val state = RegInit(s_idle)
+
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
@@ -73,6 +76,7 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
   io.baseAddress.ready := ~base_addr_R.valid
   when(io.baseAddress.fire()) {
     //printfInfo("Latch left data\n")
+    state := s_LATCH
     base_addr_R.data := io.baseAddress.bits.data
     base_addr_R.valid := true.B
     base_addr_R.predicate := io.baseAddress.bits.predicate
@@ -81,6 +85,7 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
   io.idx1.ready := ~idx1_R.valid
   when(io.idx1.fire()) {
     //printfInfo("Latch right data\n")
+    state := s_LATCH
     idx1_R.data := io.idx1.bits.data
     idx1_R.valid := true.B
     idx1_R.predicate := io.idx1.bits.predicate
@@ -99,13 +104,14 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
 
   //Compute the address
 
-  val comp_addr_W = base_addr_R.data +
+  data_R := base_addr_R.data +
     (idx1_R.data * numByte1.U)
 
-  when(start & predicate) {
-    data_R := comp_addr_W
+  when(start & predicate & state =/= s_COMPUTE) {
+    state := s_COMPUTE
     ValidOut()
-  }.elsewhen(start & !predicate) {
+  }.elsewhen(start & !predicate & state =/= s_COMPUTE) {
+    state := s_COMPUTE
     ValidOut()
   }
 
@@ -113,7 +119,7 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-  when(IsOutReady()) {
+  when(IsOutReady() & state === s_COMPUTE) {
     //printfInfo("Start restarting output \n")
     // Reset data
     base_addr_R := DataBundle.default
@@ -125,6 +131,8 @@ class GepOneNode(NumOuts: Int, ID: Int, opCode: String)
     //Reset output
     Reset()
   }
+
+  printfInfo(" State: %x\n", state)
 
 }
 
@@ -153,6 +161,9 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
   // Output register
   val data_R = RegInit(0.U(xlen.W))
 
+  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val state = RegInit(s_idle)
+
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
@@ -167,6 +178,7 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
   io.baseAddress.ready := ~base_addr_R.valid
   when(io.baseAddress.fire()) {
     //printfInfo("Latch left data\n")
+    state := s_LATCH
     base_addr_R.data := io.baseAddress.bits.data
     base_addr_R.valid := true.B
     base_addr_R.predicate := io.baseAddress.bits.predicate
@@ -175,6 +187,7 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
   io.idx1.ready := ~idx1_R.valid
   when(io.idx1.fire()) {
     //printfInfo("Latch right data\n")
+    state := s_LATCH
     idx1_R.data := io.idx1.bits.data
     idx1_R.valid := true.B
     idx1_R.predicate := io.idx1.bits.predicate
@@ -183,6 +196,7 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
   io.idx2.ready := ~idx2_R.valid
   when(io.idx2.fire()) {
     //printfInfo("Latch right data\n")
+    state := s_LATCH
     idx2_R.data := io.idx2.bits.data
     idx2_R.valid := true.B
     idx2_R.predicate := io.idx2.bits.predicate
@@ -201,19 +215,26 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
 
   //Compute the address
 
-  val comp_addr_W = base_addr_R.data +
+  data_R := base_addr_R.data +
     (idx1_R.data * numByte1.U) + (idx2_R.data * numByte2.U)
 
-  data_R := comp_addr_W
-    
-  ValidOut()
+  when(start & predicate & state =/= s_COMPUTE) {
+    state := s_COMPUTE
+    ValidOut()
+  }.elsewhen(start & ~predicate & state =/= s_COMPUTE) {
+    //printfInfo("Start sending data to output INVALID\n")
+    state := s_COMPUTE
+    ValidOut()
+  }
 
+
+    
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
 
 
-  when(IsOutReady()) {
+  when(IsOutReady() & state === s_COMPUTE) {
     //printfInfo("Start restarting output \n")
     // Reset data
 
@@ -226,4 +247,5 @@ class GepTwoNode(NumOuts: Int, ID: Int, opCode: String)
     Reset()
   }
 
+  printfInfo(" State: %x\n", state)
 }
