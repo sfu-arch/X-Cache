@@ -46,7 +46,7 @@ class computeTester(df: ComputeNode)
 
   poke(df.io.LeftIO.valid, true.B)
   poke(df.io.RightIO.valid, true.B)
-  poke(df.io.LeftIO.bits.predicate, true.B)
+  poke(df.io.LeftIO.bits.predicate, false.B)
   poke(df.io.RightIO.bits.predicate, true.B)
 
   println(s"Output: ${peek(df.io.Out(0))}\n")
