@@ -22,6 +22,20 @@ class CacheReq(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val iswrite = Bool()
 }
 
+object CacheReq {
+  def default(implicit p: Parameters): CacheReq = {
+    val wire = Wire(new CacheReq())
+    wire.addr := 0.U
+    wire.data := 0.U
+    wire.mask := 0.U
+    wire.tag  := 0.U
+    wire.iswrite  := false.B
+    wire
+  }
+}
+
+
+
 class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val data = UInt(xlen.W)
   val tag  = UInt((List(1,mshrlen).max).W)
@@ -29,6 +43,17 @@ class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
 
 class CacheRespT(implicit p: Parameters) extends CacheResp() {
   val isSt = Bool()
+}
+
+object CacheRespT {
+  def default(implicit p: Parameters): CacheRespT = {
+    val wire = Wire(new CacheRespT())
+    wire.valid := false.B
+    wire.data := 0.U
+    wire.tag  := 0.U
+    wire.isSt  := false.B
+    wire
+  }
 }
 
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
