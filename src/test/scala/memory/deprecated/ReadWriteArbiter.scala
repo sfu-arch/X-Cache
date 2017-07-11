@@ -35,13 +35,14 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
     is(sIdle) {
 
       printf("\n -----------------------------------------\n ")
-      printf(" state == Idle ")
+      printf(p" state == Idle ")
 
       //Store Req
 
       when(dut.io.WriteCacheReq.ready) {
 
-        printf(" WriteCacheReq Ready ")
+        // dont use printf s inside when
+        printf(p" WriteCacheReq Ready ")
         dut.io.WriteCacheReq.valid        := true.B
         dut.io.WriteCacheReq.bits.addr    := 23.U
         dut.io.WriteCacheReq.bits.data    := 4.U
@@ -108,6 +109,8 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
       stop
     }
   }
+
+//        printf(" ^^^^^^^^^^ io.CacheReq.valid : ")
 
 //  when(state === sIdle) {
 //    when(c.io.CacheReq.valid) {

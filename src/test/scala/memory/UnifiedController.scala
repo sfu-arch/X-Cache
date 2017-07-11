@@ -19,35 +19,37 @@ import memory._
 
 class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameters) extends PeekPokeTester(c) {
 
-	//	// var readidx = 0
-	poke(c.io.WriteIn(0).bits.address, 12)
-	poke(c.io.WriteIn(0).bits.data, 45)
-	poke(c.io.WriteIn(0).bits.node, 16)
-	poke(c.io.WriteIn(0).bits.RouteID, 0)
-	poke(c.io.WriteIn(0).bits.Typ,4)
-	poke(c.io.WriteIn(0).bits.mask,15)
-	//	poke(c.io.WriteIn(0).valid,1)
-
-	poke(c.io.ReadIn(0).bits.address, 34)
-	poke(c.io.ReadIn(0).bits.node, 17)
-	poke(c.io.ReadIn(0).bits.Typ, 4)
-	//		poke(c.io.ReadIn(0).valid,1)
-	poke(c.io.ReadIn(0).bits.RouteID, 0)
+  //Note if you do not send aligned address -> it will send multiple requests of aligned addresses to memory
+  poke(c.io.ReadIn(0).bits.address, 8)
+  poke(c.io.ReadIn(0).bits.node, 17)
+  poke(c.io.ReadIn(0).bits.Typ, 64)
+  //		poke(c.io.ReadIn(0).valid,1)
+  poke(c.io.ReadIn(0).bits.RouteID, 0)
 
 
 
-	var time =  -10
-	for (t <- 0 until 10) {
+  poke(c.io.WriteIn(0).bits.address, 64)
+  poke(c.io.WriteIn(0).bits.data, 45)
+  poke(c.io.WriteIn(0).bits.node, 16)
+  poke(c.io.WriteIn(0).bits.RouteID, 0)
+  poke(c.io.WriteIn(0).bits.Typ,64)
+  poke(c.io.WriteIn(0).bits.mask,15)
+
+
+
+
+  var time =  -10
+	for (t <- 0 until 20) {
 		println(s"t = ${t} ------------------------- ")
 
 		if(t > 1 ) {
 			poke(c.io.CacheReq.ready,1)
 		}
 
-		if(t > 3 && t < 8) {
+		if(t > 3 && t < 9) {
 			if (peek(c.io.WriteIn(0).ready) == 1) {
-				println(s" WriteIn(0) is Ready ")
-				poke(c.io.WriteIn(0).valid, 1)
+        println(s" WriteIn(0) is Ready ")
+        poke(c.io.WriteIn(0).valid, 1)
 			}
 			else {
 				poke(c.io.WriteIn(0).valid, 0)
@@ -73,13 +75,16 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 
 		if(peek(c.io.CacheReq.valid) == 1) {
 
-			println(s" IO CacheReq isWrite  ${peek(c.io.CacheReq.bits.iswrite)}")
-			println(s" IO CacheReq data     ${peek(c.io.CacheReq.bits.data)}")
-			println(s" IO CacheReq tag      ${peek(c.io.CacheReq.bits.tag)}")
-
+			println(s" IO CacheReq ${peek(c.io.CacheReq)}")
 
 			time = t+1
 
+
+		}
+
+
+		if(time == t) {
+      //NOTE THIS TEST WILL ALWAYS SEND THE SAME RESPONSE REGARDLESS OF THE CACHE REQUEST
 			println(s" Sending Response from Cache ")
 			poke(c.io.CacheResp.bits.data, 45)
 			poke(c.io.CacheResp.bits.isSt, peek(c.io.CacheReq.bits.iswrite))
@@ -89,7 +94,6 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 		else {
 			poke(c.io.CacheResp.valid, 0)
 		}
-
 
 		println(s" IO CacheReq Valid  ${peek(c.io.CacheReq.valid)}")
 		if(peek(c.io.ReadOut(0).valid) == 1) {

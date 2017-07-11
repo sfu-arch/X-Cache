@@ -127,8 +127,8 @@ class UnifiedController (ID: Int,
   }
 
   ReadWriteArbiter.io.CacheReq.ready := state === sIdle
-  io.CacheReq.valid  := state === sReq
-  io.CacheReq.bits  := cacheReq_R
+  io.CacheReq.valid       := state === sReq
+  io.CacheReq.bits        := cacheReq_R
 
   ReadWriteArbiter.io.CacheResp.valid := state === sDone
   ReadWriteArbiter.io.CacheResp.bits := cacheResp_R
@@ -138,8 +138,13 @@ class UnifiedController (ID: Int,
 
   //------------------------------------------------------------------------------------
   /// Printf debugging
-  override val printfSigil = "RFile: " + ID + " Type " + (Typ_SZ)
+  override val printfSigil = "Unified: " + ID + " Type " + (Typ_SZ)
 
+//  verb match {
+//    case "high"  => {printf(p" CacheReq_R.addr: $cacheReq_R.addr")}
+//    case "med"   => {printf(p" state: $state")}
+//    case "low"   => {printf(p" state: $state")}
+//  }
 
   // printf(p"\n : ${ReadController.io.CacheReq.fire()} Tag: ${ReadReq.tag} ")
   // printf(p"\n Cache Request ${WriteController.io.CacheReq}")

@@ -27,7 +27,6 @@ abstract class RWController(implicit val p: Parameters)
   val io = IO(new Bundle {
     val ReadCacheReq = Flipped(Decoupled(new CacheReq))
     val WriteCacheReq = Flipped(Decoupled(new CacheReq))
-//    val CacheResp = new CacheRespT
     val CacheResp = Flipped(Valid(new CacheRespT))
 
     val ReadCacheResp = Valid(new CacheResp)
@@ -93,6 +92,25 @@ class ReadWriteArbiter()
   //-----------------------------------
 
 //  assert(!io.CacheResp.valid, " CACHE RESPONSE IS VALID ")
-  printf(s" io.Cache Resp valid: %x isSt: %x  tag: %x \n", io.CacheResp.valid ,io.CacheResp.bits.isSt, io.CacheResp.bits.tag )
+
+
+//  verb match {
+//      case "high"  => {
+//
+//        printfInfo(s" INPUT.READREQ: valid: %d ready: %d addr: %d data: %d, iswrite: %d \n", io.ReadCacheReq.valid,
+//          io.ReadCacheReq.ready, io.ReadCacheReq.bits.addr, io.ReadCacheReq.bits.data, io.ReadCacheReq.bits.iswrite)
+//        printfInfo(s"INPUT.WRITEREQ: valid: %d ready:%d addr: %d data:%d iswrite:%d \n", io.WriteCacheReq.valid,
+//          io.WriteCacheReq.ready, io.WriteCacheReq.bits.addr, io.WriteCacheReq.bits.data, io.WriteCacheReq.bits.iswrite)
+//
+//        printfInfo(s" OUTPUT Req valid: %d addr: %d data:%d  tag: %d  ready:%d iswrite:%d \n", io.CacheReq.valid ,
+//          io.CacheReq.bits.addr,io.CacheReq.bits.data ,io.CacheReq.bits.tag, io.CacheReq.ready, io.CacheReq.bits.iswrite )
+//
+//
+//        printfInfo(s" OUTPUT Resp valid: %d isSt: %d  tag: %d \n", io.CacheResp.valid ,io.CacheResp.bits.isSt, io.CacheResp.bits.tag )
+//
+//
+//
+//      }
+//    }
 
 }
