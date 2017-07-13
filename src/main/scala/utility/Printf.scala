@@ -8,9 +8,9 @@ trait UniformPrintfs {
   def pp(prefix: String, message: String, args: Bits*): Unit = {
     printf(prefix + message, args:_*) }
 
-  def printfInfo (m: String, a: Bits*) { pp("[INFO] ",  printfSigil++m, a:_*) }
-  def printfWarn (m: String, a: Bits*) { pp("[WARN] ",  printfSigil++m, a:_*) }
-  def printfError(m: String, a: Bits*) { pp("[ERROR] ", printfSigil++m, a:_*) }
-  def printfDebug(m: String, a: Bits*) { pp("[DEBUG] ", printfSigil++m, a:_*) }
-  def printfTodo (m: String, a: Bits*) { pp("[TODO] ",  printfSigil++m, a:_*) }
+  def printfInfo (m: String, a: Bits*) { pp("\n[INFO] ",  printfSigil++m, a:_*) }
+  def printfWarn (m: String, a: Bits*) { pp("\n[WARN] ",  printfSigil++m, a:_*) }
+  def printfError(m: String, a: Bits*) { pp("\n[ERROR] ", printfSigil++m, a:_*) }
+  def printfDebug(m: String, a: Bits*) { pp("\n[DEBUG] ", printfSigil++m, a:_*) }
+  def printfTodo (m: String, a: Bits*) { pp("\n[TODO] ",  printfSigil++m, a:_*) }
 }

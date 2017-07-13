@@ -28,7 +28,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
   // Printf debugging
-  override val printfSigil = "Node ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -121,8 +120,23 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     //Reset output
     Reset()
   }
+  var signed = if (sign == true) "S" else "U"
+  override val printfSigil = opCode + xlen +  "_" + signed + "_" + ID + ":"
 
-  printfInfo(" State: %x\n", state)
-
-
+  if (log == true && (comp contains "OP")) {
+    val x = RegInit(0.U(xlen.W))
+    x     := x + 1.U
+  
+    verb match {
+      case "high"  => { }
+      case "med"   => { }
+      case "low"   => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"Left\": %x, \"Right\": %x},",x,(left_R.valid),(right_R.valid))
+        printf("\"State\": {\"State\": \"%x\", \"(L,R)\": \"%x,%x\",  \"O(V,D,P)\": \"%x,%x,%x\" },",state,left_R.data,right_R.data,io.Out(0).valid,data_R,io.Out(0).bits.predicate)
+        printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
+        printf("}")
+       }
+      case everythingElse => {}
+    }
+  }
 }

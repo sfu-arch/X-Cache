@@ -48,8 +48,8 @@ class MiniConfig extends Config((site, here, up) => {
     // # Max bits of cache request tag. 
     case MSHRLEN  => 8
     case TYPSZ      => 64
-    case VERBOSITY  => "None"
-    case COMPONENTS => "None"
+    case VERBOSITY  => "low"
+    case COMPONENTS => "LOAD;OP"
     // Max size of type memory system may see
     case TRACE      => true
     case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))

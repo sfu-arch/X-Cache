@@ -171,8 +171,8 @@ class TypStore(NumPredOps: Int,
     }
   }
   // Trace detail.
-   override val printfSigil = "TYPSTORE" + Typ_SZ + "_" + ID + ":"
-  if (log == true) {
+  override val printfSigil = "TYPSTORE" + Typ_SZ + "_" + ID + ":"
+  if (log == true && (comp contains "TYPSTORE")) {
     val x = RegInit(0.U(xlen.W))
     x     := x + 1.U
   

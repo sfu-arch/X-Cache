@@ -43,7 +43,7 @@ class UnTypLoad(NumPredOps: Int,
 
   override lazy val io = IO(new LoadIO(NumPredOps, NumSuccOps, NumOuts))
   // Printf debugging
-  override val printfSigil = "Load ID: " + ID + " "
+  
 
 /*=============================================
 =            Registers                        =
@@ -112,6 +112,7 @@ io.memReq.valid        := false.B
     when(state === s_RECEIVING && io.memResp.valid) {
       // Set data output registers
       data_R.data := io.memResp.data
+      data_R.predicate := predicate
       data_R.valid := true.B
       ValidSucc()
       ValidOut()
@@ -144,5 +145,21 @@ io.memReq.valid        := false.B
       state := s_idle
     }
   }
-  printfInfo("State : %x, Out: %x ", state, io.Out(0).bits.data)
+  override val printfSigil = "LOAD" + xlen + "_" + ID + ":"
+  if (log == true && (comp contains "LOAD")) {
+    val x = RegInit(0.U(xlen.W))
+    x     := x + 1.U
+  
+    verb match {
+      case "high"  => { }
+      case "med"   => { }
+      case "low"   => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},",x, (addr_R.valid))
+        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },",state,data_R.valid,data_R.data,data_R.predicate)
+        printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
+        printf("}")
+       }
+      case everythingElse => {}
+    }
+  }
 }
