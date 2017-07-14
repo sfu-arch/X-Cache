@@ -40,17 +40,13 @@ class TypLoad(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int,
   ID: Int,
-  RouteID: Int)
-  (implicit p: Parameters)
+  RouteID: Int)(implicit p: Parameters)
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
 
   // Set up StoreIO
   override lazy val io = IO(new TypLoadIO(NumPredOps, NumSuccOps, NumOuts))
 
-  // Printf debugging
-  override val printfSigil = "Load ID: " + ID + " "
-
-  /*=============================================
+/*=============================================
 =            Register declarations            =
 =============================================*/
 
@@ -92,11 +88,11 @@ class TypLoad(NumPredOps: Int,
   }
   // data_R.data     = buffer.
   val linebuffer = RegInit(Vec(Seq.fill(Beats)(0.U(xlen.W))))
- 
+
   io.memReq.valid := false.B
 
   when(start & predicate) {
-  /*=============================================
+    /*=============================================
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
 
@@ -134,7 +130,7 @@ class TypLoad(NumPredOps: Int,
       ValidSucc()
       ValidOut()
       state := s_Done
-      }
+    }
   }.elsewhen(start & ~predicate) {
     ValidSucc()
     ValidOut()
@@ -165,6 +161,21 @@ class TypLoad(NumPredOps: Int,
     }
   }
   // Trace detail.
-  printf(p" State : ${state}, Data: ${Hexadecimal(io.Out(0).bits.data)}")
-  printf("]\n")
+  override val printfSigil = "TYPLOAD" + Typ_SZ + "_" + ID + ":"
+  if (log == true && (comp contains "TYPLOAD")) {
+    val x = RegInit(0.U(xlen.W))
+    x := x + 1.U
+
+    verb match {
+      case "high" => {}
+      case "med" => {}
+      case "low" => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},", x, (addr_R.valid))
+        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },", state, data_R.valid, data_R.data, data_R.predicate)
+        printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
+        printf("}")
+      }
+      case everythingElse => {}
+    }
+  }
 }

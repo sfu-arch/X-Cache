@@ -11,6 +11,8 @@ import config._
 import interfaces._
 import muxes._
 import util._
+import scala.reflect.runtime.universe._
+
 
 class Numbers(implicit p: Parameters) extends CoreBundle()(p) {
 }
@@ -20,7 +22,7 @@ class vec2(implicit p: Parameters) extends Numbers {
 }
 
 class mat2x2(implicit p: Parameters) extends Numbers {
-  val data = Vec(2, Vec(2, UInt(16.W)))
+  val data = Vec(2, Vec(2, UInt(xlen.W)))
 }
 
 object operation {
@@ -99,8 +101,6 @@ class TypComputeIO(NumOuts: Int)(implicit p: Parameters)
 class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: String)(sign: Boolean)(gen: => T)(implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new TypBundle)(p) {
   override lazy val io = IO(new TypComputeIO(NumOuts))
-  // Printf debugging
-  override val printfSigil = "Compute[T] ID_" + ID + ":"
 
   /*===========================================*
    *            Registers                      *
@@ -188,7 +188,24 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
     Reset()
     state := s_idle
   }
+  var classname: String = (gen.getClass).toString
+  var signed = if (sign == true) "S" else "U"
+  override val printfSigil = opCode + "[" + classname.replaceAll("class node.","") + "]_" + ID + ":"
 
-  // printfInfo(" state: %x data_R : %x io.Out(0). %x: OutReady %x\n", state, data_R.data, io.Out(0).valid, IsOutReady())
-  printf(p"\n state: $state Compute Output: ${io.Out(0)}\n")
+  if (log == true && (comp contains "TYPOP")) {
+    val x = RegInit(0.U(xlen.W))
+    x     := x + 1.U
+  
+    verb match {
+      case "high"  => { }
+      case "med"   => { }
+      case "low"   => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"Left\": %x, \"Right\": %x},",x,(left_R.valid),(right_R.valid))
+        printf("\"State\": {\"State\": \"%x\", \"(L,R)\": \"%x,%x\",  \"O(V,D,P)\": \"%x,%x,%x\" },",state,left_R.data,right_R.data,io.Out(0).valid,data_R.data,io.Out(0).bits.predicate)
+        printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
+        printf("}")
+       }
+      case everythingElse => {}
+    }
+  }
 }
