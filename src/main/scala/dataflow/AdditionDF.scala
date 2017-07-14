@@ -17,6 +17,7 @@ import node._
 
 /**
   * This Object should be initialize at the first step
+  * It contains all the transformation from indecies to their module's name
   */
 object functionParam{
 
@@ -87,7 +88,7 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
 
   //Compute
   val m0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "EQ")(sign = false)(p))
-  val m1 = Module(new CBranchNode(ID = 1))
+  val m1 = Module(new CBranchNode(ID = 1)(p))
 
   val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false)(p))
   val m3 = Module(new UBranchNode(ID = 3)(p))
