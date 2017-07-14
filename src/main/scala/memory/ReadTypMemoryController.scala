@@ -48,6 +48,18 @@ class ReadTypTableEntry
   val outptr     = RegInit(0.U(log2Ceil(Beats+1).W))
   val sendptr    = RegInit(0.U(log2Ceil(Beats+1).W))
   val recvptr    = RegInit(0.U(log2Ceil(Beats+1).W))
+  
+
+  val RAM = Seq.fill(Beats+1)(RegInit(0.U(xlen.W)))
+
+  val RAMMux = for (i <- 0 until Beats) yield {
+    val read_entry = i.U -> RAM(i)
+    read_entry
+  }
+  // val m0 = MuxLookup(3.U,0.U,ReadTable)
+
+
+
   val linebuffer = RegInit(Vec(Seq.fill(Beats+1)(0.U(xlen.W))))
   val xlen_bytes = xlen / 8
 
@@ -111,6 +123,12 @@ class ReadTypTableEntry
   when (io.MemResp.valid === true.B) {
      // Sending data; pick word from linebuffer
     linebuffer(recvptr)  := io.MemResp.data
+    // Set the RAM
+    for (i <- 0 until Beats) {
+      when(recvptr === i.U) {
+        RAM(i) := io.MemResp.data
+      }
+    }
     // Increment to next word
     recvptr := recvptr + 1.U
   }
@@ -125,7 +143,10 @@ class ReadTypTableEntry
     // For the demux
     io.output.valid        := 1.U
     io.output.bits.RouteID := request_R.RouteID
-    io.output.bits.data    := linebuffer(outptr)
+    val m0 = MuxLookup(outptr,0.U,RAMMux)
+
+    io.output.bits.data    := m0
+    // linebuffer(outptr)
     // Output driver demux tree has forwarded output (may not have reached receiving node yet)
     
     when(io.output.fire() && (outptr =/= (Beats-1).U)) {
@@ -139,9 +160,9 @@ class ReadTypTableEntry
      // linebuffer(1)   := 0.U
      }
   }
-
-  override val printfSigil = "RD MSHR(" + ID + "," + Typ_SZ + ")"
-  if ((log == true) && (comp contains "RDMSHR")) {
+  // printf(p"linebuffer: ${Hexadecimal(RAM(0))}${Hexadecimal(RAM(1))} MemResp: ${io.MemResp.data},${io.MemResp.valid}")
+  override val printfSigil = "RDTYP MSHR(" + id + "," + Typ_SZ + ")"
+  if ((log == true) && (comp contains "RDTYPMSHR")) {
     val x = RegInit(0.U(xlen.W))
     x     := x + 1.U
 
@@ -154,7 +175,6 @@ class ReadTypTableEntry
 
 
   //  printf(p"-----------------------------------------------------\n")
-  printfInfo("  State: %x\n", state)
 }
 
 class ReadTypMemoryController
