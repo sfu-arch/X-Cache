@@ -251,6 +251,7 @@ class CacheTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
   dut.io.cpu.req.bits.addr := Cat(tag, idx, off)
   dut.io.cpu.req.bits.data := data
   dut.io.cpu.req.bits.mask := mask
+  dut.io.cpu.req.bits.iswrite := mask.orR
   dut.io.cpu.req.valid     := state === sWait 
   gold_req.bits            := dut.io.cpu.req.bits
   gold_req.valid           := state === sStart

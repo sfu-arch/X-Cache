@@ -8,6 +8,7 @@ import chisel3.util._
 import chisel3.testers._
 import junctions._
 import config._
+import accel.coredf._
 
 class Command extends Bundle {
   val opCode = UInt()

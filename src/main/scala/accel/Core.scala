@@ -122,6 +122,7 @@ class Core(implicit p: Parameters) extends CoreT()(p) {
   io.cache.req.bits.addr := reqAddr
   io.cache.req.bits.data := writeData
   io.cache.req.bits.tag := reqTag
+  io.cache.req.bits.iswrite := (state === sWriteReq || state === sWriteResp)
 
   when(state === sWriteReq || state === sWriteResp) {
     io.cache.req.bits.mask := ~0.U(dataBytes.W)
