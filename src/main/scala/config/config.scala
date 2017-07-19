@@ -2,6 +2,7 @@ package config
 
 
 import chisel3._
+import config.cde._
 import chisel3.util._
 import config._
 import util._
