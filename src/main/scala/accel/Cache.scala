@@ -14,7 +14,7 @@ case object NWays extends Field[Int]
 case object NSets extends Field[Int]
 case object CacheBlockBytes extends Field[Int]
 
-class CacheReq(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
+class CacheReq(implicit p: Parameters) extends CoreBundle()(p) {
   val addr    = UInt(xlen.W)
   val data    = UInt(xlen.W)
   val mask    = UInt((xlen/8).W)
@@ -59,7 +59,7 @@ object CacheRespT {
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())
   val req   = Flipped(Decoupled(new CacheReq))
-  val resp  = Valid(new CacheResp)
+  val resp  = Output(Valid(new CacheRespT))
 }
 
 class CacheModuleIO(implicit p: Parameters) extends CoreBundle()(p) {
@@ -101,6 +101,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val cpu_data = Reg(io.cpu.req.bits.data.cloneType)
   val cpu_mask = Reg(io.cpu.req.bits.mask.cloneType)
   val cpu_tag  = Reg(io.cpu.req.bits.tag.cloneType)
+  val cpu_iswrite  = Reg(io.cpu.req.bits.iswrite.cloneType)
 
   // Counters
   require(dataBeats > 0)
@@ -136,13 +137,16 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   // Read Mux
   io.cpu.resp.bits.data := Vec.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
   io.cpu.resp.bits.tag  := cpu_tag
-  io.cpu.resp.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_mask.orR
+  io.cpu.resp.bits.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_iswrite
+  io.cpu.resp.bits.isSt := cpu_iswrite
+  io.cpu.resp.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_iswrite
   io.cpu.req.ready      := !is_idle
 
   when(io.cpu.resp.valid) { 
     addr_reg  := addr
     cpu_data  := io.cpu.req.bits.data
     cpu_mask  := io.cpu.req.bits.mask
+    cpu_iswrite := io.cpu.req.bits.iswrite
   }
 
   val wmeta = Wire(new MetaData)
@@ -198,13 +202,13 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   switch(state) {
     is(s_IDLE) {
       when(io.cpu.req.valid) {
-        state := Mux(io.cpu.req.bits.mask.orR, s_WRITE_CACHE, s_READ_CACHE)
+        state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
       }
     }
     is(s_READ_CACHE) {
       when(hit) {
         when(io.cpu.req.valid) {
-          state := Mux(io.cpu.req.bits.mask.orR, s_WRITE_CACHE, s_READ_CACHE)
+          state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
         }.otherwise {
           state := s_IDLE
         }
@@ -251,7 +255,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
     }
     is(s_REFILL) {
       when(read_wrap_out) {
-        state := Mux(cpu_mask.orR, s_WRITE_CACHE, s_IDLE) 
+        state := Mux(cpu_iswrite, s_WRITE_CACHE, s_IDLE)
       }
     }
   }
