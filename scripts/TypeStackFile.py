@@ -25,9 +25,9 @@ OPSize = [2,8,16,32]
 BASEDIR = "/Users/ashriram/Documents/Chisel/dataflow-lib/"
 TARGETDIR = "/tmp/build-stuff/"
 RESULT = "Out"
-OUTDIR = "./Output/"
+OUTDIR = "./Output16b/"
 
-DESIGN =  "memory.TypeStackFileVerilog"
+DESIGN =  "verilogmain.TypeStackFileVerilog16b" 
 
 SBTCMD = "sbt \"test:run-main " + DESIGN + " -td "+TARGETDIR+" -tbn verilator -tts 1"
 

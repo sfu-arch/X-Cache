@@ -1,4 +1,4 @@
-package memory
+package verilogmain
 
 // /**
 //   * Created by vnaveen0 on 2/6/17.
@@ -28,10 +28,10 @@ class TypeStackPeekPoker(c: TypeStackFile, Writes: Int, Reads: Int, Activity: St
     if (i == 0) {
       poke(c.io.WriteIn(i).bits.address, 4)
       poke(c.io.WriteIn(i).bits.RouteID, i)
-      poke(c.io.WriteIn(i).bits.Typ, MT_WU)
+      poke(c.io.WriteIn(i).bits.Typ, MT_HU)
       poke(c.io.WriteIn(i).bits.mask, 15)
       poke(c.io.WriteIn(i).valid, 1)
-      poke(c.io.WriteIn(i).bits.data, 0xdeadbeefL + i)
+      poke(c.io.WriteIn(i).bits.data, 0xbeef + i)
     } else {
       poke(c.io.WriteIn(i).valid, 0)
     }
@@ -42,13 +42,13 @@ class TypeStackPeekPoker(c: TypeStackFile, Writes: Int, Reads: Int, Activity: St
     poke(c.io.ReadIn(i).bits.address, 4)
     poke(c.io.ReadIn(i).valid, 1)
     poke(c.io.ReadIn(i).bits.RouteID, i)
-    poke(c.io.ReadIn(i).bits.Typ, MT_W)
-    if (i > J) {
+    poke(c.io.ReadIn(i).bits.Typ, MT_HU)
+    if (i >= J) {
     	poke(c.io.ReadIn(i).valid,0)
     }
   }
   var time = 0
-  while (count <= J) {
+  while (count < J) {
     step(1)
     for (i <- 0 until Reads) {
       if (peek(c.io.ReadOut(i).valid) == 1) {
@@ -120,12 +120,3 @@ object TypeStackFileVerilog extends App {
   chisel3.iotesters.Driver.execute(testargs, () => new TypeStackFile(ID=10,Size=4,NReads=ops,NWrites=1)(WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=1))(RControl=new ReadMemoryController(NumOps=ops,BaseSize=basesize,NumEntries=entrysize)))
   { c => new TypeStackPeekPoker(c,Writes = 1, Reads = ops, Activity = AF)  }
 }
-
-// class TypeStackFileSweeper extends  FlatSpec with Matchers {
-//   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-//   it should "Memory Controller tester" in {
-//   	chisel3.iotesters.Driver(() => new TypeStackFile(ID=10,Size=32,NReads=1,NWrites=1)(WControl=new WriteMemoryController(NumOps=1,BaseSize=basesize,NumEntries=1))(RControl=new ReadMemoryController(NumOps=1,BaseSize=2,NumEntries=1))) {
-//       c => new TypeStackPeekPoker(c)
-//     } should be(true)
-//   }
-// }

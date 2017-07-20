@@ -151,7 +151,12 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
     output := (linebuffer.asUInt & bitmask) >> Cat(request_R.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))
     io.output.valid := 1.U
     // @error: To handle doubles this has to change.
-    io.output.bits.data := Data2Sign(output,request_R.Typ)
+    if (xlen == 32) {
+      io.output.bits.data := Data2Sign(output,request_R.Typ,xlen)
+    }
+    if (xlen == 16) {
+      io.output.bits.data := Data2Sign16b(output,request_R.Typ,xlen)
+    }
     io.output.bits.RouteID := request_R.RouteID
     io.output.bits.valid := true.B
     ptr := 0.U

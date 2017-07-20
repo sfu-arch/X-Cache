@@ -1,4 +1,3 @@
-
 package verilogmain
 
 import java.io.{File, FileWriter}
