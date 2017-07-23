@@ -3,12 +3,12 @@ package node
 import chisel3._
 import chisel3.util._
 import org.scalacheck.Prop.False
-
 import config._
 import interfaces._
 import utility._
 import Constants._
 import utility.UniformPrintfs
+
 
 /*===========================================================
 =            Handshaking IO definitions                     =
@@ -234,7 +234,7 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   }
 }
 
-class FusedHandShakingDataBundle[T <: ValidT with PredicateT](val NumIns: Int, val NumOuts: Int,
+class HandShakingFused[T <: ValidT with PredicateT](val NumIns: Int, val NumOuts: Int,
   val ID: Int)(gen: T)(implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
@@ -254,7 +254,16 @@ class FusedHandShakingDataBundle[T <: ValidT with PredicateT](val NumIns: Int, v
   // Input Handshaking
   val in_predicate_W = Wire(Vec(Seq.fill(NumIns)(false.B)))
   val in_valid_R = RegInit(Vec(Seq.fill(NumIns)(false.B)))
-  val in_data_R =  RegInit(Vec(Seq.fill(NumIns)(DataBundle.default)))
+
+  // Seq of registers. This has to be an array and not a vector
+  // When vector it will try to instantiate registers; not possible since only 
+  // type description available here.
+  // Do not try to dynamically dereference ops.
+  val InRegs = for (i <- 0 until NumIns) yield {
+    val InReg = Reg(gen)
+    InReg
+  }
+
 
   // Wire
   val out_valid_W = Wire(Vec(Seq.fill(NumOuts)(false.B)))
@@ -266,18 +275,20 @@ class FusedHandShakingDataBundle[T <: ValidT with PredicateT](val NumIns: Int, v
 
   // Wire up OUT READYs and VALIDs
   for (i <- 0 until NumOuts) {
+   io.Out(i).valid := out_valid_W(i)
     out_ready_W(i) := io.Out(i).ready
   }
+
 
   // Wire up enable READY and VALIDs
   for (i <- 0 until NumIns) {
     io.In(i).ready := ~in_valid_R(i)
-    in_predicate_W(i) := in_data_R(i).predicate
+    in_predicate_W(i) := InRegs(i).predicate
     when(io.In(i).fire()) {
       in_valid_R(i) := io.In(i).valid
-      in_data_R(i) := io.In(i).bits
-      in_data_R(i).valid := io.In(i).valid
-      in_data_R(i).predicate := io.In(i).bits.predicate
+      InRegs(i) := io.In(i).bits
+      InRegs(i).valid := io.In(i).valid
+      InRegs(i).predicate := io.In(i).bits.predicate
     }
   }
 
@@ -320,22 +331,14 @@ class FusedHandShakingDataBundle[T <: ValidT with PredicateT](val NumIns: Int, v
   }
 
   def printInValid(): Unit = {
-    val inputvalids = for(i <- 0 until NumIns) yield {
-      val In_entry = "\""+s"In($i)"+"\": "+ s"${in_valid_R(i)}"
-      In_entry
+    for(i <- 0 until NumIns) yield {
+      if (i != (NumIns-1)) {
+        printf("\"In(%x)\" : %x ,",i.U,in_valid_R(i)) 
+      } else {
+        printf("\"In(%x)\" : %x ",i.U,in_valid_R(i)) 
+      }
     }
-    printf(inputvalids.mkString(","))
   }
-
-  def printInData(): Unit = {
-    val inputvalids = for(i <- 0 until NumIns) yield {
-     // \"O(V,D,P)\": \"%x,%x,%x\"
-     val In_entry = "\""+s"O($i)(V,D,P)"+"\": "+ "\"" + s"${in_data_R(i).valid},${Hexadecimal(in_data_R(i).data)},${in_data_R(i).predicate}" + "\""
-     In_entry
-   }
-   printf(inputvalids.mkString(","))
- }
-
 
   def InvalidIn(): Unit = {
     in_valid_R := Vec(Seq.fill(NumOuts) {
@@ -366,7 +369,7 @@ class FusedHandShakingDataBundle[T <: ValidT with PredicateT](val NumIns: Int, v
 
   def Reset(): Unit = {
     enable_valid_R := false.B
-    in_valid_R := Vec(Seq.fill(NumOuts) {
+    in_valid_R := Vec(Seq.fill(NumIns) {
       false.B
     })
   }

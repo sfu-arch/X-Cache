@@ -142,11 +142,17 @@ class MixedDataFlow(implicit val p: Parameters) extends Module with CoreParams {
   }
 
   val config64b = p.alterPartial({case XLEN => 64})
-  val Ops64b = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)
+  val Ops64b = for (i <- 0 until 2 / 2) yield {
+     val op64b = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)
               (config64b))
-  Ops64b.io.enable.bits := true.B
-  Ops64b.io.enable.valid := true.B
-  Ops64b.io.Out(0).ready := true.B
-  Ops64b.io.LeftIO <> Ops32b(0).io.Out(0)
-  Ops64b.io.RightIO <> Ops(0).io.Out(0)
+     op64b
+  }
+
+  for (i <- 0 until 2 / 2) {
+    Ops64b(i).io.enable.bits := true.B
+    Ops64b(i).io.enable.valid := true.B
+    Ops64b(i).io.Out(0).ready := true.B
+    Ops64b(i).io.LeftIO <> Ops32b(i).io.Out(0)
+    Ops64b(i).io.RightIO <> Ops(i).io.Out(0)
+  }
 }
