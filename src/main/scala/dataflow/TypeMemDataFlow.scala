@@ -18,8 +18,8 @@ class TypeMemDataFlow(implicit val p: Parameters) extends Module with CoreParams
 		            (RControl=new ReadTypMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
 	val Store     = Module(new TypStore(NumPredOps=0,NumSuccOps=1,NumOuts=1,ID=0,RouteID=0))
 	val Load      = Module(new TypLoad(NumPredOps=1,NumSuccOps=0,NumOuts=2,ID=0,RouteID=0))
-	val Store1    = Module(new TypStore(NumPredOps=0,NumSuccOps=1,NumOuts=1,ID=0,RouteID=1))
-	val Load1     = Module(new TypLoad(NumPredOps=1,NumSuccOps=0,NumOuts=2,ID=0,RouteID=1))
+	val Store1    = Module(new TypStore(NumPredOps=0,NumSuccOps=1,NumOuts=1,ID=1,RouteID=1))
+	val Load1     = Module(new TypLoad(NumPredOps=1,NumSuccOps=0,NumOuts=2,ID=1,RouteID=1))
 
 
 StackFile.io.ReadIn(0) <> Load.io.memReq
@@ -78,7 +78,7 @@ Load1.io.GepAddr.bits.data      := 16.U
 Load1.io.GepAddr.bits.predicate := true.B
 Load1.io.GepAddr.valid          := true.B
 
-Load1.io.enable.bits  := false.B
+Load1.io.enable.bits  := true.B
 Load1.io.enable.valid := true.B
 Load1.io.Out(0).ready := true.B
 

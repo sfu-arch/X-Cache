@@ -45,13 +45,9 @@ class WriteTypTableEntry
   val sendbytemask = RegInit(0.U(((Beats) * xlen/8).W))
 
   // Is the request valid and request to memory
-  val s_SendingValid = RegInit(false.B)
   val ReqAddress = RegInit(0.U(xlen.W))
 
-  // Incoming data valid and data operand.
-  val DataValid = RegInit(false.B)
   // Can optimize to be a shift bit.
-
   val inptr          = RegInit(0.U((log2Ceil(Beats)+20).W))
   val sendptr        = RegInit(0.U((log2Ceil(Beats)+1).W))
   val recvptr        = RegInit(0.U((log2Ceil(Beats)+1).W))

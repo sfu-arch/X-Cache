@@ -1,0 +1,25 @@
+package verilogmain
+
+import java.io.{File, FileWriter}
+
+import node._
+import config._
+import interfaces._
+import arbiters._
+import memory._
+import dataflow._
+import config._
+import util._
+import interfaces._
+
+
+object Main extends App {
+  val dir = new File(args(0)) ; dir.mkdirs
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new TypeMemDataFlow()))
+
+  val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
+  new firrtl.VerilogCompiler compile (
+  firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), verilog)
+  verilog.close
+}

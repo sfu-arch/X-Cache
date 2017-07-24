@@ -27,11 +27,10 @@ abstract class RWController(implicit val p: Parameters)
   val io = IO(new Bundle {
     val ReadCacheReq = Flipped(Decoupled(new CacheReq))
     val WriteCacheReq = Flipped(Decoupled(new CacheReq))
-//    val CacheResp = new CacheRespT
-    val CacheResp = Flipped(new CacheRespT)
+    val CacheResp = Flipped(Valid(new CacheRespT))
 
-    val ReadCacheResp = new CacheResp
-    val WriteCacheResp = new CacheResp
+    val ReadCacheResp = Valid(new CacheResp)
+    val WriteCacheResp = Valid(new CacheResp)
     val CacheReq = Decoupled(new CacheReq)
 
   })
@@ -77,21 +76,41 @@ class ReadWriteArbiter()
   //-----------------------------------
   // CacheResp -> Table entries Demux
   // cacheresp_demux.io.outputs.bits.isSt is an extra field not in Rd/WrCacheResp
-  io.ReadCacheResp <> cacheresp_demux.io.outputs(RdIdx)
-  io.WriteCacheResp <> cacheresp_demux.io.outputs(WrIdx)
+  io.ReadCacheResp.bits <> cacheresp_demux.io.outputs(RdIdx)
+  io.ReadCacheResp.valid := cacheresp_demux.io.outputs(RdIdx).valid
+  io.WriteCacheResp.bits <> cacheresp_demux.io.outputs(WrIdx)
+  io.WriteCacheResp.valid := cacheresp_demux.io.outputs(WrIdx).valid
 
   //-----------------------------------
   // Driver Circuit
   // Cache response Demux
   cacheresp_demux.io.en := io.CacheResp.valid
-  cacheresp_demux.io.input := io.CacheResp
+  cacheresp_demux.io.input := io.CacheResp.bits
   //Note RdIdx == 0 , so is isSt for Loads
   //ToDO this could be dangerous - fix this
-  cacheresp_demux.io.sel := io.CacheResp.isSt
+  cacheresp_demux.io.sel := io.CacheResp.bits.isSt
   //-----------------------------------
 
-
 //  assert(!io.CacheResp.valid, " CACHE RESPONSE IS VALID ")
-  printf(s" io.Cache Resp valid: %x isSt: %x  tag: %x \n", io.CacheResp.valid ,io.CacheResp.isSt, io.CacheResp.tag )
+
+
+//  verb match {
+//      case "high"  => {
+//
+//        printfInfo(s" INPUT.READREQ: valid: %d ready: %d addr: %d data: %d, iswrite: %d \n", io.ReadCacheReq.valid,
+//          io.ReadCacheReq.ready, io.ReadCacheReq.bits.addr, io.ReadCacheReq.bits.data, io.ReadCacheReq.bits.iswrite)
+//        printfInfo(s"INPUT.WRITEREQ: valid: %d ready:%d addr: %d data:%d iswrite:%d \n", io.WriteCacheReq.valid,
+//          io.WriteCacheReq.ready, io.WriteCacheReq.bits.addr, io.WriteCacheReq.bits.data, io.WriteCacheReq.bits.iswrite)
+//
+//        printfInfo(s" OUTPUT Req valid: %d addr: %d data:%d  tag: %d  ready:%d iswrite:%d \n", io.CacheReq.valid ,
+//          io.CacheReq.bits.addr,io.CacheReq.bits.data ,io.CacheReq.bits.tag, io.CacheReq.ready, io.CacheReq.bits.iswrite )
+//
+//
+//        printfInfo(s" OUTPUT Resp valid: %d isSt: %d  tag: %d \n", io.CacheResp.valid ,io.CacheResp.bits.isSt, io.CacheResp.bits.tag )
+//
+//
+//
+//      }
+//    }
 
 }

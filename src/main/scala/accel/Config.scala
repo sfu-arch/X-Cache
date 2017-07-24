@@ -9,8 +9,8 @@ import junctions._
 
 //class AcceleratorConfig extends MiniConfig()
 
-class CacheConfig extends Config((site, here, up) => {
-      case NSets => 256
+class AccelConfig extends MiniConfig() {
+
 }
-)
+
 

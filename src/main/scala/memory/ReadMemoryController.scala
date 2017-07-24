@@ -118,6 +118,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   when((state === s_SENDING) && (sendbytemask =/= 0.asUInt((xlen/4).W))) {
     io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
     io.MemReq.bits.tag := ID
+//    io.MemReq.bits.valid := true.B
     io.MemReq.valid := 1.U
     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
     when(io.MemReq.fire()) {
@@ -150,7 +151,12 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
     output := (linebuffer.asUInt & bitmask) >> Cat(request_R.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))
     io.output.valid := 1.U
     // @error: To handle doubles this has to change.
-    io.output.bits.data := Data2Sign(output,request_R.Typ)
+    if (xlen == 32) {
+      io.output.bits.data := Data2Sign(output,request_R.Typ,xlen)
+    }
+    if (xlen == 16) {
+      io.output.bits.data := Data2Sign16b(output,request_R.Typ,xlen)
+    }
     io.output.bits.RouteID := request_R.RouteID
     io.output.bits.valid := true.B
     ptr := 0.U
@@ -167,11 +173,11 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
     val x = RegInit(0.U(xlen.W))
     x     := x + 1.U
 
-    verb match {
-      case "high"  => { printf(p"\nUNTYP RD MSHR Time $x: Nodereq: $request_R "); printf(p"linebuffer: ${linebuffer}") }
-      case "med"   => { printf(p"\nUNTYP RD MSHR Time $x: $io.MemReq"); printf(p"linebuffer: ${linebuffer}") }
-      case "low"   => { printf(p"\nUNTYP RD MSHR Time $x: ") ; printf(p"Output bits : ${io.output.bits} Output Valid : ${io.output.valid}") }
-    }
+//    verb match {
+//      case "high"  => { printf(p"\nUNTYP RD MSHR Time $x: Nodereq: $request_R "); printf(p"linebuffer: ${linebuffer}") }
+//      case "med"   => { printf(p"\nUNTYP RD MSHR Time $x: $io.MemReq"); printf(p"linebuffer: ${linebuffer}") }
+//      case "low"   => { printf(p"\nUNTYP RD MSHR Time $x: ") ; printf(p"Output bits : ${io.output.bits} Output Valid : ${io.output.valid}") }
+//    }
   }
 }
 

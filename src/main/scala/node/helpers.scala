@@ -69,7 +69,7 @@ object Typ2ByteMask
 object Data2Sign
 {
   // If xlen changes from 32 this sign extension needs to be fixed here. 
-  def apply(data: Bits, typ: Bits) : Bits =
+  def apply(data: Bits, typ: Bits, xlen: Int) : Bits =
    {
      //@todo check whether casting Bits to UInt doesn't introduce bug
      val out = Mux(typ.asUInt === MT_H,  Cat(Fill(16, data(15)),  data(15,0)),
@@ -77,6 +77,21 @@ object Data2Sign
                 Mux(typ.asUInt === MT_B,  Cat(Fill(24, data(7)),    data(7,0)),
                 Mux(typ.asUInt === MT_BU, Cat(Fill(24, UInt(0x0)), data(7,0)), 
                                     data(31,0)))))
+    return out
+   }
+}
+
+object Data2Sign16b
+{
+  // If xlen changes from 32 this sign extension needs to be fixed here. 
+  def apply(data: Bits, typ: Bits, xlen: Int) : Bits =
+   {
+     //@todo check whether casting Bits to UInt doesn't introduce bug
+     val out =  Mux(typ.asUInt === MT_H,  data(15,0),
+                Mux(typ.asUInt === MT_HU, data(15,0),
+                Mux(typ.asUInt === MT_B,  Cat(Fill(8, data(7)),    data(7,0)),
+                Mux(typ.asUInt === MT_BU, Cat(Fill(8, UInt(0x0)), data(7,0)), 
+                                    data(15,0)))))
     return out
    }
 }

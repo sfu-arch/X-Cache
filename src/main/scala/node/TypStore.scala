@@ -171,8 +171,8 @@ class TypStore(NumPredOps: Int,
     }
   }
   // Trace detail.
-   override val printfSigil = "TYPSTORE" + Typ_SZ + "_" + ID + ":"
-  if (log == true) {
+  override val printfSigil = "TYPSTORE" + Typ_SZ + "_" + ID + ":"
+  if (log == true && (comp contains "TYPSTORE")) {
     val x = RegInit(0.U(xlen.W))
     x     := x + 1.U
   
@@ -182,7 +182,8 @@ class TypStore(NumPredOps: Int,
       case "med"   => { }
       case "low"   => {
         printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x, \"inData\": %x },\n",x, (addr_R.valid),(data_R.valid))
-        printf("\"State\": {\"State\": %x}",state)
+        printf("\"State\": {\"State\": %x, \"data_R\": \"%x,%x\" },",state,data_R.data,data_R.predicate)
+        printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
         printf("}")
        }
       case everythingElse => {}

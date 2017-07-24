@@ -1,74 +1,54 @@
-// package dataflow
+package dataflow
 
-// import chisel3._
-// import chisel3.util._
-// import chisel3.Module
-// import chisel3.testers._
-// import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
-// import org.scalatest.{Matchers, FlatSpec} 
+import chisel3._
+import chisel3.util._
 
-// import muxes._
-// import config._
-// import util._
-// import interfaces._
-// import regfile._
-// import node._
+import node._
+import config._
+import interfaces._
+import arbiters._
+import memory._
 
+class TypeLoadDataFlow(implicit val p: Parameters) extends Module with CoreParams{
 
-// //TODO uncomment if you remove StackCentral.scala file
-// //
-// abstract class myDataFlow(implicit val p: Parameters) extends Module with CoreParams {
-//   val io = IO(new Bundle {
-//     val result  = Output(xlen.U)
-//     val resultReady = Input(Bool())
-//     val resultValid = Output(Bool())
-//    })
-// }
+	val io = IO(new Bundle{val dummy = Input(UInt{32.W})})
 
-// class newDataFlow(implicit p: Parameters) extends myDataFlow()(p){
-  
-
-//   val reg1 = Module(new InputRegFile(Array(1.U, 4.U, 3.U, 4.U))(p))
-//   val reg2 = Module(new InputRegFile(Array(4.U, 4.U, 7.U, 8.U))(p))
-//   val reg3 = Module(new InputRegFile(Array(2.U, 2.U, 5.U, 8.U))(p))
-//   val reg4 = Module(new InputRegFile(Array(3.U, 6.U, 2.U, 8.U))(p))
-//   val reg5 = Module(new InputRegFile(Array(6.U, 8.U, 2.U, 8.U))(p))
-//   val reg6 = Module(new InputRegFile(Array(7.U, 5.U, 3.U, 8.U))(p))
-//   val reg7 = Module(new InputRegFile(Array(6.U, 1.U, 4.U, 8.U))(p))
-//   val reg8 = Module(new InputRegFile(Array(9.U, 2.U, 5.U, 8.U))(p))
-
-//   val m0 = Module(new DecoupledNodeSingle("Add", 0)(p))
-//   val m1 = Module(new DecoupledNodeSingle("Add", 1)(p))
-//   val m2 = Module(new DecoupledNodeSingle("Add", 2)(p))
-//   val m3 = Module(new DecoupledNodeSingle("Add", 3)(p))
-//   val m4 = Module(new DecoupledNodeSingle("Add", 4)(p))
-//   val m5 = Module(new DecoupledNodeSingle("Add", 5)(p))
-//   val m6 = Module(new DecoupledNodeSingle("Add", 6)(p))
+	val StackFile = Module(new TypeStackFile(ID=0,Size=32,NReads=1,NWrites=1)
+		            (WControl=new WriteTypMemoryController(NumOps=1,BaseSize=2,NumEntries=1))
+		            (RControl=new ReadTypMemoryController(NumOps=1,BaseSize=2,NumEntries=1)))
+	val Store     = Module(new TypStore(NumPredOps=0,NumSuccOps=1,NumOuts=1,ID=0,RouteID=0))
+	val Load      = Module(new TypLoad(NumPredOps=1,NumSuccOps=0,NumOuts=1,ID=0,RouteID=0))
 
 
-//   m0.io.LeftIO  <> reg1.io.Data
-//   m0.io.RightIO <> reg2.io.Data
+StackFile.io.ReadIn(0) <> Load.io.memReq
+Load.io.memResp  <> StackFile.io.ReadOut(0)
 
-//   m1.io.LeftIO  <> reg3.io.Data
-//   m1.io.RightIO <> reg4.io.Data
+StackFile.io.WriteIn(0) <> Store.io.memReq
+Store.io.memResp  <> StackFile.io.WriteOut(0)
 
-//   m4.io.LeftIO  <> reg5.io.Data
-//   m4.io.RightIO <> reg6.io.Data
 
-//   m6.io.LeftIO  <> reg7.io.Data
-//   m6.io.RightIO <> reg8.io.Data
+Store.io.GepAddr.bits.data      := 8.U
+Store.io.GepAddr.bits.predicate := true.B
+Store.io.GepAddr.valid          := true.B
 
-//   m2.io.LeftIO  <> m0.io.OutIO
-//   m2.io.RightIO <> m1.io.OutIO
+Store.io.inData.bits.data       := 0x1eadbeefbeefbeefL.U
+Store.io.inData.bits.predicate  := true.B
+Store.io.inData.valid           := true.B
 
-//   m3.io.LeftIO  <> m2.io.OutIO
-//   m3.io.RightIO <> m4.io.OutIO
+Store.io.enable.bits  := true.B
+Store.io.enable.valid := true.B
+Store.io.Out(0).ready := true.B
 
-//   m5.io.LeftIO  <> m3.io.OutIO
-//   m5.io.RightIO <> m6.io.OutIO
 
-//   m5.io.OutIO.ready := io.resultReady
-//   io.result := m5.io.OutIO.bits
-//   io.resultValid := m5.io.OutIO.valid
+Load.io.GepAddr.bits.data      := 8.U
+Load.io.GepAddr.bits.predicate := true.B
+Load.io.GepAddr.valid          := true.B
 
-// }
+Load.io.enable.bits  := true.B
+Load.io.enable.valid := true.B
+Load.io.Out(0).ready := true.B
+
+Load.io.PredOp(0) <> Store.io.SuccOp(0)
+
+}
+

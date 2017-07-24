@@ -21,6 +21,10 @@ trait RouteID extends CoreBundle() {
   val RouteID = UInt (glen.W)
 }
 
+trait PredicateT extends CoreBundle() {
+  val predicate = Bool()
+}
+
 // Maximum of 16MB Stack Array.
 
 class AllocaIO(implicit p: Parameters) extends CoreBundle()(p){
@@ -196,10 +200,9 @@ class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
   * @param p : implicit
   * @return
   */
-class DataBundle(implicit p: Parameters) extends ValidT {
+class DataBundle(implicit p: Parameters) extends ValidT with PredicateT {
   // Data packet
   val data = UInt(xlen.W)
-  val predicate = Bool()
 }
 
 
@@ -213,10 +216,9 @@ object DataBundle {
   }
 }
 
-class TypBundle(implicit p: Parameters) extends ValidT {
+class TypBundle(implicit p: Parameters) extends ValidT with PredicateT {
   // Type Packet
   val data = UInt(Typ_SZ.W)
-  val predicate = Bool()
 }
 
 

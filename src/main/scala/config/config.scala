@@ -2,6 +2,7 @@ package config
 
 
 import chisel3._
+import config.cde._
 import chisel3.util._
 import config._
 import util._
@@ -48,8 +49,8 @@ class MiniConfig extends Config((site, here, up) => {
     // # Max bits of cache request tag. 
     case MSHRLEN  => 8
     case TYPSZ      => 64
-    case VERBOSITY  => "None"
-    case COMPONENTS => "None"
+    case VERBOSITY  => "low"
+    case COMPONENTS => "TYPLOAD;TYPOP"
     // Max size of type memory system may see
     case TRACE      => true
     case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))

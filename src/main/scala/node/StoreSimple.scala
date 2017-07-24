@@ -51,9 +51,6 @@ class UnTypStore(NumPredOps: Int,
   // Set up StoreIO
   override lazy val io = IO(new StoreIO(NumPredOps, NumSuccOps, NumOuts))
 
-  // Printf debugging
-  override val printfSigil = "Store ID: " + ID + " "
-
 /*=============================================
 =            Register declarations            =
 =============================================*/
@@ -168,8 +165,21 @@ when (start & predicate) {
     }
   }
   // Trace detail.
-  printfInfo("State : %x, Out: %x Succ Mem Op [", state, io.Out(0).bits.data)
-  for (i <- 0 until NumSuccOps) {
-  printf(p"${io.SuccOp(i).valid},")}
-  printf("]\n")
+  override val printfSigil = "STORE" + xlen + "_" + ID + ":"
+  if (log == true && (comp contains "STORE")) {
+    val x = RegInit(0.U(xlen.W))
+    x     := x + 1.U
+  
+    verb match {
+      case "high"  => { }
+      case "med"   => { }
+      case "low"   => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x, \"inData\": %x },\n",x, (addr_R.valid),(data_R.valid))
+        printf("\"State\": {\"State\": %x, \"data_R\": \"%x,%x\" },",state,data_R.data,data_R.predicate)
+        printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
+        printf("}")
+       }
+      case everythingElse => {}
+    }
+  }
 }

@@ -3,9 +3,6 @@ package memory
 /**
   * Created by vnaveen0 on 9/7/17.
   */
-class ReadWriteArbiter01 {
-
-}
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
@@ -81,9 +78,9 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
       time = t+1
 
       println(s" Sending Response from Cache ")
-      poke(c.io.CacheResp.data, 45)
-      poke(c.io.CacheResp.isSt, peek(c.io.CacheReq.bits.iswrite))
-      poke(c.io.CacheResp.tag, peek(c.io.CacheReq.bits.tag))
+      poke(c.io.CacheResp.bits.data, 45)
+      poke(c.io.CacheResp.bits.isSt, peek(c.io.CacheReq.bits.iswrite))
+      poke(c.io.CacheResp.bits.tag, peek(c.io.CacheReq.bits.tag))
       poke(c.io.CacheResp.valid, 1)
     }
     else {
@@ -92,9 +89,21 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
 
 
     println(s" IO CacheReq Valid  ${peek(c.io.CacheReq.valid)}")
-    println(s" IO ReadResp Valid  ${peek(c.io.ReadCacheResp.valid)}")
-    println(s" IO WriteResp Valid  ${peek(c.io.WriteCacheResp.valid)}")
-    println(s" time :   ${time}")
+    if(peek(c.io.ReadCacheResp.valid) == 1) {
+
+      println(s"^^^^^^^^^^^^^^")
+      println(s"ReadCacheResp :  -------------")
+      println(s" IO ReadResp Valid  ${peek(c.io.ReadCacheResp)}")
+    }
+
+
+    if(peek(c.io.WriteCacheResp.valid) == 1) {
+
+      println(s"^^^^^^^^^^^^^^")
+      println(s"WriteCacheResp :  -------------")
+      println(s" IO WriteResp Valid  ${peek(c.io.WriteCacheResp)}")
+    }
+
 
 
     step(1)

@@ -3,3 +3,4 @@ target/*
 project/*
 src/target/*
 tags
+build-stuff/*

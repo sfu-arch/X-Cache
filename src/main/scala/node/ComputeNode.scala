@@ -28,7 +28,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
   // Printf debugging
-  override val printfSigil = "Node ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -38,9 +37,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
 
   // Right Input
   val right_R = RegInit(DataBundle.default)
-
-  // Output register
-  val data_R = RegInit(0.U(xlen.W))
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
   val state = RegInit(s_idle)
@@ -76,33 +72,25 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     right_R.predicate := io.RightIO.bits.predicate
   }
 
-  // Wire up Outputs
-  for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_R
-    io.Out(i).bits.predicate := predicate 
-  }
-
-
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
   //Instantiate ALU with selected code
   var FU = Module(new UALU(xlen, opCode))
-
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
-  data_R := FU.io.out
 
-  when(start & predicate & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & ~predicate & state =/= s_COMPUTE) {
-    //printfInfo("Start sending data to output INVALID\n")
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.data := FU.io.out
+    io.Out(i).bits.predicate := predicate 
+  }
+
+  when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
     ValidOut()
   }
-
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
@@ -111,18 +99,28 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     // Reset data
     left_R := DataBundle.default
     right_R := DataBundle.default
-    // Reset output
-    data_R := 0.U
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
     //Reset state
     state := s_idle
     //Reset output
     Reset()
   }
+  var signed = if (sign == true) "S" else "U"
+  override val printfSigil = opCode + xlen +  "_" + signed + "_" + ID + ":"
 
-  printfInfo(" State: %x\n", state)
-
-
+  if (log == true && (comp contains "OP")) {
+    val x = RegInit(0.U(xlen.W))
+    x     := x + 1.U
+  
+    verb match {
+      case "high"  => { }
+      case "med"   => { }
+      case "low"   => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"Left\": %x, \"Right\": %x},",x,(left_R.valid),(right_R.valid))
+        printf("\"State\": {\"State\": \"%x\", \"(L,R)\": \"%x,%x\",  \"O(V,D,P)\": \"%x,%x,%x\" },",state,left_R.data,right_R.data,out_valid_R(0),FU.io.out,io.Out(0).bits.predicate)
+        printf("\"Outputs\": {\"Out\": %x}",out_valid_R(0) & io.Out(0).ready)
+        printf("}")
+       }
+      case everythingElse => {}
+    }
+  }
 }
