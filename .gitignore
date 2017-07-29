@@ -5,3 +5,5 @@ src/target/*
 tags
 build-stuff/*
 .idea/*
+*.swp
+*.back
