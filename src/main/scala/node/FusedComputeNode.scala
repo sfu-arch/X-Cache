@@ -89,14 +89,14 @@ def PrintOut(): Unit = {
       case "high"  => { }
       case "med"   => { }
       case "low"   => {
-        printfInfo("Cycle %d : { \"Inputs\": {",x)
+        printfInfo("\nCycle %d : \n{ \"Inputs\": {",x)
         printInValid()
-        printf("},")
+        printf("},\n")
         printf("\"State\": {\"State\": \"%x\",",state)
         PrintOut()
-        printf("},")
+        printf("},\n")
         printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
-        printf("}")
+        printf("}\n")
        }
       case everythingElse => {}
     }

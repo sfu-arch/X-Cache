@@ -35,6 +35,9 @@ class ChainTester(df: Chain)
   poke(df.io.In(2).valid, false.B)
   poke(df.io.In(2).bits.predicate, false.B)
 
+  poke(df.io.In(2).bits.data, 12.U)
+  poke(df.io.In(2).valid, false.B)
+  poke(df.io.In(2).bits.predicate, false.B)
 
 
   poke(df.io.enable.bits , false.B)
@@ -77,7 +80,7 @@ class ChainTester(df: Chain)
 	class FusedCompTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new Chain(NumOps = 2, ID = 0, OpCodes = Array("Add","PassB"))(sign = false)) {
+     chisel3.iotesters.Driver(() => new Chain(NumOps = 2, ID = 0, OpCodes = Array("Add","Add"))(sign = false)) {
        c => new ChainTester(c)
      } should be(true)
    }

@@ -62,7 +62,7 @@ class Core(implicit p: Parameters) extends CoreT()(p) {
   val errorLatch = Reg(Bool())
 
   switch(state) {
-    // Idle
+   // Idle
     is(sIdle) {
       reqAddr := io.addr(31, 0)
       wordCount := 0.U

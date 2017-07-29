@@ -22,7 +22,7 @@ OPSize = [2,8,16,32]
 
 
 # Directory set up
-BASEDIR = "/Users/ashriram/Documents/Chisel/dataflow-lib/"
+BASEDIR = "/home/amiralis/git/dataflow-lib"
 TARGETDIR = "/tmp/build-stuff/"
 RESULT = "Out"
 OUTDIR = "./Output16b/"
@@ -59,6 +59,7 @@ if __name__ == '__main__':
 					EXE = SBTCMD + params + "\" > " + Output
 					
 					print(params)
+                                        print(EXE)
 					os.popen("cd " + BASEDIR + " && exec " + EXE)
 					TOPVCD     = [y for x in sorted(os.walk(TARGETDIR)) for y in glob(os.path.join(x[0], '*.vcd'))]
 					TOPVERILOG = [y for x in sorted(os.walk(TARGETDIR)) for y in glob(os.path.join(x[0], '*.v'))]

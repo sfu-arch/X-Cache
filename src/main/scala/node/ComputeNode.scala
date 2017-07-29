@@ -118,7 +118,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         printfInfo("Cycle %d : { \"Inputs\": {\"Left\": %x, \"Right\": %x},",x,(left_R.valid),(right_R.valid))
         printf("\"State\": {\"State\": \"%x\", \"(L,R)\": \"%x,%x\",  \"O(V,D,P)\": \"%x,%x,%x\" },",state,left_R.data,right_R.data,out_valid_R(0),FU.io.out,io.Out(0).bits.predicate)
         printf("\"Outputs\": {\"Out\": %x}",out_valid_R(0) & io.Out(0).ready)
-        printf("}")
+        printf("}\n")
        }
       case everythingElse => {}
     }
