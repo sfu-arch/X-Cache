@@ -4,3 +4,4 @@ project/*
 src/target/*
 tags
 build-stuff/*
+.idea/*

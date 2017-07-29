@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="SBT: edu.berkeley.cs:firrtl-interpreter_2.11:1.0-SNAPSHOT:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/edu.berkeley.cs/firrtl-interpreter_2.11/jars/firrtl-interpreter_2.11-1.0-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/edu.berkeley.cs/firrtl-interpreter_2.11/srcs/firrtl-interpreter_2.11-1.0-SNAPSHOT-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="SBT: org.scala-lang.modules:scala-jline:2.12.1:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.scala-lang.modules/scala-jline/bundles/scala-jline-2.12.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.scala-lang.modules/scala-jline/srcs/scala-jline-2.12.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
