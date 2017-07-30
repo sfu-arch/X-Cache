@@ -33,7 +33,7 @@ class ComputeFuse01DF(implicit val p: Parameters) extends Module with CoreParams
 
   io.dataOut <> m0.io.Out(2)
 
-  for(i <- 0 until 2)
+  for(i <- 0 until 4)
     m0.io.Out(i).ready := io.dataOut.ready
 }
 

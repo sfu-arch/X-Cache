@@ -104,7 +104,7 @@ def PrintOut(): Unit = {
 }
 
 class Chain(ID: Int, NumOps: Int, OpCodes: Array[String])(sign: Boolean)(implicit p: Parameters)
-  extends FusedComputeNode(NumIns = NumOps + 1, NumOuts = NumOps, ID = ID,OpCodes.mkString("_"))(sign)(p)
+  extends FusedComputeNode(NumIns = NumOps + 1, NumOuts = NumOps + 1, ID = ID,OpCodes.mkString("_"))(sign)(p)
 {
 
  // Declare chain of FUs 
@@ -126,4 +126,7 @@ class Chain(ID: Int, NumOps: Int, OpCodes: Array[String])(sign: Boolean)(implici
   	io.Out(i).bits.data := FUs(i).io.out
   	io.Out(i).bits.predicate := io.Out(i-1).bits.predicate & InRegs(i+1).predicate
   }
+
+  io.Out((OpCodes.length)).bits.data := FUs((OpCodes.length)-1).io.out
+  io.Out((OpCodes.length)).bits.predicate := io.Out((OpCodes.length)-2).bits.predicate & InRegs(OpCodes.length).predicate
 }

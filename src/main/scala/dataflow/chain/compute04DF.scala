@@ -9,7 +9,7 @@ import interfaces._
 import arbiters._
 import memory._
 
-class Compute02DF(implicit val p: Parameters) extends Module with CoreParams {
+class Compute04DF(implicit val p: Parameters) extends Module with CoreParams {
 
   val io = IO(new Bundle {
     val data0 = Flipped(Decoupled(new DataBundle()))
@@ -20,8 +20,7 @@ class Compute02DF(implicit val p: Parameters) extends Module with CoreParams {
     val data5 = Flipped(Decoupled(new DataBundle()))
     val enable = Flipped(Decoupled(Bool()))
 
-    val dataOut0 = Decoupled(new DataBundle())
-    val dataOut1 = Decoupled(new DataBundle())
+    val dataOut = Decoupled(new DataBundle())
 
   })
 
