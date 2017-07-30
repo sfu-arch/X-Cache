@@ -21,7 +21,7 @@ import firrtl_interpreter.InterpreterOptions
 
 
 // Tester.
-class computeF02STester(df: ComputeFuse02SDF)
+class computeF02STester(df: ComputeFuse02PDF)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.data0.bits.data, 4.U)
@@ -98,7 +98,7 @@ class ComputeF02STests extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Not fuse tester" in {
     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),
-      () => new ComputeFuse02SDF()) {
+      () => new ComputeFuse02PDF()) {
       c => new computeF02STester(c)
     } should be(true)
   }
