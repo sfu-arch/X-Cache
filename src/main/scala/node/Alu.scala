@@ -1,8 +1,7 @@
 package node
 
 import chisel3._
-import chisel3.util._
-
+import chisel3.util._ 
 
 /**
   * List of compute operations which we can support
@@ -15,12 +14,13 @@ object AluOpCode {
   val Xor = 5
   val Xnor = 6
   val ShiftLeft = 7
-  val ShiftRightLogical = 8
-  val ShiftRightArithmetic = 9
-  val SetLessThan = 10
-  val SetLessThanUnsigned = 11
-  val PassA = 12
-  val PassB = 13
+  val ShiftRight = 8
+  val ShiftRightLogical = 9
+  val ShiftRightArithmetic = 10
+  val SetLessThan = 11
+  val SetLessThanUnsigned = 12
+  val PassA = 13
+  val PassB = 14
 
   val opMap = Map(
     "Add" -> Add,
@@ -30,15 +30,16 @@ object AluOpCode {
     "Xor" -> Xor,
     "Xnor" -> Xnor,
     "ShiftLeft" -> ShiftLeft,
-    "ShiftRightArithmetic" -> ShiftRightArithmetic,
+    "ShiftRight" -> ShiftRight,
     "ShiftRightLogical" -> ShiftRightLogical,
+    "ShiftRightArithmetic" -> ShiftRightArithmetic,
     "SetLessThan" -> SetLessThan,
     "SetLessThanUnsigned" -> SetLessThanUnsigned,
     "PassA" -> PassA,
     "PassB" -> PassB)
 
 
-  val length = 13
+  val length = 14
 }
 
 
@@ -85,10 +86,8 @@ class UALU(val xlen: Int, val opCode: String) extends Module {
     AluOpCode.Or -> (io.in1 | io.in2),
     AluOpCode.Xor -> (io.in1 ^ io.in2),
     AluOpCode.Xnor -> (~(io.in1 ^ io.in2)),
-    AluOpCode.ShiftLeft -> (io.in1 << io.in2(4, 0)),
-    AluOpCode.ShiftRightLogical -> (io.in1 >> io.in2(4, 0)),
-
-    //BUG ALERT does not convert back to UInt properly !????
+    AluOpCode.ShiftLeft -> (io.in1 << io.in2(4,0)),
+    AluOpCode.ShiftRight -> (io.in1 >> io.in2(4,0)),
     AluOpCode.ShiftRightArithmetic -> (io.in1.asSInt >> io.in2(4, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
     AluOpCode.SetLessThan -> (io.in1.asSInt < io.in2.asSInt),
     AluOpCode.SetLessThanUnsigned -> (io.in1 < io.in2),
@@ -126,11 +125,9 @@ class SALU(val xlen: Int, val opCode: String) extends Module {
     AluOpCode.Or -> (io.in1 | io.in2),
     AluOpCode.Xor -> (io.in1 ^ io.in2),
     AluOpCode.Xnor -> (~(io.in1 ^ io.in2)),
-    AluOpCode.ShiftLeft -> (io.in1 << io.in2(4, 0)),
-    AluOpCode.ShiftRightLogical -> (io.in1 >> io.in2(4, 0)),
-
-    //BUG ALERT does not convert back to UInt properly !????
-    AluOpCode.ShiftRightArithmetic -> (io.in1.asSInt >> io.in2(4, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+    AluOpCode.ShiftLeft -> (io.in1 << io.in2(4, 0).asUInt),
+    AluOpCode.ShiftRight -> (io.in1 >> io.in2.asUInt),
+    AluOpCode.ShiftRightLogical -> (io.in1 >> io.in2(4, 0).asUInt),
     AluOpCode.SetLessThan -> (io.in1.asSInt < io.in2.asSInt),
     AluOpCode.SetLessThanUnsigned -> (io.in1 < io.in2),
     AluOpCode.PassA -> io.in1,

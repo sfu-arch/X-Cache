@@ -23,11 +23,11 @@ import interfaces._
 class computeTester(df: ComputeNode)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
-  poke(df.io.LeftIO.bits.data, 9.U)
+  poke(df.io.LeftIO.bits.data, 2.U)
   poke(df.io.LeftIO.valid, false.B)
   poke(df.io.LeftIO.bits.predicate, false.B)
 
-  poke(df.io.RightIO.bits.data, 5.U)
+  poke(df.io.RightIO.bits.data, 1.U)
   poke(df.io.RightIO.valid, false.B)
   poke(df.io.RightIO.bits.predicate, false.B)
 
@@ -61,43 +61,13 @@ class computeTester(df: ComputeNode)
     println(s"t: ${i}\n -------------------------------------")
     step(1)
   }
-//  poke(df.io.CmpIn.valid, false.B)
-//  poke(df.io.CmpIn.bits, false.B)
-//
-//  println(s"Node input : ${peek(df.io.CmpIn)}")
-//  println(s"Node output: ${peek(df.io.OutIO)}")
-//
-//  step(1)
-//
-//  poke(df.io.CmpIn.bits, true.B)
-//  println(s"Node input : ${peek(df.io.CmpIn)}")
-//  println(s"Node output: ${peek(df.io.OutIO)}")
-//
-//  poke(df.io.CmpIn.valid, true.B)
-//  step(1)
-//  println(s"Node input : ${peek(df.io.CmpIn)}")
-//  println(s"Node output: ${peek(df.io.OutIO)}")
-//
-//  step(1)
-//  println(s"Node input : ${peek(df.io.CmpIn)}")
-//  println(s"Node output: ${peek(df.io.OutIO)}")
-//  step(1)
-//
-//  poke(df.io.CmpIn.bits, false.B)
-//  println(s"Node input : ${peek(df.io.CmpIn)}")
-//  println(s"Node output: ${peek(df.io.OutIO)}")
-//  step(1)
-//  println(s"Node input : ${peek(df.io.CmpIn)}")
-//  println(s"Node output: ${peek(df.io.OutIO)}")
  }
-
-
 
 
 class CompTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)) {
+     chisel3.iotesters.Driver(() => new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftRight")(sign = false)) {
        c => new computeTester(c)
      } should be(true)
    }
