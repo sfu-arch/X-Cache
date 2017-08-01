@@ -69,7 +69,7 @@ class ComputeFuse04PDF(implicit val p: Parameters) extends Module with CoreParam
 
   })
 
-  val m0 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("And","LeftShift","Xor","Or"))(sign = false)(p))
+  val m0 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("And","ShiftLeft","Xor","Or"))(sign = false)(p))
   val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false)(p))
 
   m0.io.In(0) <> io.data0
@@ -84,7 +84,7 @@ class ComputeFuse04PDF(implicit val p: Parameters) extends Module with CoreParam
   m0.io.enable <> io.enable
   m1.io.enable <> io.enable
 
-  for(i <- 0 until 6)
+  for(i <- 0 until 5)
     m0.io.Out(i).ready := io.dataOut.ready
 
   io.dataOut <> m0.io.Out(3)

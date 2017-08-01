@@ -24,11 +24,17 @@ object AluOpCode {
 
   val opMap = Map(
     "Add" -> Add,
+    "add" -> Add,
     "Sub" -> Sub,
+    "sub" -> Sub,
     "And" -> And,
+    "and" -> And,
     "Or" -> Or,
+    "or" -> Or,
     "Xor" -> Xor,
+    "xor" -> Xor,
     "Xnor" -> Xnor,
+    "xnor" -> Xnor,
     "ShiftLeft" -> ShiftLeft,
     "ShiftRight" -> ShiftRight,
     "ShiftRightLogical" -> ShiftRightLogical,

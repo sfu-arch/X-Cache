@@ -1,4 +1,4 @@
-package dataflow.chain
+package dataflow.fuse
 
 /**
   * Created by vnaveen0 on 26/6/17.
@@ -21,7 +21,7 @@ import firrtl_interpreter.InterpreterOptions
 
 
 // Tester.
-class compute01Tester(df: Compute01DF)
+class computeF03STester(df: ComputeFuse03SDF)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.data0.bits.data, 4.U)
@@ -40,11 +40,45 @@ class compute01Tester(df: Compute01DF)
   poke(df.io.data3.valid, false.B)
   poke(df.io.data3.bits.predicate, true.B)
 
+  poke(df.io.data4.bits.data, 1.U)
+  poke(df.io.data4.valid, false.B)
+  poke(df.io.data4.bits.predicate, true.B)
+
+  poke(df.io.data5.bits.data, 1.U)
+  poke(df.io.data5.valid, false.B)
+  poke(df.io.data5.bits.predicate, true.B)
+
+  poke(df.io.data6.bits.data, 7.U)
+  poke(df.io.data6.valid, false.B)
+  poke(df.io.data6.bits.predicate, true.B)
+
+  poke(df.io.data7.bits.data, 2.U)
+  poke(df.io.data7.valid, false.B)
+  poke(df.io.data7.bits.predicate, true.B)
+
+  poke(df.io.data8.bits.data, 8.U)
+  poke(df.io.data8.valid, false.B)
+  poke(df.io.data8.bits.predicate, true.B)
+
+  poke(df.io.data9.bits.data, 6.U)
+  poke(df.io.data9.valid, false.B)
+  poke(df.io.data9.bits.predicate, true.B)
+
+  poke(df.io.data10.bits.data, 1.U)
+  poke(df.io.data10.valid, false.B)
+  poke(df.io.data10.bits.predicate, true.B)
+
+  poke(df.io.data11.bits.data, 2.U)
+  poke(df.io.data11.valid, false.B)
+  poke(df.io.data11.bits.predicate, true.B)
+
   poke(df.io.enable.bits, false.B)
   poke(df.io.enable.valid, false.B)
 
-  poke(df.io.dataOut.ready, true.B)
-  println(s"Output: ${peek(df.io.dataOut)}\n")
+  poke(df.io.dataOut0.ready, true.B)
+  poke(df.io.dataOut1.ready, true.B)
+  println(s"Output: ${peek(df.io.dataOut0)}\n")
+  println(s"Output: ${peek(df.io.dataOut1)}\n")
 
   step(1)
 
@@ -52,25 +86,42 @@ class compute01Tester(df: Compute01DF)
   poke(df.io.data1.valid, true.B)
   poke(df.io.data2.valid, true.B)
   poke(df.io.data3.valid, true.B)
+  poke(df.io.data4.valid, true.B)
+  poke(df.io.data5.valid, true.B)
+  poke(df.io.data6.valid, true.B)
   poke(df.io.enable.bits, true.B)
   poke(df.io.enable.valid, true.B)
 
-  println(s"Output: ${peek(df.io.dataOut)}\n")
+  println(s"Output: ${peek(df.io.dataOut0)}\n")
+  println(s"Output: ${peek(df.io.dataOut1)}\n")
 
   for(i <- 0 until 20){
-    println(s"Output: ${peek(df.io.dataOut)}")
+    println(s"Output: ${peek(df.io.dataOut0)}")
+    println(s"Output: ${peek(df.io.dataOut1)}")
+
+    if(peek(df.io.dataOut0.valid) == 1)
+      poke(df.io.dataOut0.ready, false.B)
+
+    if(peek(df.io.dataOut1.valid) == 1)
+      poke(df.io.dataOut1.ready, false.B)
+
+    if((peek(df.io.dataOut0.valid) == 1) && 
+        (peek(df.io.dataOut1.valid) == 1))
+      println(s"Finish: ${i}\n")
 
     println(s"t: ${i}\n ------------------------")
     step(1)
   }
+
+
 }
 
-class Compute01Tests extends  FlatSpec with Matchers {
+class ComputeF03STests extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Not fuse tester" in {
     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),
-      () => new Compute01DF()) {
-      c => new compute01Tester(c)
+      () => new ComputeFuse03SDF()) {
+      c => new computeF03STester(c)
     } should be(true)
   }
 

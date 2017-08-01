@@ -36,8 +36,8 @@ class ComputeFuse03SDF(implicit val p: Parameters) extends Module with CoreParam
   val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false)(p))
   val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false)(p))
   val m2 = Module(new ComputeNode(NumOuts = 2, ID = 0, opCode = "Xor")(sign = false)(p))
-  val m3 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShitfLeft","And","Add", "ShiftRight"))(sign = false)(p))
-  val m4 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShitfLeft","And","Add", "ShiftRight"))(sign = false)(p))
+  val m3 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false)(p))
+  val m4 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false)(p))
 
   m0.io.LeftIO <> io.data0
   m0.io.RightIO <> io.data1
@@ -66,10 +66,10 @@ class ComputeFuse03SDF(implicit val p: Parameters) extends Module with CoreParam
 
 
   for(i <- 0 until 4)
-    m3.io.Out(i).ready := io.dataOut0
+    m3.io.Out(i).ready := io.dataOut0.ready
 
   for(i <- 0 until 4)
-    m4.io.Out(i).ready := io.dataOut1
+    m4.io.Out(i).ready := io.dataOut1.ready
 
   io.dataOut0 <> m3.io.Out(3)
   io.dataOut1 <> m4.io.Out(3)
@@ -100,9 +100,9 @@ class ComputeFuse03PDF(implicit val p: Parameters) extends Module with CoreParam
 
   })
 
-  val m0 = Module(new Chain(NumOps = 6, ID = 0, OpCodes = Array("Xor","And","Xor","ShiftRight","Or"))(sign = false)(p))
+  val m0 = Module(new Chain(NumOps = 6, ID = 0, OpCodes = Array("And","Xor","ShiftLeft","And","Add", "ShiftRight"))(sign = false)(p))
   val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false)(p))
-  val m2 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShitfLeft","And","Add", "ShiftRight"))(sign = false)(p))
+  val m2 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false)(p))
 
 
   m0.io.In(0) <> io.data0
@@ -112,7 +112,6 @@ class ComputeFuse03PDF(implicit val p: Parameters) extends Module with CoreParam
   m0.io.In(4) <> io.data5
   m0.io.In(5) <> io.data6
   m0.io.In(6) <> io.data7
-  m0.io.In(7) <> io.data8
 
   m1.io.LeftIO <> io.data2
   m1.io.RightIO <> io.data3
@@ -128,10 +127,10 @@ class ComputeFuse03PDF(implicit val p: Parameters) extends Module with CoreParam
   m2.io.enable <> io.enable
 
   for(i <- 0 until 7)
-    m0.io.Out(i).ready := m0.io.Out(1).ready
+    m0.io.Out(i).ready := m2.io.Out(1).ready
 
-  for(i <- 0 until 4)
-    m2.io.Out(i).ready := io.dataOut1
+  for(i <- 0 until 5)
+    m2.io.Out(i).ready := io.dataOut1.ready
 
   io.dataOut0 <> m0.io.Out(5)
   io.dataOut1 <> m2.io.Out(3)
