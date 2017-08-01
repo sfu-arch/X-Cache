@@ -30,10 +30,10 @@ object TestCacheMain extends App {
   verilog.close
 }
 
-object OffloadMain extends App {
-  val dir = new File("RTL/TestCacheDF") ; dir.mkdirs
+object FilterMain extends App {
+  val dir = new File("RTL/FilterDF") ; dir.mkdirs
   implicit val p = config.Parameters.root((new AccelConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new __offload_func_0DF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new __offload_func_5DF()))
 
   val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
   new firrtl.VerilogCompiler compile (
