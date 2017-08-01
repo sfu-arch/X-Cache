@@ -21,6 +21,8 @@ object AluOpCode {
   val SetLessThanUnsigned = 12
   val PassA = 13
   val PassB = 14
+  val Mul = 15
+  val Div = 16
 
   val opMap = Map(
     "Add" -> Add,
@@ -42,7 +44,11 @@ object AluOpCode {
     "SetLessThan" -> SetLessThan,
     "SetLessThanUnsigned" -> SetLessThanUnsigned,
     "PassA" -> PassA,
-    "PassB" -> PassB)
+    "PassB" -> PassB,
+    "Mul" -> Mul,
+    "mul" -> Mul,
+    "Udiv" -> Div,
+    "udiv" -> Div)
 
 
   val length = 14
@@ -98,7 +104,9 @@ class UALU(val xlen: Int, val opCode: String) extends Module {
     AluOpCode.SetLessThan -> (io.in1.asSInt < io.in2.asSInt),
     AluOpCode.SetLessThanUnsigned -> (io.in1 < io.in2),
     AluOpCode.PassA -> io.in1,
-    AluOpCode.PassB -> io.in2
+    AluOpCode.PassB -> io.in2,
+    AluOpCode.Mul -> (io.in1 * io.in2),
+    AluOpCode.Div -> (io.in1 / io.in2)
   )
 
   assert(!AluOpCode.opMap.get(opCode).isEmpty, "Wrong ALU OP!")
