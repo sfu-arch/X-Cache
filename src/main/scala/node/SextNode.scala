@@ -9,7 +9,7 @@ abstract class SextNodeIO(val src: Int, val des: Int, val nout: Int) extends Mod
   val io = IO(new Bundle {
 
     //Input for Sext
-    val Input = Flipped(Decoupled(SInt(src.W)))
+    val Input = Flipped(Decoupled(UInt(src.W)))
 
     //Enabl signal
     val enable = Flipped(Decoupled(Bool()))

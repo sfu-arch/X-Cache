@@ -65,7 +65,7 @@ class compute01Tester(df: Compute01DF)
   }
 }
 
-class VerilogTests extends  FlatSpec with Matchers {
+class Compute01Tests extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Not fuse tester" in {
     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),

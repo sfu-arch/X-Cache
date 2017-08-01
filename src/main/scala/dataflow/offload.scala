@@ -29,7 +29,7 @@ object DataFlowParam{
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-  val my__lr_ph_pred = Map(
+  val entry_pred = Map(
     "active" -> 0
   )
 
@@ -46,7 +46,7 @@ object DataFlowParam{
     "ret_fail" -> 1
   )
 
-  val my__lr_ph_activate = Map(
+  val entry_activate = Map(
     "m_0" -> 0,
     "" -> 1,
     "m_1" -> 2,
@@ -108,7 +108,8 @@ object DataFlowParam{
   )
 
   val m_9_in = Map( 
-    "m_6" -> 0
+    "m_6" -> 0,
+    "m_8" -> 0
   )
 
   val m_11_in = Map( 
@@ -116,7 +117,8 @@ object DataFlowParam{
   )
 
   val m_12_in = Map( 
-    "m_6" -> 0
+    "m_6" -> 0,
+    "m_11" -> 0
   )
 
   val m_13_in = Map(
@@ -157,7 +159,7 @@ class __offload_func_0DF(implicit p: Parameters) extends __offload_func_0DFIO()(
    * ================================================================== */
 
   //Initializing BasicBlocks: 
-  val my__lr_ph = Module(new BasicBlockNoMaskNode(NumInputs = 0, NumOuts = 12, BID = 0)(p))
+  val entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 12, BID = 0)(p))
   val g = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 1)(p))
   val ret_fail = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2)(p))
 
@@ -169,9 +171,9 @@ class __offload_func_0DF(implicit p: Parameters) extends __offload_func_0DFIO()(
    *                   PRINTING STACKFILE                               *
    * ================================================================== */
 
-	val StackFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
+	val StackFile = Module(new TypeStackFile(ID=0,Size=32,NReads=5,NWrites=5)
+		            (WControl=new WriteMemoryController(NumOps=5,BaseSize=2,NumEntries=2))
+		            (RControl=new ReadMemoryController(NumOps=5,BaseSize=2,NumEntries=2)))
 
 
   /* ================================================================== *
@@ -194,7 +196,7 @@ class __offload_func_0DF(implicit p: Parameters) extends __offload_func_0DFIO()(
   val m_3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=3,RouteID=1))
 
   //  %6 = add nsw i32 %5, 1, !UID !9
-  val m_4 = Module (new ComputeNode(NumOuts = 0, ID = 4, opCode = "add")(sign=false)(p))
+  val m_4 = Module (new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign=false)(p))
 
   //  %7 = load i32, i32* %i.in, align 4, !UID !10
   val m_5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=5,RouteID=2))
@@ -203,7 +205,7 @@ class __offload_func_0DF(implicit p: Parameters) extends __offload_func_0DFIO()(
   val m_6 = Module (new ComputeNode(NumOuts = 3, ID = 6, opCode = "add")(sign=false)(p))
 
   //  store i32 %8, i32* %i.in, align 4, !UID !12
-  val m_7 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=0,ID=7,RouteID=4))
+  val m_7 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=4))
 
   //  %9 = load i32, i32* %vr.2, align 4, !UID !13
   val m_8 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=8,RouteID=3))
@@ -220,7 +222,7 @@ class __offload_func_0DF(implicit p: Parameters) extends __offload_func_0DFIO()(
   val m_11 = Module (new GepTwoNode(NumOuts = 1, ID = 11)(numByte1 = 4, numByte2 = 0)(p))
 
   //  store i32 %8, i32* %11, align 4, !UID !18, !LO !19
-  val m_12 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=0,ID=12,RouteID=4))
+  val m_12 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=12,RouteID=4))
 
   //  ret i1 true, !UID !20, !BB_UID !21
 //  val m_13 = Module (new RetNode(ID = 13)(p))
@@ -256,8 +258,8 @@ class __offload_func_0DF(implicit p: Parameters) extends __offload_func_0DFIO()(
      */
 
   //We always ground entry BasicBlock
-  my__lr_ph.io.predicateIn(param.my__lr_ph_pred("active")).bits  := ControlBundle.Activate
-  my__lr_ph.io.predicateIn(param.my__lr_ph_pred("active")).valid := true.B
+  entry.io.predicateIn(param.entry_pred("active")).bits  := ControlBundle.Activate
+  entry.io.predicateIn(param.entry_pred("active")).valid := true.B
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -279,25 +281,20 @@ class __offload_func_0DF(implicit p: Parameters) extends __offload_func_0DFIO()(
     * Wireing enable signals to the instructions
     */
   //Wiring enable signals
-  m_0.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_0"))
-  m_1.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_1"))
-  m_2.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_2"))
-  m_3.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_3"))
-  m_4.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_4"))
-  m_5.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_5"))
-  m_6.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_6"))
-  m_7.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_7"))
-  m_8.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_8"))
-  m_9.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_9"))
-  m_10.io.enable <> my__lr_ph.io.Out(param.my__lr_ph_activate("m_10"))
+  m_0.io.enable <> entry.io.Out(param.entry_activate("m_0"))
+  m_1.io.enable <> entry.io.Out(param.entry_activate("m_1"))
+  m_2.io.enable <> entry.io.Out(param.entry_activate("m_2"))
+  m_3.io.enable <> entry.io.Out(param.entry_activate("m_3"))
+  m_4.io.enable <> entry.io.Out(param.entry_activate("m_4"))
+  m_5.io.enable <> entry.io.Out(param.entry_activate("m_5"))
+  m_6.io.enable <> entry.io.Out(param.entry_activate("m_6"))
+  m_7.io.enable <> entry.io.Out(param.entry_activate("m_7"))
+  m_8.io.enable <> entry.io.Out(param.entry_activate("m_8"))
+  m_9.io.enable <> entry.io.Out(param.entry_activate("m_9"))
+  m_10.io.enable <> entry.io.Out(param.entry_activate("m_10"))
 
   m_11.io.enable <> g.io.Out(param.g_activate("m_11"))
   m_12.io.enable <> g.io.Out(param.g_activate("m_12"))
-//  m_13.io.enable <> g.io.Out(param.g_activate("m_13"))
-
-//  m_14.io.enable <> ret_fail.io.Out(param.ret_fail_activate("m_14"))
-
-
 
 
   /* ================================================================== *
@@ -321,7 +318,7 @@ class __offload_func_0DF(implicit p: Parameters) extends __offload_func_0DFIO()(
     * Connecting Dataflow signals
     */
   // Wiring SEXT instruction to the function argument
-  m_0.io.Input <> io.data_0
+  //m_0.io.Input <> io.data_0
 
   // Wiring Load instruction to the function argument
   m_1.io.GepAddr <> io.data_1
@@ -333,7 +330,8 @@ class __offload_func_0DF(implicit p: Parameters) extends __offload_func_0DFIO()(
   m_2.io.baseAddress <> m_1.io.Out(param.m_2_in("m_1"))
 
   // Wiring GEP instruction to the parent instruction
-  m_2.io.idx1 <> m_0.io.Out(param.m_2_in("m_0"))
+  m_2.io.idx1 <> io.data_0 
+  //m_2.io.idx1 <> m_0.io.Out(param.m_2_in("m_0"))
 
   // Wiring Load instruction to the parent instruction
   m_3.io.GepAddr <> m_2.io.Out(param.m_3_in("m_2"))
