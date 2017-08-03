@@ -38,7 +38,7 @@ import utility.UniformPrintfs
 class UnifiedController (ID: Int,
   Size: Int,
   NReads: Int,
-  NWrites: Int)(WControl: => WriteTypMemoryController)(RControl: => ReadTypMemoryController)(RWArbiter: => ReadWriteArbiter )(implicit val p: Parameters)
+  NWrites: Int)(WControl: => WController)(RControl: => RController)(RWArbiter: => ReadWriteArbiter )(implicit val p: Parameters)
   extends Module
   with CoreParams
   with UniformPrintfs {
