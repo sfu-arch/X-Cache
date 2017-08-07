@@ -27,11 +27,7 @@ class FusedComputeNode(NumIns: Int, NumOuts: Int, ID: Int, opCode: String)
 
 def PrintOut(): Unit = {
        for(i <- 0 until NumIns) yield {
-        	if (i != (NumIns-1)) {
         		printf("\"O_%x(D,P)\" : \"%x,%x\",",i.U,InRegs(i).data,InRegs(i).predicate)
-        		} else {
-        			printf("\"O_%x(D,P)\" : \"%x,%x\"",i.U,InRegs(i).data,InRegs(i).predicate)
-        		}
         	}
      
 }

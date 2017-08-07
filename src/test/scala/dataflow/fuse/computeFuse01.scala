@@ -67,8 +67,9 @@ class computeFuse01Tester(df: ComputeFuse01DF)
 }
 
 
-object ComputeFuse01DFVerilog extends App {
+class ComputeF01Tests extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  chisel3.iotesters.Driver.execute(args, () => new ComputeFuse01DF()(p))
+  val myargs = Array("--backend-name", "verilator", "--target-dir", "test_run_dir")
+  chisel3.iotesters.Driver.execute(myargs, () => new ComputeFuse01DF()(p))
   { c => new computeFuse01Tester(c)  }
 }
