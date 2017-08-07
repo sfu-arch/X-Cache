@@ -215,6 +215,6 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
 class AccelTests extends org.scalatest.FlatSpec {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   "Accel" should "pass" in {
-    assert(TesterDriver execute (() => new AccelTester(new Accelerator(new Core()))))
+    assert(TesterDriver execute (() => new AccelTester(new Accelerator(3,3,new Core(3,3)))))
   }
 }

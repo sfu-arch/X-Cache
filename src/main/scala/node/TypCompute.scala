@@ -21,6 +21,10 @@ class vec2(implicit p: Parameters) extends Numbers {
   val data = Vec(2, UInt(xlen.W))
 }
 
+class vec3(implicit p: Parameters) extends Numbers {
+  val data = Vec(3, UInt(xlen.W))
+}
+
 class mat2x2(implicit p: Parameters) extends Numbers {
   val data = Vec(2, Vec(2, UInt(xlen.W)))
 }
@@ -30,6 +34,7 @@ object operation {
   trait OperatorLike[T] {
     def addition(l: T, r: T)(implicit p: Parameters): T
     def subtraction(l: T, r: T)(implicit p: Parameters): T
+    def multiplication(l: T, r: T)(implicit p: Parameters): T
   }
 
   object OperatorLike {
@@ -52,6 +57,15 @@ object operation {
         }
         x
       }
+      def multiplication(l: mat2x2, r: mat2x2)(implicit p: Parameters): mat2x2 = {
+        val x = Wire(new mat2x2)
+        for (i <- 0 until 2) {
+          for (j <- 0 until 2) {
+            x.data(i)(j) := l.data(i)(j) * r.data(i)(j)
+          }
+        }
+        x
+      }
     }
 
     implicit object vec2likeNumber extends OperatorLike[vec2] {
@@ -69,10 +83,44 @@ object operation {
         x
       }
 
+      def multiplication(l: vec2, r: vec2)(implicit p: Parameters): vec2 = {
+        val x = Wire(new vec2)
+        x.data(0) := l.data(0) * r.data(0)
+        x.data(1) := l.data(1) * r.data(1)
+        x
+      }
+
+    }
+
+    implicit object vec3likeNumber extends OperatorLike[vec3] {
+      def addition(l: vec3, r: vec3)(implicit p: Parameters): vec3 = {
+        val x = Wire(new vec3)
+        x.data(0) := l.data(0) + r.data(0)
+        x.data(1) := l.data(1) + r.data(1)
+        x.data(2) := l.data(2) + r.data(2)
+        x
+      }
+
+      def subtraction(l: vec3, r: vec3)(implicit p: Parameters): vec3 = {
+        val x = Wire(new vec3)
+        x.data(0) := l.data(0) - r.data(0)
+        x.data(1) := l.data(1) - r.data(1)
+        x.data(2) := l.data(2) - r.data(2)
+        x
+      }
+
+      def multiplication(l: vec3, r: vec3)(implicit p: Parameters): vec3 = {
+        val x = Wire(new vec3)
+        x.data(0) := l.data(0) * r.data(0)
+        x.data(1) := l.data(1) * r.data(1)
+        x.data(2) := l.data(2) * r.data(2)
+        x
+      }
     }
   }
     def addition[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.addition(l, r)
     def subtraction[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.subtraction(l, r)
+    def multiplication[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.multiplication(l, r)
 
 }
 

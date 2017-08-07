@@ -32,8 +32,7 @@ import node.HandShaking
   */
 
 
-class TestCore(implicit p: Parameters) extends CoreT()(p) {
-
+class TestCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum,sNum)(p) {
 
   val (s_idle :: s_busy :: s_done :: Nil) = Enum(3)
   val state = RegInit(init = s_idle)
@@ -46,12 +45,15 @@ class TestCore(implicit p: Parameters) extends CoreT()(p) {
   override val printfSigil = "CoreDF:  add_result_reg: " + add_result_reg.asUInt() + " state: " + state + " "
 
   //IO Connections
+  io.ctrl(0).ready := true.B
+  io.ctrl(1).ready := true.B
+
   addDF.io.start := start_reg
-  addDF.io.Data0.bits.data      := io.ctrl(xlen-1,0)
+  addDF.io.Data0.bits.data      := io.ctrl(0).bits.data(xlen-1,0)
   addDF.io.Data0.bits.predicate := true.B
   addDF.io.Data0.bits.valid     := true.B
 
-  addDF.io.Data1.bits.data      := io.addr(xlen-1,0)
+  addDF.io.Data1.bits.data      := io.ctrl(1).bits.data(xlen-1,0)
   addDF.io.Data1.bits.predicate := true.B
   addDF.io.Data1.bits.valid     := true.B
   //result is Decoupled

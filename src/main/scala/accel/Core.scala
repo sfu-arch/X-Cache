@@ -4,6 +4,8 @@ import chisel3._
 import chisel3.util._
 import utility.UniformPrintfs
 import config._
+import dataflow._
+import interfaces._
 
 /**
   * The Core class contains the dataflow logic for the accelerator.
@@ -21,7 +23,7 @@ import config._
   * @note io.cache A Read/Write request interface to a memory cache block
   */
 
-abstract class CoreDFIO(implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs
+abstract class CoreDFIO(cNum : Int, sNum: Int)(implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs
 {
   val io = IO(
     new Bundle {
@@ -29,24 +31,19 @@ abstract class CoreDFIO(implicit val p: Parameters) extends Module with CorePara
       val init   = Input(Bool())
       val ready  = Output(Bool())
       val done   = Output(Bool())
-      val ctrl   = Input(UInt(xlen.W))
-      val addr   = Input(UInt(xlen.W))
-      val len    = Input(UInt(xlen.W))
-      val stat   = Output(UInt(xlen.W))
-//      val errstat   = Output(UInt(xlen.W)) TODO : Need to have a err signal with error codes
+      val ctrl   = Vec(cNum,Flipped(Decoupled(new DataBundle())))
+      val stat   = Vec(sNum,Decoupled(new DataBundle()))
+//      val err   = Output(UInt(xlen.W)) TODO : Need to have a err signal with error codes
       val cache  = Flipped(new CacheIO)
     }
   )
 }
 
 
-abstract class CoreT(implicit p: Parameters) extends CoreDFIO()(p) {
+abstract class CoreT(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreDFIO(cNum,sNum)(p) {
 }
 
-
-
-
-class Core(implicit p: Parameters) extends CoreT()(p) {
+class Core(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum,sNum)(p) {
 
   val dataBytes = xlen / 8
   val reqAddr = Reg(UInt(32.W))
@@ -61,13 +58,17 @@ class Core(implicit p: Parameters) extends CoreT()(p) {
   val stall = !io.cache.resp.valid
   val errorLatch = Reg(Bool())
 
+  io.ctrl(0).ready := true.B
+  io.ctrl(1).ready := true.B
+  io.ctrl(2).ready := true.B
+
   switch(state) {
    // Idle
     is(sIdle) {
-      reqAddr := io.addr(31, 0)
+      reqAddr := io.ctrl(1).bits.data(31, 0)
       wordCount := 0.U
       when(io.start) {
-        when(io.ctrl(0) === true.B) {
+        when(io.ctrl(0).bits.data(0) === true.B) {
           state := sReadReq
           reqTag := 1.U
         }.otherwise {
@@ -85,7 +86,7 @@ class Core(implicit p: Parameters) extends CoreT()(p) {
       when(!stall) {
         wordCount := wordCount + 1.U
         reqAddr := reqAddr + dataBytes.U
-        when(wordCount < io.len) {
+        when(wordCount < io.ctrl(2).bits.data) {
           state := sWriteReq
         }.otherwise {
           state := sDone
@@ -102,7 +103,7 @@ class Core(implicit p: Parameters) extends CoreT()(p) {
       when(!stall) {
         wordCount := wordCount + 1.U
         reqAddr := reqAddr + dataBytes.U
-        when(wordCount < io.len) {
+        when(wordCount < io.ctrl(2).bits.data) {
           state := sReadReq
         }.otherwise {
           state := sDone
@@ -139,7 +140,18 @@ class Core(implicit p: Parameters) extends CoreT()(p) {
   // Reflect state machine status to processor
   io.done := (state === sDone)
   io.ready := (state === sIdle)
-  io.stat := Cat(errorLatch, state.asUInt())
 
+  // Connect a revision number to the first status register
+  io.stat(0).bits.data := 0x55AA0001.U
+  io.stat(0).valid := true.B
+  io.stat(0).bits.predicate := true.B
+
+  io.stat(1).bits.data := Cat(errorLatch, state.asUInt())
+  io.stat(1).valid := true.B
+  io.stat(1).bits.predicate := true.B
+
+  io.stat(2).bits.data := Cat(errorLatch, state.asUInt())
+  io.stat(2).valid := true.B
+  io.stat(2).bits.predicate := true.B
 
 }

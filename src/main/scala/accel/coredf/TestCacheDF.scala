@@ -28,7 +28,7 @@ import dataflow._
   */
 
 
-class TestCacheDF(implicit p: Parameters) extends CoreT()(p) {
+class TestCacheDF(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum,sNum)(p) {
 
 
   val (s_idle :: s_busy :: s_done :: Nil) = Enum(3)
@@ -43,7 +43,8 @@ class TestCacheDF(implicit p: Parameters) extends CoreT()(p) {
 
   //IO Connections
   //result is Decoupled
-  io.stat <> add_result_reg
+  io.stat(0) <> add_result_reg
+  io.stat(0).valid := true.B
 
   io.cache.req <> MemDF.io.CacheReq
   MemDF.io.CacheResp <> io.cache.resp
@@ -81,21 +82,8 @@ class TestCacheDF(implicit p: Parameters) extends CoreT()(p) {
   // Reflect state machine status to processor
   io.done  := (state === s_done)
   io.ready := (state === s_idle)
-//  io.stat  := Cat(err_latch,state.asUInt())
   // Intermediate
   MemDF.io.result.ready  := (state === s_busy)
 
-//  addDF.io.Data0.valid := (state === s_busy || (state === s_idle && io.start))
-//  addDF.io.Data1.valid := (state === s_busy || (state === s_idle && io.start))
-/*
-  printf(p"-----------------------------------------------------\n")
-  printf(p"add_result_reg: ${add_result_reg} ")
-  printf(p"io.result.bits.data: ${addDF.io.result.bits.data} ")
-  printf(p"io.result.bits.predicate: ${addDF.io.result.bits.predicate} ")
-  printf(p"io.result.valid: ${addDF.io.result.valid} ")
-  printf(p"io.result.ready: ${addDF.io.result.ready} \n")
-
-  printfInfo(" State: %x\n", state)
-*/
 
 }
