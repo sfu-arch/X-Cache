@@ -49,7 +49,8 @@ class TypCompTests(df: TypCompute[mat2x2])
 class TypCompTester extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Typ Compute Tester" in {
-     chisel3.iotesters.Driver(() => new TypCompute(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)(new mat2x2)) {
+     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),
+       () => new TypCompute(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)(new mat2x2)) {
        c => new TypCompTests(c)
      } should be(true)
    }
