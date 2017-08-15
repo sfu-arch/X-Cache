@@ -41,3 +41,25 @@ object FilterDFMain extends App {
   verilog.close
 }
 
+object VecFilterDFMain extends App {
+  val dir = new File("RTL/VecFilterDF") ; dir.mkdirs
+  implicit val p = config.Parameters.root((new VecFilterDFConfig).toInstance)
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(6,4,new VecFilterDFCore(6,4))))
+
+  val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
+  new firrtl.VerilogCompiler compile (
+    firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), verilog)
+  verilog.close
+}
+
+object VecFilterNoKernDFMain extends App {
+  val dir = new File("RTL/VecFilterNoKernDF") ; dir.mkdirs
+  implicit val p = config.Parameters.root((new VecFilterDFConfig).toInstance)
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(12,4,new VecFilterNoKernDFCore(12,4))))
+
+  val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
+  new firrtl.VerilogCompiler compile (
+    firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), verilog)
+  verilog.close
+}
+

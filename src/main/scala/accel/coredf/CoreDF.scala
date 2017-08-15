@@ -37,7 +37,7 @@ class TestCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum
   val (s_idle :: s_busy :: s_done :: Nil) = Enum(3)
   val state = RegInit(init = s_idle)
   //  val err_latch = Reg(Bool())
-  val add_result_reg = Reg(UInt(xlen.W))
+  val add_result_reg = Reg(Decoupled(new DataBundle))
   val start_reg = RegInit(false.B)
 
   val addDF = Module(new Add01DF())
@@ -57,7 +57,10 @@ class TestCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum
   addDF.io.Data1.bits.predicate := true.B
   addDF.io.Data1.bits.valid     := true.B
   //result is Decoupled
-  io.stat <> add_result_reg
+  io.stat(0).bits.data := 0x55AA0002.U
+  io.stat(0).valid := true.B
+  io.stat(0).bits.predicate := true.B
+  io.stat(1) <> add_result_reg
 
   //Switch OFF CacheIO
   io.cache.req.valid := false.B
@@ -79,7 +82,7 @@ class TestCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum
 
       when(addDF.io.result.valid) {
         state := s_done
-        add_result_reg := addDF.io.result.bits.data(xlen-1,0)
+        add_result_reg := addDF.io.result
       }
 
     }
@@ -90,7 +93,7 @@ class TestCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum
 
       start_reg := false.B
       when(io.init) {
-        add_result_reg := 0.U
+        add_result_reg.bits.data := 0.U
         state := s_idle
       }
     }

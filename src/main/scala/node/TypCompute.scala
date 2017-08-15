@@ -126,7 +126,7 @@ object operation {
 
 import operation._
 
-class OperatorModule[T <: Numbers: OperatorLike](gen: => T)(implicit val p: Parameters) extends Module {
+class OperatorModule[T <: Numbers: OperatorLike](gen: => T, val opCode: String)(implicit val p: Parameters) extends Module {
   val io = IO(new Bundle {
     val a = Flipped(Valid(gen))
     val b = Flipped(Valid(gen))
@@ -134,7 +134,15 @@ class OperatorModule[T <: Numbers: OperatorLike](gen: => T)(implicit val p: Para
   })
 
   io.o.valid := io.a.valid && io.b.valid
-  io.o.bits := addition(io.a.bits, io.b.bits)
+  if (opCode.toLowerCase() == "add") {
+    io.o.bits := addition(io.a.bits, io.b.bits)
+  } else if (opCode.toLowerCase() == "sub") {
+    io.o.bits := subtraction(io.a.bits, io.b.bits)
+  } else if (opCode.toLowerCase() == "mul") {
+    io.o.bits := multiplication(io.a.bits, io.b.bits)
+  } else {
+    assert(false, "Unknown TypCompute OpCode!")
+  }
 }
 
 class TypComputeIO(NumOuts: Int)(implicit p: Parameters)
@@ -209,7 +217,7 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  val FU = Module(new OperatorModule(gen))
+  val FU = Module(new OperatorModule(gen, opCode))
 
   FU.io.a.bits := (left_R.data).asTypeOf(gen)
   FU.io.b.bits := (right_R.data).asTypeOf(gen)

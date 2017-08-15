@@ -62,5 +62,26 @@ class BasicFilter(implicit val p: Parameters) extends Module with CoreParams {
 
   io.sum <> Adder(7).io.Out(0)
 
+  // Info
+  val countOn = true.B // increment counter every clock cycle
+  val (counterValue, counterWrap) = Counter(countOn, 64*1024)
+
+  val active = RegInit(init = false.B)
+  val active_r = RegInit(init = false.B)
+  active := Multiplier(0).io.Out(0).valid || Multiplier(1).io.Out(0).valid || Multiplier(2).io.Out(0).valid ||
+    Multiplier(3).io.Out(0).valid || Multiplier(4).io.Out(0).valid || Multiplier(5).io.Out(0).valid ||
+    Multiplier(6).io.Out(0).valid || Multiplier(7).io.Out(0).valid || Multiplier(8).io.Out(0).valid ||
+    Adder(0).io.Out(0).valid || Adder(1).io.Out(0).valid || Adder(2).io.Out(0).valid ||
+    Adder(3).io.Out(0).valid || Adder(4).io.Out(0).valid || Adder(5).io.Out(0).valid ||
+    Adder(6).io.Out(0).valid || Adder(7).io.Out(0).valid
+
+  active_r := active
+  when (active && !active_r) {
+    printf("\nCOMPUTE START:  %d\n", counterValue)
+  }
+  when (!active && active_r) {
+    printf("\nCOMPUTE END:  %d\n", counterValue)
+  }
+
 }
 

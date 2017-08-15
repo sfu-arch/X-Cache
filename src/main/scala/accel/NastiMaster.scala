@@ -175,5 +175,6 @@ class NastiMaster()(implicit p: Parameters) extends NastiMasterIO()(p) {
   when(io.nasti.b.valid) {
     assert(io.nasti.b.bits.resp === NastiConstants.RESP_OKAY, "Write response bits don't contain OKAY code.")
   }
+  io.nasti.b.ready := true.B
 }
 
