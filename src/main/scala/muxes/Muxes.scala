@@ -106,3 +106,22 @@ class DeMuxTree[T <: RouteID with ValidT](BaseSize: Int, NumOps: Int, gen: T)(im
     }
   }
 }
+
+
+
+class Mux[ T <: ValidT](gen: T, Nops: Int) extends Module {
+  val io = IO(new Bundle {
+    val en = Input(Bool())
+    val output = Output(gen)
+    val sel = Input(UInt(max(1, log2Ceil(Nops)).W))
+    val inputs = Input(Vec(Nops, gen))
+  })
+
+  val x = io.sel
+
+  when(io.en) {
+    io.output := io.inputs(x)
+  }.otherwise {
+      io.output.valid := false.B
+  }
+}
