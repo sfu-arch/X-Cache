@@ -37,7 +37,7 @@ class DyserMuxTests(c: DyserMux)
 
 
     }
-    else if(t==3) {
+    else if(t==6) {
       poke(c.io.in(0).valid, 1)
       poke(c.io.in(0).bits.data, 999)
       poke(c.io.in(0).bits.valid, 1)
@@ -68,6 +68,16 @@ class DyserMuxTests(c: DyserMux)
 
       poke(c.io.in(3).valid, 0)
       poke(c.io.in(3).bits.valid, 0)
+
+    }
+
+
+    if(t ==4) {
+      poke(c.io.out.ready, 1)
+    }
+    else {
+
+      poke(c.io.out.ready, 0)
 
     }
 

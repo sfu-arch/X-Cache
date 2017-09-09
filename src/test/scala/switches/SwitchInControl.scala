@@ -18,7 +18,7 @@ class SwitchInControlTests(c: SwitchInControl)
                           (implicit p: config.Parameters) extends PeekPokeTester(c)  {
 
   for (t <- 0 until 8) {
-    if(t>2) {
+    if(t==2) {
       poke(c.io.in.valid, 1)
       poke(c.io.in.bits.data, 23)
       poke(c.io.in.bits.valid, 1)
@@ -29,8 +29,8 @@ class SwitchInControlTests(c: SwitchInControl)
     }
 
     if (peek(c.io.out.valid) == 1) {
-      poke(c.io.ack.valid, 1)
-      println(s"Out is valid and ack is sent \n ")
+//      poke(c.io.ack.valid, 1)
+//      println(s"Out is valid and ack is sent \n ")
     }
     else {
       poke(c.io.ack.valid, 0)
