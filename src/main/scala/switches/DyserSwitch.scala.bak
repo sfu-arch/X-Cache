@@ -1,0 +1,115 @@
+package switches
+
+/**
+  * Created by vnaveen0 on 31/8/17.
+  */
+import chisel3._
+import chisel3.util._
+import muxes._
+import scala.math._
+import config._
+import interfaces._
+import muxes._
+import node._
+import util._
+
+
+abstract class DyserSwitchIO (implicit p: Parameters) extends CoreBundle() {
+  val io = IO(
+    new Bundle {
+      val inN = Flipped(Decoupled(new DataBundle))
+      val inE = Flipped(Decoupled(new DataBundle))
+      val inW = Flipped(Decoupled(new DataBundle))
+      val inS = Flipped(Decoupled(new DataBundle))
+      val inNE = Flipped(Decoupled(new DataBundle))
+
+      val outN = Decoupled(new DataBundle)
+      val outE = Decoupled(new DataBundle)
+      val outW = Decoupled(new DataBundle)
+      val outS = Decoupled(new DataBundle)
+      val outNE = Decoupled(new DataBundle)
+      val outNW = Decoupled(new DataBundle)
+      val outSE = Decoupled(new DataBundle)
+      val outSW = Decoupled(new DataBundle)
+    }
+  )
+}
+
+
+class DyserSwitch (implicit p: Parameters) extends DyserSwitchIO()(p) {
+
+  val selN = RegInit(UInt(max(1, log2Ceil(4)).W))
+  val selE = RegInit(UInt(max(1, log2Ceil(4)).W))
+  val selW = RegInit(UInt(max(1, log2Ceil(4)).W))
+  val selS = RegInit(UInt(max(1, log2Ceil(4)).W))
+  val selNE = RegInit(UInt(max(1, log2Ceil(4)).W))
+
+  val selNW = RegInit(UInt(max(1, log2Ceil(5)).W))
+  val selSE = RegInit(UInt(max(1, log2Ceil(5)).W))
+  val selSW = RegInit(UInt(max(1, log2Ceil(5)).W))
+
+
+
+  // Input Connections
+
+
+  //val RMux   = Module(new Mux(new ReadResp(),NReads))
+  val muxN = Module(new Mux(gen, 4))
+
+  muxN.io.inputs(0) := io.inE
+  muxN.io.inputs(1) := io.inW
+  muxN.io.inputs(2) := io.inS
+  muxN.io.inputs(3) := io.inNE
+
+  val muxE = Module(new Mux(gen, 4))
+  muxE.io.inputs(0) := io.inN
+  muxE.io.inputs(1) := io.inW
+  muxE.io.inputs(2) := io.inS
+  muxE.io.inputs(3) := io.inNE
+
+  val muxW = Module(new Mux(gen, 4))
+  muxW.io.inputs(0) := io.inN
+  muxW.io.inputs(1) := io.inE
+  muxW.io.inputs(2) := io.inS
+  muxW.io.inputs(3) := io.inNE
+
+  val muxS = Module(new Mux(gen, 4))
+  muxS.io.inputs(0) := io.inN
+  muxS.io.inputs(1) := io.inE
+  muxS.io.inputs(2) := io.inW
+  muxS.io.inputs(3) := io.inNE
+
+  val muxNE = Module(new Mux(gen, 4))
+  muxNE.io.inputs(0) := io.inN
+  muxNE.io.inputs(1) := io.inE
+  muxNE.io.inputs(2) := io.inW
+  muxNE.io.inputs(3) := io.inS
+
+
+  val muxNW = Module(new Mux(gen, 5))
+  muxNW.io.inputs(0) := io.inN
+  muxNW.io.inputs(1) := io.inE
+  muxNW.io.inputs(2) := io.inW
+  muxNW.io.inputs(3) := io.inS
+  muxNW.io.inputs(4) := io.inNE
+
+
+  val muxSE = Module(new Mux(gen, 5))
+  muxSE.io.inputs(0) := io.inN
+  muxSE.io.inputs(1) := io.inE
+  muxSE.io.inputs(2) := io.inW
+  muxSE.io.inputs(3) := io.inS
+  muxSE.io.inputs(4) := io.inNE
+
+
+  val muxSW = Module(new Mux(gen, 5))
+  muxSW.io.inputs(0) := io.inN
+  muxSW.io.inputs(1) := io.inE
+  muxSW.io.inputs(2) := io.inW
+  muxSW.io.inputs(3) := io.inS
+  muxSW.io.inputs(4) := io.inNE
+
+
+
+}
+
