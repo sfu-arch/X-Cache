@@ -7,7 +7,7 @@ package switches
 import accel.CacheReq
 import chisel3._
 import chisel3.util._
-import accel._
+import accel. _
 import config._
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FlatSpec, Matchers}

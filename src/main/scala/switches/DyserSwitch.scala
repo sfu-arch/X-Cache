@@ -72,7 +72,7 @@ class DyserMux (NInputs : Int, Sel: Int, En: Bool)(implicit p: Parameters) exten
     //    switchIn(i).in := io.in(i)
     // does not work. Since, it considers as source and sink
     // and ready signals cannot be connected
-    
+
     switchIn(i).in.valid := io.in(i).valid
     switchIn(i).in.bits := io.in(i).bits
     io.in(i).ready := switchIn(i).in.ready

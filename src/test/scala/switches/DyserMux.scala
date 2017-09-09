@@ -18,7 +18,7 @@ class DyserMuxTests(c: DyserMux)
                           (implicit p: config.Parameters) extends PeekPokeTester(c)  {
 
   for (t <- 0 until 8) {
-    if(t>2) {
+    if(t==2) {
       poke(c.io.in(0).valid, 1)
       poke(c.io.in(0).bits.data, 99)
       poke(c.io.in(0).bits.valid, 1)
@@ -33,6 +33,25 @@ class DyserMuxTests(c: DyserMux)
 
       poke(c.io.in(3).valid, 1)
       poke(c.io.in(3).bits.data, 33)
+      poke(c.io.in(3).bits.valid, 1)
+
+
+    }
+    else if(t==3) {
+      poke(c.io.in(0).valid, 1)
+      poke(c.io.in(0).bits.data, 999)
+      poke(c.io.in(0).bits.valid, 1)
+
+      poke(c.io.in(1).valid, 1)
+      poke(c.io.in(1).bits.data, 111)
+      poke(c.io.in(1).bits.valid, 1)
+
+      poke(c.io.in(2).valid, 1)
+      poke(c.io.in(2).bits.data, 222)
+      poke(c.io.in(2).bits.valid, 1)
+
+      poke(c.io.in(3).valid, 1)
+      poke(c.io.in(3).bits.data, 333)
       poke(c.io.in(3).bits.valid, 1)
 
 
@@ -58,7 +77,11 @@ class DyserMuxTests(c: DyserMux)
 
     step(1)
     println(s"t: ${t} ---------------------------- \n")
-    println(s"In  : ${peek(c.io.in)}")
+    println(s"In(0)  : ${peek(c.io.in(0))}")
+    println(s"In(1)  : ${peek(c.io.in(1))}")
+    println(s"In(2)  : ${peek(c.io.in(2))}")
+    println(s"In(3)  : ${peek(c.io.in(3))}")
+
     println(s"Out  : ${peek(c.io.out)}")
   }
 
