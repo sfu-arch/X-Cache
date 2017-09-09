@@ -32,7 +32,7 @@ abstract class SwitchInControlIO (implicit val p: Parameters) extends Module wit
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new DataBundle()))
     val out = Decoupled(new DataBundle())
-    val ack = Flipped(Decoupled(new DataBundle()))
+    val ack = Flipped(Decoupled(new AckBundle()))
   })
 }
 

@@ -14,37 +14,34 @@ import org.scalatest.{FlatSpec, Matchers}
 
 
 // Tester.
-class SwitchInControlTests(df: SwitchInControl)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class SwitchInControlTests(c: SwitchInControl)
+                          (implicit p: config.Parameters) extends PeekPokeTester(c)  {
 
+  for (t <- 0 until 8) {
+    if(t>2) {
+      poke(c.io.in.valid, 1)
+      poke(c.io.in.bits.data, 23)
+      poke(c.io.in.bits.valid, 1)
+    }
+    else {
+      poke(c.io.in.valid, 0)
+      poke(c.io.in.bits.valid, 0)
+    }
 
-//  poke(df.io.EN, true.B)
-//  poke(df.io.SEL, 3.U)
-//
-//  poke(df.io.ReadIn(0).data, 99.U)
-//  poke(df.io.ReadIn(1).data, 1.U)
-//  poke(df.io.ReadIn(2).data, 2.U)
-//  poke(df.io.ReadIn(3).data, 3.U)
-//
-//
-//  poke(df.io.ReadIn(0).valid, true.B)
-//  poke(df.io.ReadIn(1).valid, true.B)
-//  poke(df.io.ReadIn(2).valid, true.B)
-//  poke(df.io.ReadIn(3).valid, true.B)
-//
-//
-//
-//  println(s"EN  : ${peek(df.io.EN)}")
-//  println(s"SEL  : ${peek(df.io.SEL)}\n")
-//  println(s"ReadIn(0)  : ${peek(df.io.ReadIn(0))}")
-//  println(s"ReadIn(1)  : ${peek(df.io.ReadIn(1))}")
-//  println(s"ReadIn(2)  : ${peek(df.io.ReadIn(2))}")
-//  println(s"ReadIn(3)  : ${peek(df.io.ReadIn(3))}")
-//
-//
-//  println(s"\nReadOut  : ${peek(df.io.ReadOut)}\n")
+    if (peek(c.io.out.valid) == 1) {
+      poke(c.io.ack.valid, 1)
+      println(s"Out is valid and ack is sent \n ")
+    }
+    else {
+      poke(c.io.ack.valid, 0)
+    }
 
-
+    step(1)
+    println(s"t: ${t} ---------------------------- \n")
+    println(s"In  : ${peek(c.io.in)}")
+    println(s"Out  : ${peek(c.io.out)}")
+    println(s"Ack  : ${peek(c.io.ack)}")
+  }
 
 }
 
