@@ -13,7 +13,9 @@ import node._
 import util._
 
 
-abstract class SwitchInControlIO (implicit val p: Parameters) extends Module with CoreParams {
+class SwitchInControlIO (implicit val p: Parameters) extends Module with CoreParams {
+//    override def cloneType(): this.type = this.getClass.newInstance.asInstanceOf[this.type]
+//      new SwitchInControlIO()(p).asInstanceOf[this.type]
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new DataBundle()))
     val out = Decoupled(new DataBundle())
@@ -51,20 +53,31 @@ abstract class DyserMuxIO(NInputs : Int) (implicit val p: Parameters) extends Mo
   })
 }
 
-//// 4:1 Mux
+//// 4:1 Mux and 5:1 Mux
 
-class DyserMux4 (NInputs : Int, Sel: Int, En: Bool)(implicit p: Parameters) extends DyserMuxIO(NInputs)(p) {
+class DyserMux (NInputs : Int, Sel: Int, En: Bool)(implicit p: Parameters) extends DyserMuxIO(NInputs)(p) {
 
   val mux   = Module(new Mux(new DataBundle(),NInputs))
-  val switchIn =
-    Vec(Seq.fill(NInputs){ Module(new SwitchInControl()(p)).io })
+//  val switchIn =  Vec(Seq.fill(NInputs){ Module(new SwitchInControl()(p)).io })
+//  val manysuchmodules = Array.fill( 5 ) (Module( new somemodule( 10 ) ).io)
+
+  val switchIn = Array.fill(NInputs) (Module(new SwitchInControl()(p)).io)
 
   val config_R = RegInit(Sel.U(max(1, log2Ceil(NInputs)).W))
   val ack_R = RegInit(false.B)
 
   for ( i <- 0 until NInputs) {
     //TODO fix this
-    switchIn(i).in := io.in(i)
+    // inputs are simply wired together
+    //    switchIn(i).in := io.in(i)
+    // does not work. Since, it considers as source and sink
+    // and ready signals cannot be connected
+    
+    switchIn(i).in.valid := io.in(i).valid
+    switchIn(i).in.bits := io.in(i).bits
+    io.in(i).ready := switchIn(i).in.ready
+
+
     mux.io.inputs(i) := switchIn(i).out.bits
   }
 
@@ -72,7 +85,7 @@ class DyserMux4 (NInputs : Int, Sel: Int, En: Bool)(implicit p: Parameters) exte
   mux.io.en := En
 
   io.out.bits := mux.io.output
-  io.out.valid := switchIn(mux.io.sel).out.valid
+  io.out.valid := switchIn(Sel).out.valid
 
   when (io.out.fire() ) {
     ack_R := true.B
@@ -80,13 +93,6 @@ class DyserMux4 (NInputs : Int, Sel: Int, En: Bool)(implicit p: Parameters) exte
     .otherwise(ack_R := false.B)
 
 
-  switchIn(mux.io.sel).ack.valid := ack_R
-
-
-
-
-//  DMux(0).in := DSwitch(0).out
-//  DMux.sel := FF
-//  DSwitch(sel).ack := (DMux.fire())
+  switchIn(Sel).ack.valid := ack_R
 
 }
