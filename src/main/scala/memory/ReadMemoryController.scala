@@ -42,8 +42,7 @@ abstract class ReadEntryIO()(implicit val p: Parameters)
   * @brief Read Table Entry
   * @details [long description]
   *
-  * @param ID [Read table IDs]
-  * @return [description]
+  * @param ID [Read taSwitchInControl() p * @return [description]
   */
 class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) with UniformPrintfs {
 
