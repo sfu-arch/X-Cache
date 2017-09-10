@@ -85,7 +85,7 @@ class DyserMux (NInputs : Int, Sel: Int, En: Bool)(implicit p: Parameters) exten
   mux.io.en := En
 
   io.out.bits := mux.io.output
-  io.out.valid := switchIn(Sel).out.valid
+  io.out.valid := switchIn(Sel).out.valid & En
 
   when (io.out.fire() ) {
     ack_R := true.B
