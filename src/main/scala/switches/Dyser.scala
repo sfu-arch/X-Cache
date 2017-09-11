@@ -49,21 +49,37 @@ abstract class DyserIO(implicit val p: Parameters) extends Module with CoreParam
   })
 }
 
+object switchParam {
 
+  val sw01 = Map(
+    "enN" -> false.B,
+    "enE" -> false.B,
+    "enW" -> false.B,
+    "enS" -> true.B,
+    "enNE" -> false.B,
+    "enNW" -> false.B,
+
+    "enSE" -> false.B,
+    "enSW" -> false.B
+  )
+}
+
+//param.sw01.("en")
 
 class Dyser (implicit p: Parameters) extends DyserIO()(p) {
+  val param = switchParam
   //Five 4:1 Muxes
-  val DMuxN = Module(new DyserMux(NInputs = 4, Sel = 1, En = false.B)(p))
-  val DMuxE = Module(new DyserMux(NInputs = 4, Sel = 1, En = false.B)(p))
-  val DMuxW = Module(new DyserMux(NInputs = 4, Sel = 1, En = false.B)(p))
-  val DMuxS = Module(new DyserMux(NInputs = 4, Sel = 1, En = true.B)(p))
-  val DMuxNE = Module(new DyserMux(NInputs = 4, Sel = 1, En =false.B)(p))
+  val DMuxN = Module(new DyserMux(NInputs = 4, Sel = 1, En = param.sw01("enN"))(p))
+  val DMuxE = Module(new DyserMux(NInputs = 4, Sel = 1, En = param.sw01("enE"))(p))
+  val DMuxW = Module(new DyserMux(NInputs = 4, Sel = 1, En = param.sw01("enW"))(p))
+  val DMuxS = Module(new DyserMux(NInputs = 4, Sel = 1, En = param.sw01("enS"))(p))
+  val DMuxNE = Module(new DyserMux(NInputs = 4, Sel = 1, En =param.sw01("enNE"))(p))
 
   //Three 5:1 Muxes
 
-  val DMuxNW = Module(new DyserMux(NInputs = 5, Sel = 1, En = false.B)(p))
-  val DMuxSW = Module(new DyserMux(NInputs = 5, Sel = 1, En = false.B)(p))
-  val DMuxSE = Module(new DyserMux(NInputs = 5, Sel = 1, En = false.B)(p))
+  val DMuxNW = Module(new DyserMux(NInputs = 5, Sel = 1, En = param.sw01("enNW"))(p))
+  val DMuxSW = Module(new DyserMux(NInputs = 5, Sel = 1, En = param.sw01("enSW"))(p))
+  val DMuxSE = Module(new DyserMux(NInputs = 5, Sel = 1, En = param.sw01("enSE"))(p))
 
 
   //--------------------------------------------------
