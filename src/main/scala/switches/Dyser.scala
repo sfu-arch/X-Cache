@@ -73,6 +73,17 @@ object switchParam {
     "selSE" ->1 ,
     "selSW" ->1
   )
+
+  val numInputs = Map(
+    "numInN"  ->4 ,
+    "numInE"  ->4 ,
+    "numInW"  ->4 ,
+    "numInS"  ->4 ,
+    "numInNE" ->4 ,
+    "numInNW" ->5 ,
+    "numInSE" ->5 ,
+    "numInSW" ->5
+  )
 }
 
 //param.sw01.("en")
@@ -80,17 +91,17 @@ object switchParam {
 class Dyser (implicit p: Parameters) extends DyserIO()(p) {
   val param = switchParam
   //Five 4:1 Muxes
-  val DMuxN = Module(new DyserMux(NInputs = 4, Sel = param.sw01Sel("selN"), En = param.sw01en("enN"))(p))
-  val DMuxE = Module(new DyserMux(NInputs = 4, Sel = param.sw01Sel("selE"), En = param.sw01en("enE"))(p))
-  val DMuxW = Module(new DyserMux(NInputs = 4, Sel = param.sw01Sel("selW"), En = param.sw01en("enW"))(p))
-  val DMuxS = Module(new DyserMux(NInputs = 4, Sel = param.sw01Sel("selS"), En = param.sw01en("enS"))(p))
-  val DMuxNE = Module(new DyserMux(NInputs = 4, Sel = param.sw01Sel("selNE"), En =param.sw01en("enNE"))(p))
+  val DMuxN = Module(new DyserMux(NInputs = param.numInputs("numInN"), Sel = param.sw01Sel("selN"), En = param.sw01en("enN"))(p))
+  val DMuxE = Module(new DyserMux(NInputs = param.numInputs("numInE"), Sel = param.sw01Sel("selE"), En = param.sw01en("enE"))(p))
+  val DMuxW = Module(new DyserMux(NInputs = param.numInputs("numInW"), Sel = param.sw01Sel("selW"), En = param.sw01en("enW"))(p))
+  val DMuxS = Module(new DyserMux(NInputs = param.numInputs("numInS"), Sel = param.sw01Sel("selS"), En = param.sw01en("enS"))(p))
+  val DMuxNE = Module(new DyserMux(NInputs= param.numInputs("numInNE"), Sel = param.sw01Sel("selNE"), En =param.sw01en("enNE"))(p))
 
   //Three 5:1 Muxes
 
-  val DMuxNW = Module(new DyserMux(NInputs = 5, Sel = param.sw01Sel("selNW"), En = param.sw01en("enNW"))(p))
-  val DMuxSE = Module(new DyserMux(NInputs = 5, Sel = param.sw01Sel("selSE"), En = param.sw01en("enSE"))(p))
-  val DMuxSW = Module(new DyserMux(NInputs = 5, Sel = param.sw01Sel("selSW"), En = param.sw01en("enSW"))(p))
+  val DMuxNW = Module(new DyserMux(NInputs =param.numInputs("numInNW") , Sel = param.sw01Sel("selNW"), En = param.sw01en("enNW"))(p))
+  val DMuxSE = Module(new DyserMux(NInputs =param.numInputs("numInSE") , Sel = param.sw01Sel("selSE"), En = param.sw01en("enSE"))(p))
+  val DMuxSW = Module(new DyserMux(NInputs =param.numInputs("numInSW") , Sel = param.sw01Sel("selSW"), En = param.sw01en("enSW"))(p))
 
 
   //--------------------------------------------------
