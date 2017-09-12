@@ -118,8 +118,25 @@ class DyserTests(c: Dyser)
 class DyserTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Mux tester" in {
-    chisel3.iotesters.Driver(() => new Dyser()(p)) {
-      c => new DyserTests(c)
+    chisel3.iotesters.Driver(() => new Dyser(
+      SelN = 1,
+      SelE = 1,
+      SelW = 1,
+      SelS = 1,
+      SelNE = 1,
+      SelNW = 1,
+      SelSE = 1,
+      SelSW = 1,
+
+      EnN = false.B,
+      EnE = false.B,
+      EnW = false.B,
+      EnS = true.B,
+      EnNE = false.B,
+      EnNW = false.B,
+      EnSE = false.B,
+      EnSW = false.B
+    )(p)) { c => new DyserTests(c)
     } should be(true)
   }
 }

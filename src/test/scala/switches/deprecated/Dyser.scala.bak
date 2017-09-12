@@ -1,21 +1,18 @@
-package switches
+package switches.deprecated
 
 /**
   * Created by vnaveen0 on 9/9/17.
   */
 
 
-import accel.CacheReq
-import chisel3._
-import chisel3.util._
-import accel._
-import config._
 import chisel3.iotesters.PeekPokeTester
+import config._
 import org.scalatest.{FlatSpec, Matchers}
+import switches.Dyser
 
 
 // Tester.
-class DyserTests1(c: Dyser1)
+class DyserTests(c: Dyser)
                           (implicit p: config.Parameters) extends PeekPokeTester(c)  {
 
   for (t <- 0 until 8) {
@@ -115,28 +112,11 @@ class DyserTests1(c: Dyser1)
 
 
 
-class DyserTester1 extends  FlatSpec with Matchers {
+class DyserTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Mux tester" in {
-    chisel3.iotesters.Driver(() => new Dyser1(
-      SelN = 1,
-      SelE = 1,
-      SelW = 1,
-      SelS = 1,
-      SelNE = 1,
-      SelNW = 1,
-      SelSE = 1,
-      SelSW = 1,
-
-      EnN = false.B,
-      EnE = false.B,
-      EnW = false.B,
-      EnS = true.B,
-      EnNE = false.B,
-      EnNW = false.B,
-      EnSE = false.B,
-      EnSW = false.B
-    )(p)) { c => new DyserTests1(c)
+    chisel3.iotesters.Driver(() => new Dyser()(p)) {
+      c => new DyserTests(c)
     } should be(true)
   }
 }
