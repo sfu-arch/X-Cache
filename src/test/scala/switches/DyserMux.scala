@@ -18,6 +18,9 @@ class DyserMuxTests(c: DyserMux)
                           (implicit p: config.Parameters) extends PeekPokeTester(c)  {
 
   for (t <- 0 until 8) {
+
+
+
     if(t==2) {
       poke(c.io.in(0).valid, 1)
       poke(c.io.in(0).bits.data, 99)
@@ -72,14 +75,14 @@ class DyserMuxTests(c: DyserMux)
     }
 
 
-    if(t ==4) {
-      poke(c.io.out.ready, 1)
-    }
-    else {
-
-      poke(c.io.out.ready, 0)
-
-    }
+//    if(t ==4) {
+//      poke(c.io.out.ready, 1)
+//    }
+//    else {
+//
+//      poke(c.io.out.ready, 0)
+//
+//    }
 
 //    if (peek(c.io.out.valid) == 1) {
 //      println(s"Out is valid and ack is sent \n ")
