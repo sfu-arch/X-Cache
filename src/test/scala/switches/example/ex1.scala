@@ -67,7 +67,6 @@ class ex1Tests(c: Dyser1X1)
   step(1)
 
   poke(c.io.start, true.B)
-  poke(c.io.result.ready, true.B)
 
 
   poke(c.io.Data0.valid, true.B)
@@ -90,6 +89,14 @@ class ex1Tests(c: Dyser1X1)
 
   for( i <- 0 until 10){
     println(s"Output: ${peek(c.io.result)}\n")
+
+    if(peek(c.io.result.valid) == 1){
+      poke(c.io.result.ready, false.B)
+      println(s"Result is valid \n")
+    }
+    else {
+      poke(c.io.result.ready, true.B)
+    }
 
     println(s"t: ${i}\n -------------------------------------")
     step(1)
