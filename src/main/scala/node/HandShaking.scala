@@ -21,19 +21,15 @@ import utility.UniformPrintfs
  * it has only vectorized output
  * @note HandshakingIONPS
  * @todo Put special case for singl output vs two outputs
- *
  *       2)  There is ordering    -> (PredOp/ SuccOp)
  *       vectorized output/succ/pred
  * @note HandshakingIOPS
- *
  *       3)  There is vectorized output + vectorized input
  *       No ordering
  * @todo needs to be implimented
  * @note HandshakingFusedIO
- *
  *       4)  Control handshaking -> The only input is enable signal
  * @note HandshakingCtrl
- *
  *       5) Control handshaking (PHI) -> There is mask and enable signal
  * @note HandshakingCtrlPhi
  *
