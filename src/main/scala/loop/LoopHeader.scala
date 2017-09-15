@@ -30,6 +30,7 @@ class LoopHeaderIO[T <: Data](val NumInputs: Int, val NumOuts: Int)(gen: T)(impl
 class LoopHeader[T <: Data](val NumInputs: Int,
                             val NumOuts: Int,
                             val ID: Int)
+                           (val nodeOut: Seq[Int])
                            (val Blocking: Boolean)
                            (gen: T)(implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs {
 
@@ -37,24 +38,26 @@ class LoopHeader[T <: Data](val NumInputs: Int,
 
   val valids = 0.U
 
-  //@todo get number of outputs for each arg and set it here
+  //@note get number of outputs for each arg and set it here
+  assert(nodeOut.size == NumInputs, "Size of nodeOut should be equal to NumInputs")
+
   val Args = for (i <- 0 until NumInputs) yield {
-    //@todo NumOuts should be set
-    val arg = Module(new LoopRegNode(NumOuts = 1, ID = i))
+    val arg = Module(new LoopRegNode(NumOuts = nodeOut(i), ID = i))
     arg
   }
 
   //Iterating over each loopReg and connect them to the IO
-  for(i <- 0 until NumInputs){
+  for (i <- 0 until NumInputs) {
     Args(i).io.inData <> io.inputArg(i)
   }
 
-  //@todo fix base on each input output
-  for(i <- 0 until NumOuts){
-    io.inputVal(i) <> Args(i).io.Out(0)
+  for (i <- 0 until NumOuts) {
+    for(j <- 0 until nodeOut(i)){
+      io.inputVal(i) <> Args(i).io.Out(j)
+    }
   }
 
-  for(i <- 0 until NumInputs){
+  for (i <- 0 until NumInputs) {
     valids(0) := io.inputArg(i).valid
   }
 
