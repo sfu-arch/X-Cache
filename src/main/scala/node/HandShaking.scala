@@ -157,11 +157,12 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   val enable_valid_R = RegInit(false.B)
 
   // Output Handshaking
-  val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
-  val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
+  val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts){false.B}))
+  val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts){false.B}))
 
   // Wire
-  val out_ready_W = Wire(Vec(Seq.fill(NumOuts)(false.B)))
+  val out_ready_W = WireInit(VecInit(Seq.fill(NumOuts){false.B}))
+//  val out_ready_W = Wire(Vec(Seq.fill(NumOuts)(false.B)))
 
   /*============================*
    *           Wiring           *
@@ -512,8 +513,8 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
 
   // Wire
-  val out_ready_W = Wire(Vec(Seq.fill(NumOuts)(false.B)))
-  val succ_ready_W = Seq.fill(NumSuccOps)(Wire(false.B))
+  val out_ready_W = WireInit(VecInit(Seq.fill(NumOuts){false.B}))
+  val succ_ready_W = Seq.fill(NumSuccOps)(WireInit(false.B))
 
   /*==============================
   =            Wiring            =
