@@ -22,6 +22,10 @@ class LoopRegNodeIO(NumOuts: Int)
   // If Ready is LOW; Do not change the inputs as this will cause a bug
   val inData = Flipped(Decoupled(new DataBundle))
 
+  /**
+    * A single signal which can freeze the value
+    */
+  val freeze = Input(Bool())
 }
 
 class LoopRegNode(NumOuts: Int, ID: Int)
@@ -64,7 +68,9 @@ class LoopRegNode(NumOuts: Int, ID: Int)
     in_data_R.predicate := io.inData.bits.predicate
   }
 
-  // Wire up Outputs
+  /**
+    * Wire up outputs
+    */
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R
     io.Out(i).bits.predicate := predicate
@@ -75,15 +81,12 @@ class LoopRegNode(NumOuts: Int, ID: Int)
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  //Compute the address
-
+  /**
+    * Latch the data
+    */
   data_R := in_data_R.data
 
-  when(start & predicate & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & !predicate & state =/= s_COMPUTE) {
-    state := s_COMPUTE
+  when(start) {
     ValidOut()
   }
 
@@ -91,7 +94,7 @@ class LoopRegNode(NumOuts: Int, ID: Int)
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-  when(IsOutReady() & state === s_COMPUTE) {
+  when(IsOutReady() & io.freeze) {
     //printfInfo("Start restarting output \n")
     // Reset data
     in_data_R := DataBundle.default

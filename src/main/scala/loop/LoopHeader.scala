@@ -23,6 +23,7 @@ class LoopHeaderIO[T <: Data](val NumInputs: Int, val NumOuts: Int)(gen: T)(impl
   val start = Output(Bool())
   val end = Input(Bool())
   val enable = Flipped(Decoupled(Bool()))
+  val freeze = Input(Bool())
 
   val inputArg = Vec(NumInputs, Flipped(Decoupled(gen)))
   val outputVal = Vec(NumOuts, Decoupled(gen))
@@ -53,6 +54,7 @@ class LoopHeader(val NumInputs: Int,
 
   for (i <- 0 until NumInputs){
     Args(i).io.enable <> io.enable
+    Args(i).io.freeze <> io.freeze
   }
 
   for (i <- 0 until NumOuts) {

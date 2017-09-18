@@ -26,6 +26,8 @@ class LoopTests(c: LoopHeader) extends PeekPokeTester(c) {
   poke(c.io.outputVal(0).ready, false)
   poke(c.io.outputVal(1).ready, false)
 
+  poke(c.io.freeze, false)
+
   poke(c.io.enable.bits, false)
   poke(c.io.enable.valid, false)
 
