@@ -18,24 +18,24 @@ val valid = Bool ()
 
 
 trait RouteID extends CoreBundle() {
-  val RouteID = UInt (glen.W)
+val RouteID = UInt (glen.W)
 }
 
 trait PredicateT extends CoreBundle() {
-  val predicate = Bool()
+val predicate = Bool ()
 }
 
 // Maximum of 16MB Stack Array.
 
-class AllocaIO(implicit p: Parameters) extends CoreBundle()(p){
+class AllocaIO(implicit p: Parameters) extends CoreBundle()(p) {
   val size = UInt(xlen.W)
   val numByte = UInt(xlen.W)
   val predicate = Bool()
   val valid = Bool()
 }
 
-object AllocaIO{
-  def default(implicit p: Parameters): AllocaIO= {
+object AllocaIO {
+  def default(implicit p: Parameters): AllocaIO = {
     val temp_w = Wire(new AllocaIO)
     temp_w.size := 0.U
     temp_w.numByte := 0.U
@@ -52,8 +52,9 @@ class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) with RouteID {
   val node = UInt(glen.W)
   val numByte = UInt(xlen.W)
 }
-object AllocaReq{
-  def default(implicit p: Parameters): AllocaReq= {
+
+object AllocaReq {
+  def default(implicit p: Parameters): AllocaReq = {
     val wire = Wire(new AllocaReq)
     wire.size := 0.U
     wire.numByte := 0.U
@@ -68,8 +69,8 @@ class AllocaResp(implicit p: Parameters)
   val ptr = UInt(xlen.W)
 }
 
-object AllocaResp{
-  def default(implicit p: Parameters): AllocaResp= {
+object AllocaResp {
+  def default(implicit p: Parameters): AllocaResp = {
     val wire = Wire(new AllocaResp)
     wire.ptr := 0.U
     wire.valid := false.B
@@ -108,9 +109,9 @@ class ReadResp(implicit p: Parameters)
 
   override def toPrintable: Printable = {
     p"ReadResp {\n" +
-    p"  valid  : ${valid}\n" +
-    p"  RouteID: ${RouteID}\n" +
-    p"  data   : 0x${Hexadecimal(data)} }"
+      p"  valid  : ${valid}\n" +
+      p"  RouteID: ${RouteID}\n" +
+      p"  data   : 0x${Hexadecimal(data)} }"
   }
 }
 
@@ -231,6 +232,7 @@ object TypBundle {
     wire
   }
 }
+
 /**
   * Control bundle between branch and
   * basicblock nodes
@@ -260,22 +262,21 @@ object ControlBundle {
 /**
   * Custom Data bundle between dataflow nodes.
   *
-  * @param len number of bits
   * @note 2 fields
   *       data : U(len.W)
   *       predicate : Bool
   * @return
   */
-class CustomDataBundle(len: Int)(implicit p: Parameters) extends CoreBundle()(p) {
+class CustomDataBundle() extends Bundle() {
   // Data packet
-  val data = UInt(len.W)
+  val data = UInt()
   val predicate = Bool()
   val valid = Bool()
 }
 
 object CustomDataBundle {
-  def default(bitLen: Int)(implicit p: Parameters): CustomDataBundle = {
-    val wire = Wire(new CustomDataBundle(len = bitLen))
+  def default(): CustomDataBundle = {
+    val wire = Wire(new CustomDataBundle())
     wire.data := 0.U
     wire.predicate := false.B
     wire.valid := false.B

@@ -14,30 +14,32 @@ import node._
 import utility.UniformPrintfs
 
 
+
 /**
   * Contain each loop input argument works like register file
   */
-class LoopElementIO[T <: Data](gen: T)(implicit p: Parameters)
-  extends CoreBundle()(p) {
+class LoopElementIO() extends Bundle() {
 
   /**
     * Module input
     */
-  val inData = Flipped(Decoupled(gen))
+  val inData = Flipped(Decoupled(new CustomDataBundle()))
   val Finish = Input(Bool())
 
   /**
     * Module output
     */
-  val outData = Output(gen)
-  val outDataValid = Output(Bool())
+  val outData = new Bundle{
+    val data  = Output(new CustomDataBundle())
+    val valid = Output(Bool())
+  }
 }
 
 
 class LoopElement(val ID: Int)(implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
-  override lazy val io = IO(new LoopElementIO(new DataBundle())(p))
+  override lazy val io = IO(new LoopElementIO())
 
   // Printf debugging
   override val printfSigil = "Node ID: " + ID + " "
@@ -47,7 +49,7 @@ class LoopElement(val ID: Int)(implicit val p: Parameters)
     */
   val data_R = RegNext(io.inData.bits)
 
-  io.outData := data_R
+  io.outData.data <> data_R
 
   /**
     * Defining state machines
@@ -58,13 +60,14 @@ class LoopElement(val ID: Int)(implicit val p: Parameters)
   /**
     * State transision
     */
+
   when(state === s_INIT){
     io.inData.ready := true.B
-    io.outDataValid := false.B
+    io.outData.valid := false.B
 
   }.elsewhen( state === s_LATCH){
     io.inData.ready := false.B
-    io.outDataValid := true.B
+    io.outData.valid := true.B
   }
 
   when(io.inData.fire()){
