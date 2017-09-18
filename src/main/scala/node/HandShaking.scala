@@ -322,9 +322,7 @@ class HandShakingFused[T <: ValidT with PredicateT](val NumIns: Int, val NumOuts
   }
 
   def ValidIn(): Unit = {
-    in_valid_R := Vec(Seq.fill(NumOuts) {
-      true.B
-    })
+    in_valid_R := VecInit(Seq.fill(NumOuts) {true.B})
   }
 
   def printInValid(): Unit = {
@@ -338,9 +336,7 @@ class HandShakingFused[T <: ValidT with PredicateT](val NumIns: Int, val NumOuts
   }
 
   def InvalidIn(): Unit = {
-    in_valid_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
+    in_valid_R := VecInit(Seq.fill(NumOuts) {false.B})
   }
 
   // OUTs
@@ -353,22 +349,16 @@ class HandShakingFused[T <: ValidT with PredicateT](val NumIns: Int, val NumOuts
   }
 
   def ValidOut(): Unit = {
-    out_valid_W := Vec(Seq.fill(NumOuts) {
-      true.B
-    })
+    out_valid_W := VecInit(Seq.fill(NumOuts){true.B})
   }
 
   def InvalidOut(): Unit = {
-    out_valid_W := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
+    out_valid_W := VecInit(Seq.fill(NumOuts) {false.B})
   }
 
   def Reset(): Unit = {
     enable_valid_R := false.B
-    in_valid_R := Vec(Seq.fill(NumIns) {
-      false.B
-    })
+    in_valid_R := VecInit(Seq.fill(NumIns) {false.B})
   }
 }
 

@@ -1,112 +1,83 @@
 package loop
 
 import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import chisel3.Module
 import chisel3.testers._
 import chisel3.util._
-import org.scalatest.{Matchers, FlatSpec}
-
+import org.scalatest.{FlatSpec, Matchers}
 import config._
 import interfaces._
 import muxes._
 import util._
 import node._
+import utility.UniformPrintfs
 
-class LoopRegNodeIO(NumOuts: Int)
-                  (implicit p: Parameters)
-  extends HandShakingIONPS(NumOuts)(new DataBundle) {
 
-  // Inputs should be fed only when Ready is HIGH
-  // Inputs are always latched.
-  // If Ready is LOW; Do not change the inputs as this will cause a bug
-  val inData = Flipped(Decoupled(new DataBundle))
+/**
+  * Contain each loop input argument works like register file
+  */
+class LoopElementIO[T <: Data](gen: T)(implicit p: Parameters)
+  extends CoreBundle()(p) {
 
   /**
-    * A single signal which can freeze the value
+    * Module input
     */
-  val freeze = Input(Bool())
+  val inData = Flipped(Decoupled(gen))
+  val Finish = Input(Bool())
+
+  /**
+    * Module output
+    */
+  val outData = Output(gen)
+  val outDataValid = Output(Bool())
 }
 
-class LoopRegNode(NumOuts: Int, ID: Int)
-             (implicit p: Parameters)
-  extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
-  override lazy val io = IO(new LoopRegNodeIO(NumOuts))
+
+class LoopElement(val ID: Int)(implicit val p: Parameters)
+  extends Module with CoreParams with UniformPrintfs {
+
+  override lazy val io = IO(new LoopElementIO(new DataBundle())(p))
+
   // Printf debugging
   override val printfSigil = "Node ID: " + ID + " "
 
-  /*===========================================*
-   *            Registers                      *
-   *===========================================*/
-  // Addr Inputs
-  val in_data_R = RegInit(DataBundle.default)
+  /**
+    * Always latch the input data
+    */
+  val data_R = RegNext(io.inData.bits)
 
+  io.outData := data_R
 
-  // Output register
-  val data_R = RegInit(0.U(xlen.W))
+  /**
+    * Defining state machines
+    */
+  val s_INIT :: s_LATCH :: Nil = Enum(2)
+  val state = RegInit(s_INIT)
 
-  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-  val state = RegInit(s_idle)
+  /**
+    * State transision
+    */
+  when(state === s_INIT){
+    io.inData.ready := true.B
+    io.outDataValid := false.B
 
-  /*==========================================*
-   *           Predicate Evaluation           *
-   *==========================================*/
+  }.elsewhen( state === s_LATCH){
+    io.inData.ready := false.B
+    io.outDataValid := true.B
+  }
 
-  val predicate = in_data_R.predicate & IsEnable()
-  val start = in_data_R.valid & IsEnableValid()
-
-  /*===============================================*
-   *            Latch inputs. Wire up output       *
-   *===============================================*/
-
-  io.inData.ready := ~in_data_R.valid
-  when(io.inData.fire()) {
-    //printfInfo("Latch left data\n")
+  when(io.inData.fire()){
     state := s_LATCH
-    in_data_R.data := io.inData.bits.data
-    in_data_R.valid := true.B
-    in_data_R.predicate := io.inData.bits.predicate
+  }
+
+  when(io.Finish){
+    state := s_INIT
   }
 
   /**
-    * Wire up outputs
+    * Debuging info
     */
-  for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_R
-    io.Out(i).bits.predicate := predicate
-  }
-
-
-  /*============================================*
-   *            ACTIONS (possibly dangerous)    *
-   *============================================*/
-
-  /**
-    * Latch the data
-    */
-  data_R := in_data_R.data
-
-  when(start) {
-    ValidOut()
-  }
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
-  when(IsOutReady() & io.freeze) {
-    //printfInfo("Start restarting output \n")
-    // Reset data
-    in_data_R := DataBundle.default
-
-    // Reset output
-    data_R := 0.U
-
-    //Reset output
-    Reset()
-  }
-
   printfInfo(" State: %x\n", state)
 
 }
-
