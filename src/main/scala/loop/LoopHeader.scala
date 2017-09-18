@@ -21,17 +21,17 @@ import utility.UniformPrintfs
 class LoopHeaderIO[T <: Data](val NumInputs: Int, val NumOuts: Int)(gen: T)(implicit p: Parameters) extends CoreBundle()(p) {
 
   val start = Output(Bool())
-  val end = Decoupled(Bool())
+  val end = Input(Bool())
+  val enable = Flipped(Decoupled(Bool()))
 
   val inputArg = Vec(NumInputs, Flipped(Decoupled(gen)))
-  val inputVal = Vec(NumOuts, Decoupled(gen))
+  val outputVal = Vec(NumOuts, Decoupled(gen))
 }
 
 class LoopHeader(val NumInputs: Int,
                             val NumOuts: Int,
                             val ID: Int)
                            (val nodeOut: Seq[Int])
-//                           (val Blocking: Boolean)
                            (implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs {
 
   lazy val io = IO(new LoopHeaderIO(NumInputs, NumOuts)(new DataBundle()))
@@ -51,9 +51,13 @@ class LoopHeader(val NumInputs: Int,
     Args(i).io.inData <> io.inputArg(i)
   }
 
+  for (i <- 0 until NumInputs){
+    Args(i).io.enable <> io.enable
+  }
+
   for (i <- 0 until NumOuts) {
     for(j <- 0 until nodeOut(i)){
-      io.inputVal(i) <> Args(i).io.Out(j)
+      io.outputVal(i) <> Args(i).io.Out(j)
     }
   }
 

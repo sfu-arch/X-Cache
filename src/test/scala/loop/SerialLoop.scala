@@ -19,51 +19,50 @@ import interfaces._
 
 class LoopTests(c: LoopHeader) extends PeekPokeTester(c) {
 
-//    poke(c.io.GepAddr.valid,false)
-//    poke(c.io.enable.valid,false)
-//    poke(c.io.memReq.ready,false)
-//    poke(c.io.memResp.valid,false)
-//    poke(c.io.Out(0).ready,true)
-//
-//
-//    for (t <- 0 until 20) {
-//
-//     step(1)
-//
-//      //IF ready is set
-//      // send address
-//      if (peek(c.io.GepAddr.ready) == 1) {
-//        poke(c.io.GepAddr.valid, true)
-//        poke(c.io.GepAddr.bits.data, 12)
-//        poke(c.io.GepAddr.bits.predicate, true)
-//        poke(c.io.enable.bits,true)
-//        poke(c.io.enable.valid,true)
-//      }
-//
-//      printf(s"t: ${t}  c.io.memReq: ${peek(c.io.memReq)} \n")
-//      if((peek(c.io.memReq.valid) == 1) && (t > 4))
-//      {
-//        poke(c.io.memReq.ready,true)
-//      }
-//
-//     if (t > 8)
-//      {
-//        poke(c.io.memResp.valid, true)
-//        poke(c.io.memResp.data, 0x1eadbeef)
-//      }
-//  }
+  poke(c.io.inputArg(0).valid, false)
+  poke(c.io.inputArg(1).valid, false)
+  poke(c.io.inputArg(0).bits.data, 0.U)
+  poke(c.io.inputArg(1).bits.data, 0.U)
+  poke(c.io.outputVal(0).ready, false)
+  poke(c.io.outputVal(1).ready, false)
+
+  poke(c.io.enable.bits, false)
+  poke(c.io.enable.valid, false)
+
+  step(1)
+  println(s"t: ${t}, Output(0): ${peek(c.io.start)}\n")
+
+  poke(c.io.inputArg(0).valid, false)
+  poke(c.io.inputArg(1).valid, false)
+  poke(c.io.enable.bits , true)
+  poke(c.io.enable.valid, true)
+
+
+  for(t <- 0 until 20){
+
+    step(1)
+    println(s"t: ${t}, Output(0): ${peek(c.io.outputVal(0))}")
+    println(s"t: ${t}, Output(1): ${peek(c.io.outputVal(1))}")
+    println(s"t: ${t} Start: ${peek(c.io.start)}")
+
+    if(t == 5){
+      poke(c.io.inputArg(0).valid, true)
+      poke(c.io.inputArg(1).valid, true)
+      poke(c.io.inputArg(0).bits.predicate, true)
+      poke(c.io.inputArg(1).bits.predicate, true)
+      poke(c.io.inputArg(0).bits.data, 5.U)
+      poke(c.io.inputArg(1).bits.data, 8.U)
+    }
+
+    if(t == 3){
+      poke(c.io.outputVal(0).ready, true)
+      poke(c.io.outputVal(1).ready, true)
+    }
+
+
+  }
 }
 
-
-
-//class LoopHeadTester extends  FlatSpec with Matchers {
-//  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-//  it should "Load Node tester" in {
-//    chisel3.iotesters.Driver(() => new TypLoad(NumPredOps=0,NumSuccOps=0,NumOuts=1,ID=1,RouteID=0)) { c =>
-//      new TypLoadTests(c)
-//    } should be(true)
-//  }
-//}
 
 
 class LoopHeadTester extends  FlatSpec with Matchers {
@@ -76,11 +75,11 @@ class LoopHeadTester extends  FlatSpec with Matchers {
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
       Array(
-        //"-ll", "Info",
+//        "-ll", "Info",
         "-tbn", "verilator",
         "-td", "test_run_dir",
         "-tts", "0001"),
-      () => new LoopHeader(NumInputs = 4, NumOuts = 4, ID = 0)(nodeOut = Seq(1,1,1,1))){
+      () => new LoopHeader(NumInputs = 2, NumOuts = 2, ID = 0)(nodeOut = Seq(1,1))){
       c => new LoopTests(c)
     } should be(true)
   }
