@@ -81,6 +81,6 @@ class LoopElement(val ID: Int)(implicit val p: Parameters)
   /**
     * Debuging info
     */
-  printfInfo(" State: %x\n", state)
+//  printfInfo(" State: %x\n", state)
 
 }

@@ -37,7 +37,12 @@ class LoopHeaderIO[T <: Data](val NumInputs: Int, val NumOuts: Int)
                              (gen: T)(implicit p: Parameters) extends CoreBundle()(p) {
 
   val inputArg  = Vec(NumInputs, Flipped(Decoupled(gen)))
-  val outputArg = Vec(NumOuts,LoopOutputBundle(gen))
+  val outputArg = Vec(NumOuts, Decoupled(gen))
+
+  /**
+    * @note This is an example of how to build custom IO
+    */
+  //  val outputArg = Vec(NumOuts,LoopOutputBundle(gen))
 
   /**
     * Finish signal comes from Ret instruction
