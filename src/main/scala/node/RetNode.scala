@@ -22,7 +22,7 @@ extends HandShakingIONPS (NumOuts)(new DataBundle) {
 class RetNode(NumOuts: Int, ID: Int)
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
-  override lazy val io = IO(new ComputeNodeIO(NumOuts))
+  override lazy val io = IO(new RetNodeIO(NumOuts))
 
   /*===========================================*
    *            Registers                      *
