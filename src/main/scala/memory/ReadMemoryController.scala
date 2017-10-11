@@ -63,9 +63,9 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   // Incoming data valid and data operand.
   val DataValid = RegInit(false.B)
   val ptr = RegInit(0.U(log2Ceil(2).W))
-  val linebuffer = RegInit(Vec(Seq.fill(2)(0.U(xlen.W))))
+  val linebuffer = RegInit(VecInit(Seq.fill(2)(0.U(xlen.W))))
   val xlen_bytes = xlen / 8
-  val output = Wire(0.U(xlen.W))
+  val output = WireInit(0.U(xlen.W))
 
   // State machine
   val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
