@@ -28,7 +28,7 @@ class PhiNode(NumInputs: Int,
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new PhiNodeIO(NumInputs, NumOuts))
   // Printf debugging
-  override val printfSigil = "Node(PHI) ID: " + ID + " "
+  override val printfSigil = "PHI ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -111,8 +111,6 @@ class PhiNode(NumInputs: Int,
   //Instantiating a MUX
   val sel = OHToUInt(mask_R)
 
-  printfInfo("sel: %x\n", sel)
-
   data_R := in_data_R(sel).data
   valid_R := true.B
 
@@ -145,5 +143,4 @@ class PhiNode(NumInputs: Int,
     Reset()
   }
 
-  printfInfo(" State: %x\n", state)
 }
