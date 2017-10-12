@@ -251,7 +251,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
 
   //Assertion
 
-  //At each interation only on preds can be activated
+  //At each iteration only on preds can be activated
   val pred_tem = predicate_in_R.asUInt
 
   assert(((pred_tem & pred_tem - 1.U) === 0.U) ,
