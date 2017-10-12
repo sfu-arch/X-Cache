@@ -58,6 +58,10 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
 
   val pred_R = RegInit(init = false.B)
 
+  //Instantiate ALU with selected code
+  val FU = Module(new UALU(xlen, opCode))
+  FU.io.in1 := left_R.data
+  FU.io.in2 := right_R.data
 
   io.LeftIO.ready := ~left_R.valid
   when(io.LeftIO.fire()) {
@@ -79,7 +83,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_R
+    io.Out(i).bits.data := FU.io.out
     io.Out(i).bits.predicate := predicate
   }
 
@@ -87,31 +91,21 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  //Instantiate ALU with selected code
-  val FU = Module(new UALU(xlen, opCode))
-
-  FU.io.in1 := left_R.data
-  FU.io.in2 := right_R.data
-  data_R := FU.io.out
-
   when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
     ValidOut()
-  }.elsewhen(start & ~predicate & state =/= s_COMPUTE){
-    state := s_COMPUTE
-    ValidOut()
   }
+
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
 
   when(IsOutReady() & (state === s_COMPUTE)) {
     // Reset data
-    left_R := DataBundle.default
+    left_R  := DataBundle.default
     right_R := DataBundle.default
+
     //Reset state
-    data_R := 0.U
-    out_ready_R := VecInit(Seq.fill(NumOuts){false.B})
     state := s_idle
     //Reset output
     Reset()
