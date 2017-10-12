@@ -16,8 +16,10 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
                (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
 
+  // Vector input
   val InData = Vec(NumInputs, Flipped(Decoupled(new DataBundle)))
 
+  // Predicate mask comming from the basic block
   val Mask = Flipped(Decoupled(UInt(NumInputs.W)))
 }
 
@@ -34,15 +36,13 @@ class PhiNode(NumInputs: Int,
    *            Registers                      *
    *===========================================*/
   // Data Inputs
-  val in_data_R = RegInit(Vec(Seq.fill(NumInputs)(DataBundle.default)))
+  val in_data_R = RegInit(DataBundle.default)
+  val in_data_valid_R = RegInit(false.B)
+  //val in_data_R = RegInit(Vec(Seq.fill(NumInputs)(DataBundle.default)))
 
   // Mask Input
   val mask_R = RegInit(0.U(NumInputs.W))
   val mask_valid_R = RegInit(false.B)
-
-
-  // Output register
-  val data_R = RegInit(0.U(xlen.W))
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
   val state = RegInit(s_idle)
@@ -51,56 +51,43 @@ class PhiNode(NumInputs: Int,
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val acc_predicate = Vec(Seq.fill(NumInputs)(false.B))
-  for(i <- 0 until NumInputs){
-    acc_predicate(i) := in_data_R(i).predicate
-  }
-
-  val acc_start = Vec(Seq.fill(NumInputs)(false.B))
-  for(i <- 0 until NumInputs){
-    acc_start(i) := in_data_R(i).valid
-  }
-
-  var predicate = acc_predicate.asUInt.andR & IsEnable()
-  var start = mask_valid_R & acc_start.asUInt.andR & IsEnableValid()
+  var predicate = in_data_R.predicate & IsEnable()
+  var start = mask_valid_R & in_data_valid_R & IsEnableValid()
 
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  // Predicate register
-  val valid_R = RegInit(false.B)
-
-  //printfInfo("start: %x\n", start)
-
   //wire up mask
   io.Mask.ready := ~mask_valid_R
   when(io.Mask.fire()) {
-    state := s_LATCH
-    mask_R := io.Mask.bits
+    mask_R <> io.Mask.bits
     mask_valid_R := true.B
   }
 
+  //Instantiating a MUX
+  val sel = OHToUInt(mask_R)
+  val mask_valid = mask_R.asUInt.orR
+  val mask_input_W = io.InData(sel)
 
-  //Wire up inputs
-  for (i <- 0 until NumInputs) {
-    io.InData(i).ready := ~in_data_R(i).valid
-    when(io.InData(i).fire()) {
-      //printfInfo("Latch left data\n")
-      state := s_LATCH
-      in_data_R(i).data := io.InData(i).bits.data
-      in_data_R(i).valid := true.B
-      in_data_R(i).predicate := io.InData(i).bits.predicate
-    }
+  in_data_R <> mask_input_W.bits
 
+  when(mask_valid === 0.U){
+    in_data_valid_R := false.B
+  }
+
+  mask_input_W.ready := ~in_data_valid_R
+  when(mask_input_W.fire()) {
+    state := s_LATCH
+    in_data_R <> mask_input_W.bits
+
+    in_data_valid_R := true.B
   }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_R
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.valid := valid_R
+    io.Out(i).bits <> in_data_R
   }
 
 
@@ -108,16 +95,8 @@ class PhiNode(NumInputs: Int,
    *            ACTIONS                         *
    *============================================*/
 
-  //Instantiating a MUX
-  val sel = OHToUInt(mask_R)
-
-  data_R := in_data_R(sel).data
-  valid_R := true.B
 
   when(start & predicate & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & !predicate =/= s_COMPUTE) {
     state := s_COMPUTE
     ValidOut()
   }
@@ -132,15 +111,14 @@ class PhiNode(NumInputs: Int,
     mask_R := 0.U
     mask_valid_R := false.B
 
-    for (i <- 0 until NumInputs) {
-      in_data_R(i) := DataBundle.default
-    }
-    // Reset output
-    data_R := 0.U
+    in_data_R := DataBundle.default
+
     //Reset state
     state := s_idle
     //Reset output
     Reset()
   }
+
+  //printfInfo("SEl Value: %x\n", sel)
 
 }
