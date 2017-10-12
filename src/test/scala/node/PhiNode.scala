@@ -45,37 +45,61 @@ class PhiTester(df: PhiNode)(implicit p: config.Parameters) extends PeekPokeTest
   println(s"Node input 1: ${peek(df.io.InData(1))}")
   println(s"Node output : ${peek(df.io.Out(0))}")
   step(1)
+  var time = 1
 
   poke(df.io.InData(0).valid, true.B)
   poke(df.io.InData(1).valid, true.B)
+
   poke(df.io.enable.valid, true.B)
   poke(df.io.Mask.valid, true.B)
-  poke(df.io.Out(0).ready, true.B)
-
-  println()
-  println(s"Node input 0: ${peek(df.io.InData(0))}")
-  println(s"Node input 1: ${peek(df.io.InData(1))}")
-  println(s"Node output : ${peek(df.io.Out(0))}")
-  step(1)
 
 
-  println()
-  println(s"Node input 0: ${peek(df.io.InData(0))}")
-  println(s"Node input 1: ${peek(df.io.InData(1))}")
-  println(s"Node output : ${peek(df.io.Out(0))}")
-  step(1)
+  while(peek(df.io.Out(0).valid) == BigInt(0)){
+    println()
+    println(s"Node input 0: ${peek(df.io.InData(0))}")
+    println(s"Node input 1: ${peek(df.io.InData(1))}")
+    println(s"Node output : ${peek(df.io.Out(0))}")
 
-  println()
-  println(s"Node input 0: ${peek(df.io.InData(0))}")
-  println(s"Node input 1: ${peek(df.io.InData(1))}")
-  println(s"Node output : ${peek(df.io.Out(0))}")
-  step(1)
+    println(s"Time: $time")
+    step(1)
+    time = time + 1
+  }
 
-  println()
-  println(s"Node input 0: ${peek(df.io.InData(0))}")
-  println(s"Node input 1: ${peek(df.io.InData(1))}")
-  println(s"Node output : ${peek(df.io.Out(0))}")
-  step(1)
+  println(s"Time: $time")
+  println(s"Result of the DF: ${peek(df.io.Out(0))}")
+  expect(df.io.Out(0).bits.data, 3.U)
+
+
+  //poke(df.io.InData(0).valid, true.B)
+  //poke(df.io.InData(1).valid, true.B)
+  //poke(df.io.enable.valid, true.B)
+  //poke(df.io.Mask.valid, true.B)
+  //poke(df.io.Out(0).ready, true.B)
+
+  //println()
+  //println(s"Node input 0: ${peek(df.io.InData(0))}")
+  //println(s"Node input 1: ${peek(df.io.InData(1))}")
+  //println(s"Node output : ${peek(df.io.Out(0))}")
+  //step(1)
+
+
+  //println()
+  //println(s"Node input 0: ${peek(df.io.InData(0))}")
+  //println(s"Node input 1: ${peek(df.io.InData(1))}")
+  //println(s"Node output : ${peek(df.io.Out(0))}")
+  //step(1)
+
+  //println()
+  //println(s"Node input 0: ${peek(df.io.InData(0))}")
+  //println(s"Node input 1: ${peek(df.io.InData(1))}")
+  //println(s"Node output : ${peek(df.io.Out(0))}")
+  //step(1)
+
+  //println()
+  //println(s"Node input 0: ${peek(df.io.InData(0))}")
+  //println(s"Node input 1: ${peek(df.io.InData(1))}")
+  //println(s"Node output : ${peek(df.io.Out(0))}")
+  //step(1)
  }
 
 
