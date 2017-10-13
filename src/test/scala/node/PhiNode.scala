@@ -4,6 +4,7 @@ package node
 
 import chisel3._
 import chisel3.util._
+import chisel3.util.Reverse
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
@@ -67,7 +68,7 @@ class PhiTester(df: PhiNode)(implicit p: config.Parameters) extends PeekPokeTest
 
   println(s"Time: $time")
   println(s"Result of the DF: ${peek(df.io.Out(0))}")
-  expect(df.io.Out(0).bits.data, 3.U)
+  expect(df.io.Out(0).bits.data, 5.U)
 
 
   //poke(df.io.InData(0).valid, true.B)

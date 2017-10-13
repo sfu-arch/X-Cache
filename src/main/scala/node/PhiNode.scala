@@ -67,7 +67,7 @@ class PhiNode(NumInputs: Int,
   }
 
   //Instantiating a MUX
-  val sel = OHToUInt(mask_R)
+  val sel = OHToUInt(Reverse(mask_R))
   val mask_valid = mask_R.asUInt.orR
   val mask_input_W = io.InData(sel)
 
