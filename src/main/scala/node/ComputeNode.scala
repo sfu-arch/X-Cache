@@ -34,9 +34,11 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *===========================================*/
   // Left Input
   val left_R = RegInit(DataBundle.default)
+  val left_valid_R = RegInit(false.B)
 
   // Right Input
   val right_R = RegInit(DataBundle.default)
+  val right_valid_R = RegInit(false.B)
 
   //Output register
   val data_R = RegInit(0.U(xlen.W))
@@ -49,7 +51,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *==========================================*/
 
   val predicate = left_R.predicate & right_R.predicate & IsEnable()
-  val start = left_R.valid & right_R.valid & IsEnableValid()
+  val start = left_valid_R & right_valid_R & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -63,22 +65,20 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
 
-  io.LeftIO.ready := ~left_R.valid
+  io.LeftIO.ready := ~left_valid_R
   when(io.LeftIO.fire()) {
     //printfInfo("Latch left data\n")
     state := s_LATCH
-    left_R.data := io.LeftIO.bits.data
-    left_R.valid := true.B
-    left_R.predicate := io.LeftIO.bits.predicate
+    left_R <> io.LeftIO.bits
+    left_valid_R := true.B
   }
 
-  io.RightIO.ready := ~right_R.valid
+  io.RightIO.ready := ~right_valid_R
   when(io.RightIO.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
-    right_R.data := io.RightIO.bits.data
-    right_R.valid := true.B
-    right_R.predicate := io.RightIO.bits.predicate
+    right_R.data <> io.RightIO.bits
+    right_valid_R := true.B
   }
 
   // Wire up Outputs
@@ -101,9 +101,13 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *==========================================*/
 
   when(IsOutReady() & (state === s_COMPUTE)) {
+
     // Reset data
     left_R  := DataBundle.default
     right_R := DataBundle.default
+
+    left_valid_R  := false.B
+    right_valid_R := false.B
 
     //Reset state
     state := s_idle
