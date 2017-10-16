@@ -28,7 +28,7 @@ class LiveOutNode(NumOuts: Int, ID: Int)
   // Printf debugging
 
   // Printf debugging
-  override val printfSigil = "Node ID: " + ID + " "
+  override val printfSigil = "LiveOut ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -36,9 +36,6 @@ class LiveOutNode(NumOuts: Int, ID: Int)
   // Left Input
   val indata_R = RegInit(DataBundle.default)
   val indata_valid_R = RegInit(false.B)
-
-  //Output register
-  val data_R = RegInit(0.U(xlen.W))
 
   val s_idle :: s_LATCH :: s_VALIDOUT :: Nil = Enum(3)
   val state = RegInit(s_idle)
