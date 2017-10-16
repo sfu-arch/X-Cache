@@ -195,11 +195,7 @@ class UBranchNode(ID: Int)
   pred_R := predicate
   valid_R := true.B
 
-  when(start & predicate) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & !predicate) {
-    //printfInfo("Start sending data to output INVALID\n")
+  when(start) {
     state := s_COMPUTE
     ValidOut()
   }
