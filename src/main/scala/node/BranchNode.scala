@@ -113,8 +113,8 @@ class CBranchNode(ID: Int)
   val out_ready_W = out_ready_R.asUInt.andR
   val out_valid_W = out_valid_R.asUInt.andR
 
-  printfInfo("out_ready: %x\n", out_ready_W)
-  printfInfo("out_valid: %x\n", out_valid_W)
+  //printfInfo("out_ready: %x\n", out_ready_W)
+  //printfInfo("out_valid: %x\n", out_valid_W)
 
   //printfInfo(" Start restarting\n")
   when(out_ready_W & out_valid_W) {
@@ -133,7 +133,7 @@ class CBranchNode(ID: Int)
     pred_R := false.B
   }
 
-  printfInfo(" State: %x\n", state)
+  //printfInfo(" State: %x\n", state)
 
 
 }
@@ -208,8 +208,8 @@ class UBranchNode(ID: Int)
   val out_ready_W = out_ready_R.asUInt.andR
   val out_valid_W = out_valid_R.asUInt.andR
 
-  printfInfo("out_ready: %x\n", out_ready_W)
-  printfInfo("out_valid: %x\n", out_valid_W)
+  //printfInfo("out_ready: %x\n", out_ready_W)
+  //printfInfo("out_valid: %x\n", out_valid_W)
 
   //printfInfo(" Start restarting\n")
   when(out_ready_W & out_valid_W) {
@@ -227,7 +227,7 @@ class UBranchNode(ID: Int)
     pred_R := false.B
   }
 
-  printfInfo(" State: %x\n", state)
+  //printfInfo(" State: %x\n", state)
 
 
 }

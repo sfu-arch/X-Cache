@@ -131,11 +131,11 @@ class BasicBlockNode(NumInputs: Int,
   val mask_ready_W = mask_ready_R.asUInt.andR
   val mask_valid_W = mask_valid_R.asUInt.andR
 
-  printfInfo("out_ready: %x\n", out_ready_W)
-  printfInfo("out_valid: %x\n", out_valid_W)
+  //printfInfo("out_ready: %x\n", out_ready_W)
+  //printfInfo("out_valid: %x\n", out_valid_W)
 
-  printfInfo("mask_ready: %x\n", mask_ready_W)
-  printfInfo("mask_valid: %x\n", mask_valid_W)
+  //printfInfo("mask_ready: %x\n", mask_ready_W)
+  //printfInfo("mask_valid: %x\n", mask_valid_W)
 
 //  printfInfo("Mask convert: %x\n", OHToUInt(predicate_in_R))
 
@@ -265,8 +265,8 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   val out_ready_W = out_ready_R.asUInt.andR
   val out_valid_W = out_valid_R.asUInt.andR
 
-  printfInfo("out_ready: %x\n", out_ready_W)
-  printfInfo("out_valid: %x\n", out_valid_W)
+  //printfInfo("out_ready: %x\n", out_ready_W)
+  //printfInfo("out_valid: %x\n", out_valid_W)
 
 
   when(out_ready_W & out_valid_W){

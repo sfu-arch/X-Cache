@@ -124,7 +124,13 @@ class LiveInTester(df: LiveInNode)
 class LiveInTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new LiveInNode(NumOuts = 1, ID = 0)) {
+    chisel3.iotesters.Driver.execute(
+     Array(
+       // "-ll", "Info",
+       "-tbn", "verilator",
+       "-td", "test_run_dir",
+       "-tts", "0001"),
+      () => new LiveInNode(NumOuts = 1, ID = 0)) {
        c => new LiveInTester(c)
      } should be(true)
    }

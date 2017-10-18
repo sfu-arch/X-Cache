@@ -117,9 +117,9 @@ class LiveInNode(NumOuts: Int, ID: Int)
     Reset()
   }
 
-  printfInfo(" Main State: %x", state)
-  printfInfo(" Finish Signal: %x", finish_start)
-  printfInfo(" Finish State: %x\n", f_state)
+  //printfInfo(" Main State: %x", state)
+  //printfInfo(" Finish Signal: %x", finish_start)
+  //printfInfo(" Finish State: %x\n", f_state)
 
 
 }

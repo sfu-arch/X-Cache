@@ -122,7 +122,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
     Reset()
   }
 
-  printfInfo(" State: %x\n", state)
+  //printfInfo(" State: %x\n", state)
 
 
 }

@@ -77,7 +77,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   when(io.RightIO.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
-    right_R.data <> io.RightIO.bits
+    right_R <> io.RightIO.bits
     right_valid_R := true.B
   }
 
