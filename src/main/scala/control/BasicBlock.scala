@@ -60,7 +60,7 @@ class BasicBlockNode(NumInputs: Int,
    *            Registers                      *
    *===========================================*/
   // OP Inputs
-  val predicate_in_R = RegInit(Vec(Seq.fill(NumInputs)(false.B)))
+  val predicate_in_R = RegInit(Vec(Seq.fill(NumInputs)(ControlBundle.default)))
   val predicate_valid_R = RegInit(Vec(Seq.fill(NumInputs)(false.B)))
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
@@ -71,7 +71,8 @@ class BasicBlockNode(NumInputs: Int,
    *===========================================*/
 
   val predicate = predicate_in_R.asUInt().orR
-  val start = predicate_valid_R.asUInt().andR
+  val start = predicate_valid_R.asUInt().orR
+  //val start = predicate_valid_R.asUInt().andR
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -81,13 +82,17 @@ class BasicBlockNode(NumInputs: Int,
 
   val pred_R = RegInit(ControlBundle.default)
 
+  val fire_W = WireInit(false.B)
+
+  //Make all the inputs invalid if one of the inputs
+  //gets fire
+  //
   for (i <- 0 until NumInputs) {
     io.predicateIn(i).ready := ~predicate_valid_R(i)
     when(io.predicateIn(i).fire()) {
-      //printfInfo("Latch predicate %x\n", i)
       state := s_LATCH
-      predicate_in_R(i) := io.predicateIn(i).bits.control
-      predicate_valid_R(i) := true.B
+      predicate_in_R(i) <> io.predicateIn(i).bits
+      fire_W := true.B
     }
   }
 
@@ -101,12 +106,19 @@ class BasicBlockNode(NumInputs: Int,
     io.MaskBB(i).bits := predicate_in_R.asUInt
   }
 
+  when(fire_W & state === s_idle){
+    for(i <- 0 until NumInputs){
+      predicate_valid_R(i) := true.B
+    }
+  }
+
+
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  when(start) {
+  when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
     pred_R.control := predicate
     ValidOut()
@@ -137,14 +149,14 @@ class BasicBlockNode(NumInputs: Int,
   //printfInfo("mask_ready: %x\n", mask_ready_W)
   //printfInfo("mask_valid: %x\n", mask_valid_W)
 
-//  printfInfo("Mask convert: %x\n", OHToUInt(predicate_in_R))
+  //printfInfo("Mask convert: %x\n", OHToUInt(predicate_in_R))
 
   when(out_ready_W & out_valid_W &
     mask_ready_W & mask_ready_W) {
     //printfInfo("Start restarting output \n")
     // Reset data
     predicate_in_R := Vec(Seq.fill(NumInputs) {
-      false.B
+      ControlBundle.default
     })
     predicate_valid_R := Vec(Seq.fill(NumInputs) {
       false.B
@@ -203,7 +215,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
    *            Registers                      *
    *===========================================*/
   // OP Inputs
-  val predicate_in_R = RegInit(Vec(Seq.fill(NumInputs)(false.B)))
+  val predicate_in_R = RegInit(Vec(Seq.fill(NumInputs)(ControlBundle.default)))
   val predicate_valid_R = RegInit(Vec(Seq.fill(NumInputs)(false.B)))
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
@@ -214,7 +226,8 @@ class BasicBlockNoMaskNode(NumInputs: Int,
    *===========================================*/
 
   val predicate = predicate_in_R.asUInt().orR
-  val start = predicate_valid_R.asUInt().andR
+  val start = predicate_valid_R.asUInt().orR
+  //val start = predicate_valid_R.asUInt().andR
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -223,14 +236,16 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   //printfInfo("start: %x\n", start)
 
   val pred_R = RegInit(ControlBundle.default)
+  val fire_W = WireInit(false.B)
 
   for (i <- 0 until NumInputs) {
     io.predicateIn(i).ready := ~predicate_valid_R(i)
     when(io.predicateIn(i).fire()) {
       //printfInfo("Latch predicate %x\n", i)
       state := s_LATCH
-      predicate_in_R(i) := io.predicateIn(i).bits.control
-      predicate_valid_R(i) := true.B
+      predicate_in_R(i) <> io.predicateIn(i).bits
+      fire_W := true.B
+      //predicate_valid_R(i) := true.B
     }
   }
 
@@ -239,11 +254,18 @@ class BasicBlockNoMaskNode(NumInputs: Int,
     io.Out(i).bits := pred_R.control
   }
 
+
+  when(fire_W & state === s_idle){
+    for(i <- 0 until NumInputs){
+      predicate_valid_R(i) := true.B
+    }
+  }
+
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  when(start) {
+  when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
     pred_R.control := predicate
     ValidOut()
@@ -273,7 +295,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
     //printfInfo("Start restarting output \n")
     // Reset data
     predicate_in_R := Vec(Seq.fill(NumInputs) {
-      false.B
+      ControlBundle.default
     })
     predicate_valid_R := Vec(Seq.fill(NumInputs) {
       false.B
