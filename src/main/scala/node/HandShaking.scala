@@ -107,9 +107,10 @@ class HandShakingCtrlMaskIO(val NumInputs: Int,
   val NumOuts: Int,
   val NumPhi: Int)(implicit p: Parameters)
   extends CoreBundle()(p) {
+
   // Output IO
-  val MaskBB = Vec(NumPhi, Decoupled(UInt(NumInputs.W)))
-  val Out = Vec(NumOuts, Decoupled(Bool()))
+  val MaskBB  = Vec(NumPhi, Decoupled(UInt(NumInputs.W)))
+  val Out     = Vec(NumOuts, Decoupled(Bool()))
 }
 
 /**
@@ -660,12 +661,12 @@ class HandShakingCtrlMask(val NumInputs: Int,
   val nodeID_R = RegInit(BID.U)
 
   // Output Handshaking
-  val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
-  val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
+  val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
 
   // Mask handshaking
-  val mask_ready_R = RegInit(Vec(Seq.fill(NumPhi)(false.B)))
-  val mask_valid_R = RegInit(Vec(Seq.fill(NumPhi)(false.B)))
+  val mask_ready_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
+  val mask_valid_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
 
   /*============================*
    *           Wiring           *
