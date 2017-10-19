@@ -28,6 +28,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
   // Printf debugging
+  override val printfSigil = "Node ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -56,9 +57,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
-
-
-  val pred_R = RegInit(init = false.B)
 
   //Instantiate ALU with selected code
   val FU = Module(new UALU(xlen, opCode))

@@ -35,9 +35,11 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
    *===========================================*/
   // Left Input
   val left_R = RegInit(DataBundle.default)
+  val left_valid_R = RegInit(false.B)
 
   // Right Input
   val right_R = RegInit(DataBundle.default)
+  val right_valid_R = RegInit(false.B)
 
   // Output register
   val data_R = RegInit(0.U(xlen.W))
@@ -56,29 +58,30 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  //printfInfo("start: %x\n", start)
+  //Instantiate ALU with selected code
+  var FU = Module(new UCMP(xlen, opCode))
+  FU.io.in1 := left_R.data
+  FU.io.in2 := right_R.data
 
-  io.LeftIO.ready := ~left_R.valid
+  io.LeftIO.ready := ~left_valid_R
   when(io.LeftIO.fire()) {
     //printfInfo("Latch left data\n")
     state := s_LATCH
-    left_R.data := io.LeftIO.bits.data
-    left_R.valid := true.B
-    left_R.predicate := io.LeftIO.bits.predicate
+    left_R <> io.LeftIO.bits
+    left_valid_R := true.B
   }
 
-  io.RightIO.ready := ~right_R.valid
+  io.RightIO.ready := ~right_valid_R
   when(io.RightIO.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
-    right_R.data := io.RightIO.bits.data
-    right_R.valid := true.B
-    right_R.predicate := io.RightIO.bits.predicate
+    right_R <> io.RightIO.bits
+    right_valid_R := true.B
   }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_R
+    io.Out(i).bits.data := FU.io.out
     io.Out(i).bits.predicate := predicate
   }
 
@@ -87,18 +90,8 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  //Instantiate ALU with selected code
-  var FU = Module(new UCMP(xlen, opCode))
- 
-  FU.io.in1 := left_R.data
-  FU.io.in2 := right_R.data
-  data_R := FU.io.out
 
-  when(start & predicate & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & ~predicate & state =/= s_COMPUTE) {
-    //printfInfo("Start sending data to output INVALID\n")
+  when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
     ValidOut()
   }
@@ -111,11 +104,11 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
     // Reset data
     left_R := DataBundle.default
     right_R := DataBundle.default
+
+    left_valid_R := false.B
+    right_valid_R := false.B
+
     // Reset output
-    data_R := 0.U
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
     //Reset state
     state := s_idle
     //Reset output
