@@ -92,7 +92,6 @@ class PhiNode(NumInputs: Int,
   for (i <- 0 until NumInputs) {
     io.InData(i).ready := ~in_data_valid_R(i)
     when(io.InData(i).fire()) {
-      //printfInfo("Latch left data\n")
       state := s_LATCH
       in_data_R(i).data := io.InData(i).bits.data
       in_data_R(i).valid := true.B

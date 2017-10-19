@@ -219,7 +219,10 @@ class BasicBlockNoMaskNode(NumInputs: Int,
    *===========================================*/
   // OP Inputs
   val predicate_in_R = RegInit(Vec(Seq.fill(NumInputs)(ControlBundle.default)))
-  val predicate_valid_R = RegInit(Vec(Seq.fill(NumInputs)(false.B)))
+
+  val predicate_valid_R = RegInit(false.B)
+  val predicate_valid_W = WireInit(VecInit(Seq.fill(NumInputs)(false.B)))
+
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
   val state = RegInit(s_idle)
@@ -241,14 +244,27 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   val pred_R = RegInit(ControlBundle.default)
   val fire_W = WireInit(false.B)
 
+  //Make all the inputs invalid if one of the inputs
+  //gets fire
+  //
+  when( state === s_idle ){
+    predicate_valid_W := VecInit(Seq.fill(NumInputs)(false.B))
+  }
+
+  fire_W := predicate_valid_W.asUInt.orR
+
+  when(fire_W & state === s_idle){
+    predicate_valid_R := true.B
+  }
+
+
   for (i <- 0 until NumInputs) {
     io.predicateIn(i).ready := ~predicate_valid_R(i)
     when(io.predicateIn(i).fire()) {
       //printfInfo("Latch predicate %x\n", i)
       state := s_LATCH
       predicate_in_R(i) <> io.predicateIn(i).bits
-      fire_W := true.B
-      //predicate_valid_R(i) := true.B
+      predicate_valid_W(i) := true.B
     }
   }
 
@@ -258,11 +274,11 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   }
 
 
-  when(fire_W & state === s_idle){
-    for(i <- 0 until NumInputs){
-      predicate_valid_R(i) := true.B
-    }
-  }
+  //when(fire_W & state === s_idle){
+    //for(i <- 0 until NumInputs){
+      //predicate_valid_R(i) := true.B
+    //}
+  //}
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
@@ -294,15 +310,18 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   //printfInfo("out_valid: %x\n", out_valid_W)
 
 
-  when(out_ready_W & out_valid_W){
+  when(out_ready_W & state === s_COMPUTE){
     //printfInfo("Start restarting output \n")
     // Reset data
     predicate_in_R := Vec(Seq.fill(NumInputs) {
       ControlBundle.default
     })
-    predicate_valid_R := Vec(Seq.fill(NumInputs) {
-      false.B
-    })
+
+    predicate_valid_R := false.B
+
+    //predicate_valid_W := Vec(Seq.fill(NumInputs) {
+      //false.B
+    //})
 
     // Reset output
     out_ready_R := Vec(Seq.fill(NumOuts) {
