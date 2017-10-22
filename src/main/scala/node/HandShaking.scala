@@ -213,21 +213,15 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := Vec(Seq.fill(NumOuts) {
-      true.B
-    })
+    out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
   }
 
   def InvalidOut(): Unit = {
-    out_valid_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
+    out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
   }
 
   def Reset(): Unit = {
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
+    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
     enable_valid_R := false.B
   }
 }
@@ -690,7 +684,7 @@ class HandShakingCtrlMask(val NumInputs: Int,
       // Detecting when to reset
       mask_ready_R(i) := io.MaskBB(i).ready
       // Propagating mask
-      out_valid_R(i) := false.B
+      mask_valid_R(i) := false.B
     }
 
   }

@@ -106,6 +106,7 @@ class LiveInTester(df: LiveInNode)
     step(1)
   }
 
+  poke(df.io.InData.bits.data, 7.U)
   poke(df.io.Finish.bits.control , true.B)
   poke(df.io.Finish.valid, true.B)
   for( i <- 0 until 5){

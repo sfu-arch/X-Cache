@@ -15,7 +15,7 @@ import util._
 class LiveOutNodeIO(NumOuts: Int)
                    (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
-  
+
   // Inputdata for Live out element
   val InData = Flipped(Decoupled(new DataBundle()))
 
@@ -25,7 +25,6 @@ class LiveOutNode(NumOuts: Int, ID: Int)
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new LiveOutNodeIO(NumOuts))
-  // Printf debugging
 
   // Printf debugging
   override val printfSigil = "LiveOut ID: " + ID + " "
@@ -40,72 +39,135 @@ class LiveOutNode(NumOuts: Int, ID: Int)
   val s_idle :: s_LATCH :: s_VALIDOUT :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
-  /*==========================================*
-   *           Predicate Evaluation           *
-   *==========================================*/
-
-  val predicate = indata_R.predicate & IsEnable()
-  val start = indata_valid_R & enable_valid_R
-
   /*===============================================*
-   *            Latch inputs. Wire up output       *
+   *            LATCHING INPUTS                    *
    *===============================================*/
 
-
-  val pred_R = RegInit(init = false.B)
-
   io.InData.ready := ~indata_valid_R
-
-  when(io.InData.fire()) {
-    //printfInfo("Latch left data\n")
-    state := s_LATCH
+  when(io.InData.fire()){
+    //Latch the data
     indata_R <> io.InData.bits
     indata_valid_R := true.B
   }
+
+  /*===============================================*
+   *            DEFINING STATES                    *
+   *===============================================*/
+
+  switch(state) {
+
+    is(s_idle) {
+
+      //When the input is fired
+      when(io.InData.fire()) {
+        state := s_LATCH
+      }
+    }
+
+    is(s_LATCH) {
+      when(enable_valid_R) {
+        //If the instruction is predicated
+        when(enable_R.data) {
+          //Change the state
+          state := s_VALIDOUT
+          //Valid the output
+          ValidOut()
+
+        }.otherwise {
+
+          //Restart the state
+          state := s_idle
+          Reset()
+
+          //Restart the register values
+          indata_R := DataBundle.default
+          indata_valid_R := false.B
+        }
+      }
+    }
+
+    is(s_VALIDOUT) {
+
+      when(IsOutReady()) {
+
+        state := s_idle
+
+        indata_R := DataBundle.default
+        indata_valid_R := false.B
+
+        Reset()
+      }
+    }
+  }
+
+  /*==========================================*
+   *             WIRING OUTPUT                *
+   *==========================================*/
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits <> indata_R
   }
 
+  /*==========================================*
+   *           Predicate Evaluation           *
+   *==========================================*/
+
+  //val predicate = IsEnable()
+  //val start = indata_valid_R & enable_valid_R
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+
+  //val pred_R = RegInit(init = false.B)
+
+  //io.InData.ready := ~indata_valid_R
+
+  //when(io.InData.fire()) {
+  ////printfInfo("Latch left data\n")
+  //state := s_LATCH
+  //indata_R <> io.InData.bits
+  //indata_valid_R := true.B
+  //}
+
+
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  when(start & ~enable_R){
-    //When the Loop hasn't done, we only restart the states
-    //and we don't make the output valid
-    
-    // Reset data
-    indata_R := DataBundle.default
-    indata_valid_R := false.B
+  //when(start & IsEnable() & (state === s_LATCH)){
+  //state := s_VALIDOUT
+  //ValidOut()
+  //}. elsewhen( start & ~IsEnable() & (state === s_LATCH) ){
 
-    //Reset state
-    state := s_idle
-    //Reset output
-    Reset()
-  } .elsewhen(start & enable_R & state =/= s_VALIDOUT) {
-    //If the input is valid, start is activated and 
-    //enalbe signal is true then we make the output valid
-    state := s_VALIDOUT
-    ValidOut()
-  }
+  ////When the Loop hasn't done, we only restart the states
+  ////and we don't make the output valid
+
+  //// Reset data
+  //indata_R := DataBundle.default
+  //indata_valid_R := false.B
+
+  ////Reset state
+  //state := s_idle
+  ////Reset output
+  //Reset()
+  //}
 
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-  when(IsOutReady() & (state === s_VALIDOUT)) {
-    // Reset data
-    indata_R := DataBundle.default
-    indata_valid_R := false.B
+  //when(IsOutReady() & (state === s_VALIDOUT)) {
+  //// Reset data
+  //indata_R := DataBundle.default
+  //indata_valid_R := false.B
 
-    //Reset state
-    state := s_idle
-    //Reset output
-    Reset()
-  }
-
-  //printfInfo(" State: %x\n", state)
+  ////Reset state
+  //state := s_idle
+  ////Reset output
+  //Reset()
+  //}
 
 }

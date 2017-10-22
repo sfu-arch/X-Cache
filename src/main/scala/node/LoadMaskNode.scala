@@ -101,7 +101,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
   io.MemReq.valid := ReqValid
  
   val s_init :: s_SENDING :: s_RECEIVING  :: s_Done :: Nil = Enum(4)
-  val state = Reg(init = s_init)
+  val state = RegInit(s_init)
   
   val type_word = MT_W
 
@@ -153,7 +153,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
    // 
    state := s_init
    val z = linebuffer.asUInt
-   printf("linebuffer %x", (z & bitmask) >> Cat(GepOperand(1,0),UInt(0,3)))
+   printf("linebuffer %x", (z & bitmask) >> Cat(GepOperand(1,0),0.U(3.W)))
 
  }
 

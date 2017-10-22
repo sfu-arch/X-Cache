@@ -69,6 +69,10 @@ class RetNode(NumOuts: Int, ID: Int)
     state := s_COMPUTE
     ValidOut()
   }
+
+  when( enable_valid_R & (~enable_R).asTypeOf(Bool())){
+    Reset()
+  }
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/

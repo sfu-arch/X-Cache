@@ -52,7 +52,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
    *==========================================*/
 
   val predicate = left_R.predicate & right_R.predicate & IsEnable()
-  val start = left_R.valid & right_R.valid & IsEnableValid()
+  val start = left_valid_R & right_valid_R & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
