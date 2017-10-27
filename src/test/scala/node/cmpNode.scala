@@ -93,7 +93,7 @@ class cmpTester(df: IcmpNode)
 class cmpTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new IcmpNode(NumOuts = 1, ID = 0, opCode = "NE")(sign = true)) {
+     chisel3.iotesters.Driver(() => new IcmpNode(NumOuts = 1, ID = 0, opCode = "SLT")(sign = true)) {
        c => new cmpTester(c)
      } should be(true)
    }
