@@ -50,13 +50,15 @@ class GepOneNode(NumOuts: Int, ID: Int)
    *===========================================*/
   // Addr Inputs
   val base_addr_R = RegInit(DataBundle.default)
+  val base_addr_valid_R = RegInit(false.B)
 
   // Index 1 input
   val idx1_R = RegInit(DataBundle.default)
+  val idx1_valid_R = RegInit(false.B)
 
 
   // Output register
-  val data_R = RegInit(0.U(xlen.W))
+  val data_W = WireInit(0.U(xlen.W))
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
   val state = RegInit(s_idle)
@@ -66,33 +68,30 @@ class GepOneNode(NumOuts: Int, ID: Int)
    *==========================================*/
 
   val predicate = base_addr_R.predicate & idx1_R.predicate & IsEnable()
-  val start = base_addr_R.valid & idx1_R.valid & IsEnableValid()
+  val start = base_addr_valid_R & idx1_valid_R & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  io.baseAddress.ready := ~base_addr_R.valid
+  io.baseAddress.ready := ~base_addr_valid_R
   when(io.baseAddress.fire()) {
     //printfInfo("Latch left data\n")
     state := s_LATCH
-    base_addr_R.data := io.baseAddress.bits.data
-    base_addr_R.valid := true.B
-    base_addr_R.predicate := io.baseAddress.bits.predicate
+    base_addr_R <> io.baseAddress
+    base_addr_valid_R := true.B
   }
 
   io.idx1.ready := ~idx1_R.valid
   when(io.idx1.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
-    idx1_R.data := io.idx1.bits.data
-    idx1_R.valid := true.B
-    idx1_R.predicate := io.idx1.bits.predicate
+    idx1_R <> io.idx1
   }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_R
+    io.Out(i).bits.data := data_W
     io.Out(i).bits.predicate := predicate
   }
 
@@ -103,13 +102,10 @@ class GepOneNode(NumOuts: Int, ID: Int)
 
   //Compute the address
 
-  data_R := base_addr_R.data +
+  data_W := base_addr_R.data +
     (idx1_R.data * numByte1.U)
 
-  when(start & predicate & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & !predicate & state =/= s_COMPUTE) {
+  when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
     ValidOut()
   }
@@ -122,16 +118,18 @@ class GepOneNode(NumOuts: Int, ID: Int)
     //printfInfo("Start restarting output \n")
     // Reset data
     base_addr_R := DataBundle.default
-    idx1_R := DataBundle.default
+    base_addr_valid_R := false.B
 
-    // Reset output
-    data_R := 0.U
+    idx1_R := DataBundle.default
+    idx1_valid_R := false.B
+
+    state := s_idle
+
 
     //Reset output
     Reset()
   }
 
-  printfInfo(" State: %x\n", state)
 
 }
 
@@ -150,15 +148,18 @@ class GepTwoNode(NumOuts: Int, ID: Int)
    *===========================================*/
   // Addr Inputs
   val base_addr_R = RegInit(DataBundle.default)
+  val base_addr_valid_R = RegInit(false.B)
 
   // Index 1 input
   val idx1_R = RegInit(DataBundle.default)
+  val idx1_valid_R = RegInit(false.B)
 
   // Index 2 input
   val idx2_R = RegInit(DataBundle.default)
+  val idx2_valid_R = RegInit(false.B)
 
   // Output register
-  val data_R = RegInit(0.U(xlen.W))
+  val data_W = WireInit(0.U(xlen.W))
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
   val state = RegInit(s_idle)
@@ -168,42 +169,39 @@ class GepTwoNode(NumOuts: Int, ID: Int)
    *==========================================*/
 
   val predicate = base_addr_R.predicate & idx1_R.predicate & idx2_R.predicate & IsEnable()
-  val start = base_addr_R.valid & idx1_R.valid & idx2_R.valid & IsEnableValid()
+  val start = base_addr_valid_R & idx1_valid_R & idx2_valid_R & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  io.baseAddress.ready := ~base_addr_R.valid
+  io.baseAddress.ready := ~base_addr_valid_R
   when(io.baseAddress.fire()) {
     //printfInfo("Latch left data\n")
     state := s_LATCH
-    base_addr_R.data := io.baseAddress.bits.data
-    base_addr_R.valid := true.B
-    base_addr_R.predicate := io.baseAddress.bits.predicate
+    base_addr_R <> io.baseAddress
+    base_addr_valid_R := true.B
   }
 
-  io.idx1.ready := ~idx1_R.valid
+  io.idx1.ready := ~idx1_valid_R
   when(io.idx1.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
-    idx1_R.data := io.idx1.bits.data
-    idx1_R.valid := true.B
-    idx1_R.predicate := io.idx1.bits.predicate
+    idx1_R <> io.idx1
+    idx1_valid_R := true.B
   }
 
   io.idx2.ready := ~idx2_R.valid
   when(io.idx2.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
-    idx2_R.data := io.idx2.bits.data
-    idx2_R.valid := true.B
-    idx2_R.predicate := io.idx2.bits.predicate
+    idx2_R <> io.idx2
+    idx2_valid_R := true.B
   }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_R
+    io.Out(i).bits.data := data_W
     io.Out(i).bits.predicate := predicate
   }
 
@@ -214,14 +212,10 @@ class GepTwoNode(NumOuts: Int, ID: Int)
 
   //Compute the address
 
-  data_R := base_addr_R.data +
+  data_W := base_addr_R.data +
     (idx1_R.data * numByte1.U) + (idx2_R.data * numByte2.U)
 
-  when(start & predicate & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & ~predicate & state =/= s_COMPUTE) {
-    //printfInfo("Start sending data to output INVALID\n")
+  when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
     ValidOut()
   }
@@ -238,13 +232,19 @@ class GepTwoNode(NumOuts: Int, ID: Int)
     // Reset data
 
     base_addr_R := DataBundle.default
+    base_addr_valid_R := false.B
+
     idx1_R := DataBundle.default
+    idx1_valid_R := false.B
+
     idx2_R := DataBundle.default
-    // Reset output
-    data_R := 0.U
+    idx2_valid_R := false.B
+
+    state := s_idle
+
     //Reset output
     Reset()
   }
 
-  printfInfo(" State: %x\n", state)
+//  printfInfo(" State: %x\n", state)
 }
