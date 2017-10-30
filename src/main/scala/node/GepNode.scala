@@ -78,7 +78,10 @@ class GepOneNode(NumOuts: Int, ID: Int)
   when(io.baseAddress.fire()) {
     //printfInfo("Latch left data\n")
     state := s_LATCH
-    base_addr_R <> io.baseAddress
+    base_addr_R.data := io.baseAddress.bits.data
+    base_addr_R.predicate := true.B
+    base_addr_R.valid := true.B
+
     base_addr_valid_R := true.B
   }
 
@@ -86,7 +89,10 @@ class GepOneNode(NumOuts: Int, ID: Int)
   when(io.idx1.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
-    idx1_R <> io.idx1
+    idx1_R.data :=  io.idx1.bits.data
+    idx1_R.predicate := true.B
+    idx1_R.valid := true.B
+
     idx1_valid_R := true.B
   }
 
@@ -180,7 +186,10 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   when(io.baseAddress.fire()) {
     //printfInfo("Latch left data\n")
     state := s_LATCH
-    base_addr_R <> io.baseAddress
+    base_addr_R.data := io.baseAddress.bits.data
+    base_addr_R.predicate := true.B
+    base_addr_R.valid := true.B
+
     base_addr_valid_R := true.B
   }
 
@@ -188,7 +197,10 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   when(io.idx1.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
-    idx1_R <> io.idx1
+    idx1_R.data :=  io.idx1.bits.data
+    idx1_R.predicate := true.B
+    idx1_R.valid := true.B
+
     idx1_valid_R := true.B
   }
 
@@ -196,7 +208,10 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   when(io.idx2.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
-    idx2_R <> io.idx2
+    idx2_R.data := io.idx2.bits.data
+    idx2_R.predicate := true.B
+    idx2_R.valid := true.B
+
     idx2_valid_R := true.B
   }
 
