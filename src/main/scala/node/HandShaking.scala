@@ -563,7 +563,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
     if (NumPredOps == 0) {
       return true.B
     } else {
-      Vec(pred_valid_R).asUInt.andR
+      VecInit(pred_valid_R).asUInt.andR
     }
   }
 

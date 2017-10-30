@@ -1,8 +1,8 @@
 package node
 
 /**
- * Created by nvedula on 15/5/17.
- */
+  * Created by nvedula on 15/5/17.
+  */
 
 import chisel3._
 import chisel3.util._
@@ -14,7 +14,6 @@ import utility.Constants._
 import utility.UniformPrintfs
 
 
-
 // Design Doc
 //////////
 /// DRIVER ///
@@ -24,8 +23,8 @@ import utility.UniformPrintfs
 //////////
 
 class LoadIO(NumPredOps: Int,
-  NumSuccOps: Int,
-  NumOuts: Int)(implicit p: Parameters)
+             NumSuccOps: Int,
+             NumOuts: Int)(implicit p: Parameters)
   extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new DataBundle) {
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
@@ -36,9 +35,9 @@ class LoadIO(NumPredOps: Int,
 }
 
 class UnTypLoad(NumPredOps: Int,
-  NumSuccOps: Int,
-  NumOuts: Int,
-  Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit p: Parameters)
+                NumSuccOps: Int,
+                NumOuts: Int,
+                Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit p: Parameters)
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new DataBundle)(p) {
 
   override lazy val io = IO(new LoadIO(NumPredOps, NumSuccOps, NumOuts))
@@ -46,34 +45,37 @@ class UnTypLoad(NumPredOps: Int,
   override val printfSigil = "Node (LOAD) ID: " + ID + " "
 
 
-/*=============================================
-=            Registers                        =
-=============================================*/
+  /*=============================================
+  =            Registers                        =
+  =============================================*/
   // OP Inputs
   val addr_R = RegInit(DataBundle.default)
+  val addr_valid_R = RegInit(false.B)
 
   // Memory Response
   val data_R = RegInit(DataBundle.default)
+  val data_valid_R = RegInit(false.B)
 
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
-/*============================================
-=            Predicate Evaluation            =
-============================================*/
+  /*============================================
+  =            Predicate Evaluation            =
+  ============================================*/
 
-  val predicate = addr_R.predicate & IsEnable()
-  val start = addr_R.valid & IsPredValid & IsEnableValid()
+  val predicate = IsEnable()
+  val start = addr_valid_R & IsPredValid & IsEnableValid()
 
-/*================================================
-=            Latch inputs. Wire up output            =
-================================================*/
+  /*================================================
+  =            Latch inputs. Wire up output            =
+  ================================================*/
 
-  io.GepAddr.ready := ~addr_R.valid
+  io.GepAddr.ready := ~addr_valid_R
   when(io.GepAddr.fire()) {
-    addr_R := io.GepAddr.bits
+    addr_R.data := io.GepAddr.bits.data
     addr_R.valid := true.B
+    addr_valid_R := true.B
   }
 
   // Wire up Outputs
@@ -82,20 +84,20 @@ class UnTypLoad(NumPredOps: Int,
     io.Out(i).bits.predicate := predicate
   }
 
-io.memReq.valid        := false.B
-/*=============================================
-=            ACTIONS (possibly dangerous)     =
-=============================================*/
+  io.memReq.valid := false.B
+  /*=============================================
+  =            ACTIONS (possibly dangerous)     =
+  =============================================*/
 
   when(start & predicate) {
     // ACTION:  Memory request
     //  Check if address is valid and predecessors have completed.
-    val mem_req_fire = addr_R.valid & IsPredValid()
+    val mem_req_fire = addr_valid_R & IsPredValid()
     io.memReq.bits.address := addr_R.data
-    io.memReq.bits.node    := nodeID_R
-    io.memReq.bits.Typ     := Typ
+    io.memReq.bits.node := nodeID_R
+    io.memReq.bits.Typ := Typ
     io.memReq.bits.RouteID := RouteID.U
-    
+
     // ACTION: Outgoing Address Req ->
     when((state === s_idle) && (mem_req_fire)) {
       io.memReq.valid := true.B
@@ -125,9 +127,9 @@ io.memReq.valid        := false.B
     ValidOut()
     state := s_Done
   }
-/*===========================================
-=            Output Handshaking and Reset   =
-===========================================*/
+  /*===========================================
+  =            Output Handshaking and Reset   =
+  ===========================================*/
 
   //  ACTION: <- Check Out READY and Successors READY
   when(state === s_Done) {
@@ -138,8 +140,10 @@ io.memReq.valid        := false.B
       // Clear all the valid states.
       // Reset address
       addr_R := DataBundle.default
+      addr_valid_R := false.B
       // Reset data
       data_R := DataBundle.default
+      data_valid_R := false.B
       // Reset state.
       Reset()
       // Reset state.
