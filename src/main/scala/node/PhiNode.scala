@@ -126,6 +126,8 @@ class PhiNode(NumInputs: Int,
     m_state := s_idle
     //Reset output
     Reset()
-  }
+    printfInfo("Output fired")
+
+   }
 
 }

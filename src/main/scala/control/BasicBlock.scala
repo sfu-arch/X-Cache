@@ -172,6 +172,9 @@ class BasicBlockNode(NumInputs: Int,
 
     //Reset state
     state := s_idle
+    when(pred_R.control) {
+      printfInfo("Output fired")
+    }
     //Restart predicate bit
     pred_R.control := false.B
   }
@@ -330,11 +333,13 @@ class BasicBlockNoMaskNode(NumInputs: Int,
 
     //Reset state
     state := s_idle
+    when(pred_R.control) {
+      printfInfo("Output fired")
+    }
     //Restart predicate bit
     pred_R.control := false.B
   }
 
   //printfInfo(" State: %x\n", state)
-
 
 }

@@ -43,7 +43,8 @@ class UnTypLoad(NumPredOps: Int,
 
   override lazy val io = IO(new LoadIO(NumPredOps, NumSuccOps, NumOuts))
   // Printf debugging
-  
+  override val printfSigil = "LOAD" + xlen + "_" + ID + ":"
+
 
 /*=============================================
 =            Registers                        =
@@ -143,9 +144,13 @@ io.memReq.valid        := false.B
       Reset()
       // Reset state.
       state := s_idle
+
+      printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },",state,data_R.valid,data_R.data,data_R.predicate)
+      printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
+      printf("}")
     }
   }
-  override val printfSigil = "LOAD" + xlen + "_" + ID + ":"
+  /*
   if (log == true && (comp contains "LOAD")) {
     val x = RegInit(0.U(xlen.W))
     x     := x + 1.U
@@ -162,4 +167,5 @@ io.memReq.valid        := false.B
       case everythingElse => {}
     }
   }
+  */
 }

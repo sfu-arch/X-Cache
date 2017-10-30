@@ -32,7 +32,7 @@ class CBranchNode(ID: Int)
   extends HandShakingCtrlNPS(2, ID)(p) {
   override lazy val io = IO(new CBranchNodeIO())
   // Printf debugging
-  override val printfSigil = "Node ID: " + ID + " "
+  override val printfSigil = "Node (CBR) ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -109,6 +109,8 @@ class CBranchNode(ID: Int)
     state := s_idle
 
     Reset()
+    printfInfo("Output fired\n")
+
   }
 
   //printfInfo(" State: %x\n", state)
@@ -121,7 +123,7 @@ class UBranchNode(ID: Int)
   extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
   override lazy val io = IO(new HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p))
   // Printf debugging
-  override val printfSigil = "Node (CBR) ID: " + ID + " "
+  override val printfSigil = "Node (UBR) ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -181,6 +183,8 @@ class UBranchNode(ID: Int)
 
     //Reset state
     state := s_idle
+    printfInfo("Output fired")
+
   }
 
 }

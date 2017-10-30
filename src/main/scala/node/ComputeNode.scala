@@ -28,7 +28,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
   // Printf debugging
-  override val printfSigil = "Node ID: " + ID + " "
+  override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -111,6 +111,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     state := s_idle
     //Reset output
     Reset()
+    printfInfo("Output fired")
   }
 
 }
