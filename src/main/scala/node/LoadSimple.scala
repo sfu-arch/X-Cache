@@ -43,7 +43,7 @@ class UnTypLoad(NumPredOps: Int,
 
   override lazy val io = IO(new LoadIO(NumPredOps, NumSuccOps, NumOuts))
   // Printf debugging
-  override val printfSigil = "LOAD" + xlen + "_" + ID + ":"
+  override val printfSigil = "Node (LOAD) ID: " + ID + " "
 
 
 /*=============================================
@@ -144,10 +144,7 @@ io.memReq.valid        := false.B
       Reset()
       // Reset state.
       state := s_idle
-
-      printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },",state,data_R.valid,data_R.data,data_R.predicate)
-      printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
-      printf("}")
+      printfInfo("Output fired")
     }
   }
   /*

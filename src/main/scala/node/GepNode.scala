@@ -43,7 +43,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new GepNodeTwoIO(NumOuts))
   // Printf debugging
-  override val printfSigil = "Node ID: " + ID + " "
+  override val printfSigil = "Node (GEP1) ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -87,6 +87,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
     //printfInfo("Latch right data\n")
     state := s_LATCH
     idx1_R <> io.idx1
+    idx1_valid_R := true.B
   }
 
   // Wire up Outputs
@@ -124,7 +125,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
     idx1_valid_R := false.B
 
     state := s_idle
-
+    printfInfo("Output fired")
 
     //Reset output
     Reset()
@@ -141,7 +142,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new GepNodeTwoIO(NumOuts))
   // Printf debugging
-  override val printfSigil = "Node ID: " + ID + " "
+  override val printfSigil = "Node (GEP2) ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -241,6 +242,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
     idx2_valid_R := false.B
 
     state := s_idle
+    printfInfo("Output fired")
 
     //Reset output
     Reset()

@@ -50,6 +50,7 @@ class UnTypStore(NumPredOps: Int,
 
   // Set up StoreIO
   override lazy val io = IO(new StoreIO(NumPredOps, NumSuccOps, NumOuts))
+  override val printfSigil = "Node (STORE) ID: " + ID + " "
 
 /*=============================================
 =            Register declarations            =
@@ -161,11 +162,14 @@ when (start & predicate) {
       Reset()
       // Reset state.
       state := s_idle
+      printfInfo("Output fired")
 
     }
   }
+
+/*
   // Trace detail.
-  override val printfSigil = "STORE" + xlen + "_" + ID + ":"
+
   if (log == true && (comp contains "STORE")) {
     val x = RegInit(0.U(xlen.W))
     x     := x + 1.U
@@ -182,4 +186,5 @@ when (start & predicate) {
       case everythingElse => {}
     }
   }
+  */
 }
