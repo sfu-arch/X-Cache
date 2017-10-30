@@ -19,8 +19,8 @@ class GepNodeOneIO(NumOuts: Int)
   // Inputs should be fed only when Ready is HIGH
   // Inputs are always latched.
   // If Ready is LOW; Do not change the inputs as this will cause a bug
-  val baseAddress = Flipped(Decoupled(new DataBundle))
-  val idx1 = Flipped(Decoupled(new DataBundle))
+  val baseAddress = Flipped(Decoupled(new DataBundle()))
+  val idx1 = Flipped(Decoupled(new DataBundle()))
 
 }
 
@@ -31,9 +31,9 @@ class GepNodeTwoIO(NumOuts: Int)
   // Inputs should be fed only when Ready is HIGH
   // Inputs are always latched.
   // If Ready is LOW; Do not change the inputs as this will cause a bug
-  val baseAddress = Flipped(Decoupled(new DataBundle))
-  val idx1 = Flipped(Decoupled(new DataBundle))
-  val idx2 = Flipped(Decoupled(new DataBundle))
+  val baseAddress = Flipped(Decoupled(new DataBundle()))
+  val idx1 = Flipped(Decoupled(new DataBundle()))
+  val idx2 = Flipped(Decoupled(new DataBundle()))
 
 }
 
@@ -41,7 +41,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
              (numByte1: Int)
              (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
-  override lazy val io = IO(new GepNodeTwoIO(NumOuts))
+  override lazy val io = IO(new GepNodeOneIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Node (GEP1) ID: " + ID + " "
 
@@ -129,12 +129,13 @@ class GepOneNode(NumOuts: Int, ID: Int)
     idx1_valid_R := false.B
 
     state := s_idle
-    printfInfo("Output fired")
+    printfInfo("Output fired\n")
 
     //Reset output
     Reset()
   }
 
+  printfInfo(" State: %x\n", state)
 
 }
 
@@ -235,7 +236,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   }
 
 
-    
+
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
@@ -255,11 +256,11 @@ class GepTwoNode(NumOuts: Int, ID: Int)
     idx2_valid_R := false.B
 
     state := s_idle
-    printfInfo("Output fired")
+    printfInfo("Output fired\n")
 
     //Reset output
     Reset()
   }
 
-//  printfInfo(" State: %x\n", state)
+  printfInfo(" State: %x\n", state)
 }
