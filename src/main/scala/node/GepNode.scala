@@ -56,10 +56,6 @@ class GepOneNode(NumOuts: Int, ID: Int)
   val idx1_R = RegInit(DataBundle.default)
   val idx1_valid_R = RegInit(false.B)
 
-
-  // Output register
-  val data_W = WireInit(0.U(xlen.W))
-
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
@@ -74,6 +70,10 @@ class GepOneNode(NumOuts: Int, ID: Int)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
+  // Output register
+  val data_W = base_addr_R.data +
+    (idx1_R.data * numByte1.U)
+
   io.baseAddress.ready := ~base_addr_valid_R
   when(io.baseAddress.fire()) {
     //printfInfo("Latch left data\n")
@@ -85,7 +85,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
     base_addr_valid_R := true.B
   }
 
-  io.idx1.ready := ~idx1_R.valid
+  io.idx1.ready := ~idx1_valid_R
   when(io.idx1.fire()) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
@@ -109,8 +109,6 @@ class GepOneNode(NumOuts: Int, ID: Int)
 
   //Compute the address
 
-  data_W := base_addr_R.data +
-    (idx1_R.data * numByte1.U)
 
   when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
