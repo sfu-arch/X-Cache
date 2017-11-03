@@ -85,6 +85,10 @@ class UnTypLoad(NumPredOps: Int,
   }
 
   io.memReq.valid := false.B
+  io.memReq.bits.address := addr_R.data
+  io.memReq.bits.node := nodeID_R
+  io.memReq.bits.Typ := Typ
+  io.memReq.bits.RouteID := RouteID.U
   /*=============================================
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
@@ -93,10 +97,6 @@ class UnTypLoad(NumPredOps: Int,
     // ACTION:  Memory request
     //  Check if address is valid and predecessors have completed.
     val mem_req_fire = addr_valid_R & IsPredValid()
-    io.memReq.bits.address := addr_R.data
-    io.memReq.bits.node := nodeID_R
-    io.memReq.bits.Typ := Typ
-    io.memReq.bits.RouteID := RouteID.U
 
     // ACTION: Outgoing Address Req ->
     when((state === s_idle) && (mem_req_fire)) {

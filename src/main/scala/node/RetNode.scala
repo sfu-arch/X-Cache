@@ -62,7 +62,8 @@ class RetNode(NumOuts: Int, ID: Int)
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := input_R.data
-    io.Out(i).bits.predicate := predicate 
+    io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.valid := true.B
   }
 
   when(start & state =/= s_COMPUTE) {
