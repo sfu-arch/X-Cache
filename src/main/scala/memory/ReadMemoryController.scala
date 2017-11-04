@@ -25,7 +25,7 @@ abstract class ReadEntryIO()(implicit val p: Parameters)
   val io = IO(new Bundle {
     // Read Request Type
     val NodeReq = Flipped(Decoupled(Input(new ReadReq)))
-    val NodeResp = Decoupled(new ReadResp)
+//    val NodeResp = Decoupled(new ReadResp)
 
     //Memory interface
     val MemReq = Decoupled(new CacheReq)
@@ -87,7 +87,17 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   =            Default values for external communication            =
   ==================================================================*/
   io.output.valid := 0.U
+  io.output.bits.RouteID := request_R.RouteID
+  io.output.bits.valid := true.B
+  io.output.bits.data := 0.U
+
   io.MemReq.valid := 0.U
+  io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
+  io.MemReq.bits.tag := ID
+  io.MemReq.bits.iswrite := false.B
+  io.MemReq.bits.data := 0.U
+  io.MemReq.bits.mask := 0.U
+  //    io.MemReq.bits.valid := true.B
 
 
   /*=======================================================
@@ -115,9 +125,6 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   ===========================================================*/
 
   when((state === s_SENDING) && (sendbytemask =/= 0.asUInt((xlen/4).W))) {
-    io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
-    io.MemReq.bits.tag := ID
-//    io.MemReq.bits.valid := true.B
     io.MemReq.valid := 1.U
     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
     when(io.MemReq.fire()) {
@@ -156,7 +163,6 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
     if (xlen == 16) {
       io.output.bits.data := Data2Sign16b(output,request_R.Typ,xlen)
     }
-    io.output.bits.RouteID := request_R.RouteID
     io.output.bits.valid := true.B
     ptr := 0.U
     // Output driver demux tree has forwarded output (may not have reached receiving node yet)

@@ -29,7 +29,7 @@ abstract class WriteEntryIO()(implicit val p: Parameters)
   val io = IO(new Bundle {
     // Read Request Type
     val NodeReq = Flipped(Decoupled(Input(new WriteReq)))
-    val NodeResp = Decoupled(new WriteResp)
+//    val NodeResp = Decoupled(new WriteResp)
 
     //Memory interface
     val MemReq = Decoupled(new CacheReq)
@@ -91,8 +91,18 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
 /*=================================================================
 =            Default values for external communication            =
 ==================================================================*/
+  // @todo: (done and valid are redundant. Need to cleanup at some point in the future)
   io.output.valid := 0.U
+  io.output.bits.done    := true.B
+  io.output.bits.valid   := true.B
+  io.output.bits.RouteID := request_R.RouteID
   io.MemReq.valid := 0.U
+  io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
+  // Sending data; pick word from linebuffer
+  io.MemReq.bits.data  := linebuffer(ptr)
+  io.MemReq.bits.tag  := ID
+  io.MemReq.bits.mask := sendbytemask(xlen/8-1,0)
+  io.MemReq.bits.iswrite   := true.B
 
 
 /*=======================================================
@@ -122,13 +132,7 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
 ===========================================================*/
 
   when((state === s_SENDING) && (sendbytemask =/= 0.asUInt((xlen/4).W))) {
-    io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
-    // Sending data; pick word from linebuffer 
-    io.MemReq.bits.data  := linebuffer(ptr)
-    io.MemReq.bits.tag  := ID
-    io.MemReq.bits.mask := sendbytemask(xlen/8-1,0)
     io.MemReq.valid     := 1.U
-    io.MemReq.bits.iswrite   := true.B
     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
     when(io.MemReq.fire()) {
       // Shift right by word length on machine.
@@ -159,10 +163,7 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
     io.output.valid := 1.U
     ptr := 0.U
     // Valid write 
-    // @todo: (done and valid are redundant. Need to cleanup at some point in the future) 
-    io.output.bits.done    := true.B
     io.output.bits.valid   := true.B
-    io.output.bits.RouteID := request_R.RouteID
     // Output driver demux tree has forwarded output (may not have reached receiving node yet)
     when(io.output.fire()) {
       state := s_idle

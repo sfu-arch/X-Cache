@@ -83,6 +83,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := FU.io.out
     io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.valid := true.B
   }
 
   /*============================================*
