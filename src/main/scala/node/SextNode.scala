@@ -20,7 +20,6 @@ class SextNodeIO(val src: Int, val des: Int, val nout: Int)
     val Out = Vec(nout, Decoupled(new DataBundle()))
     //val Out = Output(Vec(nout, Decoupled(UInt(des.W))))
 
-
 }
 
 class SextNode(val SrcW: Int, val DesW: Int, val NumOuts: Int)(implicit val p: Parameters)
