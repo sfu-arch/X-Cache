@@ -37,7 +37,8 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
   /* Target Design */
   val dut = Module(accel)
   /* Memory model interface */
-  val dutMem = Wire(new NastiIO)
+  val dutMem = Module(NastiMemSlave)//Wire(new NastiIO)
+
 
   // Connect CPU to DUT
   dut.io.h2f <> hps.io.nasti
