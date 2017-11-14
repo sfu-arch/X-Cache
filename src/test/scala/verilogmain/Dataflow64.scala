@@ -16,7 +16,7 @@ import interfaces._
 
 
 
-
+/*
 
 class DataflowPeekPoker64(df: DataFlow64)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
 	for(t <- 0 until 50){
@@ -43,5 +43,5 @@ class DataflowVerilog64 extends  FlatSpec with Matchers {
 
 }
 
-
+*/
 

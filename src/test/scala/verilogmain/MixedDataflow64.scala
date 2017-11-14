@@ -15,7 +15,7 @@ import util._
 import interfaces._
 
 
-
+/*
 
 
 class MixedDataflowPeekPoker64(df: MixedDataFlow64)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
@@ -45,3 +45,4 @@ class MixedDataflowVerilog64 extends  FlatSpec with Matchers {
 
 
 
+*/
