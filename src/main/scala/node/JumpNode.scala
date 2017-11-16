@@ -26,6 +26,23 @@ class JumpNode(val NumOuts: Int, val ID: Int)(implicit val p: Parameters)
 
   lazy val io = IO(new JumpNodeIO(NumOuts))
 
+
+  val enable_R = RegInit(false.B)
+  val enable_valid_R = RegInit(false.B)
+
+  io.enable.ready := ~enable_valid_R
+  when(io.enable.fire()) {
+    //printfInfo("Latch left data\n")
+    state := s_LATCH
+    enable_R <> io.enable.bits
+    enable_valid_R := true.B
+  }
+
+  when(enable_valid_R){
+    enable_valid_R := false.B
+  }
+
+
   for(i <- 0 until NumOuts){
     io.Out(i) <> io.Input
   }

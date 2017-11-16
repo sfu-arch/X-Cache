@@ -20,7 +20,7 @@ class GepNodeOneIO(NumOuts: Int)
   // Inputs are always latched.
   // If Ready is LOW; Do not change the inputs as this will cause a bug
   val baseAddress = Flipped(Decoupled(new DataBundle()))
-  val idx1 = Flipped(Decoupled(new DataBundle()))
+  val idx1        = Flipped(Decoupled(new DataBundle()))
 
 }
 
