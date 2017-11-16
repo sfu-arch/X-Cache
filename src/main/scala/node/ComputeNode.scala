@@ -114,5 +114,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     Reset()
     printfInfo("Output fired")
   }
+  printfInfo("State: %x", state)
 
 }
