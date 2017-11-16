@@ -16,7 +16,7 @@ import interfaces._
 
 
 
-
+/*
 
 class MixedDataflowPeekPoker32(df: MixedDataFlow32)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
 	for(t <- 0 until 50){
@@ -44,4 +44,4 @@ class MixedDataflowVerilog32 extends  FlatSpec with Matchers {
 }
 
 
-
+*/

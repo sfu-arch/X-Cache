@@ -208,11 +208,13 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
     is(s_IDLE) {
       when(io.cpu.req.valid) {
         state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
+/*
         when (io.cpu.req.bits.iswrite) {
           printf("\nSTORE START: %d\n", counterValue)
         }.otherwise {
           printf("\nLOAD START:  %d\n", counterValue)
         }
+*/
       }
     }
     is(s_READ_CACHE) {
@@ -221,7 +223,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
           state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
         }.otherwise {
           state := s_IDLE
-          printf("\nLOAD END: %d\n", counterValue)
+//          printf("\nLOAD END: %d\n", counterValue)
         }
       }.otherwise {
         io.nasti.aw.valid := is_dirty
@@ -236,7 +238,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
     is(s_WRITE_CACHE) {
       when(hit || is_alloc_reg || io.cpu.abort) {
         state := s_IDLE
-        printf("\nSTORE END: %d\n", counterValue)
+//      printf("\nSTORE END: %d\n", counterValue)
       }.otherwise {
         io.nasti.aw.valid := is_dirty
         io.nasti.ar.valid := !is_dirty
@@ -269,7 +271,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
       when(read_wrap_out) {
         state := Mux(cpu_iswrite, s_WRITE_CACHE, s_IDLE)
         when (!cpu_iswrite) {
-          printf("\nLOAD END: %d\n", counterValue)
+//          printf("\nLOAD END: %d\n", counterValue)
         }
       }
     }

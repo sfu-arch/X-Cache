@@ -7,10 +7,10 @@ import junctions._
 import config._
 
 class NastiMemSlaveIO(implicit p: Parameters) extends CoreBundle()(p) {
-  val nasti = new NastiIO
+  val nasti = Flipped(new NastiIO)
 }
 
-abstract class NastiMemSlave()(implicit p: Parameters) extends Module with CacheParams {
+class NastiMemSlave()(implicit val p: Parameters) extends Module with CacheParams {
 
   val io = IO(new NastiMemSlaveIO()(p))
 
