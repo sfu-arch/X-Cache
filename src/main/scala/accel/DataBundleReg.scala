@@ -172,7 +172,7 @@ class DataBundleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends DataB
   val countOn = true.B // increment counter every clock cycle
   val (counterValue, counterWrap) = Counter(countOn, 64*1024)
   //clockCycles := clockCycles + 1.U
-
+/*
   when (io.nasti.ar.fire()) {
     printf("\nSTATUS START:  %d\n", counterValue)
   }
@@ -185,6 +185,6 @@ class DataBundleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends DataB
   when (io.nasti.b.fire()) {
     printf("\nCONFIG END: %d\n", counterValue)
   }
-
+*/
 }
 
