@@ -30,6 +30,7 @@ class ZextNode(val SrcW: Int, val DesW: Int, val NumOuts: Int)(implicit val p: P
   for(i <- 0 until NumOuts){
     io.Out(i) <> io.Input
   }
+  io.enable.ready := true.B
 
   //for(i <- 0 until NumOuts){
 

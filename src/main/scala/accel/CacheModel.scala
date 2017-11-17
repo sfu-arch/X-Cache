@@ -40,6 +40,10 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
 
   io.cpu.resp.bits.data := read >> ((off / 4.U) * xlen.U)
   io.cpu.resp.valid := false.B
+  io.cpu.resp.bits.tag  := tag
+  io.cpu.resp.bits.isSt := req.iswrite
+  io.cpu.resp.bits.valid := false.B
+
   io.cpu.req.ready := false.B
   io.nasti.ar.bits := NastiReadAddressChannel(0.U, (req.addr >> blen.U) << blen.U, size, len)
   io.nasti.ar.valid := false.B
@@ -48,7 +52,10 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
   io.nasti.w.bits := NastiWriteDataChannel(read >> (wCnt * nastiXDataBits.U), None, wDone)
   io.nasti.w.valid := state === sWrite
   io.nasti.b.ready := state === sWrAck
-  io.nasti.r.ready := state === sRead
+  io.nasti.r.ready := true.B
+
+  // Dump state
+  io.stat := state.asUInt()
 
   switch(state) {
     is(sIdle) {
