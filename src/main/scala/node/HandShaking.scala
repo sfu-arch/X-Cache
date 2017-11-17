@@ -606,13 +606,13 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := Vec(Seq.fill(NumOuts) {
+    out_valid_R := VecInit(Seq.fill(NumOuts) {
       true.B
     })
   }
 
   def InvalidOut(): Unit = {
-    out_valid_R := Vec(Seq.fill(NumOuts) {
+    out_valid_R := VecInit(Seq.fill(NumOuts) {
       false.B
     })
   }
@@ -622,7 +622,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
 
     succ_ready_R.foreach { _ := false.B }
 
-    out_ready_R := Vec(Seq.fill(NumOuts) {
+    out_ready_R := VecInit(Seq.fill(NumOuts) {
       false.B
     })
     enable_valid_R := false.B

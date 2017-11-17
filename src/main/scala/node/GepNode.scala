@@ -264,5 +264,5 @@ class GepTwoNode(NumOuts: Int, ID: Int)
     Reset()
   }
 
-  printfInfo(" State: %x\n", state)
+//  printfInfo(" State: %x\n", state)
 }
