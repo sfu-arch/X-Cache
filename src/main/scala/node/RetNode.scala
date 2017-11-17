@@ -29,6 +29,7 @@ class RetNode(NumOuts: Int, ID: Int)
    *===========================================*/
   // Left Input
   val input_R = RegInit(DataBundle.default)
+  val input_valid_R = RegInit(false.B)
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
   val state = RegInit(s_idle)
@@ -38,7 +39,7 @@ class RetNode(NumOuts: Int, ID: Int)
    *==========================================*/
 
   val predicate = input_R.predicate & IsEnable()
-  val start = input_R.valid & IsEnableValid()
+  val start = input_valid_R & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -46,13 +47,12 @@ class RetNode(NumOuts: Int, ID: Int)
 
   //printfInfo("start: %x\n", start)
 
-  io.InputIO.ready := ~input_R.valid
+  io.InputIO.ready := ~input_valid_R
   when(io.InputIO.fire()) {
     //printfInfo("Latch left data\n")
     state := s_LATCH
-    input_R.data := io.InputIO.bits.data
-    input_R.valid := true.B
-    input_R.predicate := io.InputIO.bits.predicate
+    input_R <> io.InputIO.bits
+    input_valid_R := true.B
   }
 
   /*============================================*
@@ -61,9 +61,7 @@ class RetNode(NumOuts: Int, ID: Int)
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := input_R.data
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.valid := true.B
+    io.Out(i).bits <> input_R
   }
 
   when(start & state =/= s_COMPUTE) {
@@ -71,9 +69,10 @@ class RetNode(NumOuts: Int, ID: Int)
     ValidOut()
   }
 
-  when( enable_valid_R & (~enable_R).asTypeOf(Bool())){
-    Reset()
-  }
+  //when( enable_valid_R & (~enable_R).asTypeOf(Bool())){
+    //Reset()
+  //}
+
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
@@ -81,6 +80,8 @@ class RetNode(NumOuts: Int, ID: Int)
   when(IsOutReady() & (state === s_COMPUTE)) {
     // Reset data
     input_R := DataBundle.default
+    input_valid_R := false.B
+
     //Reset state
     state := s_idle
     //Reset output

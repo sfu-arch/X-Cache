@@ -64,13 +64,13 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
   //} else {
     //Module(new UCMP(xlen, opCode))
   //}
-  val FU = Module(new UCMP(xlen, opCode))
-  if(sign){
-    val FU = Module(new SCMP(xlen, opCode))
-  }else {
-    val FU = Module(new UCMP(xlen, opCode))
-  }
+  //if(sign){
+    //val FU = Module(new SCMP(xlen, opCode))
+  //}else {
+    //val FU = Module(new UCMP(xlen, opCode))
+  //}
 
+  val FU = Module(new UCMP(xlen, opCode))
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
 
