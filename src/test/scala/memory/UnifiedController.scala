@@ -28,12 +28,12 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 
 
 
-  poke(c.io.WriteIn(0).bits.address, 64)
-  poke(c.io.WriteIn(0).bits.data, 45)
-  poke(c.io.WriteIn(0).bits.node, 16)
+  poke(c.io.WriteIn(0).bits.address, 0)
+  poke(c.io.WriteIn(0).bits.data, 0)
+  poke(c.io.WriteIn(0).bits.node, 0)
   poke(c.io.WriteIn(0).bits.RouteID, 0)
-  poke(c.io.WriteIn(0).bits.Typ,64)
-  poke(c.io.WriteIn(0).bits.mask,15)
+  poke(c.io.WriteIn(0).bits.Typ,0)
+  poke(c.io.WriteIn(0).bits.mask,0)
 
 
 
@@ -49,14 +49,32 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 		if(t > 3 && t < 9) {
 			if (peek(c.io.WriteIn(0).ready) == 1) {
         println(s" WriteIn(0) is Ready ")
+				poke(c.io.WriteIn(0).bits.address, 64)
+				poke(c.io.WriteIn(0).bits.data, 45)
+				poke(c.io.WriteIn(0).bits.node, 16)
+				poke(c.io.WriteIn(0).bits.RouteID, 0)
+				poke(c.io.WriteIn(0).bits.Typ,64)
+				poke(c.io.WriteIn(0).bits.mask,15)
         poke(c.io.WriteIn(0).valid, 1)
 			}
 			else {
 				poke(c.io.WriteIn(0).valid, 0)
+				poke(c.io.WriteIn(0).bits.address, 0)
+				poke(c.io.WriteIn(0).bits.data, 0)
+				poke(c.io.WriteIn(0).bits.node, 0)
+				poke(c.io.WriteIn(0).bits.RouteID, 0)
+				poke(c.io.WriteIn(0).bits.Typ,0)
+				poke(c.io.WriteIn(0).bits.mask,0)
 			}
 		}
 		else {
 			poke(c.io.WriteIn(0).valid, 0)
+			poke(c.io.WriteIn(0).bits.address, 0)
+			poke(c.io.WriteIn(0).bits.data, 0)
+			poke(c.io.WriteIn(0).bits.node, 0)
+			poke(c.io.WriteIn(0).bits.RouteID, 0)
+			poke(c.io.WriteIn(0).bits.Typ,0)
+			poke(c.io.WriteIn(0).bits.mask,0)
 		}
 
 
@@ -123,8 +141,19 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 
 class UnifiedControllerTester extends  FlatSpec with Matchers {
 	implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-	it should "Memory Controller tester" in {
-		chisel3.iotesters.Driver(() => new UnifiedController(ID=10,Size=32,NReads=1,NWrites=1)(
+	// iotester flags:
+	// -ll  = log level <Error|Warn|Info|Debug|Trace>
+	// -tbn = backend <firrtl|verilator|vcs>
+	// -td  = target directory
+	// -tts = seed for RNG
+
+		it should "Memory Controller tester" in {
+		chisel3.iotesters.Driver.execute(Array(
+			// "-ll", "Info",
+			"-tbn", "verilator",
+			"-td", "test_run_dir",
+			"-tts", "0001"),
+			() => new UnifiedController(ID=10,Size=32,NReads=1,NWrites=1)(
 			WControl=new WriteTypMemoryController(NumOps=1,BaseSize=2,NumEntries=2))(
 			RControl=new ReadTypMemoryController(NumOps=1,BaseSize=2,NumEntries=2))(
 			RWArbiter = new ReadWriteArbiter())(p)) {
