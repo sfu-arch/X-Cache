@@ -10,7 +10,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import config._
 import interfaces._
 import muxes._
-import util._
+import utility._
 
 class GepNodeOneIO(NumOuts: Int)
                   (implicit p: Parameters)

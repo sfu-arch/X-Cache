@@ -94,8 +94,10 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   // memory
   val v        = RegInit(0.U(nSets.W))
   val d        = RegInit(0.U(nSets.W))
-  val metaMem  = SyncReadMem(nSets, new MetaData)
-  val dataMem  = Seq.fill(nWords)(SyncReadMem(nSets, Vec(wBytes, UInt(8.W))))
+//  val metaMem  = SyncReadMem(nSets, new MetaData)
+  val metaMem  = Mem(nSets, new MetaData)
+//  val dataMem  = Seq.fill(nWords)(SyncReadMem(nSets, Vec(wBytes, UInt(8.W))))
+  val dataMem  = Seq.fill(nWords)(Mem(nSets, Vec(wBytes, UInt(8.W))))
 
   val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
   val cpu_data = Reg(io.cpu.req.bits.data.cloneType)
@@ -125,8 +127,10 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val idx_reg  = addr_reg(slen+blen-1, blen)
   val off_reg  = addr_reg(blen-1, byteOffsetBits)
 
-  val rmeta = metaMem.read(idx, ren)
-  val rdata = Cat((dataMem map (_.read(idx, ren).asUInt)).reverse)
+  val rmeta = Reg(new MetaData)
+  rmeta := metaMem.read(idx)
+  val rdata = RegInit(0.U(128.W))
+  rdata := Cat((dataMem map (_.read(idx).asUInt)).reverse)
   val rdata_buf = RegEnable(rdata, ren_reg)
   val refill_buf = Reg(Vec(dataBeats, UInt(nastiXDataBits.W)))
   val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))

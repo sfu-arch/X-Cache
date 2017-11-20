@@ -12,16 +12,16 @@ import utility.Constants._
            2.             =
 ==============================================================================*/
 
-trait ValidT extends CoreBundle() {
+trait ValidT extends CoreBundle {
 val valid = Bool ()
 }
 
 
-trait RouteID extends CoreBundle() {
+trait RouteID extends CoreBundle {
 val RouteID = UInt (glen.W)
 }
 
-trait PredicateT extends CoreBundle() {
+trait PredicateT extends CoreBundle {
 val predicate = Bool ()
 }
 

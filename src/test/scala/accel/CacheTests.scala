@@ -11,10 +11,10 @@ import config._
 class GoldCache(implicit val p: config.Parameters) extends Module with CacheParams {
   val io = IO(new Bundle {
     val req   = Flipped(Decoupled(new CacheReq))
-    val resp  = Decoupled(new CacheResp) 
+    val resp  = Decoupled(new CacheRespT)
     val nasti = new NastiIO
   })
-  val size  = log2Up(nastiXDataBits / 8).U
+  val size  = log2Ceil(nastiXDataBits / 8).U
   val len   = (dataBeats - 1).U
 
   val data = Mem(nSets, UInt(bBits.W))
@@ -32,13 +32,17 @@ class GoldCache(implicit val p: config.Parameters) extends Module with CachePara
     ((req.data >> ((8 * (i & 0x3)).U)) & 0xff.U) << (8 * i).U, read & (BigInt(0xff) << (8 * i)).U)
   })(bBits - 1, 0)
 
-  val sIdle :: sWrite :: sWrAck :: sRead :: Nil = Enum(UInt(), 4)
+  val sIdle :: sWrite :: sWrAck :: sRead :: Nil = Enum(4)
   val state = RegInit(sIdle)
   val (wCnt, wDone) = Counter(state === sWrite, dataBeats)
   val (rCnt, rDone) = Counter(state === sRead && io.nasti.r.valid, dataBeats)
 
   io.resp.bits.data := read >> ((off / 4.U) * xlen.U)
+  io.resp.bits.valid := false.B
   io.resp.valid := false.B
+  io.resp.bits.isSt := req.iswrite
+
+  io.resp.bits.tag := tag
   io.req.ready := false.B
   io.nasti.ar.bits := NastiReadAddressChannel(0.U, (req.addr >> blen.U) << blen.U, size, len)
   io.nasti.ar.valid := false.B
@@ -64,6 +68,7 @@ class GoldCache(implicit val p: config.Parameters) extends Module with CachePara
           }
           io.req.ready := true.B
           io.resp.valid := true.B
+          io.resp.bits.valid := true.B
         }.otherwise {
           when(d(idx)) {
             io.nasti.aw.valid := true.B
@@ -114,9 +119,10 @@ class CacheTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
 
   /* Gold Model */
   val gold = Module(new GoldCache)
-  val gold_req = Wire(gold.io.req)
-  val gold_resp = Wire(gold.io.resp)
+  val gold_req = Wire(Flipped(Decoupled(new CacheReq)))
+  val gold_resp = Wire(Decoupled(new CacheRespT))
   val gold_mem = Wire(new NastiIO)
+
   gold.io.req <> Queue(gold_req, 32)
   gold_resp <> Queue(gold.io.resp, 32)
   gold_mem.ar <> Queue(gold.io.nasti.ar, 32)
@@ -125,12 +131,12 @@ class CacheTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
   gold.io.nasti.b <> Queue(gold_mem.b, 32)
   gold.io.nasti.r <> Queue(gold_mem.r, 32)
 
-  val size  = log2Up(nastiXDataBits / 8).U
+  val size  = log2Ceil(nastiXDataBits / 8).U
   val len   = (dataBeats - 1).U
 
   /* Main Memory */
   val mem = Mem(1 << 20, UInt(nastiXDataBits.W))
-  val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: Nil = Enum(UInt(), 4)
+  val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: Nil = Enum(4)
   val memState = RegInit(sMemIdle)
   val (wCnt, wDone) = Counter(memState === sMemWrite && dut_mem.w.valid && gold_mem.w.valid, dataBeats)
   val (rCnt, rDone) = Counter(memState === sMemRead && dut_mem.r.ready && gold_mem.r.ready, dataBeats)
@@ -238,7 +244,7 @@ class CacheTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
     test(tags(2), idxs(1), offs(5)) // #14: read hit
   )
   
-  val sInit :: sStart :: sWait :: sDone :: Nil = Enum(UInt(), 4)
+  val sInit :: sStart :: sWait :: sDone :: Nil = Enum(4)
   val state = RegInit(sInit)
   val timeout = Reg(UInt(32.W))
   val (initCnt, initDone) = Counter(state === sInit, initAddr.size)

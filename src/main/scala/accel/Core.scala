@@ -143,15 +143,20 @@ class Core(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum,sNu
 
   // Connect a revision number to the first status register
   io.stat(0).bits.data := 0x55AA0001.U
+  io.stat(0).bits.valid := true.B
   io.stat(0).valid := true.B
   io.stat(0).bits.predicate := true.B
 
   io.stat(1).bits.data := Cat(errorLatch, state.asUInt())
+  io.stat(1).bits.valid := true.B
   io.stat(1).valid := true.B
   io.stat(1).bits.predicate := true.B
 
   io.stat(2).bits.data := Cat(errorLatch, state.asUInt())
+  io.stat(2).bits.valid := true.B
   io.stat(2).valid := true.B
   io.stat(2).bits.predicate := true.B
+
+  io.cache.abort := false.B
 
 }
