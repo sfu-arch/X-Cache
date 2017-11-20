@@ -68,4 +68,5 @@ class VecFilterDFCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends Cor
     }
   }
   io.done := done
+  io.ready := true.B
 }

@@ -105,7 +105,16 @@ class TypStore(NumPredOps: Int,
     io.Out(i).bits.predicate := predicate
   }
   val buffer = data_R.data.asTypeOf(Vec(Beats, UInt(xlen.W)))
+
+  // Outgoing Address Req ->
+  io.memReq.bits.address := addr_R.data
+  io.memReq.bits.node    := nodeID_R
+  io.memReq.bits.data    := buffer(sendptr)
+  io.memReq.bits.Typ     := MT_W
+  io.memReq.bits.RouteID := RouteID.U
+  io.memReq.bits.mask    := 15.U
   io.memReq.valid := false.B
+
   when(start & predicate) {
     /*=============================================
 =            ACTIONS (possibly dangerous)     =
@@ -114,16 +123,11 @@ class TypStore(NumPredOps: Int,
     // ACTION:  Memory request
     //  Check if address is valid and data has arrive and predecessors have completed.
     val mem_req_fire = addr_R.valid & IsPredValid() & data_R.valid
-   
+
 
     // ACTION: Memory Request
     // -> Send memory Requests
     when((state === s_idle) && (mem_req_fire)) {
-      io.memReq.bits.address := addr_R.data
-      io.memReq.bits.node := nodeID_R
-      io.memReq.bits.data := buffer(sendptr)
-      io.memReq.bits.mask := 15.U
-      io.memReq.bits.RouteID := RouteID.U
       io.memReq.valid := true.B
       // Arbitration ready. Move on to the next word
       when(io.memReq.fire()) {

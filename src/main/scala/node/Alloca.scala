@@ -76,6 +76,7 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R
     io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.valid := true.B
   }
 
   /*============================================*
@@ -85,7 +86,6 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
   val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
   val state = RegInit(s_idle)
 
-  io.allocaReqIO.valid := false.B
 
   /**
     * State outputs
@@ -95,14 +95,16 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
 =            ACTIONS (possibly dangerous)     =
 =============================================*/
 
+  io.allocaReqIO.bits.size := alloca_R.size
+  io.allocaReqIO.bits.numByte := alloca_R.numByte
+  io.allocaReqIO.bits.node    := nodeID_R
+  io.allocaReqIO.bits.RouteID := RouteID.U
+  io.allocaReqIO.valid := false.B
+
   when(start & predicate) {
     when (state === s_idle) {
     // ACTION:  Memory request
     //  Check if address is valid and predecessors have completed.
-    io.allocaReqIO.bits.size := alloca_R.size
-    io.allocaReqIO.bits.numByte := alloca_R.numByte
-    io.allocaReqIO.bits.node    := nodeID_R
-    io.allocaReqIO.bits.RouteID := RouteID.U
     io.allocaReqIO.valid := true.B
     }
 
@@ -115,7 +117,7 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
       // Completion state.
       state := s_Done
     }
-    }.elsewhen(start & ~predicate & state === s_idle) {
+    }.elsewhen(start && !predicate && state === s_idle) {
      ValidOut()
      state := s_Done
    }

@@ -48,7 +48,7 @@ class CacheVecLoader(FilterSize : Int)(implicit val p: Parameters) extends Modul
 
   io.cache.req <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.cache.resp
-
+  io.cache.abort := false.B
 
 }
 

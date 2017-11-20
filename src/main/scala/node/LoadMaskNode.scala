@@ -128,7 +128,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
     when(io.MemReq.ready === true.B && ReqValid === 1.U) {
       // Next word to be fetched
-      ReqAddress   := ReqAddress + 1.U
+      ReqAddress := ReqAddress + 1.U
       // Shift right by word length on machine. 
       sendbytemask := sendbytemask >> (xlen/8) 
       // Disable request

@@ -212,7 +212,9 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: config.Para
 
 class VecFilterNoKernDFTests extends org.scalatest.FlatSpec {
   implicit val p = config.Parameters.root((new VecFilterDFConfig).toInstance)
+/*
   "Accel" should "pass" in {
     assert(TesterDriver execute (() => new VecFilterNoKernDFTester(new Accelerator(12,4,new VecFilterNoKernDFCore(12,4)))))
   }
+*/
 }

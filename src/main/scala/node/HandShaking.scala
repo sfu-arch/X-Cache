@@ -245,7 +245,7 @@ class HandShakingFused[T <: ValidT with PredicateT](val NumIns: Int, val NumOuts
 
   // Input Handshaking
   val in_predicate_W = WireInit(VecInit(Seq.fill(NumIns){false.B}))
-  val in_valid_R = RegInit(VecInit(Seq.fill(NumOuts){false.B}))
+  val in_valid_R = RegInit(VecInit(Seq.fill(NumIns){false.B}))
 
   // Seq of registers. This has to be an array and not a vector
   // When vector it will try to instantiate registers; not possible since only 

@@ -106,8 +106,8 @@ class UnTypStore(NumPredOps: Int,
   io.memReq.bits.data    := data_R.data
   io.memReq.bits.Typ     := Typ
   io.memReq.bits.RouteID := RouteID.U
-  io.memReq.bits.mask    := 0.U
-  io.memReq.valid := false.B
+  io.memReq.bits.mask    := 15.U
+  io.memReq.valid        := false.B
 
   /*=============================================
   =            ACTIONS (possibly dangerous)     =

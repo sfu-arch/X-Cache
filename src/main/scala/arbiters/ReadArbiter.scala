@@ -54,7 +54,7 @@ class  WordRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit val p: Paramet
   val ReadRespDeMux   = Module(new Demux(new ReadResp(),NReads));
 
   // Arbiter output latches
-  val ReadArbiterReg   = Reg(new ReadReq(), next = ReadReqArbiter.io.out.bits)
+  val ReadArbiterReg   = RegNext(next = ReadReqArbiter.io.out.bits)
   val ReadInputChosen  = RegNext(init = 0.U(max(1,log2Ceil(NReads)).W),next=ReadReqArbiter.io.chosen)
   val ReadInputValid   = RegNext(init  = false.B,next=ReadReqArbiter.io.out.valid)
 
@@ -86,7 +86,7 @@ class  WordRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit val p: Paramet
   val WriteRespDeMux   = Module(new Demux(new WriteResp(),NWrites));
 
   // Arbiter output latches
-  val WriteArbiterReg   = Reg(new WriteReq(), next = WriteReqArbiter.io.out.bits)
+  val WriteArbiterReg   = RegNext(next = WriteReqArbiter.io.out.bits)
   val WriteInputChosen  = RegNext(init = 0.U(max(1,log2Ceil(NWrites)).W),next=WriteReqArbiter.io.chosen)
   val WriteInputValid   = RegNext(init  = false.B,next=WriteReqArbiter.io.out.valid)
 

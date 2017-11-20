@@ -122,7 +122,7 @@ class UnTypLoad(NumPredOps: Int,
       // Completion state.
       state := s_Done
     }
-  }.elsewhen(start & ~predicate & state =/= s_Done) {
+  }.elsewhen(start && !predicate && state =/= s_Done) {
     ValidSucc()
     ValidOut()
     state := s_Done

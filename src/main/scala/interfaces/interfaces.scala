@@ -58,6 +58,8 @@ object AllocaReq {
     val wire = Wire(new AllocaReq)
     wire.size := 0.U
     wire.numByte := 0.U
+    wire.node := 0.U
+    wire.RouteID := 0.U
     wire
   }
 }
@@ -72,6 +74,7 @@ class AllocaResp(implicit p: Parameters)
 object AllocaResp {
   def default(implicit p: Parameters): AllocaResp = {
     val wire = Wire(new AllocaResp)
+    wire.RouteID := 0.U
     wire.ptr := 0.U
     wire.valid := false.B
     wire

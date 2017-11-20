@@ -47,6 +47,7 @@ class TestCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum
   //IO Connections
   io.ctrl(0).ready := true.B
   io.ctrl(1).ready := true.B
+  io.ctrl(2).ready := true.B
 
   addDF.io.start := start_reg
   addDF.io.Data0.bits.data      := io.ctrl(0).bits.data(xlen-1,0)
@@ -58,14 +59,23 @@ class TestCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum
   addDF.io.Data1.bits.valid     := true.B
   //result is Decoupled
   io.stat(0).bits.data := 0x55AA0002.U
+  io.stat(0).bits.valid := true.B
   io.stat(0).valid := true.B
   io.stat(0).bits.predicate := true.B
   io.stat(1) <> add_result_reg
+  io.stat(2).bits.data := 0.U
+  io.stat(2).bits.valid := true.B
+  io.stat(2).valid := true.B
+  io.stat(2).bits.predicate := true.B
 
   //Switch OFF CacheIO
   io.cache.req.valid := false.B
-
-
+  io.cache.req.bits.tag := 0.U
+  io.cache.req.bits.addr := 0.U
+  io.cache.req.bits.iswrite := false.B
+  io.cache.req.bits.mask := 0.U
+  io.cache.req.bits.data := 0.U
+  io.cache.abort := false.B
 
 
   switch (state) {

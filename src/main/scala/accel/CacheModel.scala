@@ -15,7 +15,7 @@ import accel._
 class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
   val io = IO(new CacheModuleIO)
 
-  val size  = log2Up(nastiXDataBits / 8).U
+  val size  = log2Ceil(nastiXDataBits / 8).U
   val len   = (dataBeats - 1).U
 
   val data = Mem(nSets, UInt(bBits.W))
@@ -33,7 +33,7 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
     ((req.data >> ((8 * (i & 0x3)).U)) & 0xff.U) << (8 * i).U, read & (BigInt(0xff) << (8 * i)).U)
   })(bBits - 1, 0)
 
-  val sIdle :: sWrite :: sWrAck :: sRead :: Nil = Enum(UInt(), 4)
+  val sIdle :: sWrite :: sWrAck :: sRead :: Nil = Enum(4)
   val state = RegInit(sIdle)
   val (wCnt, wDone) = Counter(state === sWrite, dataBeats)
   val (rCnt, rDone) = Counter(state === sRead && io.nasti.r.valid, dataBeats)

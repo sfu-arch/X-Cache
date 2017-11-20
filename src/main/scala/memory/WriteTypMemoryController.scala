@@ -76,12 +76,23 @@ class WriteTypTableEntry
 =            Default values for external communication            =
 ==================================================================*/
   io.output.valid := 0.U
-  io.MemReq.valid := 0.U
+  io.MemReq.bits.addr := ReqAddress + Cat(sendptr,0.U(log2Ceil(xlen_bytes).W))
+  // Sending data; pick word from linebuffer
+  io.MemReq.bits.data := linebuffer(sendptr)
+  // MSHR ID
+  io.MemReq.bits.tag  := ID
+  // Write word mask
+  io.MemReq.bits.mask := linemask(sendptr)
+  // Valid request
+  io.MemReq.valid     := false.B
+  // Is a write?
+  io.MemReq.bits.iswrite := true.B
 
 
-/*=======================================================
-=            Latch Inputs. Calculate masks              =
-========================================================*/
+
+  /*=======================================================
+  =            Latch Inputs. Calculate masks              =
+  ========================================================*/
   when(io.NodeReq.fire() && (inptr =/= (Beats).U)) {
     request_R := io.NodeReq.bits
     // Base word address
@@ -101,19 +112,9 @@ class WriteTypTableEntry
 =            Sending values to the cache request            =
 ===========================================================*/
 
-  when(sendptr =/= inptr) {
 
-    io.MemReq.bits.addr := ReqAddress + Cat(sendptr,0.U(log2Ceil(xlen_bytes).W))
-    // Sending data; pick word from linebuffer
-    io.MemReq.bits.data := linebuffer(sendptr)
-    // MSHR ID
-    io.MemReq.bits.tag  := ID
-    // Write word mask
-    io.MemReq.bits.mask := linemask(sendptr)
-    // Valid request
-    io.MemReq.valid     := 1.U
-    // Is a write?
-    io.MemReq.bits.iswrite := true.B
+  when(sendptr =/= inptr) {
+    io.MemReq.valid     := true.B
     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
     when(io.MemReq.fire()) {
       // Increment ptr to next entry in linebuffer (for next write)
@@ -140,11 +141,14 @@ class WriteTypTableEntry
 =            Cleanup and send output                         =
 =============================================================*/
 
+  io.output.bits.RouteID := request_R.RouteID
+  io.output.valid := false.B
+  io.output.bits.done := false.B
+  io.output.bits.valid := true.B
   when(state === s_Done) {
     // For the demux
     io.output.valid := 1.U
     io.output.bits.done    := true.B
-    io.output.bits.RouteID := request_R.RouteID
     // Output driver demux tree has forwarded output (may not have reached receiving node yet)
     when(io.output.fire()) {
       state           := s_idle

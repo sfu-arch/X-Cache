@@ -76,6 +76,8 @@ class StackDF(implicit p: Parameters) extends StackDFIO()(p) {
 
   //Output
   io.result <> m0.io.Out(0)
+  io.pred.valid := true.B
+  io.pred.bits := true.B
 
   //DEBUG
 //  io.pred <> b1_then.io.Out(0)

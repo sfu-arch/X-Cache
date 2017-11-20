@@ -114,15 +114,18 @@ class Chain(ID: Int, NumOps: Int, OpCodes: Array[String])(sign: Boolean)(implici
  FUs(0).io.in1 := InRegs(0).data
  FUs(0).io.in2 := InRegs(1).data
  io.Out(0).bits.data := FUs(0).io.out
+ io.Out(0).bits.valid := true.B
  io.Out(0).bits.predicate := InRegs(0).predicate & InRegs(1).predicate
  // The other ones.
  for (i <- 1 until OpCodes.length)  {
   	FUs(i).io.in1 := FUs(i-1).io.out
   	FUs(i).io.in2 := InRegs(i+1).data
   	io.Out(i).bits.data := FUs(i).io.out
+    io.Out(i).bits.valid := true.B
   	io.Out(i).bits.predicate := io.Out(i-1).bits.predicate & InRegs(i+1).predicate
   }
 
   io.Out((OpCodes.length)).bits.data := FUs((OpCodes.length)-1).io.out
   io.Out((OpCodes.length)).bits.predicate := io.Out((OpCodes.length)-2).bits.predicate & InRegs(OpCodes.length).predicate
+  io.Out((OpCodes.length)).bits.valid := true.B
 }

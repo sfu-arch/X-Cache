@@ -27,6 +27,7 @@ class SextNode(val SrcW: Int, val DesW: Int, val NumOuts: Int)(implicit val p: P
 
   lazy val io = IO(new SextNodeIO(SrcW, DesW, NumOuts))
 
+  io.enable.ready := true.B
   for(i <- 0 until NumOuts){
     io.Out(i) <> io.Input
   }

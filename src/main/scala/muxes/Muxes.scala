@@ -121,9 +121,8 @@ class Mux[ T <: ValidT](gen: T, Nops: Int) extends Module {
 
   val x = io.sel
 
-  when(io.en) {
-    io.output := io.inputs(x)
-  }.otherwise {
+  io.output := io.inputs(x)
+  when(!io.en) {
       io.output.valid := false.B
   }
 }

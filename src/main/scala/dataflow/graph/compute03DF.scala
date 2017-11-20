@@ -73,6 +73,9 @@ class Compute03DF(implicit val p: Parameters) extends Module with CoreParams {
   m9.io.LeftIO <> m3.io.Out(0)
   m9.io.RightIO <> io.data10
 
+  m10.io.LeftIO <> m3.io.Out(0)
+  m10.io.RightIO <> io.data11
+
   m0.io.enable <> io.enable
   m1.io.enable <> io.enable
   m2.io.enable <> io.enable

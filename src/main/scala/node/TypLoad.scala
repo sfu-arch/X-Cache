@@ -89,6 +89,12 @@ class TypLoad(NumPredOps: Int,
   // data_R.data     = buffer.
   val linebuffer = RegInit(Vec(Seq.fill(Beats)(0.U(xlen.W))))
 
+  //  Check if address is valid and data has arrive and predecessors have completed.
+  val mem_req_fire = addr_R.valid & IsPredValid()
+  io.memReq.bits.address := addr_R.data
+  io.memReq.bits.node := nodeID_R
+  io.memReq.bits.RouteID := RouteID.U
+  io.memReq.bits.Typ := MT_W
   io.memReq.valid := false.B
 
   when(start & predicate) {
@@ -97,11 +103,6 @@ class TypLoad(NumPredOps: Int,
   =============================================*/
 
     // ACTION:  Memory request
-    //  Check if address is valid and data has arrive and predecessors have completed.
-    val mem_req_fire = addr_R.valid & IsPredValid()
-    io.memReq.bits.address := addr_R.data
-    io.memReq.bits.node := nodeID_R
-    io.memReq.bits.RouteID := RouteID.U
 
     // ACTION: Memory Request
     // -> Send memory Requests
