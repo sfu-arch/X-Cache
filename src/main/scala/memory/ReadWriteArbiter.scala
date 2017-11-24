@@ -48,7 +48,7 @@ class ReadWriteArbiter()
 
 
     // Memory request
-  val cachereq_arb = Module(new Arbiter(new CacheReq, MLPSize))
+  val cachereq_arb = Module(new RRArbiter(new CacheReq, MLPSize))
   // Memory response Demux
   val cacheresp_demux = Module(new Demux(new CacheResp, MLPSize))
 
@@ -65,7 +65,6 @@ class ReadWriteArbiter()
   // Table entries -> CacheReq arbiter.
   cachereq_arb.io.in(RdIdx) <> io.ReadCacheReq
   cachereq_arb.io.in(WrIdx) <> io.WriteCacheReq
-
   // Cache request arbiter
   cachereq_arb.io.out.ready := io.CacheReq.ready
   io.CacheReq.bits :=  cachereq_arb.io.out.bits

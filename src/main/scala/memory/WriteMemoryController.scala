@@ -100,9 +100,13 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
   io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
   // Sending data; pick word from linebuffer
   io.MemReq.bits.data  := linebuffer(ptr)
-  io.MemReq.bits.tag  := ID
   io.MemReq.bits.mask := sendbytemask(xlen/8-1,0)
-  io.MemReq.bits.iswrite   := true.B
+  // *** Note: Chisel seems to be screwing up these constants in the arbiter.
+  // Use reg's for now to force it to keep them.
+  val myID = RegNext(ID, 0.U)
+  io.MemReq.bits.tag  := myID
+  val isWrite = RegNext(true.B, init=false.B)
+  io.MemReq.bits.iswrite := isWrite
 
 
 /*=======================================================

@@ -12,10 +12,30 @@ import org.scalatest.{Matchers, FlatSpec}
 import config._
 import util._
 import interfaces._
+import accel._
 
+class CacheWrapper(val ops:Int)(implicit val p: Parameters) extends Module with CacheParams {
+  val io = IO(new Bundle{
+    val Out = Vec(ops, Decoupled(new DataBundle()))
+  })
+  val c = Module(new UnTypMemDataFlow(ops)(p))
 
-class UnTypMemDataFlowTester(df: UnTypMemDataFlow)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
-	for(t <- 0 until 50){
+  // Instantiate the AXI Cache
+  val cache = Module(new Cache)
+  cache.io.cpu.req <> c.io.CacheReq
+  c.io.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.abort := false.B
+
+  // Instantiate a memory model with AXI slave interface for cache
+  val memModel = Module(new NastiMemSlave)
+  memModel.io.nasti <> cache.io.nasti
+
+  io.Out <> c.io.Out
+
+}
+
+class UnTypMemDataFlowTester(df: CacheWrapper)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+	for(t <- 0 until 200){
 		step(1)
 
     for (i <- 0 until df.ops) {
@@ -33,14 +53,14 @@ class UnTypMemDataFlowTester(df: UnTypMemDataFlow)(implicit p: config.Parameters
 
 class UnTypMemDataflowTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val numOuts = 2
+  val numOps = 4
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver.execute(Array(
        // "-ll", "Info",
        "-tbn", "verilator",
        "-td", "test_run_dir",
        "-tts", "0001"),
-       () => new UnTypMemDataFlow(numOuts)(p)) { c =>
+       () => new CacheWrapper(numOps)(p)) { c =>
        new UnTypMemDataFlowTester(c)
      } should be(true)
    }

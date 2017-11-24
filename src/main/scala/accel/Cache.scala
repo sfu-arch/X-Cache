@@ -34,8 +34,6 @@ object CacheReq {
   }
 }
 
-
-
 class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val data = UInt(xlen.W)
   val tag  = UInt((List(1,mshrlen).max).W)
@@ -136,18 +134,18 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
   hit := v(idx_reg) && rmeta.tag === tag_reg
-  cpu_tag := io.cpu.req.bits.tag
 
   // Read Mux
-  io.cpu.resp.bits.data := Vec.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
+  io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
   io.cpu.resp.bits.tag  := cpu_tag
-  io.cpu.resp.bits.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_iswrite
+  io.cpu.resp.bits.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.resp.bits.isSt := cpu_iswrite
-  io.cpu.resp.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_iswrite
-  io.cpu.req.ready      := !is_idle
+  io.cpu.resp.valid     := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
+  io.cpu.req.ready      := is_idle || (state === s_READ_CACHE && hit)
 
-  when(io.cpu.resp.valid) {
+  when(io.cpu.req.valid && io.cpu.req.ready) {
     addr_reg  := addr
+    cpu_tag   := io.cpu.req.bits.tag
     cpu_data  := io.cpu.req.bits.data
     cpu_mask  := io.cpu.req.bits.mask
     cpu_iswrite := io.cpu.req.bits.iswrite

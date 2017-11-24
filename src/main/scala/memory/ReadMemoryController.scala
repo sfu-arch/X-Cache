@@ -93,8 +93,12 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
 
   io.MemReq.valid := 0.U
   io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
-  io.MemReq.bits.tag := ID
-  io.MemReq.bits.iswrite := false.B
+  // *** Note: Chisel seems to be screwing up these constants in the arbiter.
+  // Use reg's for now to force it to keep them.
+  val myID = RegNext(ID, 0.U)
+  io.MemReq.bits.tag  := myID
+  val isWrite = RegNext(false.B, init=true.B)
+  io.MemReq.bits.iswrite := isWrite
   io.MemReq.bits.data := 0.U
   io.MemReq.bits.mask := 0.U
   //    io.MemReq.bits.valid := true.B
