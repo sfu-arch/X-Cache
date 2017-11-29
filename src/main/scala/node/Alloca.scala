@@ -62,9 +62,9 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
    *===============================================*/
 
   // Predicate register
-
   io.allocaInputIO.ready := ~alloca_R.valid
 
+  // Input Register
   when(io.allocaInputIO.fire()) {
     alloca_R.size := io.allocaInputIO.bits.size
     alloca_R.numByte := io.allocaInputIO.bits.numByte
@@ -72,28 +72,9 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
     alloca_R.predicate := io.allocaInputIO.bits.predicate
   }
 
-  // Wire up Outputs
-  for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_R
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.valid := true.B
-  }
-
-  /*============================================*
-   *            ACTIONS (possibly dangerous)    *
-   *============================================*/
-
-  val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
-  val state = RegInit(s_idle)
-
-
   /**
-    * State outputs
+    * Defaults assignments
     */
-   
-   /*=============================================
-=            ACTIONS (possibly dangerous)     =
-=============================================*/
 
   io.allocaReqIO.bits.size := alloca_R.size
   io.allocaReqIO.bits.numByte := alloca_R.numByte
@@ -101,40 +82,47 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
   io.allocaReqIO.bits.RouteID := RouteID.U
   io.allocaReqIO.valid := false.B
 
-  when(start & predicate) {
-    when (state === s_idle) {
-    // ACTION:  Memory request
-    //  Check if address is valid and predecessors have completed.
-    io.allocaReqIO.valid := true.B
-    }
-
-    //  ACTION: Arbitration ready
-    //   <- Incoming memory arbitration
-    when((state === s_idle) && (io.allocaReqIO.fire())) {
-      // Set data output registers
-      data_R       := io.allocaRespIO.ptr
-      ValidOut()
-      // Completion state.
-      state := s_Done
-    }
-    }.elsewhen(start && !predicate && state === s_idle) {
-     ValidOut()
-     state := s_Done
-   }
   /**
-    * Output state
+    * State Machine
     */
+  val s_idle :: s_req :: s_done :: Nil = Enum(3)
+  val state = RegInit(s_idle)
 
-  when(state === s_Done) {
-    when(IsOutReady()) {
-      io.allocaReqIO.valid := false.B
-      alloca_R := AllocaIO.default
-      data_R := 0.U
-      pred_R := false.B
-      state := s_idle
-      Reset()
+  switch (state) {
+    is (s_idle) {
+      when (start & predicate) {
+        io.allocaReqIO.valid := true.B
+        state := s_req
+      }
+    }
+    is (s_req) {
+      when (io.allocaRespIO.valid) {
+        data_R       := io.allocaRespIO.ptr
+        ValidOut()
+        // Completion state.
+        state := s_done
+      }
+    }
+    is (s_done) {
+      when(IsOutReady()) {
+        io.allocaReqIO.valid := false.B
+        alloca_R := AllocaIO.default
+        data_R := 0.U
+        pred_R := false.B
+        state := s_idle
+        Reset()
+      }
     }
   }
+
+  // Wire up Outputs.
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.data := data_R
+    io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.valid := true.B
+  }
+
+
   // printf(p"State: ${state}\n")
   // printf(p"Alloca reg: ${alloca_R}\n")
   // printf(p"Alloca input: ${io.allocaInputIO}\n")
