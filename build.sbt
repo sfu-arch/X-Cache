@@ -4,7 +4,7 @@ organization := "sfu.arch"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.11"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls")
 
@@ -18,7 +18,7 @@ resolvers ++= Seq(
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 val defaultVersions = Map(
 //  "chisel3" -> "3.0-SNAPSHOT",
-  "chisel3" -> "3.0.0-RC1",
+  "chisel3" -> "3.0.0",
   "chisel-iotesters" -> "1.1-SNAPSHOT"
   )
 
