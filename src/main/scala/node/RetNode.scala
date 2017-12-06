@@ -38,8 +38,8 @@ class RetNode(NumOuts: Int, ID: Int)
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val predicate = input_R.predicate & IsEnable()
-  val start = input_valid_R & IsEnableValid()
+  val predicate = input_R.predicate && IsEnable()
+  val start = input_valid_R && IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -64,9 +64,11 @@ class RetNode(NumOuts: Int, ID: Int)
     io.Out(i).bits <> input_R
   }
 
-  when(start & state =/= s_COMPUTE) {
+  when(start && state =/= s_COMPUTE) {
     state := s_COMPUTE
-    ValidOut()
+    when(predicate) {
+      ValidOut()
+    }
   }
 
   //when( enable_valid_R & (~enable_R).asTypeOf(Bool())){
