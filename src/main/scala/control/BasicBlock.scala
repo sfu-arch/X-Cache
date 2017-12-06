@@ -130,8 +130,10 @@ class BasicBlockNode(NumInputs: Int,
 
   when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
-    pred_R.control := predicate
-    ValidOut()
+    when(predicate){
+      pred_R.control := predicate
+      ValidOut()
+    }
   }
 
   //Assertion
