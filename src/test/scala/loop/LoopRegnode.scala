@@ -31,7 +31,7 @@ class LoopRegTests(c: LoopElement) extends PeekPokeTester(c) {
 
     if(t == 3){
       poke(c.io.inData.valid, true.B)
-      poke(c.io.inData.bits.valid, true.B)
+// //       poke(c.io.inData.bits.valid, true.B)
     }
 
     if(t == 10){

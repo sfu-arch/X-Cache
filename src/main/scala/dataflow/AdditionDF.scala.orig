@@ -162,17 +162,17 @@
 //     */
 //   m0.io.RightIO.bits.data := 9.U
 //   m0.io.RightIO.bits.predicate := true.B
-//   m0.io.RightIO.bits.valid := true.B
+// // //   m0.io.RightIO.bits.valid := true.B
 //   m0.io.RightIO.valid := true.B
 
 //   m2.io.RightIO.bits.data := 5.U
 //   m2.io.RightIO.bits.predicate := true.B
-//   m2.io.RightIO.bits.valid := true.B
+// // //   m2.io.RightIO.bits.valid := true.B
 //   m2.io.RightIO.valid := true.B
 
 //   m5.io.RightIO.bits.data := 4.U
 //   m5.io.RightIO.bits.predicate := true.B
-//   m5.io.RightIO.bits.valid := true.B
+// // //   m5.io.RightIO.bits.valid := true.B
 //   m5.io.RightIO.valid := true.B
 =======
 package dataflow
@@ -320,7 +320,7 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
 //  m4.io.InData(param.m4_phi_in("const1")) <> io.Data0
   m4.io.InData(param.m4_phi_in("const1")).bits.data := 0.U
   m4.io.InData(param.m4_phi_in("const1")).bits.predicate := true.B
-  m4.io.InData(param.m4_phi_in("const1")).bits.valid := true.B
+// //   m4.io.InData(param.m4_phi_in("const1")).bits.valid := true.B
   m4.io.InData(param.m4_phi_in("const1")).valid := true.B
 
 
@@ -346,20 +346,20 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
     */
   m0.io.RightIO.bits.data := 9.U
   m0.io.RightIO.bits.predicate := true.B
-  m0.io.RightIO.bits.valid := true.B
+// //   m0.io.RightIO.bits.valid := true.B
   m0.io.RightIO.valid := true.B
 
   m2.io.RightIO.bits.data := 5.U
   m2.io.RightIO.bits.predicate := true.B
-  m2.io.RightIO.bits.valid := true.B
+// //   m2.io.RightIO.bits.valid := true.B
   m0.io.RightIO.bits.data := 9.U
   m0.io.RightIO.bits.predicate := true.B
-  m0.io.RightIO.bits.valid := true.B
+// //   m0.io.RightIO.bits.valid := true.B
   m0.io.RightIO.valid := true.B
 
   m5.io.RightIO.bits.data := 4.U
   m5.io.RightIO.bits.predicate := true.B
-  m5.io.RightIO.bits.valid := true.B
+// //   m5.io.RightIO.bits.valid := true.B
   m5.io.RightIO.valid := true.B
 >>>>>>> origin/master
 

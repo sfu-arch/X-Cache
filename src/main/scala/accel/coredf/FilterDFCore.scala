@@ -51,12 +51,12 @@ class FilterDFCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(
   }
 
   io.stat(0).bits.data := 0x55AA0002.U
-  io.stat(0).bits.valid := true.B
+// //   io.stat(0).bits.valid := true.B
   io.stat(0).valid := true.B
   io.stat(0).bits.predicate := true.B
   io.stat(1) <> Filt.io.sum;
   io.stat(2).bits.data := 0.U
-  io.stat(2).bits.valid := true.B
+// //   io.stat(2).bits.valid := true.B
   io.stat(2).valid := true.B
   io.stat(2).bits.predicate := true.B
 

@@ -204,7 +204,8 @@ class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
   * @param p : implicit
   * @return
   */
-class DataBundle(implicit p: Parameters) extends ValidT with PredicateT {
+//class DataBundle(implicit p: Parameters) extends ValidT with PredicateT
+class DataBundle(implicit p: Parameters) extends PredicateT {
   // Data packet
   val data = UInt(xlen.W)
 }
@@ -215,7 +216,7 @@ object DataBundle {
     val wire = Wire(new DataBundle)
     wire.data := 0.U
     wire.predicate := false.B
-    wire.valid := false.B
+//    wire.valid := false.B
     wire
   }
 }
@@ -274,7 +275,7 @@ class CustomDataBundle() extends Bundle() {
   // Data packet
   val data = UInt()
   val predicate = Bool()
-  val valid = Bool()
+//  val valid = Bool()
 }
 
 object CustomDataBundle {
@@ -282,7 +283,7 @@ object CustomDataBundle {
     val wire = Wire(new CustomDataBundle())
     wire.data := 0.U
     wire.predicate := false.B
-    wire.valid := false.B
+//    wire.valid := false.B
     wire
   }
 }

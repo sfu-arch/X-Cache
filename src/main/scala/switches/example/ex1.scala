@@ -15,7 +15,7 @@ import dataflow.tests._
 import node.HandShaking
 import switches._
 import node._
-
+/*
 class Dyser1X1(implicit val p: Parameters) extends Module with CoreParams {
 
   val io = IO(new Bundle {
@@ -118,7 +118,7 @@ class Dyser1X1(implicit val p: Parameters) extends Module with CoreParams {
   sw02.io.inNE.valid   <> add.io.Out(0).valid
   sw02.io.inNE.ready   <> add.io.Out(0).ready
   // This valid is the issue
-  sw02.io.inNE.bits.valid   <> add.io.Out(0).valid
+// //   sw02.io.inNE.bits.valid   <> add.io.Out(0).valid
   sw02.io.inNE.bits.predicate   <> add.io.Out(0).bits.predicate
   sw02.io.inNE.bits.data <> add.io.Out(0).bits.data
 
@@ -131,37 +131,37 @@ class Dyser1X1(implicit val p: Parameters) extends Module with CoreParams {
   add.io.enable.valid := true.B
   add.io.enable.bits := true.B
 
-  printf("\"SW01\": {\"InW (R,V): %x,%x   bits:(Pr,V,D): %x,%x,%x \n",
+  printf("\"SW01\": {\"InW (R,V): %x,%x   bits:(Pr,D): %x,%x \n",
     sw01.io.inW.ready,sw01.io.inW.valid,sw01.io.inW.bits.predicate,
-    sw01.io.inW.bits.valid, sw01.io.inW.bits.data )
+   sw01.io.inW.bits.data )
 
-  printf("\"SW01\": {\"OutSE (R,V): %x,%x   bits:(Pr,V,D): %x,%x,%x \n",
+  printf("\"SW01\": {\"OutSE (R,V): %x,%x   bits:(Pr,D): %x,%x \n",
     sw01.io.outSE.ready,sw01.io.outSE.valid,sw01.io.outSE.bits.predicate,
-    sw01.io.outSE.bits.valid, sw01.io.outSE.bits.data )
+   sw01.io.outSE.bits.data )
 
 
-  printf("\"SW11\": {\"InE (R,V): %x,%x   bits:(Pr,V,D): %x,%x,%x \n",
+  printf("\"SW11\": {\"InE (R,V): %x,%x   bits:(Pr,D): %x,%x \n",
     sw11.io.inE.ready,sw11.io.inE.valid,sw11.io.inE.bits.predicate,
-    sw11.io.inE.bits.valid, sw11.io.inE.bits.data )
+  sw11.io.inE.bits.data )
 
-  printf("\"SW11\": {\"OutSW (R,V): %x,%x   bits:(Pr,V,D): %x,%x,%x \n",
+  printf("\"SW11\": {\"OutSW (R,V): %x,%x   bits:(Pr,D): %x,%x \n",
     sw11.io.outSW.ready,sw11.io.outSW.valid,sw11.io.outSW.bits.predicate,
-    sw11.io.outSW.bits.valid, sw11.io.outSW.bits.data )
+  sw11.io.outSW.bits.data )
 
 
-  printf("\"ADD\": {\"Out (R,V): %x,%x   bits:(Pr,V,D): %x,%x,%x \n",
+  printf("\"ADD\": {\"Out (R,V): %x,%x   bits:(Pr,D): %x,%x \n",
     add.io.Out(0).ready, add.io.Out(0).valid, add.io.Out(0).bits.predicate,
-    add.io.Out(0).bits.valid, add.io.Out(0).bits.data)
+  add.io.Out(0).bits.data)
 
 
  //----
-  printf("\"SW02\": {\"InE (R,V): %x,%x   bits:(Pr,V,D): %x,%x,%x \n",
+  printf("\"SW02\": {\"InE (R,V): %x,%x   bits:(Pr,D): %x,%x \n",
     sw02.io.inNE.ready,sw02.io.inNE.valid,sw02.io.inNE.bits.predicate,
-    sw02.io.inNE.bits.valid, sw02.io.inNE.bits.data )
+  sw02.io.inNE.bits.data )
 
-  printf("\"SW02\": {\"OutSW (R,V): %x,%x   bits:(Pr,V,D): %x,%x,%x \n",
+  printf("\"SW02\": {\"OutSW (R,V): %x,%x   bits:(Pr,D): %x,%x \n",
     sw02.io.outW.ready,sw02.io.outW.valid,sw02.io.outW.bits.predicate,
-    sw02.io.outW.bits.valid, sw02.io.outW.bits.data )
+  sw02.io.outW.bits.data )
 
 
 }
@@ -185,3 +185,4 @@ class Dyser1X1(implicit val p: Parameters) extends Module with CoreParams {
 //
 //  io.result <> add.io.Out(0)
 
+*/

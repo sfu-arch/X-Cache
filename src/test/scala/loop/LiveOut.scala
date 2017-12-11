@@ -24,7 +24,7 @@ class LiveOutTester(df: LiveOutNode)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.InData.bits.data, 2.U)
-  poke(df.io.InData.bits.valid, true.B)
+// //   poke(df.io.InData.bits.valid, true.B)
   poke(df.io.InData.bits.predicate, false.B)
 
   poke(df.io.InData.valid, false.B)

@@ -61,7 +61,9 @@ class TypStore(NumPredOps: Int,
 
   // OP Inputs
   val addr_R = RegInit(DataBundle.default)
+  val addr_valid_R = RegInit(false.B)
   val data_R = RegInit(TypBundle.default)
+  val data_valid_R = RegInit(false.B)
 
   // State machine
   val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
@@ -75,28 +77,28 @@ class TypStore(NumPredOps: Int,
 ============================================*/
 
   val predicate = addr_R.predicate & data_R.predicate & IsEnable()
-  val start = addr_R.valid & data_R.valid & IsPredValid() & IsEnableValid()
+  val start = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
 
   /*================================================
 =            Latch inputs. Set output            =
 ================================================*/
 
   //Initialization READY-VALIDs for GepAddr and Predecessor memory ops
-  io.GepAddr.ready := ~addr_R.valid
-  io.inData.ready := ~data_R.valid
+  io.GepAddr.ready := ~addr_valid_R
+  io.inData.ready := ~data_valid_R
 
   // ACTION: GepAddr
-  io.GepAddr.ready := ~addr_R.valid
+  io.GepAddr.ready := ~addr_valid_R
   when(io.GepAddr.fire()) {
     addr_R := io.GepAddr.bits
-    addr_R.valid := true.B
+    addr_valid_R := true.B
   }
 
   // ACTION: inData
   when(io.inData.fire()) {
     // Latch the data
     data_R := io.inData.bits
-    data_R.valid := true.B
+    data_valid_R := true.B
   }
 
   // Wire up Outputs
@@ -122,7 +124,7 @@ class TypStore(NumPredOps: Int,
 
     // ACTION:  Memory request
     //  Check if address is valid and data has arrive and predecessors have completed.
-    val mem_req_fire = addr_R.valid & IsPredValid() & data_R.valid
+    val mem_req_fire = addr_valid_R & IsPredValid() & data_valid_R
 
 
     // ACTION: Memory Request
@@ -185,7 +187,7 @@ class TypStore(NumPredOps: Int,
       case "high"  => { }
       case "med"   => { }
       case "low"   => {
-        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x, \"inData\": %x },\n",x, (addr_R.valid),(data_R.valid))
+        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x, \"inData\": %x },\n",x, (addr_valid_R),(data_valid_R))
         printf("\"State\": {\"State\": %x, \"data_R\": \"%x,%x\" },",state,data_R.data,data_R.predicate)
         printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
         printf("}")

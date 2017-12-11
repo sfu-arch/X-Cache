@@ -93,7 +93,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := FU.io.out
-    io.Out(i).bits.valid := true.B
+//     io.Out(i).bits.valid := true.B
     io.Out(i).bits.predicate := predicate
   }
 

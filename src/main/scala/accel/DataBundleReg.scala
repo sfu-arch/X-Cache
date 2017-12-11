@@ -116,7 +116,7 @@ class DataBundleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends DataB
   val anyvalid = valid.contains(true.B)
   for(i <- 0 until cNum) {
     io.ctrl(i).bits.data := Cat(ctrlBank(i+numCfg).reverse)
-    io.ctrl(i).bits.valid := valid(i)
+// //     io.ctrl(i).bits.valid := valid(i)
     io.ctrl(i).valid := valid(i)
   }
 

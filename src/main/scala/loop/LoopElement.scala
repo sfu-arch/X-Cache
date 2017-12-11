@@ -65,7 +65,8 @@ class LoopElement(val ID: Int)(implicit val p: Parameters)
     io.inData.ready := true.B
     io.outData.valid := false.B
 
-  }.elsewhen( state === s_LATCH){
+  }.otherwise{
+//  }.elsewhen( state === s_LATCH){
     io.inData.ready := false.B
     io.outData.valid := true.B
   }

@@ -12,7 +12,7 @@ import muxes._
 import node._
 import util._
 
-
+/*
 class SwitchInControlIO (implicit val p: Parameters) extends Module with CoreParams {
   //    override def cloneType(): this.type = this.getClass.newInstance.asInstanceOf[this.type]
   //      new SwitchInControlIO()(p).asInstanceOf[this.type]
@@ -29,7 +29,7 @@ class SwitchInControl (implicit p: Parameters) extends SwitchInControlIO()(p) {
 
   io.in.ready := ~switchControl_R.valid
 
-  // Note: Be wary of io.in.valid and io.in.bits.valid
+// //   // Note: Be wary of io.in.valid and io.in.bits.valid
   when(io.in.fire()){
     switchControl_R :=  io.in.bits
   }
@@ -98,4 +98,4 @@ class DyserMux (NInputs : Int, Sel: Int, En: Bool)(implicit p: Parameters) exten
 }
 
 
-
+*/

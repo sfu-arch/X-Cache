@@ -13,19 +13,19 @@ import config._
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FlatSpec, Matchers}
 
-
+/*
 // Tester.
 class ex1Tests(c: Dyser1X1)
               (implicit p: config.Parameters) extends PeekPokeTester(c)  {
 
   //  poke(c.io.Data0.bits.data, 2.U)
-  //  poke(c.io.Data0.bits.valid, true.B)
+// //   //  poke(c.io.Data0.bits.valid, true.B)
   //  poke(c.io.Data0.bits.predicate, true.B)
   //  poke(c.io.Data0.valid, true.B)
   //
   //
   //  poke(c.io.Data1.bits.data, 2.U)
-  //  poke(c.io.Data1.bits.valid, true.B)
+// //   //  poke(c.io.Data1.bits.valid, true.B)
   //  poke(c.io.Data1.bits.predicate, true.B)
   //  poke(c.io.Data1.valid, true.B)
   //
@@ -52,11 +52,11 @@ class ex1Tests(c: Dyser1X1)
   poke(c.io.Data0.valid, false.B)
   poke(c.io.Data0.bits.data, 2.U)
   poke(c.io.Data0.bits.predicate, false.B)
-  poke(c.io.Data0.bits.valid, false.B)
+// //   poke(c.io.Data0.bits.valid, false.B)
 
   poke(c.io.Data1.valid, false.B)
   poke(c.io.Data1.bits.predicate, false.B)
-  poke(c.io.Data1.bits.valid, false.B)
+// //   poke(c.io.Data1.bits.valid, false.B)
   poke(c.io.Data1.bits.data, 1.U)
 
   poke(c.io.start, false.B)
@@ -74,8 +74,8 @@ class ex1Tests(c: Dyser1X1)
   poke(c.io.Data0.bits.predicate, true.B)
   poke(c.io.Data1.bits.predicate, true.B)
 
-  poke(c.io.Data0.bits.valid, true.B)
-  poke(c.io.Data1.bits.valid, true.B)
+// //   poke(c.io.Data0.bits.valid, true.B)
+// //   poke(c.io.Data1.bits.valid, true.B)
 
   poke(c.io.Data0.bits.data, 2.U)
   poke(c.io.Data1.bits.data, 1.U)
@@ -114,6 +114,6 @@ class ex1Tester extends  FlatSpec with Matchers {
   }
 }
 
-
+*/
 
 

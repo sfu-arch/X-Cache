@@ -28,7 +28,7 @@ import util._
   * When EN= false, the corresponding output will always be invalid
   */
 
-
+/*
   //--------------------------------------------------
 abstract class DyserIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
@@ -415,3 +415,4 @@ class Dyser(SelN: Int, EnN: Bool,
 
 
 }
+*/

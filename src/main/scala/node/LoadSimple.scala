@@ -74,7 +74,7 @@ class UnTypLoad(NumPredOps: Int,
   io.GepAddr.ready := ~addr_valid_R
   when(io.GepAddr.fire()) {
     addr_R.data := io.GepAddr.bits.data
-    addr_R.valid := true.B
+    //addr_R.valid := true.B
     addr_valid_R := true.B
   }
 
@@ -116,7 +116,7 @@ class UnTypLoad(NumPredOps: Int,
       // Set data output registers
       data_R.data := io.memResp.data
       data_R.predicate := predicate
-      data_R.valid := true.B
+      //data_R.valid := true.B
       ValidSucc()
       ValidOut()
       // Completion state.

@@ -25,7 +25,7 @@ class AllocaTester(df: AllocaNode)(implicit p: config.Parameters) extends PeekPo
   poke(df.io.allocaInputIO.bits.size, 3.U)
   poke(df.io.allocaInputIO.bits.numByte, 4.U)
   poke(df.io.allocaInputIO.bits.predicate, false.B)
-  poke(df.io.allocaInputIO.bits.valid, false.B)
+// //   poke(df.io.allocaInputIO.bits.valid, false.B)
   poke(df.io.allocaInputIO.valid, false.B)
 
   poke(df.io.enable.bits , false.B)
@@ -46,7 +46,7 @@ class AllocaTester(df: AllocaNode)(implicit p: config.Parameters) extends PeekPo
 
 
   poke(df.io.allocaInputIO.valid, true.B)
-  poke(df.io.allocaInputIO.bits.valid, true.B)
+// //   poke(df.io.allocaInputIO.bits.valid, true.B)
   poke(df.io.allocaInputIO.bits.predicate, true.B)
 
   println(s"Output: ${peek(df.io.Out(0))}\n")

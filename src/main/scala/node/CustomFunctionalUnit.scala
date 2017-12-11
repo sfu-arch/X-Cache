@@ -109,7 +109,7 @@ class TestCFU(ID: Int, NumOps: Int, NumIns: Int, NumOuts: Int)(sign: Boolean)(im
 
   io.Out(0).bits.predicate := InRegs(0).predicate & InRegs(1).predicate & InRegs(2).predicate & InRegs(3).predicate & InRegs(4).predicate &
     InRegs(5).predicate & InRegs(6).predicate
-  io.Out(0).bits.valid := true.B
+//   io.Out(0).bits.valid := true.B
 
   // Declare chain of FUs
   //val FUs = for (i <- 0 until OpCodes.length) yield {

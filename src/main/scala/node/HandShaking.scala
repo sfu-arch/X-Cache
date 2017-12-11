@@ -226,7 +226,7 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   }
 }
 
-class HandShakingFused[T <: ValidT with PredicateT](val NumIns: Int, val NumOuts: Int,
+class HandShakingFused[T <: PredicateT](val NumIns: Int, val NumOuts: Int,
   val ID: Int)(gen: T)(implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
@@ -279,7 +279,7 @@ class HandShakingFused[T <: ValidT with PredicateT](val NumIns: Int, val NumOuts
     when(io.In(i).fire()) {
       in_valid_R(i) := io.In(i).valid
       InRegs(i) := io.In(i).bits
-      InRegs(i).valid := io.In(i).valid
+      //InRegs(i).valid := io.In(i).valid
       InRegs(i).predicate := io.In(i).bits.predicate
     }
   }

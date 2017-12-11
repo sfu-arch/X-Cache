@@ -119,7 +119,7 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R
     io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.valid := true.B
+//     io.Out(i).bits.valid := true.B
   }
 
 

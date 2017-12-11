@@ -24,12 +24,12 @@ import interfaces._
 class PhiTester(df: PhiNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.InData(0).valid, false.B)
-  poke(df.io.InData(0).bits.valid, true.B)
+// //   poke(df.io.InData(0).bits.valid, true.B)
   poke(df.io.InData(0).bits.predicate, true.B)
   poke(df.io.InData(0).bits.data, 5.U)
 
   poke(df.io.InData(1).valid, false.B)
-  poke(df.io.InData(1).bits.valid, true.B)
+// //   poke(df.io.InData(1).bits.valid, true.B)
   poke(df.io.InData(1).bits.predicate, true.B)
   poke(df.io.InData(1).bits.data, 3.U)
 

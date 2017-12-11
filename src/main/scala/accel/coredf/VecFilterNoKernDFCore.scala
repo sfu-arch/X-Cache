@@ -76,19 +76,19 @@ class VecFilterNoKernDFCore(cNum : Int, sNum: Int)(implicit p: Parameters) exten
   Loader.io.sum <> Filt.io.sum
 
   io.stat(0).bits.data := 0x55AA0003.U
-  io.stat(0).bits.valid := true.B
+// //   io.stat(0).bits.valid := true.B
   io.stat(0).bits.predicate := true.B
   io.stat(0).valid := true.B
   io.stat(1).bits.data := Filt.io.sum.bits.data(31,0)
-  io.stat(1).bits.valid := true.B
+// //   io.stat(1).bits.valid := true.B
   io.stat(1).bits.predicate := true.B
   io.stat(1).valid := Filt.io.sum.valid
   io.stat(2).bits.data := Filt.io.sum.bits.data(63,32)
-  io.stat(2).bits.valid := true.B
+// //   io.stat(2).bits.valid := true.B
   io.stat(2).valid := Filt.io.sum.valid
   io.stat(2).bits.predicate := true.B
   io.stat(3).bits.data := Filt.io.sum.bits.data(95,64)
-  io.stat(3).bits.valid := true.B
+// //   io.stat(3).bits.valid := true.B
   io.stat(3).valid := Filt.io.sum.valid
   io.stat(3).bits.predicate := true.B
 
