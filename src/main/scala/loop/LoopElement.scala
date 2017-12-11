@@ -23,14 +23,14 @@ class LoopElementIO() extends Bundle() {
   /**
     * Module input
     */
-  val inData = Flipped(Decoupled(new CustomDataBundle()))
+  val inData = Flipped(Decoupled(new CustomDataBundle(UInt(32.W))))
   val Finish = Input(Bool())
 
   /**
     * Module output
     */
   val outData = new Bundle{
-    val data  = Output(new CustomDataBundle())
+    val data  = Output(new CustomDataBundle(UInt(32.W)))
     val valid = Output(Bool())
   }
 }
