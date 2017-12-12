@@ -216,7 +216,6 @@ object DataBundle {
     val wire = Wire(new DataBundle)
     wire.data := 0.U
     wire.predicate := false.B
-//    wire.valid := false.B
     wire
   }
 }
@@ -271,7 +270,7 @@ object ControlBundle {
   *       predicate : Bool
   * @return
   */
-class CustomDataBundle[T <: Data](gen: T) extends Bundle() {
+class CustomDataBundle[T <: Data](gen: T = UInt(32.W)) extends Bundle() {
   // Data packet
   val data = gen.chiselCloneType
   val predicate = Bool()
@@ -279,9 +278,10 @@ class CustomDataBundle[T <: Data](gen: T) extends Bundle() {
 }
 
 object CustomDataBundle {
-  def apply[T <: Data](gen: T): CustomDataBundle[T] = new CustomDataBundle(gen)
+  def apply[T <: Data](gen: T = UInt(32.W)): CustomDataBundle[T] = new CustomDataBundle(gen)
+
   def default[T <: Data](gen: T): CustomDataBundle[T] = {
-    val wire = Wire(new CustomDataBundle(gen))
+    val wire = new CustomDataBundle(gen)
     wire.data := 0.U.asTypeOf(gen)
     wire.predicate := false.B
     wire

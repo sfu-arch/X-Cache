@@ -18,19 +18,19 @@ import utility.UniformPrintfs
 /**
   * Contain each loop input argument works like register file
   */
-class LoopElementIO() extends Bundle() {
+class LoopElementIO()(implicit p: Parameters) extends CoreBundle() {
 
   /**
     * Module input
     */
-  val inData = Flipped(Decoupled(new CustomDataBundle(UInt(32.W))))
+  val inData = Flipped(Decoupled(CustomDataBundle(UInt(16.W))))
   val Finish = Input(Bool())
 
   /**
     * Module output
     */
   val outData = new Bundle{
-    val data  = Output(new CustomDataBundle(UInt(32.W)))
+    val data  = Output(CustomDataBundle()) // Defaults to UInt(32.W)
     val valid = Output(Bool())
   }
 }

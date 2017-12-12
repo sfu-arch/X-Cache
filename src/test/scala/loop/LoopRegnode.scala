@@ -21,7 +21,7 @@ class LoopRegTests(c: LoopElement) extends PeekPokeTester(c) {
 
   poke(c.io.inData.valid, false.B)
   poke(c.io.Finish, false.B)
-  poke(c.io.inData.bits.data, 5.U(10.W))
+  poke(c.io.inData.bits.data, 5.U)
 //  poke(c.io.inData.bits.predicate, false.B)
 
   step(1)
