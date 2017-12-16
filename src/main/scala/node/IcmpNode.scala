@@ -36,7 +36,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
   // Left Input
   val left_R = RegInit(DataBundle.default)
   val left_valid_R = RegInit(false.B)
-
+  io.Out(0).toPrintable
   // Right Input
   val right_R = RegInit(DataBundle.default)
   val right_valid_R = RegInit(false.B)
@@ -95,6 +95,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
     io.Out(i).bits.data := FU.io.out
 //     io.Out(i).bits.valid := true.B
     io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.taskID := left_R.taskID
   }
 
 

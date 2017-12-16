@@ -29,6 +29,11 @@ class LoopEx1(c: LoopExample) extends PeekPokeTester(c) {
   poke(c.io.Input3.bits.data, 7.U(32.W))
   poke(c.io.Input4.bits.data, 2.U(32.W))
 
+  poke(c.io.Input1.bits.taskID, 1.U)
+  poke(c.io.Input2.bits.taskID, 1.U)
+  poke(c.io.Input3.bits.taskID, 1.U)
+  poke(c.io.Input4.bits.taskID, 1.U)
+
   poke(c.io.Enable.valid, false)
   poke(c.io.Enable.bits, true)
   poke(c.io.Result.ready, false)

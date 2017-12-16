@@ -18,7 +18,11 @@ val valid = Bool ()
 
 
 trait RouteID extends CoreBundle {
-val RouteID = UInt (glen.W)
+  val RouteID = UInt (glen.W)
+}
+
+trait TaskID extends CoreBundle {
+  val taskID = UInt (glen.W)
 }
 
 trait PredicateT extends CoreBundle {
@@ -205,7 +209,7 @@ class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
   * @return
   */
 //class DataBundle(implicit p: Parameters) extends ValidT with PredicateT
-class DataBundle(implicit p: Parameters) extends PredicateT {
+class DataBundle(implicit p: Parameters) extends PredicateT with TaskID {
   // Data packet
   val data = UInt(xlen.W)
 }
@@ -216,6 +220,7 @@ object DataBundle {
     val wire = Wire(new DataBundle)
     wire.data := 0.U
     wire.predicate := false.B
+    wire.taskID := 0.U
     wire
   }
 }
@@ -270,10 +275,11 @@ object ControlBundle {
   *       predicate : Bool
   * @return
   */
-class CustomDataBundle[T <: Data](gen: T = UInt(32.W)) extends Bundle() {
+class CustomDataBundle[T <: Data](gen: T = UInt(32.W)) extends Bundle {
   // Data packet
   val data = gen.chiselCloneType
   val predicate = Bool()
+  val taskID = UInt(16.W)
   override def cloneType: this.type = new CustomDataBundle(gen).asInstanceOf[this.type]
 }
 
@@ -284,6 +290,7 @@ object CustomDataBundle {
     val wire = new CustomDataBundle(gen)
     wire.data := 0.U.asTypeOf(gen)
     wire.predicate := false.B
+    wire.taskID := 0.U
     wire
   }
 }

@@ -100,7 +100,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_W
     io.Out(i).bits.predicate := predicate
-//     io.Out(i).bits.valid := true.B
+    io.Out(i).bits.taskID := base_addr_R.taskID
   }
 
 
@@ -219,7 +219,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_W
     io.Out(i).bits.predicate := predicate
-//     io.Out(i).bits.valid := true.B
+    io.Out(i).bits.taskID := base_addr_R.taskID
   }
 
 

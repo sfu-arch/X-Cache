@@ -78,12 +78,12 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     right_R <> io.RightIO.bits
     right_valid_R := true.B
   }
-
+//  assert(left_R.taskID === right_R.taskID)
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := FU.io.out
     io.Out(i).bits.predicate := predicate
-//     io.Out(i).bits.valid := true.B
+    io.Out(i).bits.taskID := left_R.taskID
   }
 
   /*============================================*

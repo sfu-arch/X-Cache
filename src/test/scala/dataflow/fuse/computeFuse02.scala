@@ -24,6 +24,14 @@ import firrtl_interpreter.InterpreterOptions
 class computeF02STester(df: ComputeFuse02SDF)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
+  poke(df.io.data0.bits.taskID, 1.U)
+  poke(df.io.data1.bits.taskID, 1.U)
+  poke(df.io.data2.bits.taskID, 1.U)
+  poke(df.io.data3.bits.taskID, 1.U)
+  poke(df.io.data4.bits.taskID, 1.U)
+  poke(df.io.data5.bits.taskID, 1.U)
+  poke(df.io.data6.bits.taskID, 1.U)
+
   poke(df.io.data0.bits.data, 4.U)
   poke(df.io.data0.valid, false.B)
   poke(df.io.data0.bits.predicate, true.B)
