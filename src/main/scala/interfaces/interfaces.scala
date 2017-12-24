@@ -6,6 +6,8 @@ import chisel3.util._
 import config._
 import utility.Constants._
 
+import scala.collection.immutable.ListMap
+
 /*==============================================================================
 =            Notes
            1. AVOID DECLARING IOs, DECLARE BUNDLES. Create IOs within your node.
@@ -295,3 +297,59 @@ object CustomDataBundle {
   }
 }
 
+/**
+  * Bundle with arrays of varying types and/or widths
+  *
+  * These classes create a record with a configurable set of fields like:
+  * "data0"
+  * "data1", etc.
+  * The bundle fields can either be of type CustomDataBundle[T] (any type) or of
+  * DataBundle depending on class used.
+  *
+  * Examples:
+  *   var foo = VariableData(List(32, 16, 8))
+  *     foo("field0") is DataBundle with UInt(32.W)
+  *     foo("field1") is DataBundle with UInt(16.W)
+  *     foo("field2") is DataBundle with UInt(8.W)
+  *   var foo = VariableCustom(List(Int(32.W), UInt(16.W), Bool())
+  *     foo("field0") is CustomDataBundle with Int(32.W)
+  *     foo("field1") is CustomDataBundle with UInt(16.W)
+  *     foo("field2") is CustomDataBundle with Bool()
+  *
+  */
+
+class VariableCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Record {
+  var elts = Seq.tabulate(argTypes.length) {
+    i => s"field$i" -> CustomDataBundle(argTypes(i))
+  }
+  override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
+  def apply(elt: String)= elements(elt)
+  override def cloneType = new VariableCustom(argTypes).asInstanceOf[this.type]
+}
+
+class VariableDecoupledCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Record {
+  var elts = Seq.tabulate(argTypes.length) {
+    i => s"field$i" -> (Decoupled(CustomDataBundle(argTypes(i))))
+  }
+  override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
+  def apply(elt: String)= elements(elt)
+  override def cloneType = new VariableDecoupledCustom(argTypes).asInstanceOf[this.type]
+}
+
+class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
+  var elts = Seq.tabulate(argTypes.length) {
+    i => s"field$i" -> new DataBundle()(p.alterPartial({case XLEN => argTypes(i)}))
+  }
+  override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
+  def apply(elt: String)= elements(elt)
+  override def cloneType = new VariableData(argTypes).asInstanceOf[this.type]
+}
+
+class VariableDecoupledData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
+  var elts = Seq.tabulate(argTypes.length) {
+    i => s"field$i" -> (Decoupled(new DataBundle()(p.alterPartial({case XLEN => argTypes(i)}))))
+  }
+  override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
+  def apply(elt: String)= elements(elt)
+  override def cloneType = new VariableDecoupledData(argTypes).asInstanceOf[this.type]
+}
