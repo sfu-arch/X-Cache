@@ -126,8 +126,9 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
     state := s_idle
     //Reset output
     Reset()
-    printfInfo("Output fired")
-
+    when (predicate) {
+      printfInfo("Output fired")
+    }
   }
 
   //printfInfo(" State: %x\n", state)

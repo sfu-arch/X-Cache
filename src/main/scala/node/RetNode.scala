@@ -23,6 +23,8 @@ class RetNode(NumOuts: Int, ID: Int)
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new RetNodeIO(NumOuts))
+  // Printf debugging
+  override val printfSigil = "Node (RET) ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -88,5 +90,8 @@ class RetNode(NumOuts: Int, ID: Int)
     state := s_idle
     //Reset output
     Reset()
+    when(predicate) {
+      printfInfo("Output fired")
+    }
   }
 }
