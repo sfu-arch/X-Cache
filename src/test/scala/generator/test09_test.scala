@@ -81,7 +81,7 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
     println(s"Cycle: $time")
     if (peek(c.io.result.valid) == 1 && peek(c.io.result.bits.predicate) == 1) {
       result = true
-      assert(peek(c.io.result.bits.data) == 105, "Incorrect result received.")
+      assert(peek(c.io.result.bits.data) == 5, "Incorrect result received.")
     }
   }
 
