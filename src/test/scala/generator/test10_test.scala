@@ -91,19 +91,32 @@ class test10Test01(c: test10CacheWrapper) extends PeekPokeTester(c) {
   poke(c.io.data_2.valid, false.B)
 
   step(1)
+
+  // NOTE: Don't use assert().  It seems to terminate the writing of VCD files
+  // early (before the error) which makes debugging very difficult. Check results
+  // using if() and fail command.
   var time = 1  //Cycle counter
   var result = false
-  while (time < 150) {
+  while (time < 1000) {
     time += 1
     step(1)
-    println(s"Cycle: $time")
+    //println(s"Cycle: $time")
     if (peek(c.io.result.valid) == 1 && peek(c.io.result.bits.predicate) == 1) {
       result = true
-      assert(peek(c.io.result.bits.data) == 105, "Incorrect result received.")
+      val data = peek(c.io.result.bits.data)
+      if (peek(c.io.result.bits.data) != 1) {
+        println(s"*** Incorrect result received. Got $data. Hoping for 1")
+        fail
+      } else {
+        println("*** Correct result received.")
+      }
     }
   }
 
-  assert(result, "*** Timeout.")
+  if(!result) {
+    println("*** Timeout.")
+    fail
+  }
 }
 
 class test10Tester extends FlatSpec with Matchers {

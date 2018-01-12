@@ -75,17 +75,27 @@ class test08Test01(c: test08CacheWrapper) extends PeekPokeTester(c) {
   step(1)
   var time = 1  //Cycle counter
   var result = false
-  while (time < 150) {
+  while (time < 1000) {
     time += 1
     step(1)
-    println(s"Cycle: $time")
+    //println(s"Cycle: $time")
     if (peek(c.io.result.valid) == 1 && peek(c.io.result.bits.predicate) == 1) {
       result = true
-      assert(peek(c.io.result.bits.data) == 105, "Incorrect result received.")
+      val data = peek(c.io.result.bits.data)
+      if (peek(c.io.result.bits.data) != 105) {
+        println(s"*** Incorrect result received. Got $data. Hoping for 105")
+        fail
+      } else {
+        println("*** Correct result received.")
+      }
     }
   }
 
-  assert(result, "*** Timeout.")
+  if(!result) {
+    println("*** Timeout.")
+    fail
+  }
+
 }
 
 class test08Tester extends FlatSpec with Matchers {
