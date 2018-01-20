@@ -41,14 +41,14 @@ abstract class AbstractRFile(size: Int)(implicit val p: Parameters) extends Modu
  * @return [description]
  */
 class RFile(size: Int)(implicit p: Parameters) extends AbstractRFile(size)(p) {
-   val regs = SyncReadMem(size,Vec(xlen/8, UInt(8.W)))
-   // SyncReadMem(size, UInt(xlen.W))
-   // I am reading a vector of bytes and then converting to a UInt before returning it.
-   io.rdata1 := Mux(io.raddr1.orR,regs.read(io.raddr1).asUInt(), 0.U)
-   io.rdata2 := Mux(io.raddr2.orR,regs.read(io.raddr2).asUInt(), 0.U)
-   // io.rdata2 := Mux(io.raddr2.orR, regs(io.raddr2), 0.U)
-   when(io.wen & io.waddr.orR) {
+  val regs = SyncReadMem(size,Vec(xlen/8, UInt(8.W)))
+  // SyncReadMem(size, UInt(xlen.W))
+  // I am reading a vector of bytes and then converting to a UInt before returning it.
+  io.rdata1 := Mux(io.raddr1.orR,regs.read(io.raddr1).asUInt(), 0.U)
+  io.rdata2 := Mux(io.raddr2.orR,regs.read(io.raddr2).asUInt(), 0.U)
+  // io.rdata2 := Mux(io.raddr2.orR, regs(io.raddr2), 0.U)
+  when(io.wen & io.waddr.orR) {
     // I am writing a vector of bytes. Need to also feed the bytemask.
-    regs.write(io.waddr, Vec.tabulate(xlen/8)(i => io.wdata(8*(i+1)-1,8*i)),io.wmask.toBools)
+    regs.write(io.waddr, VecInit.tabulate(xlen/8)(i => io.wdata(8*(i+1)-1,8*i)),io.wmask.toBools)
   }
 }

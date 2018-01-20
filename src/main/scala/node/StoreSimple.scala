@@ -138,7 +138,7 @@ class UnTypStore(NumPredOps: Int,
       ValidOut()
       state := s_Done
     }
-  }.elsewhen(start & ~predicate & state =/= s_Done){
+  }.elsewhen(start & ~predicate & state =/= s_Done & state =/= s_idle){
     ValidSucc()
     ValidOut()
     state := s_Done
@@ -157,8 +157,10 @@ class UnTypStore(NumPredOps: Int,
       // Clear all the valid states.
       // Reset address
       addr_R := DataBundle.default
+      addr_valid_R := false.B
       // Reset data.
       data_R := DataBundle.default
+      data_valid_R := false.B
       // Clear all other state
       Reset()
       // Reset state.

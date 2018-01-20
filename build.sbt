@@ -8,7 +8,7 @@ scalaVersion := "2.11.11"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls")
 
-testOptions in Test += Tests.Argument("-oDF")
+testOptions in Test += Tests.Argument("-oD")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),

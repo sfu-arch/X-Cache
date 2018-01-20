@@ -19,7 +19,7 @@ import loop._
 import accel._
 import node._
 
-class test09CacheWrapper()(implicit p: Parameters) extends test09DF()(p)
+class test03CacheWrapper()(implicit p: Parameters) extends test03DF()(p)
   with CacheParams {
 
   // Instantiate the AXI Cache
@@ -33,11 +33,11 @@ class test09CacheWrapper()(implicit p: Parameters) extends test09DF()(p)
 
 }
 
-class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
+class test03Test01(c: test03CacheWrapper) extends PeekPokeTester(c) {
 
 
   /**
-  *  test09DF interface:
+  *  test03DF interface:
   *
   *    data_0 = Flipped(Decoupled(new DataBundle))
    *    val pred = Decoupled(new Bool())
@@ -54,6 +54,12 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
   poke(c.io.data_0.bits.data, 0.U)
   poke(c.io.data_0.bits.predicate, false.B)
   poke(c.io.data_0.valid, false.B)
+  poke(c.io.data_1.bits.data, 0.U)
+  poke(c.io.data_1.bits.predicate, false.B)
+  poke(c.io.data_1.valid, false.B)
+  poke(c.io.data_2.bits.data, 0.U)
+  poke(c.io.data_2.bits.predicate, false.B)
+  poke(c.io.data_2.valid, false.B)
 
   poke(c.io.result.ready, false.B)
 
@@ -61,9 +67,15 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.entry.bits.control, true.B)
   poke(c.io.entry.valid, true.B)
-  poke(c.io.data_0.bits.data, 100.U)
+  poke(c.io.data_0.bits.data, 5.U)
   poke(c.io.data_0.bits.predicate, true.B)
   poke(c.io.data_0.valid, true.B)
+  poke(c.io.data_1.bits.data, 3.U)
+  poke(c.io.data_1.bits.predicate, true.B)
+  poke(c.io.data_1.valid, true.B)
+  poke(c.io.data_2.bits.data, 2.U)
+  poke(c.io.data_2.bits.predicate, true.B)
+  poke(c.io.data_2.valid, true.B)
   poke(c.io.result.ready, true.B)
   step(1)
   poke(c.io.entry.bits.control, false.B)
@@ -71,6 +83,12 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
   poke(c.io.data_0.bits.data, 0.U)
   poke(c.io.data_0.bits.predicate, false.B)
   poke(c.io.data_0.valid, false.B)
+  poke(c.io.data_1.bits.data, 0.U)
+  poke(c.io.data_1.bits.predicate, false.B)
+  poke(c.io.data_1.valid, false.B)
+  poke(c.io.data_2.bits.data, 0.U)
+  poke(c.io.data_2.bits.predicate, false.B)
+  poke(c.io.data_2.valid, false.B)
 
   step(1)
   var time = 1  //Cycle counter
@@ -82,8 +100,8 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
     if (peek(c.io.result.valid) == 1 && peek(c.io.result.bits.predicate) == 1) {
       result = true
       val data = peek(c.io.result.bits.data)
-      if (peek(c.io.result.bits.data) != 5) {
-        println(s"*** Incorrect result received. Got $data. Hoping for 5")
+      if (peek(c.io.result.bits.data) != 105) {
+        println(s"*** Incorrect result received. Got $data. Hoping for 105")
         fail
       } else {
         println("*** Correct result received.")
@@ -95,12 +113,11 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
     println("*** Timeout.")
     fail
   }
-
 }
 
-class test09Tester extends FlatSpec with Matchers {
+class test03Tester extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that test09 works correctly." in {
+  it should "Check that test03 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>
@@ -112,8 +129,8 @@ class test09Tester extends FlatSpec with Matchers {
        "-tbn", "verilator",
        "-td", "test_run_dir",
        "-tts", "0001"),
-     () => new test09CacheWrapper()) {
-     c => new test09Test01(c)
+     () => new test03CacheWrapper()) {
+     c => new test03Test01(c)
     } should be(true)
   }
 }
