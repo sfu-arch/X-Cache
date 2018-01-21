@@ -2,7 +2,7 @@ package interfaces
 
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.{Decoupled, _}
 import config._
 import utility.Constants._
 
@@ -352,4 +352,16 @@ class VariableDecoupledData(val argTypes: Seq[Int])(implicit p: Parameters) exte
   override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
   def apply(elt: String)= elements(elt)
   override def cloneType = new VariableDecoupledData(argTypes).asInstanceOf[this.type]
+}
+
+class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends Bundle {
+  val enable = Decoupled(new ControlBundle)
+  val data   = new VariableDecoupledData(argTypes)
+  override def cloneType = new CallDecoupled(argTypes).asInstanceOf[this.type]
+}
+
+class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends Bundle {
+  val enable = new ControlBundle
+  val data   = new VariableData(argTypes)
+  override def cloneType = new Call(argTypes).asInstanceOf[this.type]
 }
