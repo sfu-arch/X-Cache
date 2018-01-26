@@ -21,7 +21,10 @@ import node._
 
 class test10CacheWrapper()(implicit p: Parameters) extends test10DF()(p)
   with CacheParams {
-
+/*  val io2 = IO(new Bundle {
+    val init  = Flipped(Valid(new InitParams()(p)))
+  })
+  */
   // Instantiate the AXI Cache
   val cache = Module(new Cache)
   cache.io.cpu.req <> CacheMem.io.CacheReq
@@ -30,6 +33,20 @@ class test10CacheWrapper()(implicit p: Parameters) extends test10DF()(p)
   // Instantiate a memory model with AXI slave interface for cache
   val memModel = Module(new NastiMemSlave)
   memModel.io.nasti <> cache.io.nasti
+  //memModel.io.init <> io2.init
+
+  val raminit = RegInit(true.B)
+  val addrVec = VecInit(0.U,1.U,2.U,3.U)
+  val dataVec = VecInit(1.U,2.U,3.U,4.U)
+  val (count_out, count_done) = Counter(raminit, addrVec.length)
+  when (!count_done) {
+    memModel.io.init.bits.addr := addrVec(count_out)
+    memModel.io.init.bits.data := dataVec(count_out)
+    memModel.io.init.valid := true.B
+  }.otherwise {
+    memModel.io.init.valid := false.B
+    raminit := false.B
+  }
 
 }
 
@@ -46,49 +63,56 @@ class test10Test01(c: test10CacheWrapper) extends PeekPokeTester(c) {
    */
 
 
+/*
+  val initList = List((0,1), (1,2), (2,3), (3,4))
+  for ((addr,data) <- initList) {
+    poke(c.io2.init.bits.addr, addr)
+    poke(c.io2.init.bits.data, data)
+    poke(c.io2.init.valid, true.B)
+    step(1)
+  }
+  poke(c.io2.init.valid, false.B)
+*/
   // Initializing the signals
-
-  poke(c.io.entry.bits.control, false.B)
-  poke(c.io.entry.valid, false.B)
-
-  poke(c.io.data_0.bits.data, 0.U)
-  poke(c.io.data_0.bits.predicate, false.B)
-  poke(c.io.data_0.valid, false.B)
-  poke(c.io.data_1.bits.data, 0.U)
-  poke(c.io.data_1.bits.predicate, false.B)
-  poke(c.io.data_1.valid, false.B)
-  poke(c.io.data_2.bits.data, 0.U)
-  poke(c.io.data_2.bits.predicate, false.B)
-  poke(c.io.data_2.valid, false.B)
-
-  poke(c.io.result.ready, false.B)
-
-
+  poke(c.io.in.enable.bits.control, false.B)
+  poke(c.io.in.enable.valid, false.B)
+  poke(c.io.in.data("field0").bits.data, 0.U)
+  poke(c.io.in.data("field0").bits.predicate, false.B)
+  poke(c.io.in.data("field0").valid, false.B)
+  poke(c.io.in.data("field1").bits.data, 0.U)
+  poke(c.io.in.data("field1").bits.predicate, false.B)
+  poke(c.io.in.data("field1").valid, false.B)
+  poke(c.io.in.data("field2").bits.data, 0.U)
+  poke(c.io.in.data("field2").bits.predicate, false.B)
+  poke(c.io.in.data("field2").valid, false.B)
+  poke(c.io.out.data("field0").ready, false.B)
+  poke(c.io.out.enable.ready, false.B)
   step(1)
-  poke(c.io.entry.bits.control, true.B)
-  poke(c.io.entry.valid, true.B)
-  poke(c.io.data_0.bits.data, 0.U)
-  poke(c.io.data_0.bits.predicate, true.B)
-  poke(c.io.data_0.valid, true.B)
-  poke(c.io.data_1.bits.data, 4.U)
-  poke(c.io.data_1.bits.predicate, true.B)
-  poke(c.io.data_1.valid, true.B)
-  poke(c.io.data_2.bits.data, 8.U)
-  poke(c.io.data_2.bits.predicate, true.B)
-  poke(c.io.data_2.valid, true.B)
-  poke(c.io.result.ready, true.B)
+  poke(c.io.in.enable.bits.control, true.B)
+  poke(c.io.in.enable.valid, true.B)
+  poke(c.io.in.data("field0").bits.data, 0.U)
+  poke(c.io.in.data("field0").bits.predicate, true.B)
+  poke(c.io.in.data("field0").valid, true.B)
+  poke(c.io.in.data("field1").bits.data, 4.U)
+  poke(c.io.in.data("field1").bits.predicate, true.B)
+  poke(c.io.in.data("field1").valid, true.B)
+  poke(c.io.in.data("field2").bits.data, 8.U)
+  poke(c.io.in.data("field2").bits.predicate, true.B)
+  poke(c.io.in.data("field2").valid, true.B)
+  poke(c.io.out.data("field0").ready, true.B)
+  poke(c.io.out.enable.ready, true.B)
   step(1)
-  poke(c.io.entry.bits.control, false.B)
-  poke(c.io.entry.valid, false.B)
-  poke(c.io.data_0.bits.data, 0.U)
-  poke(c.io.data_0.bits.predicate, false.B)
-  poke(c.io.data_0.valid, false.B)
-  poke(c.io.data_1.bits.data, 0.U)
-  poke(c.io.data_1.bits.predicate, false.B)
-  poke(c.io.data_1.valid, false.B)
-  poke(c.io.data_2.bits.data, 0.U)
-  poke(c.io.data_2.bits.predicate, false.B)
-  poke(c.io.data_2.valid, false.B)
+  poke(c.io.in.enable.bits.control, false.B)
+  poke(c.io.in.enable.valid, false.B)
+  poke(c.io.in.data("field0").bits.data, 0.U)
+  poke(c.io.in.data("field0").bits.predicate, false.B)
+  poke(c.io.in.data("field0").valid, false.B)
+  poke(c.io.in.data("field1").bits.data, 0.U)
+  poke(c.io.in.data("field1").bits.predicate, false.B)
+  poke(c.io.in.data("field1").valid, false.B)
+  poke(c.io.in.data("field2").bits.data, 0.U)
+  poke(c.io.in.data("field2").bits.predicate, false.B)
+  poke(c.io.in.data("field2").valid, false.B)
 
   step(1)
 
@@ -101,10 +125,10 @@ class test10Test01(c: test10CacheWrapper) extends PeekPokeTester(c) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
-    if (peek(c.io.result.valid) == 1 && peek(c.io.result.bits.predicate) == 1) {
+    if (peek(c.io.out.data("field0").valid) == 1 && peek(c.io.out.data("field0").bits.predicate) == 1) {
       result = true
-      val data = peek(c.io.result.bits.data)
-      if (peek(c.io.result.bits.data) != 1) {
+      val data = peek(c.io.out.data("field0").bits.data)
+      if (data != 1) {
         println(s"*** Incorrect result received. Got $data. Hoping for 1")
         fail
       } else {
