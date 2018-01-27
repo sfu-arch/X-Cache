@@ -1,16 +1,22 @@
 package accel
 
 import chisel3._
+import chisel3.core.Data
 import chisel3.util._
-
 import junctions._
-import config._
+import config.{CoreBundle, _}
 
-class NastiMemSlaveIO(implicit p: Parameters) extends CoreBundle()(p) {
+class InitParams(implicit p: Parameters) extends CoreBundle()(p) with CacheParams {
+  val addr = UInt(nastiXAddrBits.W)
+  val data = UInt(nastiXDataBits.W)
+}
+
+class NastiMemSlaveIO(implicit p: Parameters) extends CoreBundle()(p) with CacheParams {
+  val init  = Flipped(Valid(new InitParams()(p)))
   val nasti = Flipped(new NastiIO)
 }
 
-class NastiMemSlave()(implicit val p: Parameters) extends Module with CacheParams {
+class NastiMemSlave(val depth : Int = 1<<16)(implicit val p: Parameters) extends Module with CacheParams {
 
   val io = IO(new NastiMemSlaveIO()(p))
 
@@ -28,11 +34,15 @@ class NastiMemSlave()(implicit val p: Parameters) extends Module with CacheParam
   val len = (dataBeats - 1).U
 
   /* Main Memory */
-  val mem = Mem(1 << 20, UInt(nastiXDataBits.W))
+  val mem = Mem(depth, UInt(nastiXDataBits.W))
   val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: Nil = Enum(4)
   val memState = RegInit(sMemIdle)
   val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, dataBeats)
   val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, dataBeats)
+
+  when (io.init.valid) {
+    mem.write(io.init.bits.addr, io.init.bits.data)
+  }
 
   dutMem.ar.ready := false.B
   dutMem.aw.ready := false.B
@@ -40,7 +50,8 @@ class NastiMemSlave()(implicit val p: Parameters) extends Module with CacheParam
   dutMem.b.valid := memState === sMemWrAck
   dutMem.b.bits := NastiWriteResponseChannel(0.U)
   dutMem.r.valid := memState === sMemRead
-  dutMem.r.bits := NastiReadDataChannel(0.U, mem.read((dutMem.ar.bits.addr >> size) + rCnt), rDone)
+  val rdAddr = (dutMem.ar.bits.addr >> size).asUInt() + rCnt.asUInt()
+  dutMem.r.bits := NastiReadDataChannel(0.U, mem.read(rdAddr))
 
   switch(memState) {
     is(sMemIdle) {
@@ -54,8 +65,9 @@ class NastiMemSlave()(implicit val p: Parameters) extends Module with CacheParam
       assert(dutMem.aw.bits.size === size)
       assert(dutMem.aw.bits.len === len)
       when(dutMem.w.valid) {
-        mem((dutMem.aw.bits.addr >> size) + wCnt) := dutMem.w.bits.data
-        printf("[write] mem[%x] <= %x\n", (dutMem.aw.bits.addr >> size) + wCnt, dutMem.w.bits.data)
+        val wrAddr = (dutMem.aw.bits.addr >> size).asUInt() + wCnt.asUInt()
+        mem.write(wrAddr, dutMem.w.bits.data)
+        printf("[write] mem[%x] <= %x\n", wrAddr, dutMem.w.bits.data)
         dutMem.w.ready := true.B
       }
       when(wDone) {
@@ -79,3 +91,4 @@ class NastiMemSlave()(implicit val p: Parameters) extends Module with CacheParam
     }
   }
 }
+

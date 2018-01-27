@@ -46,7 +46,8 @@ abstract class ReadEntryIO()(implicit val p: Parameters)
   */
 class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) with UniformPrintfs {
 
-  val ID = RegInit(id.U)
+  val ID = RegInit(~id.U)
+  ID := id.U
   val request_R = RegInit(ReadReq.default)
   val request_valid_R = RegInit(false.B)
   // Data buffers for misaligned accesses
@@ -93,15 +94,13 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
 
   io.MemReq.valid := 0.U
   io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
-  // *** Note: Chisel seems to be screwing up these constants in the arbiter.
+  // *** Note: Chisel seems to be screwing up constants in the arbiter.
   // Use reg's for now to force it to keep them.
-  val myID = RegNext(ID, 0.U)
-  io.MemReq.bits.tag  := myID
+  io.MemReq.bits.tag  := ID
   val isWrite = RegNext(false.B, init=true.B)
   io.MemReq.bits.iswrite := isWrite
   io.MemReq.bits.data := 0.U
   io.MemReq.bits.mask := 0.U
-//    io.MemReq.bits.valid := true.B
 
 
   /*=======================================================
@@ -117,7 +116,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
     // Bytemask of bytes within words that need to be fetched.
     sendbytemask := ReadByteMask(io.NodeReq.bits.Typ, io.NodeReq.bits.address,xlen)
     // Next State
-    state := s_SENDING
+    //state := s_SENDING
   }
 
   // printf("\nMSHR %d: Inputs are Ready %d", ID, request_R.address)
@@ -128,54 +127,62 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   =            Sending values to the cache request            =
   ===========================================================*/
 
-  when((state === s_SENDING) && (sendbytemask =/= 0.asUInt((xlen/4).W))) {
-    io.MemReq.valid := 1.U
-    // io.MemReq.ready means arbitration succeeded and memory op has been passed on
-    when(io.MemReq.fire()) {
-      // Shift right by word length on machine.
-      sendbytemask := sendbytemask >> (xlen / 8)
-      // Move to receiving data
-      state := s_RECEIVING
+
+  switch (state) {
+    is (s_idle) {
+      when(io.NodeReq.fire()) {
+        state := s_SENDING
+      }
+    }
+    is (s_SENDING) {
+      io.MemReq.valid := 1.U
+      // io.MemReq.ready means arbitration succeeded and memory op has been passed on
+      when(io.MemReq.ready) {
+        // Shift right by word length on machine.
+        sendbytemask := sendbytemask >> (xlen / 8)
+        // Move to receiving data
+        state := s_RECEIVING
+      }
+    }
+    is (s_RECEIVING) {
+      when (io.MemResp.valid) {
+        // Received data; concatenate into linebuffer
+        linebuffer(ptr) := io.MemResp.data
+        // Increment ptr to next entry in linebuffer (for next read)
+        ptr := ptr + 1.U
+        // Check if more data needs to be sent
+         when (sendbytemask === 0.asUInt((xlen/4).W)) {
+           state := s_Done
+         }.otherwise {
+           state := s_SENDING
+         }
+      }
+    }
+    is (s_Done) {
+      io.output.valid := 1.U
+      output := (linebuffer.asUInt & bitmask) >> Cat(request_R.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))
+      // @error: To handle doubles this has to change.
+      if (xlen == 32) {
+        io.output.bits.data := Data2Sign(output, request_R.Typ, xlen)
+      }
+      if (xlen == 16) {
+        io.output.bits.data := Data2Sign16b(output, request_R.Typ, xlen)
+      }
+      io.output.bits.valid := true.B
+      ptr := 0.U
+      // Output driver demux tree has forwarded output (may not have reached receiving node yet)
+      when(io.output.ready) {
+        state := s_idle
+        request_valid_R := false.B
+      }
     }
   }
 
-  /*============================================================
-  =            Receiving values from cache response            =
-  =============================================================*/
 
-  when((state === s_RECEIVING) && (io.MemResp.valid === true.B)) {
-    // Received data; concatenate into linebuffer
-    linebuffer(ptr) := io.MemResp.data
-    // Increment ptr to next entry in linebuffer (for next read)
-    ptr := ptr + 1.U
-    // Check if more data needs to be sent
-    val y = (sendbytemask === 0.asUInt((xlen/4).W))
-    state := Mux(y, s_Done, s_SENDING)
-  }
 
   /*============================================================
   =            Cleanup and send output                         =
   =============================================================*/
-
-  when(state === s_Done) {
-    output := (linebuffer.asUInt & bitmask) >> Cat(request_R.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))
-    io.output.valid := 1.U
-    // @error: To handle doubles this has to change.
-    if (xlen == 32) {
-      io.output.bits.data := Data2Sign(output,request_R.Typ,xlen)
-    }
-    if (xlen == 16) {
-      io.output.bits.data := Data2Sign16b(output,request_R.Typ,xlen)
-    }
-    io.output.bits.valid := true.B
-    ptr := 0.U
-    // Output driver demux tree has forwarded output (may not have reached receiving node yet)
-    when(io.output.fire()) {
-      state := s_idle
-      request_valid_R := false.B
-    }
-  }
-
 
    override val printfSigil = "UnTyp RD MSHR(" + ID + ")"
   if ((log == true) && (comp contains "RDMSHR")) {
