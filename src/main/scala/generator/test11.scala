@@ -467,9 +467,9 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   br11.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("br11"))
 
-  io.call8_out.enable.valid <> bb_for_body.io.Out(7).valid // Manually added
+  io.call8_out.enable.valid <> bb_for_body.io.Out(7).valid       // Manually added
   io.call8_out.enable.bits.control <> bb_for_body.io.Out(7).bits // Manually added
-  bb_for_body.io.Out(7).ready := io.call8_out.enable.ready
+  bb_for_body.io.Out(7).ready := io.call8_out.enable.ready       // Manually added
 
   add12.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("add12"))
 
@@ -556,8 +556,8 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   // Wiring Load instruction to the parent instruction
   load5.io.GepAddr <> getelementptr4.io.Out(param.load5_in("getelementptr4"))
-  load5.io.memResp <> CacheMem.io.ReadOut(0)
-  CacheMem.io.ReadIn(0) <> load5.io.memReq
+  load5.io.memResp <> RegisterFile.io.ReadOut(0)
+  RegisterFile.io.ReadIn(0) <> load5.io.memReq
 
 
 
@@ -571,8 +571,8 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   // Wiring Load instruction to the parent instruction
   load7.io.GepAddr <> getelementptr6.io.Out(param.load7_in("getelementptr6"))
-  load7.io.memResp <> CacheMem.io.ReadOut(1)
-  CacheMem.io.ReadIn(1) <> load7.io.memReq
+  load7.io.memResp <> RegisterFile.io.ReadOut(1)
+  RegisterFile.io.ReadIn(1) <> load7.io.memReq
 
 
 
@@ -596,8 +596,8 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   // Wiring Store instruction to the parent instruction
   store10.io.GepAddr <> getelementptr9.io.Out(param.store10_in("getelementptr9"))
-  store10.io.memResp  <> CacheMem.io.WriteOut(0)
-  CacheMem.io.WriteIn(0) <> store10.io.memReq
+  store10.io.memResp  <> RegisterFile.io.WriteOut(0)
+  RegisterFile.io.WriteIn(0) <> store10.io.memReq
   store10.io.Out(0).ready := true.B
 
 
