@@ -29,7 +29,7 @@ class TypLoadTests(c: TypLoad) extends PeekPokeTester(c) {
         poke(c.io.GepAddr.valid, true)
         poke(c.io.GepAddr.bits.data, 12)
         poke(c.io.GepAddr.bits.predicate, true)
-        poke(c.io.enable.bits,true)
+        poke(c.io.enable.bits.control,true)
         poke(c.io.enable.valid,true)
       }
 

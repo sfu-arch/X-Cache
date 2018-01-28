@@ -24,7 +24,7 @@ class LoopStartIO(val NumInputs: Int, val NumOuts: Int)
   val inputArg  = Vec(NumInputs, Flipped(Decoupled(new DataBundle())))
   val outputArg = Vec(NumOuts, Decoupled(new DataBundle()))
 
-  val enableSignal = Vec(NumInputs, Flipped(Decoupled(Bool())))
+  val enableSignal = Vec(NumInputs, Flipped(Decoupled(new ControlBundle)))
 
   /**
     * Finish signal comes from Ret instruction

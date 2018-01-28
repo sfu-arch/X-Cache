@@ -19,7 +19,7 @@ class ComputeFuse02SDF(implicit val p: Parameters) extends Module with CoreParam
     val data4 = Flipped(Decoupled(new DataBundle()))
     val data5 = Flipped(Decoupled(new DataBundle()))
     val data6 = Flipped(Decoupled(new DataBundle()))
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle))
 
     val dataOut0 = Decoupled(new DataBundle())
     val dataOut1 = Decoupled(new DataBundle())

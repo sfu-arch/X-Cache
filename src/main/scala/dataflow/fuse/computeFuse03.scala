@@ -24,7 +24,7 @@ class ComputeFuse03SDF(implicit val p: Parameters) extends Module with CoreParam
     val data9 = Flipped(Decoupled(new DataBundle()))
     val data10 = Flipped(Decoupled(new DataBundle()))
     val data11 = Flipped(Decoupled(new DataBundle()))
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle))
 
     val dataOut0 = Decoupled(new DataBundle())
     val dataOut1 = Decoupled(new DataBundle())
@@ -93,7 +93,7 @@ class ComputeFuse03PDF(implicit val p: Parameters) extends Module with CoreParam
     val data9 = Flipped(Decoupled(new DataBundle()))
     val data10 = Flipped(Decoupled(new DataBundle()))
     val data11 = Flipped(Decoupled(new DataBundle()))
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle))
 
     val dataOut0 = Decoupled(new DataBundle())
     val dataOut1 = Decoupled(new DataBundle())
@@ -153,7 +153,7 @@ class ComputeFuse03CDF(implicit val p: Parameters) extends Module with CoreParam
     val data9 = Flipped(Decoupled(new DataBundle()))
     val data10 = Flipped(Decoupled(new DataBundle()))
     val data11 = Flipped(Decoupled(new DataBundle()))
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle))
 
     val dataOut0 = Decoupled(new DataBundle())
     val dataOut1 = Decoupled(new DataBundle())

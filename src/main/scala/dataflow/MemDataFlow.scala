@@ -66,7 +66,7 @@ class UnTypMemDataFlow(val ops:Int)(implicit val p: Parameters) extends Module w
  	Stores(i).io.inData.bits.predicate  := true.B
  	Stores(i).io.inData.valid           := fireLoadsStores
 
- 	Stores(i).io.enable.bits  := true.B
+ 	Stores(i).io.enable.bits.control  := true.B
  	Stores(i).io.enable.valid := fireEnables
  	Stores(i).io.Out(0).ready := true.B
 
@@ -75,7 +75,7 @@ class UnTypMemDataFlow(val ops:Int)(implicit val p: Parameters) extends Module w
  	Loads(i).io.GepAddr.bits.predicate := true.B
  	Loads(i).io.GepAddr.valid          := fireLoadsStores
 
- 	Loads(i).io.enable.bits  := true.B
+ 	Loads(i).io.enable.bits.control  := true.B
  	Loads(i).io.enable.valid := fireEnables
  	Loads(i).io.Out(0).ready := true.B
 
@@ -84,7 +84,7 @@ class UnTypMemDataFlow(val ops:Int)(implicit val p: Parameters) extends Module w
  }
 
  for (i <- 0 until ops) {
-   Ops(i).io.enable.bits := true.B
+   Ops(i).io.enable.bits.control := true.B
    Ops(i).io.enable.valid := true.B
    Ops(i).io.LeftIO <> Loads(2*i).io.Out(1)
    Ops(i).io.RightIO <> Loads(2*i + 1).io.Out(1)

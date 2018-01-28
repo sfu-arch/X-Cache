@@ -29,9 +29,9 @@ class LoopTests(c: LoopStart) extends PeekPokeTester(c) {
   poke(c.io.Finish(1).bits.control, false.B)
   poke(c.io.Finish(1).valid , false.B)
 
-  poke(c.io.enableSignal(0).bits, false.B)
+  poke(c.io.enableSignal(0).bits.control, false.B)
   poke(c.io.enableSignal(0).valid , false.B)
-  poke(c.io.enableSignal(1).bits, false.B)
+  poke(c.io.enableSignal(1).bits.control, false.B)
   poke(c.io.enableSignal(1).valid , false.B)
 
   poke(c.io.outputArg(0).ready, false.B)

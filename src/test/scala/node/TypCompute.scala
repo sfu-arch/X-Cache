@@ -25,7 +25,7 @@ class TypCompTests(df: TypCompute[mat2x2])
 
   
     poke(df.io.enable.valid,true)
-    poke(df.io.enable.bits,true)
+    poke(df.io.enable.bits.control,true)
 
     poke(df.io.LeftIO.bits.data,0x1111222233334444L)
     poke(df.io.LeftIO.valid,true)

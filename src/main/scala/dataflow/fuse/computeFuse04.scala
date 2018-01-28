@@ -63,7 +63,7 @@ class ComputeFuse04PDF(implicit val p: Parameters) extends Module with CoreParam
     val data3 = Flipped(Decoupled(new DataBundle()))
     val data4 = Flipped(Decoupled(new DataBundle()))
     val data5 = Flipped(Decoupled(new DataBundle()))
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle))
 
     val dataOut = Decoupled(new DataBundle())
 

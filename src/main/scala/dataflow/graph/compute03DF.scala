@@ -24,7 +24,7 @@ class Compute03DF(implicit val p: Parameters) extends Module with CoreParams {
     val data9 = Flipped(Decoupled(new DataBundle()))
     val data10 = Flipped(Decoupled(new DataBundle()))
     val data11 = Flipped(Decoupled(new DataBundle()))
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle))
 
     val dataOut0 = Decoupled(new DataBundle())
     val dataOut1 = Decoupled(new DataBundle())

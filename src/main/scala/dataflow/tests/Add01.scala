@@ -24,7 +24,7 @@ abstract class Add01DFIO(implicit val p: Parameters) extends Module with CorePar
   val io = IO(new Bundle {
     val Data0 = Flipped(Decoupled(new DataBundle))
     val Data1 = Flipped(Decoupled(new DataBundle))
-    val pred = Decoupled(new Bool())
+    val pred = Decoupled(new ControlBundle)
     val start = Input(new Bool())
     val result = Decoupled(new DataBundle)
   })

@@ -29,7 +29,7 @@ class LiveOutTester(df: LiveOutNode)
 
   poke(df.io.InData.valid, false.B)
 
-  poke(df.io.enable.bits , false.B)
+  poke(df.io.enable.bits.control , false.B)
   poke(df.io.enable.valid, false.B)
 
   poke(df.io.Out(0).ready, false.B)
@@ -68,7 +68,7 @@ class LiveOutTester(df: LiveOutNode)
   step(1)
 
 
-  poke(df.io.enable.bits , true.B)
+  poke(df.io.enable.bits.control , true.B)
   poke(df.io.enable.valid, true.B)
 
 

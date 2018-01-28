@@ -33,7 +33,7 @@ class PhiTester(df: PhiNode)(implicit p: config.Parameters) extends PeekPokeTest
   poke(df.io.InData(1).bits.predicate, true.B)
   poke(df.io.InData(1).bits.data, 3.U)
 
-  poke(df.io.enable.bits, true.B)
+  poke(df.io.enable.bits.control, true.B)
   poke(df.io.enable.valid, false.B)
 
   poke(df.io.Mask.bits, 0.U)

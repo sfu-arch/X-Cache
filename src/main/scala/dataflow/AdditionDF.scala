@@ -70,7 +70,7 @@ object functionParam{
 abstract class AddDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val Data0 = Flipped(Decoupled(new DataBundle))
-    val pred = Decoupled(new Bool())
+    val pred = Decoupled(new ControlBundle)
     val result = Decoupled(new DataBundle)
   })
 }

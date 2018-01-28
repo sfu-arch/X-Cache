@@ -31,7 +31,7 @@ class cmpTester(df: IcmpNode)
   poke(df.io.RightIO.valid, false.B)
   poke(df.io.RightIO.bits.predicate, false.B)
 
-  poke(df.io.enable.bits , false.B)
+  poke(df.io.enable.bits.control , false.B)
   poke(df.io.enable.valid, false.B)
   poke(df.io.Out(0).ready, false.B)
   println(s"Output: ${peek(df.io.Out(0))}\n")
@@ -39,7 +39,7 @@ class cmpTester(df: IcmpNode)
 
   step(1)
 
-  poke(df.io.enable.bits , true.B)
+  poke(df.io.enable.bits.control , true.B)
   poke(df.io.enable.valid, true.B)
   poke(df.io.Out(0).ready, true.B)
 

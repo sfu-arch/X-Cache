@@ -37,7 +37,7 @@ Store.io.inData.bits.data       := 0x1111222211112222L.U
 Store.io.inData.bits.predicate  := true.B
 Store.io.inData.valid           := true.B
 
-Store.io.enable.bits  := true.B
+Store.io.enable.bits.control  := true.B
 Store.io.enable.valid := true.B
 Store.io.Out(0).ready := true.B
 
@@ -46,7 +46,7 @@ Load.io.GepAddr.bits.data      := 8.U
 Load.io.GepAddr.bits.predicate := true.B
 Load.io.GepAddr.valid          := true.B
 
-Load.io.enable.bits  := true.B
+Load.io.enable.bits.control  := true.B
 Load.io.enable.valid := true.B
 Load.io.Out(0).ready := true.B
 
@@ -70,7 +70,7 @@ Store1.io.inData.bits.data       := 0x3333444433334444L.U
 Store1.io.inData.bits.predicate  := true.B
 Store1.io.inData.valid           := true.B
 
-Store1.io.enable.bits  := true.B
+Store1.io.enable.bits.control  := true.B
 Store1.io.enable.valid := true.B
 Store1.io.Out(0).ready := true.B
 
@@ -78,14 +78,14 @@ Load1.io.GepAddr.bits.data      := 16.U
 Load1.io.GepAddr.bits.predicate := true.B
 Load1.io.GepAddr.valid          := true.B
 
-Load1.io.enable.bits  := true.B
+Load1.io.enable.bits.control  := true.B
 Load1.io.enable.valid := true.B
 Load1.io.Out(0).ready := true.B
 
 Load1.io.PredOp(0) <> Store1.io.SuccOp(0)
 
 val typadd = Module(new TypCompute(NumOuts=1,ID=0,"Add")(true)(new vec2))
-typadd.io.enable.bits  := true.B
+typadd.io.enable.bits.control  := true.B
 typadd.io.enable.valid := true.B
 typadd.io.Out(0).ready := true.B
 typadd.io.LeftIO    <>  Load.io.Out(1)

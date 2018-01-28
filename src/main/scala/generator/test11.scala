@@ -467,9 +467,7 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   br11.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("br11"))
 
-  io.call8_out.enable.valid <> bb_for_body.io.Out(7).valid       // Manually added
-  io.call8_out.enable.bits.control <> bb_for_body.io.Out(7).bits // Manually added
-  bb_for_body.io.Out(7).ready := io.call8_out.enable.ready       // Manually added
+  io.call8_out.enable <> bb_for_body.io.Out(7)      // Manually added
 
   add12.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("add12"))
 
@@ -614,10 +612,9 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   ret14.io.InputIO.bits.data := 1.U
   ret14.io.InputIO.bits.predicate := true.B
   ret14.io.InputIO.valid := true.B
-  io.out.data("field0") <> ret14.io.Out(0)
 
-  io.out.enable.valid := ret14.io.Out(0).valid
-  io.out.enable.bits.control := true.B
+  io.out.data("field0") <> ret14.io.Out(0)
+  io.out.enable <> ret14.io.CtlIO(0)
 
 
 }

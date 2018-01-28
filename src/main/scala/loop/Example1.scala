@@ -21,7 +21,7 @@ class LoopExampleIO[T <: Data](val ID: Int)(gen: T)(implicit p: Parameters) exte
   val Input3 = Flipped(Decoupled(gen))
   val Input4 = Flipped(Decoupled(gen))
 
-  val Enable = Flipped(Decoupled(Bool()))
+  val Enable = Flipped(Decoupled(new ControlBundle))
 
   val Finish = Input(Bool())
 

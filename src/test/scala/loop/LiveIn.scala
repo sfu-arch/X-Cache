@@ -29,7 +29,7 @@ class LiveInTester(df: LiveInNode)
 
   poke(df.io.InData.valid, false.B)
 
-  poke(df.io.enable.bits , false.B)
+  poke(df.io.enable.bits.control , false.B)
   poke(df.io.enable.valid, false.B)
 
 
@@ -43,7 +43,7 @@ class LiveInTester(df: LiveInNode)
 
   step(1)
 
-  poke(df.io.enable.bits , false.B)
+  poke(df.io.enable.bits.control , false.B)
   poke(df.io.enable.valid, true.B)
 
   poke(df.io.Out(0).ready, true.B)
@@ -73,7 +73,7 @@ class LiveInTester(df: LiveInNode)
 
   println(s"Make the enable valid")
   poke(df.io.enable.valid, false.B)
-  poke(df.io.enable.bits, true.B)
+  poke(df.io.enable.bits.control, true.B)
 
   step(1)
 

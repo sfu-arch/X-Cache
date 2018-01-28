@@ -29,7 +29,7 @@ class GepTester(df: GepOneNode)
   poke(df.io.baseAddress.bits.data, 1.U)
   poke(df.io.baseAddress.valid, false.B)
 
-  poke(df.io.enable.bits , false.B)
+  poke(df.io.enable.bits.control , false.B)
   poke(df.io.enable.valid, false.B)
 
   poke(df.io.Out(0).ready, false.B)
@@ -41,7 +41,7 @@ class GepTester(df: GepOneNode)
   poke(df.io.idx1.valid, true.B)
   poke(df.io.baseAddress.valid, true.B)
 
-  poke(df.io.enable.bits , true.B)
+  poke(df.io.enable.bits.control , true.B)
   poke(df.io.enable.valid, true.B)
   poke(df.io.Out(0).ready, true.B)
 

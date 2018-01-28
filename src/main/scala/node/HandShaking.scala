@@ -45,7 +45,7 @@ import utility.UniformPrintfs
 class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)(implicit p: Parameters)
   extends CoreBundle()(p) {
   // Predicate enable
-  val enable = Flipped(Decoupled(Bool()))
+  val enable = Flipped(Decoupled(new ControlBundle))
   // Output IO
   val Out = Vec(NumOuts, Decoupled(gen))
 }
@@ -68,7 +68,7 @@ class HandShakingIOPS[T <: Data](val NumPredOps: Int,
   val NumOuts: Int)(gen: T)(implicit p: Parameters)
   extends CoreBundle()(p) {
   // Predicate enable
-  val enable = Flipped(Decoupled(Bool()))
+  val enable = Flipped(Decoupled(new ControlBundle))
   // Predecessor Ordering
   val PredOp = Vec(NumPredOps, Flipped(Decoupled(new AckBundle)))
   // Successor Ordering
@@ -88,7 +88,7 @@ class HandShakingIOPS[T <: Data](val NumPredOps: Int,
 class HandShakingFusedIO[T <: Data](val NumIns: Int, val NumOuts: Int)(gen: T)(implicit p: Parameters)
   extends CoreBundle()(p) {
   // Predicate enable
-  val enable = Flipped(Decoupled(Bool()))
+  val enable = Flipped(Decoupled(new ControlBundle))
   // Input IO
   val In = Flipped(Vec(NumIns, Decoupled(gen)))
   // Output IO
@@ -110,7 +110,7 @@ class HandShakingCtrlMaskIO(val NumInputs: Int,
 
   // Output IO
   val MaskBB  = Vec(NumPhi, Decoupled(UInt(NumInputs.W)))
-  val Out     = Vec(NumOuts, Decoupled(Bool()))
+  val Out     = Vec(NumOuts, Decoupled(new ControlBundle))
 }
 
 /**
@@ -125,7 +125,7 @@ class HandShakingCtrlNoMaskIO(val NumInputs: Int,
   val NumOuts: Int)(implicit p: Parameters)
   extends CoreBundle()(p) {
   // Output IO
-  val Out = Vec(NumOuts, Decoupled(Bool()))
+  val Out = Vec(NumOuts, Decoupled(new ControlBundle))
 }
 
 /*==============================================================
@@ -185,7 +185,7 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R := io.enable.bits
+    enable_R := io.enable.bits.control
   }
 
   /*===================================*
@@ -288,7 +288,7 @@ class HandShakingFused[T <: PredicateT](val NumIns: Int, val NumOuts: Int,
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R := io.enable.bits
+    enable_R := io.enable.bits.control
   }
 
   /*===================================*
@@ -408,7 +408,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R := io.enable.bits
+    enable_R := io.enable.bits.control
   }
 
   /*===================================*
@@ -540,7 +540,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R := io.enable.bits
+    enable_R := io.enable.bits.control
   }
 
   /*=====================================

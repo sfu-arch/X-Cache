@@ -35,7 +35,7 @@ class LoopEx1(c: LoopExample) extends PeekPokeTester(c) {
   poke(c.io.Input4.bits.taskID, 1.U)
 
   poke(c.io.Enable.valid, false)
-  poke(c.io.Enable.bits, true)
+  poke(c.io.Enable.bits.control, true)
   poke(c.io.Result.ready, false)
 
   poke(c.io.Finish, false.B)
