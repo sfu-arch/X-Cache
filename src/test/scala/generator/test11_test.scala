@@ -18,7 +18,7 @@ import arbiters._
 import loop._
 import accel._
 import node._
-
+import junctions._
 
 class test11CacheWrapper()(implicit p: Parameters) extends test11DF()(p)
   with CacheParams {
@@ -63,10 +63,16 @@ class test11Main(implicit p: Parameters) extends test11MainIO()(p) {
 
   val test11_add = Module(new test11_addDF())
   val test11 = Module(new test11CacheWrapper())
+  val SplitIn = Module(new SplitCall(List(32,32,32)))
+  val SplitOut = Module(new CombineCall(List(32)))
+
 
   test11.io.in <> io.in
-  test11_add.io.in <> test11.io.call8_out
-  test11.io.call8_in <> test11_add.io.out
+
+  SplitIn.io.In <> test11.io.call8_out
+  test11_add.io.in <> SplitIn.io.Out
+  SplitOut.io.In <> test11_add.io.out
+  test11.io.call8_in <> SplitOut.io.Out
   io.out <> test11.io.out
 
 }

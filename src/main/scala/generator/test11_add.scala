@@ -66,7 +66,7 @@ abstract class test11_addDFIO(implicit val p: Parameters) extends Module with Co
     val in = Flipped(new CallDecoupled(List(32,32)))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
-    val out = new CallDecoupled(List(32))
+    val out = new Call(List(32))
   })
 }
 
@@ -139,7 +139,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
 
   //  ret i32 %add, !UID !10, !BB_UID !11, !ScalaLabel !12
-  val ret1 = Module(new RetNode(NumOuts=1, ID=1))
+  val ret1 = Module(new RetNode(ID=1,List(32)))
 
 
 
@@ -197,7 +197,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
   add0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("add0"))
 
-  ret1.io.enable <> bb_entry.io.Out(param.bb_entry_activate("ret1"))
+  ret1.io.In.enable <> bb_entry.io.Out(param.bb_entry_activate("ret1"))
 
 
 
@@ -249,11 +249,9 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
   add0.io.RightIO <> io.in.data("field1")
 
   // Wiring return instructions
-  ret1.io.InputIO <> add0.io.Out(param.ret1_in("add0"))
-  io.out.data("field0") <> ret1.io.Out(0)
+  ret1.io.In.data("field0") <> add0.io.Out(param.ret1_in("add0"))
 
-  io.out.enable.valid := ret1.io.Out(0).valid
-  io.out.enable.bits.control := true.B
+  io.out := ret1.io.Out
 
 
 }

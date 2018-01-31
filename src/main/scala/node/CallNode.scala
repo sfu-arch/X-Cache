@@ -1,83 +1,39 @@
 package node
 
 import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import chisel3.Module
-import chisel3.testers._
-import chisel3.util._
-import org.scalatest.{Matchers, FlatSpec}
+import junctions._
 
 import config._
 import interfaces._
-import muxes._
 import util._
+import utility.UniformPrintfs
 
+class CallNodeIO(val argTypes: Seq[Int], val retTypes: Seq[Int])(implicit p: Parameters)
+  extends Bundle
+{
+  val In      = Flipped(new CallDecoupled(argTypes))   // Requests from calling block(s)
+  val callOut = Decoupled(new Call(argTypes))          // To task
+  val retIn   = Flipped(Decoupled(new Call(retTypes))) // From task
+  val Out     = new CallDecoupled(retTypes)            // Returns to calling block(s)
+}
 
-class CallNode(ID: Int)(implicit p: Parameters) extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
-  override lazy val io = IO(new HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p))
-  // Printf debugging
+class CallNode(ID: Int, argTypes: Seq[Int], retTypes: Seq[Int])(implicit p: Parameters) extends Module
+  with UniformPrintfs {
+  override lazy val io = IO(new CallNodeIO(argTypes, retTypes)(p))
   override val printfSigil = "Node (Call) ID: " + ID + " "
 
-  /*===========================================*
-   *            Registers                      *
-   *===========================================*/
+  // Combine individually decoupled enable and data into single decoupled call
+  val CombineIn = Module(new CombineCall(argTypes))
+  CombineIn.io.In <> io.In
+  io.Out <> CombineIn.io.Out
 
-  // Output register
-  val data_R = RegInit(0.U(xlen.W))
+  // Split return enable and arguments into individually decoupled enable and data
+  val SplitOut = Module(new SplitCall(retTypes))
+  SplitOut.io.In <> io.retIn
+  io.callOut <> SplitOut.io.Out
 
-  val s_idle :: s_OUTPUT :: Nil = Enum(2)
-  val state = RegInit(s_idle)
-
-  /*==========================================*
-   *           Predicate Evaluation           *
-   *==========================================*/
-
-  val predicate = IsEnable()
-  val start = IsEnableValid()
-
-  /*===============================================*
-   *            Latch inputs. Wire up output       *
-   *===============================================*/
-
-  /**
-    * Combination of bits and valid signal from CmpIn whill result the output value:
-    * valid == 0  ->  output = 0
-    * valid == 1  ->  cmp = true  then 1
-    * valid == 1  ->  cmp = false then 2
-    * @note data_R value is equale to predicate bit
-    */
-  // Wire up Outputs
-  io.Out(0).bits.control := predicate
-
-  /*============================================*
-   *            ACTIONS (possibly dangerous)    *
-   *============================================*/
-
-  when(start & (state === s_idle)) {
-    state := s_OUTPUT
-    ValidOut()
-  }
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
-
-  val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
-
-  when(out_ready_W & (state === s_OUTPUT)) {
-    //printfInfo("Start restarting output \n")
-    //
-    Reset()
-
-    //Output predication
-    data_R := 0.U
-
-    //Reset state
-    state := s_idle
+  when(CombineIn.io.Out.fire) {
     printfInfo("Output fired")
-
   }
-
 }

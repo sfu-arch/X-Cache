@@ -53,16 +53,14 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
   poke(c.io.in.data("field0").bits.data, 0.U)
   poke(c.io.in.data("field0").bits.predicate, false.B)
   poke(c.io.in.data("field0").valid, false.B)
-  poke(c.io.out.data("field0").ready, false.B)
-  poke(c.io.out.enable.ready, true.B)
+  poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.enable.bits.control, true.B)
   poke(c.io.in.enable.valid, true.B)
   poke(c.io.in.data("field0").bits.data, 100.U)
   poke(c.io.in.data("field0").bits.predicate, true.B)
   poke(c.io.in.data("field0").valid, true.B)
-  poke(c.io.out.data("field0").ready, true.B)
-  poke(c.io.out.enable.ready, true.B)
+  poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.enable.bits.control, false.B)
   poke(c.io.in.enable.valid, false.B)
@@ -77,9 +75,9 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
-    if (peek(c.io.out.data("field0").valid) == 1 && peek(c.io.out.data("field0").bits.predicate) == 1) {
+    if (peek(c.io.out.valid) == 1 && peek(c.io.out.bits.data("field0").predicate) == 1) {
       result = true
-      val data = peek(c.io.out.data("field0").bits.data)
+      val data = peek(c.io.out.bits.data("field0").data)
       if (data != 5) {
         println(s"*** Incorrect result received. Got $data. Hoping for 5")
         fail

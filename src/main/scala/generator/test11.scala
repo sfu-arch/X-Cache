@@ -205,11 +205,11 @@ object Data_test11_FlowParam{
 abstract class test11DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(new CallDecoupled(List(32,32,32)))
-    val call8_out = new CallDecoupled(List(32,32))
-    val call8_in = Flipped(new CallDecoupled(List(32)))
+    val call8_out = new Call(List(32,32))
+    val call8_in = Flipped(new Call(List(32)))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
-    val out = new CallDecoupled(List(32))
+    val out = Decoupled(new Call(List(32)))
   })
 }
 
@@ -328,7 +328,7 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
 
   //  %call = call i32 @test11_add(i32 %0, i32 %1), !UID !26, !ScalaLabel !27
-  val call8 = Module(new CallNode(ID = 8)(p))
+  val call8 = Module(new CallNode(ID = 8, List(32,32), List(32))(p))
 
 
   //  %arrayidx2 = getelementptr inbounds i32, i32* %c, i32 %i.0, !UID !28, !ScalaLabel !29
@@ -358,7 +358,7 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret i32 1, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val ret14 = Module(new RetNode(NumOuts=1, ID=14))
+  val ret14 = Module(new RetNode(ID=14,List(32)))
 
 
 
@@ -467,15 +467,13 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   br11.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("br11"))
 
-  io.call8_out.enable <> bb_for_body.io.Out(7)      // Manually added
+  call8.io.In.enable <> bb_for_body.io.Out(7)      // Manually added
 
   add12.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("add12"))
 
   br13.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("br13"))
 
-
-
-  ret14.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret14"))
+  ret14.io.In.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret14"))
 
 
 
@@ -557,9 +555,6 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   load5.io.memResp <> RegisterFile.io.ReadOut(0)
   RegisterFile.io.ReadIn(0) <> load5.io.memReq
 
-
-
-
   // Wiring GEP instruction to the loop header
   getelementptr6.io.baseAddress <> loop_L_10_liveIN_1.io.Out(param.getelementptr6_in("field1"))
 
@@ -572,14 +567,12 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   load7.io.memResp <> RegisterFile.io.ReadOut(1)
   RegisterFile.io.ReadIn(1) <> load7.io.memReq
 
-
-
-
   // Wiring instructions
-  io.call8_out.data("field0") <> load5.io.Out(param.call8_in("load5"))
-
+  call8.io.In.data("field0") <> load5.io.Out(param.call8_in("load5"))
   // Wiring instructions
-  io.call8_out.data("field1") <> load7.io.Out(param.call8_in("load7")) // Manually added
+  call8.io.In.data("field1") <> load7.io.Out(param.call8_in("load7")) // Manually added
+  io.call8_out <> call8.io.callOut
+  call8.io.retIn <> io.call8_in
 
   // Wiring GEP instruction to the loop header
   getelementptr9.io.baseAddress <> loop_L_10_liveIN_2.io.Out(param.getelementptr9_in("field2"))
@@ -588,9 +581,9 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   getelementptr9.io.idx1 <> phi1.io.Out(param.getelementptr9_in("phi1"))
 
 
-  store10.io.inData <> io.call8_in.data("field0") // Manually corrected
+  store10.io.inData <> call8.io.Out.data("field0") // Manually corrected
 
-  io.call8_in.enable.ready := true.B  // Manually added
+//  io.call8_in.enable.ready := true.B  // Manually added
 
   // Wiring Store instruction to the parent instruction
   store10.io.GepAddr <> getelementptr9.io.Out(param.store10_in("getelementptr9"))
@@ -609,12 +602,11 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   add12.io.RightIO.valid := true.B
 
   // Wiring constant
-  ret14.io.InputIO.bits.data := 1.U
-  ret14.io.InputIO.bits.predicate := true.B
-  ret14.io.InputIO.valid := true.B
+  ret14.io.In.data("field0").bits.data := 1.U
+  ret14.io.In.data("field0").bits.predicate := true.B
+  ret14.io.In.data("field0").valid := true.B
 
-  io.out.data("field0") <> ret14.io.Out(0)
-  io.out.enable <> ret14.io.CtlIO(0)
+  io.out <> ret14.io.Out
 
 
 }

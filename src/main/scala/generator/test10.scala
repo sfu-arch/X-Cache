@@ -207,7 +207,7 @@ abstract class test10DFIO(implicit val p: Parameters) extends Module with CorePa
     val in = Flipped(new CallDecoupled(List(32,32,32)))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
-    val out = new CallDecoupled(List(32))
+    val out = Decoupled(new Call(List(32)))
   })
 }
 
@@ -356,7 +356,7 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret i32 1, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val ret14 = Module(new RetNode(NumOuts=1, ID=14))
+  val ret14 = Module(new RetNode(ID=14, List(32)))
 
 
 
@@ -475,7 +475,7 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
 
 
 
-  ret14.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret14"))
+  ret14.io.In.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret14"))
 
 
 
@@ -609,14 +609,11 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
   add12.io.RightIO.valid := true.B
 
   // Wiring constant
-  ret14.io.InputIO.bits.data := 1.U
-  ret14.io.InputIO.bits.predicate := true.B
-  ret14.io.InputIO.valid := true.B
-  io.out.data("field0") <> ret14.io.Out(0)
+  ret14.io.In.data("field0").bits.data := 1.U
+  ret14.io.In.data("field0").bits.predicate := true.B
+  ret14.io.In.data("field0").valid := true.B
 
-  io.out.enable.valid := ret14.io.Out(0).valid
-  io.out.enable.bits.control := true.B
-
+  io.out <> ret14.io.Out
 
 }
 

@@ -184,7 +184,7 @@ abstract class test03DFIO(implicit val p: Parameters) extends Module with CorePa
     val in = Flipped(new CallDecoupled(List(32,32,32)))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
-    val out = new CallDecoupled(List(32))
+    val out = Decoupled(new Call(List(32)))
   })
 }
 
@@ -319,7 +319,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret i32 %sum.0, !UID !41, !BB_UID !42, !ScalaLabel !43
-  val ret10 = Module(new RetNode(NumOuts=1, ID=10))
+  val ret10 = Module(new RetNode(ID=10, List(32)))
 
 
 
@@ -430,7 +430,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
 
 
-  ret10.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret10"))
+  ret10.io.In.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret10"))
 
 
   /* ================================================================== *
@@ -526,11 +526,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   add8.io.RightIO.valid := true.B
 
   // Wiring return instructions
-  ret10.io.InputIO <> phi1.io.Out(param.ret10_in("phi1"))
-  io.out.data("field0") <> ret10.io.Out(0)
-  // Evil hack to drive enable to downstream. Should probably be done in return block.
-  io.out.enable.valid := ret10.io.Out(0).valid
-  io.out.enable.bits.control := true.B
+  ret10.io.In.data("field0") <> phi1.io.Out(param.ret10_in("phi1"))
+
+  io.out <> ret10.io.Out
 
 }
 
