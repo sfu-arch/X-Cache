@@ -17,6 +17,7 @@ import stack._
 import arbiters._
 import loop._
 import accel._
+import junctions.SplitCall
 import node._
 
 
@@ -63,10 +64,10 @@ object Data_test11_add_FlowParam{
 
 abstract class test11_addDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(new CallDecoupled(List(32,32)))
+    val in = Flipped(Decoupled(new Call(List(32,32))))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
-    val out = new Call(List(32))
+    val out = Decoupled(new Call(List(32)))
   })
 }
 
@@ -134,6 +135,9 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
   // [BasicBlock]  entry:
 
+  val SplitIn = Module(new SplitCall(List(32,32)))
+  SplitIn.io.In <> io.in
+
   //  %add = add i32 %a, %b, !UID !8, !ScalaLabel !9
   val add0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "add")(sign=false)(p))
 
@@ -169,7 +173,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> io.in.enable
+  bb_entry.io.predicateIn(0) <> SplitIn.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -243,15 +247,14 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
     */
 
   // Wiring Binary instruction to the function argument
-  add0.io.LeftIO <> io.in.data("field0")
+  add0.io.LeftIO <> SplitIn.io.Out.data("field0")
 
   // Wiring Binary instruction to the function argument
-  add0.io.RightIO <> io.in.data("field1")
+  add0.io.RightIO <> SplitIn.io.Out.data("field1")
 
   // Wiring return instructions
   ret1.io.In.data("field0") <> add0.io.Out(param.ret1_in("add0"))
-
-  io.out := ret1.io.Out
+  io.out <> ret1.io.Out
 
 
 }

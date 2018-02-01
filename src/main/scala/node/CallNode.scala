@@ -26,12 +26,12 @@ class CallNode(ID: Int, argTypes: Seq[Int], retTypes: Seq[Int])(implicit p: Para
   // Combine individually decoupled enable and data into single decoupled call
   val CombineIn = Module(new CombineCall(argTypes))
   CombineIn.io.In <> io.In
-  io.Out <> CombineIn.io.Out
+  io.callOut <> CombineIn.io.Out
 
   // Split return enable and arguments into individually decoupled enable and data
   val SplitOut = Module(new SplitCall(retTypes))
   SplitOut.io.In <> io.retIn
-  io.callOut <> SplitOut.io.Out
+  io.Out <> SplitOut.io.Out
 
   when(CombineIn.io.Out.fire) {
     printfInfo("Output fired")

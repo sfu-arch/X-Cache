@@ -616,7 +616,7 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
   io.out <> ret14.io.Out
 
 }
-
+/*
 import java.io.{File, FileWriter}
 object test10Main extends App {
   val dir = new File("RTL/test10") ; dir.mkdirs
@@ -630,4 +630,4 @@ object test10Main extends App {
   verilogWriter.write(compiledStuff.value)
   verilogWriter.close()
 }
-
+*/

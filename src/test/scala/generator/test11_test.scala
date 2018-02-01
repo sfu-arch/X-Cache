@@ -55,7 +55,7 @@ class test11CacheWrapper()(implicit p: Parameters) extends test11DF()(p)
 abstract class test11MainIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(new CallDecoupled(List(32,32,32)))
-    val out = new CallDecoupled(List(32))
+    val out = Decoupled(new Call(List(32)))
   })
 }
 
@@ -63,17 +63,12 @@ class test11Main(implicit p: Parameters) extends test11MainIO()(p) {
 
   val test11_add = Module(new test11_addDF())
   val test11 = Module(new test11CacheWrapper())
-  val SplitIn = Module(new SplitCall(List(32,32,32)))
-  val SplitOut = Module(new CombineCall(List(32)))
-
 
   test11.io.in <> io.in
-
-  SplitIn.io.In <> test11.io.call8_out
-  test11_add.io.in <> SplitIn.io.Out
-  SplitOut.io.In <> test11_add.io.out
-  test11.io.call8_in <> SplitOut.io.Out
   io.out <> test11.io.out
+
+  test11_add.io.in <> test11.io.call8_out
+  test11.io.call8_ret <> test11_add.io.out
 
 }
 
@@ -99,8 +94,7 @@ class test11Test01(c: test11Main) extends PeekPokeTester(c) {
   poke(c.io.in.data("field2").bits.data, 0.U)
   poke(c.io.in.data("field2").bits.predicate, false.B)
   poke(c.io.in.data("field2").valid, false.B)
-  poke(c.io.out.data("field0").ready, false.B)
-  poke(c.io.out.enable.ready, false.B)
+  poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.enable.bits.control, true.B)
   poke(c.io.in.enable.valid, true.B)
@@ -113,8 +107,7 @@ class test11Test01(c: test11Main) extends PeekPokeTester(c) {
   poke(c.io.in.data("field2").bits.data, 8.U)
   poke(c.io.in.data("field2").bits.predicate, true.B)
   poke(c.io.in.data("field2").valid, true.B)
-  poke(c.io.out.data("field0").ready, true.B)
-  poke(c.io.out.enable.ready, true.B)
+  poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.enable.bits.control, false.B)
   poke(c.io.in.enable.valid, false.B)
@@ -139,9 +132,11 @@ class test11Test01(c: test11Main) extends PeekPokeTester(c) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
-    if (peek(c.io.out.data("field0").valid) == 1 && peek(c.io.out.data("field0").bits.predicate) == 1) {
+    if (peek(c.io.out.valid) == 1 &&
+      peek(c.io.out.bits.data("field0").predicate) == 1 &&
+      peek(c.io.out.bits.enable.control) == 1) {
       result = true
-      val data = peek(c.io.out.data("field0").bits.data)
+      val data = peek(c.io.out.bits.data("field0").data)
       if (data != 1) {
         println(s"*** Incorrect result received. Got $data. Hoping for 1")
         fail

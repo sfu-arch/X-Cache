@@ -12,8 +12,8 @@ import utility.UniformPrintfs
 class RetNodeIO(val retTypes: Seq[Int])(implicit p: Parameters)
   extends Bundle
 {
-  val In      = Flipped(new CallDecoupled(retTypes))   // Requests from calling block(s)
-  val Out     = Decoupled(new Call(retTypes))            // Returns to calling block(s)
+  val In      = Flipped(new CallDecoupled(retTypes))   // Data to be returned
+  val Out     = Decoupled(new Call(retTypes))          // Returns to calling block(s)
 }
 
 class RetNode(ID: Int, retTypes: Seq[Int])(implicit p: Parameters) extends Module

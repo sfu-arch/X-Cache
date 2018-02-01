@@ -47,7 +47,7 @@ class CombineData(val argTypes: Seq[Int])(implicit p: Parameters) extends Module
     }
     io.In(s"field$i").ready := inputReady(i)
   }
-  io.Out.valid := ~inputReady.asUInt.orR
+  io.Out.valid := ~(inputReady.asUInt.orR)
   io.Out.bits := outputReg.bits
 
 }
@@ -79,7 +79,7 @@ class CombineCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module
   }
   io.In.enable.ready := inputReady(argTypes.length)
 
-  io.Out.valid := ~inputReady.asUInt.orR
+  io.Out.valid := ~(inputReady.asUInt.orR)
   io.Out.bits := outputReg.bits
 
 }

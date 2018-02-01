@@ -503,7 +503,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
 
 }
-
+/*
 import java.io.{File, FileWriter}
 object test08Main extends App {
   val dir = new File("RTL/test08") ; dir.mkdirs
@@ -518,3 +518,4 @@ object test08Main extends App {
   verilogWriter.close()
 }
 
+*/

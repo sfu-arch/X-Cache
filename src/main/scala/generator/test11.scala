@@ -205,8 +205,8 @@ object Data_test11_FlowParam{
 abstract class test11DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(new CallDecoupled(List(32,32,32)))
-    val call8_out = new Call(List(32,32))
-    val call8_in = Flipped(new Call(List(32)))
+    val call8_out = Decoupled(new Call(List(32,32)))
+    val call8_ret = Flipped(Decoupled(new Call(List(32))))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
@@ -572,7 +572,8 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   // Wiring instructions
   call8.io.In.data("field1") <> load7.io.Out(param.call8_in("load7")) // Manually added
   io.call8_out <> call8.io.callOut
-  call8.io.retIn <> io.call8_in
+  call8.io.retIn <> io.call8_ret
+  call8.io.Out.enable.ready := true.B // Manually added
 
   // Wiring GEP instruction to the loop header
   getelementptr9.io.baseAddress <> loop_L_10_liveIN_2.io.Out(param.getelementptr9_in("field2"))
@@ -583,7 +584,6 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   store10.io.inData <> call8.io.Out.data("field0") // Manually corrected
 
-//  io.call8_in.enable.ready := true.B  // Manually added
 
   // Wiring Store instruction to the parent instruction
   store10.io.GepAddr <> getelementptr9.io.Out(param.store10_in("getelementptr9"))
