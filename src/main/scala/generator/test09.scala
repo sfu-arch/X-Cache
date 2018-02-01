@@ -17,6 +17,7 @@ import stack._
 import arbiters._
 import loop._
 import accel._
+import junctions.SplitCall
 import node._
 
 
@@ -171,7 +172,7 @@ object Data_test09_FlowParam{
 
 abstract class test09DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(new CallDecoupled(List(32)))
+    val in = Flipped(Decoupled(new Call(List(32))))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
@@ -209,6 +210,8 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
+  val InputSplitter = Module(new SplitCall(List(32)))
+  InputSplitter.io.In <> io.in
 
 
   /* ================================================================== *
@@ -333,7 +336,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> io.in.enable
+  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -454,7 +457,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32 %j
-  loop_L_5_liveIN_0.io.InData <> io.in.data("field0")
+  loop_L_5_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
 
   loop_L_5_end.io.inputArg(0) <> phi1.io.Out(0)
 
@@ -503,7 +506,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
 
 
 }
-/*
+
 import java.io.{File, FileWriter}
 object test09Main extends App {
   val dir = new File("RTL/test09") ; dir.mkdirs
@@ -517,4 +520,4 @@ object test09Main extends App {
   verilogWriter.write(compiledStuff.value)
   verilogWriter.close()
 }
-*/
+
