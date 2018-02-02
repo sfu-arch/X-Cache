@@ -121,7 +121,7 @@ class SplitCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
     when(io.In.valid && state === s_idle) {
       outputValidReg(i) := true.B
     }
-    when(outputValidReg(i) && io.Out.data(s"field$i").ready){
+    when(state === s_latched && io.Out.data(s"field$i").ready){
       outputValidReg(i) := false.B
     }
     io.Out.data(s"field$i").valid := outputValidReg(i)
@@ -131,7 +131,7 @@ class SplitCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
   when(io.In.valid && state === s_idle) {
     outputValidReg(argTypes.length) := true.B
   }
-  when(outputValidReg(argTypes.length) && io.Out.enable.ready){
+  when(state === s_latched && io.Out.enable.ready){
     outputValidReg(argTypes.length) := false.B
   }
   io.Out.enable.valid := outputValidReg(argTypes.length)

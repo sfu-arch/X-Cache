@@ -16,11 +16,11 @@ class CombineCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Mod
   val outputReg    = RegInit(0.U.asTypeOf(io.Out))
 
   for (i <- argTypes.indices) {
-    when(io.In(s"field$i").valid) {
+    when(io.Out.valid && io.Out.ready){
+      inputReady(i) := true.B
+    }.elsewhen(io.In(s"field$i").valid) {
       outputReg.bits(s"field$i") := io.In(s"field$i").bits
       inputReady(i) := false.B
-    }.elsewhen(io.Out.valid && io.Out.ready){
-      inputReady(i) := true.B
     }
     io.In(s"field$i").ready := inputReady(i)
   }
@@ -39,11 +39,11 @@ class CombineData(val argTypes: Seq[Int])(implicit p: Parameters) extends Module
   val outputReg  = RegInit(0.U.asTypeOf(io.Out))
 
   for (i <- argTypes.indices) {
-    when(io.In(s"field$i").valid) {
+    when(io.Out.fire()){
+      inputReady(i) := true.B
+    }.elsewhen(io.In(s"field$i").valid) {
       outputReg.bits(s"field$i") := io.In(s"field$i").bits
       inputReady(i) := false.B
-    }.elsewhen(io.Out.valid && io.Out.ready){
-      inputReady(i) := true.B
     }
     io.In(s"field$i").ready := inputReady(i)
   }
@@ -63,19 +63,21 @@ class CombineCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module
   val outputReg  = RegInit(0.U.asTypeOf(io.Out))
 
   for (i <- argTypes.indices) {
-    when(io.In.data(s"field$i").valid) {
+    when(io.Out.fire()){
+      inputReady(i) := true.B
+      printf(s"\nCombineCall: output fired. #indices: ${argTypes.indices}\n")
+    }.elsewhen(io.In.data(s"field$i").valid) {
       outputReg.bits.data(s"field$i") := io.In.data(s"field$i").bits
       inputReady(i) := false.B
-    }.elsewhen(io.Out.valid && io.Out.ready){
-      inputReady(i) := true.B
     }
     io.In.data(s"field$i").ready := inputReady(i)
   }
-  when(io.In.enable.valid) {
-    outputReg.bits.enable := io.In.enable.bits
-    inputReady(argTypes.length) := false.B
-  }.elsewhen(io.Out.valid && io.Out.ready){
+
+  when(io.Out.fire()){
     inputReady(argTypes.length) := true.B
+  }.elsewhen(io.In.enable.valid) {
+    outputReg.bits.enable <> io.In.enable.bits
+    inputReady (argTypes.length) := false.B
   }
   io.In.enable.ready := inputReady(argTypes.length)
 
