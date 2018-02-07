@@ -354,13 +354,13 @@ class VariableDecoupledData(val argTypes: Seq[Int])(implicit p: Parameters) exte
   override def cloneType = new VariableDecoupledData(argTypes).asInstanceOf[this.type]
 }
 
-class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends Bundle {
+class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
   val enable = Decoupled(new ControlBundle)
   val data   = new VariableDecoupledData(argTypes)
   override def cloneType = new CallDecoupled(argTypes).asInstanceOf[this.type]
 }
 
-class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends Bundle {
+class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
   val enable = new ControlBundle
   val data   = new VariableData(argTypes)
   override def cloneType = new Call(argTypes).asInstanceOf[this.type]
