@@ -71,7 +71,9 @@ class CBranchNode(ID: Int)
 
   // Wire up Outputs
   io.Out(0).bits.control := data_out_w(0)
+  io.Out(0).bits.taskID := 0.U
   io.Out(1).bits.control := data_out_w(1)
+  io.Out(1).bits.taskID := 0.U
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
@@ -155,6 +157,7 @@ class UBranchNode(ID: Int)
     */
   // Wire up Outputs
   io.Out(0).bits.control := predicate
+  io.Out(0).bits.taskID := 0.U
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *

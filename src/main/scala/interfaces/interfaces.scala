@@ -179,14 +179,14 @@ class WriteResp(implicit p: Parameters)
   *
   */
 class AckBundle(implicit p: Parameters) extends CoreBundle()(p) {
-  val token = UInt(tlen.W)
+  val taskID = UInt(tlen.W)
   val predicate = Bool()
 }
 
 object AckBundle {
   def default(implicit p: Parameters): AckBundle = {
     val wire = Wire(new AckBundle)
-    wire.token := 0.U
+    wire.taskID := 0.U
     wire.predicate := false.B
     wire
   }
@@ -251,6 +251,7 @@ object TypBundle {
   */
 class ControlBundle(implicit p: Parameters) extends CoreBundle()(p) {
   //Control packet
+  val taskID = UInt(tlen.W)
   val control = Bool()
 }
 
@@ -258,6 +259,7 @@ object ControlBundle {
   def default(implicit p: Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := false.B
+    wire.taskID := 0.U
     wire
   }
 

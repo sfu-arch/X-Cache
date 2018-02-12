@@ -237,8 +237,8 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
 
 	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=2,NWrites=1)
-		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=1))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=1))
+		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
+		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
   io.CacheReq <> CacheMem.io.CacheReq

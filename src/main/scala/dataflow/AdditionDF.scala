@@ -107,7 +107,8 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
     */
 
   //Grounding entry BasicBlock
-  b0_entry.io.predicateIn(param.b0_entry_pred("active")).bits := ControlBundle.Activate
+  b0_entry.io.predicateIn(param.b0_entry_pred("active")).bits.control := true.B
+  b0_entry.io.predicateIn(param.b0_entry_pred("active")).bits.taskID := 0.U
   b0_entry.io.predicateIn(param.b0_entry_pred("active")).valid := true.B
 
   /**

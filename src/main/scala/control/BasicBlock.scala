@@ -65,7 +65,7 @@ class BasicBlockNode(NumInputs: Int,
    *            Registers                      *
    *===========================================*/
   // OP Inputs
-  val predicate_in_R    = RegInit(VecInit(Seq.fill(NumInputs)(ControlBundle.default)))
+  val predicate_in_R    = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
   val predicate_valid_R = RegInit(false.B)
   val predicate_valid_W = WireInit(VecInit(Seq.fill(NumInputs)(false.B)))
@@ -107,7 +107,7 @@ class BasicBlockNode(NumInputs: Int,
     io.predicateIn(i).ready := ~predicate_valid_R
     when(io.predicateIn(i).fire()) {
       state := s_LATCH
-      predicate_in_R(i) <> io.predicateIn(i).bits
+      predicate_in_R(i) <> io.predicateIn(i).bits.control
       predicate_valid_W(i) := true.B
       //fire_W := true.B
     }
@@ -116,6 +116,7 @@ class BasicBlockNode(NumInputs: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.control := pred_R.control
+    io.Out(i).bits.taskID := 0.U
   }
 
   // Wire up mask output
@@ -160,7 +161,8 @@ class BasicBlockNode(NumInputs: Int,
     //printfInfo("Start restarting output \n")
     // Reset data
     predicate_in_R := Vec(Seq.fill(NumInputs) {
-      ControlBundle.default
+      //ControlBundle.default
+      false.B
     })
     predicate_valid_R := false.B
     //predicate_valid_R := Vec(Seq.fill(NumInputs) {
@@ -257,6 +259,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.control := predicate
+    io.Out(i).bits.taskID := 0.U
   }
 
 

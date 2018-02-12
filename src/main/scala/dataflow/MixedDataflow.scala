@@ -52,7 +52,8 @@ class MixedDataFlow(implicit val p: Parameters) extends Module with CoreParams {
     Stores(i).io.inData.bits.predicate := true.B
     Stores(i).io.inData.valid := true.B
 
-    Stores(i).io.enable.bits := true.B
+    Stores(i).io.enable.bits.control := true.B
+    Stores(i).io.enable.bits.taskID := 0.U
     Stores(i).io.enable.valid := true.B
     Stores(i).io.Out(0).ready := true.B
 
@@ -60,7 +61,8 @@ class MixedDataFlow(implicit val p: Parameters) extends Module with CoreParams {
     Loads(i).io.GepAddr.bits.predicate := true.B
     Loads(i).io.GepAddr.valid := true.B
 
-    Loads(i).io.enable.bits := true.B
+    Loads(i).io.enable.bits.control := true.B
+    Loads(i).io.enable.bits.taskID := 0.U
     Loads(i).io.enable.valid := true.B
     Loads(i).io.Out(0).ready := true.B
 
@@ -69,7 +71,8 @@ class MixedDataFlow(implicit val p: Parameters) extends Module with CoreParams {
   }
 
   for (i <- 0 until 2 / 2) {
-    Ops(i).io.enable.bits := true.B
+    Ops(i).io.enable.bits.control := true.B
+    Ops(i).io.enable.bits.taskID := 0.U
     Ops(i).io.enable.valid := true.B
     // Ops(i).io.Out(0).ready := true.B
     Ops(i).io.LeftIO <> Loads(i).io.Out(1)
@@ -117,7 +120,8 @@ class MixedDataFlow(implicit val p: Parameters) extends Module with CoreParams {
     Stores32b(i).io.inData.bits.predicate := true.B
     Stores32b(i).io.inData.valid := true.B
 
-    Stores32b(i).io.enable.bits := true.B
+    Stores32b(i).io.enable.bits.control := true.B
+    Stores32b(i).io.enable.bits.taskID := 0.U
     Stores32b(i).io.enable.valid := true.B
     Stores32b(i).io.Out(0).ready := true.B
 
@@ -125,7 +129,8 @@ class MixedDataFlow(implicit val p: Parameters) extends Module with CoreParams {
     Loads32b(i).io.GepAddr.bits.predicate := true.B
     Loads32b(i).io.GepAddr.valid := true.B
 
-    Loads32b(i).io.enable.bits := true.B
+    Loads32b(i).io.enable.bits.control := true.B
+    Loads32b(i).io.enable.bits.taskID := 0.U
     Loads32b(i).io.enable.valid := true.B
     Loads32b(i).io.Out(0).ready := true.B
 
@@ -134,7 +139,8 @@ class MixedDataFlow(implicit val p: Parameters) extends Module with CoreParams {
   }
 
   for (i <- 0 until 2 / 2) {
-    Ops32b(i).io.enable.bits := true.B
+    Ops32b(i).io.enable.bits.control := true.B
+    Ops32b(i).io.enable.bits.taskID := 0.U
     Ops32b(i).io.enable.valid := true.B
     // Ops32b(i).io.Out(0).ready := true.B
     Ops32b(i).io.LeftIO <> Loads32b(i).io.Out(1)
@@ -149,7 +155,8 @@ class MixedDataFlow(implicit val p: Parameters) extends Module with CoreParams {
   }
 
   for (i <- 0 until 2 / 2) {
-    Ops64b(i).io.enable.bits := true.B
+    Ops64b(i).io.enable.bits.control := true.B
+    Ops64b(i).io.enable.bits.taskID := 0.U
     Ops64b(i).io.enable.valid := true.B
     Ops64b(i).io.Out(0).ready := true.B
     Ops64b(i).io.LeftIO <> Ops32b(i).io.Out(0)

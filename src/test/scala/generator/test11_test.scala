@@ -163,7 +163,7 @@ class test11Tester extends FlatSpec with Matchers {
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
      Array(
-       // "-ll", "Info",
+//       "-ll", "Info",
        "-tbn", "verilator",
        "-td", "test_run_dir",
        "-tts", "0001"),

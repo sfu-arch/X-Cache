@@ -37,8 +37,9 @@ class Add01DF(implicit p: Parameters) extends Add01DFIO()(p) {
   val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)(p))
 
   //Setting b0_entry predicates to be true
-  // will start immedietely
-  b0_entry.io.predicateIn(0).bits := ControlBundle.Activate
+  // will start immediately
+  b0_entry.io.predicateIn(0).bits.control := true.B
+  b0_entry.io.predicateIn(0).bits.taskID := 0.U
 
   //ALU will start only if the basic block enables adds
   m0.io.enable <> b0_entry.io.Out(0)

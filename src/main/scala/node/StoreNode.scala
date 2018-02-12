@@ -1,3 +1,4 @@
+
 package node
 
 /**
@@ -43,7 +44,7 @@ class StoreNodeIO()(implicit p: Parameters) extends CoreBundle()(p) {
 
 
   // Predicate enable
-  val enable = Flipped(Decoupled(Bool()))
+  val enable = Flipped(Decoupled(new ControlBundle()))
 
   val Finish = Output(Bool())
 
@@ -114,7 +115,7 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
 
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
-    enable_R <> io.enable.bits
+    enable_R <> io.enable.bits.control
     enable_valid_R := true.B
   }
 

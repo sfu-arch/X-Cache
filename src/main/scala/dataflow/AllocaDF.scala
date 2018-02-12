@@ -47,7 +47,8 @@ class StackDF(implicit p: Parameters) extends StackDFIO()(p) {
     */
 
   //Grounding entry BasicBlock
-  b0_entry.io.predicateIn(0).bits := ControlBundle.Activate
+  b0_entry.io.predicateIn(0).bits.control := true.B
+  b0_entry.io.predicateIn(0).bits.taskID := 0.U
   b0_entry.io.predicateIn(0).valid := true.B
 
   /**

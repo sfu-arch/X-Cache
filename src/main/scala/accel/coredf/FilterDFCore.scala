@@ -38,9 +38,11 @@ class FilterDFCore(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(
   val Filt = Module(new BasicFilter()(p))
   val done = RegInit(init=false.B)
   
-  Loader.io.enable.bits := true.B
+  Loader.io.enable.bits.control := true.B
+  Loader.io.enable.bits.taskID := 0.U
   Loader.io.enable.valid := true.B
-  Filt.io.enable.bits := true.B
+  Filt.io.enable.bits.control := true.B
+  Filt.io.enable.bits.taskID := 0.U
   Filt.io.enable.valid := true.B
 
   Loader.io.ptr <> io.ctrl

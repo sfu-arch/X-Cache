@@ -13,7 +13,7 @@ import memory._
 class CacheVecLoader(FilterSize : Int)(implicit val p: Parameters) extends Module with CoreParams {
 
   val io = IO(new Bundle {
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle()))
     val ptr    = Vec(FilterSize,Flipped(Decoupled(new TypBundle())))
     val sum    = Flipped(Decoupled(new TypBundle()))
     val cache  = Flipped(new CacheIO)
