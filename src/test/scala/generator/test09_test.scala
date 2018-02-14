@@ -68,7 +68,7 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
   step(1)
   var time = 1  //Cycle counter
   var result = false
-  while (time < 1000) {
+  while (time < 200) {
     time += 1
     step(1)
     //println(s"Cycle: $time")

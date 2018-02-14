@@ -110,7 +110,7 @@ class test10Test01(c: test10CacheWrapper) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 1  //Cycle counter
   var result = false
-  while (time < 1000) {
+  while (time < 200) {
     time += 1
     step(1)
     //println(s"Cycle: $time")

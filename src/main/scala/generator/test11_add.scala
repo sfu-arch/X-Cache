@@ -143,11 +143,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
 
   //  ret i32 %add, !UID !10, !BB_UID !11, !ScalaLabel !12
-  val ret1 = Module(new RetNode(ID=1,List(32)))
-
-
-
-
+  val ret1 = Module(new RetNode(ID=1,NumPredIn=1,retTypes=List(32)))
 
 
 
@@ -201,7 +197,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
   add0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("add0"))
 
-  ret1.io.In.enable <> bb_entry.io.Out(param.bb_entry_activate("ret1"))
+  ret1.io.enable <> bb_entry.io.Out(param.bb_entry_activate("ret1"))
 
 
 
@@ -253,6 +249,9 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
   add0.io.RightIO <> SplitIn.io.Out.data("field1")
 
   // Wiring return instructions
+  ret1.io.predicateIn(0).valid := true.B
+  ret1.io.predicateIn(0).bits.control := true.B
+  ret1.io.predicateIn(0).bits.taskID := 0.U
   ret1.io.In.data("field0") <> add0.io.Out(param.ret1_in("add0"))
   io.out <> ret1.io.Out
 

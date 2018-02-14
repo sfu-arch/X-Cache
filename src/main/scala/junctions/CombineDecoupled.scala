@@ -65,7 +65,6 @@ class CombineCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module
   for (i <- argTypes.indices) {
     when(io.Out.fire()){
       inputReady(i) := true.B
-      printf(s"\nCombineCall: output fired. #indices: ${argTypes.indices}\n")
     }.elsewhen(io.In.data(s"field$i").valid) {
       outputReg.bits.data(s"field$i") := io.In.data(s"field$i").bits
       inputReady(i) := false.B

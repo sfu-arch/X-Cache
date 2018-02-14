@@ -306,7 +306,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret i32 %foo.0, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret9 = Module(new RetNode(ID=9, List(32)))
+  val ret9 = Module(new RetNode(ID=9, NumPredIn=1,retTypes=List(32)))
 
 
 
@@ -411,7 +411,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
 
 
 
-  ret9.io.In.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret9"))
+  ret9.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret9"))
 
 
 
@@ -500,6 +500,9 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
   add7.io.RightIO.valid := true.B
 
   // Wiring return instructions
+  ret9.io.predicateIn(0).valid := true.B
+  ret9.io.predicateIn(0).bits.control := true.B
+  ret9.io.predicateIn(0).bits.taskID := 0.U
   ret9.io.In.data("field0") <> phi1.io.Out(param.ret9_in("phi1"))
 
   io.out <> ret9.io.Out
