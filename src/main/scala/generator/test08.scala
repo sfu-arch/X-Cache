@@ -20,6 +20,7 @@ import accel._
 import node._
 import junctions._
 
+
 /**
   * This Object should be initialized at the first step
   * It contains all the transformation from indices to their module's name
@@ -116,44 +117,44 @@ object Data_test08_FlowParam{
   )
 
 
-  //  %foo.0 = phi i32 [ %j, %entry ], [ %inc, %for.inc ], !UID !11, !ScalaLabel !12
+  //  %foo.0 = phi i32 [ %j, %entry ], [ %inc, %for.inc ], !UID !10, !ScalaLabel !11
   val phi1_in = Map(
     "field0" -> 0,
     "add5" -> 0
   )
 
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc1, %for.inc ], !UID !13, !ScalaLabel !14
+  //  %i.0 = phi i32 [ 0, %entry ], [ %inc1, %for.inc ], !UID !12, !ScalaLabel !13
   val phi2_in = Map(
     "add7" -> 0
   )
 
 
-  //  %cmp = icmp ult i32 %i.0, 5, !UID !15, !ScalaLabel !16
+  //  %cmp = icmp ult i32 %i.0, 5, !UID !14, !ScalaLabel !15
   val icmp3_in = Map(
     "phi2" -> 0
   )
 
 
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !17, !BB_UID !18, !ScalaLabel !19
+  //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
   val br4_in = Map(
     "icmp3" -> 0
   )
 
 
-  //  %inc = add i32 %foo.0, 1, !UID !20, !ScalaLabel !21
+  //  %inc = add i32 %foo.0, 1, !UID !19, !ScalaLabel !20
   val add5_in = Map(
     "phi1" -> 0
   )
 
 
-  //  %inc1 = add i32 %i.0, 1, !UID !25, !ScalaLabel !26
+  //  %inc1 = add i32 %i.0, 1, !UID !24, !ScalaLabel !25
   val add7_in = Map(
     "phi2" -> 1
   )
 
 
-  //  ret i32 %foo.0, !UID !38, !BB_UID !39, !ScalaLabel !40
+  //  ret i32 %foo.0, !UID !37, !BB_UID !38, !ScalaLabel !39
   val ret9_in = Map(
     "phi1" -> 1
   )
@@ -213,18 +214,17 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   InputSplitter.io.In <> io.in
 
 
+
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
 
   val loop_L_5_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_5_end   = Module(new LoopEnd(NumInputs = 1, NumOuts = 1, ID = 0)(p))
-
 
 
   /* ================================================================== *
-   *                   PRINTING BASICBLOCKS                             *
+   *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
 
@@ -246,7 +246,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
 
   /* ================================================================== *
-   *                   PRINTING INSTRUCTIONS                            *
+   *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
 
@@ -254,26 +254,26 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   // [BasicBlock]  entry:
 
-  //  br label %for.cond, !UID !8, !BB_UID !9, !ScalaLabel !10
+  //  br label %for.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
   val br0 = Module (new UBranchNode(ID = 0)(p))
 
 
 
   // [BasicBlock]  for.cond:
 
-  //  %foo.0 = phi i32 [ %j, %entry ], [ %inc, %for.inc ], !UID !11, !ScalaLabel !12
+  //  %foo.0 = phi i32 [ %j, %entry ], [ %inc, %for.inc ], !UID !10, !ScalaLabel !11
   val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1)(p))
 
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc1, %for.inc ], !UID !13, !ScalaLabel !14
+  //  %i.0 = phi i32 [ 0, %entry ], [ %inc1, %for.inc ], !UID !12, !ScalaLabel !13
   val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2)(p))
 
 
-  //  %cmp = icmp ult i32 %i.0, 5, !UID !15, !ScalaLabel !16
+  //  %cmp = icmp ult i32 %i.0, 5, !UID !14, !ScalaLabel !15
   val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false)(p))
 
 
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !17, !BB_UID !18, !ScalaLabel !19
+  //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
   val br4 = Module (new CBranchNode(ID = 4)(p))
 
   val bb_for_cond_expand = Module(new ExpandNode(NumOuts=2, ID=0))
@@ -282,30 +282,30 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   // [BasicBlock]  for.body:
 
-  //  %inc = add i32 %foo.0, 1, !UID !20, !ScalaLabel !21
+  //  %inc = add i32 %foo.0, 1, !UID !19, !ScalaLabel !20
   val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false)(p))
 
 
-  //  br label %for.inc, !UID !22, !BB_UID !23, !ScalaLabel !24
+  //  br label %for.inc, !UID !21, !BB_UID !22, !ScalaLabel !23
   val br6 = Module (new UBranchNode(ID = 6)(p))
 
 
 
   // [BasicBlock]  for.inc:
 
-  //  %inc1 = add i32 %i.0, 1, !UID !25, !ScalaLabel !26
+  //  %inc1 = add i32 %i.0, 1, !UID !24, !ScalaLabel !25
   val add7 = Module (new ComputeNode(NumOuts = 1, ID = 7, opCode = "add")(sign=false)(p))
 
 
-  //  br label %for.cond, !llvm.loop !27, !UID !35, !BB_UID !36, !ScalaLabel !37
+  //  br label %for.cond, !llvm.loop !26, !UID !34, !BB_UID !35, !ScalaLabel !36
   val br8 = Module (new UBranchNode(ID = 8)(p))
 
 
 
   // [BasicBlock]  for.end:
 
-  //  ret i32 %foo.0, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret9 = Module(new RetNode(ID=9,NumPredIn=1,retTypes=List(32)))
+  //  ret i32 %foo.0, !UID !37, !BB_UID !38, !ScalaLabel !39
+  val ret9 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=9))
 
 
 
@@ -376,7 +376,6 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   /**
     * Wiring enable signals to the instructions
     */
-  //Wiring enable signals
 
   br0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("br0"))
 
@@ -458,8 +457,6 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   //i32 %j
   loop_L_5_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
 
-  loop_L_5_end.io.inputArg(0) <> phi1.io.Out(0)
-
 
 
   /* ================================================================== *
@@ -498,17 +495,16 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   add7.io.RightIO.bits.predicate := true.B
   add7.io.RightIO.valid := true.B
 
-  // Wiring return instructions
-  ret9.io.predicateIn(0).valid := true.B
+  // Wiring return instruction
   ret9.io.predicateIn(0).bits.control := true.B
   ret9.io.predicateIn(0).bits.taskID := 0.U
+  ret9.io.predicateIn(0).valid := true.B
   ret9.io.In.data("field0") <> phi1.io.Out(param.ret9_in("phi1"))
-
   io.out <> ret9.io.Out
 
 
 }
-/*
+
 import java.io.{File, FileWriter}
 object test08Main extends App {
   val dir = new File("RTL/test08") ; dir.mkdirs
@@ -523,4 +519,3 @@ object test08Main extends App {
   verilogWriter.close()
 }
 
-*/

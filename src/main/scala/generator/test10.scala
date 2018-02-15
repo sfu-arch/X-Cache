@@ -17,8 +17,8 @@ import stack._
 import arbiters._
 import loop._
 import accel._
-import junctions.SplitCall
 import node._
+import junctions._
 
 
 /**
@@ -116,78 +116,78 @@ object Data_test10_FlowParam{
   )
 
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !11, !ScalaLabel !12
+  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !10, !ScalaLabel !11
   val phi1_in = Map(
     "add12" -> 0
   )
 
 
-  //  %cmp = icmp ult i32 %i.0, 5, !UID !13, !ScalaLabel !14
+  //  %cmp = icmp ult i32 %i.0, 5, !UID !12, !ScalaLabel !13
   val icmp2_in = Map(
     "phi1" -> 0
   )
 
 
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !15, !BB_UID !16, !ScalaLabel !17
+  //  br i1 %cmp, label %for.body, label %for.end, !UID !14, !BB_UID !15, !ScalaLabel !16
   val br3_in = Map(
     "icmp2" -> 0
   )
 
 
-  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.0, !UID !18, !ScalaLabel !19
+  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.0, !UID !17, !ScalaLabel !18
   val getelementptr4_in = Map(
     "field0" -> 0,
     "phi1" -> 1
   )
 
 
-  //  %0 = load i32, i32* %arrayidx, align 4, !UID !20, !ScalaLabel !21
+  //  %0 = load i32, i32* %arrayidx, align 4, !UID !19, !ScalaLabel !20
   val load5_in = Map(
     "getelementptr4" -> 0
   )
 
 
-  //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.0, !UID !22, !ScalaLabel !23
+  //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.0, !UID !21, !ScalaLabel !22
   val getelementptr6_in = Map(
     "field1" -> 0,
     "phi1" -> 2
   )
 
 
-  //  %1 = load i32, i32* %arrayidx1, align 4, !UID !24, !ScalaLabel !25
+  //  %1 = load i32, i32* %arrayidx1, align 4, !UID !23, !ScalaLabel !24
   val load7_in = Map(
     "getelementptr6" -> 0
   )
 
 
-  //  %add = add i32 %0, %1, !UID !26, !ScalaLabel !27
+  //  %add = add i32 %0, %1, !UID !25, !ScalaLabel !26
   val add8_in = Map(
     "load5" -> 0,
     "load7" -> 0
   )
 
 
-  //  %arrayidx2 = getelementptr inbounds i32, i32* %c, i32 %i.0, !UID !28, !ScalaLabel !29
+  //  %arrayidx2 = getelementptr inbounds i32, i32* %c, i32 %i.0, !UID !27, !ScalaLabel !28
   val getelementptr9_in = Map(
     "field2" -> 0,
     "phi1" -> 3
   )
 
 
-  //  store i32 %add, i32* %arrayidx2, align 4, !UID !30, !ScalaLabel !31
+  //  store i32 %add, i32* %arrayidx2, align 4, !UID !29, !ScalaLabel !30
   val store10_in = Map(
     "add8" -> 0,
     "getelementptr9" -> 0
   )
 
 
-  //  %inc = add i32 %i.0, 1, !UID !35, !ScalaLabel !36
+  //  %inc = add i32 %i.0, 1, !UID !34, !ScalaLabel !35
   val add12_in = Map(
     "phi1" -> 4
   )
 
 
-  //  ret i32 1, !UID !49, !BB_UID !50, !ScalaLabel !51
+  //  ret i32 1, !UID !48, !BB_UID !49, !ScalaLabel !50
   val ret14_in = Map(
 
   )
@@ -247,6 +247,7 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
   InputSplitter.io.In <> io.in
 
 
+
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
@@ -258,7 +259,7 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
 
 
   /* ================================================================== *
-   *                   PRINTING BASICBLOCKS                             *
+   *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
 
@@ -280,7 +281,7 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
 
 
   /* ================================================================== *
-   *                   PRINTING INSTRUCTIONS                            *
+   *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
 
@@ -288,22 +289,22 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
 
   // [BasicBlock]  entry:
 
-  //  br label %for.cond, !UID !8, !BB_UID !9, !ScalaLabel !10
+  //  br label %for.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
   val br0 = Module (new UBranchNode(ID = 0)(p))
 
 
 
   // [BasicBlock]  for.cond:
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !11, !ScalaLabel !12
+  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !10, !ScalaLabel !11
   val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 5, ID = 1)(p))
 
 
-  //  %cmp = icmp ult i32 %i.0, 5, !UID !13, !ScalaLabel !14
+  //  %cmp = icmp ult i32 %i.0, 5, !UID !12, !ScalaLabel !13
   val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT")(sign=false)(p))
 
 
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !15, !BB_UID !16, !ScalaLabel !17
+  //  br i1 %cmp, label %for.body, label %for.end, !UID !14, !BB_UID !15, !ScalaLabel !16
   val br3 = Module (new CBranchNode(ID = 3)(p))
 
   val bb_for_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0))
@@ -312,54 +313,54 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
 
   // [BasicBlock]  for.body:
 
-  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.0, !UID !18, !ScalaLabel !19
+  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.0, !UID !17, !ScalaLabel !18
   val getelementptr4 = Module (new GepOneNode(NumOuts = 1, ID = 4)(numByte1 = 1)(p))
 
 
-  //  %0 = load i32, i32* %arrayidx, align 4, !UID !20, !ScalaLabel !21
+  //  %0 = load i32, i32* %arrayidx, align 4, !UID !19, !ScalaLabel !20
   val load5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=5,RouteID=0))
 
 
-  //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.0, !UID !22, !ScalaLabel !23
+  //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.0, !UID !21, !ScalaLabel !22
   val getelementptr6 = Module (new GepOneNode(NumOuts = 1, ID = 6)(numByte1 = 1)(p))
 
 
-  //  %1 = load i32, i32* %arrayidx1, align 4, !UID !24, !ScalaLabel !25
+  //  %1 = load i32, i32* %arrayidx1, align 4, !UID !23, !ScalaLabel !24
   val load7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=1))
 
 
-  //  %add = add i32 %0, %1, !UID !26, !ScalaLabel !27
+  //  %add = add i32 %0, %1, !UID !25, !ScalaLabel !26
   val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false)(p))
 
 
-  //  %arrayidx2 = getelementptr inbounds i32, i32* %c, i32 %i.0, !UID !28, !ScalaLabel !29
+  //  %arrayidx2 = getelementptr inbounds i32, i32* %c, i32 %i.0, !UID !27, !ScalaLabel !28
   val getelementptr9 = Module (new GepOneNode(NumOuts = 1, ID = 9)(numByte1 = 1)(p))
 
 
-  //  store i32 %add, i32* %arrayidx2, align 4, !UID !30, !ScalaLabel !31
+  //  store i32 %add, i32* %arrayidx2, align 4, !UID !29, !ScalaLabel !30
   val store10 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=10,RouteID=0))
 
 
-  //  br label %for.inc, !UID !32, !BB_UID !33, !ScalaLabel !34
+  //  br label %for.inc, !UID !31, !BB_UID !32, !ScalaLabel !33
   val br11 = Module (new UBranchNode(ID = 11)(p))
 
 
 
   // [BasicBlock]  for.inc:
 
-  //  %inc = add i32 %i.0, 1, !UID !35, !ScalaLabel !36
+  //  %inc = add i32 %i.0, 1, !UID !34, !ScalaLabel !35
   val add12 = Module (new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign=false)(p))
 
 
-  //  br label %for.cond, !llvm.loop !37, !UID !46, !BB_UID !47, !ScalaLabel !48
+  //  br label %for.cond, !llvm.loop !36, !UID !45, !BB_UID !46, !ScalaLabel !47
   val br13 = Module (new UBranchNode(ID = 13)(p))
 
 
 
   // [BasicBlock]  for.end:
 
-  //  ret i32 1, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val ret14 = Module(new RetNode(ID=14, NumPredIn=1,retTypes=List(32)))
+  //  ret i32 1, !UID !48, !BB_UID !49, !ScalaLabel !50
+  val ret14 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=14))
 
 
 
@@ -430,7 +431,6 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
   /**
     * Wiring enable signals to the instructions
     */
-  //Wiring enable signals
 
   br0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("br0"))
 
@@ -611,18 +611,18 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
   add12.io.RightIO.bits.predicate := true.B
   add12.io.RightIO.valid := true.B
 
-  // Wiring constant
-  ret14.io.predicateIn(0).valid := true.B
+  // Wiring return instruction
   ret14.io.predicateIn(0).bits.control := true.B
   ret14.io.predicateIn(0).bits.taskID := 0.U
+  ret14.io.predicateIn(0).valid := true.B
   ret14.io.In.data("field0").bits.data := 1.U
   ret14.io.In.data("field0").bits.predicate := true.B
   ret14.io.In.data("field0").valid := true.B
-
   io.out <> ret14.io.Out
 
+
 }
-/*
+
 import java.io.{File, FileWriter}
 object test10Main extends App {
   val dir = new File("RTL/test10") ; dir.mkdirs
@@ -636,4 +636,4 @@ object test10Main extends App {
   verilogWriter.write(compiledStuff.value)
   verilogWriter.close()
 }
-*/
+

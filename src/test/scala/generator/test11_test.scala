@@ -22,7 +22,6 @@ import junctions._
 
 class test11CacheWrapper()(implicit p: Parameters) extends test11DF()(p)
   with CacheParams {
-
   /*  val io2 = IO(new Bundle {
       val init  = Flipped(Valid(new InitParams()(p)))
     })
@@ -54,7 +53,7 @@ class test11CacheWrapper()(implicit p: Parameters) extends test11DF()(p)
 
 abstract class test11MainIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(new CallDecoupled(List(32,32,32)))
+    val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -68,7 +67,7 @@ class test11Main(implicit p: Parameters) extends test11MainIO()(p) {
   io.out <> test11.io.out
 
   test11_add.io.in <> test11.io.call8_out
-  test11.io.call8_ret <> test11_add.io.out
+  test11.io.call8_in <> test11_add.io.out
 
 }
 
@@ -83,43 +82,34 @@ class test11Test01(c: test11Main) extends PeekPokeTester(c) {
   */
 
   // Initializing the signals
-  poke(c.io.in.enable.bits.control, false.B)
-  poke(c.io.in.enable.valid, false.B)
-  poke(c.io.in.data("field0").bits.data, 0.U)
-  poke(c.io.in.data("field0").bits.predicate, false.B)
-  poke(c.io.in.data("field0").valid, false.B)
-  poke(c.io.in.data("field1").bits.data, 0.U)
-  poke(c.io.in.data("field1").bits.predicate, false.B)
-  poke(c.io.in.data("field1").valid, false.B)
-  poke(c.io.in.data("field2").bits.data, 0.U)
-  poke(c.io.in.data("field2").bits.predicate, false.B)
-  poke(c.io.in.data("field2").valid, false.B)
+  poke(c.io.in.bits.enable.control, false.B)
+  poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, false.B)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field2").data, 0.U)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
-  poke(c.io.in.enable.bits.control, true.B)
-  poke(c.io.in.enable.valid, true.B)
-  poke(c.io.in.data("field0").bits.data, 0.U)
-  poke(c.io.in.data("field0").bits.predicate, true.B)
-  poke(c.io.in.data("field0").valid, true.B)
-  poke(c.io.in.data("field1").bits.data, 4.U)
-  poke(c.io.in.data("field1").bits.predicate, true.B)
-  poke(c.io.in.data("field1").valid, true.B)
-  poke(c.io.in.data("field2").bits.data, 8.U)
-  poke(c.io.in.data("field2").bits.predicate, true.B)
-  poke(c.io.in.data("field2").valid, true.B)
+  poke(c.io.in.bits.enable.control, true.B)
+  poke(c.io.in.valid, true.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, true.B)
+  poke(c.io.in.bits.data("field1").data, 4.U)
+  poke(c.io.in.bits.data("field1").predicate, true.B)
+  poke(c.io.in.bits.data("field2").data, 8.U)
+  poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
-  poke(c.io.in.enable.bits.control, false.B)
-  poke(c.io.in.enable.valid, false.B)
-  poke(c.io.in.data("field0").bits.data, 0.U)
-  poke(c.io.in.data("field0").bits.predicate, false.B)
-  poke(c.io.in.data("field0").valid, false.B)
-  poke(c.io.in.data("field1").bits.data, 0.U)
-  poke(c.io.in.data("field1").bits.predicate, false.B)
-  poke(c.io.in.data("field1").valid, false.B)
-  poke(c.io.in.data("field2").bits.data, 0.U)
-  poke(c.io.in.data("field2").bits.predicate, false.B)
-  poke(c.io.in.data("field2").valid, false.B)
+  poke(c.io.in.bits.enable.control, false.B)
+  poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, false.B)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field2").data, 0.U)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
 
   step(1)
 

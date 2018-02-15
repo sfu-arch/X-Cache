@@ -17,8 +17,8 @@ import stack._
 import arbiters._
 import loop._
 import accel._
-import junctions.SplitCall
 import node._
+import junctions._
 
 
 /**
@@ -39,14 +39,14 @@ object Data_test11_add_FlowParam{
   )
 
 
-  //  %add = add i32 %a, %b, !UID !8, !ScalaLabel !9
+  //  %add = add i32 %a, %b, !UID !7, !ScalaLabel !8
   val add0_in = Map(
     "field0" -> 0,
     "field1" -> 0
   )
 
 
-  //  ret i32 %add, !UID !10, !BB_UID !11, !ScalaLabel !12
+  //  ret i32 %add, !UID !9, !BB_UID !10, !ScalaLabel !11
   val ret1_in = Map(
     "add0" -> 0
   )
@@ -102,6 +102,9 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
+  val InputSplitter = Module(new SplitCall(List(32,32)))
+  InputSplitter.io.In <> io.in
+
 
 
   /* ================================================================== *
@@ -113,7 +116,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
 
   /* ================================================================== *
-   *                   PRINTING BASICBLOCKS                             *
+   *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
 
@@ -127,7 +130,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
 
   /* ================================================================== *
-   *                   PRINTING INSTRUCTIONS                            *
+   *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
 
@@ -135,15 +138,16 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
   // [BasicBlock]  entry:
 
-  val SplitIn = Module(new SplitCall(List(32,32)))
-  SplitIn.io.In <> io.in
-
-  //  %add = add i32 %a, %b, !UID !8, !ScalaLabel !9
+  //  %add = add i32 %a, %b, !UID !7, !ScalaLabel !8
   val add0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "add")(sign=false)(p))
 
 
-  //  ret i32 %add, !UID !10, !BB_UID !11, !ScalaLabel !12
-  val ret1 = Module(new RetNode(ID=1,NumPredIn=1,retTypes=List(32)))
+  //  ret i32 %add, !UID !9, !BB_UID !10, !ScalaLabel !11
+  val ret1 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=1))
+
+
+
+
 
 
 
@@ -169,7 +173,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> SplitIn.io.Out.enable
+  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -193,7 +197,6 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
   /**
     * Wiring enable signals to the instructions
     */
-  //Wiring enable signals
 
   add0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("add0"))
 
@@ -243,15 +246,15 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
     */
 
   // Wiring Binary instruction to the function argument
-  add0.io.LeftIO <> SplitIn.io.Out.data("field0")
+  add0.io.LeftIO <> InputSplitter.io.Out.data("field0")
 
   // Wiring Binary instruction to the function argument
-  add0.io.RightIO <> SplitIn.io.Out.data("field1")
+  add0.io.RightIO <> InputSplitter.io.Out.data("field1")
 
-  // Wiring return instructions
-  ret1.io.predicateIn(0).valid := true.B
+  // Wiring return instruction
   ret1.io.predicateIn(0).bits.control := true.B
   ret1.io.predicateIn(0).bits.taskID := 0.U
+  ret1.io.predicateIn(0).valid := true.B
   ret1.io.In.data("field0") <> add0.io.Out(param.ret1_in("add0"))
   io.out <> ret1.io.Out
 

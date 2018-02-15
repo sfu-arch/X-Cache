@@ -20,6 +20,7 @@ import accel._
 import node._
 import junctions._
 
+
 /**
   * This Object should be initialized at the first step
   * It contains all the transformation from indices to their module's name
@@ -117,53 +118,53 @@ object Data_test03_FlowParam{
   )
 
 
-  //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !11, !ScalaLabel !12
+  //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !10, !ScalaLabel !11
   val phi1_in = Map(
     "field0" -> 0,
     "mul6" -> 0
   )
 
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !13, !ScalaLabel !14
+  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !12, !ScalaLabel !13
   val phi2_in = Map(
     "add8" -> 0
   )
 
 
-  //  %cmp = icmp slt i32 %i.0, %n, !UID !15, !ScalaLabel !16
+  //  %cmp = icmp slt i32 %i.0, %n, !UID !14, !ScalaLabel !15
   val icmp3_in = Map(
     "phi2" -> 0,
     "field2" -> 0
   )
 
 
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !17, !BB_UID !18, !ScalaLabel !19
+  //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
   val br4_in = Map(
     "icmp3" -> 0
   )
 
 
-  //  %add = add i32 %sum.0, %a, !UID !20, !ScalaLabel !21
+  //  %add = add i32 %sum.0, %a, !UID !19, !ScalaLabel !20
   val add5_in = Map(
     "phi1" -> 0,
     "field0" -> 1
   )
 
 
-  //  %mul = mul i32 %add, %b, !UID !22, !ScalaLabel !23
+  //  %mul = mul i32 %add, %b, !UID !21, !ScalaLabel !22
   val mul6_in = Map(
     "add5" -> 0,
     "field1" -> 0
   )
 
 
-  //  %inc = add nsw i32 %i.0, 1, !UID !27, !ScalaLabel !28
+  //  %inc = add nsw i32 %i.0, 1, !UID !26, !ScalaLabel !27
   val add8_in = Map(
     "phi2" -> 1
   )
 
 
-  //  ret i32 %sum.0, !UID !41, !BB_UID !42, !ScalaLabel !43
+  //  ret i32 %sum.0, !UID !40, !BB_UID !41, !ScalaLabel !42
   val ret10_in = Map(
     "phi1" -> 1
   )
@@ -223,6 +224,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   InputSplitter.io.In <> io.in
 
 
+
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
@@ -231,12 +233,10 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val loop_L_7_liveIN_0 = Module(new LiveInNode(NumOuts = 2, ID = 0))
   val loop_L_7_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
   val loop_L_7_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_7_end   = Module(new LoopEnd(NumInputs = 1, NumOuts = 1, ID = 0)(p))
-
 
 
   /* ================================================================== *
-   *                   PRINTING BASICBLOCKS                             *
+   *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
 
@@ -258,7 +258,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
 
   /* ================================================================== *
-   *                   PRINTING INSTRUCTIONS                            *
+   *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
 
@@ -266,26 +266,26 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   // [BasicBlock]  entry:
 
-  //  br label %for.cond, !UID !8, !BB_UID !9, !ScalaLabel !10
+  //  br label %for.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
   val br0 = Module (new UBranchNode(ID = 0)(p))
 
 
 
   // [BasicBlock]  for.cond:
 
-  //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !11, !ScalaLabel !12
+  //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !10, !ScalaLabel !11
   val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1)(p))
 
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !13, !ScalaLabel !14
+  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !12, !ScalaLabel !13
   val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2)(p))
 
 
-  //  %cmp = icmp slt i32 %i.0, %n, !UID !15, !ScalaLabel !16
+  //  %cmp = icmp slt i32 %i.0, %n, !UID !14, !ScalaLabel !15
   val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false)(p))
 
 
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !17, !BB_UID !18, !ScalaLabel !19
+  //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
   val br4 = Module (new CBranchNode(ID = 4)(p))
 
   val bb_for_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0))
@@ -294,34 +294,34 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   // [BasicBlock]  for.body:
 
-  //  %add = add i32 %sum.0, %a, !UID !20, !ScalaLabel !21
+  //  %add = add i32 %sum.0, %a, !UID !19, !ScalaLabel !20
   val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false)(p))
 
 
-  //  %mul = mul i32 %add, %b, !UID !22, !ScalaLabel !23
+  //  %mul = mul i32 %add, %b, !UID !21, !ScalaLabel !22
   val mul6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign=false)(p))
 
 
-  //  br label %for.inc, !UID !24, !BB_UID !25, !ScalaLabel !26
+  //  br label %for.inc, !UID !23, !BB_UID !24, !ScalaLabel !25
   val br7 = Module (new UBranchNode(ID = 7)(p))
 
 
 
   // [BasicBlock]  for.inc:
 
-  //  %inc = add nsw i32 %i.0, 1, !UID !27, !ScalaLabel !28
+  //  %inc = add nsw i32 %i.0, 1, !UID !26, !ScalaLabel !27
   val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false)(p))
 
 
-  //  br label %for.cond, !llvm.loop !29, !UID !38, !BB_UID !39, !ScalaLabel !40
+  //  br label %for.cond, !llvm.loop !28, !UID !37, !BB_UID !38, !ScalaLabel !39
   val br9 = Module (new UBranchNode(ID = 9)(p))
 
 
 
   // [BasicBlock]  for.end:
 
-  //  ret i32 %sum.0, !UID !41, !BB_UID !42, !ScalaLabel !43
-  val ret10 = Module(new RetNode(ID=10, NumPredIn=1,retTypes=List(32)))
+  //  ret i32 %sum.0, !UID !40, !BB_UID !41, !ScalaLabel !42
+  val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10))
 
 
 
@@ -392,7 +392,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   /**
     * Wiring enable signals to the instructions
     */
-  //Wiring enable signals
 
   br0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("br0"))
 
@@ -433,6 +432,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
 
   ret10.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret10"))
+
+
+
 
 
   /* ================================================================== *
@@ -485,8 +487,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   //i32 %n
   loop_L_7_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
 
-  loop_L_7_end.io.inputArg(0) <> phi1.io.Out(0)
-
 
 
   /* ================================================================== *
@@ -527,13 +527,13 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   add8.io.RightIO.bits.predicate := true.B
   add8.io.RightIO.valid := true.B
 
-  // Wiring return instructions
-  ret10.io.predicateIn(0).valid := true.B
+  // Wiring return instruction
   ret10.io.predicateIn(0).bits.control := true.B
   ret10.io.predicateIn(0).bits.taskID := 0.U
+  ret10.io.predicateIn(0).valid := true.B
   ret10.io.In.data("field0") <> phi1.io.Out(param.ret10_in("phi1"))
-
   io.out <> ret10.io.Out
+
 
 }
 
@@ -550,3 +550,4 @@ object test03Main extends App {
   verilogWriter.write(compiledStuff.value)
   verilogWriter.close()
 }
+
