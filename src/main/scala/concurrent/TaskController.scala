@@ -38,7 +38,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], NumParent: 
   val taskArb  = Module(new RRArbiter(new Call(argTypes), NumParent))
   val freeList = Module(new Queue(UInt(), 1<<tlen))
   val exeList  = Module(new Queue(new Call(argTypes), 1<<tlen))
-  val parentTable = SyncReadMem(new ParentBundle(), 1<<tlen)
+  val parentTable = SyncReadMem(1<<tlen, new ParentBundle())
 
   for (i <- 0 until NumParent) {
       taskArb.io.in(i) <> io.parentIn(i)
