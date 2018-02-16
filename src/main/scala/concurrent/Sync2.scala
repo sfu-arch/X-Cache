@@ -16,7 +16,7 @@ extends HandShakingIONPS(NumOuts)(new ControlBundle)(p)
 }
 
 class Sync2(NumOuts : Int, ID: Int)(implicit p: Parameters)
-  extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
+  extends HandShakingCtrlNPS(NumOuts, ID)(p) {
   override lazy val io = IO(new Sync2IO(NumOuts)(p))
   // Printf debugging
   override val printfSigil = "Node (SYNC) ID: " + ID + " "
@@ -49,14 +49,16 @@ class Sync2(NumOuts : Int, ID: Int)(implicit p: Parameters)
 
   io.incIn.ready := true.B
   io.decIn.ready := true.B
-  when(io.incIn.fire() && !io.decIn.fire()) {
+  val inc = io.incIn.fire() && io.incIn.bits.control
+  val dec = io.decIn.fire() && io.decIn.bits.control
+  when(inc && !dec) {
     syncCount := syncCount + 1.U
-  }.elsewhen(!io.incIn.fire() && io.decIn.fire()) {
+  }.elsewhen(!inc && dec) {
     syncCount := syncCount - 1.U
   }
 
   for (i <- 0 until NumOuts) {
-    io.Out(i).valid := false.B
+//    io.Out(i).valid := false.B
     io.Out(i).bits.control := predicate
     io.Out(i).bits.taskID := enableID
   }
@@ -69,9 +71,10 @@ class Sync2(NumOuts : Int, ID: Int)(implicit p: Parameters)
       }
     }
     is (s_COMPUTE) {
-      when(IsOutReady()) {
+      when(IsOutReady() && (syncCount === 0.U)) {
         Reset()
         printfInfo("Output fired")
+        state := s_IDLE
       }
     }
   }

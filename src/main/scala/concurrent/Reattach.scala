@@ -9,7 +9,7 @@ import node._
 
 class ReattachIO(val NumPredIn: Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p) {
-  val predicateIn  = Vec(NumPredIn, Flipped(Decoupled(new ControlBundle()(p))))
+  val predicateIn  = Vec(NumPredIn, Flipped(Decoupled(new DataBundle()(p))))
 }
 
 class Reattach(val NumPredIn: Int, ID: Int)(implicit p: Parameters)
@@ -28,7 +28,7 @@ class Reattach(val NumPredIn: Int, ID: Int)(implicit p: Parameters)
   for (i <- 0 until NumPredIn) {
     when(io.predicateIn(i).fire()) {
       ctrlReady_R(i) := true.B
-      ctrlPredicate_R(i) := io.predicateIn(i).bits.control
+      ctrlPredicate_R(i) := io.predicateIn(i).bits.predicate
     }
     io.predicateIn(i).ready := ~ctrlReady_R(i)
   }

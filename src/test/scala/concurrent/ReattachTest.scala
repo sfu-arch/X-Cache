@@ -33,7 +33,8 @@ class ReattachTest01(c: Reattach) extends PeekPokeTester(c) {
     for (i <- 0 until 3) {
      if (peek(c.io.predicateIn(i).ready) == 1) {
         poke(c.io.predicateIn(i).valid, true.B)
-        poke(c.io.predicateIn(i).bits.control, true.B)
+        poke(c.io.predicateIn(i).bits.predicate, true.B)
+       poke(c.io.predicateIn(i).bits.data, 0.U)
         poke(c.io.predicateIn(i).bits.taskID, count_in(i))
         count_in(i) += 1
       }
