@@ -73,7 +73,7 @@ class Sync2(NumOuts : Int, ID: Int)(implicit p: Parameters)
     is (s_COMPUTE) {
       when(IsOutReady() && (syncCount === 0.U)) {
         Reset()
-        printfInfo("Output fired")
+        when (predicate) {printfInfo("Output fired")}
         state := s_IDLE
       }
     }

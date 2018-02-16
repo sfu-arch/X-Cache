@@ -111,7 +111,7 @@ class CBranchNode(ID: Int)
     state := s_idle
 
     Reset()
-    printfInfo("Output fired\n")
+    printfInfo("Output fired")
 
   }
 
@@ -186,7 +186,8 @@ class UBranchNode(ID: Int)
 
     //Reset state
     state := s_idle
-    printfInfo("Output fired")
+    when (predicate) {printfInfo("Output fired")}
+
 
   }
 

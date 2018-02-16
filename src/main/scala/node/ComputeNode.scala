@@ -44,8 +44,8 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   //Output register
   val data_R = RegInit(0.U(xlen.W))
 
-  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-  val state = RegInit(s_idle)
+  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val state = RegInit(s_IDLE)
 
   /*==========================================*
    *           Predicate Evaluation           *
@@ -65,20 +65,16 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
 
   io.LeftIO.ready := ~left_valid_R
   when(io.LeftIO.fire()) {
-    //printfInfo("Latch left data\n")
-    state := s_LATCH
     left_R <> io.LeftIO.bits
     left_valid_R := true.B
   }
 
   io.RightIO.ready := ~right_valid_R
   when(io.RightIO.fire()) {
-    //printfInfo("Latch right data\n")
-    state := s_LATCH
     right_R <> io.RightIO.bits
     right_valid_R := true.B
   }
-//  assert(left_R.taskID === right_R.taskID)
+
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := FU.io.out
@@ -87,35 +83,39 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   }
 
   /*============================================*
-   *            ACTIONS (possibly dangerous)    *
+   *            State Machine    *
    *============================================*/
-
-  when(start & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
+  switch (state) {
+    is (s_IDLE) {
+      when(io.LeftIO.fire() || io.RightIO.fire()) {
+        state := s_LATCH
+      }
+    }
+    is (s_LATCH) {
+        when(start) {
+          state := s_COMPUTE
+          ValidOut()
+        }
+    }
+    is (s_COMPUTE) {
+      when(IsOutReady()) {
+        // Reset data
+        left_R  := DataBundle.default
+        right_R := DataBundle.default
+        left_valid_R  := false.B
+        right_valid_R := false.B
+        //Reset state
+        state := s_IDLE
+        //Reset output
+        Reset()
+        when (predicate) {printfInfo("Output fired")}
+      }
+    }
   }
 
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-  when(IsOutReady() & (state === s_COMPUTE)) {
-
-    // Reset data
-    left_R  := DataBundle.default
-    right_R := DataBundle.default
-
-    left_valid_R  := false.B
-    right_valid_R := false.B
-
-    //Reset state
-    state := s_idle
-    //Reset output
-    Reset()
-    when (predicate) {
-      printfInfo("Output fired")
-    }
-  }
-//  printfInfo("State: %x", state)
 
 }

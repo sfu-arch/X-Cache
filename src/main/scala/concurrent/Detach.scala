@@ -68,8 +68,7 @@ class Detach(ID: Int) (implicit p: Parameters)
     Reset()
     //Reset state
     state := s_idle
-    printfInfo("Output fired")
+    when(latchedEnable.control) {printfInfo("Output fired")}
   }
-
 
 }

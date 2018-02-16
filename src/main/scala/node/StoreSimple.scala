@@ -165,7 +165,7 @@ class UnTypStore(NumPredOps: Int,
       Reset()
       // Reset state.
       state := s_idle
-      printfInfo("Output fired")
+      when (predicate) {printfInfo("Output fired")}
 
     }
   }

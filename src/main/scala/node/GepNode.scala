@@ -130,7 +130,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
     idx1_valid_R := false.B
 
     state := s_idle
-    printfInfo("Output fired\n")
+    when (predicate) {printfInfo("Output fired")}
 
     //Reset output
     Reset()
@@ -258,7 +258,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
     idx2_valid_R := false.B
 
     state := s_idle
-    printfInfo("Output fired\n")
+    when (predicate) {printfInfo("Output fired\n")}
 
     //Reset output
     Reset()

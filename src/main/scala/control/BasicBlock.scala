@@ -176,9 +176,7 @@ class BasicBlockNode(NumInputs: Int,
 
     //Reset state
     state := s_idle
-    when(pred_R.control) {
-      printfInfo("Output fired")
-    }
+    when (predicate) {printfInfo("Output fired")}
     //Restart predicate bit
     pred_R.control := false.B
   }
@@ -304,24 +302,9 @@ class BasicBlockNoMaskNode(NumInputs: Int,
     state := s_idle
 
     Reset()
-    printfInfo("Output fired")
+    when (predicate) {printfInfo("Output fired")}
 
-    //predicate_valid_W := Vec(Seq.fill(NumInputs) {
-      //false.B
-    //})
-
-    // Reset output
-    //out_ready_R := Vec(Seq.fill(NumOuts) {
-      //false.B
-    //})
-
-
-    //when(pred_R.control) {
-    //}
-    //Restart predicate bit
-    //pred_R.control := false.B
   }
 
-  //printfInfo(" State: %x\n", state)
 
 }

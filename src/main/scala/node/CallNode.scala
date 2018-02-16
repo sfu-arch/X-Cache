@@ -34,6 +34,6 @@ class CallNode(ID: Int, argTypes: Seq[Int], retTypes: Seq[Int])(implicit p: Para
   io.Out <> SplitOut.io.Out
 
   when(CombineIn.io.Out.fire) {
-    printfInfo("Output fired")
+    when (CombineIn.io.Out.bits.enable.control) {printfInfo("Output fired")}
   }
 }

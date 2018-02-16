@@ -40,9 +40,10 @@ class Reattach(val NumPredIn: Int, ID: Int)(implicit p: Parameters)
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val start = Wire(Bool())
-  start := ctrlReady_R.asUInt.andR && IsEnableValid()
-  io.Out(0).bits.control := ctrlPredicate_R.asUInt.andR && IsEnable()
+  val start = ctrlReady_R.asUInt.andR && IsEnableValid()
+  val predicate = ctrlPredicate_R.asUInt.andR && IsEnable()
+
+  io.Out(0).bits.control := predicate
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -80,7 +81,7 @@ class Reattach(val NumPredIn: Int, ID: Int)(implicit p: Parameters)
       ctrlPredicate_R(i) := false.B
     }
 
-    printfInfo("Output fired\n")
+    when (predicate) {printfInfo("Output fired")}
 
   }
 
