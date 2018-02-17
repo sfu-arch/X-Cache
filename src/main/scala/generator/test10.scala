@@ -307,7 +307,7 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
   //  br i1 %cmp, label %for.body, label %for.end, !UID !14, !BB_UID !15, !ScalaLabel !16
   val br3 = Module (new CBranchNode(ID = 3)(p))
 
-  val bb_for_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0))
+  val bb_for_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0)(new ControlBundle))
 
 
 

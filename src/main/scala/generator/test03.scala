@@ -288,7 +288,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
   val br4 = Module (new CBranchNode(ID = 4)(p))
 
-  val bb_for_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0))
+  val bb_for_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0)(new ControlBundle))
 
 
 

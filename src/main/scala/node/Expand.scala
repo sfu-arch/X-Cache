@@ -12,24 +12,23 @@ import interfaces._
 import muxes._
 import util._
 
-class ExpandNodeIO(NumOuts: Int)
+class ExpandNodeIO[T <: Data](NumOuts: Int)(gen: T)
                    (implicit p: Parameters)
-  extends HandShakingIONPS(NumOuts)(new ControlBundle) {
-  val InData = Flipped(Decoupled(new ControlBundle()))
-
+  extends HandShakingIONPS(NumOuts)(gen) {
+  val InData = Flipped(Decoupled(gen))
 }
 
-class ExpandNode(NumOuts: Int, ID: Int)
+class ExpandNode[T <: Data](NumOuts: Int, ID: Int)(gen: T)
                  (implicit p: Parameters)
-  extends HandShakingNPS(NumOuts, ID)(new ControlBundle())(p) {
-  override lazy val io = IO(new ExpandNodeIO(NumOuts))
+  extends HandShakingNPS(NumOuts, ID)(gen)(p) {
+  override lazy val io = IO(new ExpandNodeIO(NumOuts)(gen))
   // Printf debugging
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
   // Left Input
-  val indata_R = RegInit(ControlBundle.default)
+  val indata_R = RegInit(0.U.asTypeOf(gen))
   val indata_valid_R = RegInit(false.B)
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
@@ -75,7 +74,7 @@ class ExpandNode(NumOuts: Int, ID: Int)
   when(IsOutReady() & (state === s_COMPUTE)) {
 
     // Reset data
-    indata_R := ControlBundle.default
+//    indata_R := gen.default
 
     indata_valid_R := false.B
 
