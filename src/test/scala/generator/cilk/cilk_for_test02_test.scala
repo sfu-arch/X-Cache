@@ -42,20 +42,45 @@ abstract class cilk_for_test02MainIO(implicit val p: Parameters) extends Module 
   })
 }
 
-class cilk_for_test02Main(implicit p: Parameters) extends cilk_for_test02MainIO()(p) {
+class cilk_for_test02MainDirect(implicit p: Parameters) extends cilk_for_test02MainIO()(p) {
 
   val cilk_for_test02_mul = Module(new cilk_for_test02_mulDF())
   val cilk_for_test02 = Module(new cilk_for_test02CacheWrapper())
 
   cilk_for_test02.io.in <> io.in
-  io.out <> cilk_for_test02.io.out
-
   cilk_for_test02_mul.io.in <> cilk_for_test02.io.call6_out
   cilk_for_test02.io.call6_in <> cilk_for_test02_mul.io.out
+  io.out <> cilk_for_test02.io.out
 
 }
 
-class cilk_for_test02Test01(c: cilk_for_test02Main) extends PeekPokeTester(c) {
+class cilk_for_test02MainTM(implicit p: Parameters) extends cilk_for_test02MainIO()(p) {
+
+  val TaskControllerModule = Module(new TaskController(List(32,32), List(32), 1, 1))
+  val cilk_for_test02_mul = Module(new cilk_for_test02_mulDF())
+  val cilk_for_test02 = Module(new cilk_for_test02CacheWrapper())
+
+  // tester to cilk_for_test02
+  cilk_for_test02.io.in <> io.in
+
+  // cilk_for_test02 to task controller
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test02.io.call6_out
+
+  // task controller to sub-task cilk_for_test02_mul
+  cilk_for_test02_mul.io.in <> TaskControllerModule.io.childOut(0)
+
+  // sub-task to task controller
+  TaskControllerModule.io.childIn(0) <> cilk_for_test02_mul.io.out
+
+  // Task controller to cilk_for_test02
+  cilk_for_test02.io.call6_in <> TaskControllerModule.io.parentOut(0)
+
+  // cilk_for_test02 to tester
+  io.out <> cilk_for_test02.io.out
+
+}
+
+class cilk_for_test02Test01[T <: cilk_for_test02MainIO](c: T) extends PeekPokeTester(c) {
 
 
   /**
@@ -91,10 +116,10 @@ class cilk_for_test02Test01(c: cilk_for_test02Main) extends PeekPokeTester(c) {
 
   var time = 1  //Cycle counter
   var result = false
-  while (time < 500) {
+  while (time < 200) {
     time += 1
     step(1)
-    //println(s"Cycle: $time")
+    println(s"Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
       peek(c.io.out.bits.data("field0").predicate) == 1 &&
       peek(c.io.out.bits.enable.control) == 1) {
@@ -104,7 +129,7 @@ class cilk_for_test02Test01(c: cilk_for_test02Main) extends PeekPokeTester(c) {
         println(s"*** Incorrect result received. Got $data. Hoping for 1")
         fail
       } else {
-        println("*** Correct result received.")
+        println(s"*** Correct result received.")
       }
     }
   }
@@ -117,21 +142,31 @@ class cilk_for_test02Test01(c: cilk_for_test02Main) extends PeekPokeTester(c) {
 
 class cilk_for_test02Tester extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that cilk_for_test02 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>
     // -td  = target directory
     // -tts = seed for RNG
+  it should "Check that cilk_for_test02 works when called directly." in {
     chisel3.iotesters.Driver.execute(
-     Array(
-       // "-ll", "Info",
-       "-tbn", "verilator",
-       "-td", "test_run_dir",
-       "-tts", "0001"),
-     () => new cilk_for_test02Main()) {
-     c => new cilk_for_test02Test01(c)
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir",
+        "-tts", "0001"),
+      () => new cilk_for_test02MainDirect()) {
+      c => new cilk_for_test02Test01(c)
+    } should be(true)
+  }
+  it should "Check that cilk_for_test02 works when called via task manager." in {
+    chisel3.iotesters.Driver.execute(
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir",
+        "-tts", "0001"),
+      () => new cilk_for_test02MainTM()) {
+      c => new cilk_for_test02Test01(c)
     } should be(true)
   }
 }
-

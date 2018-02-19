@@ -66,7 +66,6 @@ class Sync2(NumOuts : Int, ID: Int)(implicit p: Parameters)
     is (s_IDLE) {
       when(start && predicate) {
         state := s_COMPUTE
-        printfInfo("Input fired")
         ValidOut()
       }
     }

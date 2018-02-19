@@ -16,7 +16,7 @@ class Reattach(val NumPredIn: Int, ID: Int)(implicit p: Parameters)
   extends HandShakingNPS(NumOuts=1, ID)(new ControlBundle)(p) {
   override lazy val io = IO(new ReattachIO(NumPredIn))
   // Printf debugging
-  override val printfSigil = "Node (REATTACH) ID: " + ID + " "
+  override val printfSigil = "Node (REAT) ID: " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -81,7 +81,7 @@ class Reattach(val NumPredIn: Int, ID: Int)(implicit p: Parameters)
       ctrlPredicate_R(i) := false.B
     }
 
-    when (predicate) {printfInfo("Output fired")}
+    when (predicate) {printfInfo(s"Output fired")}
 
   }
 

@@ -58,6 +58,6 @@ class RetNode(NumPredIn: Int=0, retTypes: Seq[Int], ID: Int)(implicit val p: Par
   io.Out.bits := outputReg.bits
 
   when(io.Out.fire()) {
-    when (outputReg.bits.enable.control) {printfInfo(s"Output fired.\n")}
+    when (outputReg.bits.enable.control) {printfInfo("Output fired.")}
   }
 }

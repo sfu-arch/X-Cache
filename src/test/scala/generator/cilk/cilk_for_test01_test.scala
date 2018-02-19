@@ -20,7 +20,6 @@ import accel._
 import node._
 import junctions._
 
-
 class cilk_for_test01CacheWrapper()(implicit p: Parameters) extends cilk_for_test01DF()(p)
   with CacheParams {
 
@@ -72,10 +71,10 @@ class cilk_for_test01Test01(c: cilk_for_test01CacheWrapper) extends PeekPokeTest
 
   var time = 1  //Cycle counter
   var result = false
-  while (time < 500) {
+  while (time < 200) {
     time += 1
     step(1)
-    //println(s"Cycle: $time")
+    println(s"[INFO] Clock Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
       peek(c.io.out.bits.data("field0").predicate) == 1 &&
       peek(c.io.out.bits.enable.control) == 1) {
