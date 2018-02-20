@@ -305,21 +305,21 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc="bb_entry")(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc = "bb_entry")(p))
 
-  val bb_pfor_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 1, BID = 1, Desc="bb_pfor_cond")(p))
+  val bb_pfor_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 1, BID = 1, Desc = "bb_pfor_cond")(p))
 
-  val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2, Desc="bb_pfor_detach")(p))
+  val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2, Desc = "bb_pfor_detach")(p))
 
-  val bb_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 7, BID = 3, Desc="bb_pfor_body")(p))
+  val bb_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 7, BID = 3, Desc = "bb_pfor_body")(p))
 
-  val bb_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4, Desc="bb_pfor_preattach")(p))
+  val bb_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4, Desc = "bb_pfor_preattach")(p))
 
-  val bb_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5, Desc="bb_pfor_inc")(p)) // Manually reduced inputs
+  val bb_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5, Desc = "bb_pfor_inc")(p))
 
-  val bb_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6, Desc="bb_pfor_end")(p))
+  val bb_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6, Desc = "bb_pfor_end")(p))
 
-  val bb_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7, Desc="bb_pfor_end_continue")(p))
+  val bb_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7, Desc = "bb_pfor_end_continue")(p))
 
 
 
@@ -336,22 +336,22 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   // [BasicBlock]  entry:
 
   //  br label %pfor.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0, Desc="br0")(p))
+  val br0 = Module (new UBranchNode(ID = 0, Desc = "br0")(p))
 
 
 
   // [BasicBlock]  pfor.cond:
 
   //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %pfor.inc ], !UID !10, !ScalaLabel !11
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 4, ID = 1, Desc="phi1")(p))
+  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 4, ID = 1, Desc = "phi1")(p))
 
 
   //  %cmp = icmp slt i32 %i.0, 5, !UID !12, !ScalaLabel !13
-  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT", Desc="icmp2")(sign=false)(p))
+  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT", Desc = "icmp2")(sign=false)(p))
 
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end, !UID !14, !BB_UID !15, !ScalaLabel !16
-  val br3 = Module (new CBranchNode(ID = 3)(p))
+  val br3 = Module (new CBranchNode(ID = 3, Desc = "br3")(p))
 
   val bb_pfor_cond_expand = Module(new ExpandNode(NumOuts=3, ID=0)(new ControlBundle))
 
@@ -360,57 +360,59 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   // [BasicBlock]  pfor.detach:
 
   //  detach label %pfor.body, label %pfor.inc, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val detach4 = Module(new Detach(ID = 4, Desc="detach4")(p))
+  val detach4 = Module(new Detach(ID = 4, Desc = "detach4")(p))
 
 
 
   // [BasicBlock]  pfor.body:
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.0, !UID !22, !ScalaLabel !23
-  val getelementptr6 = Module (new GepOneNode(NumOuts = 1, ID = 6, Desc = "getelemtnptr6")(numByte1 = 1)(p))
+  val getelementptr6 = Module (new GepOneNode(NumOuts = 1, ID = 6, Desc = "getelementptr6")(numByte1 = 1)(p))
 
 
   //  %1 = load i32, i32* %arrayidx, align 4, !UID !24, !ScalaLabel !25
-  val load7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=0,Desc = "load7"))
+  val load7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=0,Desc="load7"))
 
 
   //  %mul = mul i32 %1, 2, !UID !26, !ScalaLabel !27
-  val mul8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "mul",Desc = "mul8")(sign=false)(p))
+  val mul8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "mul", Desc = "mul8")(sign=false)(p))
 
 
   //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.0, !UID !28, !ScalaLabel !29
-  val getelementptr9 = Module (new GepOneNode(NumOuts = 1, ID = 9,Desc = "getelementptr9")(numByte1 = 1)(p))
+  val getelementptr9 = Module (new GepOneNode(NumOuts = 1, ID = 9, Desc = "getelementptr9")(numByte1 = 1)(p))
 
 
   //  store i32 %mul, i32* %arrayidx1, align 4, !UID !30, !ScalaLabel !31
-  val store10 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=10,RouteID=0,Desc = "store10"))
+  val store10 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=10,RouteID=0,Desc="store10"))
 
 
   //  br label %pfor.preattach, !UID !32, !BB_UID !33, !ScalaLabel !34
-  val br11 = Module (new UBranchNode(ID = 11,Desc = "br11")(p))
+  val br11 = Module (new UBranchNode(ID = 11, Desc = "br11")(p))
 
 
 
   // [BasicBlock]  pfor.preattach:
 
   //  reattach label %pfor.inc, !UID !35, !BB_UID !36, !ScalaLabel !37
-  val reattach12 = Module(new Reattach(NumPredIn=1, ID=12, Desc="reattach12")(p))
+  val reattach12 = Module(new Reattach(NumPredIn=1, ID=12, Desc = "reattach12")(p))
+
+
 
   // [BasicBlock]  pfor.inc:
 
   //  %inc = add nsw i32 %i.0, 1, !UID !38, !ScalaLabel !39
-  val add13 = Module (new ComputeNode(NumOuts = 1, ID = 13, opCode = "add",Desc = "add13")(sign=false)(p))
+  val add13 = Module (new ComputeNode(NumOuts = 1, ID = 13, opCode = "add", Desc = "add13")(sign=false)(p))
 
 
   //  br label %pfor.cond, !llvm.loop !40, !UID !50, !BB_UID !51, !ScalaLabel !52
-  val br14 = Module (new UBranchNode(ID = 14,Desc = "br14")(p))
+  val br14 = Module (new UBranchNode(ID = 14, Desc = "br14")(p))
 
 
 
   // [BasicBlock]  pfor.end:
 
   //  sync label %pfor.end.continue, !UID !53, !BB_UID !54, !ScalaLabel !55
-  val sync15 = Module(new Sync2(ID = 15, NumOuts = 1,Desc = "sync15")(p))  // Manually changed to sync2
+  val sync15 = Module(new Sync2(ID = 15, NumOuts = 1, Desc = "sync15")(p))
 
 
 
@@ -671,7 +673,6 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   add13.io.RightIO.valid := true.B
 
   // Wiring return instruction
-
   ret16.io.predicateIn(0).bits.control := true.B
   ret16.io.predicateIn(0).bits.taskID := 0.U
   ret16.io.predicateIn(0).valid := true.B
