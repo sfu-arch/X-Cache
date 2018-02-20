@@ -37,8 +37,8 @@ class GepNodeTwoIO(NumOuts: Int)
 
 }
 
-class GepOneNode(NumOuts: Int, ID: Int)
-             (numByte1: Int, Desc : String = "GepOneNode")
+class GepOneNode(NumOuts: Int, ID: Int, Desc : String = "GepOneNode")
+             (numByte1: Int)
              (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new GepNodeOneIO(NumOuts))
