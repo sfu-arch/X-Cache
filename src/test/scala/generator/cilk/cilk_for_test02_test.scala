@@ -119,7 +119,7 @@ class cilk_for_test02Test01[T <: cilk_for_test02MainIO](c: T) extends PeekPokeTe
   while (time < 200) {
     time += 1
     step(1)
-    println(s"Cycle: $time")
+    println(s"[INFO] Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
       peek(c.io.out.bits.data("field0").predicate) == 1 &&
       peek(c.io.out.bits.enable.control) == 1) {
@@ -158,15 +158,15 @@ class cilk_for_test02Tester extends FlatSpec with Matchers {
       c => new cilk_for_test02Test01(c)
     } should be(true)
   }
-  it should "Check that cilk_for_test02 works when called via task manager." in {
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new cilk_for_test02MainTM()) {
-      c => new cilk_for_test02Test01(c)
-    } should be(true)
-  }
+//  it should "Check that cilk_for_test02 works when called via task manager." in {
+//    chisel3.iotesters.Driver.execute(
+//      Array(
+//        // "-ll", "Info",
+//        "-tbn", "verilator",
+//        "-td", "test_run_dir",
+//        "-tts", "0001"),
+//      () => new cilk_for_test02MainTM()) {
+//      c => new cilk_for_test02Test01(c)
+//    } should be(true)
+//  }
 }

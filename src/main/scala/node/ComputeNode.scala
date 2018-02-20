@@ -22,13 +22,14 @@ class ComputeNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle()))
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
+class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "ComputeNode")
                  (sign: Boolean)
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -108,7 +109,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         state := s_IDLE
         //Reset output
         Reset()
-        when (predicate) {printfInfo("Output fired")}
+        when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
       }
     }
   }

@@ -38,12 +38,13 @@ class GepNodeTwoIO(NumOuts: Int)
 }
 
 class GepOneNode(NumOuts: Int, ID: Int)
-             (numByte1: Int)
+             (numByte1: Int, Desc : String = "GepOneNode")
              (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new GepNodeOneIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Node (GEP1) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -130,7 +131,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
     idx1_valid_R := false.B
 
     state := s_idle
-    when (predicate) {printfInfo("Output fired")}
+    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
 
     //Reset output
     Reset()
@@ -141,7 +142,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
 }
 
 
-class GepTwoNode(NumOuts: Int, ID: Int)
+class GepTwoNode(NumOuts: Int, ID: Int, Desc : String = "GepTwoNode")
              (numByte1: Int,
               numByte2: Int)
              (implicit p: Parameters)
@@ -149,6 +150,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   override lazy val io = IO(new GepNodeTwoIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Node (GEP2) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -258,7 +260,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
     idx2_valid_R := false.B
 
     state := s_idle
-    when (predicate) {printfInfo("Output fired\n")}
+    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
 
     //Reset output
     Reset()

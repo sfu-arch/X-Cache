@@ -49,14 +49,15 @@ class BasicBlockIO(NumInputs: Int,
 class BasicBlockNode(NumInputs: Int,
                      NumOuts: Int,
                      NumPhi: Int,
-                     BID: Int)
+                     BID: Int, Desc : String = "BasicBlock")
                     (implicit p: Parameters)
   extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
 
   override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
 
   // Printf debugging
-  override val printfSigil = "BasicBlock ID: " + BID + " "
+  override val printfSigil = Desc + BID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   //Assertion
   assert(NumPhi >= 1, "NumPhi Cannot be zero")
@@ -176,7 +177,8 @@ class BasicBlockNode(NumInputs: Int,
 
     //Reset state
     state := s_idle
-    when (predicate) {printfInfo(s"Output fired")}
+    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+
     //Restart predicate bit
     pred_R.control := false.B
   }
@@ -210,14 +212,15 @@ class BasicBlockNoMaskIO(NumInputs: Int,
 
 class BasicBlockNoMaskNode(NumInputs: Int,
                      NumOuts: Int,
-                     BID: Int)
+                     BID: Int, Desc : String = "BasicBlock")
                     (implicit p: Parameters)
   extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
 
   override lazy val io = IO(new BasicBlockNoMaskIO(NumInputs, NumOuts))
 
   // Printf debugging
-  override val printfSigil = "BasicBlock ID: " + BID + " "
+  override val printfSigil = Desc + BID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -302,7 +305,8 @@ class BasicBlockNoMaskNode(NumInputs: Int,
     state := s_idle
 
     Reset()
-    when (predicate) {printfInfo(s"Output fired")}
+    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+
 
   }
 

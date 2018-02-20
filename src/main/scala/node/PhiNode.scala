@@ -25,12 +25,13 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
 
 class PhiNode(NumInputs: Int,
                  NumOuts: Int,
-                 ID: Int)
+                 ID: Int, Desc : String = "PhiNode")
                 (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new PhiNodeIO(NumInputs, NumOuts))
   // Printf debugging
   override val printfSigil = "PHI ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -126,7 +127,7 @@ class PhiNode(NumInputs: Int,
     m_state := s_idle
     //Reset output
     Reset()
-    when (predicate) {printfInfo("Output fired")}
+     when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
 
    }
 

@@ -305,21 +305,21 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0)(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc="bb_entry")(p))
 
-  val bb_pfor_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 1, BID = 1)(p))
+  val bb_pfor_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 1, BID = 1, Desc="bb_pfor_cond")(p))
 
-  val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2)(p))
+  val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2, Desc="bb_pfor_detach")(p))
 
-  val bb_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 7, BID = 3)(p))
+  val bb_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 7, BID = 3, Desc="bb_pfor_body")(p))
 
-  val bb_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4)(p))
+  val bb_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4, Desc="bb_pfor_preattach")(p))
 
-  val bb_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5)(p)) // Manually reduced inputs
+  val bb_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5, Desc="bb_pfor_inc")(p)) // Manually reduced inputs
 
-  val bb_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6)(p))
+  val bb_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6, Desc="bb_pfor_end")(p))
 
-  val bb_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7)(p))
+  val bb_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7, Desc="bb_pfor_end_continue")(p))
 
 
 
@@ -394,9 +394,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   // [BasicBlock]  pfor.preattach:
 
   //  reattach label %pfor.inc, !UID !35, !BB_UID !36, !ScalaLabel !37
-  val reattach12 = Module(new Reattach(NumPredIn=1, ID=12)(p))
-
-
+  val reattach12 = Module(new Reattach(NumPredIn=1, ID=12, Desc="reattach")(p))
 
   // [BasicBlock]  pfor.inc:
 
@@ -419,7 +417,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   // [BasicBlock]  pfor.end.continue:
 
   //  ret i32 1, !UID !56, !BB_UID !57, !ScalaLabel !58
-  val ret16 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=16))
+  val ret16 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=16, Desc="ret16"))
 
 
 

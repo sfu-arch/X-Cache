@@ -56,12 +56,13 @@ class JumpNodeIO(NumOuts: Int)
 
 }
 
-class JumpNode(NumOuts: Int, ID: Int)
+class JumpNode(NumOuts: Int, ID: Int, Desc : String = "JumpNode")
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new JumpNodeIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Jump Node ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -131,9 +132,9 @@ class JumpNode(NumOuts: Int, ID: Int)
     state := s_idle
     //Reset output
     Reset()
-    printfInfo("Output fired")
+    printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)
   }
-  printfInfo("State: %x", state)
+  //printfInfo("State: %x", state)
 
 }
 

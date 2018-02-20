@@ -27,12 +27,13 @@ class CBranchNodeIO(NumOuts: Int = 2)
   val CmpIO = Flipped(Decoupled(new DataBundle))
 }
 
-class CBranchNode(ID: Int)
+class CBranchNode(ID: Int, Desc : String = "CBranchNode")
                  (implicit p: Parameters)
   extends HandShakingCtrlNPS(2, ID)(p) {
   override lazy val io = IO(new CBranchNodeIO())
   // Printf debugging
   override val printfSigil = "Node (CBR) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -111,7 +112,7 @@ class CBranchNode(ID: Int)
     state := s_idle
 
     Reset()
-    printfInfo("Output fired")
+    printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)
 
   }
 
@@ -120,12 +121,13 @@ class CBranchNode(ID: Int)
 
 }
 
-class UBranchNode(ID: Int)
+class UBranchNode(ID: Int, Desc : String = "UBranchNode")
                  (implicit p: Parameters)
   extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
   override lazy val io = IO(new HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p))
   // Printf debugging
   override val printfSigil = "Node (UBR) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -186,7 +188,8 @@ class UBranchNode(ID: Int)
 
     //Reset state
     state := s_idle
-    when (predicate) {printfInfo("Output fired")}
+    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+
 
 
   }

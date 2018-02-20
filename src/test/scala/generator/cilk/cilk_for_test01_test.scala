@@ -74,7 +74,7 @@ class cilk_for_test01Test01(c: cilk_for_test01CacheWrapper) extends PeekPokeTest
   while (time < 200) {
     time += 1
     step(1)
-    println(s"[INFO] Clock Cycle: $time")
+    //println(s"[INFO] Clock Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
       peek(c.io.out.bits.data("field0").predicate) == 1 &&
       peek(c.io.out.bits.enable.control) == 1) {

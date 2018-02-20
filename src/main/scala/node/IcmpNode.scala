@@ -22,13 +22,14 @@ val LeftIO = Flipped (Decoupled (new DataBundle) )
 val RightIO = Flipped (Decoupled (new DataBundle) )
 }
 
-class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
+class IcmpNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "IcmpNode")
                  (sign: Boolean)
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Node (ICMP) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -126,7 +127,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
     state := s_idle
     //Reset output
     Reset()
-    when (predicate) {printfInfo("Output fired")}
+    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
   }
 
   //printfInfo(" State: %x\n", state)

@@ -18,12 +18,13 @@ class RetNodeIO(val NumPredIn : Int, val retTypes: Seq[Int])(implicit p: Paramet
   val Out         = Decoupled(new Call(retTypes))                  // Returns to calling block(s)
 }
 
-class RetNode(NumPredIn: Int=0, retTypes: Seq[Int], ID: Int)(implicit val p: Parameters) extends Module
+class RetNode(NumPredIn: Int=0, retTypes: Seq[Int], ID: Int, Desc : String = "Return")(implicit val p: Parameters) extends Module
   with CoreParams with UniformPrintfs {
   override lazy val io = IO(new RetNodeIO(NumPredIn, retTypes)(p))
   override val printfSigil = "Node (Ret) ID: " + ID + " "
   val inputReady = RegInit(VecInit(Seq.fill(retTypes.length+NumPredIn+1){true.B}))
   val outputReg  = RegInit(0.U.asTypeOf(io.Out))
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   // Latch Data
   for (i <- retTypes.indices) {
@@ -58,6 +59,7 @@ class RetNode(NumPredIn: Int=0, retTypes: Seq[Int], ID: Int)(implicit val p: Par
   io.Out.bits := outputReg.bits
 
   when(io.Out.fire()) {
-    when (outputReg.bits.enable.control) {printfInfo("Output fired.")}
+      when (outputReg.bits.enable.control) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+//    when (outputReg.bits.enable.control) {printfInfo("Output fired.")}
   }
 }

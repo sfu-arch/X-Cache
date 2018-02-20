@@ -15,11 +15,12 @@ extends HandShakingIONPS(NumOuts)(new ControlBundle)(p)
   val decIn = Flipped(Decoupled(new ControlBundle()))
 }
 
-class Sync2(NumOuts : Int, ID: Int)(implicit p: Parameters)
+class Sync2(NumOuts : Int, ID: Int, Desc : String = "Sync")(implicit p: Parameters)
   extends HandShakingCtrlNPS(NumOuts, ID)(p) {
   override lazy val io = IO(new Sync2IO(NumOuts)(p))
   // Printf debugging
   override val printfSigil = "Node (SYNC) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -72,7 +73,7 @@ class Sync2(NumOuts : Int, ID: Int)(implicit p: Parameters)
     is (s_COMPUTE) {
       when(IsOutReady() && (syncCount === 0.U)) {
         Reset()
-        when (predicate) {printfInfo("Output fired")}
+        when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
         state := s_IDLE
       }
     }
