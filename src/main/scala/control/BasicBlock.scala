@@ -274,8 +274,14 @@ class BasicBlockNoMaskNode(NumInputs: Int,
       when(predicate_valid_R ) {
         when(predicate_in_R){
           ValidOut()
+          state := s_COMPUTE
+        }.otherwise{
+          state := s_IDLE
+
+          predicate_in_R    := false.B
+          predicate_valid_R := false.B
+          Reset()
         }
-        state := s_COMPUTE
       }
     }
     is(s_COMPUTE){
@@ -286,7 +292,6 @@ class BasicBlockNoMaskNode(NumInputs: Int,
         state := s_IDLE
 
         Reset()
-
         when (predicate_in_R) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
       }
     }

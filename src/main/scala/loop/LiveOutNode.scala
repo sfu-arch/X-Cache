@@ -25,12 +25,15 @@ class LiveOutNodeIO(NumOuts: Int)
 }
 
 class LiveOutNode(NumOuts: Int, ID: Int)
-                 (implicit p: Parameters)
+                 (implicit p: Parameters, name: sourcecode.Name)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new LiveOutNodeIO(NumOuts))
 
+  val node_name = name.value
+
   // Printf debugging
-  override val printfSigil = "LiveOut ID: " + ID + " "
+  override val printfSigil = node_name + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *

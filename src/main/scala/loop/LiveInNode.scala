@@ -20,16 +20,20 @@ class LiveInNodeIO(NumOuts: Int)
   val InData = Flipped(Decoupled(new DataBundle()))
 
   //Finish signal
-//  val Finish = Flipped(Decoupled(new ControlBundle()))
+  //val Finish = Flipped(Decoupled(new ControlBundle()))
 
 }
 
 class LiveInNode(NumOuts: Int, ID: Int)
-                (implicit p: Parameters)
+                (implicit p: Parameters, name: sourcecode.Name)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new LiveInNodeIO(NumOuts))
+
+  var NodeName = name.value
+
   // Printf debugging
-  override val printfSigil = "LiveIn ID: " + ID + " "
+  override val printfSigil = NodeName + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
@@ -37,10 +41,6 @@ class LiveInNode(NumOuts: Int, ID: Int)
   // In data Input
   val indata_R = RegInit(DataBundle.default)
   val indata_valid_R = RegInit(false.B)
-
-  // Finish data
-//  val finish_R = RegInit(ControlBundle.default)
-//  val finish_valid_R = RegInit(false.B)
 
   val s_IDLE :: s_LATCH :: s_VALIDOUT :: s_RESET :: Nil = Enum(4)
 
@@ -56,12 +56,6 @@ class LiveInNode(NumOuts: Int, ID: Int)
     indata_valid_R := true.B
   }
 
-//  io.Finish.ready := ~finish_valid_R
-//  when(io.Finish.fire()) {
-//    finish_R <> io.Finish.bits
-//    finish_valid_R := true.B
-//  }
-
   /*===============================================*
    *            DEFINING STATES                    *
    *===============================================*/
@@ -70,6 +64,7 @@ class LiveInNode(NumOuts: Int, ID: Int)
     is(s_IDLE){
       when(io.InData.fire()){
         state := s_LATCH
+        printf("[LOG] " + NodeName + ": Latch fired @ %d, Value:%d\n",cycleCount, io.InData.bits.data.asUInt())
       }
     }
     is(s_LATCH){
@@ -87,6 +82,7 @@ class LiveInNode(NumOuts: Int, ID: Int)
       }
     }
     is(s_RESET){
+      printf("[LOG] " + NodeName + ": Latch reset @ %d\n",cycleCount)
       state := s_IDLE
       Reset()
       indata_R <> DataBundle.default

@@ -234,6 +234,8 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val loop_L_7_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
   val loop_L_7_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
+  val loop_L7_liveOut_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
@@ -248,9 +250,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2, Desc = "bb_for_body")(p))
 
-  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3, Desc = "bb_for_inc")(p))
+  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3, Desc = "bb_for_inc")(p))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4, Desc = "bb_for_end")(p))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4, Desc = "bb_for_end")(p))
 
 
 
@@ -267,7 +269,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  br label %for.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0, NumOuts = 4, Desc = "br0")(p))
+  val br0 = Module (new UBranchNode(ID = 0, NumOuts = 1, Desc = "br0")(p))
 
 
 
@@ -363,12 +365,12 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   //Connecting br4 to bb_for_body
   bb_for_body.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
+  bb_for_end.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
 
 
   //Connecting br4 to bb_for_end
 //  bb_for_cond_expand.io.InData <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
 //  bb_for_end.io.predicateIn <> bb_for_cond_expand.io.Out(0)
-  bb_for_end.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
 
 
   //Connecting br7 to bb_for_inc
@@ -406,15 +408,10 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   br4.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br4"))
 
-//  bb_for_cond_expand.io.enable <> bb_for_cond.io.Out(7)
 
-  loop_L_7_liveIN_0.io.enable <> br0.io.Out(1)
-  loop_L_7_liveIN_1.io.enable <> br0.io.Out(2)
-  loop_L_7_liveIN_2.io.enable <> br0.io.Out(3)
-
-//  loop_L_7_liveIN_0.io.Finish <> bb_for_end.io.Out(1)
-//  loop_L_7_liveIN_1.io.Finish <> bb_for_end.io.Out(2)
-//  loop_L_7_liveIN_2.io.Finish <> bb_for_end.io.Out(3)
+  loop_L_7_liveIN_0.io.enable <> bb_for_end.io.Out(1)
+  loop_L_7_liveIN_1.io.enable <> bb_for_end.io.Out(2)
+  loop_L_7_liveIN_2.io.enable <> bb_for_end.io.Out(3)
 
 
 
@@ -430,9 +427,12 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   br9.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("br9"))
 
+  loop_L7_liveOut_0.io.enable <> bb_for_inc.io.Out(2)
+
 
 
   ret10.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret10"))
+  loop_L7_liveOut_0.io.Finish <> bb_for_end.io.Out(4)
 
 
 
@@ -532,7 +532,11 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   ret10.io.predicateIn(0).bits.control := true.B
   ret10.io.predicateIn(0).bits.taskID := 0.U
   ret10.io.predicateIn(0).valid := true.B
-  ret10.io.In.data("field0") <> phi1.io.Out(param.ret10_in("phi1"))
+
+
+  loop_L7_liveOut_0.io.InData <> phi1.io.Out(param.ret10_in("phi1"))
+  ret10.io.In.data("field0") <> loop_L7_liveOut_0.io.Out(0)
+
   io.out <> ret10.io.Out
 
 

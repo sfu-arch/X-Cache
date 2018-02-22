@@ -27,7 +27,9 @@ libraryDependencies ++= (Seq("chisel3","chisel-iotesters").map {
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1",
-  "org.scalacheck" %% "scalacheck" % "1.13.4")
+  "org.scalacheck" %% "scalacheck" % "1.13.4",
+  "com.lihaoyi" %% "sourcecode" % "0.1.4" // Scala-JVM
+)
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
