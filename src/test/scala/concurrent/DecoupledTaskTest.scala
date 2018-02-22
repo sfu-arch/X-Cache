@@ -33,7 +33,7 @@ class DecoupledTaskDF()(implicit p: Parameters) extends Module {
 
   /* Wire task modules to controller */
   splitIn.io.In <> TaskControllerModule.io.childOut(0)
-  bb.io.predicateIn(0) <> splitIn.io.Out.enable
+  bb.io.predicateIn <> splitIn.io.Out.enable
 
   addModule1.io.enable <> bb.io.Out(0)
   addModule1.io.LeftIO <> splitIn.io.Out.data("field0")

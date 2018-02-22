@@ -219,7 +219,7 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions

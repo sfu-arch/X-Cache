@@ -390,7 +390,7 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -401,16 +401,16 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
 
 
   //Connecting br3 to bb_for_body
-  bb_for_body.io.predicateIn(param.bb_for_body_pred("br3")) <> br3.io.Out(param.br3_brn_bb("bb_for_body"))
+  bb_for_body.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_for_body"))
 
 
   //Connecting br3 to bb_for_end
   bb_for_cond_expand.io.InData <> br3.io.Out(param.br3_brn_bb("bb_for_end"))
-  bb_for_end.io.predicateIn(param.bb_for_end_pred("br3")) <> bb_for_cond_expand.io.Out(0)
+  bb_for_end.io.predicateIn <> bb_for_cond_expand.io.Out(0)
 
 
   //Connecting br11 to bb_for_inc
-  bb_for_inc.io.predicateIn(param.bb_for_inc_pred("br11")) <> br11.io.Out(param.br11_brn_bb("bb_for_inc"))
+  bb_for_inc.io.predicateIn <> br11.io.Out(param.br11_brn_bb("bb_for_inc"))
 
 
   //Connecting br13 to bb_for_cond
@@ -448,9 +448,9 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
   loop_L_4_liveIN_1.io.enable <> bb_for_cond.io.Out(4)
   loop_L_4_liveIN_2.io.enable <> bb_for_cond.io.Out(5)
 
-  loop_L_4_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
-  loop_L_4_liveIN_1.io.Finish <> bb_for_cond_expand.io.Out(2)
-  loop_L_4_liveIN_2.io.Finish <> bb_for_cond_expand.io.Out(3)
+  //loop_L_4_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
+  //loop_L_4_liveIN_1.io.Finish <> bb_for_cond_expand.io.Out(2)
+  //loop_L_4_liveIN_2.io.Finish <> bb_for_cond_expand.io.Out(3)
 
 
 

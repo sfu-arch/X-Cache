@@ -107,7 +107,7 @@ class CBranchNode(ID: Int, Desc : String = "CBranchNode")
     cmp_valid_R := false.B
 
     // Reset output
-    data_out_w := Vec(Seq.fill(2)(false.B))
+    data_out_w := VecInit(Seq.fill(2)(false.B))
     //Reset state
     state := s_idle
 
@@ -121,10 +121,10 @@ class CBranchNode(ID: Int, Desc : String = "CBranchNode")
 
 }
 
-class UBranchNode(ID: Int, Desc : String = "UBranchNode")
+class UBranchNode(ID: Int, Desc : String = "UBranchNode", NumOuts: Int = 1)
                  (implicit p: Parameters)
-  extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
-  override lazy val io = IO(new HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p))
+  extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
+  override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
   // Printf debugging
   override val printfSigil = "Node (UBR) ID: " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
@@ -158,8 +158,11 @@ class UBranchNode(ID: Int, Desc : String = "UBranchNode")
     * @note data_R value is equale to predicate bit
     */
   // Wire up Outputs
-  io.Out(0).bits.control := predicate
-  io.Out(0).bits.taskID := 0.U
+  for( i <- 0 until NumOuts){
+    io.Out(i).bits.control := predicate
+    io.Out(i).bits.taskID := 0.U
+
+  }
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *

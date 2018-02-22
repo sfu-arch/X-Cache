@@ -335,7 +335,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -346,16 +346,16 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
 
 
   //Connecting br4 to bb_for_body
-  bb_for_body.io.predicateIn(param.bb_for_body_pred("br4")) <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
+  bb_for_body.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
 
 
   //Connecting br4 to bb_for_end
   bb_for_cond_expand.io.InData <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
-  bb_for_end.io.predicateIn(param.bb_for_end_pred("br4")) <> bb_for_cond_expand.io.Out(0)
+  bb_for_end.io.predicateIn <> bb_for_cond_expand.io.Out(0)
 
 
   //Connecting br6 to bb_for_inc
-  bb_for_inc.io.predicateIn(param.bb_for_inc_pred("br6")) <> br6.io.Out(param.br6_brn_bb("bb_for_inc"))
+  bb_for_inc.io.predicateIn <> br6.io.Out(param.br6_brn_bb("bb_for_inc"))
 
 
   //Connecting br8 to bb_for_cond
@@ -393,7 +393,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
 
   loop_L_5_liveIN_0.io.enable <> bb_for_cond.io.Out(4)
 
-  loop_L_5_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
+  //loop_L_5_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
 
 
 

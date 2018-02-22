@@ -407,7 +407,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -418,16 +418,16 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
 
 
   //Connecting br3 to bb_pfor_detach
-  bb_pfor_detach.io.predicateIn(param.bb_pfor_detach_pred("br3")) <> br3.io.Out(param.br3_brn_bb("bb_pfor_detach"))
+  bb_pfor_detach.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_pfor_detach"))
 
 
   //Connecting br3 to bb_pfor_end
   bb_pfor_cond_expand.io.InData <> br3.io.Out(param.br3_brn_bb("bb_pfor_end"))
-  bb_pfor_end.io.predicateIn(param.bb_pfor_end_pred("br3")) <> bb_pfor_cond_expand.io.Out(0)
+  bb_pfor_end.io.predicateIn <> bb_pfor_cond_expand.io.Out(0)
 
 
   //Connecting br7 to bb_pfor_preattach
-  bb_pfor_preattach.io.predicateIn(param.bb_pfor_preattach_pred("br7")) <> br7.io.Out(param.br7_brn_bb("bb_pfor_preattach"))
+  bb_pfor_preattach.io.predicateIn <> br7.io.Out(param.br7_brn_bb("bb_pfor_preattach"))
 
 
   //Connecting br10 to bb_pfor_cond
@@ -435,13 +435,13 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
 
 
   //Connecting detach4 to bb_pfor_body
-  bb_pfor_body.io.predicateIn(param.bb_pfor_body_pred("detach4")) <> detach4.io.Out(param.detach4_brn_bb("bb_pfor_body"))
+  bb_pfor_body.io.predicateIn <> detach4.io.Out(param.detach4_brn_bb("bb_pfor_body"))
 
 
   //Connecting detach4 to bb_pfor_inc
-  bb_pfor_inc.io.predicateIn(param.bb_pfor_inc_pred("detach4")) <> detach4.io.Out(param.detach4_brn_bb("bb_pfor_inc"))
+  bb_pfor_inc.io.predicateIn <> detach4.io.Out(param.detach4_brn_bb("bb_pfor_inc"))
 
-  bb_pfor_end_continue.io.predicateIn(0) <> sync11.io.Out(0) // added manually
+  bb_pfor_end_continue.io.predicateIn <> sync11.io.Out(0) // added manually
 
 
 
@@ -469,8 +469,8 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   loop_L_10_liveIN_0.io.enable <> bb_pfor_cond.io.Out(3)
   loop_L_10_liveIN_1.io.enable <> bb_pfor_cond.io.Out(4)
 
-  loop_L_10_liveIN_0.io.Finish <> bb_pfor_cond_expand.io.Out(1)
-  loop_L_10_liveIN_1.io.Finish <> bb_pfor_cond_expand.io.Out(2)
+  //loop_L_10_liveIN_0.io.Finish <> bb_pfor_cond_expand.io.Out(1)
+  //loop_L_10_liveIN_1.io.Finish <> bb_pfor_cond_expand.io.Out(2)
 
 
 

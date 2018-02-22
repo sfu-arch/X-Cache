@@ -332,6 +332,8 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
   val loop_L_6_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
   val loop_L_5_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
+  val loop_L6_liveOut_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
@@ -346,7 +348,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2, Desc = "bb_for_body")(p))
 
-  val bb_for_cond1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 2, BID = 3, Desc = "bb_for_cond1")(p))
+  val bb_for_cond1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 5, NumPhi = 2, BID = 3, Desc = "bb_for_cond1")(p))
 
   val bb_for_body3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4, Desc = "bb_for_body3")(p))
 
@@ -444,7 +446,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 
   //  br label %for.cond1, !llvm.loop !38, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val br13 = Module (new UBranchNode(ID = 13, Desc = "br13")(p))
+  val br13 = Module (new UBranchNode(ID = 13, Desc = "br13", NumOuts = 2)(p))
 
 
 
@@ -462,7 +464,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 
   //  br label %for.cond, !llvm.loop !57, !UID !60, !BB_UID !61, !ScalaLabel !62
-  val br16 = Module (new UBranchNode(ID = 16, Desc = "br16")(p))
+  val br16 = Module (new UBranchNode(ID = 16, Desc = "br16", NumOuts = 3)(p))
 
 
 
@@ -499,7 +501,8 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+//  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -510,12 +513,14 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 
   //Connecting br4 to bb_for_body
-  bb_for_body.io.predicateIn(param.bb_for_body_pred("br4")) <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
+//  bb_for_body.io.predicateIn(param.bb_for_body_pred("br4")) <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
+  bb_for_body.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
 
 
   //Connecting br4 to bb_for_end7
   bb_for_cond_expand.io.InData <> br4.io.Out(param.br4_brn_bb("bb_for_end7"))
-  bb_for_end7.io.predicateIn(param.bb_for_end7_pred("br4")) <> bb_for_cond_expand.io.Out(0)
+//  bb_for_end7.io.predicateIn(param.bb_for_end7_pred("br4")) <> bb_for_cond_expand.io.Out(0)
+  bb_for_end7.io.predicateIn <> bb_for_cond_expand.io.Out(0)
 
 
   //Connecting br5 to bb_for_cond1
@@ -523,16 +528,20 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 
   //Connecting br9 to bb_for_body3
-  bb_for_body3.io.predicateIn(param.bb_for_body3_pred("br9")) <> br9.io.Out(param.br9_brn_bb("bb_for_body3"))
+//  bb_for_body3.io.predicateIn(param.bb_for_body3_pred("br9")) <> br9.io.Out(param.br9_brn_bb("bb_for_body3"))
+  bb_for_body3.io.predicateIn <> br9.io.Out(param.br9_brn_bb("bb_for_body3"))
 
 
   //Connecting br9 to bb_for_end
-  bb_for_cond1_expand.io.InData <> br9.io.Out(param.br9_brn_bb("bb_for_end"))
-  bb_for_end.io.predicateIn(param.bb_for_end_pred("br9")) <> bb_for_cond1_expand.io.Out(0)
+//  bb_for_cond1_expand.io.InData <> br9.io.Out(param.br9_brn_bb("bb_for_end"))
+//  bb_for_cond1_expand.io.InData <> br9.io.Out(param.br9_brn_bb("bb_for_end"))
+//  bb_for_end.io.predicateIn(param.bb_for_end_pred("br9")) <> bb_for_cond1_expand.io.Out(0)
+  bb_for_end.io.predicateIn <> br9.io.Out(1)
 
 
   //Connecting br11 to bb_for_inc
-  bb_for_inc.io.predicateIn(param.bb_for_inc_pred("br11")) <> br11.io.Out(param.br11_brn_bb("bb_for_inc"))
+//  bb_for_inc.io.predicateIn(param.bb_for_inc_pred("br11")) <> br11.io.Out(param.br11_brn_bb("bb_for_inc"))
+  bb_for_inc.io.predicateIn <> br11.io.Out(param.br11_brn_bb("bb_for_inc"))
 
 
   //Connecting br13 to bb_for_cond1
@@ -540,7 +549,8 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 
   //Connecting br14 to bb_for_inc5
-  bb_for_inc5.io.predicateIn(param.bb_for_inc5_pred("br14")) <> br14.io.Out(param.br14_brn_bb("bb_for_inc5"))
+//  bb_for_inc5.io.predicateIn(param.bb_for_inc5_pred("br14")) <> br14.io.Out(param.br14_brn_bb("bb_for_inc5"))
+  bb_for_inc5.io.predicateIn <> br14.io.Out(param.br14_brn_bb("bb_for_inc5"))
 
 
   //Connecting br16 to bb_for_cond
@@ -578,7 +588,10 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   loop_L_5_liveIN_0.io.enable <> bb_for_cond.io.Out(4)
 
-  loop_L_5_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
+  //loop_L_5_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
+
+  loop_L6_liveOut_0.io.Finish <> br16.io.Out(1)
+  loop_L6_liveOut_0.io.enable <> br13.io.Out(1)
 
 
 
@@ -594,11 +607,12 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   br9.io.enable <> bb_for_cond1.io.Out(param.bb_for_cond1_activate("br9"))
 
-  bb_for_cond1_expand.io.enable <> bb_for_cond1.io.Out(5)
+//  bb_for_cond1_expand.io.enable <> bb_for_cond1.io.Out(5)
 
   loop_L_6_liveIN_0.io.enable <> bb_for_cond1.io.Out(4)
 
-  loop_L_6_liveIN_0.io.Finish <> bb_for_cond1_expand.io.Out(1)
+//  loop_L_6_liveIN_0.io.Finish <> bb_for_cond1_expand.io.Out(1)
+  //loop_L_6_liveIN_0.io.Finish <> br16.io.Out(2)
 
 
 
@@ -650,7 +664,9 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   phi2.io.InData(param.phi2_phi_in("field0")) <> loop_L_5_liveIN_0.io.Out(param.phi2_in("field0"))
 
-  phi2.io.InData(param.phi2_phi_in("phi6")) <> phi6.io.Out(param.phi2_in("phi6"))
+//  phi2.io.InData(param.phi2_phi_in("phi6")) <> phi6.io.Out(param.phi2_in("phi6"))
+  loop_L6_liveOut_0.io.InData <> phi6.io.Out(0)
+  phi2.io.InData(param.phi2_phi_in("phi6")) <> loop_L6_liveOut_0.io.Out(0)
 
   // Wiring Live in to PHI node
 

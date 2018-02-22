@@ -681,17 +681,17 @@ class __offload_func_5DF(implicit p: Parameters) extends __offload_func_5DFIO()(
      */
 
   //We always ground entry BasicBlock
-  my_for_cond5_preheader.io.predicateIn(param.my_for_cond5_preheader_pred("active")).bits  := ControlBundle.Activate
-  my_for_cond5_preheader.io.predicateIn(param.my_for_cond5_preheader_pred("active")).valid := true.B
+  my_for_cond5_preheader.io.predicateIn.bits  := ControlBundle.Activate
+  my_for_cond5_preheader.io.predicateIn.valid := true.B
 
   /**
     * Connecting basic blocks to predicate instructions
     */
   //Connecting m_58 to ret_fail
-  ret_fail.io.predicateIn(param.ret_fail_pred("m_58")) <> m_58.io.Out(param.m_58_brn_bb("ret_fail"))
+  ret_fail.io.predicateIn <> m_58.io.Out(param.m_58_brn_bb("ret_fail"))
 
   //Connecting m_58 to g
-  g.io.predicateIn(param.g_pred("m_58")) <> m_58.io.Out(param.m_58_brn_bb("g"))
+  g.io.predicateIn <> m_58.io.Out(param.m_58_brn_bb("g"))
 
 
 

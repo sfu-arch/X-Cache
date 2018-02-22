@@ -107,15 +107,15 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
     */
 
   //Grounding entry BasicBlock
-  b0_entry.io.predicateIn(param.b0_entry_pred("active")).bits.control := true.B
-  b0_entry.io.predicateIn(param.b0_entry_pred("active")).bits.taskID := 0.U
-  b0_entry.io.predicateIn(param.b0_entry_pred("active")).valid := true.B
+  b0_entry.io.predicateIn.bits.control := true.B
+  b0_entry.io.predicateIn.bits.taskID := 0.U
+  b0_entry.io.predicateIn.valid := true.B
 
   /**
     * Connecting basic blocks to predicate instructions
     */
   //Connecting m1 to b1_then
-  b1_then.io.predicateIn(param.b1_then_pred("m1")) <> m1.io.Out(param.m1_brn_bb("b1_then"))
+  b1_then.io.predicateIn <> m1.io.Out(param.m1_brn_bb("b1_then"))
 
   //Connecting m1 to b2_end
   b2_end.io.predicateIn(param.b2_end_pred("m1")) <> m1.io.Out(param.m1_brn_bb("b2_end"))

@@ -198,7 +198,8 @@ class BasicBlockNoMaskIO(NumInputs: Int,
                   (implicit p: Parameters)
   extends HandShakingCtrlNoMaskIO(NumInputs, NumOuts) {
   // LeftIO: Left input data for computation
-  val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
+//  val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
+  val predicateIn = Flipped(Decoupled(new ControlBundle()))
 }
 
 
@@ -226,40 +227,35 @@ class BasicBlockNoMaskNode(NumInputs: Int,
    *            Registers                      *
    *===========================================*/
   // OP Inputs
-  //val predicate_in_R    = RegInit(VecInit(Seq.fill(NumInputs)(ControlBundle.default)))
-  val predicate_in_R    = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
-  val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+//  val predicate_in_R    = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+//  val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
+  val predicate_in_R    = RegInit(false.B)
+  val predicate_valid_R = RegInit(false.B)
 
-  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-  val state = RegInit(s_idle)
+  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val state = RegInit(s_IDLE)
 
   /*===========================================*
    *            Valids                         *
    *===========================================*/
 
-  val predicate = predicate_in_R.asUInt().orR
-  val start     = predicate_valid_R.asUInt().orR
-
-  //printfInfo("Predicate: %x", predicate)
+//  val predicate = predicate_in_R
+//  val start     = predicate_valid_R
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  for (i <- 0 until NumInputs) {
-    io.predicateIn(i).ready := ~predicate_valid_R(i)
-    when(io.predicateIn(i).fire()) {
-      //printfInfo("Latch predicate %x\n", i)
-      state := s_LATCH
-      predicate_in_R(i)    := io.predicateIn(i).bits.control
-      predicate_valid_R(i) := true.B
+    io.predicateIn.ready := ~predicate_valid_R
+    when(io.predicateIn.fire()) {
+      predicate_in_R    := io.predicateIn.bits.control
+      predicate_valid_R := true.B
     }
-  }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := predicate
+    io.Out(i).bits.control := predicate_in_R
     io.Out(i).bits.taskID := 0.U
   }
 
@@ -268,9 +264,33 @@ class BasicBlockNoMaskNode(NumInputs: Int,
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  when(start & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
+  switch(state){
+    is(s_IDLE){
+      when(io.predicateIn.fire()){
+        state := s_LATCH
+      }
+    }
+    is(s_LATCH){
+      when(predicate_valid_R ) {
+        when(predicate_in_R){
+          ValidOut()
+        }
+        state := s_COMPUTE
+      }
+    }
+    is(s_COMPUTE){
+      when(IsOutReady()){
+        predicate_in_R    := false.B
+        predicate_valid_R := false.B
+
+        state := s_IDLE
+
+        Reset()
+
+        when (predicate_in_R) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+      }
+    }
+
   }
 
   //Assertion
@@ -285,30 +305,20 @@ class BasicBlockNoMaskNode(NumInputs: Int,
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-
-  //val out_ready_W = out_ready_R.asUInt.andR
-  //val out_valid_W = out_valid_R.asUInt.andR
-
-  //printfInfo("out_ready: %x\n", out_ready_W)
-  //printfInfo("out_valid: %x\n", out_valid_W)
-
-
-  when(IsOutReady() & (state === s_COMPUTE)){
-    //printfInfo("Start restarting output \n")
-    // Reset data
-    predicate_in_R    := Vec(Seq.fill(NumInputs) {false.B})
-    predicate_valid_R := Vec(Seq.fill(NumInputs) {false.B})
-    //predicate_valid_R := false.B
-
-
-    //Reset state
-    state := s_idle
-
-    Reset()
-    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
-
-
-  }
+//  when(IsOutReady() & (state === s_COMPUTE)){
+//    //printfInfo("Start restarting output \n")
+//    // Reset data
+//    //predicate_valid_R := false.B
+//
+//
+//    //Reset state
+//    state := s_IDLE
+//
+//    Reset()
+//
+//
+//
+//  }
 
 
 }
