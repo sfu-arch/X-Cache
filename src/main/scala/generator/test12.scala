@@ -693,7 +693,6 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
     * Connecting PHI Masks
     */
   //Connect PHI node
-
   phi1.io.Mask <> bb_for_cond.io.MaskBB(0)
 
   phi2.io.Mask <> bb_for_cond.io.MaskBB(1)

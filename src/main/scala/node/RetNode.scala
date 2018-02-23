@@ -9,26 +9,27 @@ import interfaces._
 import util._
 import utility.UniformPrintfs
 
-class RetNodeIO(val NumPredIn : Int, val retTypes: Seq[Int])(implicit p: Parameters)
-  extends Bundle
-{
-  val enable      = Flipped(Decoupled(new ControlBundle()))
+class RetNodeIO(val NumPredIn: Int, val retTypes: Seq[Int])(implicit p: Parameters)
+  extends Bundle {
+  val enable = Flipped(Decoupled(new ControlBundle()))
   val predicateIn = Flipped(Vec(NumPredIn, Decoupled(new ControlBundle()(p))))
-  val In          = Flipped(new VariableDecoupledData(retTypes))   // Data to be returned
-  val Out         = Decoupled(new Call(retTypes))                  // Returns to calling block(s)
+  val In = Flipped(new VariableDecoupledData(retTypes)) // Data to be returned
+  val Out = Decoupled(new Call(retTypes)) // Returns to calling block(s)
 }
 
-class RetNode(NumPredIn: Int=0, retTypes: Seq[Int], ID: Int, Desc : String = "Return")(implicit val p: Parameters) extends Module
+class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int, Desc: String = "Return")(implicit val p: Parameters) extends Module
   with CoreParams with UniformPrintfs {
   override lazy val io = IO(new RetNodeIO(NumPredIn, retTypes)(p))
   override val printfSigil = "Node (Ret) ID: " + ID + " "
-  val inputReady = RegInit(VecInit(Seq.fill(retTypes.length+NumPredIn+1){true.B}))
-  val outputReg  = RegInit(0.U.asTypeOf(io.Out))
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val inputReady = RegInit(VecInit(Seq.fill(retTypes.length + NumPredIn + 1) {
+    true.B
+  }))
+  val outputReg = RegInit(0.U.asTypeOf(io.Out))
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   // Latch Data
   for (i <- retTypes.indices) {
-    when(io.Out.fire()){
+    when(io.Out.fire()) {
       inputReady(i) := true.B
     }.elsewhen(io.In.data(s"field$i").valid) {
       outputReg.bits.data(s"field$i") := io.In.data(s"field$i").bits
@@ -38,28 +39,35 @@ class RetNode(NumPredIn: Int=0, retTypes: Seq[Int], ID: Int, Desc : String = "Re
   }
 
   // Latch Enable
-  when(io.Out.fire()){
+  // @todo logic need to be checked
+  // @note I just added second level when statement
+  when(io.Out.fire()) {
     inputReady(retTypes.length) := true.B
   }.elsewhen(io.enable.valid) {
-    outputReg.bits.enable <> io.enable.bits
-    inputReady(retTypes.length) := false.B
+    //@note new block of code
+    when(io.enable.bits.control){
+      outputReg.bits.enable <> io.enable.bits
+      inputReady(retTypes.length) := false.B
+    }
   }
   io.enable.ready := inputReady(retTypes.length)
 
-  for (i <- (retTypes.length+1) until (retTypes.length+1+NumPredIn)) {
+  for (i <- (retTypes.length + 1) until (retTypes.length + 1 + NumPredIn)) {
     when(io.Out.fire()) {
       inputReady(i) := true.B
-    }.elsewhen(io.predicateIn(i-(retTypes.length+1)).valid) {
+    }.elsewhen(io.predicateIn(i - (retTypes.length + 1)).valid) {
       inputReady(i) := false.B
     }
-    io.predicateIn(i-(retTypes.length+1)).ready := inputReady(i)
+    io.predicateIn(i - (retTypes.length + 1)).ready := inputReady(i)
   }
 
   io.Out.valid := ~(inputReady.asUInt.orR)
   io.Out.bits := outputReg.bits
 
   when(io.Out.fire()) {
-      when (outputReg.bits.enable.control) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
-//    when (outputReg.bits.enable.control) {printfInfo("Output fired.")}
+    when(outputReg.bits.enable.control) {
+      printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n", cycleCount, outputReg.bits.data(s"field0").data)
+    }
+    //    when (outputReg.bits.enable.control) {printfInfo("Output fired.")}
   }
 }

@@ -22,7 +22,7 @@ class ComputeNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle()))
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "ComputeNode")
+class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "ComputeNode")
                  (sign: Boolean)
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
@@ -30,7 +30,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "Comput
 
   // Printf debugging
   override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
@@ -87,31 +87,48 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "Comput
   /*============================================*
    *            State Machine    *
    *============================================*/
-  switch (state) {
-    is (s_IDLE) {
-      when(io.LeftIO.fire() || io.RightIO.fire()) {
+  switch(state) {
+    is(s_IDLE) {
+      /**
+        * We wait for all the input to become valid and then
+        * proceed to the next state that is waiting for
+        * control signal
+        */
+      when(left_valid_R && right_valid_R) {
         state := s_LATCH
       }
     }
-    is (s_LATCH) {
-        when(start) {
+    is(s_LATCH) {
+      when(enable_valid_R) {
+        when(enable_R) {
           state := s_COMPUTE
           ValidOut()
+        }.otherwise {
+          printf("[LOG] " + Desc + ": Not predicated value\n")
+          // Reset data
+          left_R := DataBundle.default
+          right_R := DataBundle.default
+          left_valid_R := false.B
+          right_valid_R := false.B
+          //Reset state
+          state := s_IDLE //Reset to the IDLE state
+          Reset()
         }
+      }
     }
-    is (s_COMPUTE) {
+    is(s_COMPUTE) {
       when(IsOutReady()) {
         // Reset data
-        left_R  := DataBundle.default
+        left_R := DataBundle.default
         right_R := DataBundle.default
-        left_valid_R  := false.B
+        left_valid_R := false.B
         right_valid_R := false.B
         //Reset state
         state := s_IDLE
         //Reset output
         Reset()
-//        when (predicate) {printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)}
-        printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)
+        //        when (predicate) {printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)}
+        printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out)
       }
     }
   }

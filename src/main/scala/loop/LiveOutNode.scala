@@ -33,7 +33,7 @@ class LiveOutNode(NumOuts: Int, ID: Int)
 
   // Printf debugging
   override val printfSigil = node_name + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
@@ -53,14 +53,14 @@ class LiveOutNode(NumOuts: Int, ID: Int)
    *===============================================*/
 
   io.InData.ready := ~indata_valid_R
-  when(io.InData.fire()){
+  when(io.InData.fire()) {
     //Latch the data
     indata_R <> io.InData.bits
     indata_valid_R := true.B
   }
 
   io.Finish.ready := ~finish_valid_R
-  when(io.Finish.fire()){
+  when(io.Finish.fire()) {
     finish_R <> io.Finish.bits
     finish_valid_R := true.B
   }
@@ -77,8 +77,8 @@ class LiveOutNode(NumOuts: Int, ID: Int)
         state := s_LATCH
       }
     }
-    is(s_LATCH){
-      when(enable_R && enable_valid_R){
+    is(s_LATCH) {
+      when(enable_R && enable_valid_R) {
         // In this case we have to invalidate the input
         state := s_IDLE
 
@@ -89,14 +89,18 @@ class LiveOutNode(NumOuts: Int, ID: Int)
         finish_valid_R := false.B
 
         Reset()
-      }.elsewhen(finish_R.control && finish_valid_R){
-        ValidOut()
-        state := s_VALIDOUT
+      }.elsewhen(finish_valid_R) {
+        when(finish_R.control) {
+          ValidOut()
+          state := s_VALIDOUT
+        }.otherwise{
+          finish_valid_R := false.B
+        }
       }
     }
 
-    is(s_VALIDOUT){
-      when(IsOutReady()){
+    is(s_VALIDOUT) {
+      when(IsOutReady()) {
         state := s_IDLE
 
         indata_R := DataBundle.default

@@ -39,7 +39,6 @@ class BasicBlockIO(NumInputs: Int,
   * @param NumOuts   Number of successor instructions
   * @param NumPhi    Number existing phi nodes
   * @param BID       BasicBlock ID
-  *
   * @note The logic for BasicBlock nodes differs from Compute nodes.
   *       In the BasicBlock nodes, as soon as one of the input signals get fires
   *       all the inputs should get not ready, since we don't need to wait for other
@@ -49,7 +48,7 @@ class BasicBlockIO(NumInputs: Int,
 class BasicBlockNode(NumInputs: Int,
                      NumOuts: Int,
                      NumPhi: Int,
-                     BID: Int, Desc : String = "BasicBlock")
+                     BID: Int, Desc: String = "BasicBlock")
                     (implicit p: Parameters)
   extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
 
@@ -57,7 +56,7 @@ class BasicBlockNode(NumInputs: Int,
 
   // Printf debugging
   override val printfSigil = Desc + BID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   //Assertion
   assert(NumPhi >= 1, "NumPhi Cannot be zero")
@@ -66,7 +65,7 @@ class BasicBlockNode(NumInputs: Int,
    *            Registers                      *
    *===========================================*/
   // OP Inputs
-  val predicate_in_R    = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+  val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
   val predicate_valid_R = RegInit(false.B)
   val predicate_valid_W = WireInit(VecInit(Seq.fill(NumInputs)(false.B)))
@@ -79,7 +78,7 @@ class BasicBlockNode(NumInputs: Int,
    *===========================================*/
 
   val predicate = predicate_in_R.asUInt().orR
-  val start     = predicate_valid_R.asUInt().orR
+  val start = predicate_valid_R.asUInt().orR
 
   //val start = predicate_valid_R.asUInt().andR
 
@@ -94,13 +93,13 @@ class BasicBlockNode(NumInputs: Int,
   //Make all the inputs invalid if one of the inputs
   //gets fire
   //
-  when( state === s_idle ){
+  when(state === s_idle) {
     predicate_valid_W := VecInit(Seq.fill(NumInputs)(false.B))
   }
 
   fire_W := predicate_valid_W.asUInt.orR
 
-  when(fire_W & state === s_idle){
+  when(fire_W & state === s_idle) {
     predicate_valid_R := true.B
   }
 
@@ -132,7 +131,7 @@ class BasicBlockNode(NumInputs: Int,
 
   when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
-    when(predicate){
+    when(predicate) {
       pred_R.control := predicate
       ValidOut()
     }
@@ -143,7 +142,7 @@ class BasicBlockNode(NumInputs: Int,
   //At each interation only on preds can be activated
   val pred_tem = predicate_in_R.asUInt
 
-  assert(((pred_tem & pred_tem - 1.U) === 0.U) ,
+  assert(((pred_tem & pred_tem - 1.U) === 0.U),
     "BasicBlock can not have multiple active preds")
 
   /*==========================================*
@@ -167,7 +166,7 @@ class BasicBlockNode(NumInputs: Int,
     })
     predicate_valid_R := false.B
     //predicate_valid_R := Vec(Seq.fill(NumInputs) {
-      //false.B
+    //false.B
     //})
 
     // Reset output
@@ -177,7 +176,9 @@ class BasicBlockNode(NumInputs: Int,
 
     //Reset state
     state := s_idle
-    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+    when(predicate) {
+      printf("[LOG] " + Desc + ": Output fired @ %d\n", cycleCount)
+    }
 
     //Restart predicate bit
     pred_R.control := false.B
@@ -194,11 +195,11 @@ class BasicBlockNode(NumInputs: Int,
   */
 
 class BasicBlockNoMaskIO(NumInputs: Int,
-                   NumOuts: Int)
-                  (implicit p: Parameters)
+                         NumOuts: Int)
+                        (implicit p: Parameters)
   extends HandShakingCtrlNoMaskIO(NumInputs, NumOuts) {
   // LeftIO: Left input data for computation
-//  val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
+  //  val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
   val predicateIn = Flipped(Decoupled(new ControlBundle()))
 }
 
@@ -212,46 +213,39 @@ class BasicBlockNoMaskIO(NumInputs: Int,
   */
 
 class BasicBlockNoMaskNode(NumInputs: Int,
-                     NumOuts: Int,
-                     BID: Int, Desc : String = "BasicBlock")
-                    (implicit p: Parameters)
+                           NumOuts: Int,
+                           BID: Int, Desc: String = "BasicBlock")
+                          (implicit p: Parameters)
   extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
 
   override lazy val io = IO(new BasicBlockNoMaskIO(NumInputs, NumOuts))
 
   // Printf debugging
   override val printfSigil = Desc + BID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
   // OP Inputs
-//  val predicate_in_R    = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
-//  val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+  //  val predicate_in_R    = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+  //  val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
-  val predicate_in_R    = RegInit(false.B)
+  val predicate_in_R = RegInit(false.B)
   val predicate_valid_R = RegInit(false.B)
 
   val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
   val state = RegInit(s_IDLE)
 
-  /*===========================================*
-   *            Valids                         *
-   *===========================================*/
-
-//  val predicate = predicate_in_R
-//  val start     = predicate_valid_R
-
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-    io.predicateIn.ready := ~predicate_valid_R
-    when(io.predicateIn.fire()) {
-      predicate_in_R    := io.predicateIn.bits.control
-      predicate_valid_R := true.B
-    }
+  io.predicateIn.ready := ~predicate_valid_R
+  when(io.predicateIn.fire()) {
+    predicate_in_R := io.predicateIn.bits.control
+    predicate_valid_R := true.B
+  }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
@@ -264,35 +258,31 @@ class BasicBlockNoMaskNode(NumInputs: Int,
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  switch(state){
-    is(s_IDLE){
-      when(io.predicateIn.fire()){
+  switch(state) {
+    is(s_IDLE) {
+      when(io.predicateIn.fire()) {
         state := s_LATCH
       }
     }
-    is(s_LATCH){
-      when(predicate_valid_R ) {
-        when(predicate_in_R){
-          ValidOut()
-          state := s_COMPUTE
-        }.otherwise{
-          state := s_IDLE
-
-          predicate_in_R    := false.B
-          predicate_valid_R := false.B
-          Reset()
-        }
+    is(s_LATCH) {
+      when(predicate_valid_R) {
+        ValidOut()
+        state := s_COMPUTE
       }
     }
-    is(s_COMPUTE){
-      when(IsOutReady()){
-        predicate_in_R    := false.B
+    is(s_COMPUTE) {
+      when(IsOutReady()) {
+        predicate_in_R := false.B
         predicate_valid_R := false.B
 
         state := s_IDLE
 
         Reset()
-        when (predicate_in_R) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+        when(predicate_in_R) {
+          printf("[LOG] " + Desc + ": Output [T] fired @ %d\n", cycleCount)
+        }.otherwise{
+          printf("[LOG] " + Desc + ": Output [F] fired @ %d\n", cycleCount)
+        }
       }
     }
 
@@ -301,27 +291,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   //At each iteration only on preds can be activated
   val pred_tem = predicate_in_R.asUInt
 
-  assert(((pred_tem & pred_tem - 1.U) === 0.U) ,
+  assert(((pred_tem & pred_tem - 1.U) === 0.U),
     "BasicBlock can not have multiple active preds")
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
-//  when(IsOutReady() & (state === s_COMPUTE)){
-//    //printfInfo("Start restarting output \n")
-//    // Reset data
-//    //predicate_valid_R := false.B
-//
-//
-//    //Reset state
-//    state := s_IDLE
-//
-//    Reset()
-//
-//
-//
-//  }
-
 
 }

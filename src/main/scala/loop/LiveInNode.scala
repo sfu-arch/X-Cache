@@ -34,7 +34,7 @@ class LiveInNode(NumOuts: Int, ID: Int)
   val indata_R = RegInit(DataBundle.default)
   val indata_valid_R = RegInit(false.B)
 
-  val s_IDLE :: s_LATCH :: Nil = Enum(2)
+  val s_IDLE :: s_VALIDOUT :: s_LATCH :: Nil = Enum(3)
 
   val state = RegInit(s_IDLE)
 
@@ -55,22 +55,29 @@ class LiveInNode(NumOuts: Int, ID: Int)
   switch(state){
     is(s_IDLE){
       when(io.InData.fire()){
-        state := s_LATCH
+        state := s_VALIDOUT
         ValidOut()
         printf("[LOG] " + NodeName + ": Latch fired @ %d, Value:%d\n",cycleCount, io.InData.bits.data.asUInt())
       }
     }
-    is(s_LATCH){
+    is(s_VALIDOUT){
       when(IsOutReady()){
-        out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
-        ValidOut()
+        state := s_LATCH
       }
-      when(enable_R && enable_valid_R){
-        printf("[LOG] " + NodeName + ": Latch reset @ %d\n",cycleCount)
-        state := s_IDLE
-        indata_R <> DataBundle.default
-        indata_valid_R := false.B
-        Reset()
+    }
+    is(s_LATCH){
+      when(enable_valid_R){
+        when(enable_R){
+          printf("[LOG] " + NodeName + ": Latch reset @ %d\n",cycleCount)
+          state := s_IDLE
+          indata_R <> DataBundle.default
+          indata_valid_R := false.B
+          Reset()
+        }.otherwise{
+          state := s_VALIDOUT
+          ValidOut()
+          Reset()
+        }
       }
     }
   }

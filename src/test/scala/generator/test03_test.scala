@@ -92,7 +92,7 @@ class test03Test01(c: test03CacheWrapper) extends PeekPokeTester(c) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 105")
         fail
       } else {
-        println(Console.BLUE + "*** Correct result received.")
+        println(Console.BLUE + s"*** Correct result received @ cycle: $time.")
       }
     }
   }
