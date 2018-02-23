@@ -250,7 +250,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2, Desc = "bb_for_body")(p))
 
-  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3, Desc = "bb_for_inc")(p))
+  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3, Desc = "bb_for_inc")(p))
 
   val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4, Desc = "bb_for_end")(p))
 
@@ -427,12 +427,12 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   br9.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("br9"))
 
-  loop_L7_liveOut_0.io.enable <> bb_for_inc.io.Out(2)
+//  loop_L7_liveOut_0.io.enable <> bb_for_inc.io.Out(2)
+  loop_L7_liveOut_0.io.enable <> bb_for_end.io.Out(4)
 
 
 
   ret10.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret10"))
-  loop_L7_liveOut_0.io.Finish <> bb_for_end.io.Out(4)
 
 
 

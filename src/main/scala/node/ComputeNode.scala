@@ -85,7 +85,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "Compute
   }
 
   /*============================================*
-   *            State Machine    *
+   *            State Machine                   *
    *============================================*/
   switch(state) {
     is(s_IDLE) {
@@ -104,7 +104,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "Compute
           state := s_COMPUTE
           ValidOut()
         }.otherwise {
-          printf("[LOG] " + Desc + ": Not predicated value\n")
+          printf("[LOG] " + Desc + ": Not predicated value -> reset\n")
           // Reset data
           left_R := DataBundle.default
           right_R := DataBundle.default
@@ -127,15 +127,10 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "Compute
         state := s_IDLE
         //Reset output
         Reset()
-        //        when (predicate) {printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)}
+        //when (predicate) {printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)}
         printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out)
       }
     }
   }
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
 
 }

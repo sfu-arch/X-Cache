@@ -68,7 +68,7 @@ class LiveInNode(NumOuts: Int, ID: Int)
     is(s_LATCH){
       when(enable_valid_R){
         when(enable_R){
-          printf("[LOG] " + NodeName + ": Latch reset @ %d\n",cycleCount)
+          printf("[LOG] " + NodeName + ": Latch invalidate @ %d\n",cycleCount)
           state := s_IDLE
           indata_R <> DataBundle.default
           indata_valid_R := false.B

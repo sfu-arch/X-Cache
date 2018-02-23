@@ -1,15 +1,10 @@
 package node
 
 import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
-import chisel3.Module
-import chisel3.testers._
 import chisel3.util._
-import org.scalatest.{Matchers, FlatSpec}
 
 import config._
 import interfaces._
-import muxes._
 import util._
 
 class LiveOutNodeIO(NumOuts: Int)
@@ -18,9 +13,6 @@ class LiveOutNodeIO(NumOuts: Int)
 
   // Inputdata for Live out element
   val InData = Flipped(Decoupled(new DataBundle()))
-
-  //Finish signal
-  val Finish = Flipped(Decoupled(new ControlBundle()))
 
 }
 
@@ -59,12 +51,6 @@ class LiveOutNode(NumOuts: Int, ID: Int)
     indata_valid_R := true.B
   }
 
-  io.Finish.ready := ~finish_valid_R
-  when(io.Finish.fire()) {
-    finish_R <> io.Finish.bits
-    finish_valid_R := true.B
-  }
-
   /*===============================================*
    *            DEFINING STATES                    *
    *===============================================*/
@@ -72,33 +58,25 @@ class LiveOutNode(NumOuts: Int, ID: Int)
   switch(state) {
 
     is(s_IDLE) {
-      //When the input is fired
       when(io.InData.fire()) {
         state := s_LATCH
       }
     }
     is(s_LATCH) {
-      when(enable_R && enable_valid_R) {
-        // In this case we have to invalidate the input
-        state := s_IDLE
-
-        indata_R := DataBundle.default
-        indata_valid_R := false.B
-
-        finish_R := ControlBundle.default
-        finish_valid_R := false.B
-
-        Reset()
-      }.elsewhen(finish_valid_R) {
-        when(finish_R.control) {
-          ValidOut()
+      when(enable_valid_R) {
+        when(enable_R) {
           state := s_VALIDOUT
-        }.otherwise{
-          finish_valid_R := false.B
+          ValidOut()
+        }.otherwise {
+          state := s_IDLE
+
+          indata_R := DataBundle.default
+          indata_valid_R := false.B
+
+          enable_valid_R := false.B
         }
       }
     }
-
     is(s_VALIDOUT) {
       when(IsOutReady()) {
         state := s_IDLE
@@ -106,13 +84,9 @@ class LiveOutNode(NumOuts: Int, ID: Int)
         indata_R := DataBundle.default
         indata_valid_R := false.B
 
-        finish_R := ControlBundle.default
-        finish_valid_R := false.B
-
         Reset()
       }
     }
-
   }
 
   /*==========================================*
