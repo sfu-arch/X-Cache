@@ -344,21 +344,21 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc = "bb_entry")(p))
 
-  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 2, BID = 1, Desc = "bb_for_cond")(p))
+  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 5, NumPhi = 2, BID = 1, Desc = "bb_for_cond")(p))
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2, Desc = "bb_for_body")(p))
 
-  val bb_for_cond1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 5, NumPhi = 2, BID = 3, Desc = "bb_for_cond1")(p))
+  val bb_for_cond1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 2, BID = 3, Desc = "bb_for_cond1")(p))
 
   val bb_for_body3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4, Desc = "bb_for_body3")(p))
 
   val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5, Desc = "bb_for_inc")(p))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6, Desc = "bb_for_end")(p))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 6, Desc = "bb_for_end")(p))
 
-  val bb_for_inc5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7, Desc = "bb_for_inc5")(p))
+  val bb_for_inc5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 7, Desc = "bb_for_inc5")(p))
 
-  val bb_for_end7 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 8, Desc = "bb_for_end7")(p))
+  val bb_for_end7 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 8, Desc = "bb_for_end7")(p))
 
 
 
@@ -446,7 +446,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 
   //  br label %for.cond1, !llvm.loop !38, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val br13 = Module (new UBranchNode(ID = 13, Desc = "br13", NumOuts = 2)(p))
+  val br13 = Module (new UBranchNode(ID = 13, Desc = "br13", NumOuts = 1)(p))
 
 
 
@@ -464,7 +464,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 
   //  br label %for.cond, !llvm.loop !57, !UID !60, !BB_UID !61, !ScalaLabel !62
-  val br16 = Module (new UBranchNode(ID = 16, Desc = "br16", NumOuts = 3)(p))
+  val br16 = Module (new UBranchNode(ID = 16, Desc = "br16", NumOuts = 1)(p))
 
 
 
@@ -518,9 +518,10 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 
   //Connecting br4 to bb_for_end7
-  bb_for_cond_expand.io.InData <> br4.io.Out(param.br4_brn_bb("bb_for_end7"))
+//  bb_for_cond_expand.io.InData <> br4.io.Out(param.br4_brn_bb("bb_for_end7"))
 //  bb_for_end7.io.predicateIn(param.bb_for_end7_pred("br4")) <> bb_for_cond_expand.io.Out(0)
-  bb_for_end7.io.predicateIn <> bb_for_cond_expand.io.Out(0)
+//  bb_for_end7.io.predicateIn <> bb_for_cond_expand.io.Out(0)
+    bb_for_end7.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_end7"))
 
 
   //Connecting br5 to bb_for_cond1
@@ -584,14 +585,20 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   br4.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br4"))
 
-  bb_for_cond_expand.io.enable <> bb_for_cond.io.Out(5)
+//  bb_for_cond_expand.io.enable <> bb_for_cond.io.Out(5)
+
+//  loop_L_5_liveIN_0.io.enable <> bb_for_cond.io.Out(4)
 
   loop_L_5_liveIN_0.io.enable <> bb_for_cond.io.Out(4)
+  loop_L_5_liveIN_0.io.Finish <> bb_for_end7.io.Out(1)
 
   //loop_L_5_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
 
-  loop_L6_liveOut_0.io.Finish <> br16.io.Out(1)
-  loop_L6_liveOut_0.io.enable <> br13.io.Out(1)
+//  loop_L6_liveOut_0.io.Finish <> br16.io.Out(1)
+//  loop_L6_liveOut_0.io.enable <> br13.io.Out(1)
+  loop_L6_liveOut_0.io.Finish <> bb_for_inc5.io.Out(2)
+  loop_L6_liveOut_0.io.enable <> bb_for_cond1.io.Out(4)
+//  loop_L6_liveOut_0.io.enable <> bb_for_inc5.io.Out(2)
 
 
 
@@ -609,7 +616,9 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 //  bb_for_cond1_expand.io.enable <> bb_for_cond1.io.Out(5)
 
-  loop_L_6_liveIN_0.io.enable <> bb_for_cond1.io.Out(4)
+//  loop_L_6_liveIN_0.io.enable <> bb_for_cond1.io.Out(4)
+  loop_L_6_liveIN_0.io.enable <> bb_for_cond1.io.Out(5)
+  loop_L_6_liveIN_0.io.Finish <> bb_for_end.io.Out(1)
 
 //  loop_L_6_liveIN_0.io.Finish <> bb_for_cond1_expand.io.Out(1)
   //loop_L_6_liveIN_0.io.Finish <> br16.io.Out(2)

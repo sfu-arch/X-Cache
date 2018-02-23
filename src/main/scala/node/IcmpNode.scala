@@ -127,7 +127,8 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "IcmpNode"
     state := s_idle
     //Reset output
     Reset()
-    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+//    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+    printf("[LOG] " + Desc+": Output fired @ %d, (%d ? %d) -> %d\n",cycleCount, left_R.data, right_R.data, FU.io.out)
   }
 
   //printfInfo(" State: %x\n", state)

@@ -131,7 +131,7 @@ class PhiNode(NumInputs: Int,
 
         //Print output
         when (predicate) {
-          printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)
+          printf("[LOG] " + Desc+": Output fired @ %d, Value: %d\n",cycleCount, in_data_W.data)
         }
 
 

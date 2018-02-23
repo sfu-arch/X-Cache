@@ -112,7 +112,7 @@ class CBranchNode(ID: Int, Desc : String = "CBranchNode")
     state := s_idle
 
     Reset()
-    printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)
+    printf("[LOG] " + Desc+": Output fired @ %d, Value: %d\n",cycleCount, cmp_R.data)
 
   }
 

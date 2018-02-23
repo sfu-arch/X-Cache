@@ -27,6 +27,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "Comput
                  (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
+
   // Printf debugging
   override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
@@ -109,7 +110,8 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "Comput
         state := s_IDLE
         //Reset output
         Reset()
-        when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+//        when (predicate) {printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)}
+        printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)
       }
     }
   }
