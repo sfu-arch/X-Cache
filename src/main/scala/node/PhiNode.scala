@@ -66,13 +66,14 @@ class PhiNode(NumInputs: Int,
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
+  // If the mask value is eqaul to zero we don't proceed
+  val mask_valid = mask_R.asUInt.orR
+
   //Instantiating a MUX
   val sel = OHToUInt(mask_R)
 
   in_data_W := in_data_R(sel)
 
-  // If the mask value is eqaul to zero we don't proceed
-  val mask_valid = mask_R.asUInt.orR
 
   //wire up mask
   io.Mask.ready := ~mask_valid_R
@@ -101,7 +102,7 @@ class PhiNode(NumInputs: Int,
    *============================================*/
   switch(state){
     is(s_IDLE){
-      when(io.Mask.fire()){
+      when(io.Mask.fire() && io.Mask.bits.asUInt.orR ){
         state := s_MASKLATCH
       }
     }

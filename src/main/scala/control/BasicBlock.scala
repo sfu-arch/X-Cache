@@ -80,8 +80,6 @@ class BasicBlockNode(NumInputs: Int,
   val predicate = predicate_in_R.asUInt().orR
   val start = predicate_valid_R.asUInt().orR
 
-  //val start = predicate_valid_R.asUInt().andR
-
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
@@ -131,22 +129,12 @@ class BasicBlockNode(NumInputs: Int,
 
   when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
-    when(predicate) {
-      pred_R.control := predicate
-      ValidOut()
-    }
+    pred_R.control := predicate
+    ValidOut()
   }
 
-  //Assertion
-
-  //At each interation only on preds can be activated
-  val pred_tem = predicate_in_R.asUInt
-
-  assert(((pred_tem & pred_tem - 1.U) === 0.U),
-    "BasicBlock can not have multiple active preds")
-
   /*==========================================*
-   *            Output Handshaking and Reset  *
+   *      Output Handshaking and Reset        *
    *==========================================*/
 
 
@@ -157,34 +145,25 @@ class BasicBlockNode(NumInputs: Int,
   val mask_valid_W = mask_valid_R.asUInt.andR
 
 
+  // Reseting all the latches
   when(out_ready_W & mask_ready_W & (state === s_COMPUTE)) {
-    //printfInfo("Start restarting output \n")
-    // Reset data
-    predicate_in_R := Vec(Seq.fill(NumInputs) {
-      //ControlBundle.default
-      false.B
-    })
+    predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
     predicate_valid_R := false.B
-    //predicate_valid_R := Vec(Seq.fill(NumInputs) {
-    //false.B
-    //})
 
     // Reset output
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
+    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
 
     //Reset state
     state := s_idle
     when(predicate) {
-      printf("[LOG] " + Desc + ": Output fired @ %d\n", cycleCount)
+      printf("[LOG] " + Desc + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+    }.otherwise{
+      printf("[LOG] " + Desc + ": Output fired @ %d -> 0 predicate\n", cycleCount)
     }
-
     //Restart predicate bit
     pred_R.control := false.B
   }
 
-  //printfInfo(" State: %x\n", state)
 }
 
 /**
@@ -280,7 +259,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
         Reset()
         when(predicate_in_R) {
           printf("[LOG] " + Desc + ": Output [T] fired @ %d\n", cycleCount)
-        }.otherwise{
+        }.otherwise {
           printf("[LOG] " + Desc + ": Output [F] fired @ %d\n", cycleCount)
         }
       }
