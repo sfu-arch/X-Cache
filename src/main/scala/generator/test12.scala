@@ -348,9 +348,9 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5, Desc = "bb_for_inc")(p))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 6, Desc = "bb_for_end")(p))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 6, Desc = "bb_for_end")(p))
 
-  val bb_for_inc5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 7, Desc = "bb_for_inc5")(p))
+  val bb_for_inc5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7, Desc = "bb_for_inc5")(p))
 
   val bb_for_end7 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 8, Desc = "bb_for_end7")(p))
 
@@ -437,7 +437,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  br label %for.inc5, !UID !52, !BB_UID !53, !ScalaLabel !54
-  val br14 = Module(new UBranchNode(ID = 14, Desc = "br14")(p))
+  val br14 = Module(new UBranchEndNode(ID = 14, Desc = "br14")(p))
 
 
   // [BasicBlock]  for.inc5:
@@ -548,8 +548,9 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
 
   loop_L_6_liveIN_0.io.enable <> bb_for_end.io.Out(1)
+  loop_L6_liveOut_0.io.enable <> bb_for_end.io.Out(2)
+
   loop_L_5_liveIN_0.io.enable <> bb_for_end7.io.Out(1)
-  loop_L6_liveOut_0.io.enable <> bb_for_inc5.io.Out(2)
 
   br0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("br0"))
 

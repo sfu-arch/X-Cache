@@ -448,9 +448,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   }
 
   def Reset(): Unit = {
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-      })
+    out_ready_R := Vec(Seq.fill(NumOuts)(false.B))
     enable_valid_R := false.B
   }
 }

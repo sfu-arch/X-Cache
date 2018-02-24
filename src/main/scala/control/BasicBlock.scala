@@ -413,3 +413,4 @@ class BasicBlockNoMaskNode(NumInputs: Int,
     "BasicBlock can not have multiple active preds")
 
 }
+

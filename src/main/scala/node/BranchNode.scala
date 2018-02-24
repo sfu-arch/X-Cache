@@ -204,3 +204,79 @@ class UBranchNode(ID: Int, Desc: String = "UBranchNode", NumOuts: Int = 1)
   }
 
 }
+
+class UBranchEndNode(ID: Int, Desc: String = "UBranchNode", NumOuts: Int = 1)
+                 (implicit p: Parameters)
+  extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
+  override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
+  // Printf debugging
+  override val printfSigil = "Node (UBR) ID: " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+
+  // Output register
+  val data_R = RegInit(0.U(xlen.W))
+
+  val s_idle :: s_OUTPUT :: Nil = Enum(2)
+  val state = RegInit(s_idle)
+
+  /*==========================================*
+   *           Predicate Evaluation           *
+   *==========================================*/
+
+  val predicate = IsEnable()
+  val start = IsEnableValid()
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+  /**
+    * Combination of bits and valid signal from CmpIn whill result the output value:
+    * valid == 0  ->  output = 0
+    * valid == 1  ->  cmp = true  then 1
+    * valid == 1  ->  cmp = false then 2
+    *
+    * @note data_R value is equale to predicate bit
+    */
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.control := predicate
+    io.Out(i).bits.taskID := 0.U
+
+  }
+
+  /*============================================*
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
+
+  when(start & (state === s_idle)) {
+    when(predicate){
+      state := s_OUTPUT
+      ValidOut()
+    }.otherwise{
+      enable_valid_R := false.B
+    }
+  }
+
+  /*==========================================*
+   *            Output Handshaking and Reset  *
+   *==========================================*/
+
+
+  val out_ready_W = out_ready_R.asUInt.andR
+  val out_valid_W = out_valid_R.asUInt.andR
+
+  when(out_ready_W & (state === s_OUTPUT)) {
+    Reset()
+
+    state := s_idle
+    printf("[LOG] " + Desc + ": Output fired @ %d\n", cycleCount)
+
+
+  }
+
+}
