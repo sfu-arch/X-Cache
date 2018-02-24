@@ -48,6 +48,10 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int, Desc: String = "R
     when(io.enable.bits.control){
       outputReg.bits.enable <> io.enable.bits
       inputReady(retTypes.length) := false.B
+    }.otherwise{
+      for( i <- retTypes.indices){
+        inputReady(i) := true.B
+      }
     }
   }
   io.enable.ready := inputReady(retTypes.length)
