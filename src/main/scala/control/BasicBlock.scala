@@ -166,6 +166,145 @@ class BasicBlockNode(NumInputs: Int,
 
 }
 
+
+/**
+  * @brief BasicBlockIO class definition
+  * @details Implimentation of BasickBlockIO
+  * @param NumInputs Number of predecessors
+  * @param NumOuts   Number of successor instructions
+  * @param NumPhi    Number existing phi nodes
+  * @param BID       BasicBlock ID
+  * @note The logic for BasicBlock nodes differs from Compute nodes.
+  *       In the BasicBlock nodes, as soon as one of the input signals get fires
+  *       all the inputs should get not ready, since we don't need to wait for other
+  *       inputs.
+  */
+
+class BasicBlockLoopHeadNode(NumInputs: Int,
+                     NumOuts: Int,
+                     NumPhi: Int,
+                     BID: Int, Desc: String = "BasicBlock")
+                    (implicit p: Parameters)
+  extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
+
+  override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
+
+  // Printf debugging
+  override val printfSigil = Desc + BID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  //Assertion
+  assert(NumPhi >= 1, "NumPhi Cannot be zero")
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+  // OP Inputs
+  val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+
+  val predicate_valid_R = RegInit(false.B)
+  val predicate_valid_W = WireInit(VecInit(Seq.fill(NumInputs)(false.B)))
+
+  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val state = RegInit(s_idle)
+
+  /*===========================================*
+   *            Valids                         *
+   *===========================================*/
+
+  val predicate = predicate_in_R.asUInt().orR
+  val start = predicate_valid_R.asUInt().orR
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+  val pred_R = RegInit(ControlBundle.default)
+  val fire_W = WireInit(false.B)
+
+
+  //Make all the inputs invalid if one of the inputs
+  //gets fire
+  //
+  when(state === s_idle) {
+    predicate_valid_W := VecInit(Seq.fill(NumInputs)(false.B))
+  }
+
+  fire_W := predicate_valid_W.asUInt.orR
+
+  when(fire_W & state === s_idle) {
+    predicate_valid_R := true.B
+  }
+
+  for (i <- 0 until NumInputs) {
+    io.predicateIn(i).ready := ~predicate_valid_R
+    when(io.predicateIn(i).fire()) {
+      state := s_LATCH
+      predicate_in_R(i) <> io.predicateIn(i).bits.control
+      predicate_valid_W(i) := true.B
+    }
+  }
+
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.control := pred_R.control
+    io.Out(i).bits.taskID := 0.U
+  }
+
+  // Wire up mask output
+  for (i <- 0 until NumPhi) {
+    io.MaskBB(i).bits := predicate_in_R.asUInt
+  }
+
+
+  /*============================================*
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
+
+  when(start & state =/= s_COMPUTE) {
+    when(predicate){
+      state := s_COMPUTE
+      pred_R.control := predicate
+      ValidOut()
+    }.otherwise{
+      state := s_idle
+      predicate_valid_R := false.B
+    }
+  }
+
+  /*==========================================*
+   *      Output Handshaking and Reset        *
+   *==========================================*/
+
+
+  val out_ready_W = out_ready_R.asUInt.andR
+  val out_valid_W = out_valid_R.asUInt.andR
+
+  val mask_ready_W = mask_ready_R.asUInt.andR
+  val mask_valid_W = mask_valid_R.asUInt.andR
+
+
+  // Reseting all the latches
+  when(out_ready_W & mask_ready_W & (state === s_COMPUTE)) {
+    predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
+    predicate_valid_R := false.B
+
+    // Reset output
+    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+
+    //Reset state
+    state := s_idle
+    when(predicate) {
+      printf("[LOG] " + Desc + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+    }.otherwise{
+      printf("[LOG] " + Desc + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+    }
+    //Restart predicate bit
+    pred_R.control := false.B
+  }
+
+}
+
 /**
   * @brief BasicBlockIO class definition
   * @details Implimentation of BasickBlockIO

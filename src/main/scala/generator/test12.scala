@@ -338,11 +338,11 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc = "bb_entry")(p))
 
-  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1, Desc = "bb_for_cond")(p))
+  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1, Desc = "bb_for_cond")(p))
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2, Desc = "bb_for_body")(p))
 
-  val bb_for_cond1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 3, Desc = "bb_for_cond1")(p))
+  val bb_for_cond1 = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 3, Desc = "bb_for_cond1")(p))
 
   val bb_for_body3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4, Desc = "bb_for_body3")(p))
 

@@ -89,31 +89,32 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "IcmpNode")
 
   switch(state) {
     is(s_IDLE) {
-      /**
-        * We wait for all the input to become valid and then
-        * proceed to the next state that is waiting for
-        * control signal
-        */
-      when(left_valid_R && right_valid_R) {
+      when(enable_valid_R && ~enable_R) {
+        left_R := DataBundle.default
+        right_R := DataBundle.default
+
+        left_valid_R := false.B
+        right_valid_R := false.B
+
+        Reset()
+        printf("[LOG] " + Desc + ": Not predicated value -> reset\n")
+      }.elsewhen(io.LeftIO.fire() || io.RightIO.fire()) {
         state := s_LATCH
       }
     }
     is(s_LATCH) {
-      when(enable_valid_R) {
-        when(enable_R) {
-          state := s_COMPUTE
-          ValidOut()
-        }.otherwise {
-          printf("[LOG] " + Desc + ": Not predicated value -> reset\n")
-          // Reset data
-          left_R := DataBundle.default
-          right_R := DataBundle.default
-          left_valid_R := false.B
-          right_valid_R := false.B
-          //Reset state
-          state := s_IDLE //Reset to the IDLE state
-          Reset()
-        }
+      when(enable_valid_R && ~enable_R) {
+        state := s_IDLE
+        left_R := DataBundle.default
+        right_R := DataBundle.default
+
+        left_valid_R := false.B
+        right_valid_R := false.B
+
+        Reset()
+      }.elsewhen(start) {
+        state := s_COMPUTE
+        ValidOut()
       }
     }
     is(s_COMPUTE) {
@@ -127,11 +128,11 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "IcmpNode")
         state := s_IDLE
         //Reset output
         Reset()
+        //when (predicate) {printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)}
         printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out)
       }
     }
   }
-
 
 
 }

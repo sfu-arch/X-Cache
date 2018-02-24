@@ -246,7 +246,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc = "bb_entry")(p))
 
-  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1, Desc = "bb_for_cond")(p))
+  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1, Desc = "bb_for_cond")(p))
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2, Desc = "bb_for_body")(p))
 
@@ -289,9 +289,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
   val br4 = Module (new CBranchNode(ID = 4, Desc = "br4")(p))
-
-//  val bb_for_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0)(new ControlBundle))
-
 
 
   // [BasicBlock]  for.body:
@@ -427,7 +424,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   br9.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("br9"))
 
-//  loop_L7_liveOut_0.io.enable <> bb_for_inc.io.Out(2)
   loop_L7_liveOut_0.io.enable <> bb_for_end.io.Out(4)
 
 
