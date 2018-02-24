@@ -27,13 +27,13 @@ class CBranchNodeIO(NumOuts: Int = 2)
   val CmpIO = Flipped(Decoupled(new DataBundle))
 }
 
-class CBranchNode(ID: Int, Desc : String = "CBranchNode")
+class CBranchNode(ID: Int, Desc: String = "CBranchNode")
                  (implicit p: Parameters)
   extends HandShakingCtrlNPS(2, ID)(p) {
   override lazy val io = IO(new CBranchNodeIO())
   // Printf debugging
   override val printfSigil = "Node (CBR) ID: " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
@@ -43,11 +43,12 @@ class CBranchNode(ID: Int, Desc : String = "CBranchNode")
   val cmp_valid_R = RegInit(false.B)
 
 
-  // Output register
-  val data_out_w = WireInit(VecInit(Seq.fill(2)(false.B)))
+  // Output wire
+  //  val data_out_w = WireInit(VecInit(Seq.fill(2)(false.B)))
+  val data_out_R = RegInit(VecInit(Seq.fill(2)(false.B)))
 
-  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-  val state = RegInit(s_idle)
+  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val state = RegInit(s_IDLE)
 
   /*==========================================*
    *           Predicate Evaluation           *
@@ -65,19 +66,18 @@ class CBranchNode(ID: Int, Desc : String = "CBranchNode")
 
   io.CmpIO.ready := ~cmp_valid_R
   when(io.CmpIO.fire()) {
-    state := s_LATCH
     cmp_R <> io.CmpIO.bits
     cmp_valid_R := true.B
   }
 
   // Wire up Outputs
-  io.Out(0).bits.control := data_out_w(0)
+  io.Out(0).bits.control := data_out_R(0)
   io.Out(0).bits.taskID := 0.U
-  io.Out(1).bits.control := data_out_w(1)
+  io.Out(1).bits.control := data_out_R(1)
   io.Out(1).bits.taskID := 0.U
 
   /*============================================*
-   *            ACTIONS (possibly dangerous)    *
+   *            STATE MACHINE                   *
    *============================================*/
 
   /**
@@ -87,44 +87,51 @@ class CBranchNode(ID: Int, Desc : String = "CBranchNode")
     * valid == 1  ->  cmp = false then 2
     */
 
-  data_out_w(0) := cmp_R.data.asUInt.orR
-  data_out_w(1) := ~cmp_R.data.asUInt.orR
+ switch(state) {
+    is(s_IDLE) {
+      when(enable_valid_R && ~enable_R){
+        state := s_COMPUTE
+        ValidOut()
+      }.elsewhen(io.CmpIO.fire()) {
+        state := s_LATCH
+      }
+    }
+    is(s_LATCH) {
+      state := s_COMPUTE
+      when(enable_valid_R){
+        when(enable_R){
+          data_out_R(0) := cmp_R.data.asUInt.orR
+          data_out_R(1) := ~cmp_R.data.asUInt.orR
+        }
+        ValidOut()
+      }
+    }
+    is(s_COMPUTE) {
+      when(IsOutReady()) {
+        // Restarting
+        cmp_R := DataBundle.default
+        cmp_valid_R := false.B
 
-  when(start & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
-  }
+        // Reset output
+        data_out_R := VecInit(Seq.fill(2)(false.B))
+        //Reset state
+        state := s_IDLE
 
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
-
-  when(IsOutReady() & (state === s_COMPUTE)){
-    //printfInfo("Start restarting output \n")
-    // Reset data
-    cmp_R := DataBundle.default
-    cmp_valid_R := false.B
-
-    // Reset output
-    data_out_w := VecInit(Seq.fill(2)(false.B))
-    //Reset state
-    state := s_idle
-
-    Reset()
-    printf("[LOG] " + Desc+": Output fired @ %d, Value: %d\n",cycleCount, cmp_R.data + 1.U)
-
+        Reset()
+        printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n", cycleCount, data_out_R.asUInt())
+      }
+    }
   }
 
 }
 
-class UBranchNode(ID: Int, Desc : String = "UBranchNode", NumOuts: Int = 1)
+class UBranchNode(ID: Int, Desc: String = "UBranchNode", NumOuts: Int = 1)
                  (implicit p: Parameters)
   extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
   override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
   // Printf debugging
   override val printfSigil = "Node (UBR) ID: " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
@@ -152,10 +159,11 @@ class UBranchNode(ID: Int, Desc : String = "UBranchNode", NumOuts: Int = 1)
     * valid == 0  ->  output = 0
     * valid == 1  ->  cmp = true  then 1
     * valid == 1  ->  cmp = false then 2
+    *
     * @note data_R value is equale to predicate bit
     */
   // Wire up Outputs
-  for( i <- 0 until NumOuts){
+  for (i <- 0 until NumOuts) {
     io.Out(i).bits.control := predicate
     io.Out(i).bits.taskID := 0.U
 
@@ -188,8 +196,9 @@ class UBranchNode(ID: Int, Desc : String = "UBranchNode", NumOuts: Int = 1)
 
     //Reset state
     state := s_idle
-    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
-
+    when(predicate) {
+      printf("[LOG] " + Desc + ": Output fired @ %d\n", cycleCount)
+    }
 
 
   }
