@@ -17,7 +17,7 @@ import node._
 class StackIO(NumOps: Int)
              (implicit p: Parameters) extends CoreBundle()(p) {
   val InData = Vec(NumOps, Flipped(Decoupled(new AllocaReq)))
-  val OutData = Vec(NumOps, Decoupled(new AllocaResp))
+  val OutData = Vec(NumOps, (new AllocaResp))
 }
 
 class Stack(NumOps: Int)
@@ -34,39 +34,29 @@ class Stack(NumOps: Int)
   }
 
   /**
-    * Instantiating Demux
-    */
-  val out_demux = Module(new Demux(new AllocaResp(), Nops = NumOps))
-  out_demux.io.en := true.B
-  for( i <- 0 until NumOps){
-    io.OutData(i).bits <> out_demux.io.outputs(i)
-    io.OutData(i).valid <> out_demux.io.outputs(i).valid
-  }
-
-  out_demux.io.sel := in_arbiter.io.out.bits.RouteID
-
-  /**
     * Arbiter's output is always ready
     */
+
   in_arbiter.io.out.ready := true.B
 
   /**
     * Stack pointer Update
     */
   val SP = RegInit(0.U)
-  val old_SP = RegInit(0.U)
+  //val old_SP = RegInit(0.U)
 
   when(in_arbiter.io.out.fire){
-    old_SP := SP
     SP := SP + (in_arbiter.io.out.bits.numByte * in_arbiter.io.out.bits.size)
   }
 
-  /**
-    * Connecting SP to the demux
-    */
-
-  out_demux.io.input.ptr := old_SP
-  out_demux.io.input.RouteID := in_arbiter.io.out.bits.RouteID
+  // Copy arbiter output and pointer to all outputs.
+  // Assert valid to the output corresponding to the arbiter grant
+  for (i <- 0 until NumOps) {
+    io.OutData(i).ptr := SP
+    io.OutData(i).RouteID := in_arbiter.io.out.bits.RouteID
+    io.OutData(i).valid := false.B
+  }
+  io.OutData(in_arbiter.io.chosen).valid := in_arbiter.io.out.valid
 
 }
 

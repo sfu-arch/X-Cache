@@ -122,7 +122,7 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.data := data_R.data
-  io.memReq.bits.node := nodeID_R
+//  io.memReq.bits.taskID := nodeID_R
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
   io.memReq.bits.mask := 0.U

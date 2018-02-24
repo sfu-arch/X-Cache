@@ -55,7 +55,7 @@ object AllocaIO {
 // Can be any of the 4MB regions. Size is over provisioned
 class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) with RouteID {
   val size = UInt(xlen.W)
-  val node = UInt(glen.W)
+//  val taskID = UInt(glen.W)
   val numByte = UInt(xlen.W)
 }
 
@@ -64,7 +64,7 @@ object AllocaReq {
     val wire = Wire(new AllocaReq)
     wire.size := 0.U
     wire.numByte := 0.U
-    wire.node := 0.U
+//    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire
   }
@@ -93,7 +93,7 @@ object AllocaResp {
 class ReadReq(implicit p: Parameters)
   extends RouteID {
   val address = UInt(xlen.W)
-  val node = UInt(glen.W)
+//  val taskID = UInt(tlen.W)
   val Typ = UInt(8.W)
 
 }
@@ -102,7 +102,7 @@ object ReadReq {
   def default(implicit p: Parameters): ReadReq = {
     val wire = Wire(new ReadReq)
     wire.address := 0.U
-    wire.node := 0.U
+//    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire.Typ := MT_W
     wire
@@ -149,7 +149,7 @@ class WriteReq(implicit p: Parameters)
   val address = UInt((xlen - 10).W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen / 8).W)
-  val node = UInt(glen.W)
+//  val taskID = UInt(tlen.W)
   val Typ = UInt(8.W)
 }
 
@@ -159,7 +159,7 @@ object WriteReq {
     wire.address := 0.U
     wire.data := 0.U
     wire.mask := 0.U
-    wire.node := 0.U
+//    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire.Typ := MT_W
     wire

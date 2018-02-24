@@ -35,85 +35,121 @@ object Data_test06_FlowParam{
 
   val bb_entry_activate = Map(
     "alloca0" -> 0,
-    "getelementptr1" -> 1,
-    "store2" -> 2,
-    "getelementptr3" -> 3,
-    "store4" -> 4,
-    "getelementptr5" -> 5,
-    "load6" -> 6,
-    "getelementptr7" -> 7,
-    "load8" -> 8,
-    "add9" -> 9,
-    "ret10" -> 10
+    "alloca1" -> 1,
+    "getelementptr2" -> 2,
+    "store3" -> 3,
+    "getelementptr4" -> 4,
+    "store5" -> 5,
+    "getelementptr6" -> 6,
+    "load7" -> 7,
+    "getelementptr8" -> 8,
+    "load9" -> 9,
+    "add10" -> 10,
+    "getelementptr11" -> 11,
+    "store12" -> 12,
+    "getelementptr13" -> 13,
+    "load14" -> 14,
+    "ret15" -> 15
   )
 
 
-  //  %sum = alloca [2 x i32], align 4, !UID !7, !ScalaLabel !8
+  //  %alloc0 = alloca [2 x i32], align 4, !UID !8, !ScalaLabel !9
   val alloca0_in = Map(
 
   )
 
 
-  //  %arrayidx = getelementptr inbounds [2 x i32], [2 x i32]* %sum, i32 0, i32 0, !UID !9, !ScalaLabel !10
-  val getelementptr1_in = Map(
+  //  %alloc1 = alloca [1 x i32], align 4, !UID !10, !ScalaLabel !11
+  val alloca1_in = Map(
+
+  )
+
+
+  //  %arrayidx = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 0, !UID !12, !ScalaLabel !13
+  val getelementptr2_in = Map(
     "alloca0" -> 0
   )
 
 
-  //  store i32 %a, i32* %arrayidx, align 4, !UID !11, !ScalaLabel !12
-  val store2_in = Map(
+  //  store i32 %a, i32* %arrayidx, align 4, !UID !14, !ScalaLabel !15
+  val store3_in = Map(
     "field0" -> 0,
-    "getelementptr1" -> 0
+    "getelementptr2" -> 0
   )
 
 
-  //  %arrayidx1 = getelementptr inbounds [2 x i32], [2 x i32]* %sum, i32 0, i32 1, !UID !13, !ScalaLabel !14
-  val getelementptr3_in = Map(
+  //  %arrayidx1 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 1, !UID !16, !ScalaLabel !17
+  val getelementptr4_in = Map(
     "alloca0" -> 1
   )
 
 
-  //  store i32 %b, i32* %arrayidx1, align 4, !UID !15, !ScalaLabel !16
-  val store4_in = Map(
+  //  store i32 %b, i32* %arrayidx1, align 4, !UID !18, !ScalaLabel !19
+  val store5_in = Map(
     "field1" -> 0,
-    "getelementptr3" -> 0
+    "getelementptr4" -> 0
   )
 
 
-  //  %arrayidx2 = getelementptr inbounds [2 x i32], [2 x i32]* %sum, i32 0, i32 0, !UID !17, !ScalaLabel !18
-  val getelementptr5_in = Map(
+  //  %arrayidx2 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 0, !UID !20, !ScalaLabel !21
+  val getelementptr6_in = Map(
     "alloca0" -> 2
   )
 
 
-  //  %0 = load i32, i32* %arrayidx2, align 4, !UID !19, !ScalaLabel !20
-  val load6_in = Map(
-    "getelementptr5" -> 0
+  //  %0 = load i32, i32* %arrayidx2, align 4, !UID !22, !ScalaLabel !23
+  val load7_in = Map(
+    "getelementptr6" -> 0
   )
 
 
-  //  %arrayidx3 = getelementptr inbounds [2 x i32], [2 x i32]* %sum, i32 0, i32 1, !UID !21, !ScalaLabel !22
-  val getelementptr7_in = Map(
+  //  %arrayidx3 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 1, !UID !24, !ScalaLabel !25
+  val getelementptr8_in = Map(
     "alloca0" -> 3
   )
 
 
-  //  %1 = load i32, i32* %arrayidx3, align 4, !UID !23, !ScalaLabel !24
-  val load8_in = Map(
-    "getelementptr7" -> 0
+  //  %1 = load i32, i32* %arrayidx3, align 4, !UID !26, !ScalaLabel !27
+  val load9_in = Map(
+    "getelementptr8" -> 0
   )
 
 
-  //  %add = add nsw i32 %0, %1, !UID !25, !ScalaLabel !26
-  val add9_in = Map(
-    "load6" -> 0,
-    "load8" -> 0
+  //  %add = add i32 %0, %1, !UID !28, !ScalaLabel !29
+  val add10_in = Map(
+    "load7" -> 0,
+    "load9" -> 0
   )
 
 
-  //  ret i32 %add, !UID !27, !BB_UID !28, !ScalaLabel !29
-  val ret10_in = Map(
-    "add9" -> 0
+  //  %arrayidx4 = getelementptr inbounds [1 x i32], [1 x i32]* %alloc1, i32 0, i32 0, !UID !30, !ScalaLabel !31
+  val getelementptr11_in = Map(
+    "alloca1" -> 0
+  )
+
+
+  //  store i32 %add, i32* %arrayidx4, align 4, !UID !32, !ScalaLabel !33
+  val store12_in = Map(
+    "add10" -> 0,
+    "getelementptr11" -> 0
+  )
+
+
+  //  %arrayidx5 = getelementptr inbounds [1 x i32], [1 x i32]* %alloc1, i32 0, i32 0, !UID !34, !ScalaLabel !35
+  val getelementptr13_in = Map(
+    "alloca1" -> 1
+  )
+
+
+  //  %2 = load i32, i32* %arrayidx5, align 4, !UID !36, !ScalaLabel !37
+  val load14_in = Map(
+    "getelementptr13" -> 0
+  )
+
+
+  //  ret i32 %2, !UID !38, !BB_UID !39, !ScalaLabel !40
+  val ret15_in = Map(
+    "load14" -> 0
   )
 
 
@@ -153,15 +189,15 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
    * ================================================================== */
 
 
-	val StackPointer = Module(new Stack(NumOps = 1))
+	val StackPointer = Module(new Stack(NumOps = 2))
 
-	val RegisterFile = Module(new TypeStackFile(ID=0,Size=4,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
+	val RegisterFile = Module(new TypeStackFile(ID=0,Size=64,NReads=3,NWrites=3)
+		            (WControl=new WriteMemoryController(NumOps=3,BaseSize=2,NumEntries=2))
+		            (RControl=new ReadMemoryController(NumOps=3,BaseSize=2,NumEntries=2)))
 
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
+	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=3,NWrites=3)
+		            (WControl=new WriteMemoryController(NumOps=3,BaseSize=2,NumEntries=2))
+		            (RControl=new ReadMemoryController(NumOps=3,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
   io.CacheReq <> CacheMem.io.CacheReq
@@ -169,6 +205,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
   val InputSplitter = Module(new SplitCall(List(32,32)))
   InputSplitter.io.In <> io.in
+
 
 
   /* ================================================================== *
@@ -186,7 +223,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 11, BID = 0)(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 16, BID = 0, Desc = "bb_entry")(p))
 
 
 
@@ -202,48 +239,68 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
   // [BasicBlock]  entry:
 
-  //  %sum = alloca [2 x i32], align 4, !UID !7, !ScalaLabel !8
-  val alloca0 = Module(new AllocaNode(NumOuts=4, RouteID=0, ID=0))
+  //  %alloc0 = alloca [2 x i32], align 4, !UID !8, !ScalaLabel !9
+  val alloca0 = Module(new AllocaNode(NumOuts=4, RouteID=0, ID=0, FrameSize=12))
 
 
-  //  %arrayidx = getelementptr inbounds [2 x i32], [2 x i32]* %sum, i32 0, i32 0, !UID !9, !ScalaLabel !10
-  val getelementptr1 = Module (new GepTwoNode(NumOuts = 1, ID = 1)(numByte1 = 8, numByte2 = 0)(p))
+  //  %alloc1 = alloca [1 x i32], align 4, !UID !10, !ScalaLabel !11
+  val alloca1 = Module(new AllocaNode(NumOuts=2, RouteID=1, ID=1, FrameSize=12))
 
 
-  //  store i32 %a, i32* %arrayidx, align 4, !UID !11, !ScalaLabel !12
-  val store2 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=2,RouteID=0))
+  //  %arrayidx = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 0, !UID !12, !ScalaLabel !13
+  val getelementptr2 = Module (new GepTwoNode(NumOuts = 1, ID = 2, Desc = "getelementptr2")(numByte1 = 8, numByte2 = 0)(p))
 
 
-  //  %arrayidx1 = getelementptr inbounds [2 x i32], [2 x i32]* %sum, i32 0, i32 1, !UID !13, !ScalaLabel !14
-  val getelementptr3 = Module (new GepTwoNode(NumOuts = 1, ID = 3)(numByte1 = 8, numByte2 = 4)(p))
+  //  store i32 %a, i32* %arrayidx, align 4, !UID !14, !ScalaLabel !15
+  val store3 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=3,RouteID=0,Desc="store3"))
 
 
-  //  store i32 %b, i32* %arrayidx1, align 4, !UID !15, !ScalaLabel !16
-  val store4 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=4,RouteID=1))
+  //  %arrayidx1 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 1, !UID !16, !ScalaLabel !17
+  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4, Desc = "getelementptr4")(numByte1 = 8, numByte2 = 4)(p))
 
 
-  //  %arrayidx2 = getelementptr inbounds [2 x i32], [2 x i32]* %sum, i32 0, i32 0, !UID !17, !ScalaLabel !18
-  val getelementptr5 = Module (new GepTwoNode(NumOuts = 1, ID = 5)(numByte1 = 8, numByte2 = 0)(p))
+  //  store i32 %b, i32* %arrayidx1, align 4, !UID !18, !ScalaLabel !19
+  val store5 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=5,RouteID=1,Desc="store5"))
 
 
-  //  %0 = load i32, i32* %arrayidx2, align 4, !UID !19, !ScalaLabel !20
-  val load6 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=6,RouteID=0))
+  //  %arrayidx2 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 0, !UID !20, !ScalaLabel !21
+  val getelementptr6 = Module (new GepTwoNode(NumOuts = 1, ID = 6, Desc = "getelementptr6")(numByte1 = 8, numByte2 = 0)(p))
 
 
-  //  %arrayidx3 = getelementptr inbounds [2 x i32], [2 x i32]* %sum, i32 0, i32 1, !UID !21, !ScalaLabel !22
-  val getelementptr7 = Module (new GepTwoNode(NumOuts = 1, ID = 7)(numByte1 = 8, numByte2 = 4)(p))
+  //  %0 = load i32, i32* %arrayidx2, align 4, !UID !22, !ScalaLabel !23
+  val load7 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=7,RouteID=0,Desc="load7"))
 
 
-  //  %1 = load i32, i32* %arrayidx3, align 4, !UID !23, !ScalaLabel !24
-  val load8 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=8,RouteID=1))
+  //  %arrayidx3 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 1, !UID !24, !ScalaLabel !25
+  val getelementptr8 = Module (new GepTwoNode(NumOuts = 1, ID = 8, Desc = "getelementptr8")(numByte1 = 8, numByte2 = 4)(p))
 
 
-  //  %add = add nsw i32 %0, %1, !UID !25, !ScalaLabel !26
-  val add9 = Module (new ComputeNode(NumOuts = 1, ID = 9, opCode = "add")(sign=false)(p))
+  //  %1 = load i32, i32* %arrayidx3, align 4, !UID !26, !ScalaLabel !27
+  val load9 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=9,RouteID=1,Desc="load9"))
 
 
-  //  ret i32 %add, !UID !27, !BB_UID !28, !ScalaLabel !29
-  val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10))
+  //  %add = add i32 %0, %1, !UID !28, !ScalaLabel !29
+  val add10 = Module (new ComputeNode(NumOuts = 1, ID = 10, opCode = "add", Desc = "add10")(sign=false)(p))
+
+
+  //  %arrayidx4 = getelementptr inbounds [1 x i32], [1 x i32]* %alloc1, i32 0, i32 0, !UID !30, !ScalaLabel !31
+  val getelementptr11 = Module (new GepTwoNode(NumOuts = 1, ID = 11, Desc = "getelementptr11")(numByte1 = 4, numByte2 = 0)(p))
+
+
+  //  store i32 %add, i32* %arrayidx4, align 4, !UID !32, !ScalaLabel !33
+  val store12 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=12,RouteID=2,Desc="store12"))
+
+
+  //  %arrayidx5 = getelementptr inbounds [1 x i32], [1 x i32]* %alloc1, i32 0, i32 0, !UID !34, !ScalaLabel !35
+  val getelementptr13 = Module (new GepTwoNode(NumOuts = 1, ID = 13, Desc = "getelementptr13")(numByte1 = 4, numByte2 = 0)(p))
+
+
+  //  %2 = load i32, i32* %arrayidx5, align 4, !UID !36, !ScalaLabel !37
+  val load14 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=14,RouteID=2,Desc="load14"))
+
+
+  //  ret i32 %2, !UID !38, !BB_UID !39, !ScalaLabel !40
+  val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15, Desc="ret15"))
 
 
 
@@ -300,25 +357,35 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
   alloca0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("alloca0"))
 
-  getelementptr1.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr1"))
+  alloca1.io.enable <> bb_entry.io.Out(param.bb_entry_activate("alloca1"))
 
-  store2.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store2"))
+  getelementptr2.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr2"))
 
-  getelementptr3.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr3"))
+  store3.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store3"))
 
-  store4.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store4"))
+  getelementptr4.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr4"))
 
-  getelementptr5.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr5"))
+  store5.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store5"))
 
-  load6.io.enable <> bb_entry.io.Out(param.bb_entry_activate("load6"))
+  getelementptr6.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr6"))
 
-  getelementptr7.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr7"))
+  load7.io.enable <> bb_entry.io.Out(param.bb_entry_activate("load7"))
 
-  load8.io.enable <> bb_entry.io.Out(param.bb_entry_activate("load8"))
+  getelementptr8.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr8"))
 
-  add9.io.enable <> bb_entry.io.Out(param.bb_entry_activate("add9"))
+  load9.io.enable <> bb_entry.io.Out(param.bb_entry_activate("load9"))
 
-  ret10.io.enable <> bb_entry.io.Out(param.bb_entry_activate("ret10"))
+  add10.io.enable <> bb_entry.io.Out(param.bb_entry_activate("add10"))
+
+  getelementptr11.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr11"))
+
+  store12.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store12"))
+
+  getelementptr13.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr13"))
+
+  load14.io.enable <> bb_entry.io.Out(param.bb_entry_activate("load14"))
+
+  ret15.io.enable <> bb_entry.io.Out(param.bb_entry_activate("ret15"))
 
 
 
@@ -375,126 +442,191 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
   alloca0.io.allocaRespIO <> StackPointer.io.OutData(0)
 
 
+  // Wiring Alloca instructions with Static inputs
+  alloca1.io.allocaInputIO.bits.size      := 1.U
+  alloca1.io.allocaInputIO.bits.numByte   := 4.U
+  alloca1.io.allocaInputIO.bits.predicate := true.B
+  alloca1.io.allocaInputIO.bits.valid     := true.B
+  alloca1.io.allocaInputIO.valid          := true.B
+
+  // Connecting Alloca to Stack
+  StackPointer.io.InData(1) <> alloca1.io.allocaReqIO
+  alloca1.io.allocaRespIO <> StackPointer.io.OutData(1)
+
+
   // Wiring GEP instruction to the parent instruction
-  getelementptr1.io.baseAddress <> alloca0.io.Out(param.getelementptr1_in("alloca0"))
+  getelementptr2.io.baseAddress <> alloca0.io.Out(param.getelementptr2_in("alloca0"))
 
 
   // Wiring GEP instruction to the Constant
-  getelementptr1.io.idx1.valid :=  true.B
-  getelementptr1.io.idx1.bits.predicate :=  true.B
-  getelementptr1.io.idx1.bits.data :=  0.U
+  getelementptr2.io.idx1.valid :=  true.B
+  getelementptr2.io.idx1.bits.predicate :=  true.B
+  getelementptr2.io.idx1.bits.data :=  0.U
 
 
   // Wiring GEP instruction to the Constant
-  getelementptr1.io.idx2.valid :=  true.B
-  getelementptr1.io.idx2.bits.predicate :=  true.B
-  getelementptr1.io.idx2.bits.data :=  0.U
+  getelementptr2.io.idx2.valid :=  true.B
+  getelementptr2.io.idx2.bits.predicate :=  true.B
+  getelementptr2.io.idx2.bits.data :=  0.U
 
 
   // Wiring Store instruction to the function argument
-  store2.io.inData <> InputSplitter.io.Out.data("field0")
+  store3.io.inData <> InputSplitter.io.Out.data("field0")   // Manually fixed
 
 
 
   // Wiring Store instruction to the parent instruction
-  store2.io.GepAddr <> getelementptr1.io.Out(param.store2_in("getelementptr1"))
-  store2.io.memResp  <> RegisterFile.io.WriteOut(0)
-  RegisterFile.io.WriteIn(0) <> store2.io.memReq
-  store2.io.Out(0).ready := true.B
+  store3.io.GepAddr <> getelementptr2.io.Out(param.store3_in("getelementptr2"))
+  store3.io.memResp  <> RegisterFile.io.WriteOut(0)
+  RegisterFile.io.WriteIn(0) <> store3.io.memReq
+  store3.io.Out(0).ready := true.B
 
 
 
   // Wiring GEP instruction to the parent instruction
-  getelementptr3.io.baseAddress <> alloca0.io.Out(param.getelementptr3_in("alloca0"))
+  getelementptr4.io.baseAddress <> alloca0.io.Out(param.getelementptr4_in("alloca0"))
 
 
   // Wiring GEP instruction to the Constant
-  getelementptr3.io.idx1.valid :=  true.B
-  getelementptr3.io.idx1.bits.predicate :=  true.B
-  getelementptr3.io.idx1.bits.data :=  0.U
+  getelementptr4.io.idx1.valid :=  true.B
+  getelementptr4.io.idx1.bits.predicate :=  true.B
+  getelementptr4.io.idx1.bits.data :=  0.U
 
 
   // Wiring GEP instruction to the Constant
-  getelementptr3.io.idx2.valid :=  true.B
-  getelementptr3.io.idx2.bits.predicate :=  true.B
-  getelementptr3.io.idx2.bits.data :=  1.U
+  getelementptr4.io.idx2.valid :=  true.B
+  getelementptr4.io.idx2.bits.predicate :=  true.B
+  getelementptr4.io.idx2.bits.data :=  1.U
 
 
   // Wiring Store instruction to the function argument
-  store4.io.inData <> InputSplitter.io.Out.data("field1")
+  store5.io.inData <> InputSplitter.io.Out.data("field1")   // Manually fixed
+
 
 
   // Wiring Store instruction to the parent instruction
-  store4.io.GepAddr <> getelementptr3.io.Out(param.store4_in("getelementptr3"))
-  store4.io.memResp  <> RegisterFile.io.WriteOut(1)
-
-  RegisterFile.io.WriteIn(1) <> store4.io.memReq
-  store4.io.Out(0).ready := true.B
-
-
-
-  // Wiring GEP instruction to the parent instruction
-  getelementptr5.io.baseAddress <> alloca0.io.Out(param.getelementptr5_in("alloca0"))
-
-
-  // Wiring GEP instruction to the Constant
-  getelementptr5.io.idx1.valid :=  true.B
-  getelementptr5.io.idx1.bits.predicate :=  true.B
-  getelementptr5.io.idx1.bits.data :=  0.U
-
-
-  // Wiring GEP instruction to the Constant
-  getelementptr5.io.idx2.valid :=  true.B
-  getelementptr5.io.idx2.bits.predicate :=  true.B
-  getelementptr5.io.idx2.bits.data :=  0.U
-
-
-  // Wiring Load instruction to the parent instruction
-  load6.io.GepAddr <> getelementptr5.io.Out(param.load6_in("getelementptr5"))
-  load6.io.memResp <> RegisterFile.io.ReadOut(0)
-  load6.io.PredOp(0) <> store2.io.SuccOp(0)
-  RegisterFile.io.ReadIn(0) <> load6.io.memReq
-
+  store5.io.GepAddr <> getelementptr4.io.Out(param.store5_in("getelementptr4"))
+  store5.io.memResp  <> RegisterFile.io.WriteOut(1)
+  RegisterFile.io.WriteIn(1) <> store5.io.memReq
+  store5.io.Out(0).ready := true.B
 
 
 
   // Wiring GEP instruction to the parent instruction
-  getelementptr7.io.baseAddress <> alloca0.io.Out(param.getelementptr7_in("alloca0"))
+  getelementptr6.io.baseAddress <> alloca0.io.Out(param.getelementptr6_in("alloca0"))
 
 
   // Wiring GEP instruction to the Constant
-  getelementptr7.io.idx1.valid :=  true.B
-  getelementptr7.io.idx1.bits.predicate :=  true.B
-  getelementptr7.io.idx1.bits.data :=  0.U
+  getelementptr6.io.idx1.valid :=  true.B
+  getelementptr6.io.idx1.bits.predicate :=  true.B
+  getelementptr6.io.idx1.bits.data :=  0.U
 
 
   // Wiring GEP instruction to the Constant
-  getelementptr7.io.idx2.valid :=  true.B
-  getelementptr7.io.idx2.bits.predicate :=  true.B
-  getelementptr7.io.idx2.bits.data :=  1.U
+  getelementptr6.io.idx2.valid :=  true.B
+  getelementptr6.io.idx2.bits.predicate :=  true.B
+  getelementptr6.io.idx2.bits.data :=  0.U
 
 
   // Wiring Load instruction to the parent instruction
-  load8.io.GepAddr <> getelementptr7.io.Out(param.load8_in("getelementptr7"))
-  load8.io.memResp <> RegisterFile.io.ReadOut(1)
-  load8.io.PredOp(0) <> store4.io.SuccOp(0)
-  RegisterFile.io.ReadIn(1) <> load8.io.memReq
+  load7.io.GepAddr <> getelementptr6.io.Out(param.load7_in("getelementptr6"))
+  load7.io.memResp <> RegisterFile.io.ReadOut(0)
+  RegisterFile.io.ReadIn(0) <> load7.io.memReq
+  load7.io.PredOp(0) <> store3.io.SuccOp(0)  // manually added
+
+
+
+
+  // Wiring GEP instruction to the parent instruction
+  getelementptr8.io.baseAddress <> alloca0.io.Out(param.getelementptr8_in("alloca0"))
+
+
+  // Wiring GEP instruction to the Constant
+  getelementptr8.io.idx1.valid :=  true.B
+  getelementptr8.io.idx1.bits.predicate :=  true.B
+  getelementptr8.io.idx1.bits.data :=  0.U
+
+
+  // Wiring GEP instruction to the Constant
+  getelementptr8.io.idx2.valid :=  true.B
+  getelementptr8.io.idx2.bits.predicate :=  true.B
+  getelementptr8.io.idx2.bits.data :=  1.U
+
+
+  // Wiring Load instruction to the parent instruction
+  load9.io.GepAddr <> getelementptr8.io.Out(param.load9_in("getelementptr8"))
+  load9.io.memResp <> RegisterFile.io.ReadOut(1)
+  RegisterFile.io.ReadIn(1) <> load9.io.memReq
+  load9.io.PredOp(0) <> store5.io.SuccOp(0)  // manually added
 
 
 
 
   // Wiring instructions
-  add9.io.LeftIO <> load6.io.Out(param.add9_in("load6"))
+  add10.io.LeftIO <> load7.io.Out(param.add10_in("load7"))
 
   // Wiring instructions
-  add9.io.RightIO <> load8.io.Out(param.add9_in("load8"))
+  add10.io.RightIO <> load9.io.Out(param.add10_in("load9"))
+
+  // Wiring GEP instruction to the parent instruction
+  getelementptr11.io.baseAddress <> alloca1.io.Out(param.getelementptr11_in("alloca1"))
+
+
+  // Wiring GEP instruction to the Constant
+  getelementptr11.io.idx1.valid :=  true.B
+  getelementptr11.io.idx1.bits.predicate :=  true.B
+  getelementptr11.io.idx1.bits.data :=  0.U
+
+
+  // Wiring GEP instruction to the Constant
+  getelementptr11.io.idx2.valid :=  true.B
+  getelementptr11.io.idx2.bits.predicate :=  true.B
+  getelementptr11.io.idx2.bits.data :=  0.U
+
+
+  store12.io.inData <> add10.io.Out(param.store12_in("add10"))
+
+
+
+  // Wiring Store instruction to the parent instruction
+  store12.io.GepAddr <> getelementptr11.io.Out(param.store12_in("getelementptr11"))
+  store12.io.memResp  <> RegisterFile.io.WriteOut(2)
+  RegisterFile.io.WriteIn(2) <> store12.io.memReq
+  store12.io.Out(0).ready := true.B
+
+
+
+  // Wiring GEP instruction to the parent instruction
+  getelementptr13.io.baseAddress <> alloca1.io.Out(param.getelementptr13_in("alloca1"))
+
+
+  // Wiring GEP instruction to the Constant
+  getelementptr13.io.idx1.valid :=  true.B
+  getelementptr13.io.idx1.bits.predicate :=  true.B
+  getelementptr13.io.idx1.bits.data :=  0.U
+
+
+  // Wiring GEP instruction to the Constant
+  getelementptr13.io.idx2.valid :=  true.B
+  getelementptr13.io.idx2.bits.predicate :=  true.B
+  getelementptr13.io.idx2.bits.data :=  0.U
+
+
+  // Wiring Load instruction to the parent instruction
+  load14.io.GepAddr <> getelementptr13.io.Out(param.load14_in("getelementptr13"))
+  load14.io.memResp <> RegisterFile.io.ReadOut(2)
+  RegisterFile.io.ReadIn(2) <> load14.io.memReq
+  load14.io.PredOp(0) <> store12.io.SuccOp(0)  // manually added
+
+
+
 
   // Wiring return instruction
-  ret10.io.predicateIn(0).bits.control := true.B
-  ret10.io.predicateIn(0).bits.taskID := 0.U
-  ret10.io.predicateIn(0).valid := true.B
-  ret10.io.In.data("field0") <> add9.io.Out(param.ret10_in("add9"))
-  io.out <> ret10.io.Out
+  ret15.io.predicateIn(0).bits.control := true.B
+  ret15.io.predicateIn(0).bits.taskID := 0.U
+  ret15.io.predicateIn(0).valid := true.B
+  ret15.io.In.data("field0") <> load14.io.Out(param.ret15_in("load14"))
+  io.out <> ret15.io.Out
 
 
 }

@@ -104,7 +104,7 @@ class UnTypStore(NumPredOps: Int,
   }
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
-  io.memReq.bits.node    := nodeID_R
+//  io.memReq.bits.taskID    := nodeID_R
   io.memReq.bits.data    := data_R.data
   io.memReq.bits.Typ     := Typ
   io.memReq.bits.RouteID := RouteID.U

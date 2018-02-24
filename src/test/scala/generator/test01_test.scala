@@ -21,7 +21,7 @@ import node._
 import junctions._
 
 
-class test06CacheWrapper()(implicit p: Parameters) extends test06DF()(p)
+class test01CacheWrapper()(implicit p: Parameters) extends test01DF()(p)
   with CacheParams {
 
   // Instantiate the AXI Cache
@@ -35,29 +35,22 @@ class test06CacheWrapper()(implicit p: Parameters) extends test06DF()(p)
 
 }
 
-class test06Test01(c: test06CacheWrapper) extends PeekPokeTester(c) {
-
+class test01Test01(c: test01CacheWrapper) extends PeekPokeTester(c) {
 
   poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.bits.enable.taskID, 0.U)
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field0").taskID, 0.U)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field1").taskID, 0.U)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.bits.enable.taskID, 3.U)
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.data("field0").data, 5.U)
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field0").taskID, 3.U)
   poke(c.io.in.bits.data("field1").data, 3.U)
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field1").taskID, 3.U)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
@@ -78,9 +71,8 @@ class test06Test01(c: test06CacheWrapper) extends PeekPokeTester(c) {
       peek(c.io.out.bits.enable.control) == 1) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      val expected = 8
-      if (data != expected) {
-        println(s"*** Incorrect result received. Got $data. Hoping for $expected")
+      if (data != 15) {
+        println(s"*** Incorrect result received. Got $data. Hoping for 15")
         fail
       } else {
         println("*** Correct result received.")
@@ -92,11 +84,12 @@ class test06Test01(c: test06CacheWrapper) extends PeekPokeTester(c) {
     println("*** Timeout.")
     fail
   }
+
 }
 
-class test06Tester extends FlatSpec with Matchers {
+class test01Tester extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that test06 works correctly." in {
+  it should "Check that test01 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>
@@ -108,8 +101,8 @@ class test06Tester extends FlatSpec with Matchers {
        "-tbn", "verilator",
        "-td", "test_run_dir",
        "-tts", "0001"),
-     () => new test06CacheWrapper()) {
-     c => new test06Test01(c)
+     () => new test01CacheWrapper()) {
+     c => new test01Test01(c)
     } should be(true)
   }
 }

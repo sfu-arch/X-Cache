@@ -110,7 +110,7 @@ class TypStore(NumPredOps: Int,
 
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
-  io.memReq.bits.node    := nodeID_R
+//  io.memReq.bits.taskID    := nodeID_R
   io.memReq.bits.data    := buffer(sendptr)
   io.memReq.bits.Typ     := MT_W
   io.memReq.bits.RouteID := RouteID.U

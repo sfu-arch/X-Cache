@@ -114,10 +114,14 @@ class BasicBlockNode(NumInputs: Int,
     }
   }
 
+  val taskID_R = RegInit(0.U(tlen.W))
+  when (io.predicateIn(0).fire()) {
+    taskID_R := io.predicateIn(0).bits.taskID
+  }
+
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := pred_R.control
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits := pred_R
   }
 
   // Wire up mask output
@@ -132,9 +136,10 @@ class BasicBlockNode(NumInputs: Int,
 
   when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
+    ValidOut()
     when(predicate){
       pred_R.control := predicate
-      ValidOut()
+      pred_R.taskID  := taskID_R
     }
   }
 
@@ -257,10 +262,15 @@ class BasicBlockNoMaskNode(NumInputs: Int,
     }
   }
 
+  val taskID_R = RegInit(0.U(tlen.W))
+  when (io.predicateIn(0).fire()) {
+    taskID_R := io.predicateIn(0).bits.taskID
+  }
+
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.control := predicate
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits.taskID := taskID_R
   }
 
 

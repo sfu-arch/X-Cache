@@ -27,13 +27,14 @@ class AllocaNodeIO(NumOuts: Int) (implicit p: Parameters)
 
 }
 
-class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
+class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int, FrameSize : Int = 16)
                 (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new AllocaNodeIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Node ID: " + ID + " "
 
+  val FrameBits = log2Ceil(FrameSize)
   /*===========================================*
    *            Registers                      *
    *===========================================*/
@@ -50,6 +51,8 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
   // Alloca resp
   val alloca_resp_R = RegInit(AllocaResp.default)
 
+  val taskID_R = RegInit(0.U(tlen.W))
+
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
@@ -60,6 +63,10 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
+
+  when (io.enable.fire()) {
+    taskID_R := io.enable.bits.taskID
+  }
 
   // Predicate register
   io.allocaInputIO.ready := ~alloca_R.valid
@@ -78,7 +85,7 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
 
   io.allocaReqIO.bits.size := alloca_R.size
   io.allocaReqIO.bits.numByte := alloca_R.numByte
-  io.allocaReqIO.bits.node    := nodeID_R
+//  io.allocaReqIO.bits.taskID  := taskID_R
   io.allocaReqIO.bits.RouteID := RouteID.U
   io.allocaReqIO.valid := false.B
 
@@ -87,17 +94,21 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
     */
   val s_idle :: s_req :: s_done :: Nil = Enum(3)
   val state = RegInit(s_idle)
+  val req_valid = RegInit(false.B)
+  io.allocaReqIO.valid := req_valid
 
   switch (state) {
     is (s_idle) {
       when (start & predicate) {
-        io.allocaReqIO.valid := true.B
+        req_valid := true.B
         state := s_req
       }
     }
     is (s_req) {
       when (io.allocaRespIO.valid) {
-        data_R       := io.allocaRespIO.ptr
+        req_valid := false.B
+//        data_R := Cat(Fill(xlen-(tlen+FrameBits)-1,0.U),taskID_R,io.allocaRespIO.ptr(FrameBits-1,0))
+        data_R := Cat(taskID_R,io.allocaRespIO.ptr(FrameBits-1,0))
         ValidOut()
         // Completion state.
         state := s_done
@@ -105,7 +116,6 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int)
     }
     is (s_done) {
       when(IsOutReady()) {
-        io.allocaReqIO.valid := false.B
         alloca_R := AllocaIO.default
         data_R := 0.U
         pred_R := false.B

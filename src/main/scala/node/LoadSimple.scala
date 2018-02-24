@@ -87,7 +87,7 @@ class UnTypLoad(NumPredOps: Int,
 
   io.memReq.valid := false.B
   io.memReq.bits.address := addr_R.data
-  io.memReq.bits.node := nodeID_R
+//  io.memReq.bits.taskID := nodeID_R
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
   /*=============================================

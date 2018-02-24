@@ -19,7 +19,7 @@ class StackTester(df: Stack)
 
   for( i <- 0 until 10){
     poke(df.io.InData(i).bits.RouteID, i)
-    poke(df.io.InData(i).bits.node, i)
+//    poke(df.io.InData(i).bits.node, i)
     poke(df.io.InData(i).bits.size, 3)
     poke(df.io.InData(i).bits.numByte, 2)
     poke(df.io.InData(i).valid, false.B)
@@ -28,7 +28,7 @@ class StackTester(df: Stack)
   step(1)
 
   poke(df.io.InData(3).valid, true.B)
-  poke(df.io.OutData(3).ready, true.B)
+//  poke(df.io.OutData(3).ready, true.B)
   println(s"Output: ${peek(df.io.OutData(3))}\n")
   step(1)
   println(s"Output: ${peek(df.io.OutData(3))}\n")

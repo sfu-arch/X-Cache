@@ -41,7 +41,7 @@ class ReadTypTableEntryTests(c: ReadTypTableEntry)
       poke(c.io.NodeReq.valid,1)
       poke(c.io.NodeReq.bits.address,123)
       poke(c.io.NodeReq.bits.Typ,4)
-      poke(c.io.NodeReq.bits.node,2)
+//      poke(c.io.NodeReq.bits.node,2)
     }
     else {
       poke(c.io.NodeReq.valid, 0)
