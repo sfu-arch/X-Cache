@@ -18,7 +18,7 @@ resolvers ++= Seq(
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 val defaultVersions = Map(
 //  "chisel3" -> "3.0-SNAPSHOT",
-  "chisel3" -> "3.0.0",
+  "chisel3" -> "3.0.1",
   "chisel-iotesters" -> "1.1-SNAPSHOT"
   )
 

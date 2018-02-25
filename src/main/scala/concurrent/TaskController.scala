@@ -66,11 +66,13 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], NumParent: 
   when (initDone) {
     initQueue := false.B
   }
+  val retReg = RegInit(0.U.asTypeOf(Decoupled(new Call(retTypes))))
   when (initQueue) {
     freeList.io.enq.bits := initCount.asUInt()
     freeList.io.enq.valid := true.B
   }.otherwise {
-    freeList.io.enq.valid := false.B
+    freeList.io.enq.bits  := retReg.bits.data("field0").taskID
+    freeList.io.enq.valid := retReg.fire()
   }
   freeList.io.deq.ready := exeList.io.enq.ready && taskArb.io.out.valid
 
@@ -92,8 +94,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], NumParent: 
     * Delay the result by one clock cycle to look up the parent ID and TID
     * Replace the PID and TID with the original from the parent request
     **************************************************************************/
-  val retReg = RegInit(0.U.asTypeOf(Decoupled(new Call(retTypes))))
-  retReg <> io.childIn(0)//CombineChildData.io.Out
+  retReg <> io.childIn(0)
 
   // Lookup the original PID and TID
   val taskEntry = parentTable(io.childIn(0).bits.data("field0").taskID)

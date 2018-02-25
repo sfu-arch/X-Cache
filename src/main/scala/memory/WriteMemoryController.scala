@@ -220,6 +220,21 @@ class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implici
   // Create WriteTable
   val WriteTable = for (i <- 0 until MLPSize) yield {
     val write_entry = Module(new WriteTableEntry(i))
+    // val MSHR = Module(new WriteTableEntry(i))
+    // Allocator wireup with table entries
+    alloc_arb.io.in(i).valid := write_entry.io.free
+    write_entry.io.NodeReq.valid := alloc_arb.io.in(i).fire()
+    write_entry.io.NodeReq.bits := in_arb.io.out.bits
+
+    // Table entries -> CacheReq arbiter.
+    cachereq_arb.io.in(i) <> write_entry.io.MemReq
+
+    // CacheResp -> Table entries Demux
+    write_entry.io.MemResp <> cacheresp_demux.io.outputs(i)
+
+    // Table entries -> Output arbiter
+    out_arb.io.in(i) <> write_entry.io.output
+
     write_entry
   }
 
@@ -233,20 +248,6 @@ class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implici
 =========================================================================*/
 
   for (i <- 0 until MLPSize) {
-    // val MSHR = Module(new WriteTableEntry(i))
-    // Allocator wireup with table entries
-    alloc_arb.io.in(i).valid := WriteTable(i).io.free
-    WriteTable(i).io.NodeReq.valid := alloc_arb.io.in(i).fire()
-    WriteTable(i).io.NodeReq.bits := in_arb.io.out.bits
-
-    // Table entries -> CacheReq arbiter.
-    cachereq_arb.io.in(i) <> WriteTable(i).io.MemReq
-
-    // CacheResp -> Table entries Demux
-    WriteTable(i).io.MemResp <> cacheresp_demux.io.outputs(i)
-
-    // Table entries -> Output arbiter 
-    out_arb.io.in(i) <> WriteTable(i).io.output
   }
 
   //  Handshaking input arbiter with allocator

@@ -245,10 +245,28 @@ class ReadMemoryController
   =============================================*/
 
   // Create ReadTable
+
   val ReadTable = for (i <- 0 until MLPSize) yield {
     val read_entry = Module(new ReadTableEntry(i))
+    // val MSHR = Module(new ReadTableEntry(i))
+    // Allocator wireup with table entries
+    alloc_arb.io.in(i).valid := read_entry.io.free
+    read_entry.io.NodeReq.valid := alloc_arb.io.in(i).fire()
+    read_entry.io.NodeReq.bits := in_arb.io.out.bits
+
+    // Table entries -> CacheReq arbiter.
+    cachereq_arb.io.in(i).valid := read_entry.io.MemReq.valid
+    cachereq_arb.io.in(i).bits := read_entry.io.MemReq.bits
+    read_entry.io.MemReq.ready := cachereq_arb.io.in(i).ready
+
+    // CacheResp -> Table entries Demux
+    read_entry.io.MemResp <> cacheresp_demux.io.outputs(i)
+
+    // Table entries -> Output arbiter
+    out_arb.io.in(i) <> read_entry.io.output
     read_entry
   }
+
 
   /*=========================================================================
   =            Wire up arbiters and demux to read table entries
@@ -258,23 +276,6 @@ class ReadMemoryController
                4. Cache request arbiter
                5. Cache response demux                                                             =
   =========================================================================*/
-
-  for (i <- 0 until MLPSize) {
-    // val MSHR = Module(new ReadTableEntry(i))
-    // Allocator wireup with table entries
-    alloc_arb.io.in(i).valid := ReadTable(i).io.free
-    ReadTable(i).io.NodeReq.valid := alloc_arb.io.in(i).fire()
-    ReadTable(i).io.NodeReq.bits := in_arb.io.out.bits
-
-    // Table entries -> CacheReq arbiter.
-    cachereq_arb.io.in(i) <> ReadTable(i).io.MemReq
-
-    // CacheResp -> Table entries Demux
-    ReadTable(i).io.MemResp <> cacheresp_demux.io.outputs(i)
-
-    // Table entries -> Output arbiter
-    out_arb.io.in(i) <> ReadTable(i).io.output
-  }
 
   //  Handshaking input arbiter with allocator
   in_arb.io.out.ready := alloc_arb.io.out.valid
