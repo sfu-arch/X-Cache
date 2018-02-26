@@ -12,27 +12,20 @@ import junctions._
 
 import scala.util.Random
 
-
-class DecoupledTaskDF()(implicit p: Parameters) extends Module {
+class DecoupledChildDF(val ID:Int)(implicit p: Parameters) extends Module {
   val io = IO(new Bundle {
-    val In = Flipped(Decoupled(new Call(List(32,32,32,32))))
+   val In = Flipped(Decoupled(new Call(List(32,32,32,32))))
     val Out = Decoupled(new Call(List(32)))
   })
-
-  /* Instantiate modules */
-  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, 1)(p.alterPartial({case TLEN => 4})))
   val bb = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0, Desc="bb")(p))
-  val addModule1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add", Desc="addModule1")(sign = false))
-  val addModule2 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "Add", Desc="addModule2")(sign = false))
-  val addModule3 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add", Desc="addModule3")(sign = false))
   val splitIn = Module(new SplitCall(List(32,32,32,32)))
+  val addModule1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add", Desc=s"c${ID}_addModule1")(sign = false))
+  val addModule2 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "Add", Desc=s"c${ID}_addModule2")(sign = false))
+  val addModule3 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add", Desc=s"c${ID}_addModule3")(sign = false))
   val ret4 = Module(new RetNode(ID=3,NumPredIn=1,retTypes=List(32), Desc="ret4"))
 
-  /* Wire up task module to tester inputs */
-  TaskControllerModule.io.parentIn(0) <> io.In
-
   /* Wire task modules to controller */
-  splitIn.io.In <> TaskControllerModule.io.childOut(0)
+  splitIn.io.In <> io.In
   bb.io.predicateIn(0) <> splitIn.io.Out.enable
 
   addModule1.io.enable <> bb.io.Out(0)
@@ -54,8 +47,29 @@ class DecoupledTaskDF()(implicit p: Parameters) extends Module {
   ret4.io.enable.bits.control := true.B
   ret4.io.enable.valid := true.B
   ret4.io.In.data("field0") <> addModule3.io.Out(0)
+  io.Out <> ret4.io.Out
 
-  TaskControllerModule.io.childIn(0) <> ret4.io.Out
+}
+
+class DecoupledTaskDF()(implicit p: Parameters) extends Module {
+  val io = IO(new Bundle {
+    val In = Flipped(Decoupled(new Call(List(32,32,32,32))))
+    val Out = Decoupled(new Call(List(32)))
+  })
+
+  val numChildren = 4
+
+  /* Instantiate modules */
+  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, numChildren)(p.alterPartial({case TLEN => 4})))
+
+  /* Wire up task module to tester inputs */
+  TaskControllerModule.io.parentIn(0) <> io.In
+
+  val AdderChild = for (c <- 0 until numChildren) yield {
+    val adder = Module(new DecoupledChildDF(c))
+    adder.io.In <> TaskControllerModule.io.childOut(c)
+    TaskControllerModule.io.childIn(c) <> adder.io.Out
+  }
 
   /* wire up module to tester outputs */
   io.Out <> TaskControllerModule.io.parentOut(0)
