@@ -17,14 +17,17 @@ class LiveInNodeIO(NumOuts: Int)
 }
 
 class LiveInNode(NumOuts: Int, ID: Int)
-                (implicit p: Parameters, name: sourcecode.Name)
+                (implicit p: Parameters,
+                 name: sourcecode.Name,
+                 file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new LiveInNodeIO(NumOuts))
 
-  var NodeName = name.value
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
 
   // Printf debugging
-  override val printfSigil = NodeName + ID + " "
+  override val printfSigil = module_name + ": " + node_name + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
@@ -57,7 +60,7 @@ class LiveInNode(NumOuts: Int, ID: Int)
       when(io.InData.fire()){
         state := s_VALIDOUT
         ValidOut()
-        printf("[LOG] " + NodeName + ": Latch fired @ %d, Value:%d\n",cycleCount, io.InData.bits.data.asUInt())
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Latch fired @ %d, Value:%d\n",cycleCount, io.InData.bits.data.asUInt())
       }
     }
     is(s_VALIDOUT){
@@ -68,7 +71,7 @@ class LiveInNode(NumOuts: Int, ID: Int)
     is(s_LATCH){
       when(enable_valid_R){
         when(enable_R){
-          printf("[LOG] " + NodeName + ": Latch invalidate @ %d\n",cycleCount)
+          printf("[LOG] " + " [" + module_name + "] " + module_name + ": Latch invalidate @ %d\n",cycleCount)
           state := s_IDLE
           indata_R <> DataBundle.default
           indata_valid_R := false.B

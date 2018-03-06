@@ -48,14 +48,19 @@ class BasicBlockIO(NumInputs: Int,
 class BasicBlockNode(NumInputs: Int,
                      NumOuts: Int,
                      NumPhi: Int,
-                     BID: Int, Desc: String = "BasicBlock")
-                    (implicit p: Parameters)
+                     BID: Int)
+                    (implicit p: Parameters,
+                     name: sourcecode.Name,
+                     file: sourcecode.File)
   extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
 
   override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
 
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
   // Printf debugging
-  override val printfSigil = Desc + BID + " "
+  override val printfSigil = node_name + BID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   //Assertion
@@ -156,9 +161,9 @@ class BasicBlockNode(NumInputs: Int,
     //Reset state
     state := s_idle
     when(predicate) {
-      printf("[LOG] " + Desc + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
     }.otherwise{
-      printf("[LOG] " + Desc + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d -> 0 predicate\n", cycleCount)
     }
     //Restart predicate bit
     pred_R.control := false.B
@@ -183,14 +188,20 @@ class BasicBlockNode(NumInputs: Int,
 class BasicBlockLoopHeadNode(NumInputs: Int,
                      NumOuts: Int,
                      NumPhi: Int,
-                     BID: Int, Desc: String = "BasicBlock")
-                    (implicit p: Parameters)
+                     BID: Int)
+                    (implicit p: Parameters,
+                     name: sourcecode.Name,
+                     file: sourcecode.File)
   extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
 
   override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
 
+
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
   // Printf debugging
-  override val printfSigil = Desc + BID + " "
+  override val printfSigil = node_name + BID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   //Assertion
@@ -295,9 +306,9 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
     //Reset state
     state := s_idle
     when(predicate) {
-      printf("[LOG] " + Desc + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+      printf("[LOG] " + "[" + module_name + "] " + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
     }.otherwise{
-      printf("[LOG] " + Desc + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+      printf("[LOG] " + "[" + module_name + "] " +  ": Output fired @ %d -> 0 predicate\n", cycleCount)
     }
     //Restart predicate bit
     pred_R.control := false.B
@@ -332,14 +343,19 @@ class BasicBlockNoMaskIO(NumInputs: Int,
 
 class BasicBlockNoMaskNode(NumInputs: Int,
                            NumOuts: Int,
-                           BID: Int, Desc: String = "BasicBlock")
-                          (implicit p: Parameters)
+                           BID: Int)
+                          (implicit p: Parameters,
+                           name: sourcecode.Name,
+                           file: sourcecode.File)
   extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
 
   override lazy val io = IO(new BasicBlockNoMaskIO(NumInputs, NumOuts))
 
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
   // Printf debugging
-  override val printfSigil = Desc + BID + " "
+  override val printfSigil = node_name + BID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -397,9 +413,9 @@ class BasicBlockNoMaskNode(NumInputs: Int,
 
         Reset()
         when(predicate_in_R) {
-          printf("[LOG] " + Desc + ": Output [T] fired @ %d\n", cycleCount)
+          printf("[LOG] " + "[" + module_name + "] " + ": Output [T] fired @ %d\n", cycleCount)
         }.otherwise {
-          printf("[LOG] " + Desc + ": Output [F] fired @ %d\n", cycleCount)
+          printf("[LOG] " + "[" + module_name + "] " +  ": Output [F] fired @ %d\n", cycleCount)
         }
       }
     }
