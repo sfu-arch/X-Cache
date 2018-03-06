@@ -63,9 +63,6 @@ class PhiNode(NumInputs: Int,
    *==========================================*/
 
   var predicate = in_data_W.predicate & IsEnable()
-  var start = IsEnableValid()
-//  var start = mask_valid_R & IsEnableValid()
-
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -117,7 +114,7 @@ class PhiNode(NumInputs: Int,
       }
     }
     is(s_DATALATCH){
-      when(start){
+      when(enable_valid_R){
         state := s_COMPUTE
         ValidOut()
       }

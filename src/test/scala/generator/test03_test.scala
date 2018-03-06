@@ -84,8 +84,7 @@ class test03Test01(c: test03CacheWrapper) extends PeekPokeTester(c) {
     step(1)
     //println(s"Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
-        peek(c.io.out.bits.data("field0").predicate) == 1 &&
-        peek(c.io.out.bits.enable.control) == 1) {
+        peek(c.io.out.bits.data("field0").predicate) == 1) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 3030) {

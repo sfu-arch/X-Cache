@@ -81,8 +81,9 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
 
   switch(state) {
     is(s_IDLE) {
-      when(in_data_valid_R.asUInt().andR() && enable_valid_R) {
-        when(~enable_R) {
+      when(enable_valid_R) {
+        when((~enable_R).toBool) {
+
           out_ready_R := false.B
           enable_valid_R := false.B
 
@@ -94,7 +95,7 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
             in_data_valid_R(i) := false.B
           }
           state := s_IDLE
-        }.otherwise{
+        }.elsewhen(in_data_valid_R.asUInt.andR){
           out_valid_R := true.B
           state := s_COMPUTE
         }
@@ -115,90 +116,4 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
     }
   }
 
-
-//  switch(state) {
-//    is(s_IDLE) {
-//      when(enable_valid_R) {
-//        when(~enable_R) {
-//          out_ready_R := false.B
-//          enable_valid_R := false.B
-//
-//          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-//
-//          state := s_IDLE
-//
-//          for (i <- retTypes.indices) {
-//            in_data_valid_R(i) := false.B
-//          }
-//
-//        }.elsewhen(in_data_valid_R.asUInt.andR) {
-//          out_valid_R := true.B
-//          state := s_COMPUTE
-//        }.otherwise {
-//          state := s_IDLE
-//        }
-//      }
-//    }
-//    is(s_COMPUTE) {
-//      when(out_ready_R) {
-//        for (i <- retTypes.indices) {
-//          in_data_valid_R(i) := false.B
-//        }
-//
-//        out_valid_R := false.B
-//        enable_valid_R := false.B
-//
-//        state := s_IDLE
-//        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, outputReg.bits.data(s"field0").data)
-//      }
-//    }
-//  }
-
-
-  // Latch Data
-  //  for (i <- retTypes.indices) {
-  //    when(io.Out.fire()) {
-  //      inputReady(i) := true.B
-  //    }.elsewhen(io.In.data(s"field$i").valid) {
-  //      outputReg.bits.data(s"field$i") := io.In.data(s"field$i").bits
-  //      inputReady(i) := false.B
-  //    }
-  //    io.In.data(s"field$i").ready := inputReady(i)
-  //  }
-  //
-  //  // Latch Enable
-  //  // @todo logic need to be checked
-  //  // @note I just added second level when statement
-  //  when(io.Out.fire()) {
-  //    inputReady(retTypes.length) := true.B
-  //  }.elsewhen(io.enable.valid) {
-  //    //@note new block of code
-  //    when(io.enable.bits.control) {
-  //      outputReg.bits.enable <> io.enable.bits
-  //      inputReady(retTypes.length) := false.B
-  //    }.otherwise {
-  //      for (i <- retTypes.indices) {
-  //        inputReady(i) := true.B
-  //      }
-  //    }
-  //  }
-  //  io.enable.ready := inputReady(retTypes.length)
-  //
-  //  for (i <- (retTypes.length + 1) until (retTypes.length + 1 + NumPredIn)) {
-  //    when(io.Out.fire()) {
-  //      inputReady(i) := true.B
-  //    }.elsewhen(io.predicateIn(i - (retTypes.length + 1)).valid) {
-  //      inputReady(i) := false.B
-  //    }
-  //    io.predicateIn(i - (retTypes.length + 1)).ready := inputReady(i)
-  //  }
-  //
-  //  io.Out.valid := ~(inputReady.asUInt.orR)
-  //  io.Out.bits := outputReg.bits
-  //
-  //  when(io.Out.fire()) {
-  //    when(outputReg.bits.enable.control) {
-  //      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, outputReg.bits.data(s"field0").data)
-  //    }
-  //  }
 }
