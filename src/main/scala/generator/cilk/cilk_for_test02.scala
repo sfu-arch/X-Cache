@@ -579,6 +579,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
 
   // Reattach (Manual add)
   reattach8.io.predicateIn(0) <> call6.io.Out.data("field0")
+  call6.io.Out.enable.ready := true.B
 
   // Sync (Manual add)
   sync11.io.incIn(0) <> detach4.io.Out(2)
