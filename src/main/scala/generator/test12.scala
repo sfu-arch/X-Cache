@@ -240,6 +240,8 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   val loop_L_13_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
+  val loop_L_13_liveOut_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
@@ -256,7 +258,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 4))
 
 
 
@@ -416,6 +418,8 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
   //loop_L_13_liveIN_0.io.enable <> bb_for_cond.io.Out(4)
   loop_L_13_liveIN_0.io.enable <> bb_for_end.io.Out(1)
 
+  loop_L_13_liveOut_0.io.enable <> bb_for_end.io.Out(2)
+
   //loop_L_13_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
 
 
@@ -532,7 +536,10 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
   ret10.io.predicateIn(0).bits.control := true.B
   ret10.io.predicateIn(0).bits.taskID := 0.U
   ret10.io.predicateIn(0).valid := true.B
-  ret10.io.In.data("field0") <> phi1.io.Out(param.ret10_in("phi1"))
+
+  loop_L_13_liveOut_0.io.InData <> phi1.io.Out(param.ret10_in("phi1"))
+  ret10.io.In.data("field0") <> loop_L_13_liveOut_0.io.Out(0)
+
   io.out <> ret10.io.Out
 
 

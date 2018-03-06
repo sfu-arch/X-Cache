@@ -35,7 +35,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
 
   override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
-//  override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
+  //  override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -52,7 +52,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   //Output register
   val data_R = RegInit(0.U(xlen.W))
 
-  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
   /*==========================================*
@@ -95,33 +95,22 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *============================================*/
   switch(state) {
     is(s_IDLE) {
-      when(enable_valid_R && ~enable_R) {
-        left_R := DataBundle.default
-        right_R := DataBundle.default
+      when(enable_valid_R) {
+        when((~enable_R).toBool) {
+          left_R := DataBundle.default
+          right_R := DataBundle.default
 
-        left_valid_R := false.B
-        right_valid_R := false.B
+          left_valid_R := false.B
+          right_valid_R := false.B
 
-        Reset()
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-      }.elsewhen(io.LeftIO.fire() || io.RightIO.fire()) {
-        state := s_LATCH
+          Reset()
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+        }.elsewhen(left_valid_R && right_valid_R) {
+          ValidOut()
+          state := s_COMPUTE
+        }
       }
-    }
-    is(s_LATCH) {
-      when(enable_valid_R && ~enable_R) {
-        state := s_IDLE
-        left_R := DataBundle.default
-        right_R := DataBundle.default
 
-        left_valid_R := false.B
-        right_valid_R := false.B
-
-        Reset()
-      }.elsewhen(start) {
-        state := s_COMPUTE
-        ValidOut()
-      }
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {
@@ -134,7 +123,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         state := s_IDLE
         //Reset output
         Reset()
-        //when (predicate) {printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)}
         printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out)
       }
     }
