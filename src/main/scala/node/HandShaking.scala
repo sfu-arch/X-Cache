@@ -604,15 +604,11 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := VecInit(Seq.fill(NumOuts) {
-      true.B
-    })
+    out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
   }
 
   def InvalidOut(): Unit = {
-    out_valid_R := VecInit(Seq.fill(NumOuts) {
-      false.B
-    })
+    out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
   }
 
   def Reset(): Unit = {
@@ -708,9 +704,7 @@ class HandShakingCtrlMask(val NumInputs: Int,
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := Vec(Seq.fill(NumOuts) {
-      true.B
-    })
+    out_valid_R := Vec(Seq.fill(NumOuts) (true.B))
 
     mask_valid_R := Vec(Seq.fill(NumPhi) {
       true.B
@@ -718,11 +712,9 @@ class HandShakingCtrlMask(val NumInputs: Int,
   }
 
   def InvalidOut(): Unit = {
-    out_valid_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
+    out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
 
-    mask_valid_R := Vec(Seq.fill(NumPhi) {
+    mask_valid_R := VecInit(Seq.fill(NumPhi) {
       false.B
     })
   }
