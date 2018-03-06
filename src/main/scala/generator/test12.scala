@@ -227,6 +227,13 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
 
   /* ================================================================== *
+   *                   SUB MODULES                                      *
+   * ================================================================== */
+
+  val sub_module_1 = Module(new test12_innerDF())
+
+
+  /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
@@ -243,7 +250,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1))
+  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1))
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
 
@@ -528,6 +535,12 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
   ret10.io.In.data("field0") <> phi1.io.Out(param.ret10_in("phi1"))
   io.out <> ret10.io.Out
 
+
+  /* ================================================================== *
+   *                   CONNECTING SUBMODULES                            *
+   * ================================================================== */
+  sub_module_1.io.in <> call5.io.callOut
+  call5.io.retIn <> sub_module_1.io.out
 
 }
 

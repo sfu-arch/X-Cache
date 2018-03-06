@@ -98,7 +98,7 @@ class test12Test01(c: test12CacheWrapper) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 1  //Cycle counter
   var result = false
-  while (time < 600) {
+  while (time < 800) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
@@ -107,11 +107,11 @@ class test12Test01(c: test12CacheWrapper) extends PeekPokeTester(c) {
       peek(c.io.out.bits.enable.control) == 1) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 35) {
-        println(s"*** Incorrect result received. Got $data. Hoping for 1")
+      if (data != 475) {
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1")
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE + s"*** Correct result received.")
       }
     }
   }

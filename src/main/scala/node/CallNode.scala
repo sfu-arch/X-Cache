@@ -18,10 +18,16 @@ class CallNodeIO(val argTypes: Seq[Int], val retTypes: Seq[Int])(implicit p: Par
   val Out     = new CallDecoupled(retTypes)            // Returns to calling block(s)
 }
 
-class CallNode(ID: Int, argTypes: Seq[Int], retTypes: Seq[Int], Desc : String = "CallNode")(implicit p: Parameters) extends Module
+class CallNode(ID: Int, argTypes: Seq[Int], retTypes: Seq[Int])
+              (implicit p: Parameters,
+               name: sourcecode.Name,
+               file: sourcecode.File) extends Module
   with UniformPrintfs {
   override lazy val io = IO(new CallNodeIO(argTypes, retTypes)(p))
-  override val printfSigil = "Node (Call) ID: " + ID + " "
+  
+  override val printfSigil = module_name + ": " + node_name + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount,_) = Counter(true.B,32*1024)
 
   // Combine individually decoupled enable and data into single decoupled call
@@ -35,6 +41,9 @@ class CallNode(ID: Int, argTypes: Seq[Int], retTypes: Seq[Int], Desc : String = 
   io.Out <> SplitOut.io.Out
 
   when(CombineIn.io.Out.fire) {
-    when (CombineIn.io.Out.bits.enable.control) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+    when (CombineIn.io.Out.bits.enable.control)
+    {
+      printf("[LOG] " + "[" + module_name + "] " + node_name  + ": Output fired @ %d\n",cycleCount)
+    }
   }
 }

@@ -17,13 +17,24 @@ class RetNodeIO(val NumPredIn: Int, val retTypes: Seq[Int])(implicit p: Paramete
   val Out = Decoupled(new Call(retTypes)) // Returns to calling block(s)
 }
 
-class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int, Desc: String = "Return")(implicit val p: Parameters) extends Module
+class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
+             (implicit val p: Parameters,
+              name: sourcecode.Name,
+              file: sourcecode.File) extends Module
   with CoreParams with UniformPrintfs {
+
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
   override lazy val io = IO(new RetNodeIO(NumPredIn, retTypes)(p))
-  override val printfSigil = "Node (Ret) ID: " + ID + " "
+  override val printfSigil = module_name + ": " + node_name + ID + " "
+  //  override val printfSigil = "Node (Ret) ID: " + ID + " "
+
   val inputReady = RegInit(VecInit(Seq.fill(retTypes.length + NumPredIn + 1) {
     true.B
   }))
+
+
   val outputReg = RegInit(0.U.asTypeOf(io.Out))
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
@@ -45,11 +56,11 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int, Desc: String = "R
     inputReady(retTypes.length) := true.B
   }.elsewhen(io.enable.valid) {
     //@note new block of code
-    when(io.enable.bits.control){
+    when(io.enable.bits.control) {
       outputReg.bits.enable <> io.enable.bits
       inputReady(retTypes.length) := false.B
-    }.otherwise{
-      for( i <- retTypes.indices){
+    }.otherwise {
+      for (i <- retTypes.indices) {
         inputReady(i) := true.B
       }
     }
@@ -70,8 +81,7 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int, Desc: String = "R
 
   when(io.Out.fire()) {
     when(outputReg.bits.enable.control) {
-      printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n", cycleCount, outputReg.bits.data(s"field0").data)
+      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, outputReg.bits.data(s"field0").data)
     }
-    //    when (outputReg.bits.enable.control) {printfInfo("Output fired.")}
   }
 }
