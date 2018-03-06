@@ -27,12 +27,13 @@ class AllocaNodeIO(NumOuts: Int) (implicit p: Parameters)
 
 }
 
-class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int, FrameSize : Int = 16)
+class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int, FrameSize : Int = 16, Desc : String = "AllocaNode")
                 (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new AllocaNodeIO(NumOuts))
   // Printf debugging
   override val printfSigil = "Node ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   val FrameBits = log2Ceil(FrameSize)
   /*===========================================*
@@ -121,6 +122,7 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int, FrameSize : Int = 16)
         pred_R := false.B
         state := s_idle
         Reset()
+        when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
       }
     }
   }
