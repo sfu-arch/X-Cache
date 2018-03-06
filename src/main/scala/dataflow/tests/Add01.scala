@@ -31,10 +31,10 @@ abstract class Add01DFIO(implicit val p: Parameters) extends Module with CorePar
 }
 
 
-class Add01DF(implicit p: Parameters) extends Add01DFIO()(p) {
+class Add01DF(implicit p: Parameters) extends Add01DFIO() {
 
-  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0)(p))
-  val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)(p))
+  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
 
   //Setting b0_entry predicates to be true
   // will start immediately

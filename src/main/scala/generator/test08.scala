@@ -187,7 +187,7 @@ abstract class test08DFIO(implicit val p: Parameters) extends Module with CorePa
    * ================================================================== */
 
 
-class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
+class test08DF(implicit p: Parameters) extends test08DFIO() {
 
 
 
@@ -230,15 +230,15 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0)(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 2, BID = 1)(p))
+  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 2, BID = 1))
 
-  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2)(p))
+  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
 
-  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3)(p))
+  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4)(p))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4))
 
 
 
@@ -255,26 +255,26 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  br label %for.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0)(p))
+  val br0 = Module (new UBranchNode(ID = 0))
 
 
 
   // [BasicBlock]  for.cond:
 
   //  %foo.0 = phi i32 [ %j, %entry ], [ %inc, %for.inc ], !UID !10, !ScalaLabel !11
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1)(p))
+  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1))
 
 
   //  %i.0 = phi i32 [ 0, %entry ], [ %inc1, %for.inc ], !UID !12, !ScalaLabel !13
-  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2)(p))
+  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
 
 
   //  %cmp = icmp ult i32 %i.0, 5, !UID !14, !ScalaLabel !15
-  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false)(p))
+  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false))
 
 
   //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
-  val br4 = Module (new CBranchNode(ID = 4)(p))
+  val br4 = Module (new CBranchNode(ID = 4))
 
   val bb_for_cond_expand = Module(new ExpandNode(NumOuts=2, ID=0)(new ControlBundle))
 
@@ -283,22 +283,22 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   // [BasicBlock]  for.body:
 
   //  %inc = add i32 %foo.0, 1, !UID !19, !ScalaLabel !20
-  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false)(p))
+  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
 
 
   //  br label %for.inc, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val br6 = Module (new UBranchNode(ID = 6)(p))
+  val br6 = Module (new UBranchNode(ID = 6))
 
 
 
   // [BasicBlock]  for.inc:
 
   //  %inc1 = add i32 %i.0, 1, !UID !24, !ScalaLabel !25
-  val add7 = Module (new ComputeNode(NumOuts = 1, ID = 7, opCode = "add")(sign=false)(p))
+  val add7 = Module (new ComputeNode(NumOuts = 1, ID = 7, opCode = "add")(sign=false))
 
 
   //  br label %for.cond, !llvm.loop !26, !UID !34, !BB_UID !35, !ScalaLabel !36
-  val br8 = Module (new UBranchNode(ID = 8)(p))
+  val br8 = Module (new UBranchNode(ID = 8))
 
 
 

@@ -198,7 +198,7 @@ abstract class test12DFIO(implicit val p: Parameters) extends Module with CorePa
    * ================================================================== */
 
 
-class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
+class test12DF(implicit p: Parameters) extends test12DFIO() {
 
 
 
@@ -241,15 +241,15 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc = "bb_entry")(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1, Desc = "bb_for_cond")(p))
+  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1))
 
-  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2, Desc = "bb_for_body")(p))
+  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
 
-  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3, Desc = "bb_for_inc")(p))
+  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4, Desc = "bb_for_end")(p))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4))
 
 
 
@@ -266,26 +266,26 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  br label %for.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0, Desc = "br0")(p))
+  val br0 = Module (new UBranchNode(ID = 0))
 
 
 
   // [BasicBlock]  for.cond:
 
   //  %foo.0 = phi i32 [ %j, %entry ], [ %add, %for.inc ], !UID !10, !ScalaLabel !11
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1, Desc = "phi1")(p))
+  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
 
 
   //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !12, !ScalaLabel !13
-  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2, Desc = "phi2")(p))
+  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
 
 
   //  %cmp = icmp ult i32 %i.0, 5, !UID !14, !ScalaLabel !15
-  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT", Desc = "icmp3")(sign=false)(p))
+  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false))
 
 
   //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
-  val br4 = Module (new CBranchNode(ID = 4, Desc = "br4")(p))
+  val br4 = Module (new CBranchNode(ID = 4))
 
   //val bb_for_cond_expand = Module(new ExpandNode(NumOuts=2, ID=0)(new ControlBundle))
 
@@ -294,33 +294,33 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
   // [BasicBlock]  for.body:
 
   //  %call = call i32 @test12_inner(i32 %foo.0), !UID !19, !ScalaLabel !20
-  val call5 = Module(new CallNode(ID=5,argTypes=List(32),retTypes=List(32), Desc="call5")(p))
+  val call5 = Module(new CallNode(ID=5,argTypes=List(32),retTypes=List(32)))
 
 
   //  %add = add i32 %foo.0, %call, !UID !21, !ScalaLabel !22
-  val add6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "add", Desc = "add6")(sign=false)(p))
+  val add6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "add")(sign=false))
 
 
   //  br label %for.inc, !UID !23, !BB_UID !24, !ScalaLabel !25
-  val br7 = Module (new UBranchNode(ID = 7, Desc = "br7")(p))
+  val br7 = Module (new UBranchNode(ID = 7))
 
 
 
   // [BasicBlock]  for.inc:
 
   //  %inc = add i32 %i.0, 1, !UID !26, !ScalaLabel !27
-  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add", Desc = "add8")(sign=false)(p))
+  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
 
 
   //  br label %for.cond, !llvm.loop !28, !UID !36, !BB_UID !37, !ScalaLabel !38
-  val br9 = Module (new UBranchNode(ID = 9, Desc = "br9")(p))
+  val br9 = Module (new UBranchNode(ID = 9))
 
 
 
   // [BasicBlock]  for.end:
 
   //  ret i32 %foo.0, !UID !39, !BB_UID !40, !ScalaLabel !41
-  val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10, Desc="ret10"))
+  val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10))
 
 
 

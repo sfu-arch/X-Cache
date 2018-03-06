@@ -27,12 +27,17 @@ class CBranchNodeIO(NumOuts: Int = 2)
   val CmpIO = Flipped(Decoupled(new DataBundle))
 }
 
-class CBranchNode(ID: Int, Desc: String = "CBranchNode")
-                 (implicit p: Parameters)
+class CBranchNode(ID: Int)
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
   extends HandShakingCtrlNPS(2, ID)(p) {
   override lazy val io = IO(new CBranchNodeIO())
   // Printf debugging
-  override val printfSigil = "Node (CBR) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -118,19 +123,25 @@ class CBranchNode(ID: Int, Desc: String = "CBranchNode")
         state := s_IDLE
 
         Reset()
-        printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n", cycleCount, data_out_R.asUInt())
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": " + ": Output fired @ %d, Value: %d\n", cycleCount, data_out_R.asUInt())
       }
     }
   }
 
 }
 
-class UBranchNode(ID: Int, Desc: String = "UBranchNode", NumOuts: Int = 1)
-                 (implicit p: Parameters)
+class UBranchNode(ID: Int, NumOuts: Int = 1)
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
   extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
   override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
   // Printf debugging
-  override val printfSigil = "Node (UBR) ID: " + ID + " "
+
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -197,7 +208,7 @@ class UBranchNode(ID: Int, Desc: String = "UBranchNode", NumOuts: Int = 1)
     //Reset state
     state := s_idle
     when(predicate) {
-      printf("[LOG] " + Desc + ": Output fired @ %d\n", cycleCount)
+      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n", cycleCount)
     }
 
 
@@ -205,12 +216,17 @@ class UBranchNode(ID: Int, Desc: String = "UBranchNode", NumOuts: Int = 1)
 
 }
 
-class UBranchEndNode(ID: Int, Desc: String = "UBranchNode", NumOuts: Int = 1)
-                 (implicit p: Parameters)
+class UBranchEndNode(ID: Int, NumOuts: Int = 1)
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
   extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
   override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
   // Printf debugging
-  override val printfSigil = "Node (UBR) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -274,7 +290,7 @@ class UBranchEndNode(ID: Int, Desc: String = "UBranchNode", NumOuts: Int = 1)
     Reset()
 
     state := s_idle
-    printf("[LOG] " + Desc + ": Output fired @ %d\n", cycleCount)
+    printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
 
 
   }

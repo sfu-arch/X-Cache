@@ -21,7 +21,7 @@ class DecoupledTaskDF()(implicit p: Parameters) extends Module {
 
   /* Instantiate modules */
   val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, 1))
-  val bb = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0)(p))
+  val bb = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
   val addModule1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
   val addModule2 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "Add")(sign = false))
   val addModule3 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false))

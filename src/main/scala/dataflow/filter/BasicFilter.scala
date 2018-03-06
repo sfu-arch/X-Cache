@@ -21,7 +21,7 @@ class BasicFilter(implicit val p: Parameters) extends Module with CoreParams {
   })
 
   val Multiplier = for (i <- 0 until FilterSize) yield {
-    val mul = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "mul")(sign = false)(p))
+    val mul = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "mul")(sign = false))
     mul
   }
 
@@ -32,7 +32,7 @@ class BasicFilter(implicit val p: Parameters) extends Module with CoreParams {
   }
 
   val Adder = for (i <- 0 until FilterSize-1) yield {
-    val add = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)(p))
+    val add = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
     add
   }
   // First row

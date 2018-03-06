@@ -33,11 +33,11 @@ class ComputeFuse03SDF(implicit val p: Parameters) extends Module with CoreParam
 
 
 
-  val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false)(p))
-  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false)(p))
-  val m2 = Module(new ComputeNode(NumOuts = 2, ID = 0, opCode = "Xor")(sign = false)(p))
-  val m3 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false)(p))
-  val m4 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false)(p))
+  val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false))
+  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false))
+  val m2 = Module(new ComputeNode(NumOuts = 2, ID = 0, opCode = "Xor")(sign = false))
+  val m3 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false))
+  val m4 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false))
 
   m0.io.LeftIO <> io.data0
   m0.io.RightIO <> io.data1
@@ -100,10 +100,10 @@ class ComputeFuse03PDF(implicit val p: Parameters) extends Module with CoreParam
 
   })
 
-  val m0 = Module(new Chain(NumOps = 6, ID = 0, OpCodes = Array("And","Xor","ShiftLeft","And","Add", "ShiftRight"))(sign = false)(p))
-  val t0 = Module(new TestCFU(ID = 0, NumOps = 6, NumIns = 7, NumOuts = 1)(sign = false)(p))
-  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false)(p))
-  val m2 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false)(p))
+  val m0 = Module(new Chain(NumOps = 6, ID = 0, OpCodes = Array("And","Xor","ShiftLeft","And","Add", "ShiftRight"))(sign = false))
+  val t0 = Module(new TestCFU(ID = 0, NumOps = 6, NumIns = 7, NumOuts = 1)(sign = false))
+  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false))
+  val m2 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false))
 
 
   m0.io.In(0) <> io.data0
@@ -160,9 +160,9 @@ class ComputeFuse03CDF(implicit val p: Parameters) extends Module with CoreParam
 
   })
 
-  val t0 = Module(new TestCFU(ID = 0, NumOps = 6, NumIns = 7, NumOuts = 1)(sign = false)(p))
-  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false)(p))
-  val m2 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false)(p))
+  val t0 = Module(new TestCFU(ID = 0, NumOps = 6, NumIns = 7, NumOuts = 1)(sign = false))
+  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false))
+  val m2 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("ShiftLeft","And","Add", "ShiftRight"))(sign = false))
 
 
   t0.io.In(0) <> io.data0

@@ -22,13 +22,19 @@ class IcmpNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle))
 }
 
-class IcmpNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "IcmpNode")
+class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
               (sign: Boolean)
-              (implicit p: Parameters)
+              (implicit p: Parameters,
+               name: sourcecode.Name,
+               file: sourcecode.File)
+
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
   // Printf debugging
-  override val printfSigil = "Node (ICMP) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -97,7 +103,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "IcmpNode")
         right_valid_R := false.B
 
         Reset()
-        printf("[LOG] " + Desc + ": Not predicated value -> reset\n")
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
       }.elsewhen(io.LeftIO.fire() || io.RightIO.fire()) {
         state := s_LATCH
       }
@@ -128,7 +134,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "IcmpNode")
         state := s_IDLE
         //Reset output
         Reset()
-        printf("[LOG] " + Desc + ": Output fired @ %d, (%d ? %d) ->  %d\n", cycleCount,left_R.data, right_R.data, FU.io.out)
+        printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d, (%d ? %d) ->  %d\n", cycleCount,left_R.data, right_R.data, FU.io.out)
       }
     }
   }

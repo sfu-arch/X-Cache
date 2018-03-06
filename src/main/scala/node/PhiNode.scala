@@ -25,12 +25,17 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
 
 class PhiNode(NumInputs: Int,
                  NumOuts: Int,
-                 ID: Int, Desc : String = "PhiNode")
-                (implicit p: Parameters)
+                 ID: Int)
+                (implicit p: Parameters,
+                 name: sourcecode.Name,
+                 file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new PhiNodeIO(NumInputs, NumOuts))
   // Printf debugging
-  override val printfSigil = "PHI ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
@@ -132,42 +137,12 @@ class PhiNode(NumInputs: Int,
 
         //Print output
         when (predicate) {
-          printf("[LOG] " + Desc+": Output fired @ %d, Value: %d\n",cycleCount, in_data_W.data)
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n",cycleCount, in_data_W.data)
         }
 
 
       }
     }
   }
-
-  /*============================================*
-   *            ACTIONS                         *
-   *============================================*/
-
-
-//  when(start && (state === s_DATALATCH) && (in_data_valid_R(sel) === true.B)) {
-//    state := s_COMPUTE
-//    ValidOut()
-//  }
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
-//   when(IsOutReady() && (state === s_COMPUTE) && (m_state === s_DATALATCH)) {
-//    // Reset data
-//    mask_R := 0.U
-//    mask_valid_R := false.B
-//
-//     in_data_R := VecInit(Seq.fill(NumInputs)(DataBundle.default))
-//     in_data_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
-//
-//    //Reset state
-//    state := s_IDLE
-//    //Reset output
-//    Reset()
-//     when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
-//
-//   }
 
 }

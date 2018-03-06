@@ -22,14 +22,20 @@ class ComputeNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle()))
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "ComputeNode")
+class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
                  (sign: Boolean)
-                 (implicit p: Parameters)
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
 
   // Printf debugging
-  override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+//  override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -97,7 +103,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "Compute
         right_valid_R := false.B
 
         Reset()
-        printf("[LOG] " + Desc + ": Not predicated value -> reset\n")
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
       }.elsewhen(io.LeftIO.fire() || io.RightIO.fire()) {
         state := s_LATCH
       }
@@ -129,7 +135,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc: String = "Compute
         //Reset output
         Reset()
         //when (predicate) {printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n",cycleCount, FU.io.out)}
-        printf("[LOG] " + Desc + ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out)
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out)
       }
     }
   }

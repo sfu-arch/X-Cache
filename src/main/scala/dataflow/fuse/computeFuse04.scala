@@ -25,9 +25,9 @@ class ComputeFuse04SDF(implicit val p: Parameters) extends Module with CoreParam
 
   })
 
-  val m0 = Module(new Chain(NumOps = 3, ID = 0, OpCodes = Array("And","ShiftLeft","Xor"))(sign = false)(p))
-  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false)(p))
-  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Or")(sign = false)(p))
+  val m0 = Module(new Chain(NumOps = 3, ID = 0, OpCodes = Array("And","ShiftLeft","Xor"))(sign = false))
+  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false))
+  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Or")(sign = false))
 
   m0.io.In(0) <> io.data0
   m0.io.In(1) <> io.data1
@@ -69,8 +69,8 @@ class ComputeFuse04PDF(implicit val p: Parameters) extends Module with CoreParam
 
   })
 
-  val m0 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("And","ShiftLeft","Xor","Or"))(sign = false)(p))
-  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false)(p))
+  val m0 = Module(new Chain(NumOps = 4, ID = 0, OpCodes = Array("And","ShiftLeft","Xor","Or"))(sign = false))
+  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false))
 
   m0.io.In(0) <> io.data0
   m0.io.In(1) <> io.data1

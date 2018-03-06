@@ -306,9 +306,9 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
     //Reset state
     state := s_idle
     when(predicate) {
-      printf("[LOG] " + "[" + module_name + "] " + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
     }.otherwise{
-      printf("[LOG] " + "[" + module_name + "] " +  ": Output fired @ %d -> 0 predicate\n", cycleCount)
+      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d -> 0 predicate\n", cycleCount)
     }
     //Restart predicate bit
     pred_R.control := false.B
@@ -413,9 +413,9 @@ class BasicBlockNoMaskNode(NumInputs: Int,
 
         Reset()
         when(predicate_in_R) {
-          printf("[LOG] " + "[" + module_name + "] " + ": Output [T] fired @ %d\n", cycleCount)
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output [T] fired @ %d\n", cycleCount)
         }.otherwise {
-          printf("[LOG] " + "[" + module_name + "] " +  ": Output [F] fired @ %d\n", cycleCount)
+          printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output [F] fired @ %d\n", cycleCount)
         }
       }
     }

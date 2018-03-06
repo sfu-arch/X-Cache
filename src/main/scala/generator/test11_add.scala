@@ -79,7 +79,7 @@ abstract class test11_addDFIO(implicit val p: Parameters) extends Module with Co
    * ================================================================== */
 
 
-class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
+class test11_addDF(implicit p: Parameters) extends test11_addDFIO() {
 
 
 
@@ -122,7 +122,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0)(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
 
 
 
@@ -139,7 +139,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
   // [BasicBlock]  entry:
 
   //  %add = add i32 %a, %b, !UID !7, !ScalaLabel !8
-  val add0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "add")(sign=false)(p))
+  val add0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "add")(sign=false))
 
 
   //  ret i32 %add, !UID !9, !BB_UID !10, !ScalaLabel !11

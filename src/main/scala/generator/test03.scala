@@ -197,7 +197,7 @@ abstract class test03DFIO(implicit val p: Parameters) extends Module with CorePa
    * ================================================================== */
 
 
-class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
+class test03DF(implicit p: Parameters) extends test03DFIO() {
 
 
 
@@ -244,15 +244,15 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc = "bb_entry")(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1, Desc = "bb_for_cond")(p))
+  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1))
 
-  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2, Desc = "bb_for_body")(p))
+  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
 
-  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3, Desc = "bb_for_inc")(p))
+  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4, Desc = "bb_for_end")(p))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
 
 
 
@@ -269,58 +269,58 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  br label %for.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0, NumOuts = 1, Desc = "br0")(p))
+  val br0 = Module (new UBranchNode(ID = 0, NumOuts = 1))
 
 
 
   // [BasicBlock]  for.cond:
 
   //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !10, !ScalaLabel !11
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1, Desc = "phi1")(p))
+  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1))
 
 
   //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !12, !ScalaLabel !13
-  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2, Desc = "phi2")(p))
+  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
 
 
   //  %cmp = icmp slt i32 %i.0, %n, !UID !14, !ScalaLabel !15
-  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT", Desc = "icmp3")(sign=false)(p))
+  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false))
 
 
   //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
-  val br4 = Module (new CBranchNode(ID = 4, Desc = "br4")(p))
+  val br4 = Module (new CBranchNode(ID = 4))
 
 
   // [BasicBlock]  for.body:
 
   //  %add = add i32 %sum.0, %a, !UID !19, !ScalaLabel !20
-  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add", Desc = "add5")(sign=false)(p))
+  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
 
 
   //  %mul = mul i32 %add, %b, !UID !21, !ScalaLabel !22
-  val mul6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul", Desc = "mul6")(sign=false)(p))
+  val mul6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign=false))
 
 
   //  br label %for.inc, !UID !23, !BB_UID !24, !ScalaLabel !25
-  val br7 = Module (new UBranchNode(ID = 7, Desc = "br7")(p))
+  val br7 = Module (new UBranchNode(ID = 7))
 
 
 
   // [BasicBlock]  for.inc:
 
   //  %inc = add nsw i32 %i.0, 1, !UID !26, !ScalaLabel !27
-  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add", Desc = "add8")(sign=false)(p))
+  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
 
 
   //  br label %for.cond, !llvm.loop !28, !UID !37, !BB_UID !38, !ScalaLabel !39
-  val br9 = Module (new UBranchNode(ID = 9, Desc = "br9")(p))
+  val br9 = Module (new UBranchNode(ID = 9))
 
 
 
   // [BasicBlock]  for.end:
 
   //  ret i32 %sum.0, !UID !40, !BB_UID !41, !ScalaLabel !42
-  val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10, Desc = "ret10"))
+  val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10))
 
 
 
