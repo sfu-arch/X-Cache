@@ -71,48 +71,30 @@ class BasicBlockNode(NumInputs: Int,
    *===========================================*/
   // OP Inputs
   val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+  val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
-  val predicate_valid_R = RegInit(false.B)
-  val predicate_valid_W = WireInit(VecInit(Seq.fill(NumInputs)(false.B)))
-
-  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-  val state = RegInit(s_idle)
+  val s_IDLE :: s_LATCH :: Nil = Enum(2)
+  val state = RegInit(s_IDLE)
 
   /*===========================================*
    *            Valids                         *
    *===========================================*/
 
   val predicate = predicate_in_R.asUInt().orR
-  val start = predicate_valid_R.asUInt().orR
+  val start = predicate_valid_R.asUInt().andR()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
   val pred_R = RegInit(ControlBundle.default)
-  val fire_W = WireInit(false.B)
 
-
-  //Make all the inputs invalid if one of the inputs
-  //gets fire
-  //
-  when(state === s_idle) {
-    predicate_valid_W := VecInit(Seq.fill(NumInputs)(false.B))
-  }
-
-  fire_W := predicate_valid_W.asUInt.orR
-
-  when(fire_W & state === s_idle) {
-    predicate_valid_R := true.B
-  }
 
   for (i <- 0 until NumInputs) {
-    io.predicateIn(i).ready := ~predicate_valid_R
+    io.predicateIn(i).ready := ~predicate_valid_R(i)
     when(io.predicateIn(i).fire()) {
-      state := s_LATCH
       predicate_in_R(i) <> io.predicateIn(i).bits.control
-      predicate_valid_W(i) := true.B
-      //fire_W := true.B
+      predicate_valid_R(i) := true.B
     }
   }
 
@@ -124,7 +106,7 @@ class BasicBlockNode(NumInputs: Int,
 
   // Wire up mask output
   for (i <- 0 until NumPhi) {
-    io.MaskBB(i).bits := predicate_in_R.asUInt
+    io.MaskBB(i).bits := Reverse(predicate_in_R.asUInt())
   }
 
 
@@ -132,44 +114,183 @@ class BasicBlockNode(NumInputs: Int,
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
 
-  when(start & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    pred_R.control := predicate
-    ValidOut()
+  switch(state) {
+    is(s_IDLE) {
+      when(predicate_valid_R.asUInt.andR) {
+        pred_R.control := predicate
+        ValidOut()
+        state := s_LATCH
+      }
+    }
+    is(s_LATCH) {
+      when(IsOutReady()) {
+        predicate_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
+        predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
+
+        Reset()
+
+        state := s_IDLE
+
+        when(predicate) {
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+        }.otherwise {
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+        }
+        //Restart predicate bit
+        pred_R.control := false.B
+      }
+    }
+
   }
-
-  /*==========================================*
-   *      Output Handshaking and Reset        *
-   *==========================================*/
-
-
-  val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
-
-  val mask_ready_W = mask_ready_R.asUInt.andR
-  val mask_valid_W = mask_valid_R.asUInt.andR
 
 
   // Reseting all the latches
-  when(out_ready_W & mask_ready_W & (state === s_COMPUTE)) {
-    predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
-    predicate_valid_R := false.B
-
-    // Reset output
-    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
-
-    //Reset state
-    state := s_idle
-    when(predicate) {
-      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
-    }.otherwise{
-      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d -> 0 predicate\n", cycleCount)
-    }
-    //Restart predicate bit
-    pred_R.control := false.B
-  }
+//  when(out_ready_W & mask_ready_W & (state === s_COMPUTE)) {
+//    predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
+//    predicate_valid_R := false.B
+//
+//    // Reset output
+//    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+//
+//    //Reset state
+//    state := s_idle
+//    when(predicate) {
+//      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+//    }.otherwise {
+//      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+//    }
+//    //Restart predicate bit
+//    pred_R.control := false.B
+//  }
 
 }
+
+//
+//class BasicBlockNode(NumInputs: Int,
+//                     NumOuts: Int,
+//                     NumPhi: Int,
+//                     BID: Int)
+//                    (implicit p: Parameters,
+//                     name: sourcecode.Name,
+//                     file: sourcecode.File)
+//  extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
+//
+//  override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
+//
+//  val node_name = name.value
+//  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+//
+//  // Printf debugging
+//  override val printfSigil = node_name + BID + " "
+//  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+//
+//  //Assertion
+//  assert(NumPhi >= 1, "NumPhi Cannot be zero")
+//
+//  /*===========================================*
+//   *            Registers                      *
+//   *===========================================*/
+//  // OP Inputs
+//  val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+//
+//  val predicate_valid_R = RegInit(false.B)
+//  val predicate_valid_W = WireInit(VecInit(Seq.fill(NumInputs)(false.B)))
+//
+//  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+//  val state = RegInit(s_idle)
+//
+//  /*===========================================*
+//   *            Valids                         *
+//   *===========================================*/
+//
+//  val predicate = predicate_in_R.asUInt().orR
+//  val start = predicate_valid_R.asUInt().orR
+//
+//  /*===============================================*
+//   *            Latch inputs. Wire up output       *
+//   *===============================================*/
+//
+//  val pred_R = RegInit(ControlBundle.default)
+//  val fire_W = WireInit(false.B)
+//
+//
+//  //Make all the inputs invalid if one of the inputs
+//  //gets fire
+//  //
+//  when(state === s_idle) {
+//    predicate_valid_W := VecInit(Seq.fill(NumInputs)(false.B))
+//  }
+//
+//  fire_W := predicate_valid_W.asUInt.orR
+//
+//  when(fire_W & state === s_idle) {
+//    predicate_valid_R := true.B
+//  }
+//
+//  for (i <- 0 until NumInputs) {
+//    io.predicateIn(i).ready := ~predicate_valid_R
+//    when(io.predicateIn(i).fire()) {
+//      state := s_LATCH
+//      predicate_in_R(i) <> io.predicateIn(i).bits.control
+//      predicate_valid_W(i) := true.B
+//      //fire_W := true.B
+//    }
+//  }
+//
+//  // Wire up Outputs
+//  for (i <- 0 until NumOuts) {
+//    io.Out(i).bits.control := pred_R.control
+//    io.Out(i).bits.taskID := 0.U
+//  }
+//
+//  // Wire up mask output
+//  for (i <- 0 until NumPhi) {
+//    io.MaskBB(i).bits := predicate_in_R.asUInt
+//  }
+//
+//
+//  /*============================================*
+//   *            ACTIONS (possibly dangerous)    *
+//   *============================================*/
+//
+//  when(start & state =/= s_COMPUTE) {
+//    state := s_COMPUTE
+//    pred_R.control := predicate
+//    ValidOut()
+//  }
+//
+//  /*==========================================*
+//   *      Output Handshaking and Reset        *
+//   *==========================================*/
+//
+//
+//  val out_ready_W = out_ready_R.asUInt.andR
+//  val out_valid_W = out_valid_R.asUInt.andR
+//
+//  val mask_ready_W = mask_ready_R.asUInt.andR
+//  val mask_valid_W = mask_valid_R.asUInt.andR
+//
+//
+//  // Reseting all the latches
+//  when(out_ready_W & mask_ready_W & (state === s_COMPUTE)) {
+//    predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
+//    predicate_valid_R := false.B
+//
+//    // Reset output
+//    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+//
+//    //Reset state
+//    state := s_idle
+//    when(predicate) {
+//      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+//    }.otherwise{
+//      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d -> 0 predicate\n", cycleCount)
+//    }
+//    //Restart predicate bit
+//    pred_R.control := false.B
+//  }
+//
+//}
 
 
 /**
@@ -186,12 +307,12 @@ class BasicBlockNode(NumInputs: Int,
   */
 
 class BasicBlockLoopHeadNode(NumInputs: Int,
-                     NumOuts: Int,
-                     NumPhi: Int,
-                     BID: Int)
-                    (implicit p: Parameters,
-                     name: sourcecode.Name,
-                     file: sourcecode.File)
+                             NumOuts: Int,
+                             NumPhi: Int,
+                             BID: Int)
+                            (implicit p: Parameters,
+                             name: sourcecode.Name,
+                             file: sourcecode.File)
   extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
 
   override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
@@ -273,11 +394,11 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
    *============================================*/
 
   when(start & state =/= s_COMPUTE) {
-    when(predicate){
+    when(predicate) {
       state := s_COMPUTE
       pred_R.control := predicate
       ValidOut()
-    }.otherwise{
+    }.otherwise {
       state := s_idle
       predicate_valid_R := false.B
     }
@@ -307,8 +428,8 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
     state := s_idle
     when(predicate) {
       printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
-    }.otherwise{
-      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d -> 0 predicate\n", cycleCount)
+    }.otherwise {
+      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
     }
     //Restart predicate bit
     pred_R.control := false.B
@@ -415,7 +536,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
         when(predicate_in_R) {
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output [T] fired @ %d\n", cycleCount)
         }.otherwise {
-          printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output [F] fired @ %d\n", cycleCount)
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output [F] fired @ %d\n", cycleCount)
         }
       }
     }

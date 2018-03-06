@@ -39,28 +39,18 @@ object Data_test02_FlowParam{
 
 
   val bb_if_end_pred = Map(
-    "br3" -> 0,
-    "br5" -> 1
-  )
-
-
-  val bb_entry_if_end_crit_edge_pred = Map(
-    "br2" -> 0
+    "br2" -> 0,
+    "br4" -> 1
   )
 
 
   val br2_brn_bb = Map(
     "bb_if_then" -> 0,
-    "bb_entry_if_end_crit_edge" -> 1
+    "bb_if_end" -> 1
   )
 
 
-  val br3_brn_bb = Map(
-    "bb_if_end" -> 0
-  )
-
-
-  val br5_brn_bb = Map(
+  val br4_brn_bb = Map(
     "bb_if_end" -> 0
   )
 
@@ -72,25 +62,20 @@ object Data_test02_FlowParam{
   )
 
 
-  val bb_entry_if_end_crit_edge_activate = Map(
-    "br3" -> 0
-  )
-
-
   val bb_if_then_activate = Map(
-    "add4" -> 0,
-    "br5" -> 1
+    "add3" -> 0,
+    "br4" -> 1
   )
 
 
   val bb_if_end_activate = Map(
-    "phi6" -> 0,
-    "ret7" -> 1
+    "phi5" -> 0,
+    "ret6" -> 1
   )
 
 
-  val phi6_phi_in = Map(
-    "add4" -> 0,
+  val phi5_phi_in = Map(
+    "add3" -> 0,
     "const_1" -> 1
   )
 
@@ -107,28 +92,28 @@ object Data_test02_FlowParam{
   )
 
 
-  //  br i1 %cmp, label %if.then, label %entry.if.end_crit_edge, !UID !12, !BB_UID !13, !ScalaLabel !14
+  //  br i1 %cmp, label %if.then, label %if.end, !UID !12, !BB_UID !13, !ScalaLabel !14
   val br2_in = Map(
     "icmp1" -> 0
   )
 
 
-  //  %add = add i32 %a, %b, !UID !16, !ScalaLabel !17
-  val add4_in = Map(
+  //  %add = add i32 %a, %b, !UID !15, !ScalaLabel !16
+  val add3_in = Map(
     "field0" -> 1,
     "field1" -> 0
   )
 
 
-  //  %sum.0 = phi i32 [ %add, %if.then ], [ 0, %entry.if.end_crit_edge ], !UID !21, !ScalaLabel !22
-  val phi6_in = Map(
-    "add4" -> 0
+  //  %sum.0 = phi i32 [ %add, %if.then ], [ 0, %entry ], !UID !20, !ScalaLabel !21
+  val phi5_in = Map(
+    "add3" -> 0
   )
 
 
-  //  ret i32 %sum.0, !UID !23, !BB_UID !24, !ScalaLabel !25
-  val ret7_in = Map(
-    "phi6" -> 0
+  //  ret i32 %sum.0, !UID !22, !BB_UID !23, !ScalaLabel !24
+  val ret6_in = Map(
+    "phi5" -> 0
   )
 
 
@@ -204,11 +189,9 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
-  val bb_entry_if_end_crit_edge = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1))
 
-  val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
-
-  val bb_if_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 3))
+  val bb_if_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2))
 
 
 
@@ -232,37 +215,30 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
   val icmp1 = Module (new IcmpNode(NumOuts = 1, ID = 1, opCode = "EQ")(sign=false))
 
 
-  //  br i1 %cmp, label %if.then, label %entry.if.end_crit_edge, !UID !12, !BB_UID !13, !ScalaLabel !14
+  //  br i1 %cmp, label %if.then, label %if.end, !UID !12, !BB_UID !13, !ScalaLabel !14
   val br2 = Module (new CBranchNode(ID = 2))
-
-
-
-  // [BasicBlock]  entry.if.end_crit_edge:
-
-  //  br label %if.end, !ScalaLabel !15
-  val br3 = Module (new UBranchNode(ID = 3))
 
 
 
   // [BasicBlock]  if.then:
 
-  //  %add = add i32 %a, %b, !UID !16, !ScalaLabel !17
-  val add4 = Module (new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign=false))
+  //  %add = add i32 %a, %b, !UID !15, !ScalaLabel !16
+  val add3 = Module (new ComputeNode(NumOuts = 1, ID = 3, opCode = "add")(sign=false))
 
 
-  //  br label %if.end, !UID !18, !BB_UID !19, !ScalaLabel !20
-  val br5 = Module (new UBranchNode(ID = 5))
+  //  br label %if.end, !UID !17, !BB_UID !18, !ScalaLabel !19
+  val br4 = Module (new UBranchNode(ID = 4))
 
 
 
   // [BasicBlock]  if.end:
 
-  //  %sum.0 = phi i32 [ %add, %if.then ], [ 0, %entry.if.end_crit_edge ], !UID !21, !ScalaLabel !22
-  val phi6 = Module (new PhiNode(NumInputs = 2, NumOuts = 1, ID = 6))
+  //  %sum.0 = phi i32 [ %add, %if.then ], [ 0, %entry ], !UID !20, !ScalaLabel !21
+  val phi5 = Module (new PhiNode(NumInputs = 2, NumOuts = 1, ID = 5))
 
 
-  //  ret i32 %sum.0, !UID !23, !BB_UID !24, !ScalaLabel !25
-  val ret7 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=7))
+  //  ret i32 %sum.0, !UID !22, !BB_UID !23, !ScalaLabel !24
+  val ret6 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=6))
 
 
 
@@ -299,19 +275,15 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
     */
 
   //Connecting br2 to bb_if_then
-  bb_if_then.io.predicateIn(param.bb_if_then_pred("br2")) <> br2.io.Out(param.br2_brn_bb("bb_if_then"))
+  bb_if_then.io.predicateIn <> br2.io.Out(param.br2_brn_bb("bb_if_then"))
 
 
-  //Connecting br2 to bb_entry_if_end_crit_edge
-  bb_entry_if_end_crit_edge.io.predicateIn(param.bb_entry_if_end_crit_edge_pred("br2")) <> br2.io.Out(param.br2_brn_bb("bb_entry_if_end_crit_edge"))
+  //Connecting br2 to bb_if_end
+  bb_if_end.io.predicateIn(param.bb_if_end_pred("br2")) <> br2.io.Out(param.br2_brn_bb("bb_if_end"))
 
 
-  //Connecting br3 to bb_if_end
-  bb_if_end.io.predicateIn(param.bb_if_end_pred("br3")) <> br3.io.Out(param.br3_brn_bb("bb_if_end"))
-
-
-  //Connecting br5 to bb_if_end
-  bb_if_end.io.predicateIn(param.bb_if_end_pred("br5")) <> br5.io.Out(param.br5_brn_bb("bb_if_end"))
+  //Connecting br4 to bb_if_end
+  bb_if_end.io.predicateIn(param.bb_if_end_pred("br4")) <> br4.io.Out(param.br4_brn_bb("bb_if_end"))
 
 
 
@@ -333,19 +305,15 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 
 
 
-  br3.io.enable <> bb_entry_if_end_crit_edge.io.Out(param.bb_entry_if_end_crit_edge_activate("br3"))
+  add3.io.enable <> bb_if_then.io.Out(param.bb_if_then_activate("add3"))
+
+  br4.io.enable <> bb_if_then.io.Out(param.bb_if_then_activate("br4"))
 
 
 
-  add4.io.enable <> bb_if_then.io.Out(param.bb_if_then_activate("add4"))
+  phi5.io.enable <> bb_if_end.io.Out(param.bb_if_end_activate("phi5"))
 
-  br5.io.enable <> bb_if_then.io.Out(param.bb_if_then_activate("br5"))
-
-
-
-  phi6.io.enable <> bb_if_end.io.Out(param.bb_if_end_activate("phi6"))
-
-  ret7.io.enable <> bb_if_end.io.Out(param.bb_if_end_activate("ret7"))
+  ret6.io.enable <> bb_if_end.io.Out(param.bb_if_end_activate("ret6"))
 
 
 
@@ -369,18 +337,18 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
     */
   //Connect PHI node
 
-  phi6.io.InData(param.phi6_phi_in("add4")) <> add4.io.Out(param.phi6_in("add4"))
+  phi5.io.InData(param.phi5_phi_in("add3")) <> add3.io.Out(param.phi5_in("add3"))
 
-  phi6.io.InData(param.phi6_phi_in("const_1")).bits.data := 0.U
-  phi6.io.InData(param.phi6_phi_in("const_1")).bits.predicate := true.B
-  phi6.io.InData(param.phi6_phi_in("const_1")).valid := true.B
+  phi5.io.InData(param.phi5_phi_in("const_1")).bits.data := 0.U
+  phi5.io.InData(param.phi5_phi_in("const_1")).bits.predicate := true.B
+  phi5.io.InData(param.phi5_phi_in("const_1")).valid := true.B
 
   /**
     * Connecting PHI Masks
     */
   //Connect PHI node
 
-  phi6.io.Mask <> bb_if_end.io.MaskBB(0)
+  phi5.io.Mask <> bb_if_end.io.MaskBB(0)
 
 
 
@@ -413,17 +381,17 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
   br2.io.CmpIO <> icmp1.io.Out(param.br2_in("icmp1"))
 
   // Wiring Binary instruction to the function argument
-  add4.io.LeftIO <> InputSplitter.io.Out.data("field0")
+  add3.io.LeftIO <> InputSplitter.io.Out.data("field0")
 
   // Wiring Binary instruction to the function argument
-  add4.io.RightIO <> InputSplitter.io.Out.data("field1")
+  add3.io.RightIO <> InputSplitter.io.Out.data("field1")
 
   // Wiring return instruction
-  ret7.io.predicateIn(0).bits.control := true.B
-  ret7.io.predicateIn(0).bits.taskID := 0.U
-  ret7.io.predicateIn(0).valid := true.B
-  ret7.io.In.data("field0") <> phi6.io.Out(param.ret7_in("phi6"))
-  io.out <> ret7.io.Out
+  ret6.io.predicateIn(0).bits.control := true.B
+  ret6.io.predicateIn(0).bits.taskID := 0.U
+  ret6.io.predicateIn(0).valid := true.B
+  ret6.io.In.data("field0") <> phi5.io.Out(param.ret6_in("phi5"))
+  io.out <> ret6.io.Out
 
 
 }
