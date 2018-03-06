@@ -39,9 +39,9 @@ class test10CacheWrapper()(implicit p: Parameters) extends test10DF()(p)
   val addrVec = VecInit(0.U,1.U,2.U,3.U)
   val dataVec = VecInit(1.U,2.U,3.U,4.U)
   val (count_out, count_done) = Counter(raminit, addrVec.length)
+  memModel.io.init.bits.addr := addrVec(count_out)
+  memModel.io.init.bits.data := dataVec(count_out)
   when (!count_done) {
-    memModel.io.init.bits.addr := addrVec(count_out)
-    memModel.io.init.bits.data := dataVec(count_out)
     memModel.io.init.valid := true.B
   }.otherwise {
     memModel.io.init.valid := false.B
