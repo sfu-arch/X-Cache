@@ -96,6 +96,7 @@ class UnifiedController (ID: Int,
   val (sIdle :: sReq :: sResp :: sDone :: Nil) = Enum(4)
   val state = RegInit(init = sIdle)
 
+  ReadWriteArbiter.io.CacheReq.ready := true.B
   switch(state) {
     is(sIdle){
       when(ReadWriteArbiter.io.CacheReq.fire()) {

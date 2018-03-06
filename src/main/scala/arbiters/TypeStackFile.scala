@@ -109,9 +109,9 @@ class TypeStackFile(ID: Int,
 =            Read Memory Controller            =
 ==============================================*/
 
-  when(ReadController.io.CacheReq.fire()) {
+//  when(ReadController.io.CacheReq.fire()) {
     RegFile.io.raddr1 := ReadController.io.CacheReq.bits.addr(wordindex + log2Ceil(Size) - 1, wordindex)
-  }
+//  }
 
   ReadController.io.CacheResp.valid     := ReadValid
   ReadController.io.CacheResp.bits.tag  := ReadReq.tag

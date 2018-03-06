@@ -15,31 +15,31 @@ class ParentBundle()(implicit p: Parameters) extends CoreBundle  {
 //  override def cloneType: this.type = new ParentBundle(argTypes).asInstanceOf[this.type]
 }
 
-class TaskControllerIO(val argTypes: Seq[Int], val retTypes: Seq[Int], NumParent: Int, NumChild: Int)(implicit p: Parameters)
-  extends Bundle
+class TaskControllerIO(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int)(implicit p: Parameters)
+  extends CoreBundle
 {
-  val parentIn  = Vec(NumParent, Flipped(Decoupled(new Call(argTypes))))  // Requests from calling block(s)
-  val parentOut = Vec(NumParent, Decoupled(new Call(retTypes)))           // Returns to calling block(s)
-  val childIn   = Vec(NumChild, Flipped(Decoupled(new Call(retTypes))))   // Returns from sub-block
-  val childOut  = Vec(NumChild, Decoupled(new Call(argTypes)))            // Requests to sub-block
+  val parentIn  = Vec(numParent, Flipped(Decoupled(new Call(argTypes))))  // Requests from calling block(s)
+  val parentOut = Vec(numParent, Decoupled(new Call(retTypes)))           // Returns to calling block(s)
+  val childIn   = Vec(numChild, Flipped(Decoupled(new Call(retTypes))))   // Returns from sub-block
+  val childOut  = Vec(numChild, Decoupled(new Call(argTypes)))            // Requests to sub-block
 }
 
-class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], NumParent: Int, NumChild: Int)
+class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int)
                     (implicit val p: Parameters) extends Module with CoreParams {
 
   // Instantiate TaskController I/O signals
-  val io = IO(new TaskControllerIO(argTypes, retTypes, NumParent, NumChild))
+  val io = IO(new TaskControllerIO(argTypes, retTypes, numParent, numChild))
 
   /** *************************************************************************
     * Input Arbiter
     * Instantiate a round-robin arbiter to select from multiple possible inputs
     * *************************************************************************/
-  val taskArb = Module(new RRArbiter(new Call(argTypes), NumParent))
-  val freeList = Module(new Queue(UInt(), 1 << tlen))
+  val taskArb = Module(new RRArbiter(new Call(argTypes), numParent))
+  val freeList = Module(new Queue(UInt(tlen.W), 1 << tlen))
   val exeList = Module(new Queue(new Call(argTypes), 1 << tlen))
   val parentTable = SyncReadMem(1 << tlen, new ParentBundle())
 
-  for (i <- 0 until NumParent) {
+  for (i <- 0 until numParent) {
     taskArb.io.in(i) <> io.parentIn(i)
   }
   taskArb.io.out.ready := exeList.io.enq.ready && freeList.io.deq.valid
@@ -49,12 +49,13 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], NumParent: 
   parentID.sid := taskArb.io.chosen
   parentID.did := taskArb.io.out.bits.data("field0").taskID
 
+  /*
   var parentCall = Wire(new Call(argTypes))
   parentCall := taskArb.io.out.bits
   for (i <- argTypes.indices) {
     parentCall.data(s"field$i").taskID := freeList.io.deq.bits.data
   }
-
+*/
   /** *************************************************************************
     * Free List
     * Instantiate a queue to hold the unused table task entries. Initialize
@@ -95,8 +96,8 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], NumParent: 
   /***************************************************************************
     * Spawn task to an available child
     **************************************************************************/
-  val readyBits = WireInit(VecInit(Seq.fill(NumChild)(false.B)))
-  for (i <- 0 until NumChild) {
+  val readyBits = WireInit(VecInit(Seq.fill(numChild)(false.B)))
+  for (i <- 0 until numChild) {
     io.childOut(i).bits := exeList.io.deq.bits
     io.childOut(i).valid := false.B
     readyBits(i) := io.childOut(i).ready
@@ -110,7 +111,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], NumParent: 
     * Delay the result by one clock cycle to look up the parent ID and TID
     * Replace the PID and TID with the original from the parent request
     **************************************************************************/
-  val ChildArb = Module(new RRArbiter(new Call(retTypes), NumChild))
+  val ChildArb = Module(new RRArbiter(new Call(retTypes), numChild))
   ChildArb.io.in <> io.childIn
   retReg <> ChildArb.io.out
 
