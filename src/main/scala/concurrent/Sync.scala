@@ -4,29 +4,33 @@ import chisel3._
 import chisel3.util._
 import chisel3.Module
 import config.{CoreParams, Parameters}
+import control.BasicBlockNoMaskIO
 import interfaces.{ControlBundle, DataBundle}
-import node.{HandShakingCtrlNPS, HandShakingIONPS}
+import node.{HandShakingCtrlNPS, HandShakingCtrlNoMaskIO, HandShakingIONPS}
 
-class SyncIO()(implicit p: Parameters)
-  extends HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p)
+class SyncIO(NumOuts : Int, NumInc : Int, NumDec : Int)(implicit p: Parameters)
+extends HandShakingIONPS(NumOuts)(new ControlBundle)(p)
 {
-  val syncStatus = Input(Vec(1<<tlen,Bool()))
+  val incIn = Flipped(Vec(NumInc, Decoupled(new ControlBundle())))
+  val decIn = Flipped(Vec(NumDec, Decoupled(new ControlBundle())))
 }
 
-class Sync(ID: Int)(implicit p: Parameters)
-  extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
-  override lazy val io = IO(new SyncIO()(p))
+class Sync(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int, Desc : String = "Sync")
+           (implicit p: Parameters) extends HandShakingCtrlNPS(NumOuts, ID)(p) {
+  override lazy val io = IO(new SyncIO(NumOuts, NumInc, NumDec)(p))
   // Printf debugging
   override val printfSigil = "Node (SYNC) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
 
   // State machine
-  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
+  val s_IDLE :: s_COMPUTE :: s_DONE :: Nil = Enum(3)
   val state = RegInit(s_IDLE)
   val enableID = RegInit(0.U(1<<tlen))
+  val syncCount = RegInit(0.U(8.W))
 
   /*==========================================*
    *           Predicate Evaluation           *
@@ -43,24 +47,43 @@ class Sync(ID: Int)(implicit p: Parameters)
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
+  val incArb = Module(new Arbiter(new ControlBundle, NumInc))
+  val decArb = Module(new Arbiter(new ControlBundle, NumDec))
 
+  incArb.io.in <> io.incIn
+  decArb.io.in <> io.decIn
 
-  io.Out(0).valid := false.B
+  incArb.io.out.ready := true.B
+  decArb.io.out.ready := true.B
+  val inc = incArb.io.out.fire() && incArb.io.out.bits.control
+  val dec = decArb.io.out.fire() && decArb.io.out.bits.control
+  when(inc && !dec) {
+    syncCount := syncCount + 1.U
+  }.elsewhen(!inc && dec) {
+    syncCount := syncCount - 1.U
+  }
+
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.control := predicate
+    io.Out(i).bits.taskID := enableID
+  }
   switch (state) {
     is (s_IDLE) {
       when(start && predicate) {
         state := s_COMPUTE
-        printfInfo("Input fired")
       }
     }
     is (s_COMPUTE) {
-      when(io.Out(0).ready && io.syncStatus(enableID)) {
-        state := s_IDLE
-        io.Out(0).valid := true.B
-        io.Out(0).bits.control := true.B
-        io.Out(0).bits.taskID  := enableID
+      when (syncCount === 0.U) {
+        ValidOut()
+        state := s_DONE
+      }
+    }
+    is (s_DONE) {
+      when(IsOutReady()) {
         Reset()
-        printfInfo("Output fired")
+        when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+        state := s_IDLE
       }
     }
   }

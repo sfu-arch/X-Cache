@@ -261,7 +261,7 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
 
 
   //  sync label %sync.continue, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val sync6 = Module(new Sync2(ID = 6, NumOuts = 1, Desc = "sync6")(p))
+  val sync6 = Module(new Sync(ID = 6, NumOuts = 1, NumInc=1, NumDec=1, Desc = "sync6")(p))
 
 
 
@@ -461,8 +461,8 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
   reattach4.io.predicateIn(0) <> store3.io.Out(0)
 
   // Sync (Manual add)
-  sync6.io.incIn <> detach1.io.Out(2)
-  sync6.io.decIn <> reattach4.io.Out(0)
+  sync6.io.incIn(0) <> detach1.io.Out(2)
+  sync6.io.decIn(0) <> reattach4.io.Out(0)
 
 
   // Wiring return instruction

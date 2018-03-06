@@ -412,7 +412,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   // [BasicBlock]  pfor.end:
 
   //  sync label %pfor.end.continue, !UID !53, !BB_UID !54, !ScalaLabel !55
-  val sync15 = Module(new Sync2(ID = 15, NumOuts = 1, Desc = "sync15")(p)) // Manually changed to sync2
+  val sync15 = Module(new Sync(ID = 15, NumOuts = 1, NumInc = 1, NumDec = 1, Desc = "sync15")(p)) // Manually changed to sync
 
 
 
@@ -659,8 +659,8 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   reattach12.io.predicateIn(0) <> store10.io.Out(0)
 
   // Sync (Manual add)
-  sync15.io.incIn <> detach4.io.Out(2)
-  sync15.io.decIn <> reattach12.io.Out(0)
+  sync15.io.incIn(0) <> detach4.io.Out(2)
+  sync15.io.decIn(0) <> reattach12.io.Out(0)
 
 
 
