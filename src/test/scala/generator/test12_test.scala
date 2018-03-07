@@ -107,10 +107,10 @@ class test12Test01(c: test12CacheWrapper) extends PeekPokeTester(c) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 475) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1")
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"*** Correct result received.")
+        println(Console.BLUE + s"*** Correct result received." + Console.RESET)
       }
     }
   }

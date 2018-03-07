@@ -39,14 +39,14 @@ object Data_test11_add_FlowParam{
   )
 
 
-  //  %add = add i32 %a, %b, !UID !7, !ScalaLabel !8
+  //  %add = add i32 %a, %b, !UID !8, !ScalaLabel !9
   val add0_in = Map(
     "field0" -> 0,
     "field1" -> 0
   )
 
 
-  //  ret i32 %add, !UID !9, !BB_UID !10, !ScalaLabel !11
+  //  ret i32 %add, !UID !10, !BB_UID !11, !ScalaLabel !12
   val ret1_in = Map(
     "add0" -> 0
   )
@@ -79,7 +79,7 @@ abstract class test11_addDFIO(implicit val p: Parameters) extends Module with Co
    * ================================================================== */
 
 
-class test11_addDF(implicit p: Parameters) extends test11_addDFIO() {
+class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
 
 
@@ -138,14 +138,12 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO() {
 
   // [BasicBlock]  entry:
 
-  //  %add = add i32 %a, %b, !UID !7, !ScalaLabel !8
+  //  %add = add i32 %a, %b, !UID !8, !ScalaLabel !9
   val add0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "add")(sign=false))
 
 
-  //  ret i32 %add, !UID !9, !BB_UID !10, !ScalaLabel !11
+  //  ret i32 %add, !UID !10, !BB_UID !11, !ScalaLabel !12
   val ret1 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=1))
-
-
 
 
 
@@ -184,10 +182,6 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO() {
 
 
 
-  // There is no detach instruction
-
-
-
 
   /* ================================================================== *
    *                   CONNECTING BASIC BLOCKS TO INSTRUCTIONS          *
@@ -204,6 +198,14 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO() {
 
 
 
+
+
+  /* ================================================================== *
+   *                   CONNECTING LOOPHEADERS                           *
+   * ================================================================== */
+
+
+  //Function doesn't have any for loop
 
 
   /* ================================================================== *
@@ -226,14 +228,6 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO() {
     */
   //Connect PHI node
   // There is no PHI node
-
-
-  /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
-   * ================================================================== */
-
-
-  //Function doesn't have any for loop
 
 
   /* ================================================================== *
