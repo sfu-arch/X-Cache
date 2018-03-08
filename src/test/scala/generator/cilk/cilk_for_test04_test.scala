@@ -36,8 +36,10 @@ class cilk_for_test04CacheWrapper()(implicit p: Parameters) extends cilk_for_tes
   //memModel.io.init <> io2.init
 
   val raminit = RegInit(true.B)
-  val addrVec = VecInit(0.U,1.U,2.U,3.U)
-  val dataVec = VecInit(1.U,2.U,3.U,4.U)
+  val addrVec = VecInit(0.U,1.U,1.U,3.U,4.U,
+                        8.U,9.U,10.U,11.U,12.U)
+  val dataVec = VecInit(1.U,2.U,3.U,4.U,5.U,
+                        1.U,2.U,3.U,4.U,5.U)
   val (count_out, count_done) = Counter(raminit, addrVec.length)
   when (!count_done) {
     memModel.io.init.bits.addr := addrVec(count_out)
@@ -68,6 +70,38 @@ class cilk_for_test04MainDirect(implicit p: Parameters) extends cilk_for_test04M
   io.out <> cilk_for_test04.io.out
 
 }
+
+class cilk_for_test04MainTM(implicit p: Parameters) extends cilk_for_test04MainIO()(p) {
+
+  val children = 2
+  val TaskControllerModule = Module(new TaskController(List(32,32), List(32), 1, children))
+  val cilk_for_test04 = Module(new cilk_for_test04CacheWrapper())
+
+  val cilk_for_test04_detach = for (i <- 0 until children) yield {
+    val foo = Module(new cilk_for_test04_detachDF())
+    foo
+  }
+
+  // tester to cilk_for_test02
+  cilk_for_test04.io.in <> io.in
+
+  // cilk_for_test02 to task controller
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test04.io.call9_out
+
+  // task controller to sub-task cilk_for_test04_detach
+  for (i <- 0 until children ) {
+    cilk_for_test04_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> cilk_for_test04_detach(i).io.out
+  }
+
+  // Task controller to cilk_for_test02
+  cilk_for_test04.io.call9_in <> TaskControllerModule.io.parentOut(0)
+
+  // cilk_for_test02 to tester
+  io.out <> cilk_for_test04.io.out
+
+}
+
 class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T) extends PeekPokeTester(c) {
 
 
@@ -96,9 +130,9 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T) extends PeekPokeTe
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 4.U)
+  poke(c.io.in.bits.data("field1").data, 32.U)
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 8.U)
+  poke(c.io.in.bits.data("field2").data, 64.U)
   poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -142,7 +176,7 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T) extends PeekPokeTe
   }
 }
 
-class cilk_for_test04Tester extends FlatSpec with Matchers {
+class cilk_for_test04Tester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that cilk_for_test04 works correctly." in {
     // iotester flags:
@@ -162,3 +196,22 @@ class cilk_for_test04Tester extends FlatSpec with Matchers {
   }
 }
 
+class cilk_for_test04Tester2 extends FlatSpec with Matchers {
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  // iotester flags:
+  // -ll  = log level <Error|Warn|Info|Debug|Trace>
+  // -tbn = backend <firrtl|verilator|vcs>
+  // -td  = target directory
+  // -tts = seed for RNG
+  it should "Check that cilk_for_test02 works when called via task manager." in {
+    chisel3.iotesters.Driver.execute(
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir",
+        "-tts", "0001"),
+      () => new cilk_for_test04MainTM()) {
+      c => new cilk_for_test04Test01(c)
+    } should be(true)
+  }
+}

@@ -183,7 +183,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 0, Desc = "bb_my_pfor_body")(p))
+  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0, Desc = "bb_my_pfor_body")(p))
 
   val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1, Desc = "bb_my_pfor_preattach")(p))
 
@@ -230,7 +230,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  br label %my_pfor.preattach, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val br7 = Module (new UBranchNode(ID = 7, Desc = "br7")(p))
+  val br7 = Module (new UBranchFastNode(ID = 7, Desc = "br7")(p))
 
 
 
@@ -291,7 +291,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   /**
     * Wiring enable signals to the instructions
     */
-
+/*
   getelementptr0.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr0"))
 
   load1.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("load1"))
@@ -311,7 +311,23 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   ret8.io.enable <> bb_my_pfor_preattach.io.Out(param.bb_my_pfor_preattach_activate("ret8"))
+*/
+  getelementptr0.io.enable <> bb_my_pfor_body.io.Out(0)
+  getelementptr2.io.enable <> bb_my_pfor_body.io.Out(1)
+  getelementptr5.io.enable <> bb_my_pfor_body.io.Out(2)
 
+  load1.io.enable.valid := true.B
+  load1.io.enable.bits.control := true.B
+  load3.io.enable.valid  := true.B
+  load3.io.enable.bits.control  := true.B
+  add4.io.enable.valid  := true.B
+  add4.io.enable.bits.control  := true.B
+  store6.io.enable.valid  := true.B
+  store6.io.enable.bits.control  := true.B
+  br7.io.enable.valid  := true.B
+  br7.io.enable.bits.control  := true.B
+  ret8.io.enable.valid  := true.B
+  ret8.io.enable.bits.control  := true.B
 
 
 

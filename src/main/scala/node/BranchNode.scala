@@ -1,16 +1,17 @@
 package node
 
 import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import chisel3.Module
 import chisel3.testers._
 import chisel3.util._
-import org.scalatest.{Matchers, FlatSpec}
-
+import org.scalatest.{FlatSpec, Matchers}
 import config._
+import dataflow.DetachFastIO
 import interfaces._
 import muxes._
 import util._
+import utility.UniformPrintfs
 
 
 /**
@@ -193,5 +194,25 @@ class UBranchNode(ID: Int, Desc : String = "UBranchNode")
 
 
   }
+
+}
+
+class UBranchFastIO()(implicit p: Parameters) extends CoreBundle {
+  // Predicate enable
+  val enable = Flipped(Decoupled(new ControlBundle))
+  // Output IO
+  val Out = Vec(1,Decoupled(new ControlBundle))
+}
+class UBranchFastNode(ID: Int, Desc : String = "UBranchNode")
+                 (implicit val p: Parameters)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new UBranchFastIO()(p))
+  // Printf debugging
+  override val printfSigil = "Node (UBR) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
+
+  io.Out(0) <> io.enable
+
 
 }
