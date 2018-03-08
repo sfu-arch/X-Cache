@@ -25,12 +25,17 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
 
 class PhiNode(NumInputs: Int,
                  NumOuts: Int,
-                 ID: Int, Desc : String = "PhiNode")
-                (implicit p: Parameters)
+                 ID: Int)
+                (implicit p: Parameters,
+                 name: sourcecode.Name,
+                 file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new PhiNodeIO(NumInputs, NumOuts))
   // Printf debugging
-  override val printfSigil = "PHI ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
@@ -50,48 +55,42 @@ class PhiNode(NumInputs: Int,
   // Output register
   //val data_R = RegInit(0.U(xlen.W))
 
-  val s_idle :: s_MASKLATCH :: s_DATALATCH :: s_COMPUTE :: Nil = Enum(4)
-  val state = RegInit(s_idle)
-  val m_state = RegInit(s_idle)
+  val s_IDLE :: s_MASKLATCH :: s_DATALATCH :: s_COMPUTE :: Nil = Enum(4)
+  val state = RegInit(s_IDLE)
 
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
 
   var predicate = in_data_W.predicate & IsEnable()
-  var start = mask_valid_R & IsEnableValid()
-
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
+
+  // If the mask value is eqaul to zero we don't proceed
+  val mask_valid = mask_R.asUInt.orR
 
   //Instantiating a MUX
   val sel = OHToUInt(mask_R)
 
   in_data_W := in_data_R(sel)
 
-  // If the mask value is eqaul to zero we don't proceed
-  val mask_valid = mask_R.asUInt.orR
 
   //wire up mask
   io.Mask.ready := ~mask_valid_R
   when(io.Mask.fire()) {
-    m_state := s_MASKLATCH
     mask_R := io.Mask.bits
     mask_valid_R := true.B
   }
 
   //Wire up inputs
   for (i <- 0 until NumInputs) {
-
     io.InData(i).ready := ~in_data_valid_R(i)
     when(io.InData(i).fire()) {
-      state := s_DATALATCH
       in_data_R(i) <> io.InData(i).bits
       in_data_valid_R(i) := true.B
     }
-
   }
 
   // Wire up Outputs
@@ -101,34 +100,46 @@ class PhiNode(NumInputs: Int,
 
 
   /*============================================*
-   *            ACTIONS                         *
+   *            STATE MACHINE                   *
    *============================================*/
+  switch(state){
+    is(s_IDLE){
+      when(io.Mask.fire() && io.Mask.bits.asUInt.orR ){
+        state := s_MASKLATCH
+      }
+    }
+    is(s_MASKLATCH){
+      when(in_data_valid_R(sel)){
+        state := s_DATALATCH
+      }
+    }
+    is(s_DATALATCH){
+      when(enable_valid_R){
+        state := s_COMPUTE
+        ValidOut()
+      }
+    }
+    is(s_COMPUTE){
+      when(IsOutReady()){
+        mask_R := 0.U
+        mask_valid_R := false.B
+
+        in_data_R := VecInit(Seq.fill(NumInputs)(DataBundle.default))
+        in_data_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
+
+        //Reset state
+        state := s_IDLE
+        //Reset output
+        Reset()
+
+        //Print output
+        when (predicate) {
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n",cycleCount, in_data_W.data)
+        }
 
 
-  when(start & (state === s_DATALATCH) & (in_data_valid_R(sel) === true.B)) {
-    state := s_COMPUTE
-    ValidOut()
+      }
+    }
   }
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
-   when(IsOutReady() & (state === s_COMPUTE) & (m_state === s_MASKLATCH)) {
-    // Reset data
-    mask_R := 0.U
-    mask_valid_R := false.B
-
-     in_data_R := VecInit(Seq.fill(NumInputs)(DataBundle.default))
-     in_data_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
-
-    //Reset state
-    state := s_idle
-    m_state := s_idle
-    //Reset output
-    Reset()
-     when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
-
-   }
 
 }

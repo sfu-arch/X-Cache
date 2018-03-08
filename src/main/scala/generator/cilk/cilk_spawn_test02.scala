@@ -269,17 +269,17 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0, Desc = "bb_entry")(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
-  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 1, Desc = "bb_det_achd")(p))
+  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 1))
 
-  val bb_det_cont = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 2, Desc = "bb_det_cont")(p))
+  val bb_det_cont = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 2))
 
-  val bb_det_achd1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3, Desc = "bb_det_achd1")(p))
+  val bb_det_achd1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3))
 
-  val bb_det_cont3 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 4, Desc = "bb_det_cont3")(p))
+  val bb_det_cont3 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 4))
 
-  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 5, Desc = "bb_sync_continue")(p))
+  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 5))
 
 
 
@@ -304,14 +304,14 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  detach label %det.achd, label %det.cont, !UID !11, !BB_UID !12, !ScalaLabel !13
-  val detach2 = Module(new Detach(ID = 2, Desc = "detach2")(p))
+  val detach2 = Module(new Detach(ID = 2, Desc = "detach2"))
 
 
 
   // [BasicBlock]  det.achd:
 
   //  %add = add nsw i32 %a, 5, !UID !14, !ScalaLabel !15
-  val add3 = Module (new ComputeNode(NumOuts = 1, ID = 3, opCode = "add", Desc = "add3")(sign=false)(p))
+  val add3 = Module (new ComputeNode(NumOuts = 1, ID = 3, opCode = "add")(sign=false))
 
 
   //  store i32 %add, i32* %x, align 4, !UID !16, !ScalaLabel !17
@@ -319,21 +319,21 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  reattach label %det.cont, !UID !18, !BB_UID !19, !ScalaLabel !20
-  val reattach5 = Module(new Reattach(NumPredIn=1, ID=5, Desc = "reattach5")(p))
+  val reattach5 = Module(new Reattach(NumPredIn=1, ID=5, Desc = "reattach5"))
 
 
 
   // [BasicBlock]  det.cont:
 
   //  detach label %det.achd1, label %det.cont3, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val detach6 = Module(new Detach(ID = 6, Desc = "detach6")(p))
+  val detach6 = Module(new Detach(ID = 6, Desc = "detach6"))
 
 
 
   // [BasicBlock]  det.achd1:
 
   //  %add2 = add nsw i32 %b, 5, !UID !24, !ScalaLabel !25
-  val add7 = Module (new ComputeNode(NumOuts = 1, ID = 7, opCode = "add", Desc = "add7")(sign=false)(p))
+  val add7 = Module (new ComputeNode(NumOuts = 1, ID = 7, opCode = "add")(sign=false))
 
 
   //  store i32 %add2, i32* %y, align 4, !UID !26, !ScalaLabel !27
@@ -341,14 +341,14 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  reattach label %det.cont3, !UID !28, !BB_UID !29, !ScalaLabel !30
-  val reattach9 = Module(new Reattach(NumPredIn=1, ID=9, Desc = "reattach9")(p))
+  val reattach9 = Module(new Reattach(NumPredIn=1, ID=9, Desc = "reattach9"))
 
 
 
   // [BasicBlock]  det.cont3:
 
   //  sync label %sync.continue, !UID !31, !BB_UID !32, !ScalaLabel !33
-  val sync10 = Module(new Sync(ID = 10, NumOuts = 1, NumInc = 2, NumDec = 2, Desc = "sync10")(p)) // Manually changed to sync2
+  val sync10 = Module(new Sync(ID = 10, NumOuts = 1, NumInc = 2, NumDec = 2, Desc = "sync10")) // Manually changed to sync2
 
 
 
@@ -363,11 +363,11 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  %add4 = add nsw i32 %0, %1, !UID !38, !ScalaLabel !39
-  val add13 = Module (new ComputeNode(NumOuts = 1, ID = 13, opCode = "add", Desc = "add13")(sign=false)(p))
+  val add13 = Module (new ComputeNode(NumOuts = 1, ID = 13, opCode = "add")(sign=false))
 
 
   //  ret i32 %add4, !UID !40, !BB_UID !41, !ScalaLabel !42
-  val ret14 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=14, Desc="ret14"))
+  val ret14 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=14))
 
 
 
@@ -397,7 +397,7 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -408,21 +408,21 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //Connecting detach2 to bb_det_achd
-  bb_det_achd.io.predicateIn(param.bb_det_achd_pred("detach2")) <> detach2.io.Out(param.detach2_brn_bb("bb_det_achd"))
+  bb_det_achd.io.predicateIn <> detach2.io.Out(param.detach2_brn_bb("bb_det_achd"))
 
 
   //Connecting detach2 to bb_det_cont
-  bb_det_cont.io.predicateIn(param.bb_det_cont_pred("detach2")) <> detach2.io.Out(param.detach2_brn_bb("bb_det_cont"))
+  bb_det_cont.io.predicateIn <> detach2.io.Out(param.detach2_brn_bb("bb_det_cont"))
 
 
   //Connecting detach6 to bb_det_achd1
-  bb_det_achd1.io.predicateIn(param.bb_det_achd1_pred("detach6")) <> detach6.io.Out(param.detach6_brn_bb("bb_det_achd1"))
+  bb_det_achd1.io.predicateIn <> detach6.io.Out(param.detach6_brn_bb("bb_det_achd1"))
 
 
   //Connecting detach6 to bb_det_cont3
-  bb_det_cont3.io.predicateIn(param.bb_det_cont3_pred("detach6")) <> detach6.io.Out(param.detach6_brn_bb("bb_det_cont3"))
+  bb_det_cont3.io.predicateIn <> detach6.io.Out(param.detach6_brn_bb("bb_det_cont3"))
 
-  bb_sync_continue.io.predicateIn(0) <> sync10.io.Out(0) // Manually added
+  bb_sync_continue.io.predicateIn <> sync10.io.Out(0) // Manually added
 
 
 

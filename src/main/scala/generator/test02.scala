@@ -187,11 +187,11 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0, Desc = "bb_entry")(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
-  val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1, Desc = "bb_if_then")(p))
+  val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1))
 
-  val bb_if_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2, Desc = "bb_if_end")(p))
+  val bb_if_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2))
 
 
 
@@ -208,37 +208,37 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  %div = udiv i32 %a, 2, !UID !8, !ScalaLabel !9
-  val udiv0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "udiv", Desc = "udiv0")(sign=false)(p))
+  val udiv0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "udiv")(sign=false))
 
 
   //  %cmp = icmp eq i32 %div, 4, !UID !10, !ScalaLabel !11
-  val icmp1 = Module (new IcmpNode(NumOuts = 1, ID = 1, opCode = "EQ", Desc = "icmp1")(sign=false)(p))
+  val icmp1 = Module (new IcmpNode(NumOuts = 1, ID = 1, opCode = "EQ")(sign=false))
 
 
   //  br i1 %cmp, label %if.then, label %if.end, !UID !12, !BB_UID !13, !ScalaLabel !14
-  val br2 = Module (new CBranchNode(ID = 2, Desc = "br2")(p))
+  val br2 = Module (new CBranchNode(ID = 2))
 
 
 
   // [BasicBlock]  if.then:
 
   //  %add = add i32 %a, %b, !UID !15, !ScalaLabel !16
-  val add3 = Module (new ComputeNode(NumOuts = 1, ID = 3, opCode = "add", Desc = "add3")(sign=false)(p))
+  val add3 = Module (new ComputeNode(NumOuts = 1, ID = 3, opCode = "add")(sign=false))
 
 
   //  br label %if.end, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val br4 = Module (new UBranchNode(ID = 4, Desc = "br4")(p))
+  val br4 = Module (new UBranchNode(ID = 4))
 
 
 
   // [BasicBlock]  if.end:
 
   //  %sum.0 = phi i32 [ %add, %if.then ], [ 0, %entry ], !UID !20, !ScalaLabel !21
-  val phi5 = Module (new PhiNode(NumInputs = 2, NumOuts = 1, ID = 5, Desc = "phi5")(p))
+  val phi5 = Module (new PhiNode(NumInputs = 2, NumOuts = 1, ID = 5))
 
 
   //  ret i32 %sum.0, !UID !22, !BB_UID !23, !ScalaLabel !24
-  val ret6 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=6, Desc="ret6"))
+  val ret6 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=6))
 
 
 
@@ -268,14 +268,14 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
     */
 
   //Connecting br2 to bb_if_then
-  bb_if_then.io.predicateIn(param.bb_if_then_pred("br2")) <> br2.io.Out(param.br2_brn_bb("bb_if_then"))
+  bb_if_then.io.predicateIn <> br2.io.Out(param.br2_brn_bb("bb_if_then"))
 
 
   //Connecting br2 to bb_if_end
@@ -284,10 +284,6 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 
   //Connecting br4 to bb_if_end
   bb_if_end.io.predicateIn(param.bb_if_end_pred("br4")) <> br4.io.Out(param.br4_brn_bb("bb_if_end"))
-
-
-
-  // There is no detach instruction
 
 
 
@@ -324,6 +320,14 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 
 
   /* ================================================================== *
+   *                   CONNECTING LOOPHEADERS                           *
+   * ================================================================== */
+
+
+  //Function doesn't have any for loop
+
+
+  /* ================================================================== *
    *                   DUMPING PHI NODES                                *
    * ================================================================== */
 
@@ -346,14 +350,6 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 
   phi5.io.Mask <> bb_if_end.io.MaskBB(0)
 
-
-
-  /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
-   * ================================================================== */
-
-
-  //Function doesn't have any for loop
 
 
   /* ================================================================== *

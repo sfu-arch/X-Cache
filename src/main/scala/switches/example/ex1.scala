@@ -27,7 +27,7 @@ class Dyser1X1(implicit val p: Parameters) extends Module with CoreParams {
 
 
 
-  val add = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)(p))
+  val add = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
   val sw01 = Module(new Dyser(
     SelN = 1,
     SelE = 1,
@@ -46,7 +46,7 @@ class Dyser1X1(implicit val p: Parameters) extends Module with CoreParams {
     EnNW = false.B,
     EnSE = true.B,
     EnSW = false.B
-  )(p))
+  ))
 
   val sw11 = Module(new Dyser(
     SelN = 1,
@@ -66,7 +66,7 @@ class Dyser1X1(implicit val p: Parameters) extends Module with CoreParams {
     EnNW = false.B,
     EnSE = false.B,
     EnSW = true.B
-  )(p))
+  ))
 
 
   val sw02 = Module(new Dyser(
@@ -87,7 +87,7 @@ class Dyser1X1(implicit val p: Parameters) extends Module with CoreParams {
     EnNW = false.B,
     EnSE = false.B,
     EnSW = false.B
-  )(p))
+  ))
 
 
   //IO connections

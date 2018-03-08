@@ -31,15 +31,15 @@ abstract class Add01DFIO(implicit val p: Parameters) extends Module with CorePar
 }
 
 
-class Add01DF(implicit p: Parameters) extends Add01DFIO()(p) {
+class Add01DF(implicit p: Parameters) extends Add01DFIO() {
 
-  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0)(p))
-  val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)(p))
+  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
 
   //Setting b0_entry predicates to be true
   // will start immediately
-  b0_entry.io.predicateIn(0).bits.control := true.B
-  b0_entry.io.predicateIn(0).bits.taskID := 0.U
+  b0_entry.io.predicateIn.bits.control := true.B
+  b0_entry.io.predicateIn.bits.taskID := 0.U
 
   //ALU will start only if the basic block enables adds
   m0.io.enable <> b0_entry.io.Out(0)
@@ -48,7 +48,7 @@ class Add01DF(implicit p: Parameters) extends Add01DFIO()(p) {
 
   m0.io.LeftIO <> io.Data0
   m0.io.RightIO <> io.Data1
-  b0_entry.io.predicateIn(0).valid := io.start
+  b0_entry.io.predicateIn.valid := io.start
 
 
   io.pred <> b0_entry.io.Out(0)

@@ -118,53 +118,53 @@ object Data_test03_FlowParam{
   )
 
 
-  //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !10, !ScalaLabel !11
+  //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !11, !ScalaLabel !12
   val phi1_in = Map(
     "field0" -> 0,
     "mul6" -> 0
   )
 
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !12, !ScalaLabel !13
+  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !13, !ScalaLabel !14
   val phi2_in = Map(
     "add8" -> 0
   )
 
 
-  //  %cmp = icmp slt i32 %i.0, %n, !UID !14, !ScalaLabel !15
+  //  %cmp = icmp slt i32 %i.0, %n, !UID !15, !ScalaLabel !16
   val icmp3_in = Map(
     "phi2" -> 0,
     "field2" -> 0
   )
 
 
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
+  //  br i1 %cmp, label %for.body, label %for.end, !UID !17, !BB_UID !18, !ScalaLabel !19
   val br4_in = Map(
     "icmp3" -> 0
   )
 
 
-  //  %add = add i32 %sum.0, %a, !UID !19, !ScalaLabel !20
+  //  %add = add i32 %sum.0, %a, !UID !20, !ScalaLabel !21
   val add5_in = Map(
     "phi1" -> 0,
     "field0" -> 1
   )
 
 
-  //  %mul = mul i32 %add, %b, !UID !21, !ScalaLabel !22
+  //  %mul = mul i32 %add, %b, !UID !22, !ScalaLabel !23
   val mul6_in = Map(
     "add5" -> 0,
     "field1" -> 0
   )
 
 
-  //  %inc = add nsw i32 %i.0, 1, !UID !26, !ScalaLabel !27
+  //  %inc = add nsw i32 %i.0, 1, !UID !27, !ScalaLabel !28
   val add8_in = Map(
     "phi2" -> 1
   )
 
 
-  //  ret i32 %sum.0, !UID !40, !BB_UID !41, !ScalaLabel !42
+  //  ret i32 %sum.0, !UID !41, !BB_UID !42, !ScalaLabel !43
   val ret10_in = Map(
     "phi1" -> 1
   )
@@ -234,6 +234,8 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val loop_L_7_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
   val loop_L_7_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
+  val loop_L_7_LiveOut_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
@@ -242,15 +244,15 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0)(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 8, NumPhi = 2, BID = 1)(p))
+  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1))
 
-  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2)(p))
+  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
 
-  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3)(p))
+  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4)(p))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
 
 
 
@@ -266,64 +268,52 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   // [BasicBlock]  entry:
 
-  //  br label %for.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0)(p))
-
-
+  //  br label %for.cond, !UID !8, !BB_UID !9, !ScalaLabel !10
+  val br0 = Module (new UBranchNode(ID = 0))
 
   // [BasicBlock]  for.cond:
 
-  //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !10, !ScalaLabel !11
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1)(p))
+  //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !11, !ScalaLabel !12
+  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1))
 
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !12, !ScalaLabel !13
-  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2)(p))
+  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !13, !ScalaLabel !14
+  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
 
 
-  //  %cmp = icmp slt i32 %i.0, %n, !UID !14, !ScalaLabel !15
-  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false)(p))
+  //  %cmp = icmp slt i32 %i.0, %n, !UID !15, !ScalaLabel !16
+  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false))
 
 
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !16, !BB_UID !17, !ScalaLabel !18
-  val br4 = Module (new CBranchNode(ID = 4)(p))
-
-  val bb_for_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0)(new ControlBundle))
-
-
+  //  br i1 %cmp, label %for.body, label %for.end, !UID !17, !BB_UID !18, !ScalaLabel !19
+  val br4 = Module (new CBranchNode(ID = 4))
 
   // [BasicBlock]  for.body:
 
-  //  %add = add i32 %sum.0, %a, !UID !19, !ScalaLabel !20
-  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false)(p))
+  //  %add = add i32 %sum.0, %a, !UID !20, !ScalaLabel !21
+  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
 
 
-  //  %mul = mul i32 %add, %b, !UID !21, !ScalaLabel !22
-  val mul6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign=false)(p))
+  //  %mul = mul i32 %add, %b, !UID !22, !ScalaLabel !23
+  val mul6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign=false))
 
 
-  //  br label %for.inc, !UID !23, !BB_UID !24, !ScalaLabel !25
-  val br7 = Module (new UBranchNode(ID = 7)(p))
-
-
+  //  br label %for.inc, !UID !24, !BB_UID !25, !ScalaLabel !26
+  val br7 = Module (new UBranchNode(ID = 7))
 
   // [BasicBlock]  for.inc:
 
-  //  %inc = add nsw i32 %i.0, 1, !UID !26, !ScalaLabel !27
-  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false)(p))
+  //  %inc = add nsw i32 %i.0, 1, !UID !27, !ScalaLabel !28
+  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
 
 
-  //  br label %for.cond, !llvm.loop !28, !UID !37, !BB_UID !38, !ScalaLabel !39
-  val br9 = Module (new UBranchNode(ID = 9)(p))
-
-
+  //  br label %for.cond, !llvm.loop !29, !UID !38, !BB_UID !39, !ScalaLabel !40
+  val br9 = Module (new UBranchNode(ID = 9))
 
   // [BasicBlock]  for.end:
 
-  //  ret i32 %sum.0, !UID !40, !BB_UID !41, !ScalaLabel !42
+  //  ret i32 %sum.0, !UID !41, !BB_UID !42, !ScalaLabel !43
   val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10))
-
-
 
 
 
@@ -351,7 +341,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -362,24 +352,19 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
 
   //Connecting br4 to bb_for_body
-  bb_for_body.io.predicateIn(param.bb_for_body_pred("br4")) <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
+  bb_for_body.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
 
 
   //Connecting br4 to bb_for_end
-  bb_for_cond_expand.io.InData <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
-  bb_for_end.io.predicateIn(param.bb_for_end_pred("br4")) <> bb_for_cond_expand.io.Out(0)
+  bb_for_end.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
 
 
   //Connecting br7 to bb_for_inc
-  bb_for_inc.io.predicateIn(param.bb_for_inc_pred("br7")) <> br7.io.Out(param.br7_brn_bb("bb_for_inc"))
+  bb_for_inc.io.predicateIn <> br7.io.Out(param.br7_brn_bb("bb_for_inc"))
 
 
   //Connecting br9 to bb_for_cond
   bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br9")) <> br9.io.Out(param.br9_brn_bb("bb_for_cond"))
-
-
-
-  // There is no detach instruction
 
 
 
@@ -405,16 +390,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   br4.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br4"))
 
-  bb_for_cond_expand.io.enable <> bb_for_cond.io.Out(7)
-
-  loop_L_7_liveIN_0.io.enable <> bb_for_cond.io.Out(4)
-  loop_L_7_liveIN_1.io.enable <> bb_for_cond.io.Out(5)
-  loop_L_7_liveIN_2.io.enable <> bb_for_cond.io.Out(6)
-
-  loop_L_7_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
-  loop_L_7_liveIN_1.io.Finish <> bb_for_cond_expand.io.Out(2)
-  loop_L_7_liveIN_2.io.Finish <> bb_for_cond_expand.io.Out(3)
-
 
 
   add5.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("add5"))
@@ -433,7 +408,32 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   ret10.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret10"))
 
+  loop_L_7_liveIN_0.io.enable <> bb_for_end.io.Out(1)
+  loop_L_7_liveIN_1.io.enable <> bb_for_end.io.Out(2)
+  loop_L_7_liveIN_2.io.enable <> bb_for_end.io.Out(3)
 
+  loop_L_7_LiveOut_0.io.enable <> bb_for_end.io.Out(4)
+
+
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING LOOPHEADERS                           *
+   * ================================================================== */
+
+
+  // Connecting function argument to the loop header
+  //i32 %a
+  loop_L_7_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+
+  // Connecting function argument to the loop header
+  //i32 %b
+  loop_L_7_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+
+  // Connecting function argument to the loop header
+  //i32 %n
+  loop_L_7_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
 
 
 
@@ -467,25 +467,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   phi1.io.Mask <> bb_for_cond.io.MaskBB(0)
 
   phi2.io.Mask <> bb_for_cond.io.MaskBB(1)
-
-
-
-  /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
-   * ================================================================== */
-
-
-  // Connecting function argument to the loop header
-  //i32 %a
-  loop_L_7_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
-
-  // Connecting function argument to the loop header
-  //i32 %b
-  loop_L_7_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
-
-  // Connecting function argument to the loop header
-  //i32 %n
-  loop_L_7_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
 
 
 
@@ -527,11 +508,12 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   add8.io.RightIO.bits.predicate := true.B
   add8.io.RightIO.valid := true.B
 
-  // Wiring return instruction
   ret10.io.predicateIn(0).bits.control := true.B
   ret10.io.predicateIn(0).bits.taskID := 0.U
   ret10.io.predicateIn(0).valid := true.B
-  ret10.io.In.data("field0") <> phi1.io.Out(param.ret10_in("phi1"))
+
+  loop_L_7_LiveOut_0.io.InData <>   phi1.io.Out(param.ret10_in("phi1"))
+  ret10.io.In.data("field0") <> loop_L_7_LiveOut_0.io.Out(0)
   io.out <> ret10.io.Out
 
 

@@ -57,9 +57,9 @@ class cilk_for_test01Test01(c: cilk_for_test01CacheWrapper) extends PeekPokeTest
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.data("field0").data, 4.U)
-  poke(c.io.in.bits.data("field0").predicate, true.B)
+  poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 8.U)
-  poke(c.io.in.bits.data("field1").predicate, true.B)
+  poke(c.io.in.bits.data("field1").predicate, false.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
@@ -76,8 +76,8 @@ class cilk_for_test01Test01(c: cilk_for_test01CacheWrapper) extends PeekPokeTest
     step(1)
     //println(s"[INFO] Clock Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1 &&
-      peek(c.io.out.bits.enable.control) == 1) {
+      peek(c.io.out.bits.data("field0").predicate) == 1
+      ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 1) {

@@ -223,7 +223,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 16, BID = 0, Desc = "bb_entry")(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 16, BID = 0))
 
 
 
@@ -280,7 +280,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
 
   //  %add = add i32 %0, %1, !UID !28, !ScalaLabel !29
-  val add10 = Module (new ComputeNode(NumOuts = 1, ID = 10, opCode = "add", Desc = "add10")(sign=false)(p))
+  val add10 = Module (new ComputeNode(NumOuts = 1, ID = 10, opCode = "add")(sign=false))
 
 
   //  %arrayidx4 = getelementptr inbounds [1 x i32], [1 x i32]* %alloc1, i32 0, i32 0, !UID !30, !ScalaLabel !31
@@ -300,7 +300,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
 
   //  ret i32 %2, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15, Desc="ret15"))
+  val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15))
 
 
 
@@ -330,7 +330,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions

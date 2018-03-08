@@ -17,16 +17,16 @@ class DecoupledChildDF(val ID:Int)(implicit p: Parameters) extends Module {
    val In = Flipped(Decoupled(new Call(List(32,32,32,32))))
     val Out = Decoupled(new Call(List(32)))
   })
-  val bb = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0, Desc="bb")(p))
+  val bb = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
   val splitIn = Module(new SplitCall(List(32,32,32,32)))
-  val addModule1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add", Desc=s"c${ID}_addModule1")(sign = false))
-  val addModule2 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "Add", Desc=s"c${ID}_addModule2")(sign = false))
-  val addModule3 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add", Desc=s"c${ID}_addModule3")(sign = false))
-  val ret4 = Module(new RetNode(ID=3,NumPredIn=1,retTypes=List(32), Desc="ret4"))
+  val addModule1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
+  val addModule2 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "Add")(sign = false))
+  val addModule3 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false))
+  val ret4 = Module(new RetNode(ID=3,NumPredIn=1,retTypes=List(32)))
 
   /* Wire task modules to controller */
   splitIn.io.In <> io.In
-  bb.io.predicateIn(0) <> splitIn.io.Out.enable
+  bb.io.predicateIn <> splitIn.io.Out.enable
 
   addModule1.io.enable <> bb.io.Out(0)
   addModule1.io.LeftIO <> splitIn.io.Out.data("field0")

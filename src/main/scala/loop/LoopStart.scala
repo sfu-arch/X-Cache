@@ -48,7 +48,7 @@ class LoopStart(val NumInputs: Int, val NumOuts: Int, val ID: Int)
   //Iterating over each loopelement and connect them to the IO
   for (i <- 0 until NumInputs) {
     Args(i).io.InData <> io.inputArg(i)
-    Args(i).io.Finish <> io.Finish(i)
+    //Args(i).io.Finish <> io.Finish(i)
     Args(i).io.enable <> io.enableSignal(i)
   }
 

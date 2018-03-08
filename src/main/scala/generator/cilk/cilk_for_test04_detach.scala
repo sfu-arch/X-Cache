@@ -183,9 +183,9 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0, Desc = "bb_my_pfor_body")(p))
+  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
-  val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1, Desc = "bb_my_pfor_preattach")(p))
+  val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
 
 
@@ -202,7 +202,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   // [BasicBlock]  my_pfor.body:
 
   //  %0 = getelementptr inbounds i32, i32* %a.in, i32 %i.0.in, !UID !7, !ScalaLabel !8
-  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0, Desc = "getelementptr0")(numByte1 = 1)(p))
+  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0, Desc = "getelementptr0")(numByte1 = 1))
 
 
   //  %1 = load i32, i32* %0, align 4, !UID !9, !ScalaLabel !10
@@ -210,7 +210,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  %2 = getelementptr inbounds i32, i32* %b.in, i32 %i.0.in, !UID !11, !ScalaLabel !12
-  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2, Desc = "getelementptr2")(numByte1 = 1)(p))
+  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2, Desc = "getelementptr2")(numByte1 = 1))
 
 
   //  %3 = load i32, i32* %2, align 4, !UID !13, !ScalaLabel !14
@@ -218,11 +218,11 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  %4 = add i32 %1, %3, !UID !15, !ScalaLabel !16
-  val add4 = Module (new ComputeNode(NumOuts = 1, ID = 4, opCode = "add", Desc = "add4")(sign=false)(p))
+  val add4 = Module (new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign=false))
 
 
   //  %5 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !17, !ScalaLabel !18
-  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5, Desc = "getelementptr5")(numByte1 = 1)(p))
+  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5, Desc = "getelementptr5")(numByte1 = 1))
 
 
   //  store i32 %4, i32* %5, align 4, !UID !19, !ScalaLabel !20
@@ -230,14 +230,14 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  br label %my_pfor.preattach, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val br7 = Module (new UBranchFastNode(ID = 7, Desc = "br7")(p))
+  val br7 = Module (new UBranchFastNode(ID = 7, Desc = "br7"))
 
 
 
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !24, !BB_UID !25, !ScalaLabel !26
-  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8, Desc="ret8"))
+  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8))
 
 
 
@@ -267,14 +267,14 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
      */
 
 
-  bb_my_pfor_body.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_my_pfor_body.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
     */
 
   //Connecting br7 to bb_my_pfor_preattach
-  bb_my_pfor_preattach.io.predicateIn(param.bb_my_pfor_preattach_pred("br7")) <> br7.io.Out(param.br7_brn_bb("bb_my_pfor_preattach"))
+  bb_my_pfor_preattach.io.predicateIn <> br7.io.Out(param.br7_brn_bb("bb_my_pfor_preattach"))
 
 
 

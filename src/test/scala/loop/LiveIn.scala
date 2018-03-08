@@ -33,8 +33,8 @@ class LiveInTester(df: LiveInNode)
   poke(df.io.enable.valid, false.B)
 
 
-  poke(df.io.Finish.bits.control , false.B)
-  poke(df.io.Finish.valid, false.B)
+  //poke(df.io.Finish.bits.control , false.B)
+  //poke(df.io.Finish.valid, false.B)
 
   poke(df.io.Out(0).ready, false.B)
 
@@ -107,8 +107,8 @@ class LiveInTester(df: LiveInNode)
   }
 
   poke(df.io.InData.bits.data, 7.U)
-  poke(df.io.Finish.bits.control , true.B)
-  poke(df.io.Finish.valid, true.B)
+  //poke(df.io.Finish.bits.control , true.B)
+  //poke(df.io.Finish.valid, true.B)
   for( i <- 0 until 5){
     println(s"Input : ${peek(df.io.InData)}\n")
     println(s"Output: ${peek(df.io.Out(0))}\n")

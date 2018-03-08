@@ -73,15 +73,14 @@ class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
     step(1)
     //println(s"Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1 &&
-      peek(c.io.out.bits.enable.control) == 1) {
+      peek(c.io.out.bits.data("field0").predicate) == 1){
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 5) {
-        println(s"*** Incorrect result received. Got $data. Hoping for 5")
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 5")
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE + s"*** Correct result received.")
       }
     }
   }

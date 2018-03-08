@@ -324,21 +324,21 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc = "bb_entry")(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_Minim_Loop = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1, Desc = "bb_Minim_Loop")(p))
+  val bb_Minim_Loop = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
-  val bb_while_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 7, NumPhi = 2, BID = 2, Desc = "bb_while_cond")(p))
+  val bb_while_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 7, NumPhi = 2, BID = 2))
 
-  val bb_while_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3, Desc = "bb_while_body")(p))
+  val bb_while_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4, Desc = "bb_if_then")(p))
+  val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4))
 
-  val bb_if_else = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5, Desc = "bb_if_else")(p))
+  val bb_if_else = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
-  val bb_if_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 6, Desc = "bb_if_end")(p))
+  val bb_if_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 6))
 
-  val bb_while_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7, Desc = "bb_while_end")(p))
+  val bb_while_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7))
 
 
 
@@ -355,33 +355,33 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  br label %Minim_Loop, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0, Desc = "br0")(p))
+  val br0 = Module (new UBranchNode(ID = 0))
 
 
 
   // [BasicBlock]  Minim_Loop:
 
   //  br label %while.cond, !UID !10, !BB_UID !11, !ScalaLabel !12
-  val br1 = Module (new UBranchNode(ID = 1, Desc = "br1")(p))
+  val br1 = Module (new UBranchNode(ID = 1))
 
 
 
   // [BasicBlock]  while.cond:
 
   //  %b.addr.0 = phi i32 [ %b, %Minim_Loop ], [ %b.addr.1, %if.end ], !UID !13, !ScalaLabel !14
-  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 5, ID = 2, Desc = "phi2")(p))
+  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 5, ID = 2))
 
 
   //  %a.addr.0 = phi i32 [ %a, %Minim_Loop ], [ %a.addr.1, %if.end ], !UID !15, !ScalaLabel !16
-  val phi3 = Module (new PhiNode(NumInputs = 2, NumOuts = 5, ID = 3, Desc = "phi3")(p))
+  val phi3 = Module (new PhiNode(NumInputs = 2, NumOuts = 5, ID = 3))
 
 
   //  %cmp = icmp ne i32 %a.addr.0, %b.addr.0, !UID !17, !ScalaLabel !18
-  val icmp4 = Module (new IcmpNode(NumOuts = 1, ID = 4, opCode = "NE", Desc = "icmp4")(sign=false)(p))
+  val icmp4 = Module (new IcmpNode(NumOuts = 1, ID = 4, opCode = "NE")(sign=false))
 
 
   //  br i1 %cmp, label %while.body, label %while.end, !UID !19, !BB_UID !20, !ScalaLabel !21
-  val br5 = Module (new CBranchNode(ID = 5, Desc = "br5")(p))
+  val br5 = Module (new CBranchNode(ID = 5))
 
   val bb_while_cond_expand = Module(new ExpandNode(NumOuts=3, ID=0)(new ControlBundle))
 
@@ -390,55 +390,55 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   // [BasicBlock]  while.body:
 
   //  %cmp1 = icmp sgt i32 %a.addr.0, %b.addr.0, !UID !22, !ScalaLabel !23
-  val icmp6 = Module (new IcmpNode(NumOuts = 1, ID = 6, opCode = "UGT", Desc = "icmp6")(sign=false)(p))
+  val icmp6 = Module (new IcmpNode(NumOuts = 1, ID = 6, opCode = "UGT")(sign=false))
 
 
   //  br i1 %cmp1, label %if.then, label %if.else, !UID !24, !BB_UID !25, !ScalaLabel !26
-  val br7 = Module (new CBranchNode(ID = 7, Desc = "br7")(p))
+  val br7 = Module (new CBranchNode(ID = 7))
 
 
 
   // [BasicBlock]  if.then:
 
   //  %sub = sub nsw i32 %a.addr.0, %b.addr.0, !UID !27, !ScalaLabel !28
-  val sub8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "sub", Desc = "sub8")(sign=false)(p))
+  val sub8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "sub")(sign=false))
 
 
   //  br label %if.end, !UID !29, !BB_UID !30, !ScalaLabel !31
-  val br9 = Module (new UBranchNode(ID = 9, Desc = "br9")(p))
+  val br9 = Module (new UBranchNode(ID = 9))
 
 
 
   // [BasicBlock]  if.else:
 
   //  %sub2 = sub nsw i32 %b.addr.0, %a.addr.0, !UID !32, !ScalaLabel !33
-  val sub10 = Module (new ComputeNode(NumOuts = 1, ID = 10, opCode = "sub", Desc = "sub10")(sign=false)(p))
+  val sub10 = Module (new ComputeNode(NumOuts = 1, ID = 10, opCode = "sub")(sign=false))
 
 
   //  br label %if.end, !UID !34, !BB_UID !35, !ScalaLabel !36
-  val br11 = Module (new UBranchNode(ID = 11, Desc = "br11")(p))
+  val br11 = Module (new UBranchNode(ID = 11))
 
 
 
   // [BasicBlock]  if.end:
 
   //  %b.addr.1 = phi i32 [ %b.addr.0, %if.then ], [ %sub2, %if.else ], !UID !37, !ScalaLabel !38
-  val phi12 = Module (new PhiNode(NumInputs = 2, NumOuts = 1, ID = 12, Desc = "phi12")(p))
+  val phi12 = Module (new PhiNode(NumInputs = 2, NumOuts = 1, ID = 12))
 
 
   //  %a.addr.1 = phi i32 [ %sub, %if.then ], [ %a.addr.0, %if.else ], !UID !39, !ScalaLabel !40
-  val phi13 = Module (new PhiNode(NumInputs = 2, NumOuts = 1, ID = 13, Desc = "phi13")(p))
+  val phi13 = Module (new PhiNode(NumInputs = 2, NumOuts = 1, ID = 13))
 
 
   //  br label %while.cond, !llvm.loop !41, !UID !48, !BB_UID !49, !ScalaLabel !50
-  val br14 = Module (new UBranchNode(ID = 14, Desc = "br14")(p))
+  val br14 = Module (new UBranchNode(ID = 14))
 
 
 
   // [BasicBlock]  while.end:
 
   //  ret void, !UID !51, !BB_UID !52, !ScalaLabel !53
-  val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15, Desc="ret15"))
+  val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15))
 
 
 
@@ -468,14 +468,14 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
     */
 
   //Connecting br0 to bb_Minim_Loop
-  bb_Minim_Loop.io.predicateIn(param.bb_Minim_Loop_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_Minim_Loop"))
+  bb_Minim_Loop.io.predicateIn <> br0.io.Out(param.br0_brn_bb("bb_Minim_Loop"))
 
 
   //Connecting br1 to bb_while_cond
@@ -483,20 +483,20 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
 
   //Connecting br5 to bb_while_body
-  bb_while_body.io.predicateIn(param.bb_while_body_pred("br5")) <> br5.io.Out(param.br5_brn_bb("bb_while_body"))
+  bb_while_body.io.predicateIn <> br5.io.Out(param.br5_brn_bb("bb_while_body"))
 
 
   //Connecting br5 to bb_while_end
   bb_while_cond_expand.io.InData <> br5.io.Out(param.br5_brn_bb("bb_while_end"))
-  bb_while_end.io.predicateIn(param.bb_while_end_pred("br5")) <> bb_while_cond_expand.io.Out(0)
+  bb_while_end.io.predicateIn <> bb_while_cond_expand.io.Out(0)
 
 
   //Connecting br7 to bb_if_then
-  bb_if_then.io.predicateIn(param.bb_if_then_pred("br7")) <> br7.io.Out(param.br7_brn_bb("bb_if_then"))
+  bb_if_then.io.predicateIn <> br7.io.Out(param.br7_brn_bb("bb_if_then"))
 
 
   //Connecting br7 to bb_if_else
-  bb_if_else.io.predicateIn(param.bb_if_else_pred("br7")) <> br7.io.Out(param.br7_brn_bb("bb_if_else"))
+  bb_if_else.io.predicateIn <> br7.io.Out(param.br7_brn_bb("bb_if_else"))
 
 
   //Connecting br9 to bb_if_end
@@ -547,8 +547,6 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   loop_L_4_liveIN_0.io.enable <> bb_while_cond.io.Out(4)
   loop_L_4_liveIN_1.io.enable <> bb_while_cond.io.Out(5)
 
-  loop_L_4_liveIN_0.io.Finish <> bb_while_cond_expand.io.Out(1)
-  loop_L_4_liveIN_1.io.Finish <> bb_while_cond_expand.io.Out(2)
 
 
 

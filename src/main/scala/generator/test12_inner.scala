@@ -26,7 +26,7 @@ import junctions._
   * It contains all the transformation from indices to their module's name
   */
 
-object Data_test12_FlowParam{
+object Data_test12_inner_FlowParam{
 
   val bb_entry_pred = Map(
     "active" -> 0
@@ -35,12 +35,12 @@ object Data_test12_FlowParam{
 
   val bb_for_cond_pred = Map(
     "br0" -> 0,
-    "br9" -> 1
+    "br8" -> 1
   )
 
 
   val bb_for_inc_pred = Map(
-    "br7" -> 0
+    "br6" -> 0
   )
 
 
@@ -65,12 +65,12 @@ object Data_test12_FlowParam{
   )
 
 
-  val br7_brn_bb = Map(
+  val br6_brn_bb = Map(
     "bb_for_inc" -> 0
   )
 
 
-  val br9_brn_bb = Map(
+  val br8_brn_bb = Map(
     "bb_for_cond" -> 0
   )
 
@@ -89,49 +89,48 @@ object Data_test12_FlowParam{
 
 
   val bb_for_body_activate = Map(
-    "call5" -> 0,
-    "add6" -> 1,
-    "br7" -> 2
+    "add5" -> 0,
+    "br6" -> 1
   )
 
 
   val bb_for_inc_activate = Map(
-    "add8" -> 0,
-    "br9" -> 1
+    "add7" -> 0,
+    "br8" -> 1
   )
 
 
   val bb_for_end_activate = Map(
-    "ret10" -> 0
+    "ret9" -> 0
   )
 
 
   val phi1_phi_in = Map(
     "field0" -> 0,
-    "add6" -> 1
+    "add5" -> 1
   )
 
 
   val phi2_phi_in = Map(
     "const_0" -> 0,
-    "add8" -> 1
+    "add7" -> 1
   )
 
 
-  //  %foo.0 = phi i32 [ %j, %entry ], [ %add, %for.inc ], !UID !10, !ScalaLabel !11
+  //  %foo.0 = phi i32 [ %j, %entry ], [ %inc, %for.inc ], !UID !10, !ScalaLabel !11
   val phi1_in = Map(
     "field0" -> 0,
-    "add6" -> 0
+    "add5" -> 0
   )
 
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !12, !ScalaLabel !13
+  //  %k.0 = phi i32 [ 0, %entry ], [ %inc1, %for.inc ], !UID !12, !ScalaLabel !13
   val phi2_in = Map(
-    "add8" -> 0
+    "add7" -> 0
   )
 
 
-  //  %cmp = icmp ult i32 %i.0, 5, !UID !14, !ScalaLabel !15
+  //  %cmp = icmp ult i32 %k.0, 5, !UID !14, !ScalaLabel !15
   val icmp3_in = Map(
     "phi2" -> 0
   )
@@ -143,29 +142,21 @@ object Data_test12_FlowParam{
   )
 
 
-  //  %call = call i32 @test12_inner(i32 %foo.0), !UID !19, !ScalaLabel !20
-  val call5_in = Map(
-    "phi1" -> 0,
-    "" -> 0
+  //  %inc = add i32 %foo.0, 1, !UID !19, !ScalaLabel !20
+  val add5_in = Map(
+    "phi1" -> 0
   )
 
 
-  //  %add = add i32 %foo.0, %call, !UID !21, !ScalaLabel !22
-  val add6_in = Map(
-    "phi1" -> 1,
-    "call5" -> 0
-  )
-
-
-  //  %inc = add i32 %i.0, 1, !UID !26, !ScalaLabel !27
-  val add8_in = Map(
+  //  %inc1 = add i32 %k.0, 1, !UID !24, !ScalaLabel !25
+  val add7_in = Map(
     "phi2" -> 1
   )
 
 
-  //  ret i32 %foo.0, !UID !39, !BB_UID !40, !ScalaLabel !41
-  val ret10_in = Map(
-    "phi1" -> 2
+  //  ret i32 %foo.0, !UID !37, !BB_UID !38, !ScalaLabel !39
+  val ret9_in = Map(
+    "phi1" -> 1
   )
 
 
@@ -179,11 +170,9 @@ object Data_test12_FlowParam{
    * ================================================================== */
 
 
-abstract class test12DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class test12_innerDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
-    val call5_out = Decoupled(new Call(List(32)))
-    val call5_in = Flipped(Decoupled(new Call(List(32))))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
@@ -198,7 +187,7 @@ abstract class test12DFIO(implicit val p: Parameters) extends Module with CorePa
    * ================================================================== */
 
 
-class test12DF(implicit p: Parameters) extends test12DFIO() {
+class test12_innerDF(implicit p: Parameters) extends test12_innerDFIO() {
 
 
 
@@ -227,20 +216,13 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
 
   /* ================================================================== *
-   *                   SUB MODULES                                      *
-   * ================================================================== */
-
-  val sub_module_1 = Module(new test12_innerDF())
-
-
-  /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
 
-  val loop_L_13_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
+  val loop_L_5_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
-  val loop_L_13_liveOut_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_5_liveOut_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
 
 
   /* ================================================================== *
@@ -254,7 +236,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1))
 
-  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
+  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
 
   val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
@@ -281,15 +263,15 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   // [BasicBlock]  for.cond:
 
-  //  %foo.0 = phi i32 [ %j, %entry ], [ %add, %for.inc ], !UID !10, !ScalaLabel !11
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
+  //  %foo.0 = phi i32 [ %j, %entry ], [ %inc, %for.inc ], !UID !10, !ScalaLabel !11
+  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1))
 
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !12, !ScalaLabel !13
+  //  %k.0 = phi i32 [ 0, %entry ], [ %inc1, %for.inc ], !UID !12, !ScalaLabel !13
   val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
 
 
-  //  %cmp = icmp ult i32 %i.0, 5, !UID !14, !ScalaLabel !15
+  //  %cmp = icmp ult i32 %k.0, 5, !UID !14, !ScalaLabel !15
   val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false))
 
 
@@ -302,34 +284,30 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   // [BasicBlock]  for.body:
 
-  //  %call = call i32 @test12_inner(i32 %foo.0), !UID !19, !ScalaLabel !20
-  val call5 = Module(new CallNode(ID=5,argTypes=List(32),retTypes=List(32)))
+  //  %inc = add i32 %foo.0, 1, !UID !19, !ScalaLabel !20
+  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
 
 
-  //  %add = add i32 %foo.0, %call, !UID !21, !ScalaLabel !22
-  val add6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "add")(sign=false))
-
-
-  //  br label %for.inc, !UID !23, !BB_UID !24, !ScalaLabel !25
-  val br7 = Module (new UBranchNode(ID = 7))
+  //  br label %for.inc, !UID !21, !BB_UID !22, !ScalaLabel !23
+  val br6 = Module (new UBranchNode(ID = 6))
 
 
 
   // [BasicBlock]  for.inc:
 
-  //  %inc = add i32 %i.0, 1, !UID !26, !ScalaLabel !27
-  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
+  //  %inc1 = add i32 %k.0, 1, !UID !24, !ScalaLabel !25
+  val add7 = Module (new ComputeNode(NumOuts = 1, ID = 7, opCode = "add")(sign=false))
 
 
-  //  br label %for.cond, !llvm.loop !28, !UID !36, !BB_UID !37, !ScalaLabel !38
-  val br9 = Module (new UBranchNode(ID = 9))
+  //  br label %for.cond, !llvm.loop !26, !UID !34, !BB_UID !35, !ScalaLabel !36
+  val br8 = Module (new UBranchNode(ID = 8))
 
 
 
   // [BasicBlock]  for.end:
 
-  //  ret i32 %foo.0, !UID !39, !BB_UID !40, !ScalaLabel !41
-  val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10))
+  //  ret i32 %foo.0, !UID !37, !BB_UID !38, !ScalaLabel !39
+  val ret9 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=9))
 
 
 
@@ -345,7 +323,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
   /**
     * Instantiating parameters
     */
-  val param = Data_test12_FlowParam
+  val param = Data_test12_inner_FlowParam
 
 
 
@@ -375,15 +353,16 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   //Connecting br4 to bb_for_end
   //bb_for_cond_expand.io.InData <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
+  //bb_for_end.io.predicateIn(param.bb_for_end_pred("br4")) <> bb_for_cond_expand.io.Out(0)
   bb_for_end.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
 
 
-  //Connecting br7 to bb_for_inc
-  bb_for_inc.io.predicateIn <> br7.io.Out(param.br7_brn_bb("bb_for_inc"))
+  //Connecting br6 to bb_for_inc
+  bb_for_inc.io.predicateIn <> br6.io.Out(param.br6_brn_bb("bb_for_inc"))
 
 
-  //Connecting br9 to bb_for_cond
-  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br9")) <> br9.io.Out(param.br9_brn_bb("bb_for_cond"))
+  //Connecting br8 to bb_for_cond
+  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br8")) <> br8.io.Out(param.br8_brn_bb("bb_for_cond"))
 
 
 
@@ -413,32 +392,26 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   br4.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br4"))
 
-  //bb_for_cond_expand.io.enable <> bb_for_cond.io.Out(5)
 
-  //loop_L_13_liveIN_0.io.enable <> bb_for_cond.io.Out(4)
-  loop_L_13_liveIN_0.io.enable <> bb_for_end.io.Out(1)
-
-  loop_L_13_liveOut_0.io.enable <> bb_for_end.io.Out(2)
-
-  //loop_L_13_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
+  loop_L_5_liveIN_0.io.enable  <> bb_for_end.io.Out(1)
+  loop_L_5_liveOut_0.io.enable <> bb_for_end.io.Out(2)
 
 
 
-  call5.io.In.enable <> bb_for_body.io.Out(param.bb_for_body_activate("call5"))
 
-  add6.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("add6"))
+  add5.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("add5"))
 
-  br7.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("br7"))
-
-
-
-  add8.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("add8"))
-
-  br9.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("br9"))
+  br6.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("br6"))
 
 
 
-  ret10.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret10"))
+  add7.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("add7"))
+
+  br8.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("br8"))
+
+
+
+  ret9.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret9"))
 
 
 
@@ -451,7 +424,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   // Connecting function argument to the loop header
   //i32 %j
-  loop_L_13_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_5_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
 
 
 
@@ -467,15 +440,15 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
 
   // Wiring Live in to PHI node
 
-  phi1.io.InData(param.phi1_phi_in("field0")) <> loop_L_13_liveIN_0.io.Out(param.phi1_in("field0"))
+  phi1.io.InData(param.phi1_phi_in("field0")) <> loop_L_5_liveIN_0.io.Out(param.phi1_in("field0"))
 
-  phi1.io.InData(param.phi1_phi_in("add6")) <> add6.io.Out(param.phi1_in("add6"))
+  phi1.io.InData(param.phi1_phi_in("add5")) <> add5.io.Out(param.phi1_in("add5"))
 
   phi2.io.InData(param.phi2_phi_in("const_0")).bits.data := 0.U
   phi2.io.InData(param.phi2_phi_in("const_0")).bits.predicate := true.B
   phi2.io.InData(param.phi2_phi_in("const_0")).valid := true.B
 
-  phi2.io.InData(param.phi2_phi_in("add8")) <> add8.io.Out(param.phi2_in("add8"))
+  phi2.io.InData(param.phi2_phi_in("add7")) <> add7.io.Out(param.phi2_in("add7"))
 
   /**
     * Connecting PHI Masks
@@ -508,54 +481,40 @@ class test12DF(implicit p: Parameters) extends test12DFIO() {
   // Wiring Branch instruction
   br4.io.CmpIO <> icmp3.io.Out(param.br4_in("icmp3"))
 
-  // Wiring Call to I/O
-  io.call5_out <> call5.io.callOut
-  call5.io.retIn <> io.call5_in
-  call5.io.Out.enable.ready := true.B
-
   // Wiring instructions
-  call5.io.In.data("field0") <> phi1.io.Out(param.call5_in("phi1"))
-
-
-
-  // Wiring instructions
-  add6.io.LeftIO <> phi1.io.Out(param.add6_in("phi1"))
-
-  // Wiring instructions
-  add6.io.RightIO <> call5.io.Out.data("field0")
-
-  // Wiring instructions
-  add8.io.LeftIO <> phi2.io.Out(param.add8_in("phi2"))
+  add5.io.LeftIO <> phi1.io.Out(param.add5_in("phi1"))
 
   // Wiring constant
-  add8.io.RightIO.bits.data := 1.U
-  add8.io.RightIO.bits.predicate := true.B
-  add8.io.RightIO.valid := true.B
+  add5.io.RightIO.bits.data := 1.U
+  add5.io.RightIO.bits.predicate := true.B
+  add5.io.RightIO.valid := true.B
+
+  // Wiring instructions
+  add7.io.LeftIO <> phi2.io.Out(param.add7_in("phi2"))
+
+  // Wiring constant
+  add7.io.RightIO.bits.data := 1.U
+  add7.io.RightIO.bits.predicate := true.B
+  add7.io.RightIO.valid := true.B
 
   // Wiring return instruction
-  ret10.io.predicateIn(0).bits.control := true.B
-  ret10.io.predicateIn(0).bits.taskID := 0.U
-  ret10.io.predicateIn(0).valid := true.B
+  ret9.io.predicateIn(0).bits.control := true.B
+  ret9.io.predicateIn(0).bits.taskID := 0.U
+  ret9.io.predicateIn(0).valid := true.B
 
-  loop_L_13_liveOut_0.io.InData <> phi1.io.Out(param.ret10_in("phi1"))
-  ret10.io.In.data("field0") <> loop_L_13_liveOut_0.io.Out(0)
+  loop_L_5_liveOut_0.io.InData <> phi1.io.Out(param.ret9_in("phi1"))
+  ret9.io.In.data("field0") <> loop_L_5_liveOut_0.io.Out(0)
 
-  io.out <> ret10.io.Out
+  io.out <> ret9.io.Out
 
-
-  /* ================================================================== *
-   *                   CONNECTING SUBMODULES                            *
-   * ================================================================== */
-  sub_module_1.io.in <> call5.io.callOut
-  call5.io.retIn <> sub_module_1.io.out
 
 }
 
 import java.io.{File, FileWriter}
-object test12Main extends App {
-  val dir = new File("RTL/test12") ; dir.mkdirs
+object test12_innerMain extends App {
+  val dir = new File("RTL/test12_inner") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test12DF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test12_innerDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

@@ -134,7 +134,7 @@ class PhiTester(df: PhiNode)(implicit p: config.Parameters) extends PeekPokeTest
 class PHITests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new PhiNode(NumInputs = 2, NumOuts = 1, ID = 0)(p)) { c =>
+     chisel3.iotesters.Driver(() => new PhiNode(NumInputs = 2, NumOuts = 1, ID = 0)) { c =>
        new PhiTester(c)
      } should be(true)
    }

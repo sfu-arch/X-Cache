@@ -37,53 +37,68 @@ class test02CacheWrapper()(implicit p: Parameters) extends test02DF()(p)
 
 class test02Test01(c: test02CacheWrapper) extends PeekPokeTester(c) {
 
-  poke(c.io.in.bits.enable.control, false.B)
+
+  /**
+    * test02DF interface:
+    *
+    * in = Flipped(Decoupled(new Call(List(...))))
+    * out = Decoupled(new Call(List(32)))
+    */
+
+
+  // Initializing the signals
+
   poke(c.io.in.valid, false.B)
+
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
-  poke(c.io.in.bits.enable.control, true.B)
+
   poke(c.io.in.valid, true.B)
+  poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.bits.data("field0").data, 8.U)
   poke(c.io.in.bits.data("field0").predicate, true.B)
   poke(c.io.in.bits.data("field1").data, 3.U)
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
-  poke(c.io.in.bits.enable.control, false.B)
+
   poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.out.ready, true.B)
   step(1)
-  var time = 1  //Cycle counter
+
+  var time = 1
   var result = false
-  while (time < 200) {
+
+  while (time < 100) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1 &&
-      peek(c.io.out.bits.enable.control) == 1) {
+      peek(c.io.out.bits.data("field0").predicate) == 1) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 11) {
-        println(s"*** Incorrect result received. Got $data. Hoping for 11")
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 105")
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE + s"*** Correct result received @ cycle: $time.")
       }
     }
   }
-
-  if(!result) {
+  if (!result) {
     println("*** Timeout.")
     fail
   }
+
 
 }
 
@@ -96,13 +111,13 @@ class test02Tester extends FlatSpec with Matchers {
     // -td  = target directory
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
-     Array(
-       // "-ll", "Info",
-       "-tbn", "verilator",
-       "-td", "test_run_dir",
-       "-tts", "0001"),
-     () => new test02CacheWrapper()) {
-     c => new test02Test01(c)
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir",
+        "-tts", "0001"),
+      () => new test02CacheWrapper()) {
+      c => new test02Test01(c)
     } should be(true)
   }
 }

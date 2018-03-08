@@ -64,7 +64,7 @@ class test03Test01(c: test03CacheWrapper) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field0").predicate, true.B)
   poke(c.io.in.bits.data("field1").data, 3.U)
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 2.U)
+  poke(c.io.in.bits.data("field2").data, 5.U)
   poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -79,20 +79,19 @@ class test03Test01(c: test03CacheWrapper) extends PeekPokeTester(c) {
   step(1)
   var time = 1  //Cycle counter
   var result = false
-  while (time < 200) {
+  while (time < 300) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
-        peek(c.io.out.bits.data("field0").predicate) == 1 &&
-        peek(c.io.out.bits.enable.control) == 1) {
+        peek(c.io.out.bits.data("field0").predicate) == 1) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 105) {
-        println(s"*** Incorrect result received. Got $data. Hoping for 105")
+      if (data != 3030) {
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 105")
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE + s"*** Correct result received @ cycle: $time.")
       }
     }
   }

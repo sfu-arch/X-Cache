@@ -122,7 +122,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0)(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
 
 
 
@@ -139,7 +139,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  %mul = mul i32 %a, %b, !UID !8, !ScalaLabel !9
-  val mul0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "mul")(sign=false)(p))
+  val mul0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "mul")(sign=false))
 
 
   //  ret i32 %mul, !UID !10, !BB_UID !11, !ScalaLabel !12
@@ -173,7 +173,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -181,10 +181,6 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
 
 
   // There is no branch instruction
-
-
-
-  // There is no detach instruction
 
 
 
@@ -207,6 +203,14 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
 
 
   /* ================================================================== *
+   *                   CONNECTING LOOPHEADERS                           *
+   * ================================================================== */
+
+
+  //Function doesn't have any for loop
+
+
+  /* ================================================================== *
    *                   DUMPING PHI NODES                                *
    * ================================================================== */
 
@@ -226,14 +230,6 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
     */
   //Connect PHI node
   // There is no PHI node
-
-
-  /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
-   * ================================================================== */
-
-
-  //Function doesn't have any for loop
 
 
   /* ================================================================== *

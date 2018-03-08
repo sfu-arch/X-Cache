@@ -160,7 +160,7 @@ object Data_test11_FlowParam{
   )
 
 
-  //  %call = call i32 @test11_add(i32 %0, i32 %1), !UID !26, !ScalaLabel !27
+  //  %call = tail call i32 @test11_add(i32 %0, i32 %1), !UID !26, !ScalaLabel !27
   val call8_in = Map(
     "load5" -> 0,
     "load7" -> 0,
@@ -261,6 +261,7 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   val loop_L_10_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
 
+
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
@@ -268,15 +269,15 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc = "bb_entry")(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 7, NumPhi = 1, BID = 1, Desc = "bb_for_cond")(p))
+  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
 
-  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 2, Desc = "bb_for_body")(p))
+  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 2))
 
-  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3, Desc = "bb_for_inc")(p))
+  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4, Desc = "bb_for_end")(p))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4))
 
 
 
@@ -293,79 +294,67 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  br label %for.cond, !UID !8, !BB_UID !9, !ScalaLabel !10
-  val br0 = Module (new UBranchNode(ID = 0, Desc = "br0")(p))
-
-
+  val br0 = Module (new UBranchNode(ID = 0))
 
   // [BasicBlock]  for.cond:
 
   //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !11, !ScalaLabel !12
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 5, ID = 1, Desc = "phi1")(p))
+  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 5, ID = 1))
 
 
   //  %cmp = icmp ult i32 %i.0, 5, !UID !13, !ScalaLabel !14
-  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT", Desc = "icmp2")(sign=false)(p))
+  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT")(sign=false))
 
 
   //  br i1 %cmp, label %for.body, label %for.end, !UID !15, !BB_UID !16, !ScalaLabel !17
-  val br3 = Module (new CBranchNode(ID = 3, Desc = "br3")(p))
-
-  val bb_for_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0)(new ControlBundle))
-
-
+  val br3 = Module (new CBranchNode(ID = 3))
 
   // [BasicBlock]  for.body:
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.0, !UID !18, !ScalaLabel !19
-  val getelementptr4 = Module (new GepOneNode(NumOuts = 1, ID = 4, Desc = "getelementptr4")(numByte1 = 1)(p))
+  val getelementptr4 = Module (new GepOneNode(NumOuts = 1, ID = 4)(numByte1 = 1))
 
 
   //  %0 = load i32, i32* %arrayidx, align 4, !UID !20, !ScalaLabel !21
-  val load5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=5,RouteID=0,Desc="load5"))
+  val load5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=5,RouteID=0))
 
 
   //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.0, !UID !22, !ScalaLabel !23
-  val getelementptr6 = Module (new GepOneNode(NumOuts = 1, ID = 6, Desc = "getelementptr6")(numByte1 = 1)(p))
+  val getelementptr6 = Module (new GepOneNode(NumOuts = 1, ID = 6)(numByte1 = 1))
 
 
   //  %1 = load i32, i32* %arrayidx1, align 4, !UID !24, !ScalaLabel !25
-  val load7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=1,Desc="load7"))
+  val load7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=1))
 
 
-  //  %call = call i32 @test11_add(i32 %0, i32 %1), !UID !26, !ScalaLabel !27
-  val call8 = Module(new CallNode(ID=8,argTypes=List(32,32),retTypes=List(32), Desc="call8")(p))
+  //  %call = tail call i32 @test11_add(i32 %0, i32 %1), !UID !26, !ScalaLabel !27
+  val call8 = Module(new CallNode(ID=8,argTypes=List(32,32),retTypes=List(32)))
 
 
   //  %arrayidx2 = getelementptr inbounds i32, i32* %c, i32 %i.0, !UID !28, !ScalaLabel !29
-  val getelementptr9 = Module (new GepOneNode(NumOuts = 1, ID = 9, Desc = "getelementptr9")(numByte1 = 1)(p))
+  val getelementptr9 = Module (new GepOneNode(NumOuts = 1, ID = 9)(numByte1 = 1))
 
 
   //  store i32 %call, i32* %arrayidx2, align 4, !UID !30, !ScalaLabel !31
-  val store10 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=10,RouteID=0,Desc="store10"))
+  val store10 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=10,RouteID=0))
 
 
   //  br label %for.inc, !UID !32, !BB_UID !33, !ScalaLabel !34
-  val br11 = Module (new UBranchNode(ID = 11, Desc = "br11")(p))
-
-
+  val br11 = Module (new UBranchNode(ID = 11))
 
   // [BasicBlock]  for.inc:
 
   //  %inc = add i32 %i.0, 1, !UID !35, !ScalaLabel !36
-  val add12 = Module (new ComputeNode(NumOuts = 1, ID = 12, opCode = "add", Desc = "add12")(sign=false)(p))
+  val add12 = Module (new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign=false))
 
 
   //  br label %for.cond, !llvm.loop !37, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val br13 = Module (new UBranchNode(ID = 13, Desc = "br13")(p))
-
-
+  val br13 = Module (new UBranchNode(ID = 13))
 
   // [BasicBlock]  for.end:
 
   //  ret i32 1, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val ret14 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=14, Desc="ret14"))
-
-
+  val ret14 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=14))
 
 
 
@@ -393,7 +382,7 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -404,24 +393,19 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
 
   //Connecting br3 to bb_for_body
-  bb_for_body.io.predicateIn(param.bb_for_body_pred("br3")) <> br3.io.Out(param.br3_brn_bb("bb_for_body"))
+  bb_for_body.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_for_body"))
 
 
   //Connecting br3 to bb_for_end
-  bb_for_cond_expand.io.InData <> br3.io.Out(param.br3_brn_bb("bb_for_end"))
-  bb_for_end.io.predicateIn(param.bb_for_end_pred("br3")) <> bb_for_cond_expand.io.Out(0)
+  bb_for_end.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_for_end"))
 
 
   //Connecting br11 to bb_for_inc
-  bb_for_inc.io.predicateIn(param.bb_for_inc_pred("br11")) <> br11.io.Out(param.br11_brn_bb("bb_for_inc"))
+  bb_for_inc.io.predicateIn <> br11.io.Out(param.br11_brn_bb("bb_for_inc"))
 
 
   //Connecting br13 to bb_for_cond
   bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br13")) <> br13.io.Out(param.br13_brn_bb("bb_for_cond"))
-
-
-
-  // There is no detach instruction
 
 
 
@@ -444,16 +428,6 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   icmp2.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("icmp2"))
 
   br3.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br3"))
-
-  bb_for_cond_expand.io.enable <> bb_for_cond.io.Out(6)
-
-  loop_L_10_liveIN_0.io.enable <> bb_for_cond.io.Out(3)
-  loop_L_10_liveIN_1.io.enable <> bb_for_cond.io.Out(4)
-  loop_L_10_liveIN_2.io.enable <> bb_for_cond.io.Out(5)
-
-  loop_L_10_liveIN_0.io.Finish <> bb_for_cond_expand.io.Out(1)
-  loop_L_10_liveIN_1.io.Finish <> bb_for_cond_expand.io.Out(2)
-  loop_L_10_liveIN_2.io.Finish <> bb_for_cond_expand.io.Out(3)
 
 
 
@@ -483,7 +457,31 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   ret14.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret14"))
 
+  loop_L_10_liveIN_0.io.enable <> bb_for_end.io.Out(1)
+  loop_L_10_liveIN_1.io.enable <> bb_for_end.io.Out(2)
+  loop_L_10_liveIN_2.io.enable <> bb_for_end.io.Out(3)
 
+
+
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING LOOPHEADERS                           *
+   * ================================================================== */
+
+
+  // Connecting function argument to the loop header
+  //i32* %a
+  loop_L_10_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+
+  // Connecting function argument to the loop header
+  //i32* %b
+  loop_L_10_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+
+  // Connecting function argument to the loop header
+  //i32* %c
+  loop_L_10_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
 
 
 
@@ -509,25 +507,6 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   //Connect PHI node
 
   phi1.io.Mask <> bb_for_cond.io.MaskBB(0)
-
-
-
-  /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
-   * ================================================================== */
-
-
-  // Connecting function argument to the loop header
-  //i32* %a
-  loop_L_10_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
-
-  // Connecting function argument to the loop header
-  //i32* %b
-  loop_L_10_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
-
-  // Connecting function argument to the loop header
-  //i32* %c
-  loop_L_10_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
 
 
 
@@ -560,8 +539,8 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   // Wiring Load instruction to the parent instruction
   load5.io.GepAddr <> getelementptr4.io.Out(param.load5_in("getelementptr4"))
-  load5.io.memResp <> CacheMem.io.ReadOut(0)
-  CacheMem.io.ReadIn(0) <> load5.io.memReq
+  load5.io.memResp <> RegisterFile.io.ReadOut(0)
+  RegisterFile.io.ReadIn(0) <> load5.io.memReq
 
 
 
@@ -575,8 +554,8 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   // Wiring Load instruction to the parent instruction
   load7.io.GepAddr <> getelementptr6.io.Out(param.load7_in("getelementptr6"))
-  load7.io.memResp <> CacheMem.io.ReadOut(1)
-  CacheMem.io.ReadIn(1) <> load7.io.memReq
+  load7.io.memResp <> RegisterFile.io.ReadOut(1)
+  RegisterFile.io.ReadIn(1) <> load7.io.memReq
 
 
 
@@ -606,8 +585,8 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   // Wiring Store instruction to the parent instruction
   store10.io.GepAddr <> getelementptr9.io.Out(param.store10_in("getelementptr9"))
-  store10.io.memResp  <> CacheMem.io.WriteOut(0)
-  CacheMem.io.WriteIn(0) <> store10.io.memReq
+  store10.io.memResp  <> RegisterFile.io.WriteOut(0)
+  RegisterFile.io.WriteIn(0) <> store10.io.memReq
   store10.io.Out(0).ready := true.B
 
 

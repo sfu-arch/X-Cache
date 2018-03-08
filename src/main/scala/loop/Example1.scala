@@ -14,7 +14,7 @@ import node._
 import utility.UniformPrintfs
 
 
-class LoopExampleIO[T <: Data](val ID: Int)(gen: T)(implicit p: Parameters) extends CoreBundle()(p){
+class LoopExampleIO[T <: Data](val ID: Int)(gen: T)(implicit p: Parameters) extends CoreBundle(){
 
   val Input1 = Flipped(Decoupled(gen))
   val Input2 = Flipped(Decoupled(gen))
@@ -34,10 +34,10 @@ class LoopExample(val NumInputs: Int, val ID: Int)
 
   lazy val io = IO(new LoopExampleIO(ID)(new DataBundle()))
 
-  val head = Module(new LoopHeader(NumInputs = NumInputs, NumOuts = 4, ID = 0)(p))
-  val comp1 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "Add")(sign = false)(p))
-  val comp2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false)(p))
-  val comp3 = Module(new ComputeNode(NumOuts = 1, ID = 3, opCode = "Add")(sign = false)(p))
+  val head = Module(new LoopHeader(NumInputs = NumInputs, NumOuts = 4, ID = 0))
+  val comp1 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "Add")(sign = false))
+  val comp2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false))
+  val comp3 = Module(new ComputeNode(NumOuts = 1, ID = 3, opCode = "Add")(sign = false))
 
   comp1.io.enable <> io.Enable
   comp2.io.enable <> io.Enable

@@ -22,14 +22,21 @@ class ComputeNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle()))
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "ComputeNode")
+class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
                  (sign: Boolean)
-                 (implicit p: Parameters)
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
+
   // Printf debugging
-  override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  //  override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
@@ -45,7 +52,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "Comput
   //Output register
   val data_R = RegInit(0.U(xlen.W))
 
-  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
   /*==========================================*
@@ -84,39 +91,41 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String, Desc : String = "Comput
   }
 
   /*============================================*
-   *            State Machine    *
+   *            State Machine                   *
    *============================================*/
-  switch (state) {
-    is (s_IDLE) {
-      when(io.LeftIO.fire() || io.RightIO.fire()) {
-        state := s_LATCH
-      }
-    }
-    is (s_LATCH) {
-        when(start) {
-          state := s_COMPUTE
+  switch(state) {
+    is(s_IDLE) {
+      when(enable_valid_R) {
+        when((~enable_R).toBool) {
+          left_R := DataBundle.default
+          right_R := DataBundle.default
+
+          left_valid_R := false.B
+          right_valid_R := false.B
+
+          Reset()
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+        }.elsewhen(left_valid_R && right_valid_R) {
           ValidOut()
+          state := s_COMPUTE
         }
+      }
+
     }
-    is (s_COMPUTE) {
+    is(s_COMPUTE) {
       when(IsOutReady()) {
         // Reset data
-        left_R  := DataBundle.default
+        left_R := DataBundle.default
         right_R := DataBundle.default
-        left_valid_R  := false.B
+        left_valid_R := false.B
         right_valid_R := false.B
         //Reset state
         state := s_IDLE
         //Reset output
         Reset()
-        when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out)
       }
     }
   }
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
 
 }

@@ -75,26 +75,26 @@ abstract class AddDFIO(implicit val p: Parameters) extends Module with CoreParam
   })
 }
 
-class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
+class AddDF(implicit p: Parameters) extends AddDFIO() {
 
 
   /**
     * @note Module's variables they should set during initialization
     */
   //BasicBlock
-  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0)(p))
-  val b1_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1)(p))
-  val b2_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2)(p))
+  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
+  val b1_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1))
+  val b2_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2))
 
   //Compute
-  val m0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "EQ")(sign = false)(p))
-  val m1 = Module(new CBranchNode(ID = 1)(p))
+  val m0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "EQ")(sign = false))
+  val m1 = Module(new CBranchNode(ID = 1))
 
-  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false)(p))
-  val m3 = Module(new UBranchNode(ID = 3)(p))
+  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false))
+  val m3 = Module(new UBranchNode(ID = 3))
 
-  val m4 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4)(p))
-  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(sign = false)(p))
+  val m4 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4))
+  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(sign = false))
 
   /**
     * Instantiating parameters
@@ -107,15 +107,15 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
     */
 
   //Grounding entry BasicBlock
-  b0_entry.io.predicateIn(param.b0_entry_pred("active")).bits.control := true.B
-  b0_entry.io.predicateIn(param.b0_entry_pred("active")).bits.taskID := 0.U
-  b0_entry.io.predicateIn(param.b0_entry_pred("active")).valid := true.B
+  b0_entry.io.predicateIn.bits.control := true.B
+  b0_entry.io.predicateIn.bits.taskID := 0.U
+  b0_entry.io.predicateIn.valid := true.B
 
   /**
     * Connecting basic blocks to predicate instructions
     */
   //Connecting m1 to b1_then
-  b1_then.io.predicateIn(param.b1_then_pred("m1")) <> m1.io.Out(param.m1_brn_bb("b1_then"))
+  b1_then.io.predicateIn <> m1.io.Out(param.m1_brn_bb("b1_then"))
 
   //Connecting m1 to b2_end
   b2_end.io.predicateIn(param.b2_end_pred("m1")) <> m1.io.Out(param.m1_brn_bb("b2_end"))
