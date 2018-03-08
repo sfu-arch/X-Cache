@@ -183,9 +183,9 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 0)(p))
+  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 0, Desc = "bb_my_pfor_body")(p))
 
-  val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1)(p))
+  val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1, Desc = "bb_my_pfor_preattach")(p))
 
 
 
@@ -202,42 +202,42 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   // [BasicBlock]  my_pfor.body:
 
   //  %0 = getelementptr inbounds i32, i32* %a.in, i32 %i.0.in, !UID !7, !ScalaLabel !8
-  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 1)(p))
+  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0, Desc = "getelementptr0")(numByte1 = 1)(p))
 
 
   //  %1 = load i32, i32* %0, align 4, !UID !9, !ScalaLabel !10
-  val load1 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=1,RouteID=0))
+  val load1 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=1,RouteID=0,Desc="load1"))
 
 
   //  %2 = getelementptr inbounds i32, i32* %b.in, i32 %i.0.in, !UID !11, !ScalaLabel !12
-  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2)(numByte1 = 1)(p))
+  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2, Desc = "getelementptr2")(numByte1 = 1)(p))
 
 
   //  %3 = load i32, i32* %2, align 4, !UID !13, !ScalaLabel !14
-  val load3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=3,RouteID=1))
+  val load3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=3,RouteID=1,Desc="load3"))
 
 
   //  %4 = add i32 %1, %3, !UID !15, !ScalaLabel !16
-  val add4 = Module (new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign=false)(p))
+  val add4 = Module (new ComputeNode(NumOuts = 1, ID = 4, opCode = "add", Desc = "add4")(sign=false)(p))
 
 
   //  %5 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !17, !ScalaLabel !18
-  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5)(numByte1 = 1)(p))
+  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5, Desc = "getelementptr5")(numByte1 = 1)(p))
 
 
   //  store i32 %4, i32* %5, align 4, !UID !19, !ScalaLabel !20
-  val store6 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=6,RouteID=0))
+  val store6 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=6,RouteID=0,Desc="store6"))
 
 
   //  br label %my_pfor.preattach, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val br7 = Module (new UBranchNode(ID = 7)(p))
+  val br7 = Module (new UBranchNode(ID = 7, Desc = "br7")(p))
 
 
 
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !24, !BB_UID !25, !ScalaLabel !26
-  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8))
+  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8, Desc="ret8"))
 
 
 
@@ -317,6 +317,14 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   /* ================================================================== *
+   *                   CONNECTING LOOPHEADERS                           *
+   * ================================================================== */
+
+
+  //Function doesn't have any for loop
+
+
+  /* ================================================================== *
    *                   DUMPING PHI NODES                                *
    * ================================================================== */
 
@@ -339,14 +347,6 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
-   * ================================================================== */
-
-
-  //Function doesn't have any for loop
-
-
-  /* ================================================================== *
    *                   DUMPING DATAFLOW                                 *
    * ================================================================== */
 
@@ -365,8 +365,8 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   // Wiring Load instruction to the parent instruction
   load1.io.GepAddr <> getelementptr0.io.Out(param.load1_in("getelementptr0"))
-  load1.io.memResp <> CacheMem.io.ReadOut(0)
-  CacheMem.io.ReadIn(0) <> load1.io.memReq
+  load1.io.memResp <> RegisterFile.io.ReadOut(0)
+  RegisterFile.io.ReadIn(0) <> load1.io.memReq
 
 
 
@@ -381,8 +381,8 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   // Wiring Load instruction to the parent instruction
   load3.io.GepAddr <> getelementptr2.io.Out(param.load3_in("getelementptr2"))
-  load3.io.memResp <> CacheMem.io.ReadOut(1)
-  CacheMem.io.ReadIn(1) <> load3.io.memReq
+  load3.io.memResp <> RegisterFile.io.ReadOut(1)
+  RegisterFile.io.ReadIn(1) <> load3.io.memReq
 
 
 
@@ -407,18 +407,18 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   // Wiring Store instruction to the parent instruction
   store6.io.GepAddr <> getelementptr5.io.Out(param.store6_in("getelementptr5"))
-  store6.io.memResp  <> CacheMem.io.WriteOut(0)
-  CacheMem.io.WriteIn(0) <> store6.io.memReq
-  store6.io.Out(0).ready := true.B
+  store6.io.memResp  <> RegisterFile.io.WriteOut(0)
+  RegisterFile.io.WriteIn(0) <> store6.io.memReq
 
 
 
   /**
     * Connecting Dataflow signals
     */
-  ret8.io.In.data("field0").bits.data := 1.U
-  ret8.io.In.data("field0").bits.predicate := true.B
-  ret8.io.In.data("field0").valid := true.B
+  ret8.io.predicateIn(0).bits.control := true.B
+  ret8.io.predicateIn(0).bits.taskID := 0.U
+  ret8.io.predicateIn(0).valid := true.B
+  ret8.io.In.data("field0") <> store6.io.Out(0)  // Manually connected
   io.out <> ret8.io.Out
 
 

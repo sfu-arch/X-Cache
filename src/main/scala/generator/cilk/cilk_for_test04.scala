@@ -169,7 +169,7 @@ object Data_cilk_for_test04_FlowParam{
   )
 
 
-  //  call void @__offload_func_pfor_body(i32* %a, i32 %i.0, i32* %b, i32* %c), !UID !41, !ScalaLabel !42
+  //  call void @cilk_for_test04_detach(i32* %a, i32 %i.0, i32* %b, i32* %c), !UID !41, !ScalaLabel !42
   val call9_in = Map(
     "field0" -> 0,
     "phi1" -> 2,
@@ -259,19 +259,19 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0)(p))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0, Desc = "bb_entry")(p))
 
-  val bb_pfor_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 7, NumPhi = 1, BID = 1)(p))
+  val bb_pfor_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 7, NumPhi = 1, BID = 1, Desc = "bb_pfor_cond")(p))
 
-  val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2)(p))
+  val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2, Desc = "bb_pfor_detach")(p))
 
-  val bb_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3)(p))
+  val bb_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3, Desc = "bb_pfor_inc")(p))
 
-  val bb_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4)(p))
+  val bb_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4, Desc = "bb_pfor_end")(p))
 
-  val bb_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5)(p))
+  val bb_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5, Desc = "bb_pfor_end_continue")(p))
 
-  val bb_offload_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 6)(p))
+  val bb_offload_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 6, Desc = "bb_offload_pfor_body")(p))
 
 
 
@@ -288,22 +288,22 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   // [BasicBlock]  entry:
 
   //  br label %pfor.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0)(p))
+  val br0 = Module (new UBranchNode(ID = 0, Desc = "br0")(p))
 
 
 
   // [BasicBlock]  pfor.cond:
 
   //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %pfor.inc ], !UID !10, !ScalaLabel !11
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1)(p))
+  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1, Desc = "phi1")(p))
 
 
   //  %cmp = icmp ult i32 %i.0, 5, !UID !12, !ScalaLabel !13
-  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT")(sign=false)(p))
+  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT", Desc = "icmp2")(sign=false)(p))
 
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end, !UID !14, !BB_UID !15, !ScalaLabel !16
-  val br3 = Module (new CBranchNode(ID = 3)(p))
+  val br3 = Module (new CBranchNode(ID = 3, Desc = "br3")(p))
 
   val bb_pfor_cond_expand = Module(new ExpandNode(NumOuts=4, ID=0)(new ControlBundle))
 
@@ -312,43 +312,43 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   // [BasicBlock]  pfor.detach:
 
   //  detach label %offload.pfor.body, label %pfor.inc, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val detach4 = Module(new Detach(ID = 4)(p))
+  val detach4 = Module(new Detach(ID = 4, Desc = "detach4")(p))
 
 
 
   // [BasicBlock]  pfor.inc:
 
   //  %inc = add i32 %i.0, 1, !UID !20, !ScalaLabel !21
-  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false)(p))
+  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add", Desc = "add5")(sign=false)(p))
 
 
   //  br label %pfor.cond, !llvm.loop !22, !UID !32, !BB_UID !33, !ScalaLabel !34
-  val br6 = Module (new UBranchNode(ID = 6)(p))
+  val br6 = Module (new UBranchNode(ID = 6, Desc = "br6")(p))
 
 
 
   // [BasicBlock]  pfor.end:
 
   //  sync label %pfor.end.continue, !UID !35, !BB_UID !36, !ScalaLabel !37
-  val sync7 = Module(new Sync(NumOuts = 1, NumInc =1 , NumDec = 1, ID = 11, Desc = "sync7")(p))
+  val sync7 = Module(new Sync(ID = 7, NumOuts = 1, NumInc = 1, NumDec = 1, Desc = "sync7")(p))
 
 
 
   // [BasicBlock]  pfor.end.continue:
 
   //  ret i32 1, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8))
+  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8, Desc="ret8"))
 
 
 
   // [BasicBlock]  offload.pfor.body:
 
-  //  call void @__offload_func_pfor_body(i32* %a, i32 %i.0, i32* %b, i32* %c), !UID !41, !ScalaLabel !42
-  val call9 = Module(new CallNode(ID=9,argTypes=List(32,32,32,32),retTypes=List(32))(p))
+  //  call void @cilk_for_test04_detach(i32* %a, i32 %i.0, i32* %b, i32* %c), !UID !41, !ScalaLabel !42
+  val call9 = Module(new CallNode(ID=9,argTypes=List(32,32,32,32),retTypes=List(32), Desc="call9")(p))
 
 
   //  reattach label %pfor.inc, !UID !43, !BB_UID !44, !ScalaLabel !45
-  val reattach10 = Module(new Reattach(NumPredIn=1, ID=10)(p))
+  val reattach10 = Module(new Reattach(NumPredIn=1, ID=10, Desc = "reattach10")(p))
 
 
 
@@ -469,6 +469,25 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
 
   /* ================================================================== *
+   *                   CONNECTING LOOPHEADERS                           *
+   * ================================================================== */
+
+
+  // Connecting function argument to the loop header
+  //i32* %a
+  loop_L_5_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+
+  // Connecting function argument to the loop header
+  //i32* %b
+  loop_L_5_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+
+  // Connecting function argument to the loop header
+  //i32* %c
+  loop_L_5_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
+
+
+
+  /* ================================================================== *
    *                   DUMPING PHI NODES                                *
    * ================================================================== */
 
@@ -490,25 +509,6 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   //Connect PHI node
 
   phi1.io.Mask <> bb_pfor_cond.io.MaskBB(0)
-
-
-
-  /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
-   * ================================================================== */
-
-
-  // Connecting function argument to the loop header
-  //i32* %a
-  loop_L_5_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
-
-  // Connecting function argument to the loop header
-  //i32* %b
-  loop_L_5_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
-
-  // Connecting function argument to the loop header
-  //i32* %c
-  loop_L_5_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
 
 
 
@@ -565,6 +565,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
   // Wiring Call instruction to the loop header
   call9.io.In.data("field3") <>loop_L_5_liveIN_2.io.Out(param.call9_in("field2"))  // Manually added
+  call9.io.Out.enable.ready := true.B
 
   // Reattach (Manual add)
   reattach10.io.predicateIn(0) <> call9.io.Out.data("field0")
