@@ -48,8 +48,8 @@ class cilk_for_test02MainDirect(implicit p: Parameters) extends cilk_for_test02M
   val cilk_for_test02 = Module(new cilk_for_test02CacheWrapper())
 
   cilk_for_test02.io.in <> io.in
-  cilk_for_test02_mul.io.in <> cilk_for_test02.io.call6_out
-  cilk_for_test02.io.call6_in <> cilk_for_test02_mul.io.out
+  cilk_for_test02_mul.io.in <> cilk_for_test02.io.call5_out
+  cilk_for_test02.io.call5_in <> cilk_for_test02_mul.io.out
   io.out <> cilk_for_test02.io.out
 
 }
@@ -64,7 +64,7 @@ class cilk_for_test02MainTM(implicit p: Parameters) extends cilk_for_test02MainI
   cilk_for_test02.io.in <> io.in
 
   // cilk_for_test02 to task controller
-  TaskControllerModule.io.parentIn(0) <> cilk_for_test02.io.call6_out
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test02.io.call5_out
 
   // task controller to sub-task cilk_for_test02_mul
   cilk_for_test02_mul.io.in <> TaskControllerModule.io.childOut(0)
@@ -73,7 +73,7 @@ class cilk_for_test02MainTM(implicit p: Parameters) extends cilk_for_test02MainI
   TaskControllerModule.io.childIn(0) <> cilk_for_test02_mul.io.out
 
   // Task controller to cilk_for_test02
-  cilk_for_test02.io.call6_in <> TaskControllerModule.io.parentOut(0)
+  cilk_for_test02.io.call5_in <> TaskControllerModule.io.parentOut(0)
 
   // cilk_for_test02 to tester
   io.out <> cilk_for_test02.io.out
@@ -121,8 +121,8 @@ class cilk_for_test02Test01[T <: cilk_for_test02MainIO](c: T) extends PeekPokeTe
     step(1)
 //    println(s"[INFO] Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1 &&
-      peek(c.io.out.bits.enable.control) == 1) {
+      peek(c.io.out.bits.data("field0").predicate) == 1
+      ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 1) {
