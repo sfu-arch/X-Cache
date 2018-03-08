@@ -31,7 +31,7 @@ class computeTester(df: ComputeNode)
   poke(df.io.RightIO.valid, false.B)
   poke(df.io.RightIO.bits.predicate, false.B)
 
-  poke(df.io.enable.bits , false.B)
+  poke(df.io.enable.bits.control , false.B)
   poke(df.io.enable.valid, false.B)
   poke(df.io.Out(0).ready, false.B)
   println(s"Output: ${peek(df.io.Out(0))}\n")
@@ -39,7 +39,7 @@ class computeTester(df: ComputeNode)
 
   step(1)
 
-  poke(df.io.enable.bits , true.B)
+  poke(df.io.enable.bits.control , true.B)
   poke(df.io.enable.valid, true.B)
   poke(df.io.Out(0).ready, true.B)
 
@@ -67,7 +67,7 @@ class computeTester(df: ComputeNode)
 class CompTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftRight")(sign = false)) {
+     chisel3.iotesters.Driver(() => new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)) {
        c => new computeTester(c)
      } should be(true)
    }

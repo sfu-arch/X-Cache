@@ -70,31 +70,31 @@ object functionParam{
 abstract class AddDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val Data0 = Flipped(Decoupled(new DataBundle))
-    val pred = Decoupled(new Bool())
+    val pred = Decoupled(new ControlBundle)
     val result = Decoupled(new DataBundle)
   })
 }
 
-class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
+class AddDF(implicit p: Parameters) extends AddDFIO() {
 
 
   /**
     * @note Module's variables they should set during initialization
     */
   //BasicBlock
-  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0)(p))
-  val b1_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1)(p))
-  val b2_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2)(p))
+  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
+  val b1_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1))
+  val b2_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2))
 
   //Compute
-  val m0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "EQ")(sign = false)(p))
-  val m1 = Module(new CBranchNode(ID = 1)(p))
+  val m0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "EQ")(sign = false))
+  val m1 = Module(new CBranchNode(ID = 1))
 
-  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false)(p))
-  val m3 = Module(new UBranchNode(ID = 3)(p))
+  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false))
+  val m3 = Module(new UBranchNode(ID = 3))
 
-  val m4 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4)(p))
-  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(sign = false)(p))
+  val m4 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4))
+  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(sign = false))
 
   /**
     * Instantiating parameters
@@ -107,14 +107,15 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
     */
 
   //Grounding entry BasicBlock
-  b0_entry.io.predicateIn(param.b0_entry_pred("active")).bits := ControlBundle.Activate
-  b0_entry.io.predicateIn(param.b0_entry_pred("active")).valid := true.B
+  b0_entry.io.predicateIn.bits.control := true.B
+  b0_entry.io.predicateIn.bits.taskID := 0.U
+  b0_entry.io.predicateIn.valid := true.B
 
   /**
     * Connecting basic blocks to predicate instructions
     */
   //Connecting m1 to b1_then
-  b1_then.io.predicateIn(param.b1_then_pred("m1")) <> m1.io.Out(param.m1_brn_bb("b1_then"))
+  b1_then.io.predicateIn <> m1.io.Out(param.m1_brn_bb("b1_then"))
 
   //Connecting m1 to b2_end
   b2_end.io.predicateIn(param.b2_end_pred("m1")) <> m1.io.Out(param.m1_brn_bb("b2_end"))
@@ -144,7 +145,7 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
 //  m4.io.InData(param.m4_phi_in("const1")) <> io.Data0
   m4.io.InData(param.m4_phi_in("const1")).bits.data := 0.U
   m4.io.InData(param.m4_phi_in("const1")).bits.predicate := true.B
-  m4.io.InData(param.m4_phi_in("const1")).bits.valid := true.B
+// //   m4.io.InData(param.m4_phi_in("const1")).bits.valid := true.B
   m4.io.InData(param.m4_phi_in("const1")).valid := true.B
 
 
@@ -170,20 +171,20 @@ class AddDF(implicit p: Parameters) extends AddDFIO()(p) {
     */
   m0.io.RightIO.bits.data := 9.U
   m0.io.RightIO.bits.predicate := true.B
-  m0.io.RightIO.bits.valid := true.B
+// //   m0.io.RightIO.bits.valid := true.B
   m0.io.RightIO.valid := true.B
 
   m2.io.RightIO.bits.data := 5.U
   m2.io.RightIO.bits.predicate := true.B
-  m2.io.RightIO.bits.valid := true.B
+// //   m2.io.RightIO.bits.valid := true.B
   m0.io.RightIO.bits.data := 9.U
   m0.io.RightIO.bits.predicate := true.B
-  m0.io.RightIO.bits.valid := true.B
+// //   m0.io.RightIO.bits.valid := true.B
   m0.io.RightIO.valid := true.B
 
   m5.io.RightIO.bits.data := 4.U
   m5.io.RightIO.bits.predicate := true.B
-  m5.io.RightIO.bits.valid := true.B
+// //   m5.io.RightIO.bits.valid := true.B
   m5.io.RightIO.valid := true.B
 
   //Output

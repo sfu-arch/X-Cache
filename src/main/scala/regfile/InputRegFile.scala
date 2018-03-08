@@ -29,8 +29,8 @@ abstract class InRegFile(implicit val p: Parameters) extends Module with CorePar
 class IndexCounter(implicit val p: Parameters) extends Module with CoreParams{
   val io = IO(new Bundle{
     val inc   = Input(Bool())
-    val maxN  = Input(xlen.U)
-    val indx  = Output(xlen.U)
+    val maxN  = Input(UInt(xlen.W))
+    val indx  = Output(UInt(xlen.W))
   })
     val in_reg = RegInit(0.U(10.W))
 
@@ -49,8 +49,8 @@ class IndexCounter(implicit val p: Parameters) extends Module with CoreParams{
 
 class InputRegFile (val inData : Array[UInt])(implicit p: Parameters) extends InRegFile()(p){
 
-  val ROM    = Vec(inData)
-  val Valids = Reg(init = Vec(Seq.fill(inData.size)(true.B)))
+  val ROM    = VecInit(inData)
+  val Valids = RegInit(VecInit(Seq.fill(inData.size)(true.B)))
 
   val counter = Module(new IndexCounter())
 

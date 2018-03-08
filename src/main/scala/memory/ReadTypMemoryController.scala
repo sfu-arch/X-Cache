@@ -66,6 +66,7 @@ class ReadTypTableEntry(id: Int)(implicit p: Parameters)
 =            Default values for external communication            =
 ==================================================================*/
   io.output.valid := 0.U
+  io.output.bits.valid := true.B
   io.MemReq.valid := 0.U
 
   /*=======================================================
@@ -84,14 +85,19 @@ class ReadTypTableEntry(id: Int)(implicit p: Parameters)
 /*===========================================================
 =            Sending values to the cache request            =
 ===========================================================*/
+  // Request address
+  io.MemReq.bits.addr := ReqAddress + Cat(sendptr, 0.U(log2Ceil(xlen_bytes).W))
+  // MSHR ID
+  io.MemReq.bits.tag := ID
+  io.MemReq.bits.data := 0.U
+  io.MemReq.bits.iswrite := false.B
+  io.MemReq.bits.mask := ~0.U
+
+  // Memreq valid
+  io.MemReq.valid := false.B
 
   when((sendptr =/= Beats.U) && (request_valid_R === true.B)) {
-    // Request address
-    io.MemReq.bits.addr := ReqAddress + Cat(sendptr, 0.U(log2Ceil(xlen_bytes).W))
-    // MSHR ID
-    io.MemReq.bits.tag := ID
-    // Memreq valid
-    io.MemReq.valid := 1.U
+    io.MemReq.valid := true.B
     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
     when(io.MemReq.fire()) {
       // Increment the address
@@ -112,11 +118,11 @@ class ReadTypTableEntry(id: Int)(implicit p: Parameters)
 =            Cleanup and send output                         =
 =============================================================*/
   // Reg outputvalid = 
+  io.output.bits.RouteID := request_R.RouteID
+  io.output.bits.data := linebuffer(outptr)
   when(outptr =/= recvptr) {
     // For the demux
     io.output.valid := 1.U
-    io.output.bits.RouteID := request_R.RouteID
-    io.output.bits.data := linebuffer(outptr)
     // Output driver demux tree has forwarded output (may not have reached receiving node yet)
 
     when(io.output.fire() && (outptr =/= (Beats - 1).U)) {

@@ -4,19 +4,24 @@ package accel
 
 import java.io.{File, FileWriter}
 
+import accel.CoreMain.{chirrtl, dir}
+import accel.FilterDFMain.{chirrtl, dir}
 import accel.coredf._
 import config._
 import dataflow._
 
 object CoreMain extends App {
-  val dir = new File("accel_rtl") ; dir.mkdirs
+  val dir = new File("RTL/accel_rtl") ; dir.mkdirs
   implicit val p = config.Parameters.root((new AccelConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(3,3,new Core(3,3))))
 
-  val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
-  new firrtl.VerilogCompiler compile (
-  firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), verilog)
-  verilog.close
+  val verilogFile = new File(dir, s"${chirrtl.main}.v")
+  val verilogWriter = new FileWriter(verilogFile)
+  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+  val compiledStuff = compileResult.getEmittedCircuit
+  verilogWriter.write(compiledStuff.value)
+  verilogWriter.close()
+
 }
 
 object TestCacheMain extends App {
@@ -24,10 +29,12 @@ object TestCacheMain extends App {
   implicit val p = config.Parameters.root((new AccelConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(3,3,new TestCacheDF(3,3))))
 
-  val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
-  new firrtl.VerilogCompiler compile (
-  firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), verilog)
-  verilog.close
+  val verilogFile = new File(dir, s"${chirrtl.main}.v")
+  val verilogWriter = new FileWriter(verilogFile)
+  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+  val compiledStuff = compileResult.getEmittedCircuit
+  verilogWriter.write(compiledStuff.value)
+  verilogWriter.close()
 }
 
 object FilterDFMain extends App {
@@ -35,10 +42,12 @@ object FilterDFMain extends App {
   implicit val p = config.Parameters.root((new AccelConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(18,3,new FilterDFCore(18,3))))
 
-  val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
-  new firrtl.VerilogCompiler compile (
-  firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), verilog)
-  verilog.close
+  val verilogFile = new File(dir, s"${chirrtl.main}.v")
+  val verilogWriter = new FileWriter(verilogFile)
+  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+  val compiledStuff = compileResult.getEmittedCircuit
+  verilogWriter.write(compiledStuff.value)
+  verilogWriter.close()
 }
 
 object VecFilterDFMain extends App {
@@ -46,10 +55,12 @@ object VecFilterDFMain extends App {
   implicit val p = config.Parameters.root((new VecFilterDFConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(6,4,new VecFilterDFCore(6,4))))
 
-  val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
-  new firrtl.VerilogCompiler compile (
-    firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), verilog)
-  verilog.close
+  val verilogFile = new File(dir, s"${chirrtl.main}.v")
+  val verilogWriter = new FileWriter(verilogFile)
+  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+  val compiledStuff = compileResult.getEmittedCircuit
+  verilogWriter.write(compiledStuff.value)
+  verilogWriter.close()
 }
 
 object VecFilterNoKernDFMain extends App {
@@ -57,9 +68,11 @@ object VecFilterNoKernDFMain extends App {
   implicit val p = config.Parameters.root((new VecFilterDFConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(12,4,new VecFilterNoKernDFCore(12,4))))
 
-  val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
-  new firrtl.VerilogCompiler compile (
-    firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), verilog)
-  verilog.close
+  val verilogFile = new File(dir, s"${chirrtl.main}.v")
+  val verilogWriter = new FileWriter(verilogFile)
+  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+  val compiledStuff = compileResult.getEmittedCircuit
+  verilogWriter.write(compiledStuff.value)
+  verilogWriter.close()
 }
 

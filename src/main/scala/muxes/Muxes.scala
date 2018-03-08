@@ -19,11 +19,13 @@ class Demux[T <: ValidT](gen: T, Nops: Int) extends Module {
 
   val x = io.sel
 
+  for (i <- 0 until Nops) {
+    io.outputs(i) := io.input
+  }
   when(io.en) {
     for (i <- 0 until Nops) {
       io.outputs(i).valid := false.B
     }
-    io.outputs(x) := io.input
     io.outputs(x).valid := true.B
   }.otherwise {
     for (i <- 0 until Nops) {
@@ -119,9 +121,8 @@ class Mux[ T <: ValidT](gen: T, Nops: Int) extends Module {
 
   val x = io.sel
 
-  when(io.en) {
-    io.output := io.inputs(x)
-  }.otherwise {
+  io.output := io.inputs(x)
+  when(!io.en) {
       io.output.valid := false.B
   }
 }

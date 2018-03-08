@@ -31,7 +31,7 @@ class LoadNodeTests(c: UnTypLoad) extends PeekPokeTester(c) {
         poke(c.io.GepAddr.bits.predicate,true)
         poke(c.io.GepAddr.bits.data, 12)
         poke(c.io.enable.valid,true)
-        poke(c.io.enable.bits,true)
+        poke(c.io.enable.bits.control,true)
       }
 
        if((peek(c.io.memReq.valid) == 1) && (t > 4))

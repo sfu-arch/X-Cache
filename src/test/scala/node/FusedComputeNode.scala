@@ -40,7 +40,7 @@ class ChainTester(df: Chain)
   poke(df.io.In(2).bits.predicate, false.B)
 
 
-  poke(df.io.enable.bits , false.B)
+  poke(df.io.enable.bits.control , false.B)
   poke(df.io.enable.valid, false.B)
   poke(df.io.Out(0).ready, false.B)
   poke(df.io.Out(1).ready, false.B)
@@ -49,7 +49,7 @@ class ChainTester(df: Chain)
 
   step(1)
 
-  poke(df.io.enable.bits , true.B)
+  poke(df.io.enable.bits.control , true.B)
   poke(df.io.enable.valid, true.B)
   poke(df.io.Out(0).ready, true.B)
   poke(df.io.Out(1).ready, true.B)

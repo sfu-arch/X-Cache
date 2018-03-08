@@ -25,21 +25,21 @@ abstract class StackDFIO(implicit val p: Parameters) extends Module with CorePar
   })
 }
 
-class StackDF(implicit p: Parameters) extends StackDFIO()(p) {
+class StackDF(implicit p: Parameters) extends StackDFIO() {
 
 
   /**
     * @note Module's variables they should set during initialization
     */
   //BasicBlock
-  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0)(p))
+  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0))
 
   //Compute
-  val m0 = Module(new AllocaNode(NumOuts = 1,ID = 0,RouteID=0)(p))
-//  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(sign = false)(p))
+  val m0 = Module(new AllocaNode(NumOuts = 1,ID = 0,RouteID=0))
+//  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(sign = false))
 
   //Stack
-  val stack = Module(new Stack(NumOps = 2)(p))
+  val stack = Module(new Stack(NumOps = 2))
 
   /**
     * Wireing control signals from BasicBlock nodes
@@ -47,8 +47,9 @@ class StackDF(implicit p: Parameters) extends StackDFIO()(p) {
     */
 
   //Grounding entry BasicBlock
-  b0_entry.io.predicateIn(0).bits := ControlBundle.Activate
-  b0_entry.io.predicateIn(0).valid := true.B
+  b0_entry.io.predicateIn.bits.control := true.B
+  b0_entry.io.predicateIn.bits.taskID := 0.U
+  b0_entry.io.predicateIn.valid := true.B
 
   /**
     * Wireing enable signals to the instructions
@@ -70,12 +71,14 @@ class StackDF(implicit p: Parameters) extends StackDFIO()(p) {
   m0.io.allocaInputIO <> io.Data0
 //  m0.io.allocaInputIO.bits.size := 3.U
 //  m0.io.allocaInputIO.bits.numByte := 4.U
-//  m0.io.allocaInputIO.bits.valid := true.B
+// // //  m0.io.allocaInputIO.bits.valid := true.B
 //  m0.io.allocaInputIO.bits.predicate := true.B
 //  m0.io.allocaInputIO.valid := true.B
 
   //Output
   io.result <> m0.io.Out(0)
+  io.pred.valid := true.B
+  io.pred.bits := true.B
 
   //DEBUG
 //  io.pred <> b1_then.io.Out(0)

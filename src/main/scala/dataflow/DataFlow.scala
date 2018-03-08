@@ -35,7 +35,7 @@ Store.io.inData.bits.data       := 0x1eadbeefbeefbeefL.U
 Store.io.inData.bits.predicate  := true.B
 Store.io.inData.valid           := true.B
 
-Store.io.enable.bits  := true.B
+Store.io.enable.bits.control  := true.B
 Store.io.enable.valid := true.B
 Store.io.Out(0).ready := true.B
 
@@ -44,7 +44,7 @@ Load.io.GepAddr.bits.data      := 8.U
 Load.io.GepAddr.bits.predicate := true.B
 Load.io.GepAddr.valid          := true.B
 
-Load.io.enable.bits  := true.B
+Load.io.enable.bits.control  := true.B
 Load.io.enable.valid := true.B
 Load.io.Out(0).ready := true.B
 

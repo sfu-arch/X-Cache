@@ -126,13 +126,18 @@ class UnifiedController (ID: Int,
     }
   }
 
+
+/*
   ReadWriteArbiter.io.CacheReq.ready := state === sIdle
   io.CacheReq.valid       := state === sReq
   io.CacheReq.bits        := cacheReq_R
 
   ReadWriteArbiter.io.CacheResp.valid := state === sDone
   ReadWriteArbiter.io.CacheResp.bits := cacheResp_R
+*/
 
+  io.CacheReq <> ReadWriteArbiter.io.CacheReq
+  ReadWriteArbiter.io.CacheResp <> io.CacheResp
 
   //--------------------------
 

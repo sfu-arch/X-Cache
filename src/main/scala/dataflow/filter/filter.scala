@@ -427,7 +427,11 @@ abstract class offload_func_5DFIO(implicit val p: Parameters) extends Module wit
   })
 }
 
+<<<<<<< HEAD:src/main/scala/dataflow/filter/filter.scala
 class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
+=======
+class __offload_func_5DF(implicit p: Parameters) extends __offload_func_5DFIO() {
+>>>>>>> origin/nestedLoop:src/main/scala/accel/filter.scala
 
 
 
@@ -443,9 +447,9 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
    * ================================================================== */
 
   //Initializing BasicBlocks: 
-  val my_for_cond5_preheader = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 59, BID = 0)(p))
-  val g = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 1)(p))
-  val ret_fail = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2)(p))
+  val my_for_cond5_preheader = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 59, BID = 0))
+  val g = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 1))
+  val ret_fail = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
 
 
@@ -468,10 +472,10 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   // my_for.cond5.preheader: 
 
   //  %2 = add nsw i32 %mul21.in, %iCol.06.in, !UID !5
-  val m_0 = Module (new ComputeNode(NumOuts = 4, ID = 0, opCode = "add")(sign=false)(p))
+  val m_0 = Module (new ComputeNode(NumOuts = 4, ID = 0, opCode = "add")(sign=false))
 
   //  %3 = getelementptr inbounds i32, i32* %imIn.in, i32 %2, !UID !6
-  val m_1 = Module (new GepOneNode(NumOuts = 1, ID = 1)(numByte1 = 0)(p))
+  val m_1 = Module (new GepOneNode(NumOuts = 1, ID = 1)(numByte1 = 0))
 
   //  %4 = load i32, i32* %3, align 4, !UID !7
   val m_2 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=2,RouteID=0))
@@ -480,13 +484,13 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   val m_3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=3,RouteID=1))
 
   //  %6 = mul i32 %5, %4, !UID !9
-  val m_4 = Module (new ComputeNode(NumOuts = 1, ID = 4, opCode = "mul")(sign=false)(p))
+  val m_4 = Module (new ComputeNode(NumOuts = 1, ID = 4, opCode = "mul")(sign=false))
 
   //  %7 = add nsw i32 %2, 1, !UID !10
-  val m_5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false)(p))
+  val m_5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
 
   //  %8 = getelementptr inbounds i32, i32* %imIn.in, i32 %7, !UID !11
-  val m_6 = Module (new GepOneNode(NumOuts = 1, ID = 6)(numByte1 = 0)(p))
+  val m_6 = Module (new GepOneNode(NumOuts = 1, ID = 6)(numByte1 = 0))
 
   //  %9 = load i32, i32* %8, align 4, !UID !12
   val m_7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=2))
@@ -495,16 +499,16 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   val m_8 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=8,RouteID=3))
 
   //  %11 = mul i32 %10, %9, !UID !14
-  val m_9 = Module (new ComputeNode(NumOuts = 1, ID = 9, opCode = "mul")(sign=false)(p))
+  val m_9 = Module (new ComputeNode(NumOuts = 1, ID = 9, opCode = "mul")(sign=false))
 
   //  %12 = add i32 %11, %6, !UID !15
-  val m_10 = Module (new ComputeNode(NumOuts = 1, ID = 10, opCode = "add")(sign=false)(p))
+  val m_10 = Module (new ComputeNode(NumOuts = 1, ID = 10, opCode = "add")(sign=false))
 
   //  %13 = add nsw i32 %2, 2, !UID !16
-  val m_11 = Module (new ComputeNode(NumOuts = 1, ID = 11, opCode = "add")(sign=false)(p))
+  val m_11 = Module (new ComputeNode(NumOuts = 1, ID = 11, opCode = "add")(sign=false))
 
   //  %14 = getelementptr inbounds i32, i32* %imIn.in, i32 %13, !UID !17
-  val m_12 = Module (new GepOneNode(NumOuts = 1, ID = 12)(numByte1 = 0)(p))
+  val m_12 = Module (new GepOneNode(NumOuts = 1, ID = 12)(numByte1 = 0))
 
   //  %15 = load i32, i32* %14, align 4, !UID !18
   val m_13 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=13,RouteID=4))
@@ -513,16 +517,16 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   val m_14 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=14,RouteID=5))
 
   //  %17 = mul i32 %16, %15, !UID !20
-  val m_15 = Module (new ComputeNode(NumOuts = 1, ID = 15, opCode = "mul")(sign=false)(p))
+  val m_15 = Module (new ComputeNode(NumOuts = 1, ID = 15, opCode = "mul")(sign=false))
 
   //  %18 = add i32 %12, %17, !UID !21
-  val m_16 = Module (new ComputeNode(NumOuts = 1, ID = 16, opCode = "add")(sign=false)(p))
+  val m_16 = Module (new ComputeNode(NumOuts = 1, ID = 16, opCode = "add")(sign=false))
 
   //  %19 = add nsw i32 %mul.1.in, %iCol.06.in, !UID !22
-  val m_17 = Module (new ComputeNode(NumOuts = 3, ID = 17, opCode = "add")(sign=false)(p))
+  val m_17 = Module (new ComputeNode(NumOuts = 3, ID = 17, opCode = "add")(sign=false))
 
   //  %20 = getelementptr inbounds i32, i32* %imIn.in, i32 %19, !UID !23
-  val m_18 = Module (new GepOneNode(NumOuts = 1, ID = 18)(numByte1 = 0)(p))
+  val m_18 = Module (new GepOneNode(NumOuts = 1, ID = 18)(numByte1 = 0))
 
   //  %21 = load i32, i32* %20, align 4, !UID !24
   val m_19 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=19,RouteID=6))
@@ -531,16 +535,16 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   val m_20 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=20,RouteID=7))
 
   //  %23 = mul i32 %22, %21, !UID !26
-  val m_21 = Module (new ComputeNode(NumOuts = 1, ID = 21, opCode = "mul")(sign=false)(p))
+  val m_21 = Module (new ComputeNode(NumOuts = 1, ID = 21, opCode = "mul")(sign=false))
 
   //  %24 = add i32 %18, %23, !UID !27
-  val m_22 = Module (new ComputeNode(NumOuts = 1, ID = 22, opCode = "add")(sign=false)(p))
+  val m_22 = Module (new ComputeNode(NumOuts = 1, ID = 22, opCode = "add")(sign=false))
 
   //  %25 = add nsw i32 %19, 1, !UID !28
-  val m_23 = Module (new ComputeNode(NumOuts = 1, ID = 23, opCode = "add")(sign=false)(p))
+  val m_23 = Module (new ComputeNode(NumOuts = 1, ID = 23, opCode = "add")(sign=false))
 
   //  %26 = getelementptr inbounds i32, i32* %imIn.in, i32 %25, !UID !29
-  val m_24 = Module (new GepOneNode(NumOuts = 1, ID = 24)(numByte1 = 0)(p))
+  val m_24 = Module (new GepOneNode(NumOuts = 1, ID = 24)(numByte1 = 0))
 
   //  %27 = load i32, i32* %26, align 4, !UID !30
   val m_25 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=25,RouteID=8))
@@ -549,16 +553,16 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   val m_26 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=26,RouteID=9))
 
   //  %29 = mul i32 %28, %27, !UID !32
-  val m_27 = Module (new ComputeNode(NumOuts = 1, ID = 27, opCode = "mul")(sign=false)(p))
+  val m_27 = Module (new ComputeNode(NumOuts = 1, ID = 27, opCode = "mul")(sign=false))
 
   //  %30 = add i32 %24, %29, !UID !33
-  val m_28 = Module (new ComputeNode(NumOuts = 1, ID = 28, opCode = "add")(sign=false)(p))
+  val m_28 = Module (new ComputeNode(NumOuts = 1, ID = 28, opCode = "add")(sign=false))
 
   //  %31 = add nsw i32 %19, 2, !UID !34
-  val m_29 = Module (new ComputeNode(NumOuts = 1, ID = 29, opCode = "add")(sign=false)(p))
+  val m_29 = Module (new ComputeNode(NumOuts = 1, ID = 29, opCode = "add")(sign=false))
 
   //  %32 = getelementptr inbounds i32, i32* %imIn.in, i32 %31, !UID !35
-  val m_30 = Module (new GepOneNode(NumOuts = 1, ID = 30)(numByte1 = 0)(p))
+  val m_30 = Module (new GepOneNode(NumOuts = 1, ID = 30)(numByte1 = 0))
 
   //  %33 = load i32, i32* %32, align 4, !UID !36
   val m_31 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=31,RouteID=10))
@@ -567,16 +571,16 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   val m_32 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=32,RouteID=11))
 
   //  %35 = mul i32 %34, %33, !UID !38
-  val m_33 = Module (new ComputeNode(NumOuts = 1, ID = 33, opCode = "mul")(sign=false)(p))
+  val m_33 = Module (new ComputeNode(NumOuts = 1, ID = 33, opCode = "mul")(sign=false))
 
   //  %36 = add i32 %30, %35, !UID !39
-  val m_34 = Module (new ComputeNode(NumOuts = 1, ID = 34, opCode = "add")(sign=false)(p))
+  val m_34 = Module (new ComputeNode(NumOuts = 1, ID = 34, opCode = "add")(sign=false))
 
   //  %37 = add nsw i32 %mul.2.in, %iCol.06.in, !UID !40
-  val m_35 = Module (new ComputeNode(NumOuts = 3, ID = 35, opCode = "add")(sign=false)(p))
+  val m_35 = Module (new ComputeNode(NumOuts = 3, ID = 35, opCode = "add")(sign=false))
 
   //  %38 = getelementptr inbounds i32, i32* %imIn.in, i32 %37, !UID !41
-  val m_36 = Module (new GepOneNode(NumOuts = 1, ID = 36)(numByte1 = 0)(p))
+  val m_36 = Module (new GepOneNode(NumOuts = 1, ID = 36)(numByte1 = 0))
 
   //  %39 = load i32, i32* %38, align 4, !UID !42
   val m_37 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=37,RouteID=12))
@@ -585,16 +589,16 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   val m_38 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=38,RouteID=13))
 
   //  %41 = mul i32 %40, %39, !UID !44
-  val m_39 = Module (new ComputeNode(NumOuts = 1, ID = 39, opCode = "mul")(sign=false)(p))
+  val m_39 = Module (new ComputeNode(NumOuts = 1, ID = 39, opCode = "mul")(sign=false))
 
   //  %42 = add i32 %36, %41, !UID !45
-  val m_40 = Module (new ComputeNode(NumOuts = 1, ID = 40, opCode = "add")(sign=false)(p))
+  val m_40 = Module (new ComputeNode(NumOuts = 1, ID = 40, opCode = "add")(sign=false))
 
   //  %43 = add nsw i32 %37, 1, !UID !46
-  val m_41 = Module (new ComputeNode(NumOuts = 1, ID = 41, opCode = "add")(sign=false)(p))
+  val m_41 = Module (new ComputeNode(NumOuts = 1, ID = 41, opCode = "add")(sign=false))
 
   //  %44 = getelementptr inbounds i32, i32* %imIn.in, i32 %43, !UID !47
-  val m_42 = Module (new GepOneNode(NumOuts = 1, ID = 42)(numByte1 = 0)(p))
+  val m_42 = Module (new GepOneNode(NumOuts = 1, ID = 42)(numByte1 = 0))
 
   //  %45 = load i32, i32* %44, align 4, !UID !48
   val m_43 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=43,RouteID=14))
@@ -603,16 +607,16 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   val m_44 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=44,RouteID=15))
 
   //  %47 = mul i32 %46, %45, !UID !50
-  val m_45 = Module (new ComputeNode(NumOuts = 1, ID = 45, opCode = "mul")(sign=false)(p))
+  val m_45 = Module (new ComputeNode(NumOuts = 1, ID = 45, opCode = "mul")(sign=false))
 
   //  %48 = add i32 %42, %47, !UID !51
-  val m_46 = Module (new ComputeNode(NumOuts = 1, ID = 46, opCode = "add")(sign=false)(p))
+  val m_46 = Module (new ComputeNode(NumOuts = 1, ID = 46, opCode = "add")(sign=false))
 
   //  %49 = add nsw i32 %37, 2, !UID !52
-  val m_47 = Module (new ComputeNode(NumOuts = 1, ID = 47, opCode = "add")(sign=false)(p))
+  val m_47 = Module (new ComputeNode(NumOuts = 1, ID = 47, opCode = "add")(sign=false))
 
   //  %50 = getelementptr inbounds i32, i32* %imIn.in, i32 %49, !UID !53
-  val m_48 = Module (new GepOneNode(NumOuts = 1, ID = 48)(numByte1 = 0)(p))
+  val m_48 = Module (new GepOneNode(NumOuts = 1, ID = 48)(numByte1 = 0))
 
   //  %51 = load i32, i32* %50, align 4, !UID !54
   val m_49 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=49,RouteID=16))
@@ -621,44 +625,44 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
   val m_50 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=50,RouteID=17))
 
   //  %53 = mul i32 %52, %51, !UID !56
-  val m_51 = Module (new ComputeNode(NumOuts = 1, ID = 51, opCode = "mul")(sign=false)(p))
+  val m_51 = Module (new ComputeNode(NumOuts = 1, ID = 51, opCode = "mul")(sign=false))
 
   //  %54 = add i32 %48, %53, !UID !57
-  val m_52 = Module (new ComputeNode(NumOuts = 1, ID = 52, opCode = "add")(sign=false)(p))
+  val m_52 = Module (new ComputeNode(NumOuts = 1, ID = 52, opCode = "add")(sign=false))
 
   //  %55 = udiv i32 %54, %weight.in, !UID !58
-  val m_53 = Module (new ComputeNode(NumOuts = 1, ID = 53, opCode = "udiv")(sign=false)(p))
+  val m_53 = Module (new ComputeNode(NumOuts = 1, ID = 53, opCode = "udiv")(sign=false))
 
   //  %56 = getelementptr inbounds i32, i32* %imOut.in, i32 %2, !UID !59
-  val m_54 = Module (new GepOneNode(NumOuts = 1, ID = 54)(numByte1 = 0)(p))
+  val m_54 = Module (new GepOneNode(NumOuts = 1, ID = 54)(numByte1 = 0))
 
   //  store i32 %55, i32* %56, align 4, !UID !60
   val m_55 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=55,RouteID=0))
 
   //  %57 = add nuw nsw i32 %iCol.06.in, 1, !UID !61
-  val m_56 = Module (new ComputeNode(NumOuts = 2, ID = 56, opCode = "add")(sign=false)(p))
+  val m_56 = Module (new ComputeNode(NumOuts = 2, ID = 56, opCode = "add")(sign=false))
 
   //  %58 = icmp eq i32 %57, %sub2.in, !UID !62
-  val m_57 = Module (new IcmpNode(NumOuts = 1, ID = 57, opCode = "EQ")(sign=false)(p))
+  val m_57 = Module (new IcmpNode(NumOuts = 1, ID = 57, opCode = "EQ")(sign=false))
 
   //  br i1 %58, label %ret.fail, label %g, !UID !63, !BB_UID !64
-  val m_58 = Module (new CBranchNode(ID = 58)(p))
+  val m_58 = Module (new CBranchNode(ID = 58))
 
   // g: 
 
   //  %59 = getelementptr <{ i32 }>, <{ i32 }>* %1, i32 0, i32 0, !UID !65
-  val m_59 = Module (new GepTwoNode(NumOuts = 1, ID = 59)(numByte1 = 4, numByte2 = 0)(p))
+  val m_59 = Module (new GepTwoNode(NumOuts = 1, ID = 59)(numByte1 = 4, numByte2 = 0))
 
   //  store i32 %57, i32* %59, align 4, !UID !66, !LO !67
   val m_60 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=60,RouteID=1))
 
   //  ret i1 true, !UID !68, !BB_UID !69
-  //val m_61 = Module (new RetNode(ID = 61)(p))
+  //val m_61 = Module (new RetNode(ID = 61))
 
   // ret.fail: 
 
   //  ret i1 false, !UID !70, !BB_UID !71
-  //val m_62 = Module (new RetNode(ID = 62)(p))
+  //val m_62 = Module (new RetNode(ID = 62))
 
 
 
@@ -686,17 +690,17 @@ class offload_func_5DF(implicit p: Parameters) extends offload_func_5DFIO()(p) {
      */
 
   //We always ground entry BasicBlock
-  my_for_cond5_preheader.io.predicateIn(param.my_for_cond5_preheader_pred("active")).bits  := ControlBundle.Activate
-  my_for_cond5_preheader.io.predicateIn(param.my_for_cond5_preheader_pred("active")).valid := true.B
+  my_for_cond5_preheader.io.predicateIn.bits  := ControlBundle.Activate
+  my_for_cond5_preheader.io.predicateIn.valid := true.B
 
   /**
     * Connecting basic blocks to predicate instructions
     */
   //Connecting m_58 to ret_fail
-  ret_fail.io.predicateIn(param.ret_fail_pred("m_58")) <> m_58.io.Out(param.m_58_brn_bb("ret_fail"))
+  ret_fail.io.predicateIn <> m_58.io.Out(param.m_58_brn_bb("ret_fail"))
 
   //Connecting m_58 to g
-  g.io.predicateIn(param.g_pred("m_58")) <> m_58.io.Out(param.m_58_brn_bb("g"))
+  g.io.predicateIn <> m_58.io.Out(param.m_58_brn_bb("g"))
 
 
 

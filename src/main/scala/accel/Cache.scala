@@ -34,8 +34,6 @@ object CacheReq {
   }
 }
 
-
-
 class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val data = UInt(xlen.W)
   val tag  = UInt((List(1,mshrlen).max).W)
@@ -94,8 +92,10 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   // memory
   val v        = RegInit(0.U(nSets.W))
   val d        = RegInit(0.U(nSets.W))
-  val metaMem  = SyncReadMem(nSets, new MetaData)
-  val dataMem  = Seq.fill(nWords)(SyncReadMem(nSets, Vec(wBytes, UInt(8.W))))
+//  val metaMem  = SyncReadMem(nSets, new MetaData)
+  val metaMem  = Mem(nSets, new MetaData)
+//  val dataMem  = Seq.fill(nWords)(SyncReadMem(nSets, Vec(wBytes, UInt(8.W))))
+  val dataMem  = Seq.fill(nWords)(Mem(nSets, Vec(wBytes, UInt(8.W))))
 
   val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
   val cpu_data = Reg(io.cpu.req.bits.data.cloneType)
@@ -125,25 +125,27 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val idx_reg  = addr_reg(slen+blen-1, blen)
   val off_reg  = addr_reg(blen-1, byteOffsetBits)
 
-  val rmeta = metaMem.read(idx, ren)
-  val rdata = Cat((dataMem map (_.read(idx, ren).asUInt)).reverse)
+  val rmeta = Reg(new MetaData)
+  rmeta := metaMem.read(idx)
+  val rdata = RegInit(0.U(128.W))
+  rdata := Cat((dataMem map (_.read(idx).asUInt)).reverse)
   val rdata_buf = RegEnable(rdata, ren_reg)
   val refill_buf = Reg(Vec(dataBeats, UInt(nastiXDataBits.W)))
   val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
   hit := v(idx_reg) && rmeta.tag === tag_reg
-  cpu_tag := io.cpu.req.bits.tag
 
   // Read Mux
-  io.cpu.resp.bits.data := Vec.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
+  io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
   io.cpu.resp.bits.tag  := cpu_tag
-  io.cpu.resp.bits.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_iswrite
+  io.cpu.resp.bits.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.resp.bits.isSt := cpu_iswrite
-  io.cpu.resp.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_iswrite
-  io.cpu.req.ready      := !is_idle
+  io.cpu.resp.valid     := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
+  io.cpu.req.ready      := is_idle || (state === s_READ_CACHE && hit)
 
-  when(io.cpu.resp.valid) {
+  when(io.cpu.req.valid && io.cpu.req.ready) {
     addr_reg  := addr
+    cpu_tag   := io.cpu.req.bits.tag
     cpu_data  := io.cpu.req.bits.data
     cpu_mask  := io.cpu.req.bits.mask
     cpu_iswrite := io.cpu.req.bits.iswrite
@@ -208,11 +210,13 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
     is(s_IDLE) {
       when(io.cpu.req.valid) {
         state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
+/*
         when (io.cpu.req.bits.iswrite) {
           printf("\nSTORE START: %d\n", counterValue)
         }.otherwise {
           printf("\nLOAD START:  %d\n", counterValue)
         }
+*/
       }
     }
     is(s_READ_CACHE) {
@@ -221,7 +225,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
           state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
         }.otherwise {
           state := s_IDLE
-          printf("\nLOAD END: %d\n", counterValue)
+//          printf("\nLOAD END: %d\n", counterValue)
         }
       }.otherwise {
         io.nasti.aw.valid := is_dirty
@@ -236,7 +240,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
     is(s_WRITE_CACHE) {
       when(hit || is_alloc_reg || io.cpu.abort) {
         state := s_IDLE
-        printf("\nSTORE END: %d\n", counterValue)
+//      printf("\nSTORE END: %d\n", counterValue)
       }.otherwise {
         io.nasti.aw.valid := is_dirty
         io.nasti.ar.valid := !is_dirty
@@ -269,7 +273,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
       when(read_wrap_out) {
         state := Mux(cpu_iswrite, s_WRITE_CACHE, s_IDLE)
         when (!cpu_iswrite) {
-          printf("\nLOAD END: %d\n", counterValue)
+//          printf("\nLOAD END: %d\n", counterValue)
         }
       }
     }

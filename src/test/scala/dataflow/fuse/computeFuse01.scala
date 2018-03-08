@@ -41,7 +41,7 @@ class computeFuse01Tester(df: ComputeFuse01DF)
   poke(df.io.data3.valid, false.B)
   poke(df.io.data3.bits.predicate, true.B)
 
-  poke(df.io.enable.bits, false.B)
+  poke(df.io.enable.bits.control, false.B)
   poke(df.io.enable.valid, false.B)
 
   poke(df.io.dataOut.ready, true.B)
@@ -53,7 +53,7 @@ class computeFuse01Tester(df: ComputeFuse01DF)
   poke(df.io.data1.valid, true.B)
   poke(df.io.data2.valid, true.B)
   poke(df.io.data3.valid, true.B)
-  poke(df.io.enable.bits, true.B)
+  poke(df.io.enable.bits.control, true.B)
   poke(df.io.enable.valid, true.B)
 
   println(s"Output: ${peek(df.io.dataOut)}\n")

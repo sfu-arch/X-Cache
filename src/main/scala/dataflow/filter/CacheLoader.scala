@@ -13,7 +13,7 @@ import memory._
 class CacheLoader(FilterSize : Int)(implicit val p: Parameters) extends Module with CoreParams {
 
   val io = IO(new Bundle {
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle()))
     val ptr    = Vec(FilterSize,Flipped(Decoupled(new DataBundle())))
     val cache  = Flipped(new CacheIO)
     val data   = Vec(FilterSize,Decoupled(new DataBundle()))
@@ -37,8 +37,8 @@ class CacheLoader(FilterSize : Int)(implicit val p: Parameters) extends Module w
     io.data(i) <> Load(i).io.Out(0) 
   }
 
+  io.cache.abort := false.B
   io.cache.req <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.cache.resp
-
 }
 

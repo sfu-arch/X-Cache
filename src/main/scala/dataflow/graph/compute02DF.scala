@@ -19,19 +19,19 @@ class Compute02DF(implicit val p: Parameters) extends Module with CoreParams {
     val data4 = Flipped(Decoupled(new DataBundle()))
     val data5 = Flipped(Decoupled(new DataBundle()))
     val data6 = Flipped(Decoupled(new DataBundle()))
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle))
 
     val dataOut0 = Decoupled(new DataBundle())
     val dataOut1 = Decoupled(new DataBundle())
 
   })
 
-  val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false)(p))
-  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false)(p))
-  val m2 = Module(new ComputeNode(NumOuts = 2, ID = 0, opCode = "Xor")(sign = false)(p))
-  val m3 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftLeft")(sign = false)(p))
-  val m4 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftRight")(sign = false)(p))
-  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Or")(sign = false)(p))
+  val m0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Xor")(sign = false))
+  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "And")(sign = false))
+  val m2 = Module(new ComputeNode(NumOuts = 2, ID = 0, opCode = "Xor")(sign = false))
+  val m3 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftLeft")(sign = false))
+  val m4 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftRight")(sign = false))
+  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Or")(sign = false))
 
   m0.io.LeftIO <> io.data0
   m0.io.RightIO <> io.data1

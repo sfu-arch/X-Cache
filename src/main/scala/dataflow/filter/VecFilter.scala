@@ -14,7 +14,7 @@ class VecFilter(implicit val p: Parameters) extends Module with CoreParams {
   val FilterSize = 3
 
   val io = IO(new Bundle {
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle()))
     val data   = Vec(FilterSize,Flipped(Decoupled(new TypBundle())))
     val kern   = Vec(FilterSize,Flipped(Decoupled(new TypBundle())))
     val sum    = Decoupled(new TypBundle())

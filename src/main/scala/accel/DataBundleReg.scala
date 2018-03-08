@@ -116,6 +116,7 @@ class DataBundleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends DataB
   val anyvalid = valid.contains(true.B)
   for(i <- 0 until cNum) {
     io.ctrl(i).bits.data := Cat(ctrlBank(i+numCfg).reverse)
+// //     io.ctrl(i).bits.valid := valid(i)
     io.ctrl(i).valid := valid(i)
   }
 
@@ -128,6 +129,7 @@ class DataBundleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends DataB
   writeRespValidReg  := doWrite && !writeRespValidReg
   io.nasti.b.valid   := writeRespValidReg
   io.nasti.b.bits.id := io.nasti.aw.bits.id
+  io.nasti.b.bits.user := 0.U
 
   // read address ready generation
   val readAddrReadyReg = RegInit(false.B)
@@ -148,6 +150,7 @@ class DataBundleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends DataB
   io.nasti.r.bits.last  := readValidReg
   io.nasti.r.bits.resp := 0.U    // always OK
   io.nasti.r.bits.id := io.nasti.ar.bits.id
+  io.nasti.r.bits.user := 0.U
 
   statBank(0):= Cat(anyvalid, io.ready, io.done)
   for(i <- 0 until sNum) {
@@ -172,7 +175,7 @@ class DataBundleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends DataB
   val countOn = true.B // increment counter every clock cycle
   val (counterValue, counterWrap) = Counter(countOn, 64*1024)
   //clockCycles := clockCycles + 1.U
-
+/*
   when (io.nasti.ar.fire()) {
     printf("\nSTATUS START:  %d\n", counterValue)
   }
@@ -185,6 +188,6 @@ class DataBundleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends DataB
   when (io.nasti.b.fire()) {
     printf("\nCONFIG END: %d\n", counterValue)
   }
-
+*/
 }
 

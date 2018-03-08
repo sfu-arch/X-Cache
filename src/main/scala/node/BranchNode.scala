@@ -28,61 +28,61 @@ class CBranchNodeIO(NumOuts: Int = 2)
 }
 
 class CBranchNode(ID: Int)
-                 (implicit p: Parameters)
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
   extends HandShakingCtrlNPS(2, ID)(p) {
   override lazy val io = IO(new CBranchNodeIO())
   // Printf debugging
-  override val printfSigil = "Node ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
   // OP Inputs
   val cmp_R = RegInit(DataBundle.default)
+  val cmp_valid_R = RegInit(false.B)
 
 
-  // Output register
-  val data0_R = RegInit(0.U(xlen.W))
-  val data1_R = RegInit(0.U(xlen.W))
+  // Output wire
+  //  val data_out_w = WireInit(VecInit(Seq.fill(2)(false.B)))
+  val data_out_R = RegInit(VecInit(Seq.fill(2)(false.B)))
 
-  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-  val state = RegInit(s_idle)
+  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val state = RegInit(s_IDLE)
 
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val predicate = cmp_R.predicate & IsEnable()
-  val start = cmp_R.valid & IsEnableValid()
+  val start = cmp_valid_R & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
   // Predicate register
-  val pred_R = RegInit(init = false.B)
+  //val pred_R = RegInit(init = false.B)
 
 
-  io.CmpIO.ready := ~cmp_R.valid
+  io.CmpIO.ready := ~cmp_valid_R
   when(io.CmpIO.fire()) {
-    //printfInfo("Latch left data\n")
-    state := s_LATCH
-    cmp_R.data := io.CmpIO.bits.data
-    cmp_R.valid := true.B
-    cmp_R.predicate := io.CmpIO.bits.predicate
+    cmp_R <> io.CmpIO.bits
+    cmp_valid_R := true.B
   }
 
   // Wire up Outputs
-  io.Out(0).bits.control := data0_R.orR.toBool
-//  io.Out(0).bits.predicate := pred_R
-
-  io.Out(1).bits.control := data1_R.orR.toBool
-//  io.Out(1).bits.predicate := pred_R
-
-  //printf(p"cmp_R: ${cmp_R}\n")
+  io.Out(0).bits.control := data_out_R(0)
+  io.Out(0).bits.taskID := 0.U
+  io.Out(1).bits.control := data_out_R(1)
+  io.Out(1).bits.taskID := 0.U
 
   /*============================================*
-   *            ACTIONS (possibly dangerous)    *
+   *            STATE MACHINE                   *
    *============================================*/
 
   /**
@@ -92,70 +92,66 @@ class CBranchNode(ID: Int)
     * valid == 1  ->  cmp = false then 2
     */
 
-  data0_R := ~cmp_R.data.asUInt.orR
-  data1_R := cmp_R.data.asUInt.orR
-  pred_R := predicate
+ switch(state) {
+    is(s_IDLE) {
+      when(enable_valid_R && ~enable_R){
+        state := s_COMPUTE
+        ValidOut()
+      }.elsewhen(io.CmpIO.fire()) {
+        state := s_LATCH
+      }
+    }
+    is(s_LATCH) {
+      state := s_COMPUTE
+      when(enable_valid_R){
+        when(enable_R){
+          data_out_R(0) := cmp_R.data.asUInt.orR
+          data_out_R(1) := ~cmp_R.data.asUInt.orR
+        }
+        ValidOut()
+      }
+    }
+    is(s_COMPUTE) {
+      when(IsOutReady()) {
+        // Restarting
+        cmp_R := DataBundle.default
+        cmp_valid_R := false.B
 
-  when(start & predicate) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & !predicate) {
-    //printfInfo("Start sending data to output INVALID\n")
-    state := s_COMPUTE
-    ValidOut()
+        // Reset output
+        data_out_R := VecInit(Seq.fill(2)(false.B))
+        //Reset state
+        state := s_IDLE
+
+        Reset()
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": " + ": Output fired @ %d, Value: %d\n", cycleCount, data_out_R.asUInt())
+      }
+    }
   }
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
-
-  val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
-
-  printfInfo("out_ready: %x\n", out_ready_W)
-  printfInfo("out_valid: %x\n", out_valid_W)
-
-  //printfInfo(" Start restarting\n")
-  when(out_ready_W & out_valid_W) {
-    //printfInfo("Start restarting output \n")
-    // Reset data
-    cmp_R := DataBundle.default
-    // Reset output
-    data0_R := 0.U
-    data1_R := 0.U
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
-    //Reset state
-    state := s_idle
-    //Restart predicate bit
-    pred_R := false.B
-  }
-
-  printfInfo(" State: %x\n", state)
-
 
 }
 
-class UBranchNode(ID: Int)
-                 (implicit p: Parameters)
-  extends HandShakingCtrlNPS(NumOuts = 1, ID)(p) {
-  override lazy val io = IO(new HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p))
+class UBranchNode(ID: Int, NumOuts: Int = 1)
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
+  extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
+  override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
   // Printf debugging
-  override val printfSigil = "Node (CBR) ID: " + ID + " "
+
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
-  // OP Inputs
-  val cmp_R = RegInit(DataBundle.default)
-
 
   // Output register
   val data_R = RegInit(0.U(xlen.W))
 
-  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val s_idle :: s_OUTPUT :: Nil = Enum(2)
   val state = RegInit(s_idle)
 
   /*==========================================*
@@ -169,38 +165,27 @@ class UBranchNode(ID: Int)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  // Predicate register
-  val pred_R = RegInit(false.B)
-  val valid_R = RegInit(false.B)
-
-
-  // Wire up Outputs
-  io.Out(0).bits.control := data_R.orR.toBool
-
-  //printf(p"cmp_R: ${cmp_R}\n")
-
-  /*============================================*
-   *            ACTIONS (possibly dangerous)    *
-   *============================================*/
-
   /**
     * Combination of bits and valid signal from CmpIn whill result the output value:
     * valid == 0  ->  output = 0
     * valid == 1  ->  cmp = true  then 1
     * valid == 1  ->  cmp = false then 2
+    *
     * @note data_R value is equale to predicate bit
     */
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.control := predicate
+    io.Out(i).bits.taskID := 0.U
 
-  data_R := predicate
-  pred_R := predicate
-  valid_R := true.B
+  }
 
-  when(start & predicate) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & !predicate) {
-    //printfInfo("Start sending data to output INVALID\n")
-    state := s_COMPUTE
+  /*============================================*
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
+
+  when(start & (state === s_idle)) {
+    state := s_OUTPUT
     ValidOut()
   }
 
@@ -212,26 +197,102 @@ class UBranchNode(ID: Int)
   val out_ready_W = out_ready_R.asUInt.andR
   val out_valid_W = out_valid_R.asUInt.andR
 
-  printfInfo("out_ready: %x\n", out_ready_W)
-  printfInfo("out_valid: %x\n", out_valid_W)
-
-  //printfInfo(" Start restarting\n")
-  when(out_ready_W & out_valid_W) {
+  when(out_ready_W & (state === s_OUTPUT)) {
     //printfInfo("Start restarting output \n")
-    // Reset data
-    cmp_R := DataBundle.default
-    // Reset output
+    //
+    Reset()
+
+    //Output predication
     data_R := 0.U
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
+
     //Reset state
     state := s_idle
-    //Restart predicate bit
-    pred_R := false.B
+    when(predicate) {
+      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n", cycleCount)
+    }
+
+
   }
 
-  printfInfo(" State: %x\n", state)
+}
 
+class UBranchEndNode(ID: Int, NumOuts: Int = 1)
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
+  extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
+  override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+
+  // Output register
+  val data_R = RegInit(0.U(xlen.W))
+
+  val s_idle :: s_OUTPUT :: Nil = Enum(2)
+  val state = RegInit(s_idle)
+
+  /*==========================================*
+   *           Predicate Evaluation           *
+   *==========================================*/
+
+  val predicate = IsEnable()
+  val start = IsEnableValid()
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+  /**
+    * Combination of bits and valid signal from CmpIn whill result the output value:
+    * valid == 0  ->  output = 0
+    * valid == 1  ->  cmp = true  then 1
+    * valid == 1  ->  cmp = false then 2
+    *
+    * @note data_R value is equale to predicate bit
+    */
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.control := predicate
+    io.Out(i).bits.taskID := 0.U
+
+  }
+
+  /*============================================*
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
+
+  when(start & (state === s_idle)) {
+    when(predicate){
+      state := s_OUTPUT
+      ValidOut()
+    }.otherwise{
+      enable_valid_R := false.B
+    }
+  }
+
+  /*==========================================*
+   *            Output Handshaking and Reset  *
+   *==========================================*/
+
+
+  val out_ready_W = out_ready_R.asUInt.andR
+  val out_valid_W = out_valid_R.asUInt.andR
+
+  when(out_ready_W & (state === s_OUTPUT)) {
+    Reset()
+
+    state := s_idle
+    printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+
+
+  }
 
 }

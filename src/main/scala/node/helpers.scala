@@ -45,7 +45,7 @@ object ReadBitMask
    def apply(sel: UInt, address: UInt, xlen: Int): UInt = 
    {
       val wordmask = Typ2BitMask(sel)
-      val alignment = Cat(address(log2Ceil(xlen/8)-1,0),UInt(0,3))
+      val alignment = Cat(address(log2Ceil(xlen/8)-1,0),0.U(3.W))
       val mask = (wordmask << alignment)
       return mask
    }
@@ -73,9 +73,9 @@ object Data2Sign
    {
      //@todo check whether casting Bits to UInt doesn't introduce bug
      val out = Mux(typ.asUInt === MT_H,  Cat(Fill(16, data(15)),  data(15,0)),
-                Mux(typ.asUInt === MT_HU, Cat(Fill(16, UInt(0x0)), data(15,0)),
+                Mux(typ.asUInt === MT_HU, Cat(Fill(16, 0.U), data(15,0)),
                 Mux(typ.asUInt === MT_B,  Cat(Fill(24, data(7)),    data(7,0)),
-                Mux(typ.asUInt === MT_BU, Cat(Fill(24, UInt(0x0)), data(7,0)), 
+                Mux(typ.asUInt === MT_BU, Cat(Fill(24, 0.U), data(7,0)),
                                     data(31,0)))))
     return out
    }
@@ -90,7 +90,7 @@ object Data2Sign16b
      val out =  Mux(typ.asUInt === MT_H,  data(15,0),
                 Mux(typ.asUInt === MT_HU, data(15,0),
                 Mux(typ.asUInt === MT_B,  Cat(Fill(8, data(7)),    data(7,0)),
-                Mux(typ.asUInt === MT_BU, Cat(Fill(8, UInt(0x0)), data(7,0)), 
+                Mux(typ.asUInt === MT_BU, Cat(Fill(8, 0.U), data(7,0)),
                                     data(15,0)))))
     return out
    }

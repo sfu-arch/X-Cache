@@ -56,9 +56,12 @@ class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends Pee
 
 class LoadMaskTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+/*
  it should "Load Node tester" in {
+
     chisel3.iotesters.Driver(() => new LoadMaskNode(NumPredOps = 2)) { c =>
       new LoadMaskTests(c)
     } should be(true)
   }
+*/
 }

@@ -210,6 +210,7 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := data_R.data
+    io.Out(i).bits.valid := true.B
     io.Out(i).bits.predicate := predicate
   }
 
@@ -232,7 +233,7 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
     state := s_COMPUTE
     // Next cycle it will become valid.
     ValidOut()
-  }.elsewhen(start & ~predicate & state =/= s_COMPUTE) {
+  }.elsewhen(start && !predicate && state =/= s_COMPUTE) {
     state := s_COMPUTE
     ValidOut()
   }

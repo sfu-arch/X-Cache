@@ -1,13 +1,12 @@
 package node
 
 /**
- * Created by nvedula on 15/5/17.
- */
+  * Created by nvedula on 15/5/17.
+  */
 
-import chisel3._
+import chisel3.{RegInit, _}
 import chisel3.util._
 import org.scalacheck.Prop.False
-
 import config._
 import interfaces._
 import utility.Constants._
@@ -22,8 +21,8 @@ import utility.UniformPrintfs
 //////////
 
 class StoreIO(NumPredOps: Int,
-  NumSuccOps: Int,
-  NumOuts: Int)(implicit p: Parameters)
+              NumSuccOps: Int,
+              NumOuts: Int)(implicit p: Parameters)
   extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new DataBundle) {
   // Node specific IO
   // GepAddr: The calculated address comming from GEP node
@@ -37,27 +36,31 @@ class StoreIO(NumPredOps: Int,
 }
 
 /**
- * @brief Store Node. Implements store operations
- * @details [long description]
- *
- * @param NumPredOps [Number of predicate memory operations]
- */
+  * @brief Store Node. Implements store operations
+  * @details [long description]
+  *
+  * @param NumPredOps [Number of predicate memory operations]
+  */
 class UnTypStore(NumPredOps: Int,
-  NumSuccOps: Int,
-  NumOuts: Int,
-  Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit p: Parameters)
+                 NumSuccOps: Int,
+                 NumOuts: Int,
+                 Typ: UInt = MT_W, ID: Int, RouteID: Int, Desc : String = "UnTypStore")(implicit p: Parameters)
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new DataBundle)(p) {
 
   // Set up StoreIO
   override lazy val io = IO(new StoreIO(NumPredOps, NumSuccOps, NumOuts))
+  override val printfSigil = "Node (STORE) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
-/*=============================================
-=            Register declarations            =
-=============================================*/
+  /*=============================================
+  =            Register declarations            =
+  =============================================*/
 
   // OP Inputs
   val addr_R = RegInit(DataBundle.default)
   val data_R = RegInit(DataBundle.default)
+  val addr_valid_R = RegInit(false.B)
+  val data_valid_R = RegInit(false.B)
 
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
@@ -65,33 +68,33 @@ class UnTypStore(NumPredOps: Int,
 
   val ReqValid = RegInit(false.B)
 
-/*============================================
-=            Predicate Evaluation            =
-============================================*/
+  /*============================================
+  =            Predicate Evaluation            =
+  ============================================*/
 
   val predicate = addr_R.predicate & data_R.predicate & IsEnable()
-  val start  = addr_R.valid & data_R.valid & IsPredValid() & IsEnableValid()
+  val start  = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
 
-/*================================================
-=            Latch inputs. Set output            =
-================================================*/
+  /*================================================
+  =            Latch inputs. Set output            =
+  ================================================*/
 
   //Initialization READY-VALIDs for GepAddr and Predecessor memory ops
-  io.GepAddr.ready := ~addr_R.valid
-  io.inData.ready := ~data_R.valid
+  io.GepAddr.ready := ~addr_valid_R
+  io.inData.ready := ~data_valid_R
 
   // ACTION: GepAddr
-  io.GepAddr.ready := ~addr_R.valid
+  io.GepAddr.ready := ~addr_valid_R
   when(io.GepAddr.fire()) {
     addr_R := io.GepAddr.bits
-    addr_R.valid := true.B
+    addr_valid_R := true.B
   }
 
   // ACTION: inData
   when(io.inData.fire()) {
     // Latch the data
     data_R := io.inData.bits
-    data_R.valid := true.B
+    data_valid_R := true.B
   }
 
   // Wire up Outputs
@@ -99,51 +102,51 @@ class UnTypStore(NumPredOps: Int,
     io.Out(i).bits := data_R
     io.Out(i).bits.predicate := predicate
   }
-io.memReq.valid := false.B
-
-/*=============================================
-=            ACTIONS (possibly dangerous)     =
-=============================================*/
-when (start & predicate) {
-  // ACTION:  Memory request
-  //  Check if address is valid and data has arrive and predecessors have completed.
-  val mem_req_fire = addr_R.valid & IsPredValid() & data_R.valid
-
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.node    := nodeID_R
   io.memReq.bits.data    := data_R.data
   io.memReq.bits.Typ     := Typ
   io.memReq.bits.RouteID := RouteID.U
+  io.memReq.bits.mask    := 15.U
   io.memReq.valid        := false.B
 
-  // ACTION: Memory Request
-  // -> Send memory request
-  when((state === s_idle) && (mem_req_fire)) {
-    io.memReq.valid := true.B
-  }
+  /*=============================================
+  =            ACTIONS (possibly dangerous)     =
+  =============================================*/
+  when (start & predicate) {
+    // ACTION:  Memory request
+    //  Check if address is valid and data has arrive and predecessors have completed.
+    val mem_req_fire = addr_valid_R & IsPredValid() & data_valid_R
 
-  //  ACTION: Arbitration ready
-  when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
-    // ReqValid := false.B
-    state := s_RECEIVING
-  }
 
-  //  ACTION:  <- Incoming Data
-  when(state === s_RECEIVING && io.memResp.valid) {
-    // Set output to valid
+    // ACTION: Memory Request
+    // -> Send memory request
+    when((state === s_idle) && (mem_req_fire)) {
+      io.memReq.valid := true.B
+    }
+
+    //  ACTION: Arbitration ready
+    when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
+      // ReqValid := false.B
+      state := s_RECEIVING
+    }
+
+    //  ACTION:  <- Incoming Data
+    when(state === s_RECEIVING && io.memResp.valid) {
+      // Set output to valid
+      ValidSucc()
+      ValidOut()
+      state := s_Done
+    }
+  }.elsewhen(start & ~predicate & state =/= s_Done & state =/= s_idle){
     ValidSucc()
     ValidOut()
     state := s_Done
   }
-}.elsewhen(start & ~predicate & state =/= s_Done){
-  ValidSucc()
-  ValidOut()
-  state := s_Done
-}
-/*===========================================
-=            Output Handshaking and Reset   =
-===========================================*/
+  /*===========================================
+  =            Output Handshaking and Reset   =
+  ===========================================*/
 
   //  ACTION: <- Check Out READY and Successors READY
   when(state === s_Done) {
@@ -155,31 +158,37 @@ when (start & predicate) {
       // Clear all the valid states.
       // Reset address
       addr_R := DataBundle.default
+      addr_valid_R := false.B
       // Reset data.
       data_R := DataBundle.default
+      data_valid_R := false.B
       // Clear all other state
       Reset()
       // Reset state.
       state := s_idle
+      when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
 
     }
   }
-  // Trace detail.
-  override val printfSigil = "STORE" + xlen + "_" + ID + ":"
-  if (log == true && (comp contains "STORE")) {
-    val x = RegInit(0.U(xlen.W))
-    x     := x + 1.U
-  
-    verb match {
-      case "high"  => { }
-      case "med"   => { }
-      case "low"   => {
-        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x, \"inData\": %x },\n",x, (addr_R.valid),(data_R.valid))
-        printf("\"State\": {\"State\": %x, \"data_R\": \"%x,%x\" },",state,data_R.data,data_R.predicate)
-        printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
-        printf("}")
-       }
-      case everythingElse => {}
+
+  /*
+    // Trace detail.
+
+    if (log == true && (comp contains "STORE")) {
+      val x = RegInit(0.U(xlen.W))
+      x     := x + 1.U
+
+      verb match {
+        case "high"  => { }
+        case "med"   => { }
+        case "low"   => {
+          printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x, \"inData\": %x },\n",x, (addr_valid_R),(data_valid_R))
+          printf("\"State\": {\"State\": %x, \"data_R\": \"%x,%x\" },",state,data_R.data,data_R.predicate)
+          printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
+          printf("}")
+         }
+        case everythingElse => {}
+      }
     }
-  }
+    */
 }

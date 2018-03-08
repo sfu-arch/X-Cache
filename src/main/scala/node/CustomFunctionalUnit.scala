@@ -106,9 +106,10 @@ class TestCFU(ID: Int, NumOps: Int, NumIns: Int, NumOuts: Int)(sign: Boolean)(im
   extends CustomFunctionalNode(NumIns = NumIns, NumOuts = NumOuts, ID = ID, opCode = "TEST")(sign)(p) {
 
   io.Out(0).bits.data := ((((((InRegs(0).data & InRegs(1).data) ^ InRegs(2).data) << InRegs(3).data(4, 0).asUInt) & InRegs(4).data) + InRegs(5).data) >> InRegs(6).data(4, 0).asUInt)
-
+  io.Out(0).bits.taskID := InRegs(0).taskID
   io.Out(0).bits.predicate := InRegs(0).predicate & InRegs(1).predicate & InRegs(2).predicate & InRegs(3).predicate & InRegs(4).predicate &
     InRegs(5).predicate & InRegs(6).predicate
+//   io.Out(0).bits.valid := true.B
 
   // Declare chain of FUs
   //val FUs = for (i <- 0 until OpCodes.length) yield {

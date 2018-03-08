@@ -33,8 +33,8 @@ class TypStoreTests(c: TypStore) extends PeekPokeTester(c) {
         poke(c.io.inData.valid, true)
         poke(c.io.inData.bits.data, 0x1eadbeef1eadbeeeL)
         poke(c.io.inData.bits.predicate,true)
-        poke(c.io.inData.bits.valid,true)
-        poke(c.io.enable.bits,true)
+// //         poke(c.io.inData.bits.valid,true)
+        poke(c.io.enable.bits.control,true)
         poke(c.io.enable.valid,true)
       }
 

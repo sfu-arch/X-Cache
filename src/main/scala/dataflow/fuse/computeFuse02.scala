@@ -19,16 +19,16 @@ class ComputeFuse02SDF(implicit val p: Parameters) extends Module with CoreParam
     val data4 = Flipped(Decoupled(new DataBundle()))
     val data5 = Flipped(Decoupled(new DataBundle()))
     val data6 = Flipped(Decoupled(new DataBundle()))
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle))
 
     val dataOut0 = Decoupled(new DataBundle())
     val dataOut1 = Decoupled(new DataBundle())
 
   })
 
-  val m0 = Module(new Chain(NumOps = 3, ID = 0, OpCodes = Array("Xor","And","Xor"))(sign = false)(p))
-  val m1 = Module(new Chain(NumOps = 2, ID = 0, OpCodes = Array("ShiftRight","Or"))(sign = false)(p))
-  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftLeft")(sign = false)(p))
+  val m0 = Module(new Chain(NumOps = 3, ID = 0, OpCodes = Array("Xor","And","Xor"))(sign = false))
+  val m1 = Module(new Chain(NumOps = 2, ID = 0, OpCodes = Array("ShiftRight","Or"))(sign = false))
+  val m2 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftLeft")(sign = false))
 
   m0.io.In(0) <> io.data0
   m0.io.In(1) <> io.data1
@@ -76,8 +76,8 @@ class ComputeFuse02PDF(implicit val p: Parameters) extends Module with CoreParam
 
   })
 
-  val m0 = Module(new Chain(NumOps = 5, ID = 0, OpCodes = Array("Xor","And","Xor","ShiftRight","Or"))(sign = false)(p))
-  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftLeft")(sign = false)(p))
+  val m0 = Module(new Chain(NumOps = 5, ID = 0, OpCodes = Array("Xor","And","Xor","ShiftRight","Or"))(sign = false))
+  val m1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "ShiftLeft")(sign = false))
 
 
   m0.io.In(0) <> io.data0

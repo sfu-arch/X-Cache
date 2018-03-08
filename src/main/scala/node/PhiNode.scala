@@ -16,25 +16,36 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
                (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
 
+  // Vector input
   val InData = Vec(NumInputs, Flipped(Decoupled(new DataBundle)))
 
+  // Predicate mask comming from the basic block
   val Mask = Flipped(Decoupled(UInt(NumInputs.W)))
 }
 
 class PhiNode(NumInputs: Int,
                  NumOuts: Int,
                  ID: Int)
-                (implicit p: Parameters)
+                (implicit p: Parameters,
+                 name: sourcecode.Name,
+                 file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new PhiNodeIO(NumInputs, NumOuts))
   // Printf debugging
-  override val printfSigil = "Node(PHI) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
   // Data Inputs
-  val in_data_R = RegInit(Vec(Seq.fill(NumInputs)(DataBundle.default)))
+  val in_data_R       = RegInit(VecInit(Seq.fill(NumInputs)(DataBundle.default)))
+  val in_data_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+
+  val in_data_W = WireInit(DataBundle.default)
 
   // Mask Input
   val mask_R = RegInit(0.U(NumInputs.W))
@@ -42,108 +53,93 @@ class PhiNode(NumInputs: Int,
 
 
   // Output register
-  val data_R = RegInit(0.U(xlen.W))
+  //val data_R = RegInit(0.U(xlen.W))
 
-  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-  val state = RegInit(s_idle)
+  val s_IDLE :: s_MASKLATCH :: s_DATALATCH :: s_COMPUTE :: Nil = Enum(4)
+  val state = RegInit(s_IDLE)
 
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val acc_predicate = Vec(Seq.fill(NumInputs)(false.B))
-  for(i <- 0 until NumInputs){
-    acc_predicate(i) := in_data_R(i).predicate
-  }
-
-  val acc_start = Vec(Seq.fill(NumInputs)(false.B))
-  for(i <- 0 until NumInputs){
-    acc_start(i) := in_data_R(i).valid
-  }
-
-  var predicate = acc_predicate.asUInt.andR & IsEnable()
-  var start = mask_valid_R & acc_start.asUInt.andR & IsEnableValid()
-
+  var predicate = in_data_W.predicate & IsEnable()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  // Predicate register
-  val valid_R = RegInit(false.B)
-
-  //printfInfo("start: %x\n", start)
-
-  //wire up mask
-  io.Mask.ready := ~mask_valid_R
-  when(io.Mask.fire()) {
-    state := s_LATCH
-    mask_R := io.Mask.bits
-    mask_valid_R := true.B
-  }
-
-
-  //Wire up inputs
-  for (i <- 0 until NumInputs) {
-    io.InData(i).ready := ~in_data_R(i).valid
-    when(io.InData(i).fire()) {
-      //printfInfo("Latch left data\n")
-      state := s_LATCH
-      in_data_R(i).data := io.InData(i).bits.data
-      in_data_R(i).valid := true.B
-      in_data_R(i).predicate := io.InData(i).bits.predicate
-    }
-
-  }
-
-  // Wire up Outputs
-  for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_R
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.valid := valid_R
-  }
-
-
-  /*============================================*
-   *            ACTIONS                         *
-   *============================================*/
+  // If the mask value is eqaul to zero we don't proceed
+  val mask_valid = mask_R.asUInt.orR
 
   //Instantiating a MUX
   val sel = OHToUInt(mask_R)
 
-  printfInfo("sel: %x\n", sel)
+  in_data_W := in_data_R(sel)
 
-  data_R := in_data_R(sel).data
-  valid_R := true.B
 
-  when(start & predicate & state =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
-  }.elsewhen(start & !predicate =/= s_COMPUTE) {
-    state := s_COMPUTE
-    ValidOut()
+  //wire up mask
+  io.Mask.ready := ~mask_valid_R
+  when(io.Mask.fire()) {
+    mask_R := io.Mask.bits
+    mask_valid_R := true.B
   }
 
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
-   when(IsOutReady() & (state === s_COMPUTE)) {
-    //printfInfo("Start restarting output \n")
-    // Reset data
-    mask_R := 0.U
-    mask_valid_R := false.B
-
-    for (i <- 0 until NumInputs) {
-      in_data_R(i) := DataBundle.default
+  //Wire up inputs
+  for (i <- 0 until NumInputs) {
+    io.InData(i).ready := ~in_data_valid_R(i)
+    when(io.InData(i).fire()) {
+      in_data_R(i) <> io.InData(i).bits
+      in_data_valid_R(i) := true.B
     }
-    // Reset output
-    data_R := 0.U
-    //Reset state
-    state := s_idle
-    //Reset output
-    Reset()
   }
 
-  printfInfo(" State: %x\n", state)
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits <> in_data_W
+  }
+
+
+  /*============================================*
+   *            STATE MACHINE                   *
+   *============================================*/
+  switch(state){
+    is(s_IDLE){
+      when(io.Mask.fire() && io.Mask.bits.asUInt.orR ){
+        state := s_MASKLATCH
+      }
+    }
+    is(s_MASKLATCH){
+      when(in_data_valid_R(sel)){
+        state := s_DATALATCH
+      }
+    }
+    is(s_DATALATCH){
+      when(enable_valid_R){
+        state := s_COMPUTE
+        ValidOut()
+      }
+    }
+    is(s_COMPUTE){
+      when(IsOutReady()){
+        mask_R := 0.U
+        mask_valid_R := false.B
+
+        in_data_R := VecInit(Seq.fill(NumInputs)(DataBundle.default))
+        in_data_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
+
+        //Reset state
+        state := s_IDLE
+        //Reset output
+        Reset()
+
+        //Print output
+        when (predicate) {
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n",cycleCount, in_data_W.data)
+        }
+
+
+      }
+    }
+  }
+
 }

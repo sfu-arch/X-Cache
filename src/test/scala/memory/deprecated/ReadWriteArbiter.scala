@@ -9,7 +9,7 @@ import chisel3.testers._
 import chisel3.util._
 import config._
 import memory.ReadWriteArbiter
-
+/*
 class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Parameters)
   extends BasicTester {
 
@@ -226,3 +226,4 @@ class ReadWriteArbiterTester extends org.scalatest.FlatSpec {
     assert(TesterDriver execute (() => new ReadWriteArbiterTests(new ReadWriteArbiter())))
   }
 }
+*/

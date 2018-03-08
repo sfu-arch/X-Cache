@@ -101,7 +101,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
   io.MemReq.valid := ReqValid
  
   val s_init :: s_SENDING :: s_RECEIVING  :: s_Done :: Nil = Enum(4)
-  val state = Reg(init = s_init)
+  val state = RegInit(s_init)
   
   val type_word = MT_W
 
@@ -128,7 +128,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
     // io.MemReq.ready means arbitration succeeded and memory op has been passed on
     when(io.MemReq.ready === true.B && ReqValid === 1.U) {
       // Next word to be fetched
-      ReqAddress   := ReqAddress + 1.U
+      ReqAddress := ReqAddress + 1.U
       // Shift right by word length on machine. 
       sendbytemask := sendbytemask >> (xlen/8) 
       // Disable request
@@ -153,7 +153,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
    // 
    state := s_init
    val z = linebuffer.asUInt
-   printf("linebuffer %x", (z & bitmask) >> Cat(GepOperand(1,0),UInt(0,3)))
+   printf("linebuffer %x", (z & bitmask) >> Cat(GepOperand(1,0),0.U(3.W)))
 
  }
 
