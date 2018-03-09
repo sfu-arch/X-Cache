@@ -183,7 +183,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 0))
 
   val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
@@ -202,19 +202,19 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   // [BasicBlock]  my_pfor.body:
 
   //  %0 = getelementptr inbounds i32, i32* %a.in, i32 %i.0.in, !UID !7, !ScalaLabel !8
-  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0, Desc = "getelementptr0")(numByte1 = 1))
+  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 1))
 
 
   //  %1 = load i32, i32* %0, align 4, !UID !9, !ScalaLabel !10
-  val load1 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=1,RouteID=0,Desc="load1"))
+  val load1 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=1,RouteID=0))
 
 
   //  %2 = getelementptr inbounds i32, i32* %b.in, i32 %i.0.in, !UID !11, !ScalaLabel !12
-  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2, Desc = "getelementptr2")(numByte1 = 1))
+  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2)(numByte1 = 1))
 
 
   //  %3 = load i32, i32* %2, align 4, !UID !13, !ScalaLabel !14
-  val load3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=3,RouteID=1,Desc="load3"))
+  val load3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=3,RouteID=1))
 
 
   //  %4 = add i32 %1, %3, !UID !15, !ScalaLabel !16
@@ -222,24 +222,20 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  %5 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !17, !ScalaLabel !18
-  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5, Desc = "getelementptr5")(numByte1 = 1))
+  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5)(numByte1 = 1))
 
 
   //  store i32 %4, i32* %5, align 4, !UID !19, !ScalaLabel !20
-  val store6 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=6,RouteID=0,Desc="store6"))
+  val store6 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=6,RouteID=0))
 
 
   //  br label %my_pfor.preattach, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val br7 = Module (new UBranchFastNode(ID = 7, Desc = "br7"))
-
-
+  val br7 = Module (new UBranchNode(ID = 7))
 
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !24, !BB_UID !25, !ScalaLabel !26
   val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8))
-
-
 
 
 
@@ -291,7 +287,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   /**
     * Wiring enable signals to the instructions
     */
-/*
+
   getelementptr0.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr0"))
 
   load1.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("load1"))
@@ -311,23 +307,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   ret8.io.enable <> bb_my_pfor_preattach.io.Out(param.bb_my_pfor_preattach_activate("ret8"))
-*/
-  getelementptr0.io.enable <> bb_my_pfor_body.io.Out(0)
-  getelementptr2.io.enable <> bb_my_pfor_body.io.Out(1)
-  getelementptr5.io.enable <> bb_my_pfor_body.io.Out(2)
 
-  load1.io.enable.valid := true.B
-  load1.io.enable.bits.control := true.B
-  load3.io.enable.valid  := true.B
-  load3.io.enable.bits.control  := true.B
-  add4.io.enable.valid  := true.B
-  add4.io.enable.bits.control  := true.B
-  store6.io.enable.valid  := true.B
-  store6.io.enable.bits.control  := true.B
-  br7.io.enable.valid  := true.B
-  br7.io.enable.bits.control  := true.B
-  ret8.io.enable.valid  := true.B
-  ret8.io.enable.bits.control  := true.B
 
 
 
@@ -425,6 +405,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   store6.io.GepAddr <> getelementptr5.io.Out(param.store6_in("getelementptr5"))
   store6.io.memResp  <> RegisterFile.io.WriteOut(0)
   RegisterFile.io.WriteIn(0) <> store6.io.memReq
+  //store6.io.Out(0).ready := true.B // Manually commented out
 
 
 

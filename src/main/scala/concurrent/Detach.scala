@@ -20,11 +20,15 @@ class DetachIO()(implicit p: Parameters)
 //  val incr = Decoupled(new AckBundle)
 }
 
-class Detach(ID: Int, Desc : String = "Detach") (implicit p: Parameters)
+class Detach(ID: Int, Desc : String = "Detach") (implicit p: Parameters,
+                                                 name: sourcecode.Name, file: sourcecode.File)
   extends HandShakingCtrlNPS(NumOuts = 3, ID)(p) {
   override lazy val io = IO(new DetachIO()(p))
   // Printf debugging
-  override val printfSigil = "Node (DET) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
   /*===========================================*
    *            Registers                      *
@@ -69,7 +73,9 @@ class Detach(ID: Int, Desc : String = "Detach") (implicit p: Parameters)
     Reset()
     //Reset state
     state := s_idle
-    when (latchedEnable.control) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+    when (latchedEnable.control) {
+      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n", cycleCount)
+    }
   }
 
 }

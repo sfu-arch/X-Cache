@@ -7,7 +7,6 @@ import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
 import config._
-import dataflow.DetachFastIO
 import interfaces._
 import muxes._
 import util._
@@ -124,7 +123,7 @@ class CBranchNode(ID: Int)
         state := s_IDLE
 
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": " + ": Output fired @ %d, Value: %d\n", cycleCount, data_out_R.asUInt())
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, data_out_R.asUInt())
       }
     }
   }

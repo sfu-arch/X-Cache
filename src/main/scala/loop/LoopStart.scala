@@ -50,6 +50,7 @@ class LoopStart(val NumInputs: Int, val NumOuts: Int, val ID: Int)
     Args(i).io.InData <> io.inputArg(i)
     //Args(i).io.Finish <> io.Finish(i)
     Args(i).io.enable <> io.enableSignal(i)
+    io.Finish(i).ready := true.B // just to shut simulation up
   }
 
   for (i <- 0 until NumOuts) {

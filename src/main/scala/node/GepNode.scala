@@ -39,11 +39,15 @@ class GepNodeTwoIO(NumOuts: Int)
 
 class GepOneNode(NumOuts: Int, ID: Int, Desc : String = "GepOneNode")
              (numByte1: Int)
-             (implicit p: Parameters)
+             (implicit p: Parameters,
+              name: sourcecode.Name,
+              file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new GepNodeOneIO(NumOuts))
   // Printf debugging
-  override val printfSigil = "Node (GEP1) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
@@ -131,7 +135,7 @@ class GepOneNode(NumOuts: Int, ID: Int, Desc : String = "GepOneNode")
     idx1_valid_R := false.B
 
     state := s_idle
-    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+    when (predicate) {printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n", cycleCount)}
 
     //Reset output
     Reset()
@@ -145,11 +149,15 @@ class GepOneNode(NumOuts: Int, ID: Int, Desc : String = "GepOneNode")
 class GepTwoNode(NumOuts: Int, ID: Int, Desc : String = "GepTwoNode")
              (numByte1: Int,
               numByte2: Int)
-             (implicit p: Parameters)
+             (implicit p: Parameters,
+              name: sourcecode.Name,
+              file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new GepNodeTwoIO(NumOuts))
   // Printf debugging
-  override val printfSigil = "Node (GEP2) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
@@ -260,7 +268,9 @@ class GepTwoNode(NumOuts: Int, ID: Int, Desc : String = "GepTwoNode")
     idx2_valid_R := false.B
 
     state := s_idle
-    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+    when (predicate) {
+      printf("[LOG] \" + \"[\" + module_name + \"] \" + node_name +  \": Output fired @ %d\n", cycleCount)
+    }
 
     //Reset output
     Reset()

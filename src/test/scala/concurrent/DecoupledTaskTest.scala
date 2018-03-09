@@ -121,7 +121,7 @@ class DecoupledTaskTester1(c: DecoupledTaskDF) extends PeekPokeTester(c) {
     }
 
     // Compare outputs against expected data when valid is asserted
-    if (peek(c.io.Out.valid) == 1 && peek(c.io.Out.bits.enable.control) == 1 && countOut < testVals) {
+    if (peek(c.io.Out.valid) == 1 && countOut < testVals) {
       for (i <- 0 until 1) {
         val field = peek(c.io.Out.bits.data(s"field$i").data)
         val expected = out2(i)(countOut)
