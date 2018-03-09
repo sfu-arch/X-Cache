@@ -20,14 +20,15 @@ class DetachIO()(implicit p: Parameters)
 //  val incr = Decoupled(new AckBundle)
 }
 
-class Detach(ID: Int, Desc : String = "Detach") (implicit p: Parameters,
-                                                 name: sourcecode.Name, file: sourcecode.File)
+class Detach(ID: Int)
+            (implicit p: Parameters,
+             name: sourcecode.Name,
+             file: sourcecode.File)
   extends HandShakingCtrlNPS(NumOuts = 3, ID)(p) {
   override lazy val io = IO(new DetachIO()(p))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-
   override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
   /*===========================================*
@@ -87,12 +88,16 @@ class DetachFastIO()(implicit p: Parameters) extends CoreBundle {
   val Out = Vec(3, Decoupled(new ControlBundle))
 }
 
-class DetachFast(ID: Int, Desc : String = "Detach") (implicit val p: Parameters)
+class DetachFast(ID: Int) (implicit val p: Parameters,
+                           name: sourcecode.Name,
+                           file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
   val io = IO(new DetachFastIO()(p))
   // Printf debugging
-  override val printfSigil = "Node (DET) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
   /*===========================================*
    *            Registers                      *

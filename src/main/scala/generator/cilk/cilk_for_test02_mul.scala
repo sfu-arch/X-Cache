@@ -173,7 +173,7 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
 
 
   //  %0 = load i32, i32* %arrayidx, align 4, !UID !9, !ScalaLabel !10
-  val load1 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=1,RouteID=0,Desc="load1"))
+  val load1 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=1,RouteID=0))
 
 
   //  %mul = mul i32 %0, 2, !UID !11, !ScalaLabel !12
@@ -185,7 +185,7 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
 
 
   //  store i32 %mul, i32* %arrayidx1, align 4, !UID !15, !ScalaLabel !16
-  val store4 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=4,RouteID=0,Desc="store4"))
+  val store4 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=4,RouteID=0))
 
 
   //  ret void, !UID !17, !BB_UID !18, !ScalaLabel !19

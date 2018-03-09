@@ -72,8 +72,8 @@ class test04Test01(c: test04CacheWrapper) extends PeekPokeTester(c) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1 &&
-      peek(c.io.out.bits.enable.control) == 1) {
+      peek(c.io.out.bits.data("field0").predicate) == 1
+      ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       val expected = 1

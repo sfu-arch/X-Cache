@@ -303,7 +303,7 @@ class UBranchFastIO()(implicit p: Parameters) extends CoreBundle {
   // Output IO
   val Out = Vec(1,Decoupled(new ControlBundle))
 }
-class UBranchFastNode(ID: Int, Desc : String = "UBranchNode")
+class UBranchFastNode(ID: Int)
                  (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 

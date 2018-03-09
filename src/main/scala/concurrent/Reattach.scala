@@ -12,11 +12,16 @@ class ReattachIO(val NumPredIn: Int)(implicit p: Parameters)
   val predicateIn  = Vec(NumPredIn, Flipped(Decoupled(new DataBundle()(p))))
 }
 
-class Reattach(val NumPredIn: Int, ID: Int, Desc : String="Reattach")(implicit p: Parameters)
+class Reattach(val NumPredIn: Int, ID: Int)
+              (implicit p: Parameters,
+               name: sourcecode.Name,
+               file: sourcecode.File)
   extends HandShakingNPS(NumOuts=1, ID)(new ControlBundle)(p) {
   override lazy val io = IO(new ReattachIO(NumPredIn))
   // Printf debugging
-  override val printfSigil = Desc + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil =   "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
@@ -82,7 +87,7 @@ class Reattach(val NumPredIn: Int, ID: Int, Desc : String="Reattach")(implicit p
       ctrlPredicate_R(i) := false.B
     }
 
-    when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+    when (predicate) {printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n",cycleCount)}
 
 
   }

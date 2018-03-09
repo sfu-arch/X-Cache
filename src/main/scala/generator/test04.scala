@@ -317,6 +317,7 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   val loop_L_4_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
 
+
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
@@ -328,7 +329,7 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
   val bb_Minim_Loop = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
-  val bb_while_cond = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 7, NumPhi = 2, BID = 2))
+  val bb_while_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 2))
 
   val bb_while_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
@@ -338,7 +339,7 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
   val bb_if_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 6))
 
-  val bb_while_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7))
+  val bb_while_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 7))
 
 
 
@@ -357,14 +358,10 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   //  br label %Minim_Loop, !UID !7, !BB_UID !8, !ScalaLabel !9
   val br0 = Module (new UBranchNode(ID = 0))
 
-
-
   // [BasicBlock]  Minim_Loop:
 
   //  br label %while.cond, !UID !10, !BB_UID !11, !ScalaLabel !12
   val br1 = Module (new UBranchNode(ID = 1))
-
-
 
   // [BasicBlock]  while.cond:
 
@@ -383,10 +380,6 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   //  br i1 %cmp, label %while.body, label %while.end, !UID !19, !BB_UID !20, !ScalaLabel !21
   val br5 = Module (new CBranchNode(ID = 5))
 
-  val bb_while_cond_expand = Module(new ExpandNode(NumOuts=3, ID=0)(new ControlBundle))
-
-
-
   // [BasicBlock]  while.body:
 
   //  %cmp1 = icmp sgt i32 %a.addr.0, %b.addr.0, !UID !22, !ScalaLabel !23
@@ -395,8 +388,6 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
   //  br i1 %cmp1, label %if.then, label %if.else, !UID !24, !BB_UID !25, !ScalaLabel !26
   val br7 = Module (new CBranchNode(ID = 7))
-
-
 
   // [BasicBlock]  if.then:
 
@@ -407,8 +398,6 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   //  br label %if.end, !UID !29, !BB_UID !30, !ScalaLabel !31
   val br9 = Module (new UBranchNode(ID = 9))
 
-
-
   // [BasicBlock]  if.else:
 
   //  %sub2 = sub nsw i32 %b.addr.0, %a.addr.0, !UID !32, !ScalaLabel !33
@@ -417,8 +406,6 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
   //  br label %if.end, !UID !34, !BB_UID !35, !ScalaLabel !36
   val br11 = Module (new UBranchNode(ID = 11))
-
-
 
   // [BasicBlock]  if.end:
 
@@ -433,14 +420,10 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   //  br label %while.cond, !llvm.loop !41, !UID !48, !BB_UID !49, !ScalaLabel !50
   val br14 = Module (new UBranchNode(ID = 14))
 
-
-
   // [BasicBlock]  while.end:
 
   //  ret void, !UID !51, !BB_UID !52, !ScalaLabel !53
   val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15))
-
-
 
 
 
@@ -487,8 +470,7 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
 
   //Connecting br5 to bb_while_end
-  bb_while_cond_expand.io.InData <> br5.io.Out(param.br5_brn_bb("bb_while_end"))
-  bb_while_end.io.predicateIn <> bb_while_cond_expand.io.Out(0)
+  bb_while_end.io.predicateIn <> br5.io.Out(param.br5_brn_bb("bb_while_end"))
 
 
   //Connecting br7 to bb_if_then
@@ -542,12 +524,6 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
   br5.io.enable <> bb_while_cond.io.Out(param.bb_while_cond_activate("br5"))
 
-  bb_while_cond_expand.io.enable <> bb_while_cond.io.Out(6)
-
-  loop_L_4_liveIN_0.io.enable <> bb_while_cond.io.Out(4)
-  loop_L_4_liveIN_1.io.enable <> bb_while_cond.io.Out(5)
-
-
 
 
   icmp6.io.enable <> bb_while_body.io.Out(param.bb_while_body_activate("icmp6"))
@@ -577,6 +553,10 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
 
   ret15.io.enable <> bb_while_end.io.Out(param.bb_while_end_activate("ret15"))
+
+  loop_L_4_liveIN_0.io.enable <> bb_while_end.io.Out(1)
+  loop_L_4_liveIN_1.io.enable <> bb_while_end.io.Out(2)
+
 
 
 

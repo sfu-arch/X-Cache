@@ -338,7 +338,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   // [BasicBlock]  pfor.end:
 
   //  sync label %pfor.end.continue, !UID !35, !BB_UID !36, !ScalaLabel !37
-  val sync7 = Module(new Sync(ID = 7, NumOuts = 1, NumInc = 1, NumDec = 1, Desc = "sync7")(p))
+  val sync7 = Module(new Sync(ID = 7, NumOuts = 1, NumInc = 1, NumDec = 1))
 
   // [BasicBlock]  pfor.end.continue:
 

@@ -37,7 +37,7 @@ class GepNodeTwoIO(NumOuts: Int)
 
 }
 
-class GepOneNode(NumOuts: Int, ID: Int, Desc : String = "GepOneNode")
+class GepOneNode(NumOuts: Int, ID: Int)
              (numByte1: Int)
              (implicit p: Parameters,
               name: sourcecode.Name,
@@ -146,7 +146,7 @@ class GepOneNode(NumOuts: Int, ID: Int, Desc : String = "GepOneNode")
 }
 
 
-class GepTwoNode(NumOuts: Int, ID: Int, Desc : String = "GepTwoNode")
+class GepTwoNode(NumOuts: Int, ID: Int)
              (numByte1: Int,
               numByte2: Int)
              (implicit p: Parameters,
@@ -269,7 +269,7 @@ class GepTwoNode(NumOuts: Int, ID: Int, Desc : String = "GepTwoNode")
 
     state := s_idle
     when (predicate) {
-      printf("[LOG] \" + \"[\" + module_name + \"] \" + node_name +  \": Output fired @ %d\n", cycleCount)
+      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n", cycleCount)
     }
 
     //Reset output

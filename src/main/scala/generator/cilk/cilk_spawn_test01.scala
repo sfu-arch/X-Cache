@@ -235,9 +235,7 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
 
 
   //  detach label %det.achd, label %det.cont, !UID !9, !BB_UID !10, !ScalaLabel !11
-  val detach1 = Module(new Detach(ID = 1, Desc = "detach1"))
-
-
+  val detach1 = Module(new Detach(ID = 1))
 
   // [BasicBlock]  det.achd:
 
@@ -250,25 +248,21 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
 
 
   //  reattach label %det.cont, !UID !16, !BB_UID !17, !ScalaLabel !18
-  val reattach4 = Module(new Reattach(NumPredIn=1, ID=4, Desc = "reattach4"))
-
-
+  val reattach4 = Module(new Reattach(NumPredIn=1, ID=4))
 
   // [BasicBlock]  det.cont:
 
   //  %add1 = add nsw i32 %b, 5, !UID !19, !ScalaLabel !20
-  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add" )(sign=false))
+  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
 
 
   //  sync label %sync.continue, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val sync6 = Module(new Sync(ID = 6, NumOuts = 1, NumInc=1, NumDec=1, Desc = "sync6"))
-
-
+  val sync6 = Module(new Sync(ID = 6, NumOuts = 1, NumInc = 1, NumDec = 1))
 
   // [BasicBlock]  sync.continue:
 
   //  %0 = load i32, i32* %x, align 4, !UID !24, !ScalaLabel !25
-  val load7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=0,Desc="load7"))
+  val load7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=0))
 
 
   //  %add2 = add nsw i32 %0, %add1, !UID !26, !ScalaLabel !27
@@ -277,8 +271,6 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
 
   //  ret i32 %add2, !UID !28, !BB_UID !29, !ScalaLabel !30
   val ret9 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=9))
-
-
 
 
 
@@ -306,7 +298,7 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
      */
 
 
-  bb_entry.io.predicateIn<> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions
@@ -361,6 +353,8 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
   add8.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("add8"))
 
   ret9.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("ret9"))
+
+
 
 
 
@@ -431,7 +425,7 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
   store3.io.GepAddr <> alloca0.io.Out(param.store3_in("alloca0"))
   store3.io.memResp  <> CacheMem.io.WriteOut(0)
   CacheMem.io.WriteIn(0) <> store3.io.memReq
-  // store3.io.Out(0).ready := true.B  // Manually removed
+  //store3.io.Out(0).ready := true.B // Manually removed
 
 
 
@@ -471,7 +465,6 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
   ret9.io.predicateIn(0).valid := true.B
   ret9.io.In.data("field0") <> add8.io.Out(param.ret9_in("add8"))
   io.out <> ret9.io.Out
-
 
 
 }

@@ -304,9 +304,7 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  detach label %det.achd, label %det.cont, !UID !11, !BB_UID !12, !ScalaLabel !13
-  val detach2 = Module(new Detach(ID = 2, Desc = "detach2"))
-
-
+  val detach2 = Module(new Detach(ID = 2))
 
   // [BasicBlock]  det.achd:
 
@@ -315,20 +313,16 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  store i32 %add, i32* %x, align 4, !UID !16, !ScalaLabel !17
-  val store4 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=4,RouteID=0,Desc="store4"))
+  val store4 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=4,RouteID=0))
 
 
   //  reattach label %det.cont, !UID !18, !BB_UID !19, !ScalaLabel !20
-  val reattach5 = Module(new Reattach(NumPredIn=1, ID=5, Desc = "reattach5"))
-
-
+  val reattach5 = Module(new Reattach(NumPredIn=1, ID=5))
 
   // [BasicBlock]  det.cont:
 
   //  detach label %det.achd1, label %det.cont3, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val detach6 = Module(new Detach(ID = 6, Desc = "detach6"))
-
-
+  val detach6 = Module(new Detach(ID = 6))
 
   // [BasicBlock]  det.achd1:
 
@@ -337,29 +331,25 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  store i32 %add2, i32* %y, align 4, !UID !26, !ScalaLabel !27
-  val store8 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=8,RouteID=1,Desc="store8"))
+  val store8 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=8,RouteID=1))
 
 
   //  reattach label %det.cont3, !UID !28, !BB_UID !29, !ScalaLabel !30
-  val reattach9 = Module(new Reattach(NumPredIn=1, ID=9, Desc = "reattach9"))
-
-
+  val reattach9 = Module(new Reattach(NumPredIn=1, ID=9))
 
   // [BasicBlock]  det.cont3:
 
   //  sync label %sync.continue, !UID !31, !BB_UID !32, !ScalaLabel !33
-  val sync10 = Module(new Sync(ID = 10, NumOuts = 1, NumInc = 2, NumDec = 2, Desc = "sync10")) // Manually changed to sync2
-
-
+  val sync10 = Module(new Sync(ID = 10, NumOuts = 1, NumInc = 2, NumDec = 2))  // Manually updated
 
   // [BasicBlock]  sync.continue:
 
   //  %0 = load i32, i32* %x, align 4, !UID !34, !ScalaLabel !35
-  val load11 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=11,RouteID=0,Desc="load11"))
+  val load11 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=11,RouteID=0))
 
 
   //  %1 = load i32, i32* %y, align 4, !UID !36, !ScalaLabel !37
-  val load12 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=12,RouteID=1,Desc="load12"))
+  val load12 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=12,RouteID=1))
 
 
   //  %add4 = add nsw i32 %0, %1, !UID !38, !ScalaLabel !39
@@ -368,8 +358,6 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
   //  ret i32 %add4, !UID !40, !BB_UID !41, !ScalaLabel !42
   val ret14 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=14))
-
-
 
 
 
@@ -574,11 +562,12 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
   store8.io.inData <> add7.io.Out(param.store8_in("add7"))
 
 
+
   // Wiring Store instruction to the parent instruction
   store8.io.GepAddr <> alloca1.io.Out(param.store8_in("alloca1"))
   store8.io.memResp  <> CacheMem.io.WriteOut(1)
   CacheMem.io.WriteIn(1) <> store8.io.memReq
-  //store8.io.Out(0).ready := true.B  // Manually removed
+  //store8.io.Out(0).ready := true.B // Manually removed
 
   // Reattach (Manual add)
   reattach9.io.predicateIn(0) <> store8.io.Out(0)

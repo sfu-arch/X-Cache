@@ -44,12 +44,17 @@ class StoreIO(NumPredOps: Int,
 class UnTypStore(NumPredOps: Int,
                  NumSuccOps: Int,
                  NumOuts: Int,
-                 Typ: UInt = MT_W, ID: Int, RouteID: Int, Desc : String = "UnTypStore")(implicit p: Parameters)
+                 Typ: UInt = MT_W, ID: Int, RouteID: Int)
+                (implicit p: Parameters,
+                 name: sourcecode.Name,
+                 file: sourcecode.File)
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new DataBundle)(p) {
 
   // Set up StoreIO
   override lazy val io = IO(new StoreIO(NumPredOps, NumSuccOps, NumOuts))
-  override val printfSigil = "Node (STORE) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*=============================================
@@ -166,7 +171,7 @@ class UnTypStore(NumPredOps: Int,
       Reset()
       // Reset state.
       state := s_idle
-      when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+      when (predicate) {printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n",cycleCount)}
 
     }
   }

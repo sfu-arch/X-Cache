@@ -77,7 +77,7 @@ class ReattachTester extends FlatSpec with Matchers {
         "-tbn", tbn,
         "-td", "test_run_dir",
         "-tts", "0001"),
-      () => new Reattach(3, ID=0)(p)) {
+      () => new Reattach(3, ID=0)) {
       c => new ReattachTest01(c)
     } should be(true)
   }

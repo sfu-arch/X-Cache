@@ -76,8 +76,7 @@ class cilk_spawn_test01Test01(c: cilk_spawn_test01CacheWrapper) extends PeekPoke
     step(1)
     //println(s"[INFO] Clock Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1 &&
-      peek(c.io.out.bits.enable.control) == 1) {
+      peek(c.io.out.bits.data("field0").predicate) == 1) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       val expected = 23

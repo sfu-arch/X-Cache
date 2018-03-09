@@ -248,35 +248,35 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
 
   //  %arrayidx = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 0, !UID !12, !ScalaLabel !13
-  val getelementptr2 = Module (new GepTwoNode(NumOuts = 1, ID = 2, Desc = "getelementptr2")(numByte1 = 8, numByte2 = 0))
+  val getelementptr2 = Module (new GepTwoNode(NumOuts = 1, ID = 2)(numByte1 = 8, numByte2 = 0))
 
 
   //  store i32 %a, i32* %arrayidx, align 4, !UID !14, !ScalaLabel !15
-  val store3 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=3,RouteID=0,Desc="store3"))
+  val store3 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=3,RouteID=0))
 
 
   //  %arrayidx1 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 1, !UID !16, !ScalaLabel !17
-  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4, Desc = "getelementptr4")(numByte1 = 8, numByte2 = 4))
+  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4)(numByte1 = 8, numByte2 = 4))
 
 
   //  store i32 %b, i32* %arrayidx1, align 4, !UID !18, !ScalaLabel !19
-  val store5 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=5,RouteID=1,Desc="store5"))
+  val store5 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=5,RouteID=1))
 
 
   //  %arrayidx2 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 0, !UID !20, !ScalaLabel !21
-  val getelementptr6 = Module (new GepTwoNode(NumOuts = 1, ID = 6, Desc = "getelementptr6")(numByte1 = 8, numByte2 = 0))
+  val getelementptr6 = Module (new GepTwoNode(NumOuts = 1, ID = 6)(numByte1 = 8, numByte2 = 0))
 
 
   //  %0 = load i32, i32* %arrayidx2, align 4, !UID !22, !ScalaLabel !23
-  val load7 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=7,RouteID=0,Desc="load7"))
+  val load7 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=7,RouteID=0))
 
 
   //  %arrayidx3 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 1, !UID !24, !ScalaLabel !25
-  val getelementptr8 = Module (new GepTwoNode(NumOuts = 1, ID = 8, Desc = "getelementptr8")(numByte1 = 8, numByte2 = 4))
+  val getelementptr8 = Module (new GepTwoNode(NumOuts = 1, ID = 8)(numByte1 = 8, numByte2 = 4))
 
 
   //  %1 = load i32, i32* %arrayidx3, align 4, !UID !26, !ScalaLabel !27
-  val load9 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=9,RouteID=1,Desc="load9"))
+  val load9 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=9,RouteID=1))
 
 
   //  %add = add i32 %0, %1, !UID !28, !ScalaLabel !29
@@ -284,19 +284,19 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
 
   //  %arrayidx4 = getelementptr inbounds [1 x i32], [1 x i32]* %alloc1, i32 0, i32 0, !UID !30, !ScalaLabel !31
-  val getelementptr11 = Module (new GepTwoNode(NumOuts = 1, ID = 11, Desc = "getelementptr11")(numByte1 = 4, numByte2 = 0))
+  val getelementptr11 = Module (new GepTwoNode(NumOuts = 1, ID = 11)(numByte1 = 4, numByte2 = 0))
 
 
   //  store i32 %add, i32* %arrayidx4, align 4, !UID !32, !ScalaLabel !33
-  val store12 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=12,RouteID=2,Desc="store12"))
+  val store12 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=12,RouteID=2))
 
 
   //  %arrayidx5 = getelementptr inbounds [1 x i32], [1 x i32]* %alloc1, i32 0, i32 0, !UID !34, !ScalaLabel !35
-  val getelementptr13 = Module (new GepTwoNode(NumOuts = 1, ID = 13, Desc = "getelementptr13")(numByte1 = 4, numByte2 = 0))
+  val getelementptr13 = Module (new GepTwoNode(NumOuts = 1, ID = 13)(numByte1 = 4, numByte2 = 0))
 
 
   //  %2 = load i32, i32* %arrayidx5, align 4, !UID !36, !ScalaLabel !37
-  val load14 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=14,RouteID=2,Desc="load14"))
+  val load14 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=14,RouteID=2))
 
 
   //  ret i32 %2, !UID !38, !BB_UID !39, !ScalaLabel !40

@@ -15,11 +15,16 @@ extends HandShakingIONPS(NumOuts)(new ControlBundle)(p)
   val decIn = Flipped(Vec(NumDec, Decoupled(new ControlBundle())))
 }
 
-class Sync(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int, Desc : String = "Sync")
-           (implicit p: Parameters) extends HandShakingCtrlNPS(NumOuts, ID)(p) {
+class Sync(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
+           (implicit p: Parameters,
+            name: sourcecode.Name,
+            file: sourcecode.File)
+  extends HandShakingCtrlNPS(NumOuts, ID)(p) {
   override lazy val io = IO(new SyncIO(NumOuts, NumInc, NumDec)(p))
   // Printf debugging
-  override val printfSigil = "Node (SYNC) ID: " + ID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
 
   /*===========================================*
@@ -82,7 +87,7 @@ class Sync(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int, Desc : String = 
     is (s_DONE) {
       when(IsOutReady()) {
         Reset()
-        when (predicate) {printf("[LOG] " + Desc+": Output fired @ %d\n",cycleCount)}
+        when (predicate) {printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n",cycleCount)}
         state := s_IDLE
       }
     }
