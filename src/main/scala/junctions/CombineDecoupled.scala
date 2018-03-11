@@ -74,7 +74,8 @@ class CombineCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module
 
   when(io.Out.fire()){
     inputReady(argTypes.length) := true.B
-  }.elsewhen(io.In.enable.valid) {
+//  }.elsewhen(io.In.enable.valid) {
+  }.elsewhen(io.In.enable.fire()) {
     outputReg.bits.enable <> io.In.enable.bits
     inputReady (argTypes.length) := false.B
   }
