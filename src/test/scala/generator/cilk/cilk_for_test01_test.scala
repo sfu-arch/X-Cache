@@ -81,16 +81,16 @@ class cilk_for_test01Test01(c: cilk_for_test01CacheWrapper) extends PeekPokeTest
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 1) {
-        println(s"*** Incorrect result received. Got $data. Hoping for 1")
+        println(Console.RED +s"*** Incorrect result received. Got $data. Hoping for 1")
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE +"*** Correct result received.")
       }
     }
   }
 
   if(!result) {
-    println("*** Timeout.")
+    println(Console.RED + "*** Timeout.")
     fail
   }
 }

@@ -41,9 +41,9 @@ class cilk_for_test04CacheWrapper()(implicit p: Parameters) extends cilk_for_tes
   val dataVec = VecInit(1.U,2.U,3.U,4.U,5.U,
                         1.U,2.U,3.U,4.U,5.U)
   val (count_out, count_done) = Counter(raminit, addrVec.length)
+  memModel.io.init.bits.addr := addrVec(count_out)
+  memModel.io.init.bits.data := dataVec(count_out)
   when (!count_done) {
-    memModel.io.init.bits.addr := addrVec(count_out)
-    memModel.io.init.bits.data := dataVec(count_out)
     memModel.io.init.valid := true.B
   }.otherwise {
     memModel.io.init.valid := false.B
@@ -162,16 +162,16 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T) extends PeekPokeTe
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 1) {
-        println(s"*** Incorrect result received. Got $data. Hoping for 1")
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1")
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE + "*** Correct result received.")
       }
     }
   }
 
   if(!result) {
-    println("*** Timeout.")
+    println(Console.RED + "*** Timeout.")
     fail
   }
 }

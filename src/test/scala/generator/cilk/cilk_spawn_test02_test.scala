@@ -81,16 +81,16 @@ class cilk_spawn_test02Test01(c: cilk_spawn_test02CacheWrapper) extends PeekPoke
       val data = peek(c.io.out.bits.data("field0").data)
       val expected = 23
       if (data != expected) {
-        println(s"*** Incorrect result received. Got $data. Hoping for $expected")
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for $expected")
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE + "*** Correct result received.")
       }
     }
   }
 
   if(!result) {
-    println("*** Timeout.")
+    println(Console.RED + "*** Timeout.")
     fail
   }
 
