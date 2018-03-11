@@ -39,8 +39,9 @@ else:
 
 for text in f:
     try:
-        found = re.search('\[LOG\](.+'+args.filt+'.+?)$', text).group(1)
-        eventList.append(found)
+        found = re.search('\[LOG\](.+)', text)
+        m = found.group(1)
+        eventList.append(m)
     except AttributeError:
         found = ''  # apply your error handling
 
@@ -50,10 +51,9 @@ f.close()
 # For each event type generate a list of when the event is active
 activity = collections.defaultdict(list)
 for event in eventList:
-    fields = re.search('(.+):.+@(.+)', event)    # all events
-#    fields = re.search('(bb_.+):.+@(.+)', event) # basic blocks only
+    fields = re.search('\[(.*)\]\s*(.*'+args.filt+'.*):.+@([^\,]+)', event)    # all events
     try:
-        (node,cycle) = (fields.group(1),fields.group(2))
+        (mod,node,cycle) = (fields.group(1),fields.group(2),fields.group(3))
         activity[node].append((int(cycle),1))
     except AttributeError:
         newOutput = ''  # error handling
