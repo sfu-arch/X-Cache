@@ -60,7 +60,7 @@ class DecoupledTaskDF()(implicit p: Parameters) extends Module {
   val numChildren = 4
 
   /* Instantiate modules */
-  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, numChildren)(p.alterPartial({case TLEN => 4})))
+  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, numChildren)(p.alterPartial({case TLEN => 6})))
 
   /* Wire up task module to tester inputs */
   TaskControllerModule.io.parentIn(0) <> io.In
@@ -108,6 +108,7 @@ class DecoupledTaskTester1(c: DecoupledTaskDF) extends PeekPokeTester(c) {
       poke(c.io.In.bits.enable.control, true.B)
       for (i <- 0 until 4) {
         poke(c.io.In.bits.data(s"field$i").predicate, true.B)
+        poke(c.io.In.bits.data(s"field$i").taskID, countIn)
         poke(c.io.In.bits.data(s"field$i").data, in(i)(countIn))
       }
       countIn += 1
@@ -124,7 +125,8 @@ class DecoupledTaskTester1(c: DecoupledTaskDF) extends PeekPokeTester(c) {
     if (peek(c.io.Out.valid) == 1 && countOut < testVals) {
       for (i <- 0 until 1) {
         val field = peek(c.io.Out.bits.data(s"field$i").data)
-        val expected = out2(i)(countOut)
+        val taskID = peek(c.io.Out.bits.data(s"field$i").taskID)
+        val expected = out2(i)(taskID.intValue())
         if(field != expected) {
           println(s"countOut $countOut: field$i error.  Expected $expected.  Received $field")
           fail

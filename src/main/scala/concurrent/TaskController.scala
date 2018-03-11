@@ -112,21 +112,26 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     * Replace the PID and TID with the original from the parent request
     **************************************************************************/
   val ChildArb = Module(new RRArbiter(new Call(retTypes), numChild))
+  val finalReturn = Wire(Decoupled(new Call(retTypes)))
+
   ChildArb.io.in <> io.childIn
-  retReg <> ChildArb.io.out
+  when(finalReturn.ready) {
+    retReg.valid := ChildArb.io.out.valid
+    retReg.bits := ChildArb.io.out.bits
+  }
+  retReg.ready := finalReturn.ready
 
   // Lookup the original PID and TID
-  val taskEntry = parentTable(io.childIn(0).bits.data("field0").taskID)
+  val taskEntry = parentTable(ChildArb.io.out.bits.data("field0").taskID)
 
   // Restore the original TID and PID in the return value.
-  val finalReturn = Wire(Decoupled(new Call(retTypes)))
   finalReturn.valid := retReg.valid
   finalReturn.bits := retReg.bits
+  ChildArb.io.out.ready := finalReturn.ready
   for (i <- retTypes.indices) {
     finalReturn.bits.data(s"field$i").taskID := taskEntry.did
     finalReturn.bits.enable.taskID := taskEntry.did
   }
-  retReg.ready := finalReturn.ready
 
   /***************************************************************************
     * Output Demux
