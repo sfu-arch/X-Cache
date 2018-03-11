@@ -51,7 +51,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
   // Output register
   val data_R = RegInit(0.U(xlen.W))
 
-  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
   /*==========================================*
@@ -105,7 +105,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
 
           Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-        }.elsewhen(left_valid_R && right_valid_R) {
+        }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
           ValidOut()
           state := s_COMPUTE
         }

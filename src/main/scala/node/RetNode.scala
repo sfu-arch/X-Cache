@@ -113,6 +113,7 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
 
         out_valid_R := false.B
         enable_valid_R := false.B
+        out_ready_R := false.B
 
         state := s_IDLE
         printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, outputReg.bits.data(s"field0").data)

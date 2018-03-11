@@ -183,7 +183,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 0))
+  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
   val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
@@ -230,7 +230,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  br label %my_pfor.preattach, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val br7 = Module (new UBranchNode(ID = 7))
+  val br7 = Module (new UBranchFastNode(ID = 7))
 
   // [BasicBlock]  my_pfor.preattach:
 
@@ -288,25 +288,22 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
     * Wiring enable signals to the instructions
     */
 
-  getelementptr0.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr0"))
+  getelementptr0.io.enable <> bb_my_pfor_body.io.Out(0)
+  getelementptr2.io.enable <> bb_my_pfor_body.io.Out(1)
+  getelementptr5.io.enable <> bb_my_pfor_body.io.Out(2)
 
-  load1.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("load1"))
-
-  getelementptr2.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr2"))
-
-  load3.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("load3"))
-
-  add4.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("add4"))
-
-  getelementptr5.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr5"))
-
-  store6.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("store6"))
-
-  br7.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("br7"))
-
-
-
-  ret8.io.enable <> bb_my_pfor_preattach.io.Out(param.bb_my_pfor_preattach_activate("ret8"))
+  load1.io.enable.valid <> true.B
+  load3.io.enable.valid <> true.B
+  add4.io.enable.valid <> true.B
+  store6.io.enable.valid <> true.B
+  br7.io.enable.valid <> true.B
+  ret8.io.enable.valid <> true.B
+  load1.io.enable.bits.control <> true.B
+  load3.io.enable.bits.control <> true.B
+  add4.io.enable.bits.control <> true.B
+  store6.io.enable.bits.control <> true.B
+  br7.io.enable.bits.control <> true.B
+  ret8.io.enable.bits.control <> true.B
 
 
 

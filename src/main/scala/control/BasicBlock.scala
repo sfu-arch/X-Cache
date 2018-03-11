@@ -6,6 +6,7 @@ import chisel3.Module
 import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{Matchers, FlatSpec}
+import utility.UniformPrintfs
 
 import node._
 import config._
@@ -489,7 +490,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   val predicate_in_R = RegInit(false.B)
   val predicate_valid_R = RegInit(false.B)
 
-  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
   /*===============================================*
@@ -516,11 +517,6 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   switch(state) {
     is(s_IDLE) {
       when(io.predicateIn.fire()) {
-        state := s_LATCH
-      }
-    }
-    is(s_LATCH) {
-      when(predicate_valid_R) {
         ValidOut()
         state := s_COMPUTE
       }
@@ -551,3 +547,42 @@ class BasicBlockNoMaskNode(NumInputs: Int,
 
 }
 
+class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
+  extends CoreBundle()(p) {
+  // Output IO
+  val predicateIn = Flipped(Decoupled(new ControlBundle()))
+  val Out = Vec(NumOuts, Decoupled(new ControlBundle))
+}
+
+class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int) (implicit val p: Parameters,
+                           name: sourcecode.Name,
+                           file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new BasicBlockNoMaskFastIO(NumOuts)(p))
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + BID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+
+//  val outFired = RegInit(VecInit(Seq.fill(NumOuts){false.B}))
+
+  val allReady = io.Out.map(_.ready).reduceLeft(_ && _)
+/*  val allFired = outFired.reduceLeft(_ && _)
+  for (i <- 0 until NumOuts) {
+    when (allReady || allFired) {
+      outFired(i) := false.B
+    }.elsewhen(!outFired(i)) {
+      outFired(i) := io.Out(i).fire()
+    }
+  } */
+  io.Out.foreach(_.bits := io.predicateIn.bits)
+  io.Out.foreach(_.valid := io.predicateIn.valid)
+
+  io.predicateIn.ready := allReady// || allFired
+
+}

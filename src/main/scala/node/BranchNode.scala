@@ -130,6 +130,44 @@ class CBranchNode(ID: Int)
 
 }
 
+class CBranchFastIO()(implicit p: Parameters) extends CoreBundle {
+  // Predicate enable
+  val enable = Flipped(Decoupled(new ControlBundle))
+  // Comparator input
+  val CmpIO = Flipped(Decoupled(new DataBundle))
+  // Output IO
+  val Out = Vec(2,Decoupled(new ControlBundle))
+}
+
+class CBranchFastNode(ID: Int)
+                     (implicit val p: Parameters)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new CBranchFastIO()(p))
+  // Printf debugging
+  override val printfSigil = "Node (UBR) ID: " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
+
+  io.Out(0).bits.control := io.enable.bits.control && io.CmpIO.bits.data(0)
+  io.Out(1).bits.control := io.enable.bits.control && !io.CmpIO.bits.data(0)
+  io.Out(0).bits.taskID := io.enable.bits.taskID
+  io.Out(1).bits.taskID := io.enable.bits.taskID
+
+  when (io.Out(0).ready && io.Out(1).ready && io.CmpIO.valid && io.enable.valid) {
+    io.Out(0).valid := true.B
+    io.Out(1).valid := true.B
+    io.CmpIO.ready  := true.B
+    io.enable.ready := true.B
+  }.otherwise{
+    io.Out(0).valid := false.B
+    io.Out(1).valid := false.B
+    io.CmpIO.ready  := false.B
+    io.enable.ready := false.B
+  }
+
+
+}
+
 class UBranchNode(ID: Int, NumOuts: Int = 1)
                  (implicit p: Parameters,
                   name: sourcecode.Name,

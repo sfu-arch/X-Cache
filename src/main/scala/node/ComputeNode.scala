@@ -105,7 +105,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
 
           Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-        }.elsewhen(left_valid_R && right_valid_R) {
+        }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
           ValidOut()
           state := s_COMPUTE
         }
