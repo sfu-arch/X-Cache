@@ -316,6 +316,9 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   val loop_L_4_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
   val loop_L_4_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
+//  val loop_L_4_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0)) //Manual
+//  val loop_L_4_liveIN_3 = Module(new LiveInNode(NumOuts = 1, ID = 0)) //Manaul
+
 
 
   /* ================================================================== *
@@ -482,11 +485,13 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
 
   //Connecting br9 to bb_if_end
-  bb_if_end.io.predicateIn(param.bb_if_end_pred("br9")) <> br9.io.Out(param.br9_brn_bb("bb_if_end"))
+  //bb_if_end.io.predicateIn(param.bb_if_end_pred("br9")) <> br9.io.Out(param.br9_brn_bb("bb_if_end"))
+  bb_if_end.io.predicateIn(param.bb_if_end_pred("br9")) <> br11.io.Out(param.br11_brn_bb("bb_if_end"))
 
 
   //Connecting br11 to bb_if_end
-  bb_if_end.io.predicateIn(param.bb_if_end_pred("br11")) <> br11.io.Out(param.br11_brn_bb("bb_if_end"))
+  //bb_if_end.io.predicateIn(param.bb_if_end_pred("br11")) <> br11.io.Out(param.br11_brn_bb("bb_if_end"))
+  bb_if_end.io.predicateIn(param.bb_if_end_pred("br11")) <> br9.io.Out(param.br9_brn_bb("bb_if_end"))
 
 
   //Connecting br14 to bb_while_cond
@@ -560,8 +565,6 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
 
 
 
-
-
   /* ================================================================== *
    *                   CONNECTING LOOPHEADERS                           *
    * ================================================================== */
@@ -574,7 +577,6 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   // Connecting function argument to the loop header
   //i32 %b
   loop_L_4_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
-
 
 
   /* ================================================================== *
