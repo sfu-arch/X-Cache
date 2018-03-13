@@ -38,7 +38,6 @@ class StoreIO(NumPredOps: Int,
 /**
   * @brief Store Node. Implements store operations
   * @details [long description]
-  *
   * @param NumPredOps [Number of predicate memory operations]
   */
 class UnTypStore(NumPredOps: Int,
@@ -54,8 +53,8 @@ class UnTypStore(NumPredOps: Int,
   override lazy val io = IO(new StoreIO(NumPredOps, NumSuccOps, NumOuts))
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*=============================================
   =            Register declarations            =
@@ -78,7 +77,7 @@ class UnTypStore(NumPredOps: Int,
   ============================================*/
 
   val predicate = IsEnable()
-  val start  = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
+  val start = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
 
   /*================================================
   =            Latch inputs. Set output            =
@@ -109,70 +108,127 @@ class UnTypStore(NumPredOps: Int,
   }
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
-  io.memReq.bits.data    := data_R.data
-  io.memReq.bits.Typ     := Typ
+  io.memReq.bits.data := data_R.data
+  io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
-  io.memReq.bits.mask    := 15.U
-  io.memReq.valid        := false.B
+  io.memReq.bits.mask := 15.U
+  io.memReq.valid := false.B
 
   /*=============================================
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
-  when (start & predicate) {
-    // ACTION:  Memory request
-    //  Check if address is valid and data has arrive and predecessors have completed.
-    val mem_req_fire = addr_valid_R & IsPredValid() & data_valid_R
+  val mem_req_fire = addr_valid_R & IsPredValid() & data_valid_R
+  val complete = IsSuccReady() & IsOutReady()
 
+  switch(state) {
+    is(s_idle) {
+      when(start) {
+        when(predicate) {
+          when(mem_req_fire) {
+            io.memReq.valid := true.B
+            when(io.memReq.ready) {
+              state := s_RECEIVING
+            }
+          }
+        }.otherwise {
 
-    // ACTION: Memory Request
-    // -> Send memory request
-    when((state === s_idle) && (mem_req_fire)) {
-      io.memReq.valid := true.B
+          addr_R := DataBundle.default
+          addr_valid_R := false.B
+
+          // Reset data.
+          data_R := DataBundle.default
+          data_valid_R := false.B
+
+          // Clear all other state
+          Reset()
+
+          // Reset state.
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
+
+        }
+      }
     }
-
-    //  ACTION: Arbitration ready
-    when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
-      // ReqValid := false.B
-      state := s_RECEIVING
+    is(s_RECEIVING) {
+      when(io.memResp.valid) {
+        ValidSucc()
+        ValidOut()
+        state := s_Done
+      }
     }
-
-    //  ACTION:  <- Incoming Data
-    when(state === s_RECEIVING && io.memResp.valid) {
-      // Set output to valid
-      ValidSucc()
-      ValidOut()
-      state := s_Done
+    is(s_Done) {
+      when(complete) {
+        // Clear all the valid states.
+        // Reset address
+        addr_R := DataBundle.default
+        addr_valid_R := false.B
+        // Reset data.
+        data_R := DataBundle.default
+        data_valid_R := false.B
+        // Clear all other state
+        Reset()
+        // Reset state.
+        state := s_idle
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+      }
     }
-  }.elsewhen(start & ~predicate & state =/= s_Done & state =/= s_idle){
-    ValidSucc()
-    ValidOut()
-    state := s_Done
   }
-  /*===========================================
-  =            Output Handshaking and Reset   =
-  ===========================================*/
 
-  //  ACTION: <- Check Out READY and Successors READY
-  when(state === s_Done) {
-    // When successors are complete and outputs are ready you can reset.
-    // data already valid and would be latched in this cycle.
-    val complete = IsSuccReady() & IsOutReady()
-
-    when(complete) {
-      // Clear all the valid states.
-      // Reset address
-      addr_R := DataBundle.default
-      addr_valid_R := false.B
-      // Reset data.
-      data_R := DataBundle.default
-      data_valid_R := false.B
-      // Clear all other state
-      Reset()
-      // Reset state.
-      state := s_idle
-      when (predicate) {printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n",cycleCount)}
-
-    }
-  }
+  //  when(start & predicate) {
+  //    // ACTION:  Memory request
+  //    //  Check if address is valid and data has arrive and predecessors have completed.
+  //
+  //
+  //    // ACTION: Memory Request
+  //    // -> Send memory request
+  //    when((state === s_idle) && (mem_req_fire)) {
+  //      io.memReq.valid := true.B
+  //    }
+  //
+  //    //  ACTION: Arbitration ready
+  //    when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
+  //      // ReqValid := false.B
+  //      state := s_RECEIVING
+  //    }
+  //
+  //    //  ACTION:  <- Incoming Data
+  //    when(state === s_RECEIVING && io.memResp.valid) {
+  //      // Set output to valid
+  //      ValidSucc()
+  //      ValidOut()
+  //      state := s_Done
+  //    }
+  //  }.elsewhen(start && (~predicate).toBool && state =/= s_Done && state =/= s_idle) {
+  //    ValidSucc()
+  //    ValidOut()
+  //    state := s_Done
+  //  }
+  //  /*===========================================
+  //  =            Output Handshaking and Reset   =
+  //  ===========================================*/
+  //
+  //
+  //  //  ACTION: <- Check Out READY and Successors READY
+  //  when(state === s_Done) {
+  //    // When successors are complete and outputs are ready you can reset.
+  //    // data already valid and would be latched in this cycle.
+  //
+  //    when(complete) {
+  //      // Clear all the valid states.
+  //      // Reset address
+  //      addr_R := DataBundle.default
+  //      addr_valid_R := false.B
+  //      // Reset data.
+  //      data_R := DataBundle.default
+  //      data_valid_R := false.B
+  //      // Clear all other state
+  //      Reset()
+  //      // Reset state.
+  //      state := s_idle
+  //      when(predicate) {
+  //        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+  //      }
+  //
+  //    }
+  //  }
 
 }
