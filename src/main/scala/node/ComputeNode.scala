@@ -55,12 +55,8 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
-  /*==========================================*
-   *           Predicate Evaluation           *
-   *==========================================*/
 
   val predicate = left_R.predicate & right_R.predicate & IsEnable()
-  val start = left_valid_R & right_valid_R & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
