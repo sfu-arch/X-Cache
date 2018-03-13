@@ -492,8 +492,8 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   val succ_bundle_R = Seq.fill(NumSuccOps)(RegInit(AckBundle.default))
 
   // Output Handshaking
-  val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
-  val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
+  val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
 
   // Wire
   val out_ready_W = WireInit(VecInit(Seq.fill(NumOuts){false.B}))
@@ -790,16 +790,12 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
   }
 
   def InvalidOut(): Unit = {
-    out_valid_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
+    out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
 
   }
 
   def Reset(): Unit = {
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
+    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
     InvalidOut()
   }
 

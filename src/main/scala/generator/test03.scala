@@ -246,7 +246,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1))
+  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 1))
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
 
@@ -282,11 +282,13 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
 
   //  %cmp = icmp slt i32 %i.0, %n, !UID !15, !ScalaLabel !16
-  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false))
+//  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false))
 
 
   //  br i1 %cmp, label %for.body, label %for.end, !UID !17, !BB_UID !18, !ScalaLabel !19
   val br4 = Module (new CBranchNode(ID = 4))
+
+  val cmpBranch = Module(new CompareBranchNode(ID = 22, opCode = "ULT"))
 
   // [BasicBlock]  for.body:
 
@@ -352,11 +354,13 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
 
   //Connecting br4 to bb_for_body
-  bb_for_body.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
+//  bb_for_body.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
+  bb_for_body.io.predicateIn <> cmpBranch.io.Out(param.br4_brn_bb("bb_for_body"))
 
 
   //Connecting br4 to bb_for_end
-  bb_for_end.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
+//  bb_for_end.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
+  bb_for_end.io.predicateIn <> cmpBranch.io.Out(param.br4_brn_bb("bb_for_end"))
 
 
   //Connecting br7 to bb_for_inc
@@ -386,9 +390,11 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   phi2.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("phi2"))
 
-  icmp3.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("icmp3"))
+  cmpBranch.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("icmp3"))
 
-  br4.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br4"))
+//  icmp3.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("icmp3"))
+//
+//  br4.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br4"))
 
 
 
@@ -480,13 +486,15 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
     */
 
   // Wiring instructions
-  icmp3.io.LeftIO <> phi2.io.Out(param.icmp3_in("phi2"))
+//  icmp3.io.LeftIO <> phi2.io.Out(param.icmp3_in("phi2"))
+  cmpBranch.io.LeftIO <> phi2.io.Out(param.icmp3_in("phi2"))
 
   // Wiring Binary instruction to the loop header
-  icmp3.io.RightIO <> loop_L_7_liveIN_2.io.Out(param.icmp3_in("field2"))
+//  icmp3.io.RightIO <> loop_L_7_liveIN_2.io.Out(param.icmp3_in("field2"))
+  cmpBranch.io.RightIO <> loop_L_7_liveIN_2.io.Out(param.icmp3_in("field2"))
 
   // Wiring Branch instruction
-  br4.io.CmpIO <> icmp3.io.Out(param.br4_in("icmp3"))
+//  br4.io.CmpIO <> cmpBranch.io.Out(param.br4_in("icmp3"))
 
   // Wiring instructions
   add5.io.LeftIO <> phi1.io.Out(param.add5_in("phi1"))

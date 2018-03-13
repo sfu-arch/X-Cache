@@ -33,11 +33,10 @@ class CBranchNode(ID: Int)
                   file: sourcecode.File)
   extends HandShakingCtrlNPS(2, ID)(p) {
   override lazy val io = IO(new CBranchNodeIO())
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -92,9 +91,9 @@ class CBranchNode(ID: Int)
     * valid == 1  ->  cmp = false then 2
     */
 
- switch(state) {
+  switch(state) {
     is(s_IDLE) {
-      when(enable_valid_R && ~enable_R){
+      when(enable_valid_R && ~enable_R) {
         state := s_COMPUTE
         ValidOut()
       }.elsewhen(io.CmpIO.fire()) {
@@ -103,8 +102,8 @@ class CBranchNode(ID: Int)
     }
     is(s_LATCH) {
       state := s_COMPUTE
-      when(enable_valid_R){
-        when(enable_R){
+      when(enable_valid_R) {
+        when(enable_R) {
           data_out_R(0) := cmp_R.data.asUInt.orR
           data_out_R(1) := ~cmp_R.data.asUInt.orR
         }
@@ -136,32 +135,32 @@ class CBranchFastIO()(implicit p: Parameters) extends CoreBundle {
   // Comparator input
   val CmpIO = Flipped(Decoupled(new DataBundle))
   // Output IO
-  val Out = Vec(2,Decoupled(new ControlBundle))
+  val Out = Vec(2, Decoupled(new ControlBundle))
 }
 
 class CBranchFastNode(ID: Int)
                      (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
-  val io = IO(new CBranchFastIO()(p))
   // Printf debugging
   override val printfSigil = "Node (UBR) ID: " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val io = IO(new CBranchFastIO()(p))
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   io.Out(0).bits.control := io.enable.bits.control && io.CmpIO.bits.data(0)
   io.Out(1).bits.control := io.enable.bits.control && !io.CmpIO.bits.data(0)
   io.Out(0).bits.taskID := io.enable.bits.taskID
   io.Out(1).bits.taskID := io.enable.bits.taskID
 
-  when (io.Out(0).ready && io.Out(1).ready && io.CmpIO.valid && io.enable.valid) {
+  when(io.Out(0).ready && io.Out(1).ready && io.CmpIO.valid && io.enable.valid) {
     io.Out(0).valid := true.B
     io.Out(1).valid := true.B
-    io.CmpIO.ready  := true.B
+    io.CmpIO.ready := true.B
     io.enable.ready := true.B
-  }.otherwise{
+  }.otherwise {
     io.Out(0).valid := false.B
     io.Out(1).valid := false.B
-    io.CmpIO.ready  := false.B
+    io.CmpIO.ready := false.B
     io.enable.ready := false.B
   }
 
@@ -175,11 +174,9 @@ class UBranchNode(ID: Int, NumOuts: Int = 1)
   extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
   override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
   // Printf debugging
-
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -246,7 +243,7 @@ class UBranchNode(ID: Int, NumOuts: Int = 1)
     //Reset state
     state := s_idle
     when(predicate) {
-      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n", cycleCount)
+      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
     }
 
 
@@ -255,16 +252,15 @@ class UBranchNode(ID: Int, NumOuts: Int = 1)
 }
 
 class UBranchEndNode(ID: Int, NumOuts: Int = 1)
-                 (implicit p: Parameters,
-                  name: sourcecode.Name,
-                  file: sourcecode.File)
+                    (implicit p: Parameters,
+                     name: sourcecode.Name,
+                     file: sourcecode.File)
   extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
   override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -308,10 +304,10 @@ class UBranchEndNode(ID: Int, NumOuts: Int = 1)
    *============================================*/
 
   when(start & (state === s_idle)) {
-    when(predicate){
+    when(predicate) {
       state := s_OUTPUT
       ValidOut()
-    }.otherwise{
+    }.otherwise {
       enable_valid_R := false.B
     }
   }
@@ -339,18 +335,183 @@ class UBranchFastIO()(implicit p: Parameters) extends CoreBundle {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Output IO
-  val Out = Vec(1,Decoupled(new ControlBundle))
+  val Out = Vec(1, Decoupled(new ControlBundle))
 }
+
 class UBranchFastNode(ID: Int)
-                 (implicit val p: Parameters)
+                     (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
-  val io = IO(new UBranchFastIO()(p))
   // Printf debugging
   override val printfSigil = "Node (UBR) ID: " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val io = IO(new UBranchFastIO()(p))
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   io.Out(0) <> io.enable
 
 
 }
+
+
+/**
+  * @note
+  * For Conditional Branch output is always equal to two!
+  * Since your branch output wire to two different basic block only
+  */
+
+class CompareBranchIO()(implicit p: Parameters) extends CoreBundle {
+  // Predicate enable
+  val enable = Flipped(Decoupled(new ControlBundle))
+
+  // LeftIO: Left input data for computation
+  val LeftIO = Flipped(Decoupled(new DataBundle))
+  // RightIO: Right input data for computation
+  val RightIO = Flipped(Decoupled(new DataBundle))
+
+  // Output IO
+  val Out = Vec(2, Decoupled(new ControlBundle))
+}
+
+class CompareBranchNode(ID: Int, opCode: String)
+                       (implicit val p: Parameters,
+                        name: sourcecode.Name,
+                        file: sourcecode.File) extends Module with CoreParams with UniformPrintfs {
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  // Defining IOs
+  val io = IO(new CompareBranchIO())
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+
+  // Enable Input
+  val enable_R = RegInit(ControlBundle.default)
+  val enable_valid_R = RegInit(false.B)
+
+  // Left Input
+  val left_R = RegInit(DataBundle.default)
+  val left_valid_R = RegInit(false.B)
+
+  // Right Input
+  val right_R = RegInit(DataBundle.default)
+  val right_valid_R = RegInit(false.B)
+
+  // Output Handshaking
+  val out_ready_R = RegInit(VecInit(Seq.fill(2)(false.B)))
+  val out_valid_R = RegInit(VecInit(Seq.fill(2)(false.B)))
+
+
+  val FU = Module(new UCMP(xlen, opCode))
+  FU.io.in1 := left_R.data
+  FU.io.in2 := right_R.data
+
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
+  val state = RegInit(s_IDLE)
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+  io.enable.ready := ~enable_valid_R
+  when(io.enable.fire()) {
+    enable_R <> io.enable.bits
+    enable_valid_R := true.B
+  }
+
+  io.LeftIO.ready := ~left_valid_R
+  when(io.LeftIO.fire()) {
+    left_R <> io.LeftIO.bits
+    left_valid_R := true.B
+  }
+
+  io.RightIO.ready := ~right_valid_R
+  when(io.RightIO.fire()) {
+    right_R <> io.RightIO.bits
+    right_valid_R := true.B
+  }
+
+
+  // Wire up Outputs
+  when(enable_valid_R) {
+    io.Out(0).bits.control := FU.io.out
+    io.Out(1).bits.control := ~FU.io.out
+  }.otherwise {
+    io.Out(0).bits.control := false.B
+    io.Out(1).bits.control := false.B
+  }
+
+  io.Out(0).bits.taskID := 0.U
+  out_ready_R(0) := io.Out(0).ready
+  io.Out(0).valid := out_valid_R(0)
+  io.Out(1).bits.taskID := 0.U
+  out_ready_R(1) := io.Out(1).ready
+  io.Out(1).valid := out_valid_R(1)
+
+  /*============================================*
+   *            STATE MACHINE                   *
+   *============================================*/
+
+  /**
+    * Combination of bits and valid signal from CmpIn whill result the output value:
+    * valid == 0  ->  output = 0
+    * valid == 1  ->  cmp = true  then 1
+    * valid == 1  ->  cmp = false then 2
+    */
+
+  switch(state) {
+    is(s_IDLE) {
+      when(enable_valid_R) {
+        when((~enable_R.control).toBool) {
+
+          enable_R := ControlBundle.default
+          enable_valid_R := false.B
+
+          left_R := DataBundle.default
+          left_valid_R := false.B
+
+          right_R := DataBundle.default
+          right_valid_R := false.B
+
+          out_ready_R := VecInit(Seq.fill(2)(false.B))
+          out_valid_R := VecInit(Seq.fill(2)(false.B))
+
+          printf("[LOG] " + "[" + module_name + "] "
+            + node_name + ": Not predicated value -> reset\n")
+
+        }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
+          out_valid_R := VecInit(Seq.fill(2)(true.B))
+          state := s_COMPUTE
+        }
+      }
+    }
+    is(s_COMPUTE) {
+      when(out_ready_R.asUInt.andR) {
+        enable_R := ControlBundle.default
+        enable_valid_R := false.B
+
+        left_R := DataBundle.default
+        left_valid_R := false.B
+
+        right_R := DataBundle.default
+        right_valid_R := false.B
+
+        out_ready_R := VecInit(Seq.fill(2)(false.B))
+        out_valid_R := VecInit(Seq.fill(2)(false.B))
+
+        state := s_IDLE
+
+        printf("[LOG] " + "[" + module_name + "] " + node_name +
+          ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out.asUInt())
+      }
+    }
+  }
+
+}
+
+
+
+

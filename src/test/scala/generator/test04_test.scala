@@ -68,7 +68,7 @@ class test04Test01(c: test04CacheWrapper) extends PeekPokeTester(c) {
   step(1)
   var time = 1  //Cycle counter
   var result = false
-  while (time < 500) {
+  while (time < 600) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&

@@ -277,7 +277,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_pfor_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
+  val bb_pfor_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 1))
 
   val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
@@ -315,11 +315,13 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
 
   //  %cmp = icmp ult i32 %i.0, 5, !UID !12, !ScalaLabel !13
-  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT")(sign=false))
+//  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT")(sign=false))
 
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end, !UID !14, !BB_UID !15, !ScalaLabel !16
-  val br3 = Module (new CBranchFastNode(ID = 3))
+//  val br3 = Module (new CBranchFastNode(ID = 3))
+
+  var cmpBranch = Module(new CompareBranchNode(ID = 44, opCode="ULT"))
 
   // [BasicBlock]  pfor.detach:
 
@@ -396,11 +398,13 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
 
   //Connecting br3 to bb_pfor_detach
-  bb_pfor_detach.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_pfor_detach"))
+  bb_pfor_detach.io.predicateIn <> cmpBranch.io.Out(param.br3_brn_bb("bb_pfor_detach"))
+//  bb_pfor_detach.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_pfor_detach"))
 
 
   //Connecting br3 to bb_pfor_end
-  bb_pfor_end.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_pfor_end"))
+  bb_pfor_end.io.predicateIn <> cmpBranch.io.Out(param.br3_brn_bb("bb_pfor_end"))
+  //  bb_pfor_end.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_pfor_end"))
 
 
   //Connecting br6 to bb_pfor_cond
@@ -439,9 +443,10 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
   phi1.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("phi1"))
 
-  icmp2.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("icmp2"))
+  cmpBranch.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("icmp2"))
+//  icmp2.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("icmp2"))
 
-  br3.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("br3"))
+//  br3.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("br3"))
 
 
 
@@ -534,15 +539,20 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
     */
 
   // Wiring instructions
-  icmp2.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
+//  icmp2.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
+  cmpBranch.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
 
   // Wiring constant
-  icmp2.io.RightIO.bits.data := 10.U
-  icmp2.io.RightIO.bits.predicate := true.B
-  icmp2.io.RightIO.valid := true.B
+  //icmp2.io.RightIO.bits.data := 10.U
+  //icmp2.io.RightIO.bits.predicate := true.B
+  //icmp2.io.RightIO.valid := true.B
+
+  cmpBranch.io.RightIO.bits.data := 10.U
+  cmpBranch.io.RightIO.bits.predicate := true.B
+  cmpBranch.io.RightIO.valid := true.B
 
   // Wiring Branch instruction
-  br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
+//  br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
 
   // Wiring instructions
   add5.io.LeftIO <> phi1.io.Out(param.add5_in("phi1"))
