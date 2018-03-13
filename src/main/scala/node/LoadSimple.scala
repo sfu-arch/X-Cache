@@ -44,11 +44,11 @@ class UnTypLoad(NumPredOps: Int,
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new DataBundle)(p) {
 
   override lazy val io = IO(new LoadIO(NumPredOps, NumSuccOps, NumOuts))
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
 
   /*=============================================
@@ -92,9 +92,9 @@ class UnTypLoad(NumPredOps: Int,
 
   io.memReq.valid := false.B
   io.memReq.bits.address := addr_R.data
-//  io.memReq.bits.taskID := nodeID_R
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
+
   /*=============================================
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
@@ -129,9 +129,19 @@ class UnTypLoad(NumPredOps: Int,
       state := s_Done
     }
   }.elsewhen(start && !predicate && state =/= s_Done) {
-    ValidSucc()
-    ValidOut()
-    state := s_Done
+    //    ValidSucc()
+    //    ValidOut()
+    //    state := s_Done
+    addr_R := DataBundle.default
+    addr_valid_R := false.B
+    // Reset data
+    data_R := DataBundle.default
+    data_valid_R := false.B
+    // Reset state.
+    Reset()
+    // Reset state.
+    state := s_idle
+    printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
   }
   /*===========================================
   =            Output Handshaking and Reset   =
@@ -154,7 +164,9 @@ class UnTypLoad(NumPredOps: Int,
       Reset()
       // Reset state.
       state := s_idle
-      when (predicate) {printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n",cycleCount)}
+      when(predicate) {
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+      }
     }
   }
   /*

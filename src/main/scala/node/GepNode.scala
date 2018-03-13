@@ -69,7 +69,6 @@ class GepOneNode(NumOuts: Int, ID: Int)
    *==========================================*/
 
   val predicate = base_addr_R.predicate & idx1_R.predicate & IsEnable()
-  val start = base_addr_valid_R & idx1_valid_R & IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -81,13 +80,13 @@ class GepOneNode(NumOuts: Int, ID: Int)
 
   io.baseAddress.ready := ~base_addr_valid_R
   when(io.baseAddress.fire()) {
-    base_addr_R <> io.baseAddress.bits.data
+    base_addr_R <> io.baseAddress
     base_addr_valid_R := true.B
   }
 
   io.idx1.ready := ~idx1_valid_R
   when(io.idx1.fire()) {
-    idx1_R <> io.idx1.bits.data
+    idx1_R <> io.idx1
     idx1_valid_R := true.B
   }
 
@@ -111,7 +110,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
           base_addr_R := DataBundle.default
 
           idx1_valid_R := true.B
-          base_addr_R := true.B
+          base_addr_valid_R := true.B
 
           Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")

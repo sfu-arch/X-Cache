@@ -77,7 +77,7 @@ class UnTypStore(NumPredOps: Int,
   =            Predicate Evaluation            =
   ============================================*/
 
-  val predicate = addr_R.predicate & data_R.predicate & IsEnable()
+  val predicate = IsEnable()
   val start  = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
 
   /*================================================
@@ -109,7 +109,6 @@ class UnTypStore(NumPredOps: Int,
   }
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
-//  io.memReq.bits.taskID    := nodeID_R
   io.memReq.bits.data    := data_R.data
   io.memReq.bits.Typ     := Typ
   io.memReq.bits.RouteID := RouteID.U
@@ -176,24 +175,4 @@ class UnTypStore(NumPredOps: Int,
     }
   }
 
-  /*
-    // Trace detail.
-
-    if (log == true && (comp contains "STORE")) {
-      val x = RegInit(0.U(xlen.W))
-      x     := x + 1.U
-
-      verb match {
-        case "high"  => { }
-        case "med"   => { }
-        case "low"   => {
-          printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x, \"inData\": %x },\n",x, (addr_valid_R),(data_valid_R))
-          printf("\"State\": {\"State\": %x, \"data_R\": \"%x,%x\" },",state,data_R.data,data_R.predicate)
-          printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
-          printf("}")
-         }
-        case everythingElse => {}
-      }
-    }
-    */
 }

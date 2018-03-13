@@ -183,6 +183,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   //Initializing BasicBlocks: 
 
+//  val bb_my_pfor_body = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 0))
   val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
   val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))

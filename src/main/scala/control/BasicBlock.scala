@@ -28,7 +28,7 @@ class BasicBlockIO(NumInputs: Int,
                    NumPhi: Int)
                   (implicit p: Parameters)
   extends HandShakingCtrlMaskIO(NumInputs, NumOuts, NumPhi) {
-  // LeftIO: Left input data for computation
+
   val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
 }
 
@@ -56,12 +56,10 @@ class BasicBlockNode(NumInputs: Int,
   extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
 
   override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
-
-  val node_name = name.value
-  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-
   // Printf debugging
   override val printfSigil = node_name + BID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   //Assertion
@@ -145,153 +143,7 @@ class BasicBlockNode(NumInputs: Int,
   }
 
 
-  // Reseting all the latches
-//  when(out_ready_W & mask_ready_W & (state === s_COMPUTE)) {
-//    predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
-//    predicate_valid_R := false.B
-//
-//    // Reset output
-//    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
-//
-//    //Reset state
-//    state := s_idle
-//    when(predicate) {
-//      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
-//    }.otherwise {
-//      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
-//    }
-//    //Restart predicate bit
-//    pred_R.control := false.B
-//  }
-
 }
-
-//
-//class BasicBlockNode(NumInputs: Int,
-//                     NumOuts: Int,
-//                     NumPhi: Int,
-//                     BID: Int)
-//                    (implicit p: Parameters,
-//                     name: sourcecode.Name,
-//                     file: sourcecode.File)
-//  extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
-//
-//  override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
-//
-//  val node_name = name.value
-//  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-//
-//  // Printf debugging
-//  override val printfSigil = node_name + BID + " "
-//  val (cycleCount, _) = Counter(true.B, 32 * 1024)
-//
-//  //Assertion
-//  assert(NumPhi >= 1, "NumPhi Cannot be zero")
-//
-//  /*===========================================*
-//   *            Registers                      *
-//   *===========================================*/
-//  // OP Inputs
-//  val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
-//
-//  val predicate_valid_R = RegInit(false.B)
-//  val predicate_valid_W = WireInit(VecInit(Seq.fill(NumInputs)(false.B)))
-//
-//  val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-//  val state = RegInit(s_idle)
-//
-//  /*===========================================*
-//   *            Valids                         *
-//   *===========================================*/
-//
-//  val predicate = predicate_in_R.asUInt().orR
-//  val start = predicate_valid_R.asUInt().orR
-//
-//  /*===============================================*
-//   *            Latch inputs. Wire up output       *
-//   *===============================================*/
-//
-//  val pred_R = RegInit(ControlBundle.default)
-//  val fire_W = WireInit(false.B)
-//
-//
-//  //Make all the inputs invalid if one of the inputs
-//  //gets fire
-//  //
-//  when(state === s_idle) {
-//    predicate_valid_W := VecInit(Seq.fill(NumInputs)(false.B))
-//  }
-//
-//  fire_W := predicate_valid_W.asUInt.orR
-//
-//  when(fire_W & state === s_idle) {
-//    predicate_valid_R := true.B
-//  }
-//
-//  for (i <- 0 until NumInputs) {
-//    io.predicateIn(i).ready := ~predicate_valid_R
-//    when(io.predicateIn(i).fire()) {
-//      state := s_LATCH
-//      predicate_in_R(i) <> io.predicateIn(i).bits.control
-//      predicate_valid_W(i) := true.B
-//      //fire_W := true.B
-//    }
-//  }
-//
-//  // Wire up Outputs
-//  for (i <- 0 until NumOuts) {
-//    io.Out(i).bits.control := pred_R.control
-//    io.Out(i).bits.taskID := 0.U
-//  }
-//
-//  // Wire up mask output
-//  for (i <- 0 until NumPhi) {
-//    io.MaskBB(i).bits := predicate_in_R.asUInt
-//  }
-//
-//
-//  /*============================================*
-//   *            ACTIONS (possibly dangerous)    *
-//   *============================================*/
-//
-//  when(start & state =/= s_COMPUTE) {
-//    state := s_COMPUTE
-//    pred_R.control := predicate
-//    ValidOut()
-//  }
-//
-//  /*==========================================*
-//   *      Output Handshaking and Reset        *
-//   *==========================================*/
-//
-//
-//  val out_ready_W = out_ready_R.asUInt.andR
-//  val out_valid_W = out_valid_R.asUInt.andR
-//
-//  val mask_ready_W = mask_ready_R.asUInt.andR
-//  val mask_valid_W = mask_valid_R.asUInt.andR
-//
-//
-//  // Reseting all the latches
-//  when(out_ready_W & mask_ready_W & (state === s_COMPUTE)) {
-//    predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
-//    predicate_valid_R := false.B
-//
-//    // Reset output
-//    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
-//
-//    //Reset state
-//    state := s_idle
-//    when(predicate) {
-//      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
-//    }.otherwise{
-//      printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d -> 0 predicate\n", cycleCount)
-//    }
-//    //Restart predicate bit
-//    pred_R.control := false.B
-//  }
-//
-//}
 
 
 /**
@@ -317,13 +169,10 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
   extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
 
   override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
-
-
-  val node_name = name.value
-  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-
   // Printf debugging
   override val printfSigil = node_name + BID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   //Assertion
@@ -472,20 +321,15 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
 
   override lazy val io = IO(new BasicBlockNoMaskIO(NumInputs, NumOuts))
-
-  val node_name = name.value
-  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-
   // Printf debugging
   override val printfSigil = node_name + BID + " "
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
-  // OP Inputs
-  //  val predicate_in_R    = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
-  //  val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
   val predicate_in_R = RegInit(false.B)
   val predicate_valid_R = RegInit(false.B)
@@ -559,27 +403,19 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int) (
                            file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + BID + " "
   val io = IO(new BasicBlockNoMaskFastIO(NumOuts)(p))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + BID + " "
   val (cycleCount,_) = Counter(true.B,32*1024)
   /*===========================================*
    *            Registers                      *
    *===========================================*/
 
-//  val outFired = RegInit(VecInit(Seq.fill(NumOuts){false.B}))
 
   val allReady = io.Out.map(_.ready).reduceLeft(_ && _)
-/*  val allFired = outFired.reduceLeft(_ && _)
-  for (i <- 0 until NumOuts) {
-    when (allReady || allFired) {
-      outFired(i) := false.B
-    }.elsewhen(!outFired(i)) {
-      outFired(i) := io.Out(i).fire()
-    }
-  } */
+
   io.Out.foreach(_.bits := io.predicateIn.bits)
   io.Out.foreach(_.valid := io.predicateIn.valid)
 
