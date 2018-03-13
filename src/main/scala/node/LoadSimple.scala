@@ -99,92 +99,134 @@ class UnTypLoad(NumPredOps: Int,
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
 
-  when(start & predicate) {
-    // ACTION:  Memory request
-    //  Check if address is valid and predecessors have completed.
-    val mem_req_fire = addr_valid_R & IsPredValid()
+  val mem_req_fire = addr_valid_R & IsPredValid()
+  val complete = IsSuccReady() & IsOutReady()
 
-    // ACTION: Outgoing Address Req ->
-    when((state === s_idle) && (mem_req_fire)) {
-      io.memReq.valid := true.B
+  switch(state) {
+    is(s_idle) {
+      when(start) {
+        when(predicate) {
+          when(mem_req_fire) {
+            io.memReq.valid := true.B
+            when(io.memReq.ready) {
+              state := s_RECEIVING
+            }
+          }
+        }.otherwise {
+          addr_R := DataBundle.default
+          addr_valid_R := false.B
+          // Reset data
+          data_R := DataBundle.default
+          data_valid_R := false.B
+          // Reset state.
+          Reset()
+          // Reset state.
+          state := s_idle
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
+        }
+      }
     }
+    is(s_RECEIVING) {
+      when(io.memResp.valid) {
 
-    //  ACTION: Arbitration ready
-    //   <- Incoming memory arbitration
-    when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
-      state := s_RECEIVING
+        // Set data output registers
+        data_R.data := io.memResp.data
+        data_R.predicate := predicate
+        //data_R.valid := true.B
+        ValidSucc()
+        ValidOut()
+        // Completion state.
+        state := s_Done
+
+      }
     }
-
-    // Data detected only one cycle later.
-    // Memory should supply only one cycle after arbitration.
-    //  ACTION:  <- Incoming Data
-    when(state === s_RECEIVING && io.memResp.valid) {
-      // Set data output registers
-      data_R.data := io.memResp.data
-      data_R.predicate := predicate
-      //data_R.valid := true.B
-      ValidSucc()
-      ValidOut()
-      // Completion state.
-      state := s_Done
-    }
-  }.elsewhen(start && !predicate && state =/= s_Done) {
-    //    ValidSucc()
-    //    ValidOut()
-    //    state := s_Done
-    addr_R := DataBundle.default
-    addr_valid_R := false.B
-    // Reset data
-    data_R := DataBundle.default
-    data_valid_R := false.B
-    // Reset state.
-    Reset()
-    // Reset state.
-    state := s_idle
-    printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
-  }
-  /*===========================================
-  =            Output Handshaking and Reset   =
-  ===========================================*/
-
-  //  ACTION: <- Check Out READY and Successors READY
-  when(state === s_Done) {
-    // When successors are complete and outputs are ready you can reset.
-    // data already valid and would be latched in this cycle.
-    val complete = IsSuccReady() & IsOutReady()
-    when(complete) {
-      // Clear all the valid states.
-      // Reset address
-      addr_R := DataBundle.default
-      addr_valid_R := false.B
-      // Reset data
-      data_R := DataBundle.default
-      data_valid_R := false.B
-      // Reset state.
-      Reset()
-      // Reset state.
-      state := s_idle
-      when(predicate) {
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+    is(s_Done) {
+      when(complete) {
+        // Clear all the valid states.
+        // Reset address
+        addr_R := DataBundle.default
+        addr_valid_R := false.B
+        // Reset data
+        data_R := DataBundle.default
+        data_valid_R := false.B
+        // Reset state.
+        Reset()
+        // Reset state.
+        state := s_idle
+        when(predicate) {
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+        }
       }
     }
   }
-  /*
-  if (log == true && (comp contains "LOAD")) {
-    val x = RegInit(0.U(xlen.W))
-    x     := x + 1.U
-  
-    verb match {
-      case "high"  => { }
-      case "med"   => { }
-      case "low"   => {
-        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},",x, (addr_R.valid))
-        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },",state,data_R.valid,data_R.data,data_R.predicate)
-        printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
-        printf("}")
-       }
-      case everythingElse => {}
-    }
-  }
-  */
+
+//  when(start & predicate) {
+  //    // ACTION:  Memory request
+  //    //  Check if address is valid and predecessors have completed.
+  //
+  //    // ACTION: Outgoing Address Req ->
+  //    when((state === s_idle) && (mem_req_fire)) {
+  //      io.memReq.valid := true.B
+  //    }
+  //
+  //    //  ACTION: Arbitration ready
+  //    //   <- Incoming memory arbitration
+  //    when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
+  //      state := s_RECEIVING
+  //    }
+  //
+  //    // Data detected only one cycle later.
+  //    // Memory should supply only one cycle after arbitration.
+  //    //  ACTION:  <- Incoming Data
+  //    when(state === s_RECEIVING && io.memResp.valid) {
+  //      // Set data output registers
+  //      data_R.data := io.memResp.data
+  //      data_R.predicate := predicate
+  //      //data_R.valid := true.B
+  //      ValidSucc()
+  //      ValidOut()
+  //      // Completion state.
+  //      state := s_Done
+  //    }
+  //  }.elsewhen(start && !predicate && state =/= s_Done) {
+  //    //    ValidSucc()
+  //    //    ValidOut()
+  //    //    state := s_Done
+  //    addr_R := DataBundle.default
+  //    addr_valid_R := false.B
+  //    // Reset data
+  //    data_R := DataBundle.default
+  //    data_valid_R := false.B
+  //    // Reset state.
+  //    Reset()
+  //    // Reset state.
+  //    state := s_idle
+  //    printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
+  //  }
+  //  /*===========================================
+  //  =            Output Handshaking and Reset   =
+  //  ===========================================*/
+  //
+  //  //  ACTION: <- Check Out READY and Successors READY
+  //  when(state === s_Done) {
+  //    // When successors are complete and outputs are ready you can reset.
+  //    // data already valid and would be latched in this cycle.
+  //    when(complete) {
+  //      // Clear all the valid states.
+  //      // Reset address
+  //      addr_R := DataBundle.default
+  //      addr_valid_R := false.B
+  //      // Reset data
+  //      data_R := DataBundle.default
+  //      data_valid_R := false.B
+  //      // Reset state.
+  //      Reset()
+  //      // Reset state.
+  //      state := s_idle
+  //      when(predicate) {
+  //        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+  //      }
+  //    }
+  //  }
+
 }
