@@ -156,7 +156,7 @@ class cilk_for_test05Test01[T <: cilk_for_test05MainIO](c: T) extends PeekPokeTe
   // using if() and fail command.
   var time = 1  //Cycle counter
   var result = false
-  while (time < 200) {
+  while (time < 500) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
