@@ -328,15 +328,15 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 0))
+  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
 
-  val bb_my_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 1))
+  val bb_my_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 1))
 
   val bb_my_if_end = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 2))
 
   val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 3))
 
-  val bb_my_if_else = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 4))
+  val bb_my_if_else = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 4))
 
 
 
@@ -406,12 +406,12 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
 
 
   //  br label %my_if.end, !UID !34, !BB_UID !35, !ScalaLabel !36
-  val br13 = Module (new UBranchNode(ID = 13))
+  val br13 = Module (new UBranchFastNode(ID = 13))
 
   // [BasicBlock]  my_if.end:
 
   //  br label %my_pfor.preattach, !UID !37, !BB_UID !38, !ScalaLabel !39
-  val br14 = Module (new UBranchNode(ID = 14))
+  val br14 = Module (new UBranchFastNode(ID = 14))
 
   // [BasicBlock]  my_pfor.preattach:
 
@@ -449,7 +449,7 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
 
 
   //  br label %my_if.end, !UID !57, !BB_UID !58, !ScalaLabel !59
-  val br23 = Module (new UBranchNode(ID = 23))
+  val br23 = Module (new UBranchFastNode(ID = 23))
 
 
 
@@ -518,61 +518,49 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
     * Wiring enable signals to the instructions
     */
 
-  getelementptr0.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr0"))
+  getelementptr0.io.enable <> bb_my_pfor_body.io.Out(0)
+  getelementptr2.io.enable <> bb_my_pfor_body.io.Out(1)
+  getelementptr6.io.enable <> bb_my_if_then.io.Out(0)
+  getelementptr8.io.enable <> bb_my_if_then.io.Out(1)
+  getelementptr11.io.enable <> bb_my_if_then.io.Out(2)
+  getelementptr16.io.enable <> bb_my_if_else.io.Out(0)
+  getelementptr18.io.enable <> bb_my_if_else.io.Out(1)
+  getelementptr21.io.enable <> bb_my_if_else.io.Out(2)
 
-  load1.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("load1"))
+  load1.io.enable.valid <> true.B
+  load3.io.enable.valid <> true.B
+  icmp4.io.enable.valid <> true.B
+  br5.io.enable.valid <> true.B
+  load1.io.enable.bits.control <> true.B
+  load3.io.enable.bits.control <> true.B
+  icmp4.io.enable.bits.control <> true.B
+  br5.io.enable.bits.control <> true.B
 
-  getelementptr2.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr2"))
+  load7.io.enable.valid <> true.B
+  load9.io.enable.valid <> true.B
+  sub10.io.enable.valid <> true.B
+  store12.io.enable.valid <> true.B
+  br13.io.enable.valid <> true.B
+  load7.io.enable.bits.control <> true.B
+  load9.io.enable.bits.control <> true.B
+  sub10.io.enable.bits.control <> true.B
+  store12.io.enable.bits.control <> true.B
+  br13.io.enable.bits.control <> true.B
 
-  load3.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("load3"))
-
-  icmp4.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("icmp4"))
-
-  br5.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("br5"))
-
-
-
-  getelementptr6.io.enable <> bb_my_if_then.io.Out(param.bb_my_if_then_activate("getelementptr6"))
-
-  load7.io.enable <> bb_my_if_then.io.Out(param.bb_my_if_then_activate("load7"))
-
-  getelementptr8.io.enable <> bb_my_if_then.io.Out(param.bb_my_if_then_activate("getelementptr8"))
-
-  load9.io.enable <> bb_my_if_then.io.Out(param.bb_my_if_then_activate("load9"))
-
-  sub10.io.enable <> bb_my_if_then.io.Out(param.bb_my_if_then_activate("sub10"))
-
-  getelementptr11.io.enable <> bb_my_if_then.io.Out(param.bb_my_if_then_activate("getelementptr11"))
-
-  store12.io.enable <> bb_my_if_then.io.Out(param.bb_my_if_then_activate("store12"))
-
-  br13.io.enable <> bb_my_if_then.io.Out(param.bb_my_if_then_activate("br13"))
-
-
-
-  br14.io.enable <> bb_my_if_end.io.Out(param.bb_my_if_end_activate("br14"))
-
-
-
-  ret15.io.enable <> bb_my_pfor_preattach.io.Out(param.bb_my_pfor_preattach_activate("ret15"))
-
-
-
-  getelementptr16.io.enable <> bb_my_if_else.io.Out(param.bb_my_if_else_activate("getelementptr16"))
-
-  load17.io.enable <> bb_my_if_else.io.Out(param.bb_my_if_else_activate("load17"))
-
-  getelementptr18.io.enable <> bb_my_if_else.io.Out(param.bb_my_if_else_activate("getelementptr18"))
-
-  load19.io.enable <> bb_my_if_else.io.Out(param.bb_my_if_else_activate("load19"))
-
-  sub20.io.enable <> bb_my_if_else.io.Out(param.bb_my_if_else_activate("sub20"))
-
-  getelementptr21.io.enable <> bb_my_if_else.io.Out(param.bb_my_if_else_activate("getelementptr21"))
-
-  store22.io.enable <> bb_my_if_else.io.Out(param.bb_my_if_else_activate("store22"))
-
-  br23.io.enable <> bb_my_if_else.io.Out(param.bb_my_if_else_activate("br23"))
+  br14.io.enable.valid <> true.B
+  ret15.io.enable.valid <> true.B
+  load17.io.enable.valid <> true.B
+  load19.io.enable.valid <> true.B
+  sub20.io.enable.valid <> true.B
+  store22.io.enable.valid <> true.B
+  br23.io.enable.valid <> true.B
+  br14.io.enable.bits.control <> true.B
+  ret15.io.enable.bits.control <> true.B
+  load17.io.enable.bits.control <> true.B
+  load19.io.enable.bits.control <> true.B
+  sub20.io.enable.bits.control <> true.B
+  store22.io.enable.bits.control <> true.B
+  br23.io.enable.bits.control <> true.B
 
 
 

@@ -289,7 +289,7 @@ class cilk_for_test05DF(implicit p: Parameters) extends cilk_for_test05DFIO()(p)
   // [BasicBlock]  entry:
 
   //  br label %pfor.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0))
+  val br0 = Module (new UBranchFastNode(ID = 0))
 
   // [BasicBlock]  pfor.cond:
 
@@ -307,7 +307,7 @@ class cilk_for_test05DF(implicit p: Parameters) extends cilk_for_test05DFIO()(p)
   // [BasicBlock]  pfor.detach:
 
   //  detach label %offload.pfor.body, label %pfor.inc, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val detach4 = Module(new Detach(ID = 4))
+  val detach4 = Module(new DetachFast(ID = 4))
 
   // [BasicBlock]  pfor.inc:
 
@@ -316,7 +316,7 @@ class cilk_for_test05DF(implicit p: Parameters) extends cilk_for_test05DFIO()(p)
 
 
   //  br label %pfor.cond, !llvm.loop !22, !UID !32, !BB_UID !33, !ScalaLabel !34
-  val br6 = Module (new UBranchNode(ID = 6))
+  val br6 = Module (new UBranchFastNode(ID = 6))
 
   // [BasicBlock]  pfor.end:
 
