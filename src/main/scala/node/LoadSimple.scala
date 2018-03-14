@@ -70,8 +70,7 @@ class UnTypLoad(NumPredOps: Int,
   =            Predicate Evaluation            =
   ============================================*/
 
-  val predicate = IsEnable()
-  val start = addr_valid_R & IsPredValid & IsEnableValid()
+  //  val start = addr_valid_R & IsPredValid & IsEnableValid()
 
   /*================================================
   =            Latch inputs. Wire up output            =
@@ -87,7 +86,7 @@ class UnTypLoad(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.predicate := true.B
   }
 
   io.memReq.valid := false.B
@@ -104,9 +103,9 @@ class UnTypLoad(NumPredOps: Int,
 
   switch(state) {
     is(s_idle) {
-      when(start) {
-        when(predicate) {
-          when(mem_req_fire) {
+      when(enable_valid_R) {
+        when(enable_R) {
+          when(mem_req_fire && addr_valid_R && IsPredValid()) {
             io.memReq.valid := true.B
             when(io.memReq.ready) {
               state := s_RECEIVING
@@ -131,7 +130,7 @@ class UnTypLoad(NumPredOps: Int,
 
         // Set data output registers
         data_R.data := io.memResp.data
-        data_R.predicate := predicate
+        data_R.predicate := true.B
         //data_R.valid := true.B
         ValidSucc()
         ValidOut()
@@ -153,14 +152,12 @@ class UnTypLoad(NumPredOps: Int,
         Reset()
         // Reset state.
         state := s_idle
-        when(predicate) {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
-        }
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
       }
     }
   }
 
-//  when(start & predicate) {
+  //  when(start & predicate) {
   //    // ACTION:  Memory request
   //    //  Check if address is valid and predecessors have completed.
   //

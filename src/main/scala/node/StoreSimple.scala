@@ -76,8 +76,8 @@ class UnTypStore(NumPredOps: Int,
   =            Predicate Evaluation            =
   ============================================*/
 
-  val predicate = IsEnable()
-  val start = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
+//  val predicate = IsEnable()
+//  val start = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
 
   /*================================================
   =            Latch inputs. Set output            =
@@ -104,7 +104,7 @@ class UnTypStore(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.predicate := true.B
   }
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
@@ -122,9 +122,9 @@ class UnTypStore(NumPredOps: Int,
 
   switch(state) {
     is(s_idle) {
-      when(start) {
-        when(predicate) {
-          when(mem_req_fire) {
+      when(enable_valid_R) {
+        when(enable_R) {
+          when(mem_req_fire && data_valid_R && addr_valid_R && IsPredValid()) {
             io.memReq.valid := true.B
             when(io.memReq.ready) {
               state := s_RECEIVING
