@@ -109,8 +109,8 @@ class GepOneNode(NumOuts: Int, ID: Int)
           idx1_R := DataBundle.default
           base_addr_R := DataBundle.default
 
-          idx1_valid_R := true.B
-          base_addr_valid_R := true.B
+          idx1_valid_R := false.B
+          base_addr_valid_R := false.B
 
           Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
@@ -227,9 +227,9 @@ class GepTwoNode(NumOuts: Int, ID: Int)
           idx2_R := DataBundle.default
           base_addr_R := DataBundle.default
 
-          idx1_valid_R := true.B
-          idx2_valid_R := true.B
-          base_addr_valid_R := true.B
+          idx1_valid_R := false.B
+          idx2_valid_R := false.B
+          base_addr_valid_R := false.B
 
           Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
@@ -247,9 +247,11 @@ class GepTwoNode(NumOuts: Int, ID: Int)
       when(IsOutReady()) {
         // Reset output
         idx1_R := DataBundle.default
+        idx2_R := DataBundle.default
         base_addr_R := DataBundle.default
 
         idx1_valid_R := false.B
+        idx2_valid_R := false.B
         base_addr_valid_R := false.B
 
         // Reset state

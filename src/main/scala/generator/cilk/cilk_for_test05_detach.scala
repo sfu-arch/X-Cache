@@ -311,6 +311,17 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
   val InputSplitter = Module(new SplitCall(List(32,32,32,32)))
   InputSplitter.io.In <> io.in
 
+  // Manually added
+  val field0_expand = Module(new ExpandNode(NumOuts=3,ID=100)(new DataBundle))
+  field0_expand.io.enable.valid := true.B
+  field0_expand.io.enable.bits.control := true.B
+  field0_expand.io.InData <> InputSplitter.io.Out.data("field0")
+
+  // Manually added
+  val field1_expand = Module(new ExpandNode(NumOuts=8,ID=101)(new DataBundle))
+  field1_expand.io.enable.valid := true.B
+  field1_expand.io.enable.bits.control := true.B
+  field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
 
 
   /* ================================================================== *
@@ -606,11 +617,11 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
     */
 
   // Wiring GEP instruction to the function argument
-  getelementptr0.io.baseAddress <> InputSplitter.io.Out.data("field0")
+  getelementptr0.io.baseAddress <> field0_expand.io.Out(0)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr0.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr0.io.idx1 <> field1_expand.io.Out(0)
 
 
   // Wiring Load instruction to the parent instruction
@@ -626,7 +637,7 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr2.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr2.io.idx1 <> field1_expand.io.Out(1)
 
 
   // Wiring Load instruction to the parent instruction
@@ -647,11 +658,11 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
   br5.io.CmpIO <> icmp4.io.Out(param.br5_in("icmp4"))
 
   // Wiring GEP instruction to the function argument
-  getelementptr6.io.baseAddress <> InputSplitter.io.Out.data("field0")
+  getelementptr6.io.baseAddress <> field0_expand.io.Out(1)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr6.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr6.io.idx1 <> field1_expand.io.Out(2)
 
 
   // Wiring Load instruction to the parent instruction
@@ -667,7 +678,7 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr8.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr8.io.idx1 <> field1_expand.io.Out(3)
 
 
   // Wiring Load instruction to the parent instruction
@@ -689,7 +700,7 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr11.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr11.io.idx1 <> field1_expand.io.Out(4)
 
 
   store12.io.inData <> sub10.io.Out(param.store12_in("sub10"))
@@ -721,7 +732,7 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr16.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr16.io.idx1 <> field1_expand.io.Out(5)
 
 
   // Wiring Load instruction to the parent instruction
@@ -733,11 +744,11 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr18.io.baseAddress <> InputSplitter.io.Out.data("field0")
+  getelementptr18.io.baseAddress <> field0_expand.io.Out(2)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr18.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr18.io.idx1 <> field1_expand.io.Out(6)
 
 
   // Wiring Load instruction to the parent instruction
@@ -759,7 +770,7 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr21.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr21.io.idx1 <> field1_expand.io.Out(7)
 
 
   store22.io.inData <> sub20.io.Out(param.store22_in("sub20"))
