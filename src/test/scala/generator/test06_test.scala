@@ -80,10 +80,10 @@ class test06Test01(c: test06CacheWrapper) extends PeekPokeTester(c) {
       val data = peek(c.io.out.bits.data("field0").data)
       val expected = 8
       if (data != expected) {
-        println(s"*** Incorrect result received. Got $data. Hoping for $expected")
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for $expected" + Console.RESET)
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE + "*** Correct result received." + Console.RESET)
       }
     }
   }

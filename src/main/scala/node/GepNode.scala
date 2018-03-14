@@ -86,7 +86,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
 
   io.idx1.ready := ~idx1_valid_R
   when(io.idx1.fire()) {
-    idx1_R <> io.idx1
+    idx1_R <> io.idx1.bits
     idx1_valid_R := true.B
   }
 
@@ -180,7 +180,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val predicate = base_addr_R.predicate & idx1_R.predicate & idx2_R.predicate & IsEnable()
+  val predicate = IsEnable()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -194,13 +194,13 @@ class GepTwoNode(NumOuts: Int, ID: Int)
 
   io.idx1.ready := ~idx1_valid_R
   when(io.idx1.fire()) {
-    idx1_R <> io.idx1
+    idx1_R <> io.idx1.bits
     idx1_valid_R := true.B
   }
 
   io.idx2.ready := ~idx2_valid_R
   when(io.idx2.fire()) {
-    idx2_R := io.idx2
+    idx2_R <> io.idx2.bits
     idx2_valid_R := true.B
   }
 
@@ -229,7 +229,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
 
           idx1_valid_R := true.B
           idx2_valid_R := true.B
-          base_addr_R := true.B
+          base_addr_valid_R := true.B
 
           Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
