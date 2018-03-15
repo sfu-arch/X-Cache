@@ -74,13 +74,9 @@ class GepOneNode(NumOuts: Int, ID: Int)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  // Output
-  val data_W = base_addr_R.data +
-    (idx1_R.data * numByte1.U)
-
   io.baseAddress.ready := ~base_addr_valid_R
   when(io.baseAddress.fire()) {
-    base_addr_R <> io.baseAddress
+    base_addr_R <> io.baseAddress.bits
     base_addr_valid_R := true.B
   }
 
@@ -89,6 +85,10 @@ class GepOneNode(NumOuts: Int, ID: Int)
     idx1_R <> io.idx1.bits
     idx1_valid_R := true.B
   }
+
+  // Output
+  val data_W = base_addr_R.data +
+    (idx1_R.data * numByte1.U)
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
@@ -188,7 +188,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
 
   io.baseAddress.ready := ~base_addr_valid_R
   when(io.baseAddress.fire()) {
-    base_addr_R <> io.baseAddress
+    base_addr_R <> io.baseAddress.bits
     base_addr_valid_R := true.B
   }
 
