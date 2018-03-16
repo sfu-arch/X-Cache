@@ -19,67 +19,41 @@ import loop._
 import accel._
 import node._
 
-/*
-class cilk_for_test04CacheWrapper()(implicit p: Parameters) extends cilk_for_test04DF()(p)
-  with CacheParams {
-/*  val io2 = IO(new Bundle {
-    val init  = Flipped(Valid(new InitParams()(p)))
-  })
-  */
-  // Instantiate the AXI Cache
-  val cache = Module(new Cache)
-  cache.io.cpu.req <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> cache.io.cpu.resp
-  cache.io.cpu.abort := false.B
-  // Instantiate a memory model with AXI slave interface for cache
-  val memModel = Module(new NastiMemSlave)
-  memModel.io.nasti <> cache.io.nasti
-  //memModel.io.init <> io2.init
 
-  val raminit = RegInit(true.B)
-  val addrVec = VecInit(0.U,1.U,1.U,3.U,4.U,
-                        8.U,9.U,10.U,11.U,12.U)
-  val dataVec = VecInit(1.U,2.U,3.U,4.U,5.U,
-                        1.U,2.U,3.U,4.U,5.U)
-  val (count_out, count_done) = Counter(raminit, addrVec.length)
-  memModel.io.init.bits.addr := addrVec(count_out)
-  memModel.io.init.bits.data := dataVec(count_out)
-  when (!count_done) {
-    memModel.io.init.valid := true.B
-  }.otherwise {
-    memModel.io.init.valid := false.B
-    raminit := false.B
-  }
-
-}
-*/
-
-class cilk_for_test04MainIO(implicit p: Parameters) extends CoreBundle()(p) with CacheParams {
+class cilk_for_test04MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+  val io = IO( new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))
     val din  = Input(UInt(nastiXDataBits.W))
     val write = Input(Bool())
     val dout = Output(UInt(nastiXDataBits.W))
     val out = Decoupled(new Call(List(32)))
+  })
 }
 
-class cilk_for_test04MainDirect(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new cilk_for_test04MainIO)
-  val cache = Module(new Cache)
-  val memModel = Module(new NastiMemSlave)
-  val memCopy = Mem(1024, UInt(32.W))
+class cilk_for_test04MainDirect(implicit p: Parameters) extends cilk_for_test04MainIO {
 
+  val cache = Module(new Cache)            // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+
+  // Store a copy of all data written to the cache.  This is done since the cache isn't
+  // 'write through' to the memory model and we have no easy way of reading the
+  // cache contents from the testbench.
   when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
     memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
   }
   io.dout := memCopy.read((io.addr>>2).asUInt())
 
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
   memModel.io.nasti <> cache.io.nasti
   memModel.io.init.bits.addr := io.addr
   memModel.io.init.bits.data := io.din
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
 
+  // Wire up the cache and modules under test.
   val cilk_for_test04_detach = Module(new cilk_for_test04_detachDF())
   val cilk_for_test04 = Module(new cilk_for_test04DF())
 
@@ -91,41 +65,52 @@ class cilk_for_test04MainDirect(implicit val p: Parameters) extends Module with 
   io.out <> cilk_for_test04.io.out
 
 }
-/*
-class cilk_for_test04MainTM(implicit p: Parameters) extends cilk_for_test04MainIO()(p) {
 
-  val cache = Module(new Cache)
-  cache.io.cpu.abort := false.B
-  // Instantiate a memory model with AXI slave interface for cache
-  val memModel = Module(new NastiMemSlave)
-  memModel.io.nasti <> cache.io.nasti
-  //memModel.io.init <> io2.init
+class cilk_for_test04MainTM(implicit p: Parameters) extends cilk_for_test04MainIO  {
 
-  val raminit = RegInit(true.B)
-  val addrVec = VecInit(0.U,1.U,1.U,3.U,4.U,
-    8.U,9.U,10.U,11.U,12.U)
-  val dataVec = VecInit(1.U,2.U,3.U,4.U,5.U,
-    1.U,2.U,3.U,4.U,5.U)
-  val (count_out, count_done) = Counter(raminit, addrVec.length)
-  memModel.io.init.bits.addr := addrVec(count_out)
-  memModel.io.init.bits.data := dataVec(count_out)
-  when (!count_done) {
-    memModel.io.init.valid := true.B
-  }.otherwise {
-    memModel.io.init.valid := false.B
-    raminit := false.B
+  val cache = Module(new Cache)            // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+
+  // Store a copy of all data written to the cache.  This is done since the cache isn't
+  // 'write through' to the memory model and we have no easy way of reading the
+  // cache contents from the testbench.
+  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
+    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
   }
+  io.dout := memCopy.read((io.addr>>2).asUInt())
 
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
+  memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := io.addr
+  memModel.io.init.bits.data := io.din
+  memModel.io.init.valid := io.write
+  cache.io.cpu.abort := false.B
 
+  // Wire up the cache, TM, and modules under test.
 
-  val children = 2
-  val TaskControllerModule = Module(new TaskController(List(32,32), List(32), 1, children))
+  val children = 1
+  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val cilk_for_test04 = Module(new cilk_for_test04DF())
 
   val cilk_for_test04_detach = for (i <- 0 until children) yield {
     val foo = Module(new cilk_for_test04_detachDF())
     foo
   }
+  /*
+  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
+  // requests ports of any type.  Read or write is irrelevant.
+  val CacheArbiter = Module(new ReadWriteArbiter())
+  CacheArbiter.io.ReadCacheReq <> cilk_for_test04_detach(0).io.CacheReq
+  CacheArbiter.io.WriteCacheReq <> cilk_for_test04_detach(1).io.CacheReq
+  cilk_for_test04_detach(0).io.CacheResp <> CacheArbiter.io.ReadCacheResp
+  cilk_for_test04_detach(1).io.CacheResp <> CacheArbiter.io.WriteCacheResp
+  cache.io.cpu.req <> CacheArbiter.io.CacheReq
+  CacheArbiter.io.CacheResp <> cache.io.cpu.resp
+  */
+  cache.io.cpu.req <> cilk_for_test04_detach(0).io.CacheReq
+  cilk_for_test04_detach(0).io.CacheResp <> cache.io.cpu.resp
 
   // tester to cilk_for_test02
   cilk_for_test04.io.in <> io.in
@@ -146,9 +131,8 @@ class cilk_for_test04MainTM(implicit p: Parameters) extends cilk_for_test04MainI
   io.out <> cilk_for_test04.io.out
 
 }
-*/
-class cilk_for_test04Test01[T <: cilk_for_test04MainDirect](c: T) extends PeekPokeTester(c) {
 
+class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T) extends PeekPokeTester(c) {
 
   val inAddrVec = List("h0".U,"h4".U,"h8".U,"hC".U,"h10".U,
     "h20".U,"h24".U,"h28".U,"h2C".U,"h30".U)
@@ -157,12 +141,12 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainDirect](c: T) extends PeekPo
   val outAddrVec = List("h40".U,"h44".U,"h48".U,"h4C".U,"h50".U)
   val outDataVec = List(2.U,4.U,6.U,8.U,10.U)
 
-  // Intialize memory model
   poke(c.io.addr, 0.U)
   poke(c.io.din, 0.U)
   poke(c.io.write, false.B)
   var i = 0
 
+  // Write initial contents to the memory model.
   for(i <- 0 until 10) {
     poke(c.io.addr, inAddrVec(i))
     poke(c.io.din, inDataVec(i))
@@ -229,6 +213,7 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainDirect](c: T) extends PeekPo
     }
   }
 
+  //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
   for(i <- 0 until 5) {
     poke(c.io.addr, outAddrVec(i))
@@ -270,7 +255,7 @@ class cilk_for_test04Tester1 extends FlatSpec with Matchers {
     } should be(true)
   }
 }
-/*
+
 class cilk_for_test04Tester2 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   // iotester flags:
@@ -290,4 +275,3 @@ class cilk_for_test04Tester2 extends FlatSpec with Matchers {
     } should be(true)
   }
 }
-*/
