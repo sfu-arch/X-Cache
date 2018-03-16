@@ -215,8 +215,8 @@ abstract class cilk_for_test04DFIO(implicit val p: Parameters) extends Module wi
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val call9_out = Decoupled(new Call(List(32,32,32,32)))
     val call9_in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+//    val CacheResp = Flipped(Valid(new CacheRespT))
+//    val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -237,7 +237,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
    *                   PRINTING MEMORY SYSTEM                           *
    * ================================================================== */
 
-
+/*
 	val StackPointer = Module(new Stack(NumOps = 1))
 
 	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=2)
@@ -251,7 +251,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
-
+*/
   val InputSplitter = Module(new SplitCall(List(32,32,32)))
   InputSplitter.io.In <> io.in
 
@@ -263,8 +263,8 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
 
   val loop_L_5_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_5_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_5_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
+  val loop_L_5_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 1))
+  val loop_L_5_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 2))
 
 
 
@@ -427,7 +427,6 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
   bb_pfor_end_continue.io.predicateIn <> sync7.io.Out(0) // added manually
 
-
   /* ================================================================== *
    *                   CONNECTING BASIC BLOCKS TO INSTRUCTIONS          *
    * ================================================================== */
@@ -547,7 +546,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   //icmp2.io.RightIO.bits.predicate := true.B
   //icmp2.io.RightIO.valid := true.B
 
-  cmpBranch.io.RightIO.bits.data := 10.U
+  cmpBranch.io.RightIO.bits.data := 5.U
   cmpBranch.io.RightIO.bits.predicate := true.B
   cmpBranch.io.RightIO.valid := true.B
 
@@ -576,16 +575,16 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   io.call9_out <> call9.io.callOut
   call9.io.retIn <> io.call9_in
   // Wiring Call instruction to the loop header
-  call9.io.In.data("field0") <>loop_L_5_liveIN_0.io.Out(param.call9_in("field0"))  // Manually added
+  call9.io.In.data("field0") <> loop_L_5_liveIN_0.io.Out(param.call9_in("field0"))  // Manually added
 
   // Wiring Call instruction to the loop header
-  call9.io.In.data("field1") <>phi1.io.Out(param.call9_in("phi1"))  // Manually added
+  call9.io.In.data("field1") <> phi1.io.Out(param.call9_in("phi1"))  // Manually added
 
   // Wiring Call instruction to the loop header
-  call9.io.In.data("field2") <>loop_L_5_liveIN_1.io.Out(param.call9_in("field1"))  // Manually added
+  call9.io.In.data("field2") <> loop_L_5_liveIN_1.io.Out(param.call9_in("field1"))  // Manually added
 
   // Wiring Call instruction to the loop header
-  call9.io.In.data("field3") <>loop_L_5_liveIN_2.io.Out(param.call9_in("field2"))  // Manually added
+  call9.io.In.data("field3") <> loop_L_5_liveIN_2.io.Out(param.call9_in("field2"))  // Manually added
   call9.io.Out.enable.ready := true.B // Manual fix
 
   // Reattach (Manual add)
@@ -598,11 +597,34 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
 }
 
+
+abstract class cilk_for_test04TopIO(implicit val p: Parameters) extends Module with CoreParams {
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+    val CacheResp = Flipped(Valid(new CacheRespT))
+    val CacheReq = Decoupled(new CacheReq)
+    val out = Decoupled(new Call(List(32)))
+  })
+}
+
+class cilk_for_test04Top(implicit p: Parameters) extends cilk_for_test04TopIO()(p) {
+
+  val cilk_for_test04_detach = Module(new cilk_for_test04_detachDF())
+  val cilk_for_test04 = Module(new cilk_for_test04DF())
+
+  cilk_for_test04.io.in <> io.in
+  cilk_for_test04_detach.io.CacheResp <> io.CacheResp
+  cilk_for_test04_detach.io.in <> cilk_for_test04.io.call9_out
+  cilk_for_test04.io.call9_in <> cilk_for_test04_detach.io.out
+  io.CacheReq <> cilk_for_test04_detach.io.CacheReq
+  io.out <> cilk_for_test04.io.out
+}
+
 import java.io.{File, FileWriter}
 object cilk_for_test04Main extends App {
   val dir = new File("RTL/cilk_for_test04") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test04DF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test04Top()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

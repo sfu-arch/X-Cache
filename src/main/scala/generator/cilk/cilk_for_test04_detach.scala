@@ -151,11 +151,11 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 	val StackPointer = Module(new Stack(NumOps = 1))
 
-	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=1)
-		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
+//  val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=1)
+//		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
+//		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
 
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=2,NWrites=1)
+	val CacheMem = Module(new UnifiedController(ID=0,Size=1024,NReads=2,NWrites=1)
 		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
@@ -165,6 +165,13 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   val InputSplitter = Module(new SplitCall(List(32,32,32,32)))
   InputSplitter.io.In <> io.in
+
+
+  // Manually added
+  val field1_expand = Module(new ExpandNode(NumOuts=3,ID=101)(new DataBundle))
+  field1_expand.io.enable.valid := true.B
+  field1_expand.io.enable.bits.control := true.B
+  field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
 
 
 
@@ -203,7 +210,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   // [BasicBlock]  my_pfor.body:
 
   //  %0 = getelementptr inbounds i32, i32* %a.in, i32 %i.0.in, !UID !7, !ScalaLabel !8
-  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 1))
+  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 4))
 
 
   //  %1 = load i32, i32* %0, align 4, !UID !9, !ScalaLabel !10
@@ -211,7 +218,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  %2 = getelementptr inbounds i32, i32* %b.in, i32 %i.0.in, !UID !11, !ScalaLabel !12
-  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2)(numByte1 = 1))
+  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2)(numByte1 = 4))
 
 
   //  %3 = load i32, i32* %2, align 4, !UID !13, !ScalaLabel !14
@@ -223,7 +230,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  %5 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !17, !ScalaLabel !18
-  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5)(numByte1 = 1))
+  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5)(numByte1 = 4))
 
 
   //  store i32 %4, i32* %5, align 4, !UID !19, !ScalaLabel !20
@@ -354,13 +361,13 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr0.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr0.io.idx1 <> field1_expand.io.Out(0)
 
 
   // Wiring Load instruction to the parent instruction
   load1.io.GepAddr <> getelementptr0.io.Out(param.load1_in("getelementptr0"))
-  load1.io.memResp <> RegisterFile.io.ReadOut(0)
-  RegisterFile.io.ReadIn(0) <> load1.io.memReq
+  load1.io.memResp <> CacheMem.io.ReadOut(0)
+  CacheMem.io.ReadIn(0) <> load1.io.memReq
 
 
 
@@ -370,13 +377,13 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr2.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr2.io.idx1 <> field1_expand.io.Out(1)
 
 
   // Wiring Load instruction to the parent instruction
   load3.io.GepAddr <> getelementptr2.io.Out(param.load3_in("getelementptr2"))
-  load3.io.memResp <> RegisterFile.io.ReadOut(1)
-  RegisterFile.io.ReadIn(1) <> load3.io.memReq
+  load3.io.memResp <> CacheMem.io.ReadOut(1)
+  CacheMem.io.ReadIn(1) <> load3.io.memReq
 
 
 
@@ -392,7 +399,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr5.io.idx1 <> InputSplitter.io.Out.data("field1")
+  getelementptr5.io.idx1 <> field1_expand.io.Out(2)
 
 
   store6.io.inData <> add4.io.Out(param.store6_in("add4"))
@@ -401,8 +408,8 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
   // Wiring Store instruction to the parent instruction
   store6.io.GepAddr <> getelementptr5.io.Out(param.store6_in("getelementptr5"))
-  store6.io.memResp  <> RegisterFile.io.WriteOut(0)
-  RegisterFile.io.WriteIn(0) <> store6.io.memReq
+  store6.io.memResp  <> CacheMem.io.WriteOut(0)
+  CacheMem.io.WriteIn(0) <> store6.io.memReq
   //store6.io.Out(0).ready := true.B // Manually commented out
 
 
