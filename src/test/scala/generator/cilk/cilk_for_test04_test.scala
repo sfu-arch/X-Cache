@@ -90,7 +90,7 @@ class cilk_for_test04MainTM(implicit p: Parameters) extends cilk_for_test04MainI
 
   // Wire up the cache, TM, and modules under test.
 
-  val children = 1
+  val children = 2
   val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val cilk_for_test04 = Module(new cilk_for_test04DF())
 
@@ -98,20 +98,20 @@ class cilk_for_test04MainTM(implicit p: Parameters) extends cilk_for_test04MainI
     val foo = Module(new cilk_for_test04_detachDF())
     foo
   }
-  /*
+
   // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
   // requests ports of any type.  Read or write is irrelevant.
-  val CacheArbiter = Module(new ReadWriteArbiter())
-  CacheArbiter.io.ReadCacheReq <> cilk_for_test04_detach(0).io.CacheReq
-  CacheArbiter.io.WriteCacheReq <> cilk_for_test04_detach(1).io.CacheReq
-  cilk_for_test04_detach(0).io.CacheResp <> CacheArbiter.io.ReadCacheResp
-  cilk_for_test04_detach(1).io.CacheResp <> CacheArbiter.io.WriteCacheResp
-  cache.io.cpu.req <> CacheArbiter.io.CacheReq
-  CacheArbiter.io.CacheResp <> cache.io.cpu.resp
-  */
+  val CacheArbiter = Module(new CacheArbiter(children))
+  for (i <- 0 until children) {
+    CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test04_detach(i).io.CacheReq
+    cilk_for_test04_detach(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+  }
+  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
+  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  /*
   cache.io.cpu.req <> cilk_for_test04_detach(0).io.CacheReq
   cilk_for_test04_detach(0).io.CacheResp <> cache.io.cpu.resp
-
+  */
   // tester to cilk_for_test02
   cilk_for_test04.io.in <> io.in
 
