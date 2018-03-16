@@ -41,7 +41,7 @@ class NastiMemSlave(val depth : Int = 1<<16)(implicit val p: Parameters) extends
   val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, dataBeats)
 
   when (io.init.valid) {
-    mem.write(io.init.bits.addr, io.init.bits.data)
+    mem.write((io.init.bits.addr >>2).asUInt(), io.init.bits.data)
   }
 
   dutMem.ar.ready := false.B
