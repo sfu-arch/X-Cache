@@ -441,7 +441,11 @@ class cilk_for_test05DF(implicit p: Parameters) extends cilk_for_test05DFIO()(p)
 
   call9.io.In.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call9"))
 
-  reattach10.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach10"))
+  // Manual fix.  Reattach should only depend on its increment/decr inputs. If it is connected to the BB
+  // Enable it will stall the loop
+  //  reattach10.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach10"))
+  reattach10.io.enable.enq(ControlBundle.active())  // always enabled
+  bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach10")).ready := true.B
 
 
 

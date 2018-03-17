@@ -44,11 +44,11 @@ class UnTypLoad(NumPredOps: Int,
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new DataBundle)(p) {
 
   override lazy val io = IO(new LoadIO(NumPredOps, NumSuccOps, NumOuts))
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
 
 
   /*=============================================

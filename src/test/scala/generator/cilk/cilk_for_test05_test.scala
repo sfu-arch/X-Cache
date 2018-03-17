@@ -78,7 +78,7 @@ class cilk_for_test05MainDirect(implicit p: Parameters) extends cilk_for_test05M
 class cilk_for_test05MainTM(implicit p: Parameters) extends cilk_for_test05MainIO()(p) {
 
   val children = 2
-  val TaskControllerModule = Module(new TaskController(List(32,32), List(32), 1, children))
+  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val cilk_for_test05 = Module(new cilk_for_test05CacheWrapper())
 
   val cilk_for_test05_detach = for (i <- 0 until children) yield {
@@ -154,7 +154,7 @@ class cilk_for_test05Test01[T <: cilk_for_test05MainIO](c: T) extends PeekPokeTe
   // NOTE: Don't use assert().  It seems to terminate the writing of VCD files
   // early (before the error) which makes debugging very difficult. Check results
   // using if() and fail command.
-  var time = 1  //Cycle counter
+  var time = 0  //Cycle counter
   var result = false
   while (time < 500) {
     time += 1
@@ -166,16 +166,16 @@ class cilk_for_test05Test01[T <: cilk_for_test05MainIO](c: T) extends PeekPokeTe
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 1) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1")
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + "*** Correct result received.")
+        println(Console.BLUE + s"*** Correct result received. Run time: $time cycles." + Console.RESET)
       }
     }
   }
 
   if(!result) {
-    println(Console.RED + "*** Timeout.")
+    println(Console.RED + "*** Timeout." + Console.RESET)
     fail
   }
 }

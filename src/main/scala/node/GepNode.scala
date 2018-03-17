@@ -44,11 +44,11 @@ class GepOneNode(NumOuts: Int, ID: Int)
                  file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new GepNodeOneIO(NumOuts))
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -152,11 +152,11 @@ class GepTwoNode(NumOuts: Int, ID: Int)
                  file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new GepNodeTwoIO(NumOuts))
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
 
   /*===========================================*
    *            Registers                      *

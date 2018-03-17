@@ -57,10 +57,10 @@ class BasicBlockNode(NumInputs: Int,
 
   override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
   // Printf debugging
-  override val printfSigil = node_name + BID + " "
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = node_name + BID + " "
 
   //Assertion
   assert(NumPhi >= 1, "NumPhi Cannot be zero")
@@ -170,10 +170,10 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
 
   override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
   // Printf debugging
-  override val printfSigil = node_name + BID + " "
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = node_name + BID + " "
 
   //Assertion
   assert(NumPhi >= 1, "NumPhi Cannot be zero")
@@ -322,10 +322,10 @@ class BasicBlockNoMaskNode(NumInputs: Int,
 
   override lazy val io = IO(new BasicBlockNoMaskIO(NumInputs, NumOuts))
   // Printf debugging
-  override val printfSigil = node_name + BID + " "
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = node_name + BID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -403,12 +403,12 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int) (
                            file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
-  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + BID + " "
   val io = IO(new BasicBlockNoMaskFastIO(NumOuts)(p))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount,_) = Counter(true.B,32*1024)
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + BID + " "
   /*===========================================*
    *            Registers                      *
    *===========================================*/

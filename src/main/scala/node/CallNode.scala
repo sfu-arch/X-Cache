@@ -24,11 +24,11 @@ class CallNode(ID: Int, argTypes: Seq[Int], retTypes: Seq[Int])
                file: sourcecode.File) extends Module
   with UniformPrintfs {
   override lazy val io = IO(new CallNodeIO(argTypes, retTypes)(p))
-  
-  override val printfSigil = module_name + ": " + node_name + ID + " "
+
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount,_) = Counter(true.B,32*1024)
+  override val printfSigil = module_name + ": " + node_name + ID + " "
 
   // Combine individually decoupled enable and data into single decoupled call
   val CombineIn = Module(new CombineCall(argTypes))

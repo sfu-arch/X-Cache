@@ -546,7 +546,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   //icmp2.io.RightIO.bits.predicate := true.B
   //icmp2.io.RightIO.valid := true.B
 
-  cmpBranch.io.RightIO.bits.data := 5.U
+  cmpBranch.io.RightIO.bits.data := 10.U
   cmpBranch.io.RightIO.bits.predicate := true.B
   cmpBranch.io.RightIO.valid := true.B
 

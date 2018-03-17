@@ -151,10 +151,6 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 	val StackPointer = Module(new Stack(NumOps = 1))
 
-//  val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=1)
-//		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-//		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
-
 	val CacheMem = Module(new UnifiedController(ID=0,Size=1024,NReads=2,NWrites=1)
 		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
@@ -210,7 +206,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   // [BasicBlock]  my_pfor.body:
 
   //  %0 = getelementptr inbounds i32, i32* %a.in, i32 %i.0.in, !UID !7, !ScalaLabel !8
-  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 4))
+  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 4))  // manually corrected numByte1
 
 
   //  %1 = load i32, i32* %0, align 4, !UID !9, !ScalaLabel !10
@@ -218,7 +214,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  %2 = getelementptr inbounds i32, i32* %b.in, i32 %i.0.in, !UID !11, !ScalaLabel !12
-  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2)(numByte1 = 4))
+  val getelementptr2 = Module (new GepOneNode(NumOuts = 1, ID = 2)(numByte1 = 4))  // manually corrected numByte1
 
 
   //  %3 = load i32, i32* %2, align 4, !UID !13, !ScalaLabel !14
@@ -230,7 +226,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 
 
   //  %5 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !17, !ScalaLabel !18
-  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5)(numByte1 = 4))
+  val getelementptr5 = Module (new GepOneNode(NumOuts = 1, ID = 5)(numByte1 = 4))  // manually corrected numByte1
 
 
   //  store i32 %4, i32* %5, align 4, !UID !19, !ScalaLabel !20
@@ -300,19 +296,19 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   getelementptr2.io.enable <> bb_my_pfor_body.io.Out(1)
   getelementptr5.io.enable <> bb_my_pfor_body.io.Out(2)
 
-  load1.io.enable.valid <> true.B
-  load3.io.enable.valid <> true.B
-  add4.io.enable.valid <> true.B
-  store6.io.enable.valid <> true.B
-  br7.io.enable.valid <> true.B
-  ret8.io.enable.valid <> true.B
-  load1.io.enable.bits.control <> true.B
+  load1.io.enable.enq(ControlBundle.active())
+  load3.io.enable.enq(ControlBundle.active())
+  add4.io.enable.enq(ControlBundle.active())
+  store6.io.enable.enq(ControlBundle.active())
+  br7.io.enable.enq(ControlBundle.active())
+  ret8.io.enable.enq(ControlBundle.active())
+/*  load1.io.enable.bits.control <> true.B
   load3.io.enable.bits.control <> true.B
   add4.io.enable.bits.control <> true.B
   store6.io.enable.bits.control <> true.B
   br7.io.enable.bits.control <> true.B
   ret8.io.enable.bits.control <> true.B
-
+*/
 
 
 

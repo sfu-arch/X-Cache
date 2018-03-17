@@ -262,10 +262,16 @@ object ControlBundle {
     wire.taskID := 0.U
     wire
   }
-
-  def Activate(implicit p: Parameters): ControlBundle = {
+  def active(taskID:UInt=0.U)(implicit p: Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := true.B
+    wire.taskID := taskID
+    wire
+  }
+  def apply(control:Bool=false.B,taskID:UInt=0.U)(implicit p: Parameters): ControlBundle = {
+    val wire = Wire(new ControlBundle)
+    wire.control := control
+    wire.taskID := taskID
     wire
   }
 }

@@ -723,7 +723,7 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
   ret15.io.predicateIn(0).valid := true.B
   ret15.io.In.data("field0").bits.data := 1.U
   ret15.io.In.data("field0").bits.predicate := true.B
-  ret15.io.In.data("field0").valid := true.B
+  ret15.io.In.data("field0").valid := store12.io.Out(0).valid || store22.io.Out(0).valid  // manual hack
   io.out <> ret15.io.Out
 
 

@@ -33,11 +33,11 @@ class CBranchNode(ID: Int)
                   file: sourcecode.File)
   extends HandShakingCtrlNPS(2, ID)(p) {
   override lazy val io = IO(new CBranchNodeIO())
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -174,10 +174,10 @@ class UBranchNode(ID: Int, NumOuts: Int = 1)
   extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
   override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
   // Printf debugging
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -257,11 +257,11 @@ class UBranchEndNode(ID: Int, NumOuts: Int = 1)
                      file: sourcecode.File)
   extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
   override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -376,13 +376,13 @@ class CompareBranchNode(ID: Int, opCode: String)
                        (implicit val p: Parameters,
                         name: sourcecode.Name,
                         file: sourcecode.File) extends Module with CoreParams with UniformPrintfs {
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   // Defining IOs
   val io = IO(new CompareBranchIO())
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
 
   /*===========================================*
    *            Registers                      *

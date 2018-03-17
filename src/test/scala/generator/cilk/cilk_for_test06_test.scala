@@ -175,10 +175,10 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 1) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1")
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + "*** Correct result received.")
+        println(Console.BLUE + "*** Correct result received. Run time: $time cycles." + Console.RESET)
       }
     }
   }
