@@ -428,8 +428,8 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 
   // Wiring Load instruction to the parent instruction
   load2.io.GepAddr <> getelementptr1.io.Out(param.load2_in("getelementptr1"))
-  load2.io.memResp <> RegisterFile.io.ReadOut(0)
-  RegisterFile.io.ReadIn(0) <> load2.io.memReq
+  load2.io.memResp <> CacheMem.io.ReadOut(0)
+  CacheMem.io.ReadIn(0) <> load2.io.memReq
 
 
 
@@ -458,8 +458,8 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 
   // Wiring Load instruction to the parent instruction
   load5.io.GepAddr <> getelementptr4.io.Out(param.load5_in("getelementptr4"))
-  load5.io.memResp <> RegisterFile.io.ReadOut(1)
-  RegisterFile.io.ReadIn(1) <> load5.io.memReq
+  load5.io.memResp <> CacheMem.io.ReadOut(1)
+  CacheMem.io.ReadIn(1) <> load5.io.memReq
 
 
 
@@ -498,8 +498,8 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 
   // Wiring Store instruction to the parent instruction
   store9.io.GepAddr <> getelementptr8.io.Out(param.store9_in("getelementptr8"))
-  store9.io.memResp  <> RegisterFile.io.WriteOut(0)
-  RegisterFile.io.WriteIn(0) <> store9.io.memReq
+  store9.io.memResp  <> CacheMem.io.WriteOut(0)
+  CacheMem.io.WriteIn(0) <> store9.io.memReq
   // store9.io.Out(0).ready := true.B // Manually commented out
 
 

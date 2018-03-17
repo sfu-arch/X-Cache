@@ -90,7 +90,7 @@ class cilk_for_test07MainTM(implicit p: Parameters) extends cilk_for_test07MainI
 
   // Wire up the cache, TM, and modules under test.
 
-  val children = 3
+  val children = 2
   val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val cilk_for_test07 = Module(new cilk_for_test07DF())
 
@@ -108,14 +108,11 @@ class cilk_for_test07MainTM(implicit p: Parameters) extends cilk_for_test07MainI
   }
   cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
   CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
-  /*
-  cache.io.cpu.req <> cilk_for_test07_detach(0).io.CacheReq
-  cilk_for_test07_detach(0).io.CacheResp <> cache.io.cpu.resp
-  */
-  // tester to cilk_for_test02
+
+  // tester to cilk_for_test07
   cilk_for_test07.io.in <> io.in
 
-  // cilk_for_test02 to task controller
+  // cilk_for_test07 to task controller
   TaskControllerModule.io.parentIn(0) <> cilk_for_test07.io.call8_out
 
   // task controller to sub-task cilk_for_test07_detach
@@ -124,10 +121,10 @@ class cilk_for_test07MainTM(implicit p: Parameters) extends cilk_for_test07MainI
     TaskControllerModule.io.childIn(i) <> cilk_for_test07_detach(i).io.out
   }
 
-  // Task controller to cilk_for_test02
+  // Task controller to cilk_for_test07
   cilk_for_test07.io.call8_in <> TaskControllerModule.io.parentOut(0)
 
-  // cilk_for_test02 to tester
+  // cilk_for_test07 to tester
   io.out <> cilk_for_test07.io.out
 
 }
