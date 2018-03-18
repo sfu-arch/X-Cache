@@ -411,11 +411,11 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
 
   //Connecting br8 to bb_my_pfor_preattach
-  //bb_my_pfor_preattach.io.predicateIn <> br8.io.Out(param.br8_brn_bb("bb_my_pfor_preattach"))
+  bb_my_pfor_preattach11.io.predicateIn <> br8.io.Out(param.br8_brn_bb("bb_my_pfor_preattach11"))
   // Manually re-wired.  Want re-attach controlled by sub-block returns only (otherwise it stalls loop)
-  bb_my_pfor_preattach11.io.predicateIn.valid := true.B
-  bb_my_pfor_preattach11.io.predicateIn.bits.control := true.B
-  br8.io.Out(0).ready := true.B
+  //bb_my_pfor_preattach11.io.predicateIn.valid := true.B
+  //bb_my_pfor_preattach11.io.predicateIn.bits.control := true.B
+  //br8.io.Out(0).ready := true.B
 
 
   //Connecting detach4 to bb_my_offload_pfor_body5
@@ -479,7 +479,10 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
   call10.io.In.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("call10"))
 
-  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11"))
+//  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11"))
+  reattach11.io.enable.enq(ControlBundle.active())  // always enabled
+  bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11")).ready := true.B
+
 
 
 

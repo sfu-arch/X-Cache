@@ -132,8 +132,8 @@ class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainI
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
 
-  val children = 2
-  val TaskControllerModule = Module(new TaskController(List(32,32), List(32), 1, children))
+  val children = 1
+  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val cilk_for_test06 = Module(new cilk_for_test06DF())
 
   val cilk_for_test06_detach = for (i <- 0 until children) yield {
@@ -240,7 +240,7 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
   // using if() and fail command.
   var time = 0 //Cycle counter
   var result = false
-  while (time < 500) {
+  while (time < 1000) {
     time += 1
     step(1)
     //println(s"Cycle: $time")

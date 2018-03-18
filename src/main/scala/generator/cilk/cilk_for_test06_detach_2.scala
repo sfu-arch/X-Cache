@@ -237,11 +237,11 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
   // [BasicBlock]  my_pfor.body5:
 
   //  %0 = getelementptr inbounds [5 x i32], [5 x i32]* %a.in, i32 %i.0.in, !UID !7, !ScalaLabel !8
-  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 1))
+  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 20))
 
 
   //  %1 = getelementptr inbounds [5 x i32], [5 x i32]* %0, i32 0, i32 %j.0.in, !UID !9, !ScalaLabel !10
-  val getelementptr1 = Module (new GepTwoNode(NumOuts = 1, ID = 1)(numByte1 = 0, numByte2 = 0))
+  val getelementptr1 = Module (new GepTwoNode(NumOuts = 1, ID = 1)(numByte1 = 0, numByte2 = 4))
 
 
   //  %2 = load i32, i32* %1, align 4, !UID !11, !ScalaLabel !12
@@ -249,11 +249,11 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 
 
   //  %3 = getelementptr inbounds [5 x i32], [5 x i32]* %b.in, i32 %i.0.in, !UID !13, !ScalaLabel !14
-  val getelementptr3 = Module (new GepOneNode(NumOuts = 1, ID = 3)(numByte1 = 1))
+  val getelementptr3 = Module (new GepOneNode(NumOuts = 1, ID = 3)(numByte1 = 20))
 
 
   //  %4 = getelementptr inbounds [5 x i32], [5 x i32]* %3, i32 0, i32 %j.0.in, !UID !15, !ScalaLabel !16
-  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4)(numByte1 = 0, numByte2 = 0))
+  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4)(numByte1 = 0, numByte2 = 4))
 
 
   //  %5 = load i32, i32* %4, align 4, !UID !17, !ScalaLabel !18
@@ -265,11 +265,11 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 
 
   //  %7 = getelementptr inbounds [5 x i32], [5 x i32]* %c.in, i32 %i.0.in, !UID !21, !ScalaLabel !22
-  val getelementptr7 = Module (new GepOneNode(NumOuts = 1, ID = 7)(numByte1 = 1))
+  val getelementptr7 = Module (new GepOneNode(NumOuts = 1, ID = 7)(numByte1 = 20))
 
 
   //  %8 = getelementptr inbounds [5 x i32], [5 x i32]* %7, i32 0, i32 %j.0.in, !UID !23, !ScalaLabel !24
-  val getelementptr8 = Module (new GepTwoNode(NumOuts = 1, ID = 8)(numByte1 = 0, numByte2 = 0))
+  val getelementptr8 = Module (new GepTwoNode(NumOuts = 1, ID = 8)(numByte1 = 0, numByte2 = 4))
 
 
   //  store i32 %6, i32* %8, align 4, !UID !25, !ScalaLabel !26

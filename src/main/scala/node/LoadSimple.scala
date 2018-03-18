@@ -78,7 +78,7 @@ class UnTypLoad(NumPredOps: Int,
 
   io.GepAddr.ready := ~addr_valid_R
   when(io.GepAddr.fire()) {
-    addr_R.data := io.GepAddr.bits.data
+    addr_R := io.GepAddr.bits
     //addr_R.valid := true.B
     addr_valid_R := true.B
   }
@@ -87,6 +87,7 @@ class UnTypLoad(NumPredOps: Int,
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
     io.Out(i).bits.predicate := true.B
+    io.Out(i).bits.taskID := addr_R.taskID
   }
 
   io.memReq.valid := false.B

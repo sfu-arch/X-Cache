@@ -385,12 +385,10 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   bb_pfor_cond.io.predicateIn(param.bb_pfor_cond_pred("br6")) <> br6.io.Out(param.br6_brn_bb("bb_pfor_cond"))
 
 
-  //Connecting br10 to bb_my_pfor_preattach
-  //bb_my_pfor_preattach.io.predicateIn <> br10.io.Out(param.br10_brn_bb("bb_my_pfor_preattach"))
   // Manually re-wired.  Want re-attach controlled by sub-block returns only (otherwise it stalls loop)
-//  bb_my_pfor_preattach.io.predicateIn.valid := true.B
-//  bb_my_pfor_preattach.io.predicateIn.bits.control := true.B
-//  br6.io.Out(0).ready := true.B
+  //bb_pfor_end_continue15.io.predicateIn.valid := true.B
+  //bb_pfor_end_continue15.io.predicateIn.bits.control := true.B
+  //sync7.io.Out(0).ready := true.B
 
   //Connecting detach4 to bb_offload_pfor_body
   bb_offload_pfor_body.io.predicateIn <> detach4.io.Out(param.detach4_brn_bb("bb_offload_pfor_body"))
@@ -449,7 +447,11 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   call9.io.In.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call9"))
 
-  reattach10.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach10"))
+  // Manual fix.  Reattach should only depend on its increment/decr inputs. If it is connected to the BB
+  // Enable it will stall the loop
+  //reattach10.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach10"))
+  reattach10.io.enable.enq(ControlBundle.active())  // always enabled
+  bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach10")).ready := true.B
 
 
 
