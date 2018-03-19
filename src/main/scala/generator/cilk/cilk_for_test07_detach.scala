@@ -225,6 +225,7 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
   field2_expand.io.enable.bits.control := true.B
   field2_expand.io.InData <> InputSplitter.io.Out.data("field2")
 
+
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
@@ -257,7 +258,7 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
   // [BasicBlock]  my_pfor.body:
 
   //  %0 = getelementptr inbounds [2 x i32], [2 x i32]* %p1.in, i32 %i.032.in, i32 0, !UID !7, !ScalaLabel !8
-  val getelementptr0 = Module (new GepTwoNode(NumOuts = 1, ID = 0)(numByte1 = 8, numByte2 = 4))
+  val getelementptr0 = Module (new GepTwoNode(NumOuts = 1, ID = 0)(numByte1 = 8, numByte2 = 4)) // Manual fix
 
 
   //  %1 = load i32, i32* %0, align 4, !tbaa !9, !UID !13, !ScalaLabel !14
@@ -265,7 +266,7 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
 
 
   //  %2 = getelementptr inbounds [2 x i32], [2 x i32]* %p1.in, i32 %i.032.in, i32 1, !UID !15, !ScalaLabel !16
-  val getelementptr2 = Module (new GepTwoNode(NumOuts = 1, ID = 2)(numByte1 = 8, numByte2 = 4))
+  val getelementptr2 = Module (new GepTwoNode(NumOuts = 1, ID = 2)(numByte1 = 8, numByte2 = 4)) // Manual fix
 
 
   //  %3 = load i32, i32* %2, align 4, !tbaa !9, !UID !17, !ScalaLabel !18
@@ -273,7 +274,7 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
 
 
   //  %4 = getelementptr inbounds [2 x i32], [2 x i32]* %p2.in, i32 %i.032.in, i32 0, !UID !19, !ScalaLabel !20
-  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4)(numByte1 = 8, numByte2 = 4))
+  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4)(numByte1 = 8, numByte2 = 4)) // Manual fix
 
 
   //  %5 = load i32, i32* %4, align 4, !tbaa !9, !UID !21, !ScalaLabel !22
@@ -281,7 +282,7 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
 
 
   //  %6 = getelementptr inbounds [2 x i32], [2 x i32]* %p2.in, i32 %i.032.in, i32 1, !UID !23, !ScalaLabel !24
-  val getelementptr6 = Module (new GepTwoNode(NumOuts = 1, ID = 6)(numByte1 = 8, numByte2 = 4))
+  val getelementptr6 = Module (new GepTwoNode(NumOuts = 1, ID = 6)(numByte1 = 8, numByte2 = 4)) // Manual fix
 
 
   //  %7 = load i32, i32* %6, align 4, !tbaa !9, !UID !25, !ScalaLabel !26
@@ -309,7 +310,7 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
 
 
   //  %13 = getelementptr inbounds i32, i32* %d.in, i32 %i.032.in, !UID !37, !ScalaLabel !38
-  val getelementptr13 = Module (new GepOneNode(NumOuts = 1, ID = 13)(numByte1 = 4))
+  val getelementptr13 = Module (new GepOneNode(NumOuts = 1, ID = 13)(numByte1 = 4)) // Manual fix
 
 
   //  store i32 %12, i32* %13, align 4, !tbaa !9, !UID !39, !ScalaLabel !40
