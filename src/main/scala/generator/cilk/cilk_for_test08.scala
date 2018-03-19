@@ -271,7 +271,7 @@ class cilk_for_test08DF(implicit p: Parameters) extends cilk_for_test08DFIO()(p)
   // [BasicBlock]  entry:
 
   //  br label %pfor.detach, !UID !15, !BB_UID !16, !ScalaLabel !17
-  val br0 = Module (new UBranchNode(ID = 0))
+  val br0 = Module (new UBranchFastNode(ID = 0))
 
   // [BasicBlock]  pfor.cond.cleanup:
 
@@ -520,18 +520,129 @@ class cilk_for_test08DF(implicit p: Parameters) extends cilk_for_test08DFIO()(p)
   sync1.io.decIn(0) <> reattach9.io.Out(0)
 
 }
+abstract class cilk_for_test08TopIO(implicit val p: Parameters) extends Module with CoreParams {
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32,32))))
+    val CacheResp = Flipped(Valid(new CacheRespT))
+    val CacheReq = Decoupled(new CacheReq)
+    val out = Decoupled(new Call(List(32)))
+  })
+}
+
+class cilk_for_test08TopA(implicit p: Parameters) extends cilk_for_test08TopIO()(p) {
+
+  val cilk_for_test08_detach = Module(new cilk_for_test08_detachDF())
+  val cilk_for_test08 = Module(new cilk_for_test08DF())
+
+  cilk_for_test08.io.in <> io.in
+  cilk_for_test08_detach.io.CacheResp <> io.CacheResp
+  cilk_for_test08_detach.io.in <> cilk_for_test08.io.call8_out
+  cilk_for_test08.io.call8_in <> cilk_for_test08_detach.io.out
+  io.CacheReq <> cilk_for_test08_detach.io.CacheReq
+  io.out <> cilk_for_test08.io.out
+}
+
+class cilk_for_test08TopB(implicit p: Parameters) extends cilk_for_test08TopIO()(p) {
+
+  val children = 1
+  val TaskControllerModule = Module(new TaskController(List(32,32,32), List(32), 1, children))
+  val cilk_for_test08 = Module(new cilk_for_test08DF())
+
+  val cilk_for_test08_detach = for (i <- 0 until children) yield {
+    val foo = Module(new cilk_for_test08_detachDF())
+    foo
+  }
+
+  val CacheArbiter = Module(new CacheArbiter(children))
+  for (i <- 0 until children) {
+    CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test08_detach(i).io.CacheReq
+    cilk_for_test08_detach(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+  }
+  io.CacheReq <> CacheArbiter.io.cache.CacheReq
+  CacheArbiter.io.cache.CacheResp <>  io.CacheResp
+  // tester to cilk_for_test02
+  cilk_for_test08.io.in <> io.in
+
+  // cilk_for_test02 to task controller
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test08.io.call8_out
+
+  // task controller to sub-task cilk_for_test08_detach
+  for (i <- 0 until children ) {
+    cilk_for_test08_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> cilk_for_test08_detach(i).io.out
+  }
+
+  // Task controller to cilk_for_test02
+  cilk_for_test08.io.call8_in <> TaskControllerModule.io.parentOut(0)
+
+  // cilk_for_test02 to tester
+  io.out <> cilk_for_test08.io.out
+
+}
+
+
+class cilk_for_test08TopC(implicit p: Parameters) extends cilk_for_test08TopIO()(p) {
+
+  val children = 3
+  val TaskControllerModule = Module(new TaskController(List(32,32,32), List(32), 1, children))
+  val cilk_for_test08 = Module(new cilk_for_test08DF())
+
+  val cilk_for_test08_detach = for (i <- 0 until children) yield {
+    val foo = Module(new cilk_for_test08_detachDF())
+    foo
+  }
+
+  val CacheArbiter = Module(new CacheArbiter(children))
+  for (i <- 0 until children) {
+    CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test08_detach(i).io.CacheReq
+    cilk_for_test08_detach(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+  }
+  io.CacheReq <> CacheArbiter.io.cache.CacheReq
+  CacheArbiter.io.cache.CacheResp <>  io.CacheResp
+
+  cilk_for_test08.io.in <> io.in
+
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test08.io.call8_out
+
+  for (i <- 0 until children ) {
+    cilk_for_test08_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> cilk_for_test08_detach(i).io.out
+  }
+
+  cilk_for_test08.io.call8_in <> TaskControllerModule.io.parentOut(0)
+
+  io.out <> cilk_for_test08.io.out
+
+}
 
 import java.io.{File, FileWriter}
 object cilk_for_test08Main extends App {
-  val dir = new File("RTL/cilk_for_test08") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test08DF()))
+  val dirA = new File("RTL/cilk_for_test08TopA") ; dirA.mkdirs
+  val chirrtlA = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test08TopA()))
+  val verilogFileA = new File(dirA, s"${chirrtlA.main}.v")
+  val verilogWriterA = new FileWriter(verilogFileA)
+  val compileResultA = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtlA, firrtl.ChirrtlForm))
+  val compiledStuffA = compileResultA.getEmittedCircuit
+  verilogWriterA.write(compiledStuffA.value)
+  verilogWriterA.close()
 
-  val verilogFile = new File(dir, s"${chirrtl.main}.v")
-  val verilogWriter = new FileWriter(verilogFile)
-  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
-  val compiledStuff = compileResult.getEmittedCircuit
-  verilogWriter.write(compiledStuff.value)
-  verilogWriter.close()
+  val dirB = new File("RTL/cilk_for_test08TopB") ; dirB.mkdirs
+  val chirrtlB = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test08TopB()))
+  val verilogFileB = new File(dirB, s"${chirrtlB.main}.v")
+  val verilogWriterB = new FileWriter(verilogFileB)
+  val compileResultB = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtlB, firrtl.ChirrtlForm))
+  val compiledStuffB = compileResultB.getEmittedCircuit
+  verilogWriterB.write(compiledStuffB.value)
+  verilogWriterB.close()
+
+  val dirC = new File("RTL/cilk_for_test08TopC") ; dirC.mkdirs
+  val chirrtlC = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test08TopC()))
+  val verilogFileC = new File(dirC, s"${chirrtlC.main}.v")
+  val verilogWriterC = new FileWriter(verilogFileC)
+  val compileResultC = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtlC, firrtl.ChirrtlForm))
+  val compiledStuffC = compileResultC.getEmittedCircuit
+  verilogWriterC.write(compiledStuffC.value)
+  verilogWriterC.close()
 }
 

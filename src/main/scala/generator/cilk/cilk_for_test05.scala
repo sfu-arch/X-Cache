@@ -581,6 +581,7 @@ class cilk_for_test05TopA(implicit p: Parameters) extends cilk_for_test05TopIO()
   io.CacheReq <> cilk_for_test05_detach.io.CacheReq
   io.out <> cilk_for_test05.io.out
 }
+
 class cilk_for_test05TopB(implicit p: Parameters) extends cilk_for_test05TopIO()(p) {
 
   val children = 1
@@ -622,7 +623,7 @@ class cilk_for_test05TopB(implicit p: Parameters) extends cilk_for_test05TopIO()
 
 class cilk_for_test05TopC(implicit p: Parameters) extends cilk_for_test05TopIO()(p) {
 
-  val children = 4
+  val children = 3
   val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val cilk_for_test05 = Module(new cilk_for_test05DF())
 

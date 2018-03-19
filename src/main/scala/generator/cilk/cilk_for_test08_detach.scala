@@ -354,7 +354,7 @@ class cilk_for_test08_detachDF(implicit p: Parameters) extends cilk_for_test08_d
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 31, BID = 0))
+  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 0))
 
 
 
@@ -544,70 +544,39 @@ class cilk_for_test08_detachDF(implicit p: Parameters) extends cilk_for_test08_d
     * Wiring enable signals to the instructions
     */
 
-  getelementptr0.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr0"))
-
-  load1.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("load1"))
-
-  getelementptr2.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr2"))
-
-  load3.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("load3"))
-
-  getelementptr4.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr4"))
-
-  load5.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("load5"))
-
-  mul6.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul6"))
-
-  mul7.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul7"))
-
-  add8.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("add8"))
-
-  mul9.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul9"))
-
-  add10.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("add10"))
-
-  ashr11.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("ashr11"))
-
-  getelementptr12.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr12"))
-
-  store13.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("store13"))
-
-  mul14.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul14"))
-
-  mul15.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul15"))
-
-  add16.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("add16"))
-
-  mul17.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul17"))
-
-  add18.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("add18"))
-
-  ashr19.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("ashr19"))
-
-  getelementptr20.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr20"))
-
-  store21.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("store21"))
-
-  mul22.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul22"))
-
-  mul23.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul23"))
-
-  add24.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("add24"))
-
-  mul25.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul25"))
-
-  add26.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("add26"))
-
-  ashr27.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("ashr27"))
-
-  getelementptr28.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("getelementptr28"))
-
-  store29.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("store29"))
-
-  ret30.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("ret30"))
+  getelementptr0.io.enable <> bb_my_pfor_body.io.Out(0)
+  getelementptr2.io.enable <> bb_my_pfor_body.io.Out(1)
+  getelementptr4.io.enable <> bb_my_pfor_body.io.Out(2)
+  getelementptr12.io.enable <> bb_my_pfor_body.io.Out(3)
+  getelementptr20.io.enable <> bb_my_pfor_body.io.Out(4)
+  getelementptr28.io.enable <> bb_my_pfor_body.io.Out(5)
 
 
-
+  load1.io.enable.enq(ControlBundle.active())
+  load3.io.enable.enq(ControlBundle.active())
+  load5.io.enable.enq(ControlBundle.active())
+  mul6.io.enable.enq(ControlBundle.active())
+  mul7.io.enable.enq(ControlBundle.active())
+  add8.io.enable.enq(ControlBundle.active())
+  mul9.io.enable.enq(ControlBundle.active())
+  add10.io.enable.enq(ControlBundle.active())
+  ashr11.io.enable.enq(ControlBundle.active())
+  store13.io.enable.enq(ControlBundle.active())
+  mul14.io.enable.enq(ControlBundle.active())
+  mul15.io.enable.enq(ControlBundle.active())
+  add16.io.enable.enq(ControlBundle.active())
+  mul17.io.enable.enq(ControlBundle.active())
+  add18.io.enable.enq(ControlBundle.active())
+  ashr19.io.enable.enq(ControlBundle.active())
+  store21.io.enable.enq(ControlBundle.active())
+  mul22.io.enable.enq(ControlBundle.active())
+  mul23.io.enable.enq(ControlBundle.active())
+  add24.io.enable.enq(ControlBundle.active())
+  mul25.io.enable.enq(ControlBundle.active())
+  add26.io.enable.enq(ControlBundle.active())
+  ashr27.io.enable.enq(ControlBundle.active())
+  store29.io.enable.enq(ControlBundle.active())
+  ret30.io.enable.enq(ControlBundle.active())
 
 
   /* ================================================================== *
