@@ -68,7 +68,7 @@ object Data_cilk_for_test08_detach_FlowParam{
   )
 
 
-  //  %0 = getelementptr inbounds [3 x i32], [3 x i32]* %rgb.in, i32 %i.050.in, i32 0, !UID !15, !ScalaLabel !16
+  //  %0 = getelementptr inbounds [3 x i32], [3 x i32]* %rgb.in, i32 %i.049.in, i32 0, !UID !15, !ScalaLabel !16
   val getelementptr0_in = Map(
     "field0" -> 0,
     "field1" -> 0
@@ -81,7 +81,7 @@ object Data_cilk_for_test08_detach_FlowParam{
   )
 
 
-  //  %2 = getelementptr inbounds [3 x i32], [3 x i32]* %rgb.in, i32 %i.050.in, i32 1, !UID !23, !ScalaLabel !24
+  //  %2 = getelementptr inbounds [3 x i32], [3 x i32]* %rgb.in, i32 %i.049.in, i32 1, !UID !23, !ScalaLabel !24
   val getelementptr2_in = Map(
     "field0" -> 1,
     "field1" -> 1
@@ -94,7 +94,7 @@ object Data_cilk_for_test08_detach_FlowParam{
   )
 
 
-  //  %4 = getelementptr inbounds [3 x i32], [3 x i32]* %rgb.in, i32 %i.050.in, i32 2, !UID !27, !ScalaLabel !28
+  //  %4 = getelementptr inbounds [3 x i32], [3 x i32]* %rgb.in, i32 %i.049.in, i32 2, !UID !27, !ScalaLabel !28
   val getelementptr4_in = Map(
     "field0" -> 2,
     "field1" -> 2
@@ -145,7 +145,7 @@ object Data_cilk_for_test08_detach_FlowParam{
   )
 
 
-  //  %12 = getelementptr inbounds [3 x i32], [3 x i32]* %xyz.in, i32 %i.050.in, i32 0, !UID !43, !ScalaLabel !44
+  //  %12 = getelementptr inbounds [3 x i32], [3 x i32]* %xyz.in, i32 %i.049.in, i32 0, !UID !43, !ScalaLabel !44
   val getelementptr12_in = Map(
     "field2" -> 0,
     "field1" -> 3
@@ -197,7 +197,7 @@ object Data_cilk_for_test08_detach_FlowParam{
   )
 
 
-  //  %19 = getelementptr inbounds [3 x i32], [3 x i32]* %xyz.in, i32 %i.050.in, i32 1, !UID !59, !ScalaLabel !60
+  //  %19 = getelementptr inbounds [3 x i32], [3 x i32]* %xyz.in, i32 %i.049.in, i32 1, !UID !59, !ScalaLabel !60
   val getelementptr20_in = Map(
     "field2" -> 1,
     "field1" -> 4
@@ -249,7 +249,7 @@ object Data_cilk_for_test08_detach_FlowParam{
   )
 
 
-  //  %26 = getelementptr inbounds [3 x i32], [3 x i32]* %xyz.in, i32 %i.050.in, i32 2, !UID !75, !ScalaLabel !76
+  //  %26 = getelementptr inbounds [3 x i32], [3 x i32]* %xyz.in, i32 %i.049.in, i32 2, !UID !75, !ScalaLabel !76
   val getelementptr28_in = Map(
     "field2" -> 2,
     "field1" -> 5
@@ -304,6 +304,12 @@ class cilk_for_test08_detachDF(implicit p: Parameters) extends cilk_for_test08_d
    *                   PRINTING MEMORY SYSTEM                           *
    * ================================================================== */
 
+
+	val StackPointer = Module(new Stack(NumOps = 1))
+
+	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=3,NWrites=3)
+		            (WControl=new WriteMemoryController(NumOps=3,BaseSize=2,NumEntries=2))
+		            (RControl=new ReadMemoryController(NumOps=3,BaseSize=2,NumEntries=2)))
 
 	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=3,NWrites=3)
 		            (WControl=new WriteMemoryController(NumOps=3,BaseSize=2,NumEntries=2))
@@ -409,7 +415,7 @@ class cilk_for_test08_detachDF(implicit p: Parameters) extends cilk_for_test08_d
 
 
   //  %11 = ashr i32 %10, 16, !UID !41, !ScalaLabel !42
-  val ashr11 = Module (new ComputeNode(NumOuts = 1, ID = 11, opCode = "ashr")(sign=false))
+  val ashr11 = Module (new ComputeNode(NumOuts = 1, ID = 11, opCode = "lshr")(sign=false))  // Manually changed to lshr
 
 
   //  %12 = getelementptr inbounds [3 x i32], [3 x i32]* %xyz.in, i32 %i.050.in, i32 0, !UID !43, !ScalaLabel !44
@@ -441,7 +447,7 @@ class cilk_for_test08_detachDF(implicit p: Parameters) extends cilk_for_test08_d
 
 
   //  %18 = ashr i32 %17, 16, !UID !57, !ScalaLabel !58
-  val ashr19 = Module (new ComputeNode(NumOuts = 1, ID = 19, opCode = "ashr")(sign=false))
+  val ashr19 = Module (new ComputeNode(NumOuts = 1, ID = 19, opCode = "lshr")(sign=false)) // Manually changed to lshr
 
 
   //  %19 = getelementptr inbounds [3 x i32], [3 x i32]* %xyz.in, i32 %i.050.in, i32 1, !UID !59, !ScalaLabel !60
@@ -473,7 +479,7 @@ class cilk_for_test08_detachDF(implicit p: Parameters) extends cilk_for_test08_d
 
 
   //  %25 = ashr i32 %24, 16, !UID !73, !ScalaLabel !74
-  val ashr27 = Module (new ComputeNode(NumOuts = 1, ID = 27, opCode = "ashr")(sign=false))
+  val ashr27 = Module (new ComputeNode(NumOuts = 1, ID = 27, opCode = "lshr")(sign=false)) // Manually changed to lshr
 
 
   //  %26 = getelementptr inbounds [3 x i32], [3 x i32]* %xyz.in, i32 %i.050.in, i32 2, !UID !75, !ScalaLabel !76

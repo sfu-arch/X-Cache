@@ -22,7 +22,7 @@ import node._
 
 class cilk_for_test08MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+    val in = Flipped(Decoupled(new Call(List(32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))  // Initialization address
     val din  = Input(UInt(nastiXDataBits.W))  // Initialization data
     val write = Input(Bool())                 // Initialization write strobe
@@ -60,8 +60,8 @@ class cilk_for_test08MainDirect(implicit p: Parameters) extends cilk_for_test08M
   cache.io.cpu.req <> cilk_for_test08_detach.io.CacheReq
   cilk_for_test08_detach.io.CacheResp <> cache.io.cpu.resp
   cilk_for_test08.io.in <> io.in
-  cilk_for_test08_detach.io.in <> cilk_for_test08.io.call11_out
-  cilk_for_test08.io.call11_in <> cilk_for_test08_detach.io.out
+  cilk_for_test08_detach.io.in <> cilk_for_test08.io.call8_out
+  cilk_for_test08.io.call8_in <> cilk_for_test08_detach.io.out
   io.out <> cilk_for_test08.io.out
 
 }
@@ -90,7 +90,7 @@ class cilk_for_test08MainTM(implicit p: Parameters) extends cilk_for_test08MainI
 
   // Wire up the cache, TM, and modules under test.
 
-  val children = 2
+  val children = 3
   val TaskControllerModule = Module(new TaskController(List(32,32,32), List(32), 1, children))
   val cilk_for_test08 = Module(new cilk_for_test08DF())
 
@@ -113,7 +113,7 @@ class cilk_for_test08MainTM(implicit p: Parameters) extends cilk_for_test08MainI
   cilk_for_test08.io.in <> io.in
 
   // cilk_for_test08 to task controller
-  TaskControllerModule.io.parentIn(0) <> cilk_for_test08.io.call11_out
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test08.io.call8_out
 
   // task controller to sub-task cilk_for_test08_detach
   for (i <- 0 until children ) {
@@ -122,7 +122,7 @@ class cilk_for_test08MainTM(implicit p: Parameters) extends cilk_for_test08MainI
   }
 
   // Task controller to cilk_for_test08
-  cilk_for_test08.io.call11_in <> TaskControllerModule.io.parentOut(0)
+  cilk_for_test08.io.call8_in <> TaskControllerModule.io.parentOut(0)
 
   // cilk_for_test08 to tester
   io.out <> cilk_for_test08.io.out
@@ -164,9 +164,9 @@ class cilk_for_test08Test01[T <: cilk_for_test08MainIO](c: T) extends PeekPokeTe
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").taskID, 5.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 5.U)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
+//  poke(c.io.in.bits.data("field2").data, 0.U)
+//  poke(c.io.in.bits.data("field2").taskID, 5.U)
+//  poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
@@ -175,8 +175,8 @@ class cilk_for_test08Test01[T <: cilk_for_test08MainIO](c: T) extends PeekPokeTe
   poke(c.io.in.bits.data("field0").predicate, true.B)
   poke(c.io.in.bits.data("field1").data, 256.U)   // Array xyz[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 9.U)     // n
-  poke(c.io.in.bits.data("field2").predicate, true.B)
+//  poke(c.io.in.bits.data("field2").data, 9.U)     // n
+//  poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
@@ -185,8 +185,8 @@ class cilk_for_test08Test01[T <: cilk_for_test08MainIO](c: T) extends PeekPokeTe
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
+//  poke(c.io.in.bits.data("field2").data, 0.U)
+//  poke(c.io.in.bits.data("field2").predicate, false.B)
 
   step(1)
 
