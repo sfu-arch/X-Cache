@@ -671,7 +671,7 @@ class HandShakingCtrlMask(val NumInputs: Int,
     }
   }
 
-  // Wire up MASK Readys and Valids
+// Wire up MASK Readys and Valids
   for (i <- 0 until NumPhi) {
     io.MaskBB(i).valid := mask_valid_R(i)
     when(io.MaskBB(i).fire()) {
@@ -713,19 +713,12 @@ class HandShakingCtrlMask(val NumInputs: Int,
 
   def InvalidOut(): Unit = {
     out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
-
-    mask_valid_R := VecInit(Seq.fill(NumPhi) {
-      false.B
-    })
+    mask_valid_R := VecInit(Seq.fill(NumPhi)(false.B))
   }
 
   def Reset(): Unit = {
-    out_ready_R := Vec(Seq.fill(NumOuts) {
-      false.B
-    })
-    mask_ready_R := Vec(Seq.fill(NumPhi) {
-      false.B
-    })
+    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+    mask_ready_R := VecInit(Seq.fill(NumPhi)(false.B))
   }
 }
 
@@ -784,7 +777,7 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := Vec(Seq.fill(NumOuts) {
+    out_valid_R := VecInit(Seq.fill(NumOuts) {
       true.B
     })
   }

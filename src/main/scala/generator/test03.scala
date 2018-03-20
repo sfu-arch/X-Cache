@@ -246,7 +246,8 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 1))
+//  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 1))
+  val bb_for_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 2, BID = 1))
 
 //  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
   val bb_for_body = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 2))
@@ -254,7 +255,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 //  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
   val bb_for_inc = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 4))
 
 
 
@@ -352,7 +353,8 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
     */
 
   //Connecting br0 to bb_for_cond
-  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
+//  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
+  bb_for_cond.io.activate <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
 
 
   //Connecting br4 to bb_for_body
@@ -370,7 +372,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
 
   //Connecting br9 to bb_for_cond
-  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br9")) <> br9.io.Out(param.br9_brn_bb("bb_for_cond"))
+  bb_for_cond.io.loopBack <> br9.io.Out(param.br9_brn_bb("bb_for_cond"))
+
+  bb_for_cond.io.endLoop <> bb_for_end.io.Out(5)
 
 
 
