@@ -327,7 +327,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   // [BasicBlock]  my_pfor.detach4:
 
   //  detach label %my_offload.pfor.body5, label %my_pfor.inc, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val detach4 = Module(new Detach(ID = 4))
+  val detach4 = Module(new DetachFast(ID = 4))
 
   // [BasicBlock]  my_pfor.inc:
 
