@@ -262,13 +262,14 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_pfor_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
+//  val bb_pfor_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
+  val bb_pfor_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
 
   val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
   val bb_pfor_inc12 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3))
 
-  val bb_pfor_end14 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4))
+  val bb_pfor_end14 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
 
   val bb_pfor_end_continue15 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
@@ -370,7 +371,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
     */
 
   //Connecting br0 to bb_pfor_cond
-  bb_pfor_cond.io.predicateIn(param.bb_pfor_cond_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_pfor_cond"))
+  bb_pfor_cond.io.activate <> br0.io.Out(param.br0_brn_bb("bb_pfor_cond"))
 
 
   //Connecting br3 to bb_pfor_detach
@@ -382,7 +383,9 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
 
   //Connecting br6 to bb_pfor_cond
-  bb_pfor_cond.io.predicateIn(param.bb_pfor_cond_pred("br6")) <> br6.io.Out(param.br6_brn_bb("bb_pfor_cond"))
+  bb_pfor_cond.io.loopBack <> br6.io.Out(param.br6_brn_bb("bb_pfor_cond"))
+
+  bb_pfor_cond.io.endLoop <> bb_pfor_end14.io.Out(4)
 
 
   // Manually re-wired.  Want re-attach controlled by sub-block returns only (otherwise it stalls loop)

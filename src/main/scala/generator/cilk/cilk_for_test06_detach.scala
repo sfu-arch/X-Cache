@@ -279,13 +279,14 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
   val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_my_pfor_cond2 = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
+//  val bb_my_pfor_cond2 = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
+  val bb_my_pfor_cond2 = Module(new LoopHead( NumOuts = 3, NumPhi = 1, BID = 1))
 
   val bb_my_pfor_detach4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
   val bb_my_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3))
 
-  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
+  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 4))
 
   val bb_my_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
@@ -394,7 +395,8 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
     */
 
   //Connecting br0 to bb_my_pfor_cond2
-  bb_my_pfor_cond2.io.predicateIn(param.bb_my_pfor_cond2_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_my_pfor_cond2"))
+//  bb_my_pfor_cond2.io.predicateIn(param.bb_my_pfor_cond2_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_my_pfor_cond2"))
+  bb_my_pfor_cond2.io.activate <> br0.io.Out(param.br0_brn_bb("bb_my_pfor_cond2"))
 
 
   //Connecting br3 to bb_my_pfor_detach4
@@ -406,7 +408,9 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
 
   //Connecting br6 to bb_my_pfor_cond2
-  bb_my_pfor_cond2.io.predicateIn(param.bb_my_pfor_cond2_pred("br6")) <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_cond2"))
+  bb_my_pfor_cond2.io.loopBack <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_cond2"))
+
+  bb_my_pfor_cond2.io.endLoop <> bb_my_pfor_end.io.Out(5)
 
 
 
