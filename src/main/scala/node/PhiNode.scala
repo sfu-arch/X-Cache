@@ -110,7 +110,8 @@ class PhiNode(NumInputs: Int,
       }
     }
     is(s_COMPUTE){
-      when(IsOutReady()){
+//      when(IsOutReady()){
+      when(in_data_valid_R(sel)){
         mask_R := 0.U
         mask_valid_R := false.B
 
