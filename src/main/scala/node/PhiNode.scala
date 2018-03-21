@@ -55,7 +55,7 @@ class PhiNode(NumInputs: Int,
   // Output register
   //val data_R = RegInit(0.U(xlen.W))
 
-  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
+  val s_IDLE :: s_MASKLATCH :: s_DATALATCH :: s_COMPUTE :: Nil = Enum(4)
   val state = RegInit(s_IDLE)
 
   /*==========================================*
@@ -67,9 +67,6 @@ class PhiNode(NumInputs: Int,
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
-
-  // If the mask value is eqaul to zero we don't proceed
-  val mask_valid = mask_R.asUInt.orR
 
   //Instantiating a MUX
   val sel = OHToUInt(mask_R)
@@ -110,8 +107,7 @@ class PhiNode(NumInputs: Int,
       }
     }
     is(s_COMPUTE){
-//      when(IsOutReady()){
-      when(in_data_valid_R(sel)){
+      when(IsOutReady()){
         mask_R := 0.U
         mask_valid_R := false.B
 
