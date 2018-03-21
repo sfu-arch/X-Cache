@@ -26,7 +26,7 @@ import junctions._
   * It contains all the transformation from indices to their module's name
   */
 
-object Data_cilk_for_test06_detach_FlowParam{
+object Data_cilk_for_test06_detach_FlowParam {
 
   val bb_my_pfor_body_pred = Map(
     "active" -> 0
@@ -204,17 +204,15 @@ object Data_cilk_for_test06_detach_FlowParam{
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING PORTS DEFINITION                        *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING PORTS DEFINITION                        *
+ * ================================================================== */
 
 
 abstract class cilk_for_test06_detachDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
-    val call10_out = Decoupled(new Call(List(32,32,32,32,32)))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
+    val call10_out = Decoupled(new Call(List(32, 32, 32, 32, 32)))
     val call10_in = Flipped(Decoupled(new Call(List(32))))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
@@ -223,15 +221,12 @@ abstract class cilk_for_test06_detachDFIO(implicit val p: Parameters) extends Mo
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING MODULE DEFINITION                       *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING MODULE DEFINITION                       *
+ * ================================================================== */
 
 
 class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_detachDFIO()(p) {
-
 
 
   /* ================================================================== *
@@ -239,23 +234,22 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
    * ================================================================== */
 
 
-	val StackPointer = Module(new Stack(NumOps = 1))
+  val StackPointer = Module(new Stack(NumOps = 1))
 
-	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
+  val RegisterFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 2, NWrites = 2)
+  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2)))
 
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RWArbiter=new ReadWriteArbiter()))
+  val CacheMem = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 2)
+  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
 
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32,32,32)))
+  val InputSplitter = Module(new SplitCall(List(32, 32, 32, 32)))
   InputSplitter.io.In <> io.in
-
 
 
   /* ================================================================== *
@@ -269,7 +263,6 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   val loop_L_6_liveIN_3 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
 
-
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
@@ -279,24 +272,20 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
   val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-//  val bb_my_pfor_cond2 = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
-  val bb_my_pfor_cond2 = Module(new LoopHead( NumOuts = 3, NumPhi = 1, BID = 1))
+  //  val bb_my_pfor_cond2 = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
+  val bb_my_pfor_cond2 = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
 
   val bb_my_pfor_detach4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
   val bb_my_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3))
 
-  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 4))
+  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
 
   val bb_my_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
   val bb_my_pfor_preattach11 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
   val bb_my_offload_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
-
-
-
-
 
 
   /* ================================================================== *
@@ -309,20 +298,20 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   // [BasicBlock]  my_pfor.body:
 
   //  br label %my_pfor.cond2, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0))
+  val br0 = Module(new UBranchNode(ID = 0))
 
   // [BasicBlock]  my_pfor.cond2:
 
   //  %0 = phi i32 [ 0, %my_pfor.body ], [ %2, %my_pfor.inc ], !UID !10, !ScalaLabel !11
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
+  val phi1 = Module(new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
 
 
   //  %1 = icmp slt i32 %0, 5, !UID !12, !ScalaLabel !13
-  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT")(sign=false))
+  val icmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT")(sign = false))
 
 
   //  br i1 %1, label %my_pfor.detach4, label %my_pfor.end, !UID !14, !BB_UID !15, !ScalaLabel !16
-  val br3 = Module (new CBranchNode(ID = 3))
+  val br3 = Module(new CBranchNode(ID = 3))
 
   // [BasicBlock]  my_pfor.detach4:
 
@@ -332,11 +321,11 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   // [BasicBlock]  my_pfor.inc:
 
   //  %2 = add nsw i32 %0, 1, !UID !20, !ScalaLabel !21
-  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
+  val add5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
 
 
   //  br label %my_pfor.cond2, !llvm.loop !22, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val br6 = Module (new UBranchNode(ID = 6))
+  val br6 = Module(new UBranchNode(ID = 6))
 
   // [BasicBlock]  my_pfor.end:
 
@@ -346,24 +335,21 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   // [BasicBlock]  my_pfor.end.continue:
 
   //  br label %my_pfor.preattach11, !UID !44, !BB_UID !45, !ScalaLabel !46
-  val br8 = Module (new UBranchNode(ID = 8))
+  val br8 = Module(new UBranchNode(ID = 8))
 
   // [BasicBlock]  my_pfor.preattach11:
 
   //  ret void, !UID !47, !BB_UID !48, !ScalaLabel !49
-  val ret9 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=9))
+  val ret9 = Module(new RetNode(NumPredIn = 1, retTypes = List(32), ID = 9))
 
   // [BasicBlock]  my_offload.pfor.body5:
 
   //  call void @cilk_for_test06_detach_2([5 x i32]* %a.in, i32 %i.0.in, i32 %0, [5 x i32]* %b.in, [5 x i32]* %c.in), !UID !50, !ScalaLabel !51
-  val call10 = Module(new CallNode(ID=10,argTypes=List(32,32,32,32,32),retTypes=List(32)))
+  val call10 = Module(new CallNode(ID = 10, argTypes = List(32, 32, 32, 32, 32), retTypes = List(32)))
 
 
   //  reattach label %my_pfor.inc, !UID !52, !BB_UID !53, !ScalaLabel !54
-  val reattach11 = Module(new Reattach(NumPredIn=1, ID=11))
-
-
-
+  val reattach11 = Module(new Reattach(NumPredIn = 1, ID = 11))
 
 
   /* ================================================================== *
@@ -377,15 +363,14 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   val param = Data_cilk_for_test06_detach_FlowParam
 
 
-
   /* ================================================================== *
    *                   CONNECTING BASIC BLOCKS TO PREDICATE INSTRUCTIONS*
    * ================================================================== */
 
 
   /**
-     * Connecting basic blocks to predicate instructions
-     */
+    * Connecting basic blocks to predicate instructions
+    */
 
 
   bb_my_pfor_body.io.predicateIn <> InputSplitter.io.Out.enable
@@ -395,7 +380,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
     */
 
   //Connecting br0 to bb_my_pfor_cond2
-//  bb_my_pfor_cond2.io.predicateIn(param.bb_my_pfor_cond2_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_my_pfor_cond2"))
+  //  bb_my_pfor_cond2.io.predicateIn(param.bb_my_pfor_cond2_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_my_pfor_cond2"))
   bb_my_pfor_cond2.io.activate <> br0.io.Out(param.br0_brn_bb("bb_my_pfor_cond2"))
 
 
@@ -410,8 +395,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   //Connecting br6 to bb_my_pfor_cond2
   bb_my_pfor_cond2.io.loopBack <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_cond2"))
 
-  bb_my_pfor_cond2.io.endLoop <> bb_my_pfor_end.io.Out(5)
-
+//  bb_my_pfor_cond2.io.endLoop <> bb_my_pfor_end.io.Out(5)
 
 
   //Connecting br8 to bb_my_pfor_preattach
@@ -444,7 +428,6 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   br0.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("br0"))
 
 
-
   phi1.io.enable <> bb_my_pfor_cond2.io.Out(param.bb_my_pfor_cond2_activate("phi1"))
 
   icmp2.io.enable <> bb_my_pfor_cond2.io.Out(param.bb_my_pfor_cond2_activate("icmp2"))
@@ -452,9 +435,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   br3.io.enable <> bb_my_pfor_cond2.io.Out(param.bb_my_pfor_cond2_activate("br3"))
 
 
-
   detach4.io.enable <> bb_my_pfor_detach4.io.Out(param.bb_my_pfor_detach4_activate("detach4"))
-
 
 
   add5.io.enable <> bb_my_pfor_inc.io.Out(param.bb_my_pfor_inc_activate("add5"))
@@ -472,10 +453,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   loop_L_6_liveIN_3.io.enable <> bb_my_pfor_end.io.Out(4)
 
 
-
-
   br8.io.enable <> bb_my_pfor_end_continue.io.Out(param.bb_my_pfor_end_continue_activate("br8"))
-
 
 
   ret9.io.enable <> bb_my_pfor_preattach11.io.Out(param.bb_my_pfor_preattach11_activate("ret9"))
@@ -483,13 +461,9 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
   call10.io.In.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("call10"))
 
-//  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11"))
-  reattach11.io.enable.enq(ControlBundle.active())  // always enabled
+  //  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11"))
+  reattach11.io.enable.enq(ControlBundle.active()) // always enabled
   bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11")).ready := true.B
-
-
-
-
 
 
   /* ================================================================== *
@@ -514,7 +488,6 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   loop_L_6_liveIN_3.io.InData <> InputSplitter.io.Out.data("field3")
 
 
-
   /* ================================================================== *
    *                   DUMPING PHI NODES                                *
    * ================================================================== */
@@ -537,7 +510,6 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   //Connect PHI node
 
   phi1.io.Mask <> bb_my_pfor_cond2.io.MaskBB(0)
-
 
 
   /* ================================================================== *
@@ -585,19 +557,19 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   call10.io.retIn <> io.call10_in
   call10.io.Out.enable.ready := true.B // Manual fix
   // Wiring Call instruction to the loop header
-  call10.io.In.data("field0") <>loop_L_6_liveIN_0.io.Out(param.call10_in("field0"))
+  call10.io.In.data("field0") <> loop_L_6_liveIN_0.io.Out(param.call10_in("field0"))
 
   // Wiring Call instruction to the loop header
-  call10.io.In.data("field1") <>loop_L_6_liveIN_1.io.Out(param.call10_in("field1"))
+  call10.io.In.data("field1") <> loop_L_6_liveIN_1.io.Out(param.call10_in("field1"))
 
   // Wiring Call instruction to the loop header
-  call10.io.In.data("field2") <>phi1.io.Out(param.call10_in("phi1"))  // Manually added
+  call10.io.In.data("field2") <> phi1.io.Out(param.call10_in("phi1")) // Manually added
 
   // Wiring Call instruction to the loop header
-  call10.io.In.data("field3") <>loop_L_6_liveIN_2.io.Out(param.call10_in("field2"))
+  call10.io.In.data("field3") <> loop_L_6_liveIN_2.io.Out(param.call10_in("field2"))
 
   // Wiring Call instruction to the loop header
-  call10.io.In.data("field4") <>loop_L_6_liveIN_3.io.Out(param.call10_in("field3"))
+  call10.io.In.data("field4") <> loop_L_6_liveIN_3.io.Out(param.call10_in("field3"))
 
   call10.io.Out.enable.ready := true.B // Manual fix
 
@@ -612,8 +584,10 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 }
 
 import java.io.{File, FileWriter}
+
 object cilk_for_test06_detachMain extends App {
-  val dir = new File("RTL/cilk_for_test06_detach") ; dir.mkdirs
+  val dir = new File("RTL/cilk_for_test06_detach");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test06_detachDF()))
 

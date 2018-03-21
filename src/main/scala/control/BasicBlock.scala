@@ -430,7 +430,6 @@ class LoopHeadNodeIO(val NumOuts: Int, val NumPhi: Int)(implicit p: Parameters) 
   // Predicate enable
   val activate = Flipped(Decoupled(new ControlBundle))
   val loopBack = Flipped(Decoupled(new ControlBundle))
-  val endLoop = Flipped(Decoupled(new ControlBundle))
 
   // Output IO
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
@@ -472,8 +471,9 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
   val mask_value_R = RegInit(0.U(2.W))
   val mask_ready_W = mask_ready_R.asUInt.andR
 
-  val s_IDLE :: s_BACK :: s_END :: Nil = Enum(3)
-  val state = RegInit(s_IDLE)
+  val s_START :: s_FEED :: s_END :: Nil = Enum(3)
+  val state = RegInit(s_START)
+  val prev_state = RegInit(s_START)
 
   io.activate.ready := ~active_valid_R
   when(io.activate.fire()) {
@@ -485,12 +485,6 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
   when(io.loopBack.fire()) {
     loop_back_R <> io.loopBack.bits
     loop_back_valid_R := true.B
-  }
-
-  io.endLoop.ready := ~end_loop_valid_R
-  when(io.endLoop.fire()) {
-    end_loop_R <> io.endLoop.bits
-    end_loop_valid_R := true.B
   }
 
   for (i <- 0 until NumOuts) {
@@ -509,7 +503,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
     }
   }
 
-// Wire up MASK Readys and Valids
+  // Wire up MASK Readys and Valids
   for (i <- 0 until NumPhi) {
     io.MaskBB(i).bits := mask_value_R
     io.MaskBB(i).valid := mask_valid_R(i)
@@ -528,55 +522,56 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
    ==================*/
 
   switch(state) {
-    is(s_IDLE) {
+    is(s_START) {
       mask_value_R := 1.U
     }
-    is(s_BACK) {
+    is(s_END) {
       mask_value_R := 2.U
     }
   }
 
   switch(state) {
-    is(s_IDLE) {
-      when(io.activate.fire()) {
-
+    is(s_START) {
+      when(io.activate.fire() || active_valid_R) {
         //Valid the output
         out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
         mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
-        state := s_END
+        state := s_FEED
         printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, 1.U)
       }
     }
-    is(s_BACK) {
-      when(loop_back_valid_R) {
-        //Valid the output
-        out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
-        mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
-        state := s_END
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, 2.U)
-      }
-    }
-    is(s_END) {
-      when(out_ready_R.asUInt().andR() && end_loop_valid_R) {
-
-        //Valid the output
+    is(s_FEED) {
+      when(out_ready_R.asUInt().andR()) {
         out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
         out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
 
         mask_ready_R := VecInit(Seq.fill(NumPhi)(false.B))
         mask_valid_R := VecInit(Seq.fill(NumPhi)(false.B))
 
-        end_loop_valid_R := false.B
-        active_valid_R := false.B
+        state := s_END
+      }
+    }
+    is(s_END) {
+      when(loop_back_valid_R) {
+
+        loop_back_R := ControlBundle.default
         loop_back_valid_R := false.B
 
-        when(end_loop_R.control){
-          state := s_IDLE
+        when(loop_back_R.control) {
+          out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
+          mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, 2.U)
+
         }.otherwise{
-          state := s_BACK
+          active_R := ControlBundle.default
+          active_valid_R := false.B
+          state := s_START
+
         }
       }
     }
+
+
   }
 
 

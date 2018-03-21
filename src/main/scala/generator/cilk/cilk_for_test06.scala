@@ -269,7 +269,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   val bb_pfor_inc12 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3))
 
-  val bb_pfor_end14 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
+  val bb_pfor_end14 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4))
 
   val bb_pfor_end_continue15 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
@@ -385,7 +385,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   //Connecting br6 to bb_pfor_cond
   bb_pfor_cond.io.loopBack <> br6.io.Out(param.br6_brn_bb("bb_pfor_cond"))
 
-  bb_pfor_cond.io.endLoop <> bb_pfor_end14.io.Out(4)
+//  bb_pfor_cond.io.endLoop <> bb_pfor_end14.io.Out(4)
 
 
   // Manually re-wired.  Want re-attach controlled by sub-block returns only (otherwise it stalls loop)

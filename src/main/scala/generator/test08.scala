@@ -241,7 +241,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 4))
 
 
 
@@ -351,7 +351,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   //Connecting br8 to bb_for_cond
   bb_for_cond.io.loopBack <> br8.io.Out(param.br8_brn_bb("bb_for_cond"))
 
-  bb_for_cond.io.endLoop <> bb_for_end.io.Out(3)
+//  bb_for_cond.io.endLoop <> bb_for_end.io.Out(3)
 
 
 

@@ -55,7 +55,7 @@ class PhiNode(NumInputs: Int,
   // Output register
   //val data_R = RegInit(0.U(xlen.W))
 
-  val s_IDLE :: s_MASKLATCH :: s_DATALATCH :: s_COMPUTE :: Nil = Enum(4)
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
   /*==========================================*
@@ -103,25 +103,6 @@ class PhiNode(NumInputs: Int,
    *            STATE MACHINE                   *
    *============================================*/
   switch(state){
-/*
-    is(s_IDLE){
-      when(io.Mask.fire() && io.Mask.bits.asUInt.orR ){
-        state := s_MASKLATCH
-      }
-    }
-    is(s_MASKLATCH){
-      when(in_data_valid_R(sel)){
-        state := s_DATALATCH
-      }
-    }
-    is(s_DATALATCH){
-      when(enable_valid_R){
-        state := s_COMPUTE
-        ValidOut()
-      }
-    }
-
-*/
     is(s_IDLE){
       when(mask_valid_R && enable_valid_R && in_data_valid_R(sel)){
         state := s_COMPUTE
