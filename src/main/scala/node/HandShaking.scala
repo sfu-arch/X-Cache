@@ -383,8 +383,8 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   val enable_valid_R = RegInit(false.B)
 
   // Output Handshaking
-  val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
-  val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
+  val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
 
   // Wire
   // val out_ready_W   = Wire(Vec(Seq.fill(NumOuts)(false.B)))

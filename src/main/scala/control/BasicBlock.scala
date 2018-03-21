@@ -537,6 +537,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
         out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
         mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
         state := s_FEED
+        prev_state := s_START
         printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, 1.U)
       }
     }
@@ -560,7 +561,10 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
         when(loop_back_R.control) {
           out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
           mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
+
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, 2.U)
+
+          state := s_FEED
 
         }.otherwise{
           active_R := ControlBundle.default
