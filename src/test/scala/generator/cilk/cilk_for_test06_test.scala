@@ -89,7 +89,7 @@ class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainI
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
 
-  val children = 2
+  val children = 1
   val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val cilk_for_test06 = Module(new cilk_for_test06DF())
 
