@@ -18,50 +18,7 @@ import arbiters._
 import loop._
 import accel._
 import node._
-/*
-class cilk_for_test06CacheWrapper()(implicit p: Parameters) extends cilk_for_test06DF()(p)
-  with CacheParams {
-/*  val io2 = IO(new Bundle {
-    val init  = Flipped(Valid(new InitParams()(p)))
-  })
-  */
-  // Instantiate the AXI Cache
-  val cache = Module(new Cache)
-  cache.io.cpu.req <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> cache.io.cpu.resp
-  cache.io.cpu.abort := false.B
-  // Instantiate a memory model with AXI slave interface for cache
-  val memModel = Module(new NastiMemSlave)
-  memModel.io.nasti <> cache.io.nasti
-  //memModel.io.init <> io2.init
 
-  val raminit = RegInit(true.B)
-  val addrVec = VecInit( 0.U, 1.U, 2.U, 3.U, 4.U, 5.U, 6.U, 7.U, 8.U, 9.U,
-                        10.U,11.U,12.U,13.U,14.U,15.U,16.U,17.U,18.U,19.U,
-                        32.U,33.U,34.U,35.U,36.U,37.U,38.U,39.U,40.U,41.U,
-                        42.U,43.U,44.U,45.U,46.U,47.U,48.U,49.U,50.U,51.U)
-  val dataVec = VecInit( 0.U, 1.U, 2.U, 3.U, 4.U, 5.U, 6.U, 7.U, 8.U, 9.U,
-                        10.U,11.U,12.U,13.U,14.U,15.U,16.U,17.U,18.U,19.U,
-                        10.U,11.U,12.U,13.U,14.U,15.U,16.U,17.U,18.U,19.U,
-                         0.U, 1.U, 2.U, 3.U, 4.U, 5.U, 6.U, 7.U, 8.U, 9.U)
-  val (count_out, count_done) = Counter(raminit, addrVec.length)
-  memModel.io.init.bits.addr := addrVec(count_out)
-  memModel.io.init.bits.data := dataVec(count_out)
-  when (!count_done) {
-    memModel.io.init.valid := true.B
-  }.otherwise {
-    memModel.io.init.valid := false.B
-    raminit := false.B
-  }
-
-}
-abstract class cilk_for_test06MainIO(implicit val p: Parameters) extends Module with CoreParams {
-  val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
-    val out = Decoupled(new Call(List(32)))
-  })
-}
-*/
 
 class cilk_for_test06MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
@@ -132,7 +89,7 @@ class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainI
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
 
-  val children = 1
+  val children = 2
   val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val cilk_for_test06 = Module(new cilk_for_test06DF())
 

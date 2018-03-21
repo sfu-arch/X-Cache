@@ -319,10 +319,10 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
 
   override lazy val io = IO(new BasicBlockNoMaskIO(NumInputs, NumOuts))
-  override val printfSigil = node_name + BID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil = node_name + BID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -400,11 +400,11 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int)(i
                                                                                file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
   val io = IO(new BasicBlockNoMaskFastIO(NumOuts)(p))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
   /*===========================================*
    *            Registers                      *
@@ -470,9 +470,8 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
   val mask_ready_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
   val mask_valid_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
   val mask_value_R = RegInit(0.U(2.W))
-  val mask_ready_W = mask_ready_R.asUInt.andR
 
-  val s_IDLE :: s_BACK :: s_END :: Nil = Enum(3)
+  val s_IDLE :: s_BACK :: s_END :: s_DELAY :: Nil = Enum(4)
   val state = RegInit(s_IDLE)
 
   io.activate.ready := ~active_valid_R
@@ -526,6 +525,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
   /*=================
    * States
    ==================*/
+  val (cycleCount2, cycleCount2_done) = Counter((state===s_DELAY), 33)
 
   switch(state) {
     is(s_IDLE) {
@@ -567,14 +567,19 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
         mask_valid_R := VecInit(Seq.fill(NumPhi)(false.B))
 
         end_loop_valid_R := false.B
-        active_valid_R := false.B
-        loop_back_valid_R := false.B
 
-        when(end_loop_R.control){
-          state := s_IDLE
-        }.otherwise{
+        when(end_loop_R.control) {
+          state := s_DELAY
+        }.otherwise {
+          loop_back_valid_R := false.B
           state := s_BACK
         }
+      }
+    }
+    is(s_DELAY) {
+      when(cycleCount2_done) {
+        active_valid_R := false.B
+        state := s_IDLE
       }
     }
   }
