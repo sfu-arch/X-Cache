@@ -188,7 +188,7 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T) extends PeekPokeTe
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 500) {
+  while (time < 1000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&

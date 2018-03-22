@@ -235,7 +235,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1))
+  val bb_for_cond = Module(new LoopHead(NumOuts = 4, NumPhi = 2, BID = 1))
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
 
@@ -333,7 +333,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
     */
 
   //Connecting br0 to bb_for_cond
-  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
+  bb_for_cond.io.activate <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
 
 
   //Connecting br4 to bb_for_body
@@ -349,7 +349,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
 
 
   //Connecting br8 to bb_for_cond
-  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br8")) <> br8.io.Out(param.br8_brn_bb("bb_for_cond"))
+  bb_for_cond.io.loopBack <> br8.io.Out(param.br8_brn_bb("bb_for_cond"))
 
 
 
