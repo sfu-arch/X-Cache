@@ -57,8 +57,8 @@ class cilk_for_test09MainDirect(implicit p: Parameters) extends cilk_for_test09M
   val cilk_for_test09_inner = Module(new cilk_for_test09_innerDF())
   val cilk_for_test09 = Module(new cilk_for_test09DF())
 
-  cache.io.cpu.req <> cilk_for_test09_inner.io.CacheReq
-  cilk_for_test09_inner.io.CacheResp <> cache.io.cpu.resp
+//  cache.io.cpu.req <> cilk_for_test09_inner.io.CacheReq
+//  cilk_for_test09_inner.io.CacheResp <> cache.io.cpu.resp
   cilk_for_test09.io.in <> io.in
   cilk_for_test09_inner.io.in <> cilk_for_test09.io.call7_out
   cilk_for_test09.io.call7_in <> cilk_for_test09_inner.io.out
@@ -103,8 +103,8 @@ class cilk_for_test09MainTM(implicit p: Parameters) extends cilk_for_test09MainI
   // requests ports of any type.  Read or write is irrelevant.
   val CacheArbiter = Module(new CacheArbiter(children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test09_inner(i).io.CacheReq
-    cilk_for_test09_inner(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+    //CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test09_inner(i).io.CacheReq
+    //cilk_for_test09_inner(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
   }
   cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
   CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp

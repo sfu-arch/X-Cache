@@ -306,7 +306,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
   val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
   val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_2 = Module(new LiveInNode(NumOuts = 2, ID = 0))
+  val loop_L_0_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
 
 
@@ -633,8 +633,8 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
   // Wiring Store instruction to the parent instruction
   store1.io.GepAddr <> alloca0.io.Out(param.store1_in("alloca0"))
-  store1.io.memResp  <> CacheMem.io.WriteOut(0)
-  CacheMem.io.WriteIn(0) <> store1.io.memReq
+  store1.io.memResp  <> RegisterFile.io.WriteOut(0)
+  RegisterFile.io.WriteIn(0) <> store1.io.memReq
   store1.io.Out(0).ready := true.B
 
 
@@ -658,9 +658,9 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
 
   // Wiring Load instruction to the loop latch
-  load8.io.GepAddr <> loop_L_0_liveIN_2.io.Out(param.load8_in("alloca0")) // Manually fixed
-  load8.io.memResp <> CacheMem.io.ReadOut(0)
-  CacheMem.io.ReadIn(0) <> load8.io.memReq
+  load8.io.GepAddr <> loop_L_0_liveIN_2.io.Out(0)//param.load8_in("alloca0")) // Manually fixed
+  load8.io.memResp <> RegisterFile.io.ReadOut(0)
+  RegisterFile.io.ReadIn(0) <> load8.io.memReq
 
 
 
@@ -676,8 +676,8 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
   // Wiring Store instruction to the parent instruction
   store10.io.GepAddr <> alloca0.io.Out(param.store10_in("alloca0"))
-  store10.io.memResp  <> CacheMem.io.WriteOut(1)
-  CacheMem.io.WriteIn(1) <> store10.io.memReq
+  store10.io.memResp  <> RegisterFile.io.WriteOut(1)
+  RegisterFile.io.WriteIn(1) <> store10.io.memReq
   store10.io.Out(0).ready := true.B
 
 

@@ -173,8 +173,8 @@ object Data_cilk_for_test09_inner_FlowParam{
 abstract class cilk_for_test09_innerDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+//    val CacheResp = Flipped(Valid(new CacheRespT))
+//    val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -195,7 +195,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
    *                   PRINTING MEMORY SYSTEM                           *
    * ================================================================== */
 
-
+/*
 	val StackPointer = Module(new Stack(NumOps = 1))
 
 	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=2)
@@ -209,7 +209,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
 
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
-
+*/
   val InputSplitter = Module(new SplitCall(List(32)))
   InputSplitter.io.In <> io.in
 
