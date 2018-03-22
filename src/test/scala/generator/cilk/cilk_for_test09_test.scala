@@ -54,14 +54,14 @@ class cilk_for_test09MainDirect(implicit p: Parameters) extends cilk_for_test09M
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val cilk_for_test09_inner = Module(new cilk_for_test09_innerDF())
+  val cilk_for_test09_detach = Module(new cilk_for_test09_detachDF())
   val cilk_for_test09 = Module(new cilk_for_test09DF())
 
-//  cache.io.cpu.req <> cilk_for_test09_inner.io.CacheReq
-//  cilk_for_test09_inner.io.CacheResp <> cache.io.cpu.resp
+//  cache.io.cpu.req <> cilk_for_test09_detach.io.CacheReq
+//  cilk_for_test09_detach.io.CacheResp <> cache.io.cpu.resp
   cilk_for_test09.io.in <> io.in
-  cilk_for_test09_inner.io.in <> cilk_for_test09.io.call7_out
-  cilk_for_test09.io.call7_in <> cilk_for_test09_inner.io.out
+  cilk_for_test09_detach.io.in <> cilk_for_test09.io.call12_out
+  cilk_for_test09.io.call12_in <> cilk_for_test09_detach.io.out
   io.out <> cilk_for_test09.io.out
 
 }
@@ -90,12 +90,12 @@ class cilk_for_test09MainTM(implicit p: Parameters) extends cilk_for_test09MainI
 
   // Wire up the cache, TM, and modules under test.
 
-  val children = 3
-  val TaskControllerModule = Module(new TaskController(List(32,32,32), List(32), 1, children))
+  val children = 2
+  val TaskControllerModule = Module(new TaskController(List(32,32), List(32), 1, children))
   val cilk_for_test09 = Module(new cilk_for_test09DF())
 
-  val cilk_for_test09_inner = for (i <- 0 until children) yield {
-    val foo = Module(new cilk_for_test09_innerDF())
+  val cilk_for_test09_detach = for (i <- 0 until children) yield {
+    val foo = Module(new cilk_for_test09_detachDF())
     foo
   }
 
@@ -103,8 +103,8 @@ class cilk_for_test09MainTM(implicit p: Parameters) extends cilk_for_test09MainI
   // requests ports of any type.  Read or write is irrelevant.
   val CacheArbiter = Module(new CacheArbiter(children))
   for (i <- 0 until children) {
-    //CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test09_inner(i).io.CacheReq
-    //cilk_for_test09_inner(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+    //CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test09_detach(i).io.CacheReq
+    //cilk_for_test09_detach(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
   }
   cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
   CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
@@ -113,16 +113,16 @@ class cilk_for_test09MainTM(implicit p: Parameters) extends cilk_for_test09MainI
   cilk_for_test09.io.in <> io.in
 
   // cilk_for_test09 to task controller
-  TaskControllerModule.io.parentIn(0) <> cilk_for_test09.io.call7_out
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test09.io.call12_out
 
-  // task controller to sub-task cilk_for_test09_inner
+  // task controller to sub-task cilk_for_test09_detach
   for (i <- 0 until children ) {
-    cilk_for_test09_inner(i).io.in <> TaskControllerModule.io.childOut(i)
-    TaskControllerModule.io.childIn(i) <> cilk_for_test09_inner(i).io.out
+    cilk_for_test09_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> cilk_for_test09_detach(i).io.out
   }
 
   // Task controller to cilk_for_test09
-  cilk_for_test09.io.call7_in <> TaskControllerModule.io.parentOut(0)
+  cilk_for_test09.io.call12_in <> TaskControllerModule.io.parentOut(0)
 
   // cilk_for_test09 to tester
   io.out <> cilk_for_test09.io.out
@@ -168,7 +168,7 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T) extends PeekPokeTe
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 5.U)     // Array rgb[] base address
+  poke(c.io.in.bits.data("field0").data, 7.U)     // Array rgb[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
   poke(c.io.in.bits.data("field1").data, 10.U)   // Array xyz[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
@@ -188,7 +188,7 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T) extends PeekPokeTe
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 1000) {
+  while (time < 2000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
