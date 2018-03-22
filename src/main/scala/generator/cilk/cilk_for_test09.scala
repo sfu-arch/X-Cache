@@ -353,7 +353,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
 
   //  store i32 0, i32* %a, align 4, !UID !9, !ScalaLabel !10
-  val store1 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=1,RouteID=0))
+  val store1 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=1,RouteID=0))
 
 
   //  br label %pfor.cond, !UID !11, !BB_UID !12, !ScalaLabel !13
@@ -384,7 +384,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
 
   //  %0 = load i32, i32* %a, align 4, !UID !26, !ScalaLabel !27
-  val load8 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=8,RouteID=0))
+  val load8 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=8,RouteID=0))
 
 
   //  %add = add nsw i32 %0, %call, !UID !28, !ScalaLabel !29
@@ -392,7 +392,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
 
   //  store i32 %add, i32* %a, align 4, !UID !30, !ScalaLabel !31
-  val store10 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=10,RouteID=1))
+  val store10 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=10,RouteID=1))
 
 
   //  br label %pfor.preattach, !UID !32, !BB_UID !33, !ScalaLabel !34
@@ -529,7 +529,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
 
 
-//  reattach12.io.enable <> bb_pfor_preattach.io.Out(param.bb_pfor_preattach_activate("reattach12"))
+  //  reattach12.io.enable <> bb_pfor_preattach.io.Out(param.bb_pfor_preattach_activate("reattach12"))
   reattach12.io.enable.enq(ControlBundle.active())  // always enabled
   bb_pfor_preattach.io.Out(param.bb_pfor_preattach_activate("reattach12")).ready := true.B
 
@@ -661,7 +661,12 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
   load8.io.GepAddr <> loop_L_0_liveIN_2.io.Out(0)//param.load8_in("alloca0")) // Manually fixed
   load8.io.memResp <> RegisterFile.io.ReadOut(0)
   RegisterFile.io.ReadIn(0) <> load8.io.memReq
-
+  // Manual hack.  The load depends on both the original memory init (store1) and the
+  // subsequent writes.  Mux the two so that it fires in either case but only after the respective store.
+  val predMux = Module(new Arbiter(new AckBundle(),2))
+  predMux.io.in(0) <> store1.io.SuccOp(0)
+  predMux.io.in(1) <> store10.io.SuccOp(0)
+  load8.io.PredOp(0) <> predMux.io.out
 
 
   // Wiring instructions
