@@ -66,7 +66,7 @@ class cilk_for_test09MainDirect(implicit p: Parameters) extends cilk_for_test09M
 
 }
 
-class cilk_for_test09MainTM(implicit p: Parameters) extends cilk_for_test09MainIO  {
+class cilk_for_test09MainTM(ch:Int)(implicit p: Parameters) extends cilk_for_test09MainIO  {
 
   val cache = Module(new Cache)            // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -90,7 +90,7 @@ class cilk_for_test09MainTM(implicit p: Parameters) extends cilk_for_test09MainI
 
   // Wire up the cache, TM, and modules under test.
 
-  val children = 2
+  val children = ch
   val TaskControllerModule = Module(new TaskController(List(32,32), List(32), 1, children))
   val cilk_for_test09 = Module(new cilk_for_test09DF())
 
@@ -129,7 +129,7 @@ class cilk_for_test09MainTM(implicit p: Parameters) extends cilk_for_test09MainI
 
 }
 
-class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T) extends PeekPokeTester(c) {
+class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T, m:Int, n:Int) extends PeekPokeTester(c) {
   val pixels = 8
   val inAddrVec = List.range(0, pixels*3*4, 4)
   val inDataVec = List(1,1,1, 0,10,3, 0,2,5,
@@ -168,9 +168,9 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T) extends PeekPokeTe
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 7.U)     // Array rgb[] base address
+  poke(c.io.in.bits.data("field0").data, m.U)     // Array rgb[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 10.U)   // Array xyz[] base address
+  poke(c.io.in.bits.data("field1").data, n.U)   // Array xyz[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -188,7 +188,7 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T) extends PeekPokeTe
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 2000) {
+  while (time < 5000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -196,7 +196,7 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T) extends PeekPokeTe
     ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 50) {
+      if (data != 0) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 50" + Console.RESET)
         fail
       } else {
@@ -229,8 +229,9 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T) extends PeekPokeTe
   }
 }
 
-class cilk_for_test09Tester1 extends FlatSpec with Matchers {
+class cilk_for_test09Tester1(m:Int, n:Int) extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+
   it should "Check that cilk_for_test09 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -244,7 +245,7 @@ class cilk_for_test09Tester1 extends FlatSpec with Matchers {
         "-td", "test_run_dir",
         "-tts", "0001"),
       () => new cilk_for_test09MainDirect()) {
-      c => new cilk_for_test09Test01(c)
+      c => new cilk_for_test09Test01(c,5,5)
     } should be(true)
   }
 }
@@ -256,15 +257,20 @@ class cilk_for_test09Tester2 extends FlatSpec with Matchers {
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  it should "Check that cilk_for_test02 works when called via task manager." in {
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new cilk_for_test09MainTM()) {
-      c => new cilk_for_test09Test01(c)
-    } should be(true)
+  for (ch <- 1 to 5) {
+    for (m <- 5 to 20 by 5) {
+      for (n <- 1 to 25 by 5) {
+        it should s"$ch, $m, $n" in {
+          chisel3.iotesters.Driver.execute(
+            Array(
+              "-tbn", "verilator",
+              "-td", s"test_run_dir/test09-$ch-$m-$n",
+              "-tts", "0001"),
+            () => new cilk_for_test09MainTM(ch)) {
+            c => new cilk_for_test09Test01(c, m, n)
+          } should be(true)
+        }
+      }
+    }
   }
 }

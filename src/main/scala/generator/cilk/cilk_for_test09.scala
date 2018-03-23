@@ -283,7 +283,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
-  val bb_pfor_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
+  val bb_pfor_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1)) // Manually changed loophead
 
   val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
@@ -403,7 +403,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
     */
 
   //Connecting br2 to bb_pfor_cond
-  bb_pfor_cond.io.activate <> br2.io.Out(param.br2_brn_bb("bb_pfor_cond"))
+  bb_pfor_cond.io.activate <> br2.io.Out(param.br2_brn_bb("bb_pfor_cond")) // Manual change
 
 
   //Connecting br5 to bb_pfor_detach
@@ -415,7 +415,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
 
   //Connecting br8 to bb_pfor_cond
-  bb_pfor_cond.io.loopBack <> br8.io.Out(param.br8_brn_bb("bb_pfor_cond"))
+  bb_pfor_cond.io.loopBack <> br8.io.Out(param.br8_brn_bb("bb_pfor_cond")) // Manual change
 
 
   //Connecting detach6 to bb_offload_pfor_body
@@ -615,10 +615,10 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
   call12.io.retIn <> io.call12_in
   call12.io.Out.enable.ready := true.B // Manual fix
   // Wiring Call instruction to the loop header
-  call12.io.In.data("field0") <> loop_L_0_liveIN_1.io.Out(0)
+  call12.io.In.data("field0") <> loop_L_0_liveIN_1.io.Out(0) // Manually changed to liveIN_1
 
   // Wiring Call instruction to the loop header
-  call12.io.In.data("field1") <> loop_L_0_liveIN_2.io.Out(0)
+  call12.io.In.data("field1") <> loop_L_0_liveIN_2.io.Out(0) // Manually changed to liveIN_2
 
 
 

@@ -239,7 +239,6 @@ class cilk_for_test09_detachDF(implicit p: Parameters) extends cilk_for_test09_d
 
   val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
   val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 2, ID = 0))
-//  val loop_L_0_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 
 
 
@@ -253,7 +252,7 @@ class cilk_for_test09_detachDF(implicit p: Parameters) extends cilk_for_test09_d
 
   val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_my_for_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
+  val bb_my_for_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))  // Manually changed to LoopHead
 
   val bb_my_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 2))
 
@@ -362,7 +361,7 @@ class cilk_for_test09_detachDF(implicit p: Parameters) extends cilk_for_test09_d
     */
 
   //Connecting br0 to bb_my_for_cond
-  bb_my_for_cond.io.activate <> br0.io.Out(param.br0_brn_bb("bb_my_for_cond"))
+  bb_my_for_cond.io.activate <> br0.io.Out(param.br0_brn_bb("bb_my_for_cond"))  // Manually changed
 
 
   //Connecting br3 to bb_my_for_body
@@ -378,7 +377,7 @@ class cilk_for_test09_detachDF(implicit p: Parameters) extends cilk_for_test09_d
 
 
   //Connecting br9 to bb_my_for_cond
-  bb_my_for_cond.io.loopBack <> br9.io.Out(param.br9_brn_bb("bb_my_for_cond"))
+  bb_my_for_cond.io.loopBack <> br9.io.Out(param.br9_brn_bb("bb_my_for_cond"))  // Manually changed
 
 
   //Connecting br10 to bb_my_pfor_preattach
@@ -520,7 +519,7 @@ class cilk_for_test09_detachDF(implicit p: Parameters) extends cilk_for_test09_d
 
 
   // Wiring Store instruction to the function argument
-  store6.io.GepAddr <> loop_L_0_liveIN_1.io.Out(1)  // manually hookedup
+  store6.io.GepAddr <> loop_L_0_liveIN_1.io.Out(1)  // manually hookedup to liveIn
   store6.io.memResp  <> RegisterFile.io.WriteOut(0)
   RegisterFile.io.WriteIn(0) <> store6.io.memReq
   store6.io.Out(0).ready := true.B
@@ -528,11 +527,7 @@ class cilk_for_test09_detachDF(implicit p: Parameters) extends cilk_for_test09_d
 
 
   // Wiring instructions
-//  loop_L_0_liveIN_2.io.InData <> phi1.io.Out(param.add8_in("phi1"))
-//  loop_L_0_liveIN_2.io.enable <> bb_my_for_inc.io.Out(2)
-
   add8.io.LeftIO <> phi1.io.Out(param.add8_in("phi1"))
-//  add8.io.LeftIO <> loop_L_0_liveIN_2.io.Out(0)
 
   // Wiring constant
   add8.io.RightIO.bits.data := 1.U
@@ -548,7 +543,6 @@ class cilk_for_test09_detachDF(implicit p: Parameters) extends cilk_for_test09_d
   ret11.io.In.data("field0").bits.data := 1.U
   ret11.io.In.data("field0").bits.predicate := true.B
   ret11.io.In.data("field0").valid := true.B
-//  ret11.io.In.data("field0") <> store6.io.Out(0)
   io.out <> ret11.io.Out
 
 
