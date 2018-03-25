@@ -188,7 +188,7 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T, m:Int, n:Int) exte
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 5000) {
+  while (time < 100000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -250,6 +250,8 @@ class cilk_for_test09Tester1(m:Int, n:Int) extends FlatSpec with Matchers {
   }
 }
 
+/*
+ 
 class cilk_for_test09Tester2 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   // iotester flags:
@@ -257,14 +259,15 @@ class cilk_for_test09Tester2 extends FlatSpec with Matchers {
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  for (ch <- 1 to 5) {
-    for (m <- 5 to 20 by 5) {
-      for (n <- 1 to 25 by 5) {
+  // -td", s"test_run_dir/test09-$ch-$m-$n",
+  for (m <- 50 to 50 by 5) {
+    for (n <- 0 to 20 by 5) {
+      for (ch <- 1 to 10) {
         it should s"$ch, $m, $n" in {
           chisel3.iotesters.Driver.execute(
             Array(
               "-tbn", "verilator",
-              "-td", s"test_run_dir/test09-$ch-$m-$n",
+	      "-td", s"test_run_dir/test09-$ch-$m-$n",
               "-tts", "0001"),
             () => new cilk_for_test09MainTM(ch)) {
             c => new cilk_for_test09Test01(c, m, n)
@@ -274,3 +277,5 @@ class cilk_for_test09Tester2 extends FlatSpec with Matchers {
     }
   }
 }
+
+*/
