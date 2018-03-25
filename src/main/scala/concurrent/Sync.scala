@@ -217,8 +217,8 @@ class SyncNode(NumOuts: Int, ID: Int)
         (dec_valid_R && (~dec_R.control).toBool)) {
 
         //Valid the output
-        out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
         //out_ready_R := VecInit(Seq.fill(NumOuts)(true.B))
+        //out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
         assert(sync_count === 0.U, "Transition only happens if the counter is equal to zero")
         state := s_WAIT
 

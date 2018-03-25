@@ -213,12 +213,16 @@ class LiveInNewNode(NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(io.enable.fire() || enable_valid_R) {
-        when(indata_valid_R) {
-          state := s_LATCH
-          ValidOut()
-          enable_valid_R := false.B
+        when(io.enable.bits.control || enable_R) {
+          when(indata_valid_R) {
+            state := s_LATCH
+            ValidOut()
+            //            enable_valid_R := false.B
 
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Latch fired @ %d, Value:%d\n", cycleCount, io.InData.bits.data.asUInt())
+            printf("[LOG] " + "[" + module_name + "] " + node_name + ": Latch fired @ %d, Value:%d\n", cycleCount, io.InData.bits.data.asUInt())
+          }
+        }.otherwise {
+          assert((~enable_R).toBool, "ERROR!!")
         }
       }
     }
