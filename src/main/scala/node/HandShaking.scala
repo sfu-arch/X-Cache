@@ -379,7 +379,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   val nodeID_R = RegInit(ID.U)
 
   // Enable
-  val enable_R = RegInit(true.B)
+  val enable_R = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
   // Output Handshaking
@@ -408,15 +408,13 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R := io.enable.bits.control
+    enable_R <> io.enable.bits
   }
 
   /*===================================*
    *            Helper Checks          *
    *===================================*/
-  def IsEnable(): Bool = {
-    enable_R
-  }
+  def IsEnable(): Bool = {enable_R.control}
 
   def IsEnableValid(): Bool = {
     enable_valid_R
@@ -448,7 +446,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   }
 
   def Reset(): Unit = {
-    out_ready_R := Vec(Seq.fill(NumOuts)(false.B))
+    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
     enable_valid_R := false.B
   }
 }

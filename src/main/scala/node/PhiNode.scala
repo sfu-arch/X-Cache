@@ -55,7 +55,7 @@ class PhiNode(NumInputs: Int,
   // Output register
   //val data_R = RegInit(0.U(xlen.W))
 
-  val s_IDLE :: s_MASKLATCH :: s_DATALATCH :: s_COMPUTE :: Nil = Enum(4)
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
   /*==========================================*

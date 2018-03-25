@@ -257,11 +257,21 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
    * ================================================================== */
 
 
-  val loop_L_6_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_6_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_6_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_6_liveIN_3 = Module(new LiveInNode(NumOuts = 1, ID = 0))
+  val loop_L_6_liveIN_0 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
+  val loop_L_6_liveIN_1 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
+  val loop_L_6_liveIN_2 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
+  val loop_L_6_liveIN_3 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
 
+
+  val loop_L_6_liveIN_TMP_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_6_liveIN_TMP_1 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_6_liveIN_TMP_2 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_6_liveIN_TMP_3 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+
+  val loop_L_6_live_Control_0 = Module(new LiveOutControlNode(NumOuts = 1, ID = 0))
+
+  val loop_L_6_liveIN_4 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_6_liveIN_5 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
@@ -270,16 +280,16 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0))
 
   //  val bb_my_pfor_cond2 = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
   val bb_my_pfor_cond2 = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
 
   val bb_my_pfor_detach4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
-  val bb_my_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3))
+  val bb_my_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 9, BID = 3))
 
-  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
+  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4))
 
   val bb_my_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
@@ -316,7 +326,8 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   // [BasicBlock]  my_pfor.detach4:
 
   //  detach label %my_offload.pfor.body5, label %my_pfor.inc, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val detach4 = Module(new DetachFast(ID = 4))
+  //  val detach4 = Module(new Detach(ID = 4))
+  val detach4 = Module(new DetachNode(NumOuts = 3, ID = 4))
 
   // [BasicBlock]  my_pfor.inc:
 
@@ -330,7 +341,8 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   // [BasicBlock]  my_pfor.end:
 
   //  sync label %my_pfor.end.continue, !UID !41, !BB_UID !42, !ScalaLabel !43
-  val sync7 = Module(new Sync(ID = 7, NumOuts = 1, NumInc = 1, NumDec = 1))
+  //  val sync7 = Module(new Sync(ID = 7, NumOuts = 1, NumInc = 1, NumDec = 1))
+  val sync7 = Module(new SyncNode(ID = 7, NumOuts = 1))
 
   // [BasicBlock]  my_pfor.end.continue:
 
@@ -349,7 +361,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
 
   //  reattach label %my_pfor.inc, !UID !52, !BB_UID !53, !ScalaLabel !54
-  val reattach11 = Module(new Reattach(NumPredIn = 1, ID = 11))
+  val reattach11 = Module(new ReattachNode(NumPredIn = 1, ID = 11))
 
 
   /* ================================================================== *
@@ -395,7 +407,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   //Connecting br6 to bb_my_pfor_cond2
   bb_my_pfor_cond2.io.loopBack <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_cond2"))
 
-//  bb_my_pfor_cond2.io.endLoop <> bb_my_pfor_end.io.Out(5)
+  //  bb_my_pfor_cond2.io.endLoop <> bb_my_pfor_end.io.Out(5)
 
 
   //Connecting br8 to bb_my_pfor_preattach
@@ -407,11 +419,11 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
 
   //Connecting detach4 to bb_my_offload_pfor_body5
-  bb_my_offload_pfor_body5.io.predicateIn <> detach4.io.Out(param.detach4_brn_bb("bb_my_offload_pfor_body5"))
+  bb_my_offload_pfor_body5.io.predicateIn <> detach4.io.Out(0)
 
 
   //Connecting detach4 to bb_my_pfor_inc
-  bb_my_pfor_inc.io.predicateIn <> detach4.io.Out(param.detach4_brn_bb("bb_my_pfor_inc"))
+  bb_my_pfor_inc.io.predicateIn <> detach4.io.Out(1)
 
   bb_my_pfor_end_continue.io.predicateIn <> sync7.io.Out(0) // added manually
 
@@ -442,15 +454,31 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
   br6.io.enable <> bb_my_pfor_inc.io.Out(param.bb_my_pfor_inc_activate("br6"))
 
-  bb_my_offload_pfor_body5.io.Out(0).ready := true.B // Manually added
+  //  bb_my_offload_pfor_body5.io.Out(0).ready := true.B // Manually added
 
 
-  sync7.io.enable <> bb_my_pfor_end.io.Out(param.bb_my_pfor_end_activate("sync7"))
+  //  sync7.io.enable <> bb_my_pfor_end.io.Out(param.bb_my_pfor_end_activate("sync7"))
 
-  loop_L_6_liveIN_0.io.enable <> bb_my_pfor_end.io.Out(1)
-  loop_L_6_liveIN_1.io.enable <> bb_my_pfor_end.io.Out(2)
-  loop_L_6_liveIN_2.io.enable <> bb_my_pfor_end.io.Out(3)
-  loop_L_6_liveIN_3.io.enable <> bb_my_pfor_end.io.Out(4)
+
+  loop_L_6_liveIN_0.io.enable <> bb_my_pfor_body.io.Out(1)
+  loop_L_6_liveIN_1.io.enable <> bb_my_pfor_body.io.Out(2)
+  loop_L_6_liveIN_2.io.enable <> bb_my_pfor_body.io.Out(3)
+  loop_L_6_liveIN_3.io.enable <> bb_my_pfor_body.io.Out(4)
+
+  loop_L_6_liveIN_0.io.Invalid <> bb_my_pfor_end.io.Out(0)
+  loop_L_6_liveIN_1.io.Invalid <> bb_my_pfor_end.io.Out(1)
+  loop_L_6_liveIN_2.io.Invalid <> bb_my_pfor_end.io.Out(2)
+  loop_L_6_liveIN_3.io.Invalid <> bb_my_pfor_end.io.Out(3)
+
+
+  loop_L_6_liveIN_4.io.enable <> bb_my_pfor_inc.io.Out(2)
+  loop_L_6_liveIN_5.io.enable <> bb_my_pfor_inc.io.Out(3)
+
+  loop_L_6_liveIN_TMP_0.io.enable <> bb_my_pfor_inc.io.Out(4)
+  loop_L_6_liveIN_TMP_1.io.enable <> bb_my_pfor_inc.io.Out(5)
+  loop_L_6_liveIN_TMP_2.io.enable <> bb_my_pfor_inc.io.Out(6)
+  loop_L_6_liveIN_TMP_3.io.enable <> bb_my_pfor_inc.io.Out(7)
+  loop_L_6_live_Control_0.io.enable <> bb_my_pfor_inc.io.Out(8)
 
 
   br8.io.enable <> bb_my_pfor_end_continue.io.Out(param.bb_my_pfor_end_continue_activate("br8"))
@@ -459,11 +487,14 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   ret9.io.enable <> bb_my_pfor_preattach11.io.Out(param.bb_my_pfor_preattach11_activate("ret9"))
 
 
-  call10.io.In.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("call10"))
+  loop_L_6_live_Control_0.io.InData <> bb_my_offload_pfor_body5.io.Out(0)
+  call10.io.In.enable <> loop_L_6_live_Control_0.io.Out(0)
+  //  call10.io.In.enable <> bb_my_offload_pfor_body5.io.Out(0)
 
-  //  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11"))
-  reattach11.io.enable.enq(ControlBundle.active()) // always enabled
-  bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11")).ready := true.B
+  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(1)
+  //  reattach11.io.enable.enq(ControlBundle.active()) // always enabled
+  //  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(1) // always enabled
+  //  bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11")).ready := true.B
 
 
   /* ================================================================== *
@@ -522,7 +553,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
     */
 
   // Wiring instructions
-  icmp2.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
+  icmp2.io.LeftIO <> phi1.io.Out(0)
 
   // Wiring constant
   icmp2.io.RightIO.bits.data := 5.U
@@ -533,7 +564,9 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
 
   // Wiring instructions
-  add5.io.LeftIO <> phi1.io.Out(param.add5_in("phi1"))
+  //  add5.io.LeftIO <> phi1.io.Out(param.add5_in("phi1"))
+  loop_L_6_liveIN_4.io.InData <> phi1.io.Out(1)
+  add5.io.LeftIO <> loop_L_6_liveIN_4.io.Out(0)
 
   // Wiring constant
   add5.io.RightIO.bits.data := 1.U
@@ -556,29 +589,39 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   io.call10_out <> call10.io.callOut
   call10.io.retIn <> io.call10_in
   call10.io.Out.enable.ready := true.B // Manual fix
-  // Wiring Call instruction to the loop header
-  call10.io.In.data("field0") <> loop_L_6_liveIN_0.io.Out(param.call10_in("field0"))
+
+  //  call10.io.Out.enable <> bb_my_offload_pfor_body5.io.Out(0)
+  //  reattach11.io.enable <> call10.io.Out.enable
 
   // Wiring Call instruction to the loop header
-  call10.io.In.data("field1") <> loop_L_6_liveIN_1.io.Out(param.call10_in("field1"))
+  loop_L_6_liveIN_TMP_0.io.InData <> loop_L_6_liveIN_0.io.Out(0)
+  call10.io.In.data("field0") <> loop_L_6_liveIN_TMP_0.io.Out(0)
 
   // Wiring Call instruction to the loop header
-  call10.io.In.data("field2") <> phi1.io.Out(param.call10_in("phi1")) // Manually added
+  loop_L_6_liveIN_TMP_1.io.InData <> loop_L_6_liveIN_1.io.Out(0)
+  call10.io.In.data("field1") <> loop_L_6_liveIN_TMP_1.io.Out(0)
 
   // Wiring Call instruction to the loop header
-  call10.io.In.data("field3") <> loop_L_6_liveIN_2.io.Out(param.call10_in("field2"))
+  //  call10.io.In.data("field2") <> phi1.io.Out(param.call10_in("phi1")) // Manually added
+  loop_L_6_liveIN_5.io.InData <> phi1.io.Out(2)
+  call10.io.In.data("field2") <> loop_L_6_liveIN_5.io.Out(0)
 
   // Wiring Call instruction to the loop header
-  call10.io.In.data("field4") <> loop_L_6_liveIN_3.io.Out(param.call10_in("field3"))
+  loop_L_6_liveIN_TMP_2.io.InData <> loop_L_6_liveIN_2.io.Out(0)
+  call10.io.In.data("field3") <> loop_L_6_liveIN_TMP_2.io.Out(0)
 
-  call10.io.Out.enable.ready := true.B // Manual fix
+  // Wiring Call instruction to the loop header
+  loop_L_6_liveIN_TMP_3.io.InData <> loop_L_6_liveIN_3.io.Out(0)
+  call10.io.In.data("field4") <> loop_L_6_liveIN_TMP_3.io.Out(0)
+
+  //  call10.io.Out.enable.ready := true.B // Manual fix
 
   // Reattach (Manual add)
-  reattach11.io.predicateIn(0) <> call10.io.Out.data("field0")
+  reattach11.io.dataIn <> call10.io.Out.data("field0")
 
   // Sync (Manual add)
-  sync7.io.incIn(0) <> detach4.io.Out(2)
-  sync7.io.decIn(0) <> reattach11.io.Out(0)
+  sync7.io.incIn <> detach4.io.Out(2)
+  sync7.io.decIn <> reattach11.io.Out(0)
 
 
 }

@@ -93,7 +93,7 @@ class CBranchNode(ID: Int)
 
   switch(state) {
     is(s_IDLE) {
-      when(enable_valid_R && ~enable_R) {
+      when(enable_valid_R && (~enable_R.control).toBool) {
         state := s_COMPUTE
         ValidOut()
       }.elsewhen(io.CmpIO.fire()) {
@@ -103,7 +103,7 @@ class CBranchNode(ID: Int)
     is(s_LATCH) {
       state := s_COMPUTE
       when(enable_valid_R) {
-        when(enable_R) {
+        when(enable_R.control) {
           data_out_R(0) := cmp_R.data.asUInt.orR
           data_out_R(1) := ~cmp_R.data.asUInt.orR
         }

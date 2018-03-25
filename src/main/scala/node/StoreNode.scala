@@ -122,7 +122,7 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.data := data_R.data
-//  io.memReq.bits.taskID := nodeID_R
+  //  io.memReq.bits.taskID := nodeID_R
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
   io.memReq.bits.mask := 0.U
@@ -244,30 +244,30 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
   ===========================================*/
 
   //  ACTION: <- Check Out READY and Successors READY
-//  when(state === s_Done) {
-//    // When successors are complete and outputs are ready you can reset.
-//    // data already valid and would be latched in this cycle.
-//
-//    //    when(complete) {
-//    // Clear all the valid states.
-//    // Reset address
-//    addr_R := DataBundle.default
-//    addr_valid_R := false.B
-//    // Reset data.
-//    data_R := DataBundle.default
-//    data_valid_R := false.B
-//
-//    //Reset enable.
-//    enable_R := false.B
-//    enable_valid_R := false.B
-//
-//    // Clear all other state
-//    // Reset:
-//
-//    // Reset state.
-//    state := s_idle
-//    printfInfo("Output fired")
-//
-//  }
+  //  when(state === s_Done) {
+  //    // When successors are complete and outputs are ready you can reset.
+  //    // data already valid and would be latched in this cycle.
+  //
+  //    //    when(complete) {
+  //    // Clear all the valid states.
+  //    // Reset address
+  //    addr_R := DataBundle.default
+  //    addr_valid_R := false.B
+  //    // Reset data.
+  //    data_R := DataBundle.default
+  //    data_valid_R := false.B
+  //
+  //    //Reset enable.
+  //    enable_R := false.B
+  //    enable_valid_R := false.B
+  //
+  //    // Clear all other state
+  //    // Reset:
+  //
+  //    // Reset state.
+  //    state := s_idle
+  //    printfInfo("Output fired")
+  //
+  //  }
 
 }

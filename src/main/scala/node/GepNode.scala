@@ -114,7 +114,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
 
           Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-        }.elsewhen((io.idx1.fire() || idx1_valid_R) && (io.baseAddress.fire() || base_addr_valid_R)) {
+        }.elsewhen((idx1_valid_R) && (base_addr_valid_R)) {
           ValidOut()
           state := s_COMPUTE
         }
@@ -215,9 +215,9 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   }
 
 
-/*============================================*
-   *            STATES                          *
-   *============================================*/
+  /*============================================*
+     *            STATES                          *
+     *============================================*/
 
   switch(state) {
     is(s_IDLE) {
@@ -233,9 +233,8 @@ class GepTwoNode(NumOuts: Int, ID: Int)
 
           Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-        }.elsewhen((io.idx1.fire() || idx1_valid_R) &&
-          (io.idx2.fire() || idx2_valid_R) &&
-          (io.baseAddress.fire() || base_addr_valid_R)) {
+        }.elsewhen(idx1_valid_R &&
+          idx2_valid_R && base_addr_valid_R) {
 
           ValidOut()
           state := s_COMPUTE

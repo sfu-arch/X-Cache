@@ -26,7 +26,7 @@ import junctions._
   * It contains all the transformation from indices to their module's name
   */
 
-object Data_cilk_for_test06_detach_2_FlowParam{
+object Data_cilk_for_test06_detach_2_FlowParam {
 
   val bb_my_pfor_body5_pred = Map(
     "active" -> 0
@@ -140,16 +140,14 @@ object Data_cilk_for_test06_detach_2_FlowParam{
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING PORTS DEFINITION                        *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING PORTS DEFINITION                        *
+ * ================================================================== */
 
 
 abstract class cilk_for_test06_detach_2DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32,32,32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32))))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
@@ -157,15 +155,12 @@ abstract class cilk_for_test06_detach_2DFIO(implicit val p: Parameters) extends 
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING MODULE DEFINITION                       *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING MODULE DEFINITION                       *
+ * ================================================================== */
 
 
 class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06_detach_2DFIO()(p) {
-
 
 
   /* ================================================================== *
@@ -173,31 +168,31 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
    * ================================================================== */
 
 
-	val StackPointer = Module(new Stack(NumOps = 1))
+  val StackPointer = Module(new Stack(NumOps = 1))
 
-	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=1)
-		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
+  val RegisterFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 2, NWrites = 1)
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2)))
 
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=2,NWrites=1)
-		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RWArbiter=new ReadWriteArbiter()))
+  val CacheMem = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 1)
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
 
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32,32,32,32)))
+  val InputSplitter = Module(new SplitCall(List(32, 32, 32, 32, 32)))
   InputSplitter.io.In <> io.in
 
   // Manually added
-  val field1_expand = Module(new ExpandNode(NumOuts=3,ID=100)(new DataBundle))
+  val field1_expand = Module(new ExpandNode(NumOuts = 3, ID = 100)(new DataBundle))
   field1_expand.io.enable.valid := true.B
   field1_expand.io.enable.bits.control := true.B
   field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
 
   // Manually added
-  val field2_expand = Module(new ExpandNode(NumOuts=3,ID=101)(new DataBundle))
+  val field2_expand = Module(new ExpandNode(NumOuts = 3, ID = 101)(new DataBundle))
   field2_expand.io.enable.valid := true.B
   field2_expand.io.enable.bits.control := true.B
   field2_expand.io.InData <> InputSplitter.io.Out.data("field2")
@@ -218,13 +213,10 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 
   //Initializing BasicBlocks: 
 
+  //  val bb_my_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 11, BID = 0))
   val bb_my_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 11, BID = 0))
 
   val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
-
-
-
-
 
 
   /* ================================================================== *
@@ -237,55 +229,52 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
   // [BasicBlock]  my_pfor.body5:
 
   //  %0 = getelementptr inbounds [5 x i32], [5 x i32]* %a.in, i32 %i.0.in, !UID !7, !ScalaLabel !8
-  val getelementptr0 = Module (new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 20))
+  val getelementptr0 = Module(new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 20))
 
 
   //  %1 = getelementptr inbounds [5 x i32], [5 x i32]* %0, i32 0, i32 %j.0.in, !UID !9, !ScalaLabel !10
-  val getelementptr1 = Module (new GepTwoNode(NumOuts = 1, ID = 1)(numByte1 = 0, numByte2 = 4))
+  val getelementptr1 = Module(new GepTwoNode(NumOuts = 1, ID = 1)(numByte1 = 0, numByte2 = 4))
 
 
   //  %2 = load i32, i32* %1, align 4, !UID !11, !ScalaLabel !12
-  val load2 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=2,RouteID=0))
+  val load2 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 2, RouteID = 0))
 
 
   //  %3 = getelementptr inbounds [5 x i32], [5 x i32]* %b.in, i32 %i.0.in, !UID !13, !ScalaLabel !14
-  val getelementptr3 = Module (new GepOneNode(NumOuts = 1, ID = 3)(numByte1 = 20))
+  val getelementptr3 = Module(new GepOneNode(NumOuts = 1, ID = 3)(numByte1 = 20))
 
 
   //  %4 = getelementptr inbounds [5 x i32], [5 x i32]* %3, i32 0, i32 %j.0.in, !UID !15, !ScalaLabel !16
-  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4)(numByte1 = 0, numByte2 = 4))
+  val getelementptr4 = Module(new GepTwoNode(NumOuts = 1, ID = 4)(numByte1 = 0, numByte2 = 4))
 
 
   //  %5 = load i32, i32* %4, align 4, !UID !17, !ScalaLabel !18
-  val load5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=5,RouteID=1))
+  val load5 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 5, RouteID = 1))
 
 
   //  %6 = add nsw i32 %2, %5, !UID !19, !ScalaLabel !20
-  val add6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "add")(sign=false))
+  val add6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "add")(sign = false))
 
 
   //  %7 = getelementptr inbounds [5 x i32], [5 x i32]* %c.in, i32 %i.0.in, !UID !21, !ScalaLabel !22
-  val getelementptr7 = Module (new GepOneNode(NumOuts = 1, ID = 7)(numByte1 = 20))
+  val getelementptr7 = Module(new GepOneNode(NumOuts = 1, ID = 7)(numByte1 = 20))
 
 
   //  %8 = getelementptr inbounds [5 x i32], [5 x i32]* %7, i32 0, i32 %j.0.in, !UID !23, !ScalaLabel !24
-  val getelementptr8 = Module (new GepTwoNode(NumOuts = 1, ID = 8)(numByte1 = 0, numByte2 = 4))
+  val getelementptr8 = Module(new GepTwoNode(NumOuts = 1, ID = 8)(numByte1 = 0, numByte2 = 4))
 
 
   //  store i32 %6, i32* %8, align 4, !UID !25, !ScalaLabel !26
-  val store9 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=9,RouteID=0))
+  val store9 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 9, RouteID = 0))
 
 
   //  br label %my_pfor.preattach, !UID !27, !BB_UID !28, !ScalaLabel !29
-  val br10 = Module (new UBranchNode(ID = 10))
+  val br10 = Module(new UBranchNode(ID = 10))
 
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !30, !BB_UID !31, !ScalaLabel !32
-  val ret11 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=11))
-
-
-
+  val ret11 = Module(new RetNodeNew(retTypes = List(32), ID = 11))
 
 
   /* ================================================================== *
@@ -299,15 +288,14 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
   val param = Data_cilk_for_test06_detach_2_FlowParam
 
 
-
   /* ================================================================== *
    *                   CONNECTING BASIC BLOCKS TO PREDICATE INSTRUCTIONS*
    * ================================================================== */
 
 
   /**
-     * Connecting basic blocks to predicate instructions
-     */
+    * Connecting basic blocks to predicate instructions
+    */
 
 
   bb_my_pfor_body5.io.predicateIn <> InputSplitter.io.Out.enable
@@ -320,10 +308,7 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
   bb_my_pfor_preattach.io.predicateIn <> br10.io.Out(param.br10_brn_bb("bb_my_pfor_preattach"))
 
 
-
   // There is no detach instruction
-
-
 
 
   /* ================================================================== *
@@ -358,11 +343,7 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
   br10.io.enable <> bb_my_pfor_body5.io.Out(param.bb_my_pfor_body5_activate("br10"))
 
 
-
   ret11.io.enable <> bb_my_pfor_preattach.io.Out(param.bb_my_pfor_preattach_activate("ret11"))
-
-
-
 
 
   /* ================================================================== *
@@ -417,9 +398,9 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 
 
   // Wiring GEP instruction to the Constant
-  getelementptr1.io.idx1.valid :=  true.B
-  getelementptr1.io.idx1.bits.predicate :=  true.B
-  getelementptr1.io.idx1.bits.data :=  0.U
+  getelementptr1.io.idx1.valid := true.B
+  getelementptr1.io.idx1.bits.predicate := true.B
+  getelementptr1.io.idx1.bits.data := 0.U
 
 
   // Wiring GEP instruction to the function argument
@@ -430,8 +411,6 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
   load2.io.GepAddr <> getelementptr1.io.Out(param.load2_in("getelementptr1"))
   load2.io.memResp <> CacheMem.io.ReadOut(0)
   CacheMem.io.ReadIn(0) <> load2.io.memReq
-
-
 
 
   // Wiring GEP instruction to the function argument
@@ -447,9 +426,9 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 
 
   // Wiring GEP instruction to the Constant
-  getelementptr4.io.idx1.valid :=  true.B
-  getelementptr4.io.idx1.bits.predicate :=  true.B
-  getelementptr4.io.idx1.bits.data :=  0.U
+  getelementptr4.io.idx1.valid := true.B
+  getelementptr4.io.idx1.bits.predicate := true.B
+  getelementptr4.io.idx1.bits.data := 0.U
 
 
   // Wiring GEP instruction to the function argument
@@ -460,8 +439,6 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
   load5.io.GepAddr <> getelementptr4.io.Out(param.load5_in("getelementptr4"))
   load5.io.memResp <> CacheMem.io.ReadOut(1)
   CacheMem.io.ReadIn(1) <> load5.io.memReq
-
-
 
 
   // Wiring instructions
@@ -483,9 +460,9 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 
 
   // Wiring GEP instruction to the Constant
-  getelementptr8.io.idx1.valid :=  true.B
-  getelementptr8.io.idx1.bits.predicate :=  true.B
-  getelementptr8.io.idx1.bits.data :=  0.U
+  getelementptr8.io.idx1.valid := true.B
+  getelementptr8.io.idx1.bits.predicate := true.B
+  getelementptr8.io.idx1.bits.data := 0.U
 
 
   // Wiring GEP instruction to the function argument
@@ -495,24 +472,16 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
   store9.io.inData <> add6.io.Out(param.store9_in("add6"))
 
 
-
   // Wiring Store instruction to the parent instruction
   store9.io.GepAddr <> getelementptr8.io.Out(param.store9_in("getelementptr8"))
-  store9.io.memResp  <> CacheMem.io.WriteOut(0)
+  store9.io.memResp <> CacheMem.io.WriteOut(0)
   CacheMem.io.WriteIn(0) <> store9.io.memReq
   // store9.io.Out(0).ready := true.B // Manually commented out
-
 
 
   /**
     * Connecting Dataflow signals
     */
-  ret11.io.predicateIn(0).bits.control := true.B
-  ret11.io.predicateIn(0).bits.taskID := 0.U
-  ret11.io.predicateIn(0).valid := true.B
-//  ret11.io.In.data("field0").bits.data := 1.U
-//  ret11.io.In.data("field0").bits.predicate := true.B
-//  ret11.io.In.data("field0").valid := true.B
   ret11.io.In.data("field0") <> store9.io.Out(0) // manually connected
   io.out <> ret11.io.Out
 
@@ -520,8 +489,10 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
 }
 
 import java.io.{File, FileWriter}
+
 object cilk_for_test06_detach_2Main extends App {
-  val dir = new File("RTL/cilk_for_test06_detach_2") ; dir.mkdirs
+  val dir = new File("RTL/cilk_for_test06_detach_2");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test06_detach_2DF()))
 

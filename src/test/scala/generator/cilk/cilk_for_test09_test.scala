@@ -90,7 +90,7 @@ class cilk_for_test09MainTM(implicit p: Parameters) extends cilk_for_test09MainI
 
   // Wire up the cache, TM, and modules under test.
 
-  val children = 3
+  val children = 1
   val TaskControllerModule = Module(new TaskController(List(32,32,32), List(32), 1, children))
   val cilk_for_test09 = Module(new cilk_for_test09DF())
 

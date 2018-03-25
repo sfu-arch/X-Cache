@@ -328,7 +328,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   /*===========================================*
    *            Registers                      *
    *===========================================*/
-  val predicate_in_R = RegInit(false.B)
+  val predicate_in_R = RegInit(ControlBundle.default)
   val predicate_valid_R = RegInit(false.B)
 
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
@@ -340,14 +340,13 @@ class BasicBlockNoMaskNode(NumInputs: Int,
 
   io.predicateIn.ready := ~predicate_valid_R
   when(io.predicateIn.fire()) {
-    predicate_in_R := io.predicateIn.bits.control
+    predicate_in_R <> io.predicateIn.bits
     predicate_valid_R := true.B
   }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := predicate_in_R
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits <> predicate_in_R
   }
 
 
@@ -364,27 +363,23 @@ class BasicBlockNoMaskNode(NumInputs: Int,
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {
-        predicate_in_R := false.B
+        predicate_in_R <> ControlBundle.default
         predicate_valid_R := false.B
-
         state := s_IDLE
 
         Reset()
-        when(predicate_in_R) {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output [T] fired @ %d\n", cycleCount)
-        }.otherwise {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output [F] fired @ %d\n", cycleCount)
-        }
+
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output [T] fired @ %d\n", cycleCount)
       }
     }
 
   }
 
   //At each iteration only on preds can be activated
-  val pred_tem = predicate_in_R.asUInt
+  //  val pred_tem = predicate_in_R.asUInt
 
-  assert(((pred_tem & pred_tem - 1.U) === 0.U),
-    "BasicBlock can not have multiple active preds")
+  //  assert(((pred_tem & pred_tem - 1.U) === 0.U),
+  //    "BasicBlock can not have multiple active preds")
 
 }
 
@@ -532,13 +527,19 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
 
   switch(state) {
     is(s_START) {
-      when(io.activate.fire() || active_valid_R) {
-        //Valid the output
-        out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
-        mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
-        state := s_FEED
-        prev_state := s_START
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, 1.U)
+      when(active_valid_R) {
+        when(active_R.control) {
+          //Valid the output
+          out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
+          mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
+          state := s_FEED
+          prev_state := s_START
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Active fired @ %d, Mask: %d\n", cycleCount, 1.U)
+        }.otherwise {
+          active_R := ControlBundle.default
+          active_valid_R := false.B
+          state := s_START
+        }
       }
     }
     is(s_FEED) {
@@ -562,11 +563,11 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
           out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
           mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
 
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, 2.U)
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": LoopBack fired @ %d, Mask: %d\n", cycleCount, 2.U)
 
           state := s_FEED
 
-        }.otherwise{
+        }.otherwise {
           active_R := ControlBundle.default
           active_valid_R := false.B
           state := s_START
