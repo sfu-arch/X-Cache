@@ -289,7 +289,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   //  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4))
   val tmp_bb_my_pfor_end = Module(new UBranchNode(NumOuts = 4, ID = 22))
 
-  val bb_my_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
+  //  val bb_my_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
   val bb_my_pfor_preattach11 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
@@ -306,7 +306,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   // [BasicBlock]  my_pfor.body:
 
   //  br label %my_pfor.cond2, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module(new UBranchNode(ID = 0))
+  val br0 = Module(new UBranchFastNode(ID = 0))
 
   // [BasicBlock]  my_pfor.cond2:
 
@@ -319,7 +319,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
 
   //  br i1 %1, label %my_pfor.detach4, label %my_pfor.end, !UID !14, !BB_UID !15, !ScalaLabel !16
-  val br3 = Module(new CBranchNode(ID = 3))
+  val br3 = Module(new CBranchFastNode(ID = 3))
 
   // [BasicBlock]  my_pfor.detach4:
 
@@ -334,7 +334,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
 
   //  br label %my_pfor.cond2, !llvm.loop !22, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val br6 = Module(new UBranchNode(ID = 6))
+  val br6 = Module(new UBranchFastNode(ID = 6))
 
   // [BasicBlock]  my_pfor.end:
 
@@ -345,7 +345,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   // [BasicBlock]  my_pfor.end.continue:
 
   //  br label %my_pfor.preattach11, !UID !44, !BB_UID !45, !ScalaLabel !46
-  val br8 = Module(new UBranchNode(ID = 8))
+  //  val br8 = Module(new UBranchNode(ID = 8))
 
   // [BasicBlock]  my_pfor.preattach11:
 
@@ -410,7 +410,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
 
   //Connecting br8 to bb_my_pfor_preattach
-  bb_my_pfor_preattach11.io.predicateIn <> br8.io.Out(param.br8_brn_bb("bb_my_pfor_preattach11"))
+  //  bb_my_pfor_preattach11.io.predicateIn <> br8.io.Out(param.br8_brn_bb("bb_my_pfor_preattach11"))
   // Manually re-wired.  Want re-attach controlled by sub-block returns only (otherwise it stalls loop)
   //bb_my_pfor_preattach11.io.predicateIn.valid := true.B
   //bb_my_pfor_preattach11.io.predicateIn.bits.control := true.B
@@ -424,7 +424,8 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   //Connecting detach4 to bb_my_pfor_inc
   bb_my_pfor_inc.io.predicateIn <> detach4.io.Out(1)
 
-  bb_my_pfor_end_continue.io.predicateIn <> sync7.io.Out(0) // added manually
+  //  bb_my_pfor_end_continue.io.predicateIn <> sync7.io.Out(0) // added manually
+  bb_my_pfor_preattach11.io.predicateIn <> sync7.io.Out(0) // added manually
 
 
   /* ================================================================== *
@@ -474,7 +475,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   loop_L_6_live_Control_0.io.enable <> detach4.io.Out(9)
 
 
-  br8.io.enable <> bb_my_pfor_end_continue.io.Out(param.bb_my_pfor_end_continue_activate("br8"))
+  //  br8.io.enable <> bb_my_pfor_end_continue.io.Out(param.bb_my_pfor_end_continue_activate("br8"))
 
 
   ret9.io.enable <> bb_my_pfor_preattach11.io.Out(param.bb_my_pfor_preattach11_activate("ret9"))
