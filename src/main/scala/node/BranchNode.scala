@@ -76,9 +76,9 @@ class CBranchNode(ID: Int)
 
   // Wire up Outputs
   io.Out(0).bits.control := data_out_R(0)
-  io.Out(0).bits.taskID := 0.U
+  io.Out(0).bits.taskID := enable_R.taskID
   io.Out(1).bits.control := data_out_R(1)
-  io.Out(1).bits.taskID := 0.U
+  io.Out(1).bits.taskID := enable_R.taskID
 
   /*============================================*
    *            STATE MACHINE                   *
@@ -122,7 +122,7 @@ class CBranchNode(ID: Int)
         state := s_IDLE
 
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, data_out_R.asUInt())
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n",enable_R.taskID, cycleCount, data_out_R.asUInt())
       }
     }
   }
@@ -439,6 +439,10 @@ class CompareBranchNode(ID: Int, opCode: String)
     * valid == 1  ->  cmp = false then 2
     */
 
+  when(state === s_COMPUTE){
+    assert((left_R.taskID === enable_R.taskID) && (right_R.taskID === enable_R.taskID), "Control channel should be in sync with data channel!")
+  }
+
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
@@ -456,8 +460,8 @@ class CompareBranchNode(ID: Int, opCode: String)
           out_ready_R := VecInit(Seq.fill(2)(false.B))
           out_valid_R := VecInit(Seq.fill(2)(false.B))
 
-          printf("[LOG] " + "[" + module_name + "] "
-            + node_name + ": Not predicated value -> reset\n")
+          printf("[LOG] " + "[" + module_name + "] [TID-> %d] "
+            + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
 
         }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
           out_valid_R := VecInit(Seq.fill(2)(true.B))
@@ -481,8 +485,8 @@ class CompareBranchNode(ID: Int, opCode: String)
 
         state := s_IDLE
 
-        printf("[LOG] " + "[" + module_name + "] " + node_name +
-          ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out.asUInt())
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name +
+          ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, FU.io.out.asUInt())
       }
     }
   }

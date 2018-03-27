@@ -334,8 +334,6 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
-  val task_ID_R = RegNext(next = io.predicateIn.bits.taskID, init = 0.U)
-
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
@@ -372,7 +370,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
         Reset()
 
         printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output [T] fired @ %d\n",
-          task_ID_R, cycleCount)
+          predicate_in_R.taskID, cycleCount)
       }
     }
 

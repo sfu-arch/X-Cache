@@ -93,7 +93,7 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
           out_ready_R := false.B
           enable_valid_R := false.B
 
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
 
           state := s_IDLE
 

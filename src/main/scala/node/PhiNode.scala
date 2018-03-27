@@ -24,11 +24,11 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
 }
 
 class PhiNode(NumInputs: Int,
-                 NumOuts: Int,
-                 ID: Int)
-                (implicit p: Parameters,
-                 name: sourcecode.Name,
-                 file: sourcecode.File)
+              NumOuts: Int,
+              ID: Int)
+             (implicit p: Parameters,
+              name: sourcecode.Name,
+              file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new PhiNodeIO(NumInputs, NumOuts))
   // Printf debugging
@@ -36,13 +36,13 @@ class PhiNode(NumInputs: Int,
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
 
   override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
   // Data Inputs
-  val in_data_R       = RegInit(VecInit(Seq.fill(NumInputs)(DataBundle.default)))
+  val in_data_R = RegInit(VecInit(Seq.fill(NumInputs)(DataBundle.default)))
   val in_data_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
   val in_data_W = WireInit(DataBundle.default)
@@ -95,23 +95,23 @@ class PhiNode(NumInputs: Int,
     io.Out(i).bits <> in_data_W
   }
 
-  when(state === s_COMPUTE){
-    assert(enable_R.taskID === in_data_R(sel).taskID , "Control TaskID and Data TaskID should be the same!")
-  }
+  //  when(state === s_COMPUTE){
+  //    assert(enable_R.taskID === in_data_R(sel).taskID , "Control TaskID and Data TaskID should be the same!")
+  //  }
 
 
   /*============================================*
    *            STATE MACHINE                   *
    *============================================*/
-  switch(state){
-    is(s_IDLE){
-      when(mask_valid_R && enable_valid_R && in_data_valid_R(sel)){
+  switch(state) {
+    is(s_IDLE) {
+      when(mask_valid_R && enable_valid_R && in_data_valid_R(sel)) {
         state := s_COMPUTE
         ValidOut()
       }
     }
-    is(s_COMPUTE){
-      when(IsOutReady()){
+    is(s_COMPUTE) {
+      when(IsOutReady()) {
         mask_R := 0.U
         mask_valid_R := false.B
 
@@ -124,9 +124,7 @@ class PhiNode(NumInputs: Int,
         Reset()
 
         //Print output
-        when (predicate) {
-          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n",cycleCount, in_data_W.data)
-        }
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", in_data_W.taskID, cycleCount, in_data_W.data)
 
 
       }

@@ -89,9 +89,9 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   }
 
   // Assertion to make sure that runtime won't be
-  when(left_valid_R && right_valid_R && enable_valid_R){
-    assert((left_R.taskID === right_R.taskID) && (left_R.taskID === enable_R.taskID), "TaskID of two inputs should be always the same")
-  }
+  //  when(left_valid_R && right_valid_R && enable_valid_R){
+  //    assert((left_R.taskID === right_R.taskID) && (left_R.taskID === enable_R.taskID), "TaskID of two inputs should be always the same")
+  //  }
 
   /*============================================*
    *            State Machine                   *
@@ -126,7 +126,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         state := s_IDLE
         //Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n",task_ID_R, cycleCount, FU.io.out)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_R, cycleCount, FU.io.out)
       }
     }
   }

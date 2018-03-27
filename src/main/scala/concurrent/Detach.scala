@@ -182,7 +182,7 @@ class DetachNode(ID: Int, NumOuts: Int = 1)
     Reset()
 
     state := s_idle
-    printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+    printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n",enable_R.taskID, cycleCount)
 
 
   }

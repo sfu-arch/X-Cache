@@ -43,7 +43,7 @@ class CallNode(ID: Int, argTypes: Seq[Int], retTypes: Seq[Int])
   when(CombineIn.io.Out.fire) {
     when (CombineIn.io.Out.bits.enable.control)
     {
-      printf("[LOG] " + "[" + module_name + "] " + node_name  + ": Output fired @ %d\n",cycleCount)
+      printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name  + ": Output fired @ %d\n", CombineIn.io.Out.bits.enable.taskID, cycleCount)
     }
   }
 }

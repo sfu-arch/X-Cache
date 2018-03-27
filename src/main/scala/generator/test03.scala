@@ -26,7 +26,7 @@ import junctions._
   * It contains all the transformation from indices to their module's name
   */
 
-object Data_test03_FlowParam{
+object Data_test03_FlowParam {
 
   val bb_entry_pred = Map(
     "active" -> 0
@@ -173,16 +173,14 @@ object Data_test03_FlowParam{
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING PORTS DEFINITION                        *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING PORTS DEFINITION                        *
+ * ================================================================== */
 
 
 abstract class test03DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
@@ -190,15 +188,12 @@ abstract class test03DFIO(implicit val p: Parameters) extends Module with CorePa
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING MODULE DEFINITION                       *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING MODULE DEFINITION                       *
+ * ================================================================== */
 
 
 class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
-
 
 
   /* ================================================================== *
@@ -206,23 +201,22 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    * ================================================================== */
 
 
-	val StackPointer = Module(new Stack(NumOps = 1))
+  val StackPointer = Module(new Stack(NumOps = 1))
 
-	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
+  val RegisterFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 2, NWrites = 2)
+  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2)))
 
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RWArbiter=new ReadWriteArbiter()))
+  val CacheMem = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 2)
+  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
 
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32,32)))
+  val InputSplitter = Module(new SplitCall(List(32, 32, 32)))
   InputSplitter.io.In <> io.in
-
 
 
   /* ================================================================== *
@@ -246,20 +240,16 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-//  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 1))
+  //  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 1))
   val bb_for_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 2, BID = 1))
 
-//  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
+  //  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
   val bb_for_body = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 2))
 
-//  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
+  //  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
   val bb_for_inc = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
   val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
-
-
-
-
 
 
   /* ================================================================== *
@@ -272,56 +262,53 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  br label %for.cond, !UID !8, !BB_UID !9, !ScalaLabel !10
-  val br0 = Module (new UBranchNode(ID = 0))
+  val br0 = Module(new UBranchNode(ID = 0))
 
   // [BasicBlock]  for.cond:
 
   //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ], !UID !11, !ScalaLabel !12
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1))
+  val phi1 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1))
 
 
   //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !13, !ScalaLabel !14
-  val phi2 = Module (new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
+  val phi2 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
 
 
   //  %cmp = icmp slt i32 %i.0, %n, !UID !15, !ScalaLabel !16
-//  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false))
+  //  val icmp3 = Module (new IcmpNode(NumOuts = 1, ID = 3, opCode = "ULT")(sign=false))
 
 
   //  br i1 %cmp, label %for.body, label %for.end, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val br4 = Module (new CBranchNode(ID = 4))
+  val br4 = Module(new CBranchNode(ID = 4))
 
   val cmpBranch = Module(new CompareBranchNode(ID = 22, opCode = "ULT"))
 
   // [BasicBlock]  for.body:
 
   //  %add = add i32 %sum.0, %a, !UID !20, !ScalaLabel !21
-  val add5 = Module (new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
+  val add5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
 
 
   //  %mul = mul i32 %add, %b, !UID !22, !ScalaLabel !23
-  val mul6 = Module (new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign=false))
+  val mul6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign = false))
 
 
   //  br label %for.inc, !UID !24, !BB_UID !25, !ScalaLabel !26
-  val br7 = Module (new UBranchNode(ID = 7))
+  val br7 = Module(new UBranchNode(ID = 7))
 
   // [BasicBlock]  for.inc:
 
   //  %inc = add nsw i32 %i.0, 1, !UID !27, !ScalaLabel !28
-  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
+  val add8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign = false))
 
 
   //  br label %for.cond, !llvm.loop !29, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val br9 = Module (new UBranchNode(ID = 9))
+  val br9 = Module(new UBranchNode(ID = 9))
 
   // [BasicBlock]  for.end:
 
   //  ret i32 %sum.0, !UID !41, !BB_UID !42, !ScalaLabel !43
-  val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10))
-
-
-
+  val ret10 = Module(new RetNode(NumPredIn = 1, retTypes = List(32), ID = 10))
 
 
   /* ================================================================== *
@@ -335,15 +322,14 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val param = Data_test03_FlowParam
 
 
-
   /* ================================================================== *
    *                   CONNECTING BASIC BLOCKS TO PREDICATE INSTRUCTIONS*
    * ================================================================== */
 
 
   /**
-     * Connecting basic blocks to predicate instructions
-     */
+    * Connecting basic blocks to predicate instructions
+    */
 
 
   bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
@@ -353,17 +339,17 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
     */
 
   //Connecting br0 to bb_for_cond
-//  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
+  //  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
   bb_for_cond.io.activate <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
 
 
   //Connecting br4 to bb_for_body
-//  bb_for_body.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
+  //  bb_for_body.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_body"))
   bb_for_body.io.predicateIn <> cmpBranch.io.Out(param.br4_brn_bb("bb_for_body"))
 
 
   //Connecting br4 to bb_for_end
-//  bb_for_end.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
+  //  bb_for_end.io.predicateIn <> br4.io.Out(param.br4_brn_bb("bb_for_end"))
   bb_for_end.io.predicateIn <> cmpBranch.io.Out(param.br4_brn_bb("bb_for_end"))
 
 
@@ -374,9 +360,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   //Connecting br9 to bb_for_cond
   bb_for_cond.io.loopBack <> br9.io.Out(param.br9_brn_bb("bb_for_cond"))
 
-//  bb_for_cond.io.endLoop <> bb_for_end.io.Out(5)
-
-
+  //  bb_for_cond.io.endLoop <> bb_for_end.io.Out(5)
 
 
   /* ================================================================== *
@@ -391,17 +375,15 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   br0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("br0"))
 
 
-
   phi1.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("phi1"))
 
   phi2.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("phi2"))
 
   cmpBranch.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("icmp3"))
 
-//  icmp3.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("icmp3"))
-//
-//  br4.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br4"))
-
+  //  icmp3.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("icmp3"))
+  //
+  //  br4.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br4"))
 
 
   add5.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("add5"))
@@ -411,11 +393,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   br7.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("br7"))
 
 
-
   add8.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("add8"))
 
   br9.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("br9"))
-
 
 
   ret10.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret10"))
@@ -425,9 +405,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   loop_L_7_liveIN_2.io.enable <> bb_for_end.io.Out(3)
 
   loop_L_7_LiveOut_0.io.enable <> bb_for_end.io.Out(4)
-
-
-
 
 
   /* ================================================================== *
@@ -446,7 +423,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   // Connecting function argument to the loop header
   //i32 %n
   loop_L_7_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
-
 
 
   /* ================================================================== *
@@ -481,7 +457,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   phi2.io.Mask <> bb_for_cond.io.MaskBB(1)
 
 
-
   /* ================================================================== *
    *                   DUMPING DATAFLOW                                 *
    * ================================================================== */
@@ -492,15 +467,15 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
     */
 
   // Wiring instructions
-//  icmp3.io.LeftIO <> phi2.io.Out(param.icmp3_in("phi2"))
+  //  icmp3.io.LeftIO <> phi2.io.Out(param.icmp3_in("phi2"))
   cmpBranch.io.LeftIO <> phi2.io.Out(param.icmp3_in("phi2"))
 
   // Wiring Binary instruction to the loop header
-//  icmp3.io.RightIO <> loop_L_7_liveIN_2.io.Out(param.icmp3_in("field2"))
+  //  icmp3.io.RightIO <> loop_L_7_liveIN_2.io.Out(param.icmp3_in("field2"))
   cmpBranch.io.RightIO <> loop_L_7_liveIN_2.io.Out(param.icmp3_in("field2"))
 
   // Wiring Branch instruction
-//  br4.io.CmpIO <> cmpBranch.io.Out(param.br4_in("icmp3"))
+  //  br4.io.CmpIO <> cmpBranch.io.Out(param.br4_in("icmp3"))
 
   // Wiring instructions
   add5.io.LeftIO <> phi1.io.Out(param.add5_in("phi1"))
@@ -526,7 +501,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   ret10.io.predicateIn(0).bits.taskID := 0.U
   ret10.io.predicateIn(0).valid := true.B
 
-  loop_L_7_LiveOut_0.io.InData <>   phi1.io.Out(param.ret10_in("phi1"))
+  loop_L_7_LiveOut_0.io.InData <> phi1.io.Out(param.ret10_in("phi1"))
   ret10.io.In.data("field0") <> loop_L_7_LiveOut_0.io.Out(0)
   io.out <> ret10.io.Out
 
@@ -534,8 +509,10 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 }
 
 import java.io.{File, FileWriter}
+
 object test03Main extends App {
-  val dir = new File("RTL/test03") ; dir.mkdirs
+  val dir = new File("RTL/test03");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test03DF()))
 

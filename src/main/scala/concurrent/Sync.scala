@@ -255,7 +255,7 @@ class SyncNode(NumOuts: Int, ID: Int)
       when(out_ready_R.asUInt.andR | out_ready_W.asUInt.andR) {
         out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
         state := s_IDLE
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Sync(%d) fired @ %d\n", enableID, cycleCount)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enableID, cycleCount)
       }
     }
   }

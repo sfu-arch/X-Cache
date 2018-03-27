@@ -122,7 +122,7 @@ class UnTypLoad(NumPredOps: Int,
           Reset()
           // Reset state.
           state := s_idle
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": restarted @ %d\n",enable_R.taskID, cycleCount)
         }
       }
     }
@@ -153,7 +153,7 @@ class UnTypLoad(NumPredOps: Int,
         Reset()
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n",enable_R.taskID, cycleCount)
       }
     }
   }

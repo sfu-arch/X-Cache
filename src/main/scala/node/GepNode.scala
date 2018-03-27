@@ -113,7 +113,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
           base_addr_valid_R := false.B
 
           Reset()
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+          printf("[LOG] " + "[" + module_name + "] [TID-> %d]" + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
         }.elsewhen((idx1_valid_R) && (base_addr_valid_R)) {
           ValidOut()
           state := s_COMPUTE
@@ -135,7 +135,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, data_W)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n",enable_R.taskID, cycleCount, data_W)
       }
     }
   }
@@ -232,7 +232,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
           base_addr_valid_R := false.B
 
           Reset()
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
         }.elsewhen(idx1_valid_R &&
           idx2_valid_R && base_addr_valid_R) {
 
@@ -258,7 +258,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, data_W)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
       }
     }
   }
