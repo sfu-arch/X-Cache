@@ -95,6 +95,10 @@ class PhiNode(NumInputs: Int,
     io.Out(i).bits <> in_data_W
   }
 
+  when(state === s_COMPUTE){
+    assert(enable_R.taskID === in_data_R(sel).taskID , "Control TaskID and Data TaskID should be the same!")
+  }
+
 
   /*============================================*
    *            STATE MACHINE                   *
@@ -121,7 +125,7 @@ class PhiNode(NumInputs: Int,
 
         //Print output
         when (predicate) {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n",cycleCount, in_data_W.data)
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n",cycleCount, in_data_W.data)
         }
 
 

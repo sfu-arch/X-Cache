@@ -183,18 +183,12 @@ class UBranchNode(ID: Int, NumOuts: Int = 1)
    *            Registers                      *
    *===========================================*/
 
-  // Output register
-  val data_R = RegInit(0.U(xlen.W))
-
   val s_idle :: s_OUTPUT :: Nil = Enum(2)
   val state = RegInit(s_idle)
 
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
-
-  val predicate = IsEnable()
-  val start = IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -210,43 +204,26 @@ class UBranchNode(ID: Int, NumOuts: Int = 1)
     */
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := predicate
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits <> enable_R
 
   }
-
-  /*============================================*
-   *            ACTIONS (possibly dangerous)    *
-   *============================================*/
-
-  when(start & (state === s_idle)) {
-    state := s_OUTPUT
-    ValidOut()
-  }
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
 
   val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
 
-  when(out_ready_W & (state === s_OUTPUT)) {
-    //printfInfo("Start restarting output \n")
-    //
-    Reset()
-
-    //Output predication
-    data_R := 0.U
-
-    //Reset state
-    state := s_idle
-    when(predicate) {
-      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+  switch(state){
+    is(s_idle){
+      when(io.enable.fire()){
+        state := s_OUTPUT
+        ValidOut()
+      }
     }
-
-
+    is(s_OUTPUT){
+      when(out_ready_W){
+        state := s_idle
+        Reset()
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+      }
+    }
   }
 
 }

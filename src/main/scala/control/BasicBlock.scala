@@ -68,7 +68,7 @@ class BasicBlockNode(NumInputs: Int,
    *            Registers                      *
    *===========================================*/
   // OP Inputs
-  val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+  val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(ControlBundle.default)))
   val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
   val s_IDLE :: s_LATCH :: Nil = Enum(2)
@@ -78,7 +78,7 @@ class BasicBlockNode(NumInputs: Int,
    *            Valids                         *
    *===========================================*/
 
-  val predicate = predicate_in_R.asUInt().orR
+  val predicate = predicate_in_R.map(_.control).reduceLeft(_ || _)
   val start = predicate_valid_R.asUInt().andR()
 
   /*===============================================*
@@ -91,7 +91,7 @@ class BasicBlockNode(NumInputs: Int,
   for (i <- 0 until NumInputs) {
     io.predicateIn(i).ready := ~predicate_valid_R(i)
     when(io.predicateIn(i).fire()) {
-      predicate_in_R(i) <> io.predicateIn(i).bits.control
+      predicate_in_R(i) <> io.predicateIn(i).bits
       predicate_valid_R(i) := true.B
     }
   }
@@ -334,6 +334,8 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
+  val task_ID_R = RegNext(next = io.predicateIn.bits.taskID, init = 0.U)
+
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
@@ -369,17 +371,12 @@ class BasicBlockNoMaskNode(NumInputs: Int,
 
         Reset()
 
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output [T] fired @ %d\n", cycleCount)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output [T] fired @ %d\n",
+          task_ID_R, cycleCount)
       }
     }
 
   }
-
-  //At each iteration only on preds can be activated
-  //  val pred_tem = predicate_in_R.asUInt
-
-  //  assert(((pred_tem & pred_tem - 1.U) === 0.U),
-  //    "BasicBlock can not have multiple active preds")
 
 }
 
@@ -457,6 +454,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
   val end_loop_valid_R = RegInit(false.B)
 
   // Output Handshaking
+  val out_value = RegInit(ControlBundle.default)
   val out_val_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
   val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
   val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
@@ -483,8 +481,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
   }
 
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := true.B
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits <> out_value
   }
 
   // Wire up OUT READYs and VALIDs
@@ -530,11 +527,12 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
       when(active_valid_R) {
         when(active_R.control) {
           //Valid the output
+          out_value <> active_R
           out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
           mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
           state := s_FEED
           prev_state := s_START
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Active fired @ %d, Mask: %d\n", cycleCount, 1.U)
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Active fired @ %d, Mask: %d\n",active_R.taskID, cycleCount, 1.U)
         }.otherwise {
           active_R := ControlBundle.default
           active_valid_R := false.B
@@ -560,10 +558,11 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
         loop_back_valid_R := false.B
 
         when(loop_back_R.control) {
+          out_value <> loop_back_R
           out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
           mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
 
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": LoopBack fired @ %d, Mask: %d\n", cycleCount, 2.U)
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": LoopBack fired @ %d, Mask: %d\n",loop_back_R.taskID, cycleCount, 2.U)
 
           state := s_FEED
 

@@ -195,12 +195,11 @@ class SyncNode(NumOuts: Int, ID: Int)
         inc_R := ControlBundle.default
         inc_valid_R := false.B
 
+        enableID := inc_R.taskID
+
       }.elsewhen((io.incIn.fire() && (~io.incIn.bits.control).toBool) ||
         (inc_valid_R && (~inc_R.control).toBool)) {
         state := s_COUNT
-
-        //        inc_R := ControlBundle.default
-        //        inc_valid_R := false.B
 
       }.elsewhen((io.decIn.fire() && io.decIn.bits.control) ||
         (dec_valid_R && dec_R.control)) {
@@ -256,11 +255,10 @@ class SyncNode(NumOuts: Int, ID: Int)
       when(out_ready_R.asUInt.andR | out_ready_W.asUInt.andR) {
         out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
         state := s_IDLE
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Sync(%d) fired @ %d\n", enableID, cycleCount)
       }
     }
   }
-
 
 }
 

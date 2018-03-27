@@ -97,16 +97,18 @@ class SplitCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
   val io = IO(new SplitCallIO(argTypes))
   val inputReg  = RegInit(0.U.asTypeOf(io.In.bits))
   val inputReadyReg = RegInit(false.B)
-  val outputValidReg = RegInit(VecInit(Seq.fill(argTypes.length+1){false.B}))
+  val outputValidReg = RegInit(VecInit(Seq.fill(argTypes.length + 1)(false.B)))
 
   val s_idle :: s_latched :: Nil = Enum(2)
   val state = RegInit(s_idle)
 
+  io.In.ready := state === s_idle
+
   switch(state) {
     is(s_idle) {
-      when (io.In.valid) {
+      when (io.In.fire()) {
         state := s_latched
-        inputReg := io.In.bits
+        inputReg <> io.In.bits
       }
     }
     is(s_latched) {
@@ -115,7 +117,6 @@ class SplitCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
       }
     }
   }
-  io.In.ready := state === s_idle
 
   for (i <- argTypes.indices) {
     when(io.In.valid && state === s_idle) {
@@ -125,7 +126,7 @@ class SplitCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
       outputValidReg(i) := false.B
     }
     io.Out.data(s"field$i").valid := outputValidReg(i)
-    io.Out.data(s"field$i").bits := inputReg.data(s"field$i")
+    io.Out.data(s"field$i").bits <> inputReg.data(s"field$i")
   }
 
   when(io.In.valid && state === s_idle) {
@@ -135,6 +136,6 @@ class SplitCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
     outputValidReg(argTypes.length) := false.B
   }
   io.Out.enable.valid := outputValidReg(argTypes.length)
-  io.Out.enable.bits := inputReg.enable
+  io.Out.enable.bits <> inputReg.enable
 
 }

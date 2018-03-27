@@ -49,6 +49,8 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   val right_R = RegInit(DataBundle.default)
   val right_valid_R = RegInit(false.B)
 
+  val task_ID_R = RegNext(next = enable_R.taskID)
+
   //Output register
   val data_R = RegInit(0.U(xlen.W))
 
@@ -86,6 +88,11 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     io.Out(i).bits.taskID := left_R.taskID
   }
 
+  // Assertion to make sure that runtime won't be
+  when(left_valid_R && right_valid_R && enable_valid_R){
+    assert((left_R.taskID === right_R.taskID) && (left_R.taskID === enable_R.taskID), "TaskID of two inputs should be always the same")
+  }
+
   /*============================================*
    *            State Machine                   *
    *============================================*/
@@ -100,7 +107,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
           right_valid_R := false.B
 
           Reset()
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Not predicated value -> reset\n", task_ID_R)
         }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
           ValidOut()
           state := s_COMPUTE
@@ -119,7 +126,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         state := s_IDLE
         //Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n",task_ID_R, cycleCount, FU.io.out)
       }
     }
   }

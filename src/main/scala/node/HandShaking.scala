@@ -733,11 +733,9 @@ class HandShakingCtrlMask(val NumInputs: Int,
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := Vec(Seq.fill(NumOuts)(true.B))
+    out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
 
-    mask_valid_R := Vec(Seq.fill(NumPhi) {
-      true.B
-    })
+    mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
   }
 
   def InvalidOut(): Unit = {
@@ -775,8 +773,8 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
   val nodeID_R = RegInit(BID.U)
 
   // Output Handshaking
-  val out_ready_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
-  val out_valid_R = RegInit(Vec(Seq.fill(NumOuts)(false.B)))
+  val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
 
   /*============================*
    *           Wiring           *
