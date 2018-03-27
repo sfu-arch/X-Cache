@@ -68,7 +68,7 @@ class LiveOutNode(NumOuts: Int, ID: Int)
     }
     is(s_LATCH) {
       when(enable_valid_R) {
-        when(enable_R) {
+        when(enable_R.control) {
           state := s_VALIDOUT
           ValidOut()
         }.otherwise {
@@ -223,7 +223,7 @@ class LiveOutControlNode(NumOuts: Int, ID: Int)
     }
     is(s_LATCH) {
       when(enable_valid_R) {
-        when(enable_R) {
+        when(enable_R.control) {
           state := s_VALIDOUT
           ValidOut()
         }.otherwise {

@@ -96,7 +96,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when((~enable_R).toBool) {
+        when((~enable_R.control).toBool) {
           left_R := DataBundle.default
           right_R := DataBundle.default
 

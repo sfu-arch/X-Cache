@@ -105,7 +105,7 @@ class UnTypLoad(NumPredOps: Int,
   switch(state) {
     is(s_idle) {
       when(enable_valid_R) {
-        when(enable_R) {
+        when(enable_R.control) {
           when(mem_req_fire && addr_valid_R && IsPredValid()) {
             io.memReq.valid := true.B
             when(io.memReq.ready) {

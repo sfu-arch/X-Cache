@@ -70,7 +70,7 @@ class LiveInNode(NumOuts: Int, ID: Int)
     }
     is(s_LATCH) {
       when(enable_valid_R) {
-        when(enable_R) {
+        when(enable_R.control) {
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Latch invalidate @ %d\n", cycleCount)
           state := s_IDLE
           indata_R <> DataBundle.default
@@ -213,16 +213,15 @@ class LiveInNewNode(NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(io.enable.fire() || enable_valid_R) {
-        when(io.enable.bits.control || enable_R) {
+        when(io.enable.bits.control || enable_R.control) {
           when(indata_valid_R) {
             state := s_LATCH
             ValidOut()
-            //            enable_valid_R := false.B
 
             printf("[LOG] " + "[" + module_name + "] " + node_name + ": Latch fired @ %d, Value:%d\n", cycleCount, io.InData.bits.data.asUInt())
           }
         }.otherwise {
-          assert((~enable_R).toBool, "ERROR!!")
+          assert((~enable_R.control).toBool, "ERROR!!")
         }
       }
     }

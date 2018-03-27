@@ -105,7 +105,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when((~enable_R).toBool) {
+        when((~enable_R.control).toBool) {
           idx1_R := DataBundle.default
           base_addr_R := DataBundle.default
 
@@ -222,7 +222,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when((~enable_R).toBool) {
+        when((~enable_R.control).toBool) {
           idx1_R := DataBundle.default
           idx2_R := DataBundle.default
           base_addr_R := DataBundle.default

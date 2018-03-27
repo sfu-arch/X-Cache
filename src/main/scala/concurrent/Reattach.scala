@@ -6,6 +6,7 @@ import chisel3.Module
 import config._
 import interfaces._
 import node._
+import utility.UniformPrintfs
 
 class ReattachIO(val NumPredIn: Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p) {
@@ -97,17 +98,114 @@ class Reattach(val NumPredIn: Int, ID: Int)
 
 }
 
-class ReattachNodeIO(val NumPredIn: Int)(implicit p: Parameters)
+
+class ReattachNodeIO(val NumOuts: Int)(implicit p: Parameters)
+  extends Bundle {
+  val dataIn = Flipped(Decoupled(new DataBundle()))
+  val Out = Vec(NumOuts, Decoupled(new ControlBundle()))
+}
+
+class ReattachNode(val NumOuts: Int = 1, ID: Int)
+                    (implicit val p: Parameters,
+                     name: sourcecode.Name,
+                     file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+  override lazy val io = IO(new ReattachNodeIO(NumOuts))
+
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+  // Addr Inputs
+  val data_R = RegInit(DataBundle.default)
+  val data_valid_R = RegInit(false.B)
+
+  // Output Handshaking
+  val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+
+  // Wire
+  val out_ready_W = WireInit(VecInit(Seq.fill(NumOuts)(false.B)))
+
+
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
+  val state = RegInit(s_IDLE)
+
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+  io.dataIn.ready := ~data_valid_R
+  when(io.dataIn.fire()) {
+    data_R <> io.dataIn.bits
+    data_valid_R := true.B
+  }
+
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.control := data_valid_R
+    io.Out(i).bits.taskID := data_R.taskID
+  }
+
+  // Wire up OUT READYs and VALIDs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).valid := out_valid_R(i)
+    out_ready_W(i) := io.Out(i).ready
+    when(io.Out(i).fire()) {
+      // Detecting when to reset
+      out_ready_R(i) := io.Out(i).ready
+      // Propagating output
+      out_valid_R(i) := false.B
+    }
+  }
+
+
+  /*============================================*
+   *            STATES                          *
+   *============================================*/
+
+  switch(state) {
+    is(s_IDLE) {
+      when(io.dataIn.fire()) {
+        out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
+        state := s_COMPUTE
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+      }
+
+    }
+    is(s_COMPUTE) {
+      when(out_ready_R.asUInt.andR | out_ready_W.asUInt.andR) {
+        // Reset output
+        data_R := DataBundle.default
+        data_valid_R := false.B
+        // Reset state
+        state := s_IDLE
+        // Reset output
+        out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+      }
+    }
+  }
+
+
+}
+
+
+class ReattachNodeSYNCIO(val NumPredIn: Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p) {
   val dataIn = Flipped(Decoupled(new DataBundle()))
 }
 
-class ReattachNode(val NumPredIn: Int, ID: Int)
+class ReattachNodeSYNC(val NumPredIn: Int = 1, ID: Int)
                   (implicit p: Parameters,
                    name: sourcecode.Name,
                    file: sourcecode.File)
   extends HandShakingNPS(NumOuts = 1, ID)(new ControlBundle)(p) {
-  override lazy val io = IO(new ReattachNodeIO(NumOuts))
+  override lazy val io = IO(new ReattachNodeSYNCIO(NumOuts))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
@@ -138,7 +236,7 @@ class ReattachNode(val NumPredIn: Int, ID: Int)
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := enable_R
+    io.Out(i).bits.control := enable_R.control
     io.Out(i).bits.taskID := data_R.taskID
   }
 
@@ -150,7 +248,7 @@ class ReattachNode(val NumPredIn: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when((~enable_R).toBool) {
+        when((~enable_R.control).toBool) {
           //Reset()
           ValidOut()
           state := s_COMPUTE

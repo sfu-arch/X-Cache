@@ -241,9 +241,15 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    * ================================================================== */
 
 
-  val loop_L_5_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_5_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_5_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
+  val loop_L_5_liveIN_0 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
+  val loop_L_5_liveIN_1 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
+  val loop_L_5_liveIN_2 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
+
+  val loop_L_5_liveIN_TMP_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_5_liveIN_TMP_1 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_5_liveIN_TMP_2 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+
+  val loop_L_5_liveIN_Control_0 = Module(new LiveOutControlNode(NumOuts = 1, ID = 0))
 
   val loop_L_5_liveIN_3 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
   val loop_L_5_liveIN_4 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
@@ -256,20 +262,21 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 0))
 
   //  val bb_pfor_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
   val bb_pfor_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
 
-  val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  //  val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
-  val bb_pfor_inc12 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 4, BID = 3))
+  val bb_pfor_inc12 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3))
 
-  val bb_pfor_end14 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 4))
+  //  val bb_pfor_end14 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 4))
+  val tmp_bb_my_pfor_end = Module(new UBranchNode(NumOuts = 3, ID = 22))
 
   val bb_pfor_end_continue15 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
-  val bb_offload_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 6))
+  val bb_offload_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
 
   /* ================================================================== *
@@ -300,7 +307,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   // [BasicBlock]  pfor.detach:
 
   //  detach label %offload.pfor.body, label %pfor.inc12, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val detach4 = Module(new DetachNode(NumOuts = 3, ID = 4))
+  val detach4 = Module(new DetachNode(NumOuts = 9, ID = 4))
 
   // [BasicBlock]  pfor.inc12:
 
@@ -329,7 +336,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
 
   //  reattach label %pfor.inc12, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val reattach10 = Module(new ReattachNode(NumPredIn = 1, ID = 10))
+  val reattach10 = Module(new ReattachNode(ID = 10))
 
 
   /* ================================================================== *
@@ -364,11 +371,13 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
 
   //Connecting br3 to bb_pfor_detach
-  bb_pfor_detach.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_pfor_detach"))
+  //  bb_pfor_detach.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_pfor_detach"))
 
 
   //Connecting br3 to bb_pfor_end14
-  bb_pfor_end14.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_pfor_end14"))
+  //  bb_pfor_end14.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_pfor_end14"))
+  //  br3.io.Out(1).ready := true.B //Mnually added
+  tmp_bb_my_pfor_end.io.enable <> br3.io.Out(param.br3_brn_bb("bb_pfor_end14"))
 
 
   //Connecting br6 to bb_pfor_cond
@@ -387,7 +396,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
 
   //Connecting detach4 to bb_pfor_inc12
-  bb_pfor_inc12.io.predicateIn <> detach4.io.Out(param.detach4_brn_bb("bb_pfor_inc12"))
+  bb_pfor_inc12.io.predicateIn <> detach4.io.Out(1)
 
   bb_pfor_end_continue15.io.predicateIn <> sync7.io.Out(0) // added manually
 
@@ -411,7 +420,8 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   br3.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("br3"))
 
 
-  detach4.io.enable <> bb_pfor_detach.io.Out(param.bb_pfor_detach_activate("detach4"))
+  detach4.io.enable <> br3.io.Out(param.br3_brn_bb("bb_pfor_detach"))
+  //  detach4.io.enable <> bb_pfor_detach.io.Out(param.bb_pfor_detach_activate("detach4"))
 
 
   add5.io.enable <> bb_pfor_inc12.io.Out(param.bb_pfor_inc12_activate("add5"))
@@ -423,25 +433,35 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   //  sync7.io.enable <> bb_pfor_end14.io.Out(param.bb_pfor_end14_activate("sync7"))
 
-  loop_L_5_liveIN_0.io.enable <> bb_pfor_end14.io.Out(0)
-  loop_L_5_liveIN_1.io.enable <> bb_pfor_end14.io.Out(1)
-  loop_L_5_liveIN_2.io.enable <> bb_pfor_end14.io.Out(2)
+  loop_L_5_liveIN_0.io.enable <> bb_entry.io.Out(1)
+  loop_L_5_liveIN_1.io.enable <> bb_entry.io.Out(2)
+  loop_L_5_liveIN_2.io.enable <> bb_entry.io.Out(3)
 
-  loop_L_5_liveIN_3.io.enable <> bb_pfor_inc12.io.Out(2)
-  loop_L_5_liveIN_4.io.enable <> bb_pfor_inc12.io.Out(3)
+  loop_L_5_liveIN_0.io.Invalid <> tmp_bb_my_pfor_end.io.Out(0)
+  loop_L_5_liveIN_1.io.Invalid <> tmp_bb_my_pfor_end.io.Out(1)
+  loop_L_5_liveIN_2.io.Invalid <> tmp_bb_my_pfor_end.io.Out(2)
 
+  loop_L_5_liveIN_3.io.enable <> detach4.io.Out(3)
+  loop_L_5_liveIN_4.io.enable <> detach4.io.Out(4)
+
+  loop_L_5_liveIN_TMP_0.io.enable <> detach4.io.Out(5)
+  loop_L_5_liveIN_TMP_1.io.enable <> detach4.io.Out(6)
+  loop_L_5_liveIN_TMP_2.io.enable <> detach4.io.Out(7)
+
+  loop_L_5_liveIN_Control_0.io.enable <> detach4.io.Out(8)
 
   ret8.io.enable <> bb_pfor_end_continue15.io.Out(param.bb_pfor_end_continue15_activate("ret8"))
 
 
-  call9.io.In.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call9"))
+  loop_L_5_liveIN_Control_0.io.InData <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call9"))
+  call9.io.In.enable <> loop_L_5_liveIN_Control_0.io.Out(0)
 
   // Manual fix.  Reattach should only depend on its increment/decr inputs. If it is connected to the BB
   // Enable it will stall the loop
   //reattach10.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach10"))
   //  reattach10.io.enable.enq(ControlBundle.active()) // always enabled
   //  bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach10")).ready := true.B
-  reattach10.io.enable <> bb_offload_pfor_body.io.Out(1)
+  //  reattach10.io.enable <> bb_offload_pfor_body.io.Out(1)
 
 
   /* ================================================================== *
@@ -452,14 +472,17 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   // Connecting function argument to the loop header
   //[5 x i32]* %a
   loop_L_5_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_5_liveIN_TMP_0.io.InData <> loop_L_5_liveIN_0.io.Out(0)
 
   // Connecting function argument to the loop header
   //[5 x i32]* %b
   loop_L_5_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+  loop_L_5_liveIN_TMP_1.io.InData <> loop_L_5_liveIN_1.io.Out(0)
 
   // Connecting function argument to the loop header
   //[5 x i32]* %c
   loop_L_5_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
+  loop_L_5_liveIN_TMP_2.io.InData <> loop_L_5_liveIN_2.io.Out(0)
 
 
   /* ================================================================== *
@@ -530,7 +553,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   call9.io.retIn <> io.call9_in
   call9.io.Out.enable.ready := true.B // Manual fix
   // Wiring Call instruction to the loop header
-  call9.io.In.data("field0") <> loop_L_5_liveIN_0.io.Out(param.call9_in("field0")) // Manually added
+  call9.io.In.data("field0") <> loop_L_5_liveIN_TMP_0.io.Out(param.call9_in("field0")) // Manually added
 
   // Wiring Call instruction to the loop header
   //  call9.io.In.data("field1") <>phi1.io.Out(param.call9_in("phi1"))  // Manually added
@@ -540,10 +563,10 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
 
   // Wiring Call instruction to the loop header
-  call9.io.In.data("field2") <> loop_L_5_liveIN_1.io.Out(param.call9_in("field1")) // Manually added
+  call9.io.In.data("field2") <> loop_L_5_liveIN_TMP_1.io.Out(param.call9_in("field1")) // Manually added
 
   // Wiring Call instruction to the loop header
-  call9.io.In.data("field3") <> loop_L_5_liveIN_2.io.Out(param.call9_in("field2")) // Manually added
+  call9.io.In.data("field3") <> loop_L_5_liveIN_TMP_2.io.Out(param.call9_in("field2")) // Manually added
   call9.io.Out.enable.ready := true.B // Manual fix
 
   // Reattach (Manual add)

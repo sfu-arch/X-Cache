@@ -282,20 +282,18 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
   val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0))
 
-  //  val bb_my_pfor_cond2 = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
   val bb_my_pfor_cond2 = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
 
-  val bb_my_pfor_detach4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_my_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3))
 
-  val bb_my_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 9, BID = 3))
-
-  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4))
+  //  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4))
+  val tmp_bb_my_pfor_end = Module(new UBranchNode(NumOuts = 4, ID = 22))
 
   val bb_my_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
   val bb_my_pfor_preattach11 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_my_offload_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
+  val bb_my_offload_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7))
 
 
   /* ================================================================== *
@@ -327,7 +325,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
   //  detach label %my_offload.pfor.body5, label %my_pfor.inc, !UID !17, !BB_UID !18, !ScalaLabel !19
   //  val detach4 = Module(new Detach(ID = 4))
-  val detach4 = Module(new DetachNode(NumOuts = 3, ID = 4))
+  val detach4 = Module(new DetachNode(NumOuts = 10, ID = 4))
 
   // [BasicBlock]  my_pfor.inc:
 
@@ -361,7 +359,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
 
   //  reattach label %my_pfor.inc, !UID !52, !BB_UID !53, !ScalaLabel !54
-  val reattach11 = Module(new ReattachNode(NumPredIn = 1, ID = 11))
+  val reattach11 = Module(new ReattachNode(ID = 11))
 
 
   /* ================================================================== *
@@ -397,11 +395,12 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
 
   //Connecting br3 to bb_my_pfor_detach4
-  bb_my_pfor_detach4.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_my_pfor_detach4"))
+  //  bb_my_pfor_detach4.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_my_pfor_detach4"))
 
 
   //Connecting br3 to bb_my_pfor_end
-  bb_my_pfor_end.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_my_pfor_end"))
+  //  bb_my_pfor_end.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_my_pfor_end"))
+  tmp_bb_my_pfor_end.io.enable <> br3.io.Out(1)
 
 
   //Connecting br6 to bb_my_pfor_cond2
@@ -447,17 +446,11 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   br3.io.enable <> bb_my_pfor_cond2.io.Out(param.bb_my_pfor_cond2_activate("br3"))
 
 
-  detach4.io.enable <> bb_my_pfor_detach4.io.Out(param.bb_my_pfor_detach4_activate("detach4"))
-
+  detach4.io.enable <> br3.io.Out(param.br3_brn_bb("bb_my_pfor_detach4"))
 
   add5.io.enable <> bb_my_pfor_inc.io.Out(param.bb_my_pfor_inc_activate("add5"))
 
   br6.io.enable <> bb_my_pfor_inc.io.Out(param.bb_my_pfor_inc_activate("br6"))
-
-  //  bb_my_offload_pfor_body5.io.Out(0).ready := true.B // Manually added
-
-
-  //  sync7.io.enable <> bb_my_pfor_end.io.Out(param.bb_my_pfor_end_activate("sync7"))
 
 
   loop_L_6_liveIN_0.io.enable <> bb_my_pfor_body.io.Out(1)
@@ -465,20 +458,20 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   loop_L_6_liveIN_2.io.enable <> bb_my_pfor_body.io.Out(3)
   loop_L_6_liveIN_3.io.enable <> bb_my_pfor_body.io.Out(4)
 
-  loop_L_6_liveIN_0.io.Invalid <> bb_my_pfor_end.io.Out(0)
-  loop_L_6_liveIN_1.io.Invalid <> bb_my_pfor_end.io.Out(1)
-  loop_L_6_liveIN_2.io.Invalid <> bb_my_pfor_end.io.Out(2)
-  loop_L_6_liveIN_3.io.Invalid <> bb_my_pfor_end.io.Out(3)
+  loop_L_6_liveIN_0.io.Invalid <> tmp_bb_my_pfor_end.io.Out(0)
+  loop_L_6_liveIN_1.io.Invalid <> tmp_bb_my_pfor_end.io.Out(1)
+  loop_L_6_liveIN_2.io.Invalid <> tmp_bb_my_pfor_end.io.Out(2)
+  loop_L_6_liveIN_3.io.Invalid <> tmp_bb_my_pfor_end.io.Out(3)
 
 
-  loop_L_6_liveIN_4.io.enable <> bb_my_pfor_inc.io.Out(2)
-  loop_L_6_liveIN_5.io.enable <> bb_my_pfor_inc.io.Out(3)
+  loop_L_6_liveIN_4.io.enable <> detach4.io.Out(3)
+  loop_L_6_liveIN_5.io.enable <> detach4.io.Out(4)
 
-  loop_L_6_liveIN_TMP_0.io.enable <> bb_my_pfor_inc.io.Out(4)
-  loop_L_6_liveIN_TMP_1.io.enable <> bb_my_pfor_inc.io.Out(5)
-  loop_L_6_liveIN_TMP_2.io.enable <> bb_my_pfor_inc.io.Out(6)
-  loop_L_6_liveIN_TMP_3.io.enable <> bb_my_pfor_inc.io.Out(7)
-  loop_L_6_live_Control_0.io.enable <> bb_my_pfor_inc.io.Out(8)
+  loop_L_6_liveIN_TMP_0.io.enable <> detach4.io.Out(5)
+  loop_L_6_liveIN_TMP_1.io.enable <> detach4.io.Out(6)
+  loop_L_6_liveIN_TMP_2.io.enable <> detach4.io.Out(7)
+  loop_L_6_liveIN_TMP_3.io.enable <> detach4.io.Out(8)
+  loop_L_6_live_Control_0.io.enable <> detach4.io.Out(9)
 
 
   br8.io.enable <> bb_my_pfor_end_continue.io.Out(param.bb_my_pfor_end_continue_activate("br8"))
@@ -489,9 +482,10 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
 
   loop_L_6_live_Control_0.io.InData <> bb_my_offload_pfor_body5.io.Out(0)
   call10.io.In.enable <> loop_L_6_live_Control_0.io.Out(0)
+
   //  call10.io.In.enable <> bb_my_offload_pfor_body5.io.Out(0)
 
-  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(1)
+  //  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(1)
   //  reattach11.io.enable.enq(ControlBundle.active()) // always enabled
   //  reattach11.io.enable <> bb_my_offload_pfor_body5.io.Out(1) // always enabled
   //  bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach11")).ready := true.B

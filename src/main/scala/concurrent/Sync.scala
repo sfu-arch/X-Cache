@@ -130,9 +130,7 @@ class SyncNode(NumOuts: Int, ID: Int)
   // Output Handshaking
   val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
   val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
-  val out_ready_W = WireInit(VecInit(Seq.fill(NumOuts) {
-    false.B
-  }))
+  val out_ready_W = WireInit(VecInit(Seq.fill(NumOuts)(false.B)))
 
   // Defining states
   val s_IDLE :: s_COUNT :: s_WAIT :: Nil = Enum(3)
@@ -201,8 +199,8 @@ class SyncNode(NumOuts: Int, ID: Int)
         (inc_valid_R && (~inc_R.control).toBool)) {
         state := s_COUNT
 
-        inc_R := ControlBundle.default
-        inc_valid_R := false.B
+        //        inc_R := ControlBundle.default
+        //        inc_valid_R := false.B
 
       }.elsewhen((io.decIn.fire() && io.decIn.bits.control) ||
         (dec_valid_R && dec_R.control)) {
@@ -239,17 +237,18 @@ class SyncNode(NumOuts: Int, ID: Int)
 
         dec_R := ControlBundle.default
         dec_valid_R := false.B
+      }
 
-      }.elsewhen((io.decIn.fire() && (~io.decIn.bits.control).toBool) ||
-        (dec_valid_R && (~dec_R.control).toBool)) {
-        assert(sync_count === 0.U, "Transition only happens if the counter is equal to zero")
+      when(sync_count === 0.U) {
         out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
         state := s_WAIT
 
         dec_R := ControlBundle.default
         dec_valid_R := false.B
-      }.otherwise {
-        state := s_COUNT
+
+        inc_R := ControlBundle.default
+        inc_valid_R := false.B
+
       }
     }
 
