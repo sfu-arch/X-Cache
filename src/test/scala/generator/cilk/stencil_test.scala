@@ -103,7 +103,7 @@ class stencilMainTM(implicit p: Parameters) extends stencilMainIO {
 
   // Wire up the cache, TM, and modules under test.
 
-  val children = 1
+  val children = 4
   val TaskControllerModule = Module(new TaskController(List(32, 32, 32), List(32), 1, children))
   val stencil = Module(new stencilDF())
 
