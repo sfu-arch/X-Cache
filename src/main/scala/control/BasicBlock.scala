@@ -123,7 +123,7 @@ class BasicBlockNode(NumInputs: Int,
     is(s_LATCH) {
       when(IsOutReady()) {
         predicate_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
-        predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
+        predicate_in_R := VecInit(Seq.fill(NumInputs)(ControlBundle.default))
 
         Reset()
 

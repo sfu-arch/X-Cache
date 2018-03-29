@@ -26,7 +26,7 @@ import junctions._
   * It contains all the transformation from indices to their module's name
   */
 
-object Data_stencil_detach1_FlowParam{
+object Data_stencil_detach1_FlowParam {
 
   val bb_my_pfor_body_pred = Map(
     "active" -> 0
@@ -258,17 +258,15 @@ object Data_stencil_detach1_FlowParam{
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING PORTS DEFINITION                        *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING PORTS DEFINITION                        *
+ * ================================================================== */
 
 
 abstract class stencil_detach1DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
-    val call6_out = Decoupled(new Call(List(32,32,32,32,32)))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val call6_out = Decoupled(new Call(List(32, 32, 32, 32, 32)))
     val call6_in = Flipped(Decoupled(new Call(List(32))))
     val CacheResp = Flipped(Valid(new CacheRespT))
     val CacheReq = Decoupled(new CacheReq)
@@ -277,15 +275,12 @@ abstract class stencil_detach1DFIO(implicit val p: Parameters) extends Module wi
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING MODULE DEFINITION                       *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING MODULE DEFINITION                       *
+ * ================================================================== */
 
 
 class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p) {
-
 
 
   /* ================================================================== *
@@ -293,31 +288,31 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    * ================================================================== */
 
 
-	val StackPointer = Module(new Stack(NumOps = 1))
+  val StackPointer = Module(new Stack(NumOps = 1))
 
-	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=1,NWrites=1)
-		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=1,BaseSize=2,NumEntries=2)))
+  val RegisterFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 1, NWrites = 1)
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2)))
 
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=1,NWrites=1)
-		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-		            (RWArbiter=new ReadWriteArbiter()))
+  val CacheMem = Module(new UnifiedController(ID = 0, Size = 32, NReads = 1, NWrites = 1)
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
 
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32,32)))
+  val InputSplitter = Module(new SplitCall(List(32, 32, 32)))
   InputSplitter.io.In <> io.in
 
   // Manually added
-  val field0_expand = Module(new ExpandNode(NumOuts=2,ID=100)(new DataBundle))
+  val field0_expand = Module(new ExpandNode(NumOuts = 2, ID = 100)(new DataBundle))
   field0_expand.io.enable.valid := true.B
   field0_expand.io.enable.bits.control := true.B
   field0_expand.io.InData <> InputSplitter.io.Out.data("field0")
 
   // Manually added
-  val field2_expand = Module(new ExpandNode(NumOuts=3,ID=101)(new DataBundle))
+  val field2_expand = Module(new ExpandNode(NumOuts = 3, ID = 101)(new DataBundle))
   field2_expand.io.enable.valid := true.B
   field2_expand.io.enable.bits.control := true.B
   field2_expand.io.InData <> InputSplitter.io.Out.data("field2")
@@ -328,13 +323,22 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    * ================================================================== */
 
 
-  val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_3 = Module(new LiveInNode(NumOuts = 1, ID = 0))
+  val loop_L_0_liveIN_0 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
+  val loop_L_0_liveIN_1 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
+  val loop_L_0_liveIN_2 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
+  val loop_L_0_liveIN_3 = Module(new LiveInNewNode(NumOuts = 1, ID = 0))
 
+  val loop_L_0_liveIN_DELAY_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_0_liveIN_DELAY_1 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_0_liveIN_DELAY_2 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val loop_L_0_liveIN_DELAY_3 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
 
+  val loop_L_0_live_Control_0 = Module(new LiveOutControlNode(NumOuts = 1, ID = 0))
 
+  //  val loop_L_0_LiveOut_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+
+  val phi_L_DELAY_0 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
+  val phi_L_DELAY_1 = Module(new LiveOutNode(NumOuts = 1, ID = 0))
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
@@ -343,21 +347,19 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 7, BID = 0))
 
   val bb_my_for_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
 
-  val bb_my_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
+  val bb_my_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 9, BID = 2))
 
   val bb_my_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_my_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 15, BID = 4))
+  val bb_tmp_my_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
+
+  val bb_my_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 11, BID = 4))
 
   val bb_my_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
-
-
-
-
 
 
   /* ================================================================== *
@@ -370,99 +372,98 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   // [BasicBlock]  my_pfor.body:
 
   //  %0 = udiv i32 %pos.0.in, 4, !UID !7, !ScalaLabel !8
-  val udiv0 = Module (new ComputeNode(NumOuts = 3, ID = 0, opCode = "udiv")(sign=false))
+  val udiv0 = Module(new ComputeNode(NumOuts = 3, ID = 0, opCode = "udiv")(sign = false))
 
 
   //  %1 = and i32 %pos.0.in, 3, !UID !9, !ScalaLabel !10
-  val and1 = Module (new ComputeNode(NumOuts = 3, ID = 1, opCode = "and")(sign=false))
+  val and1 = Module(new ComputeNode(NumOuts = 3, ID = 1, opCode = "and")(sign = false))
 
 
   //  br label %my_for.cond, !UID !11, !BB_UID !12, !ScalaLabel !13
-  val br2 = Module (new UBranchNode(ID = 2))
+  val br2 = Module(new UBranchNode(ID = 2))
 
   // [BasicBlock]  my_for.cond:
 
   //  %2 = phi i32 [ 0, %my_pfor.body ], [ %4, %my_for.inc ], !UID !14, !ScalaLabel !15
-  val phi3 = Module (new PhiNode(NumInputs = 2, NumOuts = 3, ID = 3))
+  val phi3 = Module(new PhiNode(NumInputs = 2, NumOuts = 3, ID = 3))
 
 
   //  %3 = icmp ule i32 %2, 2, !UID !16, !ScalaLabel !17
-  val icmp4 = Module (new IcmpNode(NumOuts = 1, ID = 4, opCode = "ULE")(sign=false))
+  val icmp4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "ULE")(sign = false))
 
 
   //  br i1 %3, label %my_for.body, label %my_for.end, !UID !18, !BB_UID !19, !ScalaLabel !20
-  val br5 = Module (new CBranchNode(ID = 5))
+  val br5 = Module(new CBranchNode(ID = 5))
 
   // [BasicBlock]  my_for.body:
 
   //  call void @stencil_inner(i32* %in.in, i32* %out.in, i32 %0, i32 %1, i32 %2), !UID !21, !ScalaLabel !22
-  val call6 = Module(new CallNode(ID=6,argTypes=List(32,32,32,32,32),retTypes=List(32)))
+  val call6 = Module(new CallNode(ID = 6, argTypes = List(32, 32, 32, 32, 32), retTypes = List(32)))
 
 
   //  br label %my_for.inc, !UID !23, !BB_UID !24, !ScalaLabel !25
-  val br7 = Module (new UBranchNode(ID = 7))
+  val br7 = Module(new UBranchNode(ID = 7))
 
   // [BasicBlock]  my_for.inc:
 
   //  %4 = add i32 %2, 1, !UID !26, !ScalaLabel !27
-  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
+  val add8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign = false))
 
 
   //  br label %my_for.cond, !llvm.loop !28, !UID !40, !BB_UID !41, !ScalaLabel !42
-  val br9 = Module (new UBranchNode(ID = 9))
+  val br9 = Module(new UBranchNode(ID = 9))
 
   // [BasicBlock]  my_for.end:
 
   //  %5 = mul i32 %0, 4, !UID !43, !ScalaLabel !44
-  val mul10 = Module (new ComputeNode(NumOuts = 1, ID = 10, opCode = "mul")(sign=false))
+  val mul10 = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "mul")(sign = false))
 
 
   //  %6 = add i32 %5, %1, !UID !45, !ScalaLabel !46
-  val add11 = Module (new ComputeNode(NumOuts = 1, ID = 11, opCode = "add")(sign=false))
+  val add11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "add")(sign = false))
 
 
   //  %7 = getelementptr inbounds i32, i32* %out.in, i32 %6, !UID !47, !ScalaLabel !48
-  val getelementptr12 = Module (new GepOneNode(NumOuts = 1, ID = 12)(numByte1 = 4))
+  val getelementptr12 = Module(new GepOneNode(NumOuts = 1, ID = 12)(numByte1 = 4))
 
 
   //  %8 = load i32, i32* %7, align 4, !UID !49, !ScalaLabel !50
-  val load13 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=13,RouteID=0))
+  val load13 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 13, RouteID = 0))
 
 
   //  %9 = add i32 %8, 9, !UID !51, !ScalaLabel !52
-  val add14 = Module (new ComputeNode(NumOuts = 1, ID = 14, opCode = "add")(sign=false))
+  val add14 = Module(new ComputeNode(NumOuts = 1, ID = 14, opCode = "add")(sign = false))
 
 
   //  %10 = udiv i32 %9, 9, !UID !53, !ScalaLabel !54
-  val udiv15 = Module (new ComputeNode(NumOuts = 1, ID = 15, opCode = "udiv")(sign=false))
+  val udiv15 = Module(new ComputeNode(NumOuts = 1, ID = 15, opCode = "udiv")(sign = false))
 
 
   //  %11 = mul i32 %0, 4, !UID !55, !ScalaLabel !56
-  val mul16 = Module (new ComputeNode(NumOuts = 1, ID = 16, opCode = "mul")(sign=false))
+  val mul16 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "mul")(sign = false))
 
 
   //  %12 = add i32 %11, %1, !UID !57, !ScalaLabel !58
-  val add17 = Module (new ComputeNode(NumOuts = 1, ID = 17, opCode = "add")(sign=false))
+  val add17 = Module(new ComputeNode(NumOuts = 1, ID = 17, opCode = "add")(sign = false))
 
 
   //  %13 = getelementptr inbounds i32, i32* %out.in, i32 %12, !UID !59, !ScalaLabel !60
-  val getelementptr18 = Module (new GepOneNode(NumOuts = 1, ID = 18)(numByte1 = 4))
+  val getelementptr18 = Module(new GepOneNode(NumOuts = 1, ID = 18)(numByte1 = 4))
 
 
   //  store i32 %10, i32* %13, align 4, !UID !61, !ScalaLabel !62
-  val store19 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=19,RouteID=0))
+  val store19 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 19, RouteID = 0))
 
 
   //  br label %my_pfor.preattach, !UID !63, !BB_UID !64, !ScalaLabel !65
-  val br20 = Module (new UBranchNode(ID = 20))
+  val br20 = Module(new UBranchNode(ID = 20))
 
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !66, !BB_UID !67, !ScalaLabel !68
-  val ret21 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=21))
+  val ret21 = Module(new RetNode(NumPredIn = 1, retTypes = List(32), ID = 21))
 
-
-
+  val tmp_ubranch = Module(new UBranchEndNode(ID = 22))
 
 
   /* ================================================================== *
@@ -476,15 +477,14 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   val param = Data_stencil_detach1_FlowParam
 
 
-
   /* ================================================================== *
    *                   CONNECTING BASIC BLOCKS TO PREDICATE INSTRUCTIONS*
    * ================================================================== */
 
 
   /**
-     * Connecting basic blocks to predicate instructions
-     */
+    * Connecting basic blocks to predicate instructions
+    */
 
 
   bb_my_pfor_body.io.predicateIn <> InputSplitter.io.Out.enable
@@ -502,7 +502,13 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
 
   //Connecting br5 to bb_my_for_end
-  bb_my_for_end.io.predicateIn <> br5.io.Out(param.br5_brn_bb("bb_my_for_end"))
+  //  bb_my_for_end.io.predicateIn <> br5.io.Out(param.br5_brn_bb("bb_my_for_end"))
+
+  bb_tmp_my_for_end.io.predicateIn <> br5.io.Out(1)
+
+  tmp_ubranch.io.enable <> bb_tmp_my_for_end.io.Out(0)
+
+  bb_my_for_end.io.predicateIn <> tmp_ubranch.io.Out(0)
 
 
   //Connecting br7 to bb_my_for_inc
@@ -517,10 +523,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   bb_my_pfor_preattach.io.predicateIn <> br20.io.Out(param.br20_brn_bb("bb_my_pfor_preattach"))
 
 
-
   // There is no detach instruction
-
-
 
 
   /* ================================================================== *
@@ -539,7 +542,6 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   br2.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("br2"))
 
 
-
   phi3.io.enable <> bb_my_for_cond.io.Out(param.bb_my_for_cond_activate("phi3"))
 
   icmp4.io.enable <> bb_my_for_cond.io.Out(param.bb_my_for_cond_activate("icmp4"))
@@ -547,17 +549,17 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   br5.io.enable <> bb_my_for_cond.io.Out(param.bb_my_for_cond_activate("br5"))
 
 
-
-  call6.io.In.enable <> bb_my_for_body.io.Out(param.bb_my_for_body_activate("call6"))
+  //  call6.io.In.enable <> bb_my_for_body.io.Out(param.bb_my_for_body_activate("call6"))
+  loop_L_0_live_Control_0.io.InData <> bb_my_for_body.io.Out(0)
+  call6.io.In.enable <> loop_L_0_live_Control_0.io.Out(0)
+  //  call6.io.In.enable <> bb_my_for_body.io.Out(param.bb_my_for_body_activate("call6"))
 
   br7.io.enable <> bb_my_for_body.io.Out(param.bb_my_for_body_activate("br7"))
-
 
 
   add8.io.enable <> bb_my_for_inc.io.Out(param.bb_my_for_inc_activate("add8"))
 
   br9.io.enable <> bb_my_for_inc.io.Out(param.bb_my_for_inc_activate("br9"))
-
 
 
   mul10.io.enable <> bb_my_for_end.io.Out(param.bb_my_for_end_activate("mul10"))
@@ -582,18 +584,28 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   br20.io.enable <> bb_my_for_end.io.Out(param.bb_my_for_end_activate("br20"))
 
-  loop_L_0_liveIN_0.io.enable <> bb_my_for_end.io.Out(11)
-  loop_L_0_liveIN_1.io.enable <> bb_my_for_end.io.Out(12)
-  loop_L_0_liveIN_2.io.enable <> bb_my_for_end.io.Out(13)
-  loop_L_0_liveIN_3.io.enable <> bb_my_for_end.io.Out(14)
+  loop_L_0_liveIN_0.io.enable <> bb_my_pfor_body.io.Out(3)
+  loop_L_0_liveIN_1.io.enable <> bb_my_pfor_body.io.Out(4)
+  loop_L_0_liveIN_2.io.enable <> bb_my_pfor_body.io.Out(5)
+  loop_L_0_liveIN_3.io.enable <> bb_my_pfor_body.io.Out(6)
 
+  loop_L_0_liveIN_0.io.Invalid <> bb_tmp_my_for_end.io.Out(1)
+  loop_L_0_liveIN_1.io.Invalid <> bb_tmp_my_for_end.io.Out(2)
+  loop_L_0_liveIN_2.io.Invalid <> bb_tmp_my_for_end.io.Out(3)
+  loop_L_0_liveIN_3.io.Invalid <> bb_tmp_my_for_end.io.Out(4)
 
+  loop_L_0_liveIN_DELAY_0.io.enable <> bb_my_for_body.io.Out(2)
+  loop_L_0_liveIN_DELAY_1.io.enable <> bb_my_for_body.io.Out(3)
+  loop_L_0_liveIN_DELAY_2.io.enable <> bb_my_for_body.io.Out(4)
+  loop_L_0_liveIN_DELAY_3.io.enable <> bb_my_for_body.io.Out(5)
+  loop_L_0_live_Control_0.io.enable <> bb_my_for_body.io.Out(6)
 
+  //  loop_L_0_LiveOut_0.io.enable <> bb_tmp_my_for_end.io.Out(5)
+
+  phi_L_DELAY_0.io.enable <> bb_my_for_body.io.Out(7)
+  phi_L_DELAY_1.io.enable <> bb_my_for_body.io.Out(8)
 
   ret21.io.enable <> bb_my_pfor_preattach.io.Out(param.bb_my_pfor_preattach_activate("ret21"))
-
-
-
 
 
   /* ================================================================== *
@@ -618,7 +630,6 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   loop_L_0_liveIN_3.io.InData <> and1.io.Out(param.call6_in("and1"))
 
 
-
   /* ================================================================== *
    *                   DUMPING PHI NODES                                *
    * ================================================================== */
@@ -641,7 +652,6 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   //Connect PHI node
 
   phi3.io.Mask <> bb_my_for_cond.io.MaskBB(0)
-
 
 
   /* ================================================================== *
@@ -683,28 +693,44 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   // Wiring Call to I/O
   io.call6_out <> call6.io.callOut
   call6.io.retIn <> io.call6_in
+
   call6.io.Out.enable.ready := true.B // Manual fix
-  call6.io.Out.data("field0").ready := true.B // Manual fix
+
+
+  //  loop_L_0_LiveOut_0.io.InData <> call6.io.Out.data("field0")
+  //  loop_L_0_LiveOut_0.io.Out(0).ready := true.B // Manual fix
+  call6.io.Out.data("field0").ready := true.B
 
   // Wiring Call instruction to the loop header
-  call6.io.In.data("field0") <> loop_L_0_liveIN_0.io.Out(param.call6_in("field1"))
+  //  call6.io.In.data("field0") <> loop_L_0_liveIN_0.io.Out(param.call6_in("field1"))
+  loop_L_0_liveIN_DELAY_0.io.InData <> loop_L_0_liveIN_0.io.Out(0)
+  call6.io.In.data("field0") <> loop_L_0_liveIN_DELAY_0.io.Out(0)
 
   // Wiring Call instruction to the loop header
-  call6.io.In.data("field1") <> loop_L_0_liveIN_1.io.Out(param.call6_in("field2"))
+  //  call6.io.In.data("field1") <> loop_L_0_liveIN_1.io.Out(param.call6_in("field2"))
+  loop_L_0_liveIN_DELAY_1.io.InData <> loop_L_0_liveIN_1.io.Out(0)
+  call6.io.In.data("field1") <> loop_L_0_liveIN_DELAY_1.io.Out(0)
 
   // Wiring Call instruction to the loop header
-  call6.io.In.data("field2") <> loop_L_0_liveIN_2.io.Out(param.call6_in("udiv0"))
+  //  call6.io.In.data("field2") <> loop_L_0_liveIN_2.io.Out(param.call6_in("udiv0"))
+  loop_L_0_liveIN_DELAY_2.io.InData <> loop_L_0_liveIN_2.io.Out(0)
+  call6.io.In.data("field2") <> loop_L_0_liveIN_DELAY_2.io.Out(0)
 
   // Wiring Call instruction to the loop header
-  call6.io.In.data("field3") <> loop_L_0_liveIN_3.io.Out(param.call6_in("and1"))
+  //  call6.io.In.data("field3") <> loop_L_0_liveIN_3.io.Out(param.call6_in("and1"))
+  loop_L_0_liveIN_DELAY_3.io.InData <> loop_L_0_liveIN_3.io.Out(0)
+  call6.io.In.data("field3") <> loop_L_0_liveIN_DELAY_3.io.Out(0)
 
   // Wiring Call instruction to the loop header
-  call6.io.In.data("field4") <> phi3.io.Out(param.call6_in("phi3"))
-
+  //  call6.io.In.data("field4") <> phi3.io.Out(param.call6_in("phi3"))
+  phi_L_DELAY_0.io.InData <> phi3.io.Out(1)
+  call6.io.In.data("field4") <> phi_L_DELAY_0.io.Out(0)
 
 
   // Wiring instructions
-  add8.io.LeftIO <> phi3.io.Out(param.add8_in("phi3"))
+  //  add8.io.LeftIO <> phi3.io.Out(param.add8_in("phi3"))
+  phi_L_DELAY_1.io.InData <> phi3.io.Out(2)
+  add8.io.LeftIO <> phi_L_DELAY_1.io.Out(0)
 
   // Wiring constant
   add8.io.RightIO.bits.data := 1.U
@@ -737,8 +763,6 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   load13.io.GepAddr <> getelementptr12.io.Out(param.load13_in("getelementptr12"))
   load13.io.memResp <> CacheMem.io.ReadOut(0)
   CacheMem.io.ReadIn(0) <> load13.io.memReq
-
-
 
 
   // Wiring instructions
@@ -782,10 +806,9 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   store19.io.inData <> udiv15.io.Out(param.store19_in("udiv15"))
 
 
-
   // Wiring Store instruction to the parent instruction
   store19.io.GepAddr <> getelementptr18.io.Out(param.store19_in("getelementptr18"))
-  store19.io.memResp  <> CacheMem.io.WriteOut(0)
+  store19.io.memResp <> CacheMem.io.WriteOut(0)
   CacheMem.io.WriteIn(0) <> store19.io.memReq
   //store19.io.Out(0).ready := true.B
 
@@ -804,8 +827,10 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 }
 
 import java.io.{File, FileWriter}
+
 object stencil_detach1Main extends App {
-  val dir = new File("RTL/stencil_detach1") ; dir.mkdirs
+  val dir = new File("RTL/stencil_detach1");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new stencil_detach1DF()))
 

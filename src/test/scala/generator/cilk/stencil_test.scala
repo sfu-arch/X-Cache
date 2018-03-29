@@ -1,5 +1,7 @@
 package dataflow
 
+import java.io.BufferedWriter
+import java.io.FileWriter
 import chisel3._
 import chisel3.util._
 import chisel3.Module
@@ -20,11 +22,11 @@ import accel._
 import node._
 
 
-class stencilMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32))))
+class stencilMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+  val io = IO(new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32))))
     val addr = Input(UInt(nastiXAddrBits.W))
-    val din  = Input(UInt(nastiXDataBits.W))
+    val din = Input(UInt(nastiXDataBits.W))
     val write = Input(Bool())
     val dout = Output(UInt(nastiXDataBits.W))
     val out = Decoupled(new Call(List(32)))
@@ -33,17 +35,17 @@ class stencilMainIO(implicit val p: Parameters)  extends Module with CoreParams 
 
 class stencilMainDirect(implicit p: Parameters) extends stencilMainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
   // Store a copy of all data written to the cache.  This is done since the cache isn't
   // 'write through' to the memory model and we have no easy way of reading the
   // cache contents from the testbench.
   when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
+    memCopy.write((cache.io.cpu.req.bits.addr >> 2).asUInt(), cache.io.cpu.req.bits.data)
   }
-  io.dout := memCopy.read((io.addr>>2).asUInt())
+  io.dout := memCopy.read((io.addr >> 2).asUInt())
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -77,19 +79,19 @@ class stencilMainDirect(implicit p: Parameters) extends stencilMainIO {
 
 }
 
-class stencilMainTM(implicit p: Parameters) extends stencilMainIO  {
+class stencilMainTM(implicit p: Parameters) extends stencilMainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
   // Store a copy of all data written to the cache.  This is done since the cache isn't
   // 'write through' to the memory model and we have no easy way of reading the
   // cache contents from the testbench.
   when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
+    memCopy.write((cache.io.cpu.req.bits.addr >> 2).asUInt(), cache.io.cpu.req.bits.data)
   }
-  io.dout := memCopy.read((io.addr>>2).asUInt())
+  io.dout := memCopy.read((io.addr >> 2).asUInt())
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -102,7 +104,7 @@ class stencilMainTM(implicit p: Parameters) extends stencilMainIO  {
   // Wire up the cache, TM, and modules under test.
 
   val children = 1
-  val TaskControllerModule = Module(new TaskController(List(32,32,32), List(32), 1, children))
+  val TaskControllerModule = Module(new TaskController(List(32, 32, 32), List(32), 1, children))
   val stencil = Module(new stencilDF())
 
   val stencil_detach1 = for (i <- 0 until children) yield {
@@ -114,12 +116,12 @@ class stencilMainTM(implicit p: Parameters) extends stencilMainIO  {
     inner
   }
 
-  val CacheArbiter = Module(new CacheArbiter(2*children))
+  val CacheArbiter = Module(new CacheArbiter(2 * children))
   for (i <- 0 until children) {
     CacheArbiter.io.cpu.CacheReq(i) <> stencil_inner(i).io.CacheReq
     stencil_inner(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
-    CacheArbiter.io.cpu.CacheReq(children+i) <> stencil_detach1(i).io.CacheReq
-    stencil_detach1(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(children+i)
+    CacheArbiter.io.cpu.CacheReq(children + i) <> stencil_detach1(i).io.CacheReq
+    stencil_detach1(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(children + i)
   }
 
   cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
@@ -132,7 +134,7 @@ class stencilMainTM(implicit p: Parameters) extends stencilMainIO  {
   TaskControllerModule.io.parentIn(0) <> stencil.io.call9_out
 
   // task controller to sub-task stencil_detach1
-  for (i <- 0 until children ) {
+  for (i <- 0 until children) {
     stencil_detach1(i).io.in <> TaskControllerModule.io.childOut(i)
     stencil_inner(i).io.in <> stencil_detach1(i).io.call6_out
     stencil_detach1(i).io.call6_in <> stencil_inner(i).io.out
@@ -150,12 +152,12 @@ class stencilMainTM(implicit p: Parameters) extends stencilMainIO  {
 class stencilTest01[T <: stencilMainIO](c: T) extends PeekPokeTester(c) {
 
   val inDataVec = List(
-    3,6,7,5,
-    3,5,6,2,
-    9,1,2,7,
-    0,9,3,6)
-  val inAddrVec = List.range(0, 4*inDataVec.length, 4)
-  val outAddrVec = List.range(4*inDataVec.length, 2*4*inDataVec.length, 4)
+    3, 6, 7, 5,
+    3, 5, 6, 2,
+    9, 1, 2, 7,
+    0, 9, 3, 6)
+  val inAddrVec = List.range(0, 4 * inDataVec.length, 4)
+  val outAddrVec = List.range(4 * inDataVec.length, 2 * 4 * inDataVec.length, 4)
   val outDataVec = List(
     3, 4, 4, 3,
     4, 5, 5, 4,
@@ -168,7 +170,7 @@ class stencilTest01[T <: stencilMainIO](c: T) extends PeekPokeTester(c) {
   var i = 0
 
   // Write initial contents to the memory model.
-  for(i <- 0 until inDataVec.length) {
+  for (i <- 0 until inDataVec.length) {
     poke(c.io.addr, inAddrVec(i))
     poke(c.io.din, inDataVec(i))
     poke(c.io.write, true.B)
@@ -190,9 +192,9 @@ class stencilTest01[T <: stencilMainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0)    // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 4*inDataVec.length)   // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, 4 * inDataVec.length) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -208,14 +210,41 @@ class stencilTest01[T <: stencilMainIO](c: T) extends PeekPokeTester(c) {
   // NOTE: Don't use assert().  It seems to terminate the writing of VCD files
   // early (before the error) which makes debugging very difficult. Check results
   // using if() and fail command.
+
+  //  val file = "test.txt"
+  //  val writer = new BufferedWriter(new FileWriter(file))
+  //  val writeResult = inA.zip(inB).zip(outDataVec)
+  //  writeResult.map(_.toString() + "\n").foreach(writer.write)
+  //  writer.close()
+
+  poke(c.io.addr, 0.U)
+  poke(c.io.din, 0.U)
+  poke(c.io.write, false.B)
+  //  var i = 0
+
+  // Write initial contents to the memory model.
+  for (i <- 0 until inDataVec.length) {
+    poke(c.io.addr, inAddrVec(i))
+    poke(c.io.din, inDataVec(i))
+    poke(c.io.write, true.B)
+    step(1)
+  }
+  poke(c.io.write, false.B)
+  step(1)
+
+
+  // Initializing the signals
+  poke(c.io.in.bits.enable.control, false.B)
+  poke(c.io.in.valid, false.B)
+
   var time = 0
   var result = false
-  while (time < 1000) {
+  while (time < 6000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
       peek(c.io.out.bits.data("field0").predicate) == 1
-      ) {
+    ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 1) {
@@ -229,7 +258,7 @@ class stencilTest01[T <: stencilMainIO](c: T) extends PeekPokeTester(c) {
 
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
-  for(i <- 0 until outDataVec.length) {
+  for (i <- 0 until outDataVec.length) {
     poke(c.io.addr, outAddrVec(i))
     step(1)
     val data = peek(c.io.dout)
@@ -244,7 +273,7 @@ class stencilTest01[T <: stencilMainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
-  if(!result) {
+  if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
     fail
   }
@@ -259,13 +288,13 @@ class stencilTester1 extends FlatSpec with Matchers {
     // -td  = target directory
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
-     Array(
-       // "-ll", "Info",
-       "-tbn", "verilator",
-       "-td", "test_run_dir",
-       "-tts", "0001"),
-     () => new stencilMainDirect()) {
-     c => new stencilTest01(c)
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir",
+        "-tts", "0001"),
+      () => new stencilMainDirect()) {
+      c => new stencilTest01(c)
     } should be(true)
   }
 }
