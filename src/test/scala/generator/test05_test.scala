@@ -127,8 +127,8 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
       ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 1) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
+      if (data != 19) {
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 19" + Console.RESET)
         fail
       } else {
         println(Console.BLUE + s"*** Correct return result received. Run time: $time cycles." + Console.RESET)

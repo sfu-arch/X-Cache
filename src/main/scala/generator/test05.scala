@@ -415,7 +415,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
 
   //  store i32 %inc3, i32* %arrayidx2, align 4, !UID !38, !ScalaLabel !39
-  val store16 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=16,RouteID=1))
+  val store16 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=16,RouteID=1))
 
 
   //  %sub4 = sub i32 %n, 1, !UID !40, !ScalaLabel !41
@@ -427,7 +427,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
 
   //  %2 = load i32, i32* %arrayidx5, align 4, !UID !44, !ScalaLabel !45
-  val load19 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=19,RouteID=2))
+  val load19 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=19,RouteID=2))
 
 
   //  ret i32 %2, !UID !46, !BB_UID !47, !ScalaLabel !48
@@ -736,7 +736,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   load19.io.GepAddr <> getelementptr18.io.Out(param.load19_in("getelementptr18"))
   load19.io.memResp <> CacheMem.io.ReadOut(2)
   CacheMem.io.ReadIn(2) <> load19.io.memReq
-
+  load19.io.PredOp(0) <> store16.io.SuccOp(0) // added manually
 
 
 

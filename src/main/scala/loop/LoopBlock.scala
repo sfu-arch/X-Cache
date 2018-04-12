@@ -33,7 +33,6 @@ import node._
   *   from the loop.
   */
 
-
 class LoopBlockIO(NumIns : Int, NumOuts : Int, NumExits : Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle())
 {
