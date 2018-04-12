@@ -17,12 +17,13 @@ import node._
   * @param NumExits Number exit control bundles for loop (e.g. number of exit points)
   * I/O:
   *   In          = Connect each element to an upstream liveIn source for the loop
+  *   activate    = Connect to the activate input of the LoopHeader
   *   latchEnable = Connect to the enable for the loop feedback path
   *   liveIn      = Connect each element to the corresponding liveIn termination inside the loop
   *   loopExit    = Connect to the exit control bundle(s) for the loop
   *   liveOut     = Connect each element to the corresponding liveOut source inside the loop
   *   endEnable   = Connect to the enable input of the downstream loopEnd block
-  *   Out         = Conect each element to a downstream liveOut termination
+  *   Out         = Connect each element to a downstream liveOut termination
   * Operation:
   *   The In values are latched when they are valid.  Their values are connected to the
   *   liveIN outputs for the loop logic. The liveIN values will be validated at the start of a loop and each time
@@ -36,12 +37,13 @@ import node._
 class LoopBlockIO(NumIns : Int, NumOuts : Int, NumExits : Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle())
 {
-  val In  = Flipped(Vec(NumIns, Decoupled(new DataBundle())))  // Requests from calling block(s)
-  val liveIn  = Vec(NumIns, Decoupled(new DataBundle()))
+  val In          = Flipped(Vec(NumIns, Decoupled(new DataBundle())))
+  val activate    = Decoupled(new ControlBundle())
   val latchEnable = Flipped(Decoupled(new ControlBundle()))
-  val loopExit  = Flipped(Vec(NumExits,Decoupled(new ControlBundle())))
-  val liveOut  = Flipped(Vec(NumOuts, Decoupled(new DataBundle())))
-  val endEnable = Decoupled(new ControlBundle())
+  val liveIn      = Vec(NumIns, Decoupled(new DataBundle()))
+  val loopExit    = Flipped(Vec(NumExits,Decoupled(new ControlBundle())))
+  val liveOut     = Flipped(Vec(NumOuts, Decoupled(new DataBundle())))
+  val endEnable   = Decoupled(new ControlBundle())
 }
 
 class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
@@ -60,12 +62,15 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
   val s_idle :: s_active :: s_end :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
-  val inputReady = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
-  val liveIn_R  = RegInit(VecInit(Seq.fill(NumIns){DataBundle.default}))
-  val liveIn_R_valid = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
+  val activate_R  = RegInit(ControlBundle.default)
+  val activate_R_valid = RegInit(false.B)
 
-  val liveOut_R  = RegInit(VecInit(Seq.fill(NumIns){DataBundle.default}))
-  val liveOutValid = RegInit(VecInit(Seq.fill(NumIns){true.B}))
+  val inputReady = RegInit(VecInit(Seq.fill(NumIns)(true.B)))
+  val liveIn_R  = RegInit(VecInit(Seq.fill(NumIns){DataBundle.default}))
+  val liveIn_R_valid = RegInit(VecInit(Seq.fill(NumIns)(false.B)))
+
+  val liveOut_R  = RegInit(VecInit(Seq.fill(NumOuts){DataBundle.default}))
+  val liveOutValid = RegInit(VecInit(Seq.fill(NumOuts){true.B}))
 
   val exit_R = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
   val exitFire_R = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
@@ -77,6 +82,11 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
   // Note about hidden signals from handshaking:
   //   enable_valid_R is enable.fire()
   //   enable_R is latched io.enable.bits.control
+
+  // Activate signals
+  when(io.activate.fire()) {
+    activate_R_valid := false.B
+  }
 
   // Latch the block inputs when they fire to drive the liveIn I/O.
   for (i <- 0 until NumIns) {
@@ -113,6 +123,7 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
         when (IsEnable) {
           // Set the loop liveIN data as valid
           liveIn_R_valid.foreach(_ := true.B)
+          activate_R_valid := true.B
           state := s_active
         }.otherwise{
           // Jump to end skipping loop
@@ -137,11 +148,14 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
         }
       }
       // If we've seen a valid exit pulse and we have valid liveOut data
-      when(exitFire_R.asUInt().orR && liveOutValid.asUInt().andR) {
-        endEnable_R.bits.control := exit_R.asUInt().orR
-        endEnable_R.valid := true.B
-        ValidOut() // Set Out() valid
-        state := s_end
+      when(exitFire_R.asUInt().orR) {
+        exitFire_R.foreach(_ := false.B)
+        when(exit_R.asUInt().orR && liveOutValid.asUInt().andR) {
+          endEnable_R.bits.control := exit_R.asUInt().orR
+          endEnable_R.valid := true.B
+          ValidOut() // Set Out() valid
+          state := s_end
+        }
       }
     }
     is(s_end) {
@@ -163,6 +177,11 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
   // Connect up endEnable control bundle
   io.endEnable.bits := endEnable_R.bits
   io.endEnable.valid := endEnable_R.valid
+
+  io.activate.valid := activate_R_valid
+  io.activate.bits := enable_R
+
+  io.latchEnable.ready := true.B
 
   // Connect LiveIn registers to I/O
   for (i <- 0 until NumIns) {
