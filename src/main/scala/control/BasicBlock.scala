@@ -319,11 +319,11 @@ class BasicBlockNoMaskNode(NumInputs: Int,
   extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
 
   override lazy val io = IO(new BasicBlockNoMaskIO(NumInputs, NumOuts))
-  override val printfSigil = node_name + BID + " "
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = node_name + BID + " "
 
   /*===========================================*
    *            Registers                      *
@@ -390,12 +390,12 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int)(i
                                                                                file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
   val io = IO(new BasicBlockNoMaskFastIO(NumOuts)(p))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
   /*===========================================*
    *            Registers                      *
    *===========================================*/
