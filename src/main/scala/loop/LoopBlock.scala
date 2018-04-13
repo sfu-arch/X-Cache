@@ -48,7 +48,7 @@ class LoopBlockIO(NumIns : Int, NumOuts : Int, NumExits : Int)(implicit p: Param
 class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
                     (implicit p: Parameters,
                      name: sourcecode.Name,
-                     file: sourcecode.File) extends HandShakingNPS(1, ID)(new DataBundle())(p) {
+                     file: sourcecode.File) extends HandShakingNPS(ID=ID, NumOuts=NumOuts)(new DataBundle())(p) {
 
   // Instantiate TaskController I/O signals
   override lazy val io = IO(new LoopBlockIO(NumIns, NumOuts, NumExits))
@@ -68,15 +68,25 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
   val liveIn_R  = RegInit(VecInit(Seq.fill(NumIns){DataBundle.default}))
   val liveIn_R_valid = RegInit(VecInit(Seq.fill(NumIns)(false.B)))
 
+  val liveOut_R =  Seq.fill(NumOuts)(RegInit(DataBundle.default))
+  val liveOutFire_R = Seq.fill(NumOuts)(RegInit(true.B))
+/*
   val liveOut_R  = RegInit(VecInit(Seq.fill(NumOuts){DataBundle.default}))
   val liveOutValid = RegInit(VecInit(Seq.fill(NumOuts){true.B}))
-
+*/
   val exit_R = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
   val exitFire_R = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
 
   val endEnable_R = RegInit(0.U.asTypeOf(io.endEnable))
   val endEnableFire_R = RegNext(init=false.B,next=io.endEnable.fire())
 
+  def IsLiveOutReady(): Bool = {
+    if (NumOuts == 0) {
+      return true.B
+    } else {
+      liveOutFire_R.reduceLeft(_ && _)
+    }
+  }
 
   // Note about hidden signals from handshaking:
   //   enable_valid_R is enable.fire()
@@ -95,13 +105,11 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
     }
   }
 
-//  val allReady = io.Out.map(_.ready).reduceLeft(_ && _)
-
   // Latch the liveOut inputs when they fire to drive the Out I/O
   for (i <- 0 until NumOuts) {
     when(io.liveOut(i).fire()) {
+      liveOutFire_R(i) := true.B
       liveOut_R(i) := io.liveOut(i).bits
-      liveOutValid(i) := true.B
     }
   }
 
@@ -127,6 +135,7 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
         }.otherwise{
           // Jump to end skipping loop
           state := s_end
+          // Ensure downstream isn't predicated
           endEnable_R.bits.control := false.B
           endEnable_R.valid := true.B
           liveOut_R.foreach(_.predicate := false.B)
@@ -149,7 +158,7 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
       // If we've seen a valid exit pulse and we have valid liveOut data
       when(exitFire_R.asUInt().orR) {
         exitFire_R.foreach(_ := false.B)
-        when(exit_R.asUInt().orR && liveOutValid.asUInt().andR) {
+        when(exit_R.asUInt().orR && IsLiveOutReady() ) {
           endEnable_R.bits.control := exit_R.asUInt().orR
           endEnable_R.valid := true.B
           ValidOut() // Set Out() valid
@@ -169,6 +178,7 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
         inputReady.foreach(_ := true.B)
         exitFire_R.foreach(_ := false.B)
         endEnableFire_R := false.B
+        state := s_idle
       }
     }
   }

@@ -312,7 +312,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 2, ID = 0))
   val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
 */
-  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=1,NumExits=1));
+  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1));
 
 
   /* ================================================================== *
@@ -330,7 +330,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
   val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 11, BID = 4))
+  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 9, BID = 4))
 
 
 
@@ -394,7 +394,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
 
   //  br label %for.cond, !UID !27, !BB_UID !28, !ScalaLabel !29
-  val br11 = Module (new UBranchNode(ID = 11,NumOuts=2))
+  val br11 = Module (new UBranchNode(ID = 11,NumOuts=2)) // manually added NumOuts=2
 
   // [BasicBlock]  for.end:
 
@@ -466,9 +466,9 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
     */
 
   //Connecting br0 to bb_for_cond
-  lb_L_0.io.enable <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
+  lb_L_0.io.enable <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))  // manually added
 
-  bb_for_cond.io.activate <>lb_L_0.io.activate
+  bb_for_cond.io.activate <> lb_L_0.io.activate // manually corrected
 
 
   //Connecting br3 to bb_for_body
@@ -481,8 +481,8 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   bb_for_end.io.predicateIn <> lb_L_0.io.endEnable
 
   // Tie off live outs
-  lb_L_0.io.liveOut(0).valid := true.B
-  lb_L_0.io.Out(0).ready := true.B
+  //lb_L_0.io.liveOut(0).valid := true.B
+  //lb_L_0.io.Out(0).ready := true.B
 
   //Connecting br9 to bb_for_inc
   bb_for_inc.io.predicateIn <> br9.io.Out(param.br9_brn_bb("bb_for_inc"))
@@ -573,11 +573,11 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32* %a
-  lb_L_0.io.In(0) <> field0_expand.io.Out(0)
+  lb_L_0.io.In(0) <> field0_expand.io.Out(0) // manual
 
   // Connecting function argument to the loop header
   //i32 %n
-  lb_L_0.io.In(1) <> field1_expand.io.Out(0)
+  lb_L_0.io.In(1) <> field1_expand.io.Out(0) // manual
 
 
 
@@ -619,13 +619,13 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   icmp2.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
 
   // Wiring Binary instruction to the loop header
-  icmp2.io.RightIO <> lb_L_0.io.liveIn(1)
+  icmp2.io.RightIO <> lb_L_0.io.liveIn(1) // manual
 
   // Wiring Branch instruction
   br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
 
   // Wiring GEP instruction to the loop header
-  getelementptr4.io.baseAddress <> lb_L_0.io.liveIn(param.getelementptr4_in("field0"))
+  getelementptr4.io.baseAddress <> lb_L_0.io.liveIn(param.getelementptr4_in("field0")) // manual
 
   // Wiring GEP instruction to the parent instruction
   getelementptr4.io.idx1 <> phi1.io.Out(param.getelementptr4_in("phi1"))
@@ -648,7 +648,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   mul6.io.RightIO <> load5.io.Out(param.mul6_in("load5"))
 
   // Wiring GEP instruction to the loop header
-  getelementptr7.io.baseAddress <> lb_L_0.io.liveIn(0)
+  getelementptr7.io.baseAddress <> lb_L_0.io.liveIn(0) // manual
 
   // Wiring GEP instruction to the parent instruction
   getelementptr7.io.idx1 <> phi1.io.Out(param.getelementptr7_in("phi1"))

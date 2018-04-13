@@ -239,7 +239,7 @@ class LiveInNewNode(NumOuts: Int, ID: Int)
             invalid_R <> ControlBundle.default
             invalid_valid_R := false.B
 
-            out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+            out_ready_R.foreach(_ := false.B)
             enable_valid_R := false.B
           }.elsewhen((~io.Invalid.bits.control).toBool || (~invalid_R.control).toBool) {
             state := s_LATCH
@@ -247,7 +247,7 @@ class LiveInNewNode(NumOuts: Int, ID: Int)
             invalid_R <> ControlBundle.default
             invalid_valid_R := false.B
 
-            out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+            out_ready_R.foreach(_ := false.B)
           }
         }
       }

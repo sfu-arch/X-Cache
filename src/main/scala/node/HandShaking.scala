@@ -158,12 +158,11 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   val enable_valid_R = RegInit(false.B)
 
   // Output Handshaking
-  val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
-  val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_ready_R = Seq.fill(NumOuts)(RegInit(false.B))
+  val out_valid_R = Seq.fill(NumOuts)(RegInit(false.B))
 
   // Wire
-  val out_ready_W = WireInit(VecInit(Seq.fill(NumOuts)(false.B)))
-  //  val out_ready_W = Wire(Vec(Seq.fill(NumOuts)(false.B)))
+  val out_ready_W = Seq.fill(NumOuts)(WireInit(false.B))
 
   /*============================*
    *           Wiring           *
@@ -205,23 +204,32 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
 
   // OUTs
   def IsOutReady(): Bool = {
-    out_ready_R.asUInt.andR | out_ready_W.asUInt.andR
+    if (NumOuts == 0) {
+      return true.B
+    } else {
+      out_ready_R.reduceLeft(_ && _) | out_ready_W.reduceLeft(_ && _)
+    }
   }
 
   def IsOutValid(): Bool = {
-    out_valid_R.asUInt.andR
+//    out_valid_R.asUInt.andR
+    if (NumOuts == 0) {
+      return true.B
+    } else {
+      out_valid_R.reduceLeft(_ && _)
+    }
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
+    out_valid_R.foreach(_ := true.B)
   }
 
   def InvalidOut(): Unit = {
-    out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
+    out_valid_R.foreach(_ := false.B)
   }
 
   def Reset(): Unit = {
-    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+    out_ready_R.foreach(_ := false.B)
     enable_valid_R := false.B
   }
 }
