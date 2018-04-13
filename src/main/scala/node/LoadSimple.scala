@@ -95,6 +95,9 @@ class UnTypLoad(NumPredOps: Int,
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
 
+  // Connect successors outputs to the enable status
+  succ_bundle_R.foreach(_ := io.enable.bits)
+
   /*=============================================
   =            ACTIONS (possibly dangerous)     =
   =============================================*/

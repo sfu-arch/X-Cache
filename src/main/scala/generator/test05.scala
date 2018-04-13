@@ -625,7 +625,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
 
   // Wiring GEP instruction to the loop header
-  getelementptr4.io.baseAddress <> lb_L_0.io.liveIn(param.getelementptr4_in("field0")) // manual
+  getelementptr4.io.baseAddress <> lb_L_0.io.liveIn(0) // manual
 
   // Wiring GEP instruction to the parent instruction
   getelementptr4.io.idx1 <> phi1.io.Out(param.getelementptr4_in("phi1"))

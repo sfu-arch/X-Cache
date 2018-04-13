@@ -173,26 +173,6 @@ class WriteResp(implicit p: Parameters)
   val done = Bool()
 }
 
-/**
-  * @note Implements ordering between dataflow ops.
-  * @param predicate : predicate bit indicating if operations can continue
-  *
-  */
-class AckBundle(implicit p: Parameters) extends CoreBundle()(p) {
-  val taskID = UInt(tlen.W)
-  val predicate = Bool()
-}
-
-object AckBundle {
-  def default(implicit p: Parameters): AckBundle = {
-    val wire = Wire(new AckBundle)
-    wire.taskID := 0.U
-    wire.predicate := false.B
-    wire
-  }
-}
-
-
 //class RelayNode output
 class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
   override def cloneType = new RelayOutput().asInstanceOf[this.type]

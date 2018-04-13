@@ -70,9 +70,9 @@ class HandShakingIOPS[T <: Data](val NumPredOps: Int,
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Predecessor Ordering
-  val PredOp = Vec(NumPredOps, Flipped(Decoupled(new AckBundle)))
+  val PredOp = Vec(NumPredOps, Flipped(Decoupled(new ControlBundle)))
   // Successor Ordering
-  val SuccOp = Vec(NumSuccOps, Decoupled(new AckBundle()))
+  val SuccOp = Vec(NumSuccOps, Decoupled(new ControlBundle()))
   // Output IO
   val Out = Vec(NumOuts, Decoupled(gen))
 }
@@ -507,12 +507,12 @@ class HandShaking[T <: Data](val NumPredOps: Int,
 
   // Predecessor Handshaking
   val pred_valid_R = Seq.fill(NumPredOps)(RegInit(false.B))
-  val pred_bundle_R = Seq.fill(NumPredOps)(RegInit(AckBundle.default))
+  val pred_bundle_R = Seq.fill(NumPredOps)(RegInit(ControlBundle.default))
 
   // Successor Handshaking. Registers needed
   val succ_ready_R = Seq.fill(NumSuccOps)(RegInit(false.B))
   val succ_valid_R = Seq.fill(NumSuccOps)(RegInit(false.B))
-  val succ_bundle_R = Seq.fill(NumSuccOps)(RegInit(AckBundle.default))
+  val succ_bundle_R = Seq.fill(NumSuccOps)(RegInit(ControlBundle.default))
 
   // Output Handshaking
   val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))

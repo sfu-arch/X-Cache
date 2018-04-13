@@ -255,7 +255,7 @@ class test05Test02[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 5000) {
+  while (time < 2000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -263,7 +263,7 @@ class test05Test02[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
     ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 19) {
+      if (data != 10240) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 19" + Console.RESET)
         fail
       } else {

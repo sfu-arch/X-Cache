@@ -144,10 +144,10 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
       }
     }
     is(s_active) {
-      // Strobe the liveIn output valid signals when latch strobe is active
-      // This indicates a new iteration
+      // Strobe the liveIn output valid signals when latch strobe valid and
+      // active.  This indicates a new iteration.
       for(i <- 0 until NumIns) {
-        when (io.latchEnable.fire()) {
+        when (io.latchEnable.fire() && io.latchEnable.bits.control) {
           // Re-enable the liveIn latches to valid for next iteration
           liveIn_R_valid(i) := true.B
         }.elsewhen(io.liveIn(i).fire()){
@@ -155,8 +155,9 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
           liveIn_R_valid(i) := false.B
         }
       }
-      // If we've seen a valid exit pulse and we have valid liveOut data
-      when(exitFire_R.asUInt().orR) {
+      // If we've seen a valid exit pulse, our liveIn data has been
+      // accepted and we have valid liveOut data then we can end.
+      when(exitFire_R.asUInt().orR && !liveIn_R_valid.asUInt().orR) {
         exitFire_R.foreach(_ := false.B)
         when(exit_R.asUInt().orR && IsLiveOutReady() ) {
           endEnable_R.bits.control := exit_R.asUInt().orR
@@ -167,14 +168,11 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
       }
     }
     is(s_end) {
-      when(io.endEnable.fire()) {
+      when(endEnableFire_R) {
         endEnable_R.valid := false.B
       }
-      when(IsOutReady) {
-        // Reset output status and enable status
-        Reset()
-      }
       when(endEnableFire_R && IsOutReady()) {
+        Reset()
         inputReady.foreach(_ := true.B)
         exitFire_R.foreach(_ := false.B)
         endEnableFire_R := false.B
