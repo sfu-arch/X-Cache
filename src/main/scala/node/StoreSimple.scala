@@ -1,9 +1,5 @@
 package node
 
-/**
-  * Created by nvedula on 15/5/17.
-  */
-
 import chisel3.{RegInit, _}
 import chisel3.util._
 import org.scalacheck.Prop.False
@@ -172,63 +168,5 @@ class UnTypStore(NumPredOps: Int,
       }
     }
   }
-
-  //  when(start & predicate) {
-  //    // ACTION:  Memory request
-  //    //  Check if address is valid and data has arrive and predecessors have completed.
-  //
-  //
-  //    // ACTION: Memory Request
-  //    // -> Send memory request
-  //    when((state === s_idle) && (mem_req_fire)) {
-  //      io.memReq.valid := true.B
-  //    }
-  //
-  //    //  ACTION: Arbitration ready
-  //    when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
-  //      // ReqValid := false.B
-  //      state := s_RECEIVING
-  //    }
-  //
-  //    //  ACTION:  <- Incoming Data
-  //    when(state === s_RECEIVING && io.memResp.valid) {
-  //      // Set output to valid
-  //      ValidSucc()
-  //      ValidOut()
-  //      state := s_Done
-  //    }
-  //  }.elsewhen(start && (~predicate).toBool && state =/= s_Done && state =/= s_idle) {
-  //    ValidSucc()
-  //    ValidOut()
-  //    state := s_Done
-  //  }
-  //  /*===========================================
-  //  =            Output Handshaking and Reset   =
-  //  ===========================================*/
-  //
-  //
-  //  //  ACTION: <- Check Out READY and Successors READY
-  //  when(state === s_Done) {
-  //    // When successors are complete and outputs are ready you can reset.
-  //    // data already valid and would be latched in this cycle.
-  //
-  //    when(complete) {
-  //      // Clear all the valid states.
-  //      // Reset address
-  //      addr_R := DataBundle.default
-  //      addr_valid_R := false.B
-  //      // Reset data.
-  //      data_R := DataBundle.default
-  //      data_valid_R := false.B
-  //      // Clear all other state
-  //      Reset()
-  //      // Reset state.
-  //      state := s_idle
-  //      when(predicate) {
-  //        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
-  //      }
-  //
-  //    }
-  //  }
 
 }

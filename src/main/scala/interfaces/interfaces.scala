@@ -296,7 +296,7 @@ class CustomDataBundle[T <: Data](gen: T = UInt(32.W)) extends Bundle {
 object CustomDataBundle {
   def apply[T <: Data](gen: T = UInt(32.W)): CustomDataBundle[T] = new CustomDataBundle(gen)
 
-  def default[T <: Data](gen: T): CustomDataBundle[T] = {
+  def default[T <: Data](gen: T = UInt(32.W)): CustomDataBundle[T] = {
     val wire = new CustomDataBundle(gen)
     wire.data := 0.U.asTypeOf(gen)
     wire.predicate := false.B

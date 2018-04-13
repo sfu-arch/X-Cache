@@ -1,9 +1,5 @@
 package node
 
-/**
-  * Created by nvedula on 15/5/17.
-  */
-
 import chisel3._
 import chisel3.util._
 import org.scalacheck.Prop.False
@@ -158,73 +154,5 @@ class UnTypLoad(NumPredOps: Int,
     }
   }
 
-  //  when(start & predicate) {
-  //    // ACTION:  Memory request
-  //    //  Check if address is valid and predecessors have completed.
-  //
-  //    // ACTION: Outgoing Address Req ->
-  //    when((state === s_idle) && (mem_req_fire)) {
-  //      io.memReq.valid := true.B
-  //    }
-  //
-  //    //  ACTION: Arbitration ready
-  //    //   <- Incoming memory arbitration
-  //    when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
-  //      state := s_RECEIVING
-  //    }
-  //
-  //    // Data detected only one cycle later.
-  //    // Memory should supply only one cycle after arbitration.
-  //    //  ACTION:  <- Incoming Data
-  //    when(state === s_RECEIVING && io.memResp.valid) {
-  //      // Set data output registers
-  //      data_R.data := io.memResp.data
-  //      data_R.predicate := predicate
-  //      //data_R.valid := true.B
-  //      ValidSucc()
-  //      ValidOut()
-  //      // Completion state.
-  //      state := s_Done
-  //    }
-  //  }.elsewhen(start && !predicate && state =/= s_Done) {
-  //    //    ValidSucc()
-  //    //    ValidOut()
-  //    //    state := s_Done
-  //    addr_R := DataBundle.default
-  //    addr_valid_R := false.B
-  //    // Reset data
-  //    data_R := DataBundle.default
-  //    data_valid_R := false.B
-  //    // Reset state.
-  //    Reset()
-  //    // Reset state.
-  //    state := s_idle
-  //    printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
-  //  }
-  //  /*===========================================
-  //  =            Output Handshaking and Reset   =
-  //  ===========================================*/
-  //
-  //  //  ACTION: <- Check Out READY and Successors READY
-  //  when(state === s_Done) {
-  //    // When successors are complete and outputs are ready you can reset.
-  //    // data already valid and would be latched in this cycle.
-  //    when(complete) {
-  //      // Clear all the valid states.
-  //      // Reset address
-  //      addr_R := DataBundle.default
-  //      addr_valid_R := false.B
-  //      // Reset data
-  //      data_R := DataBundle.default
-  //      data_valid_R := false.B
-  //      // Reset state.
-  //      Reset()
-  //      // Reset state.
-  //      state := s_idle
-  //      when(predicate) {
-  //        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
-  //      }
-  //    }
-  //  }
 
 }

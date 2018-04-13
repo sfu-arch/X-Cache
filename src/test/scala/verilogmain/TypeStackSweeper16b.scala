@@ -107,7 +107,7 @@ object TypeStackFileVerilog16b extends App {
     return options
   }
 
-  val (testargs, designargs) = args.splitAt(5)
+  val (testargs, designargs) = args.splitAt(6)
   // println(testargs.deep.mkString("\n"))
   implicit val p = config.Parameters.root((new TypeStackFileVerilog16bConfig).toInstance)
 

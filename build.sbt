@@ -31,6 +31,10 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %% "sourcecode" % "0.1.4" // Scala-JVM
 )
 
+// Berkley hardfloat. locally published (built with chisel2 scala 2.11)
+libraryDependencies ++= Seq("edu.berkeley.cs" %% "hardfloat" % "1.2")
+
+
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   Resolver.sonatypeRepo("releases")
