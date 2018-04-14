@@ -139,11 +139,11 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
 
       io.memReq.valid := false.B
 
-      when(start & predicate) {
+      when(start && predicate) {
         when(mem_req_fire) {
           state := s_WAITING
         }
-      }.elsewhen(start & (~predicate).asTypeOf(Bool())) {
+      }.elsewhen(start && !predicate) {
         state := s_Done
       }
 

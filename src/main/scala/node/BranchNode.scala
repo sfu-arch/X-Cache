@@ -167,12 +167,14 @@ class CBranchFastNode(ID: Int)
 
 }
 
-class UBranchNode(ID: Int, NumOuts: Int = 1)
+class UBranchNode(NumPredOps: Int = 0,
+                  NumOuts: Int = 1,
+                  ID: Int)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)
-  extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
-  override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
+  extends HandShaking(NumPredOps, 0, NumOuts, ID)(new ControlBundle)(p) {
+  override lazy val io = IO(new HandShakingIOPS(NumPredOps, 0, NumOuts)(new ControlBundle)(p))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
@@ -205,20 +207,17 @@ class UBranchNode(ID: Int, NumOuts: Int = 1)
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits <> enable_R
-
   }
-
-  val out_ready_W = out_ready_R.asUInt.andR
 
   switch(state){
     is(s_idle){
-      when(io.enable.fire()){
+      when(IsEnableValid() && IsPredValid() ){
         state := s_OUTPUT
         ValidOut()
       }
     }
     is(s_OUTPUT){
-      when(out_ready_W){
+      when(IsOutReady()){
         state := s_idle
         Reset()
         printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)

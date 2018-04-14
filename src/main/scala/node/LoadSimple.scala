@@ -116,6 +116,7 @@ class UnTypLoad(NumPredOps: Int,
             }
           }
         }.otherwise {
+/*
           addr_R := DataBundle.default
           addr_valid_R := false.B
           // Reset data
@@ -126,6 +127,13 @@ class UnTypLoad(NumPredOps: Int,
           // Reset state.
           state := s_idle
           printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": restarted @ %d\n",enable_R.taskID, cycleCount)
+*/
+          data_R.predicate :=false.B
+          ValidSucc()
+          ValidOut()
+          // Completion state.
+          state := s_Done
+
         }
       }
     }

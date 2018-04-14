@@ -117,12 +117,10 @@ class HandShakingCtrlMaskIO(val NumInputs: Int,
   * @note Type5
   *       Handshaking IO with no ordering for control nodes
   * @note IO Bundle for Handshaking
-  * @param NumInputs Number of input basicBlocks
   * @param NumOuts   Number of outputs (Num Inst.)
   *
   */
-class HandShakingCtrlNoMaskIO(val NumInputs: Int,
-                              val NumOuts: Int)(implicit p: Parameters)
+class HandShakingCtrlNoMaskIO(val NumOuts: Int)(implicit p: Parameters)
   extends CoreBundle()(p) {
   // Output IO
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
@@ -771,7 +769,7 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
                             val BID: Int)(implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
-  lazy val io = IO(new HandShakingCtrlNoMaskIO(NumInputs, NumOuts))
+  lazy val io = IO(new HandShakingCtrlNoMaskIO(NumOuts))
 
   /*=================================
   =            Registers            =

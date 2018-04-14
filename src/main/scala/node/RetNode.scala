@@ -68,6 +68,7 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
   for (i <- retTypes.indices) {
     io.In.data(s"field$i").ready := ~in_data_valid_R(i)
     when(io.In.data(s"field$i").fire()) {
+      outputReg.bits.enable := enable_R
       outputReg.bits.data(s"field$i") <> io.In.data(s"field$i").bits
       in_data_valid_R(i) := true.B
     }
@@ -88,6 +89,7 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
+/*
         when((~enable_R.control).toBool) {
 
           out_ready_R := false.B
@@ -102,6 +104,8 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
           }
           state := s_IDLE
         }.elsewhen(in_data_valid_R.asUInt.andR) {
+*/
+        when(in_data_valid_R.asUInt.andR) {
           out_valid_R := true.B
           state := s_COMPUTE
         }

@@ -347,7 +347,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
 
 
   //  br label %for.inc, !UID !14, !BB_UID !15, !ScalaLabel !16
-  val br5 = Module (new UBranchNode(ID = 5))
+  val br5 = Module (new UBranchNode(ID = 5, NumPredOps = 1))
 
   // [BasicBlock]  for.inc:
 
@@ -487,7 +487,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   callin4.io.enable <> bb_for_body.io.Out(2) // Manual
 
   br5.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("br5"))
-
+  br5.io.PredOp(0) <> callin4.io.Out.enable
 
 
   add6.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("add6"))
@@ -587,7 +587,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   io.call4_out <> callout4.io.Out
 
   callin4.io.In <> io.call4_in
-  callin4.io.Out.enable.ready := true.B // Manual fix
+//  callin4.io.Out.enable.ready := true.B // Manual fix
   callin4.io.Out.data("field0").ready := true.B // Manual fix
 
 

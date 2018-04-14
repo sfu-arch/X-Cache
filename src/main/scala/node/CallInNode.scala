@@ -9,14 +9,14 @@ import interfaces._
 import util._
 import utility.UniformPrintfs
 
-class CallInNodeIO(val retTypes: Seq[Int])(implicit p: Parameters)
+class CallInNodeIO(val argTypes: Seq[Int])(implicit p: Parameters)
   extends Bundle
 {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Data I/O
-  val In   = Flipped(Decoupled(new Call(retTypes))) // From task
-  val Out  = new CallDecoupled(retTypes)            // Returns to calling block(s)
+  val In   = Flipped(Decoupled(new Call(argTypes))) // From task
+  val Out  = new CallDecoupled(argTypes)            // Returns to calling block(s)
 }
 
 class CallInNode(ID: Int, argTypes: Seq[Int])
@@ -74,21 +74,21 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
   }
 
   for (i <- argTypes.indices) {
+    when(io.Out.data(s"field$i").ready){
+      outputValidReg(i) := false.B
+    }
     when(io.In.valid && state === s_idle) {
       outputValidReg(i) := true.B
-    }
-    when(state === s_latched && io.Out.data(s"field$i").ready){
-      outputValidReg(i) := false.B
     }
     io.Out.data(s"field$i").valid := outputValidReg(i)
     io.Out.data(s"field$i").bits <> inputReg.data(s"field$i")
   }
 
+  when(io.Out.enable.ready){
+    outputValidReg(argTypes.length) := false.B
+  }
   when(io.In.valid && state === s_idle) {
     outputValidReg(argTypes.length) := true.B
-  }
-  when(state === s_latched && io.Out.enable.ready){
-    outputValidReg(argTypes.length) := false.B
   }
   io.Out.enable.valid := outputValidReg(argTypes.length)
   io.Out.enable.bits <> inputReg.enable

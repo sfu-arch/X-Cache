@@ -288,14 +288,12 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
 /**
   * @brief BasicBlockIO class definition
   * @details Implimentation of BasickBlockIO
-  * @param NumInputs Number of predecessors
   * @param NumOuts   Number of successor instructions
   */
 
-class BasicBlockNoMaskIO(NumInputs: Int,
-                         NumOuts: Int)
+class BasicBlockNoMaskIO(NumOuts: Int)
                         (implicit p: Parameters)
-  extends HandShakingCtrlNoMaskIO(NumInputs, NumOuts) {
+  extends HandShakingCtrlNoMaskIO(NumOuts) {
   // LeftIO: Left input data for computation
   //  val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
   val predicateIn = Flipped(Decoupled(new ControlBundle()))
@@ -318,7 +316,7 @@ class BasicBlockNoMaskNode(NumInputs: Int,
                            file: sourcecode.File)
   extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
 
-  override lazy val io = IO(new BasicBlockNoMaskIO(NumInputs, NumOuts))
+  override lazy val io = IO(new BasicBlockNoMaskIO(NumOuts))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize

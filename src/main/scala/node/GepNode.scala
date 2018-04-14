@@ -105,6 +105,7 @@ class GepOneNode(NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
+/*
         when((~enable_R.control).toBool) {
           idx1_R := DataBundle.default
           base_addr_R := DataBundle.default
@@ -115,6 +116,8 @@ class GepOneNode(NumOuts: Int, ID: Int)
           Reset()
           printf("[LOG] " + "[" + module_name + "] [TID-> %d]" + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
         }.elsewhen((idx1_valid_R) && (base_addr_valid_R)) {
+*/
+      when((idx1_valid_R) && (base_addr_valid_R)) {
           ValidOut()
           state := s_COMPUTE
         }
@@ -222,6 +225,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
+/*
         when((~enable_R.control).toBool) {
           idx1_R := DataBundle.default
           idx2_R := DataBundle.default
@@ -234,8 +238,8 @@ class GepTwoNode(NumOuts: Int, ID: Int)
           Reset()
           printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
         }.elsewhen(idx1_valid_R &&
-          idx2_valid_R && base_addr_valid_R) {
-
+*/
+        when(idx1_valid_R && idx2_valid_R && base_addr_valid_R) {
           ValidOut()
           state := s_COMPUTE
         }

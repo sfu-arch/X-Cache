@@ -381,11 +381,11 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
 
   //  store i32 %mul, i32* %arrayidx1, align 4, !UID !20, !ScalaLabel !21
-  val store8 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=8,RouteID=0))
+  val store8 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=8,RouteID=0))
 
 
   //  br label %for.inc, !UID !22, !BB_UID !23, !ScalaLabel !24
-  val br9 = Module (new UBranchNode(ID = 9))
+  val br9 = Module (new UBranchNode(NumPredOps=1, ID = 9))
 
   // [BasicBlock]  for.inc:
 
@@ -485,6 +485,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   //lb_L_0.io.Out(0).ready := true.B
 
   //Connecting br9 to bb_for_inc
+  br9.io.PredOp(0) <> store8.io.SuccOp(0)
   bb_for_inc.io.predicateIn <> br9.io.Out(param.br9_brn_bb("bb_for_inc"))
 
 
@@ -663,7 +664,6 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   store8.io.memResp  <> CacheMem.io.WriteOut(0)
   CacheMem.io.WriteIn(0) <> store8.io.memReq
   store8.io.Out(0).ready := true.B
-
 
 
   // Wiring instructions
