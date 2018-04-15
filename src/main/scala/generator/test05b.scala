@@ -342,7 +342,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   // [BasicBlock]  for.body:
 
   //  %call = call i32 @test05(i32* %a, i32 %n), !UID !12, !ScalaLabel !13
-  val callout4 = Module(new CallOutNode(ID=4,argTypes=List(32,32)))
+  val callout4 = Module(new CallOutNode(ID=4,argTypes=List(32,32))) // Manually changed
   val callin4 = Module(new CallInNode(ID=499,argTypes=List(32)))
 
 

@@ -33,7 +33,7 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
 
   // Enable
   val enable_R = RegInit(ControlBundle.default)
-  val enable_valid_R = RegInit(false.B)
+  val enableFire_R = RegInit(false.B)
 
   val inputReg  = RegInit(0.U.asTypeOf(io.In.bits))
   val inputReadyReg = RegInit(false.B)
@@ -45,30 +45,30 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
   io.In.ready := state === s_idle
 
   // Wire up enable READY and VALIDs
-  io.enable.ready := ~enable_valid_R
+  io.enable.ready := ~enableFire_R
   when(io.enable.fire()) {
-    enable_valid_R := io.enable.valid
-    enable_R <> io.enable.bits
+    enableFire_R := true.B
+    enable_R := io.enable.bits
   }
 
   val inFire_R = RegInit(false.B)
   when(io.In.fire()) {
+    inputReg := io.In.bits
     inFire_R := true.B
   }
 
 
   switch(state) {
     is(s_idle) {
-      when (inFire_R && enable_valid_R && enable_R.control) {
+      when (inFire_R && enableFire_R) {
         state := s_latched
-        inputReg <> io.In.bits
       }
     }
     is(s_latched) {
       when (outputValidReg.asUInt.orR === false.B) {
         state := s_idle
         inFire_R := false.B
-        enable_valid_R := false.B
+        enableFire_R := false.B
       }
     }
   }
@@ -81,7 +81,7 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
       outputValidReg(i) := true.B
     }
     io.Out.data(s"field$i").valid := outputValidReg(i)
-    io.Out.data(s"field$i").bits <> inputReg.data(s"field$i")
+    io.Out.data(s"field$i").bits := inputReg.data(s"field$i")
   }
 
   when(io.Out.enable.ready){
