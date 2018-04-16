@@ -42,10 +42,10 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
   val state = RegInit(s_IDLE)
 
   // Enable
-  val enable_R = RegInit(ControlBundle.default)
+  //val enable_R = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
-  val task_ID_R = RegNext(next = enable_R.taskID)
+  //val task_ID_R = RegNext(next = enable_R.taskID)
 
   // Data Inputs
   val inputReady = RegInit(VecInit(Seq.fill(retTypes.length + NumPredIn + 1)(true.B)))
@@ -61,14 +61,14 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R <> io.enable.bits
+    //enable_R <> io.enable.bits
+    outputReg.bits.enable := io.enable.bits
   }
 
   // Latching input data
   for (i <- retTypes.indices) {
     io.In.data(s"field$i").ready := ~in_data_valid_R(i)
     when(io.In.data(s"field$i").fire()) {
-      outputReg.bits.enable := enable_R
       outputReg.bits.data(s"field$i") <> io.In.data(s"field$i").bits
       in_data_valid_R(i) := true.B
     }
@@ -122,7 +122,7 @@ class RetNode(NumPredIn: Int = 0, retTypes: Seq[Int], ID: Int)
         out_ready_R := false.B
 
         state := s_IDLE
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_R, cycleCount, outputReg.bits.data(s"field0").data)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", outputReg.bits.enable.taskID, cycleCount, outputReg.bits.data(s"field0").data)
       }
     }
   }

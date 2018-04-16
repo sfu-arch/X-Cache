@@ -86,7 +86,6 @@ class UnTypLoad(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.predicate := true.B
     io.Out(i).bits.taskID := addr_R.taskID
   }
 
@@ -102,18 +101,16 @@ class UnTypLoad(NumPredOps: Int,
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
 
-  val mem_req_fire = addr_valid_R & IsPredValid()
+  //val mem_req_fire = addr_valid_R & IsPredValid()
   val complete = IsSuccReady() & IsOutReady()
 
   switch(state) {
     is(s_idle) {
-      when(enable_valid_R) {
+      when(enable_valid_R && addr_valid_R && IsPredValid()) {
         when(enable_R.control) {
-          when(mem_req_fire && addr_valid_R && IsPredValid()) {
-            io.memReq.valid := true.B
-            when(io.memReq.ready) {
-              state := s_RECEIVING
-            }
+          io.memReq.valid := true.B
+          when(io.memReq.ready) {
+            state := s_RECEIVING
           }
         }.otherwise {
 /*
@@ -131,6 +128,7 @@ class UnTypLoad(NumPredOps: Int,
           data_R.predicate :=false.B
           ValidSucc()
           ValidOut()
+          data_R := DataBundle.default
           // Completion state.
           state := s_Done
 

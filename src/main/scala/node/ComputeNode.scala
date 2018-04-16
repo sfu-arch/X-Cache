@@ -85,7 +85,12 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.data := FU.io.out
     io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.taskID := left_R.taskID
+    // The taskID's should be identical except in the case
+    // when one input is tied to a constant.  In that case
+    // the taskID will be zero.  Logicall OR'ing the IDs
+    // Should produce a valid ID in either case regardless of
+    // which input is constant.
+    io.Out(i).bits.taskID := left_R.taskID | right_R.taskID
   }
 
   // Assertion to make sure that runtime won't be

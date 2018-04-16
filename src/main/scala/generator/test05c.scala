@@ -267,7 +267,7 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new LoopHead(NumOuts = 4, NumPhi = 2, BID = 1))
+  val bb_for_cond = Module(new LoopHead(NumOuts = 4, NumPhi = 2, BID = 1)) // Manual
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 2))
 
@@ -398,7 +398,7 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
 
   //Connecting br9 to bb_for_cond
   bb_for_cond.io.loopBack <> br9.io.Out(0)
-  lb_L_0.io.latchEnable   <> br9.io.Out(1) // manual
+  lb_L_0.io.latchEnable   <> br9.io.Out(1) // Manual
 
 
 

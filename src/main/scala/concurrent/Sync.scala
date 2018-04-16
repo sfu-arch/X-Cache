@@ -42,6 +42,14 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
    *           Predicate Evaluation           *
    *==========================================*/
 
+  val predicate = IsEnable()
+  val start     = IsEnableValid()
+
+  io.enable.ready := (state === s_IDLE)
+  when (io.enable.fire()){
+    enableID := io.enable.bits.taskID
+  }
+
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
@@ -62,14 +70,14 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
   }
 
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := true.B
+    io.Out(i).bits.control := predicate
     io.Out(i).bits.taskID := enableID
   }
 
   switch(state) {
     is(s_IDLE) {
-      when(enable_valid_R) {
-        when(enable_R.control) {
+      when(start) {
+        when(predicate) {
           state := s_COMPUTE
         }.otherwise {
           Reset()
@@ -262,3 +270,104 @@ class SyncNode(NumOuts: Int, ID: Int)
 
 }
 
+class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
+            (implicit p: Parameters,
+             name: sourcecode.Name,
+             file: sourcecode.File)
+  extends HandShakingCtrlNPS(NumOuts, ID)(p) {
+  override lazy val io = IO(new SyncIO(NumOuts, NumInc, NumDec)(p))
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
+
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+
+  // idState machine
+  val s_IDLE :: s_COMPUTE :: s_DONE :: Nil = Enum(3)
+  val state = RegInit(s_IDLE) //Vec(1<<tlen, RegInit(s_IDLE))
+  val enableID = RegInit(0.U(1<<tlen))
+  val syncCount = RegInit(Vec(Seq.fill(1<<tlen)(0.U(tlen.W))))//Reg(Vec(1<<tlen,UInt(tlen.W)))
+
+  /*==========================================*
+   *           Predicate Evaluation           *
+   *==========================================*/
+
+  val predicate = IsEnable()
+  val start     = IsEnableValid()
+
+
+  when (io.enable.fire()){
+    enableID := io.enable.bits.taskID
+  }
+
+  /*============================================*
+   *            Update Counts                   *
+   *============================================*/
+  val incArb = Module(new Arbiter(new ControlBundle, NumInc))
+  val decArb = Module(new Arbiter(new ControlBundle, NumDec))
+  val updateArb = Module(new Arbiter(new ControlBundle, 2))
+
+  incArb.io.in <> io.incIn
+  decArb.io.in <> io.decIn
+  updateArb.io.in(0) <> incArb.io.out // increments are higher priority
+  updateArb.io.in(1) <> decArb.io.out // decrements lower priority
+  updateArb.io.out.ready := true.B
+
+  val update   = RegNext(init = false.B, next = updateArb.io.out.fire() && updateArb.io.out.bits.control)
+  val dec      = RegNext(init = 0.U, next = updateArb.io.chosen)
+  val updateID = RegNext(init = 0.U, next = updateArb.io.out.bits.taskID)
+
+  when(update) {
+    when (dec === 0.U) {
+      syncCount(updateID) := syncCount(updateID) + 1.U
+    }.otherwise{
+      syncCount(updateID) := syncCount(updateID) - 1.U
+    }
+  }
+
+  /*============================================*
+   *            Output State Machine            *
+   *============================================*/
+  switch(state) {
+    is(s_IDLE) {
+      when(start) {
+        when(predicate) {
+          state := s_COMPUTE
+        }.otherwise {
+          Reset()
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+        }
+      }
+    }
+    is(s_COMPUTE) {
+      when(syncCount(enableID) === 0.U) {
+        ValidOut()
+        state := s_DONE
+      }
+    }
+    is(s_DONE) {
+      when(IsOutReady()) {
+        Reset()
+        when(predicate) {
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+        }
+        state := s_IDLE
+      }
+    }
+  }
+
+  /*============================================*
+   *            Connect outputs                 *
+   *============================================*/
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.control := predicate
+    io.Out(i).bits.taskID  := enableID
+  }
+
+
+}

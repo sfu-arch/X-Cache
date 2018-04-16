@@ -98,8 +98,7 @@ class BasicBlockNode(NumInputs: Int,
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := pred_R.control
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits := predicate_in_R
   }
 
   // Wire up mask output

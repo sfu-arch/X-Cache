@@ -105,7 +105,6 @@ class UnTypStore(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.predicate := true.B
   }
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
@@ -133,6 +132,7 @@ class UnTypStore(NumPredOps: Int,
           }.otherwise {
             ValidSucc()
             ValidOut()
+            //data_R := DataBundle.default
             state := s_Done
           }
         }

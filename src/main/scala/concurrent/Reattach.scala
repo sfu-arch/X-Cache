@@ -29,13 +29,12 @@ class Reattach(val NumPredIn: Int, ID: Int)
    *            Registers                      *
    *===========================================*/
 
-  val ctrlPredicate_R = Reg(Vec(NumPredIn, Bool()))
-  val ctrlReady_R = Reg(Vec(NumPredIn, Bool()))
-  val ctrlTaskID_R = RegInit(0.U(tlen.W))
+  val ctrlPredicate_R = RegInit(VecInit(Seq.fill(NumPredIn){DataBundle.default}))
+  val ctrlReady_R = RegInit(VecInit(Seq.fill(NumPredIn){false.B}))
   for (i <- 0 until NumPredIn) {
     when(io.predicateIn(i).fire()) {
       ctrlReady_R(i) := true.B
-      ctrlPredicate_R(i) := io.predicateIn(i).bits.predicate
+      ctrlPredicate_R(i) := io.predicateIn(i).bits
     }
     io.predicateIn(i).ready := ~ctrlReady_R(i)
   }
@@ -48,20 +47,10 @@ class Reattach(val NumPredIn: Int, ID: Int)
    *==========================================*/
 
   val start = ctrlReady_R.asUInt.andR && IsEnableValid()
-  val predicate = ctrlPredicate_R.asUInt.andR && IsEnable()
+  val predicate = ctrlPredicate_R(0).predicate
 
-  io.Out(0).bits.control := predicate
-
-  /*===============================================*
-   *            Latch inputs. Wire up output       *
-   *===============================================*/
-
-
-  // Wire up Outputs
-  when(io.predicateIn(0).fire()) {
-    ctrlTaskID_R := io.predicateIn(0).bits.taskID
-  }
-  io.Out(0).bits.taskID := ctrlTaskID_R
+  io.Out(0).bits.control := ctrlPredicate_R(0).predicate
+  io.Out(0).bits.taskID := ctrlPredicate_R(0).taskID
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
@@ -85,7 +74,7 @@ class Reattach(val NumPredIn: Int, ID: Int)
     enable_valid_R := false.B
     for (i <- 0 until NumPredIn) {
       ctrlReady_R(i) := false.B
-      ctrlPredicate_R(i) := false.B
+      ctrlPredicate_R(i) := DataBundle.default
     }
 
     when(predicate) {
