@@ -55,9 +55,9 @@ class cilk_for_test12Main(implicit p: Parameters) extends cilk_for_test12MainIO 
 
   // Wire up the cache and modules under test.
   val children = 1
-  val TaskControllerModule1 = Module(new TaskController(List(32,32,32), List(32), 1, children))
-  val TaskControllerModule2 = Module(new TaskController(List(32,32), List(32), 1, children))
-  val TaskControllerModule3 = Module(new TaskController(List(32,32), List(32), 1, children))
+  val TaskControllerModule1 = Module(new TaskController(List(32,32,32), List(32), 1, children,depth=2))
+  val TaskControllerModule2 = Module(new TaskController(List(32,32), List(32), 1, children,depth=2))
+  val TaskControllerModule3 = Module(new TaskController(List(32,32), List(32), 1, children,depth=2))
   val cilk_for_test12 = Module(new cilk_for_test12DF())
 
   val cilk_for_test12_detach1 = for (i <- 0 until children) yield {
@@ -76,12 +76,12 @@ class cilk_for_test12Main(implicit p: Parameters) extends cilk_for_test12MainIO 
   // Merge requests from two children.
   val CacheArbiter = Module(new CacheArbiter(3*children+1))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.CacheReq(3*i) <> cilk_for_test12_detach1(i).io.CacheReq
-    cilk_for_test12_detach1(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*i)
-    CacheArbiter.io.cpu.CacheReq(3*i) <> cilk_for_test12_detach2(i).io.CacheReq
-    cilk_for_test12_detach2(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*i)
-    CacheArbiter.io.cpu.CacheReq(3*i) <> cilk_for_test12_detach3(i).io.CacheReq
-    cilk_for_test12_detach3(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*i)
+    CacheArbiter.io.cpu.CacheReq(3*i+0) <> cilk_for_test12_detach1(i).io.CacheReq
+    cilk_for_test12_detach1(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*i+0)
+    CacheArbiter.io.cpu.CacheReq(3*i+1) <> cilk_for_test12_detach2(i).io.CacheReq
+    cilk_for_test12_detach2(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*i+1)
+    CacheArbiter.io.cpu.CacheReq(3*i+2) <> cilk_for_test12_detach3(i).io.CacheReq
+    cilk_for_test12_detach3(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*i+2)
   }
   CacheArbiter.io.cpu.CacheReq(3*children) <> cilk_for_test12.io.CacheReq
   cilk_for_test12.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*children)
@@ -162,7 +162,7 @@ class cilk_for_test12Test01[T <: cilk_for_test12MainIO](c: T) extends PeekPokeTe
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0)    // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 64)    // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
   poke(c.io.in.bits.data("field1").data, 8)   // n
   poke(c.io.in.bits.data("field1").predicate, true.B)

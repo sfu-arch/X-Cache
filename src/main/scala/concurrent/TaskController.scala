@@ -24,7 +24,7 @@ class TaskControllerIO(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent
   val childOut  = Vec(numChild, Decoupled(new Call(argTypes)))            // Requests to sub-block
 }
 
-class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int)
+class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int, depth :Int = 16)
                     (implicit val p: Parameters) extends Module with CoreParams {
 
   // Instantiate TaskController I/O signals
@@ -36,7 +36,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     * *************************************************************************/
   val taskArb = Module(new RRArbiter(new Call(argTypes), numParent))
   val freeList = Module(new Queue(UInt(tlen.W), 1 << tlen))
-  val exeList = Module(new Queue(new Call(argTypes), 1 << tlen))
+  val exeList = Module(new Queue(new Call(argTypes), depth))
   val parentTable = SyncReadMem(1 << tlen, new ParentBundle())
 
   for (i <- 0 until numParent) {

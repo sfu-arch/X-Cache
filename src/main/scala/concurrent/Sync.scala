@@ -35,7 +35,7 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
   val s_IDLE :: s_COMPUTE :: s_DONE :: Nil = Enum(3)
   val state = RegInit(s_IDLE)
 
-  val enableID = RegInit(0.U(1 << tlen))
+  //val enableID = RegInit(0.U(1 << tlen))
   val syncCount = RegInit(0.U(8.W))
 
   /*==========================================*
@@ -46,9 +46,6 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
   val start     = IsEnableValid()
 
   io.enable.ready := (state === s_IDLE)
-  when (io.enable.fire()){
-    enableID := io.enable.bits.taskID
-  }
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
@@ -70,8 +67,7 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
   }
 
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := predicate
-    io.Out(i).bits.taskID := enableID
+    io.Out(i).bits := enable_R
   }
 
   switch(state) {
@@ -80,9 +76,10 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
         when(predicate) {
           state := s_COMPUTE
         }.otherwise {
-          Reset()
+//          Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Read value only @ %d, value: %d\n", cycleCount, syncCount)
-          state := s_IDLE
+          ValidOut()
+          state := s_DONE
         }
       }
     }
@@ -301,10 +298,6 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   val start     = IsEnableValid()
 
 
-  when (io.enable.fire()){
-    enableID := io.enable.bits.taskID
-  }
-
   /*============================================*
    *            Update Counts                   *
    *============================================*/
@@ -339,8 +332,10 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
         when(predicate) {
           state := s_COMPUTE
         }.otherwise {
-          Reset()
+//          Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+          ValidOut()
+          state := s_DONE
         }
       }
     }
@@ -365,8 +360,7 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
    *            Connect outputs                 *
    *============================================*/
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := predicate
-    io.Out(i).bits.taskID  := enableID
+    io.Out(i).bits := enable_R
   }
 
 

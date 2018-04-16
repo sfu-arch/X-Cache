@@ -432,7 +432,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R <> io.enable.bits
+    enable_R := io.enable.bits
   }
 
   /*===================================*
@@ -470,7 +470,6 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   def Reset(): Unit = {
     out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
     enable_valid_R := false.B
-    enable_R <> ControlBundle.default
   }
 }
 
@@ -561,7 +560,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R <> io.enable.bits
+    enable_R := io.enable.bits
   }
 
   /*=====================================

@@ -338,7 +338,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
   val bb_my_pfor_preattach14 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_my_offload_pfor_body10 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7))
+  val bb_my_offload_pfor_body10 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
 
 
 
@@ -382,7 +382,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   //  br label %my_pfor.cond7, !llvm.loop !17, !UID !19, !BB_UID !20, !ScalaLabel !21
-  val br6 = Module (new UBranchNode(ID = 6, NumOuts=2))
+  val br6 = Module (new UBranchNode(ID = 6, NumOuts=1))
 
   // [BasicBlock]  my_pfor.end:
 
@@ -481,7 +481,8 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
   //Connecting br6 to bb_my_pfor_cond7
   bb_my_pfor_cond7.io.loopBack <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_cond7"))
-  lb_L_0.io.latchEnable   <> br6.io.Out(1) // manual
+//  lb_L_0.io.latchEnable   <> br6.io.Out(1) // manual
+  lb_L_0.io.latchEnable   <> bb_my_offload_pfor_body10.io.Out(1) // manual
 
 
   //Connecting br13 to bb_my_pfor_preattach14

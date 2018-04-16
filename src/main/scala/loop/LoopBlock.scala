@@ -137,8 +137,10 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
           state := s_end
           // Ensure downstream isn't predicated
           endEnable_R.bits.control := false.B
+          endEnable_R.bits.taskID := enable_R.taskID
           endEnable_R.valid := true.B
           liveOut_R.foreach(_.predicate := false.B)
+          liveOut_R.foreach(_.taskID := enable_R.taskID)
           ValidOut()
         }
       }

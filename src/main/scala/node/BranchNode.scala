@@ -70,7 +70,7 @@ class CBranchNode(ID: Int)
 
   io.CmpIO.ready := ~cmp_valid_R
   when(io.CmpIO.fire()) {
-    cmp_R <> io.CmpIO.bits
+    cmp_R := io.CmpIO.bits
     cmp_valid_R := true.B
   }
 
@@ -206,7 +206,7 @@ class UBranchNode(NumPredOps: Int = 0,
     */
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits <> enable_R
+    io.Out(i).bits := enable_R
   }
 
   switch(state){

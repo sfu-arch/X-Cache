@@ -164,7 +164,7 @@ class RetNodeNew(retTypes: Seq[Int], ID: Int)
   val in_data_valid_R = RegInit(VecInit(Seq.fill(retTypes.length)(false.B)))
 
   // Output registers
-  val output_R = RegInit(0.U.asTypeOf(io.Out))
+  val output_R = RegInit(0.U.asTypeOf(io.Out.bits))
   val out_ready_R = RegInit(false.B)
   val out_valid_R = RegInit(false.B)
 
@@ -173,20 +173,20 @@ class RetNodeNew(retTypes: Seq[Int], ID: Int)
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R <> io.enable.bits
+    enable_R := io.enable.bits
   }
 
   // Latching input data
   for (i <- retTypes.indices) {
     io.In.data(s"field$i").ready := ~in_data_valid_R(i)
     when(io.In.data(s"field$i").fire()) {
-      output_R.bits.data(s"field$i") <> io.In.data(s"field$i").bits
+      output_R.data(s"field$i") := io.In.data(s"field$i").bits
       in_data_valid_R(i) := true.B
     }
   }
 
   // Connecting outputs
-  io.Out.bits := output_R.bits
+  io.Out.bits := output_R
   io.Out.valid := out_valid_R
 
   when(io.Out.fire()) {
@@ -228,7 +228,7 @@ class RetNodeNew(retTypes: Seq[Int], ID: Int)
         out_ready_R := false.B
 
         state := s_IDLE
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, output_R.bits.data(s"field0").data)
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, output_R.data(s"field0").data)
       }
     }
   }

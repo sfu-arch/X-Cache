@@ -380,7 +380,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
   //  br label %pfor.cond, !llvm.loop !26, !UID !36, !BB_UID !37, !ScalaLabel !38
-  val br8 = Module (new UBranchNode(ID = 8, NumOuts=2))
+  val br8 = Module (new UBranchNode(ID = 8, NumOuts=1))
 
   // [BasicBlock]  pfor.end25:
 
@@ -470,7 +470,8 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
   //Connecting br8 to bb_pfor_cond
   bb_pfor_cond.io.loopBack <> br8.io.Out(param.br8_brn_bb("bb_pfor_cond"))
-  lb_L_0.io.latchEnable   <> br8.io.Out(1) // manual
+//  lb_L_0.io.latchEnable   <> br8.io.Out(1) // manual
+  lb_L_0.io.latchEnable   <> bb_offload_pfor_body.io.Out(1) // manual
 
 
   //Connecting detach6 to bb_offload_pfor_body
@@ -545,7 +546,8 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   callout15.io.In.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call15"))
   callin15.io.enable.enq(ControlBundle.active())
 
-  reattach16.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach16"))
+//  reattach16.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach16"))
+  reattach16.io.enable.enq(ControlBundle.active())
 
 
 
@@ -691,8 +693,8 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
   // Wiring Load instruction to another instruction
   load13.io.GepAddr <> alloca0.io.Out(param.load13_in("alloca0"))
-  load13.io.memResp <> CacheMem.io.ReadOut(0)  // Manually added
-  CacheMem.io.ReadIn(0) <> load13.io.memReq    // Manually added
+  load13.io.memResp <> CacheMem.io.ReadOut(1)  // Manually added
+  CacheMem.io.ReadIn(1) <> load13.io.memReq    // Manually added
 
 
 

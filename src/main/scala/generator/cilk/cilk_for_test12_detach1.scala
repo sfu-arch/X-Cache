@@ -367,7 +367,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
   val bb_my_pfor_preattach22 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_my_offload_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7))
+  val bb_my_offload_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
 
 
 
@@ -411,7 +411,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   //  br label %my_pfor.cond2, !llvm.loop !22, !UID !35, !BB_UID !36, !ScalaLabel !37
-  val br6 = Module (new UBranchNode(ID = 6, NumOuts=2))
+  val br6 = Module (new UBranchNode(ID = 6, NumOuts=1))
 
   // [BasicBlock]  my_pfor.end17:
 
@@ -522,7 +522,8 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
   //Connecting br6 to bb_my_pfor_cond2
   bb_my_pfor_cond2.io.loopBack <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_cond2"))
-  lb_L_0.io.latchEnable   <> br6.io.Out(1) // manual
+//  lb_L_0.io.latchEnable   <> br6.io.Out(1) // manual
+  lb_L_0.io.latchEnable   <> bb_my_offload_pfor_body5.io.Out(1) // manual
 
 
   //Connecting br16 to bb_my_pfor_preattach22
@@ -732,6 +733,8 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
   // Wiring Load instruction to the function argument
   load13.io.GepAddr <>  field2_expand.io.Out(0)
+  load13.io.memResp <> CacheMem.io.ReadOut(1) // manual
+  CacheMem.io.ReadIn(1) <> load13.io.memReq  // manual
 
 
 
@@ -771,6 +774,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   // Wiring Call to I/O
   callout18.io.In.data("field0") <> lb_L_0.io.liveIn(0) // manual
   callout18.io.In.data("field1") <> lb_L_0.io.liveIn(1) // manual
+
   io.call18_out <> callout18.io.Out
   callin18.io.Out.enable.ready := true.B
 
