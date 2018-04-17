@@ -149,14 +149,16 @@ class cilk_for_test12Test01[T <: cilk_for_test12MainIO](c: T) extends PeekPokeTe
   poke(c.io.write, false.B)
   step(1)
 
+  val taskID = 0
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
+  poke(c.io.in.bits.enable.taskID, taskID)
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").taskID, 5.U)
+  poke(c.io.in.bits.data("field0").taskID, taskID)
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 5.U)
+  poke(c.io.in.bits.data("field1").taskID, taskID)
   poke(c.io.in.bits.data("field1").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
@@ -182,7 +184,7 @@ class cilk_for_test12Test01[T <: cilk_for_test12MainIO](c: T) extends PeekPokeTe
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 8000) {
+  while (time < 4000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -190,8 +192,8 @@ class cilk_for_test12Test01[T <: cilk_for_test12MainIO](c: T) extends PeekPokeTe
     ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 67405056) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 67405056" + Console.RESET)
+      if (data != 67405054) {
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 67405054" + Console.RESET)
         fail
       } else {
         println(Console.BLUE + s"*** Correct return result received. Run time: $time cycles." + Console.RESET)

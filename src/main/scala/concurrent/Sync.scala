@@ -287,7 +287,7 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   // idState machine
   val s_IDLE :: s_COMPUTE :: s_DONE :: Nil = Enum(3)
   val state = RegInit(s_IDLE) //Vec(1<<tlen, RegInit(s_IDLE))
-  val enableID = RegInit(0.U(1<<tlen))
+//  val enableID = RegInit(0.U(1<<tlen))
   val syncCount = RegInit(Vec(Seq.fill(1<<tlen)(0.U(tlen.W))))//Reg(Vec(1<<tlen,UInt(tlen.W)))
 
   /*==========================================*
@@ -340,7 +340,7 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
       }
     }
     is(s_COMPUTE) {
-      when(syncCount(enableID) === 0.U) {
+      when(syncCount(enable_R.taskID) === 0.U) {
         ValidOut()
         state := s_DONE
       }

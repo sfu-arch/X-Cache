@@ -338,7 +338,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
   val bb_my_pfor_preattach14 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_my_offload_pfor_body10 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
+  val bb_my_offload_pfor_body10 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7))
 
 
 
@@ -423,7 +423,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
   //  call void @cilk_for_test12_detach3(i32* %a.in, i32 %0), !UID !41, !ScalaLabel !42
 //  val call15 = Module(new CallNode(ID=15,argTypes=List(32,32),retTypes=List(32)))
-  val callout15 = Module(new CallOutNode(ID=4,argTypes=List(32,32))) // Manually changed
+  val callout15 = Module(new CallOutNode(ID=4,NumSuccOps=1,argTypes=List(32,32))) // Manually changed
   val callin15 = Module(new CallInNode(ID=499,argTypes=List(32)))
 
 
@@ -482,7 +482,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   //Connecting br6 to bb_my_pfor_cond7
   bb_my_pfor_cond7.io.loopBack <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_cond7"))
 //  lb_L_0.io.latchEnable   <> br6.io.Out(1) // manual
-  lb_L_0.io.latchEnable   <> bb_my_offload_pfor_body10.io.Out(1) // manual
+  lb_L_0.io.latchEnable   <> callout15.io.SuccOp(0) // manual
 
 
   //Connecting br13 to bb_my_pfor_preattach14
@@ -557,7 +557,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
 
 
-  callout15.io.In.enable <> bb_my_offload_pfor_body10.io.Out(param.bb_my_offload_pfor_body10_activate("call15"))
+  callout15.io.enable <> bb_my_offload_pfor_body10.io.Out(param.bb_my_offload_pfor_body10_activate("call15"))
   callin15.io.enable.enq(ControlBundle.active())
 
 
@@ -699,9 +699,9 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   // Wiring Call to I/O
-  callout15.io.In.data("field0") <> lb_L_0.io.liveIn(1) // manual
-  callout15.io.In.data("field1") <> phi1.io.Out(param.call15_in("phi1")) // manual
-  io.call15_out <> callout15.io.Out
+  callout15.io.In("field0") <> lb_L_0.io.liveIn(1) // manual
+  callout15.io.In("field1") <> phi1.io.Out(param.call15_in("phi1")) // manual
+  io.call15_out <> callout15.io.Out(0)
 
   callin15.io.In <> io.call15_in
   callin15.io.Out.enable.ready := true.B

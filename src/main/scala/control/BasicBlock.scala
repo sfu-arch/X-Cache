@@ -549,7 +549,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
     is(s_END) {
       when(loop_back_valid_R) {
 
-        loop_back_R := ControlBundle.default
+//        loop_back_R := ControlBundle.default
         loop_back_valid_R := false.B
 
         when(loop_back_R.control) {
@@ -562,7 +562,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
           state := s_FEED
 
         }.otherwise {
-          active_R := ControlBundle.default
+//          active_R := ControlBundle.default
           active_valid_R := false.B
           state := s_START
 

@@ -328,7 +328,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
   val bb_pfor_end_continue26 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 5))
 
-  val bb_offload_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 6))
+  val bb_offload_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
 
 
@@ -385,7 +385,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   // [BasicBlock]  pfor.end25:
 
   //  sync label %pfor.end.continue26, !UID !39, !BB_UID !40, !ScalaLabel !41
-  val sync9 = Module(new Sync(ID = 9, NumOuts = 1, NumInc = 1, NumDec = 1))
+  val sync9 = Module(new SyncTC(ID = 9, NumOuts = 1, NumInc = 1, NumDec = 1))
 
   // [BasicBlock]  pfor.end.continue26:
 
@@ -398,11 +398,11 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
   //  store i32 %div, i32* %result, align 4, !UID !46, !ScalaLabel !47
-  val store12 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=12,RouteID=1))
+  val store12 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=12,RouteID=1))
 
 
   //  %1 = load i32, i32* %result, align 4, !UID !48, !ScalaLabel !49
-  val load13 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=13,RouteID=1))
+  val load13 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1,ID=13,RouteID=1))
 
 
   //  ret i32 %1, !UID !50, !BB_UID !51, !ScalaLabel !52
@@ -412,7 +412,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
   //  call void @cilk_for_test12_detach1(i32 %n, i32* %a, i32* %result), !UID !53, !ScalaLabel !54
 //  val call15 = Module(new CallNode(ID=15,argTypes=List(32,32,32),retTypes=List(32)))
-  val callout15 = Module(new CallOutNode(ID=4,argTypes=List(32,32,32))) // Manually changed
+  val callout15 = Module(new CallOutNode(ID=4,NumSuccOps=1,argTypes=List(32,32,32))) // Manually changed
   val callin15 = Module(new CallInNode(ID=499,argTypes=List(32)))
 
 
@@ -471,7 +471,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   //Connecting br8 to bb_pfor_cond
   bb_pfor_cond.io.loopBack <> br8.io.Out(param.br8_brn_bb("bb_pfor_cond"))
 //  lb_L_0.io.latchEnable   <> br8.io.Out(1) // manual
-  lb_L_0.io.latchEnable   <> bb_offload_pfor_body.io.Out(1) // manual
+  lb_L_0.io.latchEnable   <> callout15.io.SuccOp(0) // manual
 
 
   //Connecting detach6 to bb_offload_pfor_body
@@ -543,7 +543,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
 //  call15.io.In.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call15"))
-  callout15.io.In.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call15"))
+  callout15.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call15"))
   callin15.io.enable.enq(ControlBundle.active())
 
 //  reattach16.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach16"))
@@ -695,7 +695,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   load13.io.GepAddr <> alloca0.io.Out(param.load13_in("alloca0"))
   load13.io.memResp <> CacheMem.io.ReadOut(1)  // Manually added
   CacheMem.io.ReadIn(1) <> load13.io.memReq    // Manually added
-
+  load13.io.PredOp(0) <> store12.io.SuccOp(0)
 
 
 
@@ -707,10 +707,10 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   io.out <> ret14.io.Out
 
 
-  callout15.io.In.data("field0") <> lb_L_0.io.liveIn(1) // manual %n
-  callout15.io.In.data("field1") <> lb_L_0.io.liveIn(0) // manual %a
-  callout15.io.In.data("field2") <> lb_L_0.io.liveIn(2) // manual %alloc
-  io.call15_out <> callout15.io.Out
+  callout15.io.In("field0") <> lb_L_0.io.liveIn(1) // manual %n
+  callout15.io.In("field1") <> lb_L_0.io.liveIn(0) // manual %a
+  callout15.io.In("field2") <> lb_L_0.io.liveIn(2) // manual %alloc
+  io.call15_out <> callout15.io.Out(0)
   callin15.io.Out.enable.ready := true.B
 
   callin15.io.In <> io.call15_in

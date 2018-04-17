@@ -367,7 +367,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
   val bb_my_pfor_preattach22 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_my_offload_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
+  val bb_my_offload_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7))
 
 
 
@@ -464,7 +464,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
   //  call void @cilk_for_test12_detach2(i32 %n.in, i32* %a.in), !UID !63, !ScalaLabel !64
 //  val call18 = Module(new CallNode(ID=18,argTypes=List(32,32),retTypes=List(32)))
-  val callout18 = Module(new CallOutNode(ID=4,argTypes=List(32,32))) // Manually changed
+  val callout18 = Module(new CallOutNode(ID=4,NumSuccOps=1,argTypes=List(32,32))) // Manually changed
   val callin18 = Module(new CallInNode(ID=499,argTypes=List(32)))
 
 
@@ -523,7 +523,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   //Connecting br6 to bb_my_pfor_cond2
   bb_my_pfor_cond2.io.loopBack <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_cond2"))
 //  lb_L_0.io.latchEnable   <> br6.io.Out(1) // manual
-  lb_L_0.io.latchEnable   <> bb_my_offload_pfor_body5.io.Out(1) // manual
+  lb_L_0.io.latchEnable   <> callout18.io.SuccOp(0) // manual
 
 
   //Connecting br16 to bb_my_pfor_preattach22
@@ -604,9 +604,8 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
 
-  callout18.io.In.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("call18"))
+  callout18.io.enable <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("call18"))
   callin18.io.enable.enq(ControlBundle.active())
-
 
 
   reattach19.io.enable.enq(ControlBundle.active())// <> bb_my_offload_pfor_body5.io.Out(param.bb_my_offload_pfor_body5_activate("reattach19"))
@@ -772,10 +771,10 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   // Wiring Call to I/O
-  callout18.io.In.data("field0") <> lb_L_0.io.liveIn(0) // manual
-  callout18.io.In.data("field1") <> lb_L_0.io.liveIn(1) // manual
+  callout18.io.In("field0") <> lb_L_0.io.liveIn(0) // manual
+  callout18.io.In("field1") <> lb_L_0.io.liveIn(1) // manual
 
-  io.call18_out <> callout18.io.Out
+  io.call18_out <> callout18.io.Out(0)
   callin18.io.Out.enable.ready := true.B
 
   callin18.io.In <> io.call18_in

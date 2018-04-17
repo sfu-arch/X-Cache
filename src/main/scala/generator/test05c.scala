@@ -430,7 +430,7 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
 
 
 
-  callout5.io.In.enable <> bb_for_body.io.Out(param.bb_for_body_activate("call5"))
+  callout5.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("call5"))
   callin5.io.enable <> bb_for_body.io.Out(3) // Manual
 
   add6.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("add6"))
@@ -540,9 +540,9 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
   // Wiring Call instruction to the loop header
   call5.io.In.data("field1") <> lb_L_0.io.liveIn(1)
 */
-  callout5.io.In.data("field0") <> lb_L_0.io.liveIn(0) // manual
-  callout5.io.In.data("field1") <> lb_L_0.io.liveIn(1) // manual
-  io.call5_out <> callout5.io.Out
+  callout5.io.In("field0") <> lb_L_0.io.liveIn(0) // manual
+  callout5.io.In("field1") <> lb_L_0.io.liveIn(1) // manual
+  io.call5_out <> callout5.io.Out(0)
 
   callin5.io.In <> io.call5_in
 

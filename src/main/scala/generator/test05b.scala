@@ -483,7 +483,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
 
 
 
-  callout4.io.In.enable <> bb_for_body.io.Out(param.bb_for_body_activate("call4"))
+  callout4.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("call4"))
   callin4.io.enable <> bb_for_body.io.Out(2) // Manual
 
   br5.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("br5"))
@@ -582,9 +582,9 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
 
   // Wiring Call to I/O
-  callout4.io.In.data("field0") <> lb_L_0.io.liveIn(0) // manual
-  callout4.io.In.data("field1") <> lb_L_0.io.liveIn(1) // manual
-  io.call4_out <> callout4.io.Out
+  callout4.io.In("field0") <> lb_L_0.io.liveIn(0) // manual
+  callout4.io.In("field1") <> lb_L_0.io.liveIn(1) // manual
+  io.call4_out <> callout4.io.Out(0)
 
   callin4.io.In <> io.call4_in
 //  callin4.io.Out.enable.ready := true.B // Manual fix
