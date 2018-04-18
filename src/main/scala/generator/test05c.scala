@@ -228,21 +228,8 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32)))
+  val InputSplitter = Module(new SplitCallNew(List(1,1)))
   InputSplitter.io.In <> io.in
-
-  val field0_expand = Module(new ExpandNode(NumOuts=1,ID=100)(new DataBundle))
-  field0_expand.io.enable.valid := true.B
-  field0_expand.io.enable.bits.control := true.B
-  field0_expand.io.InData <> InputSplitter.io.Out.data("field0")
-
-
-  val field1_expand = Module(new ExpandNode(NumOuts=1,ID=101)(new DataBundle))
-  field1_expand.io.enable.valid := true.B
-  field1_expand.io.enable.bits.control := true.B
-  field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
-
-
 
 
   /* ================================================================== *
@@ -467,11 +454,11 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32* %a
-  lb_L_0.io.In(0) <> field0_expand.io.Out(0) // manual
+  lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0) // manual
 
   // Connecting function argument to the loop header
   //i32 %n
-  lb_L_0.io.In(1) <> field1_expand.io.Out(0) // manual
+  lb_L_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0) // manual
 
   lb_L_0.io.liveOut(0) <> phi1.io.Out(param.sdiv10_in("phi1"))
 

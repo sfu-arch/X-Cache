@@ -286,8 +286,9 @@ object CustomDataBundle {
 }
 
 /**
-  * Bundle with arrays of varying types and/or widths
-  *
+  * Bundle with variable (parameterizable) types and/or widths
+  *   VariableData   - bundle of DataBundles of different widths
+  *   VariableCustom - bundle of completely different types
   * These classes create a record with a configurable set of fields like:
   * "data0"
   * "data1", etc.
@@ -306,6 +307,7 @@ object CustomDataBundle {
   *
   */
 
+// Bundle of types specified by the argTypes parameter
 class VariableCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
     i => s"field$i" -> CustomDataBundle(argTypes(i))
@@ -315,6 +317,7 @@ class VariableCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Re
   override def cloneType = new VariableCustom(argTypes).asInstanceOf[this.type]
 }
 
+// Bundle of decoupled types specified by the argTypes parameter
 class VariableDecoupledCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
     i => s"field$i" -> (Decoupled(CustomDataBundle(argTypes(i))))
@@ -324,6 +327,7 @@ class VariableDecoupledCustom(val argTypes: Seq[Bits])(implicit p: Parameters) e
   override def cloneType = new VariableDecoupledCustom(argTypes).asInstanceOf[this.type]
 }
 
+// Bundle of DataBundles with data width specified by the argTypes parameter
 class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
     i => s"field$i" -> new DataBundle()(p.alterPartial({case XLEN => argTypes(i)}))
@@ -333,23 +337,44 @@ class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Recor
   override def cloneType = new VariableData(argTypes).asInstanceOf[this.type]
 }
 
+// Bundle of Decoupled DataBundles with data width specified by the argTypes parameter
 class VariableDecoupledData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
-    i => s"field$i" -> (Decoupled(new DataBundle()(p.alterPartial({case XLEN => argTypes(i)}))))
+    i => s"field$i" -> Decoupled(new DataBundle()(p.alterPartial({case XLEN => argTypes(i)})))
   }
   override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
   def apply(elt: String)= elements(elt)
   override def cloneType = new VariableDecoupledData(argTypes).asInstanceOf[this.type]
 }
 
+// Bundle of Decoupled DataBundle Vectors. Data width is default. Intended for use on outputs
+// of a block (i.e. configurable number of output with configurable number of copies of each output)
+class VariableDecoupledVec(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
+  var elts = Seq.tabulate(argTypes.length) {
+    i => s"field$i" -> Vec(argTypes(i), Decoupled(new DataBundle()(p)))
+  }
+  override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
+  def apply(elt: String)= elements(elt)
+  override def cloneType = new VariableDecoupledVec(argTypes).asInstanceOf[this.type]
+}
+
+// Call type that wraps an enable and variable DataBundle together
+class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
+  val enable = new ControlBundle
+  val data   = new VariableData(argTypes)
+  override def cloneType = new Call(argTypes).asInstanceOf[this.type]
+}
+
+// Call type that wraps a decoupled enable and decoupled variable data bundle together
 class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
   val enable = Decoupled(new ControlBundle)
   val data   = new VariableDecoupledData(argTypes)
   override def cloneType = new CallDecoupled(argTypes).asInstanceOf[this.type]
 }
 
-class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
-  val enable = new ControlBundle
-  val data   = new VariableData(argTypes)
-  override def cloneType = new Call(argTypes).asInstanceOf[this.type]
+// Call type that wraps a decoupled enable and decoupled vector DataBundle together
+class CallDecoupledVec(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
+  val enable = Decoupled(new ControlBundle)
+  val data   = new VariableDecoupledVec(argTypes)
+  override def cloneType = new CallDecoupledVec(argTypes).asInstanceOf[this.type]
 }

@@ -279,34 +279,14 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32)))
+  val InputSplitter = Module(new SplitCallNew(List(1,1)))
   InputSplitter.io.In <> io.in
-
-  val field0_expand = Module(new ExpandNode(NumOuts=1,ID=100)(new DataBundle))
-  field0_expand.io.enable.valid := true.B
-  field0_expand.io.enable.bits.control := true.B
-  field0_expand.io.InData <> InputSplitter.io.Out.data("field0")
-
-
-  val field1_expand = Module(new ExpandNode(NumOuts=1,ID=101)(new DataBundle))
-  field1_expand.io.enable.valid := true.B
-  field1_expand.io.enable.bits.control := true.B
-  field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
-
-
 
 
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
   val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=3,NumOuts=0,NumExits=1));
-
-/*
-  val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-*/
-
 
 
   /* ================================================================== *
@@ -353,7 +333,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
   //  br label %pfor.cond, !UID !11, !BB_UID !12, !ScalaLabel !13
-  val br2 = Module (new UBranchNode(ID = 2))
+  val br2 = Module (new UBranchFastNode(ID = 2))
 
   // [BasicBlock]  pfor.cond:
 
@@ -371,7 +351,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   // [BasicBlock]  pfor.detach:
 
   //  detach label %offload.pfor.body, label %pfor.inc23, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val detach6 = Module(new Detach(ID = 6))
+  val detach6 = Module(new DetachFast(ID = 6))
 
   // [BasicBlock]  pfor.inc23:
 
@@ -380,7 +360,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
   //  br label %pfor.cond, !llvm.loop !26, !UID !36, !BB_UID !37, !ScalaLabel !38
-  val br8 = Module (new UBranchNode(ID = 8, NumOuts=1))
+  val br8 = Module (new UBranchFastNode(ID = 8))
 
   // [BasicBlock]  pfor.end25:
 
@@ -571,11 +551,11 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 */
   // Connecting function argument to the loop header
   //i32* %a
-  lb_L_0.io.In(0) <> field0_expand.io.Out(0)
+  lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
 
   // Connecting function argument to the loop header
   //i32 %n
-  lb_L_0.io.In(1) <> field1_expand.io.Out(0)
+  lb_L_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
 
   // Connecting instruction to the loop header
   //  %result = alloca i32, align 4, !UID !7, !ScalaLabel !8

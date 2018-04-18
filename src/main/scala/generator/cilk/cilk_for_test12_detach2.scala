@@ -288,33 +288,14 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32)))
+  val InputSplitter = Module(new SplitCallNew(List(2,2)))
   InputSplitter.io.In <> io.in
-
-  val field0_expand = Module(new ExpandNode(NumOuts=2,ID=100)(new DataBundle))
-  field0_expand.io.enable.valid := true.B
-  field0_expand.io.enable.bits.control := true.B
-  field0_expand.io.InData <> InputSplitter.io.Out.data("field0")
-
-
-  val field1_expand = Module(new ExpandNode(NumOuts=2,ID=101)(new DataBundle))
-  field1_expand.io.enable.valid := true.B
-  field1_expand.io.enable.bits.control := true.B
-  field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
-
-
 
 
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
   val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1));
-
-/*
-  val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-*/
-
 
 
   /* ================================================================== *
@@ -355,7 +336,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   // [BasicBlock]  my_pfor.body5:
 
   //  br label %my_pfor.cond7, !UID !2, !BB_UID !3, !ScalaLabel !4
-  val br0 = Module (new UBranchNode(ID = 0))
+  val br0 = Module (new UBranchFastNode(ID = 0))
 
   // [BasicBlock]  my_pfor.cond7:
 
@@ -373,7 +354,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   // [BasicBlock]  my_pfor.detach9:
 
   //  detach label %my_offload.pfor.body10, label %my_pfor.inc, !UID !12, !BB_UID !13, !ScalaLabel !14
-  val detach4 = Module(new Detach(ID = 4))
+  val detach4 = Module(new DetachFast(ID = 4))
 
   // [BasicBlock]  my_pfor.inc:
 
@@ -382,7 +363,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   //  br label %my_pfor.cond7, !llvm.loop !17, !UID !19, !BB_UID !20, !ScalaLabel !21
-  val br6 = Module (new UBranchNode(ID = 6, NumOuts=1))
+  val br6 = Module (new UBranchFastNode(ID = 6))
 
   // [BasicBlock]  my_pfor.end:
 
@@ -412,7 +393,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   //  br label %my_pfor.preattach14, !UID !35, !BB_UID !36, !ScalaLabel !37
-  val br13 = Module (new UBranchNode(ID = 13))
+  val br13 = Module (new UBranchFastNode(ID = 13))
 
   // [BasicBlock]  my_pfor.preattach14:
 
@@ -582,11 +563,11 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 */
   // Connecting function argument to the loop header
   //i32 %n.in
-  lb_L_0.io.In(0) <> field0_expand.io.Out(0)
+  lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
 
   // Connecting function argument to the loop header
   //i32* %a.in
-  lb_L_0.io.In(1) <> field1_expand.io.Out(0)
+  lb_L_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
 
 
   /* ================================================================== *
@@ -641,7 +622,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   add5.io.RightIO.valid := true.B
 
   // Wiring Binary instruction to the function argument
-  sub8.io.LeftIO <> field0_expand.io.Out(1)
+  sub8.io.LeftIO <> InputSplitter.io.Out.data("field0")(1)
 
   // Wiring constant
   sub8.io.RightIO.bits.data := 1.U
@@ -649,7 +630,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   sub8.io.RightIO.valid := true.B
 
   // Wiring GEP instruction to the function argument
-  getelementptr9.io.baseAddress <> field1_expand.io.Out(1)
+  getelementptr9.io.baseAddress <> InputSplitter.io.Out.data("field1")(1)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr9.io.idx1 <> sub8.io.Out(param.getelementptr9_in("sub8"))

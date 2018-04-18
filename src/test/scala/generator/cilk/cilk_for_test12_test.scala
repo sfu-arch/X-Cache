@@ -54,37 +54,43 @@ class cilk_for_test12Main(implicit p: Parameters) extends cilk_for_test12MainIO 
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val children = 1
-  val TaskControllerModule1 = Module(new TaskController(List(32,32,32), List(32), 1, children,depth=2))
-  val TaskControllerModule2 = Module(new TaskController(List(32,32), List(32), 1, children,depth=2))
-  val TaskControllerModule3 = Module(new TaskController(List(32,32), List(32), 1, children,depth=2))
+  val children1 = 1
+  val children2 = 1
+  val children3 = 8
+  val TaskControllerModule1 = Module(new TaskController(List(32,32,32), List(32), 1, children1,depth=2))
+  val TaskControllerModule2 = Module(new TaskController(List(32,32), List(32), children1, children2,depth=2))
+  val TaskControllerModule3 = Module(new TaskController(List(32,32), List(32), children2, children3,depth=2))
   val cilk_for_test12 = Module(new cilk_for_test12DF())
 
-  val cilk_for_test12_detach1 = for (i <- 0 until children) yield {
+  val cilk_for_test12_detach1 = for (i <- 0 until children1) yield {
     val detach = Module(new cilk_for_test12_detach1DF())
     detach
   }
-  val cilk_for_test12_detach2 = for (i <- 0 until children) yield {
+  val cilk_for_test12_detach2 = for (i <- 0 until children2) yield {
     val detach2 = Module(new cilk_for_test12_detach2DF)
     detach2
   }
-  val cilk_for_test12_detach3 = for (i <- 0 until children) yield {
+  val cilk_for_test12_detach3 = for (i <- 0 until children3) yield {
     val detach3 = Module(new cilk_for_test12_detach3DF)
     detach3
   }
 
   // Merge requests from two children.
-  val CacheArbiter = Module(new CacheArbiter(3*children+1))
-  for (i <- 0 until children) {
-    CacheArbiter.io.cpu.CacheReq(3*i+0) <> cilk_for_test12_detach1(i).io.CacheReq
-    cilk_for_test12_detach1(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*i+0)
-    CacheArbiter.io.cpu.CacheReq(3*i+1) <> cilk_for_test12_detach2(i).io.CacheReq
-    cilk_for_test12_detach2(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*i+1)
-    CacheArbiter.io.cpu.CacheReq(3*i+2) <> cilk_for_test12_detach3(i).io.CacheReq
-    cilk_for_test12_detach3(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*i+2)
+  val CacheArbiter = Module(new CacheArbiter(children1+children2+children3+1))
+  for (i <- 0 until children1) {
+    CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test12_detach1(i).io.CacheReq
+    cilk_for_test12_detach1(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
   }
-  CacheArbiter.io.cpu.CacheReq(3*children) <> cilk_for_test12.io.CacheReq
-  cilk_for_test12.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3*children)
+  for (i <- 0 until children2) {
+    CacheArbiter.io.cpu.CacheReq(children1+i) <> cilk_for_test12_detach2(i).io.CacheReq
+    cilk_for_test12_detach2(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(children1+i)
+  }
+  for (i <- 0 until children3) {
+    CacheArbiter.io.cpu.CacheReq(children2+children1+i) <> cilk_for_test12_detach3(i).io.CacheReq
+    cilk_for_test12_detach3(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(children2+children1+i)
+  }
+  CacheArbiter.io.cpu.CacheReq(children1+children2+children3) <> cilk_for_test12.io.CacheReq
+  cilk_for_test12.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(children1+children2+children3)
   cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
   CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
 
@@ -95,26 +101,27 @@ class cilk_for_test12Main(implicit p: Parameters) extends cilk_for_test12MainIO 
   TaskControllerModule1.io.parentIn(0) <> cilk_for_test12.io.call15_out
 
   // task controller to sub-task cilk_for_test12_detach
-  for (i <- 0 until children ) {
+  for (i <- 0 until children1 ) {
     // TC1 to Detach1
     TaskControllerModule1.io.childIn(i) <> cilk_for_test12_detach1(i).io.out
     cilk_for_test12_detach1(i).io.in <> TaskControllerModule1.io.childOut(i)
-
     // Detach1 to TC2
     TaskControllerModule2.io.parentIn(i) <> cilk_for_test12_detach1(i).io.call18_out
     cilk_for_test12_detach1(i).io.call18_in <> TaskControllerModule2.io.parentOut(i)
-
+  }
+  for (i <- 0 until children2 ) {
     // TC2 to Detach2
     TaskControllerModule2.io.childIn(i) <> cilk_for_test12_detach2(i).io.out
     cilk_for_test12_detach2(i).io.in <> TaskControllerModule2.io.childOut(i)
-
     // Detach2 to TC3
     TaskControllerModule3.io.parentIn(i) <> cilk_for_test12_detach2(i).io.call15_out
-    cilk_for_test12_detach3(i).io.in <> TaskControllerModule3.io.childOut(i)
+    cilk_for_test12_detach2(i).io.call15_in <> TaskControllerModule3.io.parentOut(i)
+  }
 
+  for (i <- 0 until children3) {
     // TC3 to Detach3
     TaskControllerModule3.io.childIn(i) <> cilk_for_test12_detach3(i).io.out
-    cilk_for_test12_detach2(i).io.call15_in <> TaskControllerModule3.io.parentOut(i)
+    cilk_for_test12_detach3(i).io.in <> TaskControllerModule3.io.childOut(i)
   }
 
   // Task controller to cilk_for_test02

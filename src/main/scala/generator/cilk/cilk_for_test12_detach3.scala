@@ -147,21 +147,8 @@ class cilk_for_test12_detach3DF(implicit p: Parameters) extends cilk_for_test12_
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32)))
+  val InputSplitter = Module(new SplitCallNew(List(2,2)))
   InputSplitter.io.In <> io.in
-
-  val field0_expand = Module(new ExpandNode(NumOuts=2,ID=100)(new DataBundle))
-  field0_expand.io.enable.valid := true.B
-  field0_expand.io.enable.bits.control := true.B
-  field0_expand.io.InData <> InputSplitter.io.Out.data("field0")
-
-
-  val field1_expand = Module(new ExpandNode(NumOuts=2,ID=101)(new DataBundle))
-  field1_expand.io.enable.valid := true.B
-  field1_expand.io.enable.bits.control := true.B
-  field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
-
-
 
 
   /* ================================================================== *
@@ -336,10 +323,10 @@ class cilk_for_test12_detach3DF(implicit p: Parameters) extends cilk_for_test12_
     */
 
   // Wiring GEP instruction to the function argument
-  getelementptr0.io.baseAddress <> field0_expand.io.Out(0)
+  getelementptr0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
 
   // Wiring GEP instruction to the function argument
-  getelementptr0.io.idx1 <> field1_expand.io.Out(0)
+  getelementptr0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
 
   // Wiring Load instruction to the parent instruction
   load1.io.GepAddr <> getelementptr0.io.Out(param.load1_in("getelementptr0"))
@@ -358,10 +345,10 @@ class cilk_for_test12_detach3DF(implicit p: Parameters) extends cilk_for_test12_
   mul2.io.RightIO <> load1.io.Out(param.mul2_in("load1"))
 
   // Wiring GEP instruction to the function argument
-  getelementptr3.io.baseAddress <> field0_expand.io.Out(1)
+  getelementptr3.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
 
   // Wiring GEP instruction to the function argument
-  getelementptr3.io.idx1 <> field1_expand.io.Out(1)
+  getelementptr3.io.idx1 <> InputSplitter.io.Out.data("field1")(1)
 
   store4.io.inData <> mul2.io.Out(param.store4_in("mul2"))
 

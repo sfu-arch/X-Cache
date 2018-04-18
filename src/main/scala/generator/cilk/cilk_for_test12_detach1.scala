@@ -311,39 +311,13 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   io.CacheReq <> CacheMem.io.CacheReq
   CacheMem.io.CacheResp <> io.CacheResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32,32)))
+  val InputSplitter = Module(new SplitCallNew(List(2,2,2)))
   InputSplitter.io.In <> io.in
-
-  val field0_expand = Module(new ExpandNode(NumOuts=2,ID=100)(new DataBundle))
-  field0_expand.io.enable.valid := true.B
-  field0_expand.io.enable.bits.control := true.B
-  field0_expand.io.InData <> InputSplitter.io.Out.data("field0")
-
-
-  val field1_expand = Module(new ExpandNode(NumOuts=2,ID=101)(new DataBundle))
-  field1_expand.io.enable.valid := true.B
-  field1_expand.io.enable.bits.control := true.B
-  field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
-
-
-  val field2_expand = Module(new ExpandNode(NumOuts=2,ID=102)(new DataBundle))
-  field2_expand.io.enable.valid := true.B
-  field2_expand.io.enable.bits.control := true.B
-  field2_expand.io.InData <> InputSplitter.io.Out.data("field2")
-
-
-
 
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
   val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1));
-
-/*
-  val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 2, ID = 0))
-  val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-*/
-
 
 
   /* ================================================================== *
@@ -384,7 +358,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   // [BasicBlock]  my_pfor.body:
 
   //  br label %my_pfor.cond2, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0))
+  val br0 = Module (new UBranchFastNode(ID = 0))
 
   // [BasicBlock]  my_pfor.cond2:
 
@@ -402,7 +376,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   // [BasicBlock]  my_pfor.detach4:
 
   //  detach label %my_offload.pfor.body5, label %my_pfor.inc15, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val detach4 = Module(new Detach(ID = 4))
+  val detach4 = Module(new DetachFast(ID = 4))
 
   // [BasicBlock]  my_pfor.inc15:
 
@@ -411,7 +385,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   //  br label %my_pfor.cond2, !llvm.loop !22, !UID !35, !BB_UID !36, !ScalaLabel !37
-  val br6 = Module (new UBranchNode(ID = 6, NumOuts=1))
+  val br6 = Module (new UBranchFastNode(ID = 6))
 
   // [BasicBlock]  my_pfor.end17:
 
@@ -453,7 +427,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   //  br label %my_pfor.preattach22, !UID !57, !BB_UID !58, !ScalaLabel !59
-  val br16 = Module (new UBranchNode(ID = 16))
+  val br16 = Module (new UBranchFastNode(ID = 16))
 
   // [BasicBlock]  my_pfor.preattach22:
 
@@ -629,11 +603,11 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 */
   // Connecting function argument to the loop header
   //i32 %n.in
-  lb_L_0.io.In(0) <> field0_expand.io.Out(0)
+  lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)// field0_expand.io.Out(0)
 
   // Connecting function argument to the loop header
   //i32* %a.in
-  lb_L_0.io.In(1) <> field1_expand.io.Out(0)
+  lb_L_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)//field1_expand.io.Out(0)
 
 
   /* ================================================================== *
@@ -688,7 +662,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   add5.io.RightIO.valid := true.B
 
   // Wiring Binary instruction to the function argument
-  sub8.io.LeftIO <> field0_expand.io.Out(1)
+  sub8.io.LeftIO <> InputSplitter.io.Out.data("field0")(1)//field0_expand.io.Out(1)
 
   // Wiring constant
   sub8.io.RightIO.bits.data := 1.U
@@ -696,7 +670,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   sub8.io.RightIO.valid := true.B
 
   // Wiring GEP instruction to the function argument
-  getelementptr9.io.baseAddress <> field1_expand.io.Out(1)
+  getelementptr9.io.baseAddress <> InputSplitter.io.Out.data("field1")(1)//field1_expand.io.Out(1)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr9.io.idx1 <> sub8.io.Out(param.getelementptr9_in("sub8"))
@@ -731,7 +705,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   // Wiring Load instruction to the function argument
-  load13.io.GepAddr <>  field2_expand.io.Out(0)
+  load13.io.GepAddr <>  InputSplitter.io.Out.data("field2")(0)//field2_expand.io.Out(0)
   load13.io.memResp <> CacheMem.io.ReadOut(1) // manual
   CacheMem.io.ReadIn(1) <> load13.io.memReq  // manual
 
@@ -748,7 +722,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   // Wiring Store instruction to the function argument
-  store15.io.GepAddr <>  field2_expand.io.Out(1)
+  store15.io.GepAddr <>  InputSplitter.io.Out.data("field2")(1)//field2_expand.io.Out(1)
   store15.io.memResp  <> CacheMem.io.WriteOut(1)
   CacheMem.io.WriteIn(1) <> store15.io.memReq
 //  store15.io.Out(0).ready := true.B
