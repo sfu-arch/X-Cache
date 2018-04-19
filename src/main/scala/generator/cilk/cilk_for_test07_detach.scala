@@ -318,7 +318,7 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
 
 
   //  ret void, !UID !41, !BB_UID !42, !ScalaLabel !43
-  val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15))
+  val ret15 = Module(new RetNode(retTypes=List(32), ID=15))
 
 
 
@@ -573,9 +573,9 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
   /**
     * Connecting Dataflow signals
     */
-  ret15.io.predicateIn(0).bits.control := true.B
-  ret15.io.predicateIn(0).bits.taskID := 0.U
-  ret15.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret15.io.In.data("field0") <> store14.io.Out(0)  // Manually connected
   //ret15.io.In.data("field0").bits.data := 1.U
   //ret15.io.In.data("field0").bits.predicate := true.B

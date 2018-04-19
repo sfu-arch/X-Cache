@@ -398,7 +398,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   // [BasicBlock]  my_pfor.preattach14:
 
   //  ret void, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret14 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=14))
+  val ret14 = Module(new RetNode(retTypes=List(32), ID=14))
 
   // [BasicBlock]  my_offload.pfor.body10:
 
@@ -409,7 +409,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   //  reattach label %my_pfor.inc, !UID !43, !BB_UID !44, !ScalaLabel !45
-  val reattach16 = Module(new Reattach(NumPredIn=1, ID=16))
+  val reattach16 = Module(new Reattach(NumPredOps=1, ID=16))
 
 
 
@@ -667,12 +667,12 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   /**
     * Connecting Dataflow signals
     */
-  ret14.io.predicateIn(0).bits.control := true.B
-  ret14.io.predicateIn(0).bits.taskID := 0.U
-  ret14.io.predicateIn(0).valid := true.B
+  
+  
+  
 /*
   ret14.io.In.data("field0").bits.data := 1.U
-  ret14.io.In.data("field0").bits.predicate := true.B
+  
   ret14.io.In.data("field0").valid := true.B
   */
   ret14.io.In.data("field0") <> store12.io.Out(0)

@@ -238,7 +238,7 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 
 
   //  ret i32 %sum.0, !UID !22, !BB_UID !23, !ScalaLabel !24
-  val ret6 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=6))
+  val ret6 = Module(new RetNode(retTypes=List(32), ID=6))
 
 
 
@@ -387,9 +387,9 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
   add3.io.RightIO <> InputSplitter.io.Out.data("field1")
 
   // Wiring return instruction
-  ret6.io.predicateIn(0).bits.control := true.B
-  ret6.io.predicateIn(0).bits.taskID := 0.U
-  ret6.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret6.io.In.data("field0") <> phi5.io.Out(param.ret6_in("phi5"))
   io.out <> ret6.io.Out
 

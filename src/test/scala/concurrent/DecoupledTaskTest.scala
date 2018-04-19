@@ -22,7 +22,7 @@ class DecoupledChildDF(val ID:Int)(implicit p: Parameters) extends Module {
   val addModule1 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
   val addModule2 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "Add")(sign = false))
   val addModule3 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false))
-  val ret4 = Module(new RetNode(ID=3,NumPredIn=1,retTypes=List(32)))
+  val ret4 = Module(new RetNode(ID=3,retTypes=List(32)))
 
   /* Wire task modules to controller */
   splitIn.io.In <> io.In
@@ -41,9 +41,6 @@ class DecoupledChildDF(val ID:Int)(implicit p: Parameters) extends Module {
   addModule3.io.LeftIO <> addModule1.io.Out(0)
   addModule3.io.RightIO <> addModule2.io.Out(0)
 
-  ret4.io.predicateIn(0).valid := true.B
-  ret4.io.predicateIn(0).bits.control := true.B
-  ret4.io.predicateIn(0).bits.taskID := 0.U
   ret4.io.enable.bits.control := true.B
   ret4.io.enable.valid := true.B
   ret4.io.In.data("field0") <> addModule3.io.Out(0)

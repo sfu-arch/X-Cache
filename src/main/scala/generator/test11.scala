@@ -354,7 +354,7 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret i32 1, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val ret14 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=14))
+  val ret14 = Module(new RetNode(retTypes=List(32), ID=14))
 
 
 
@@ -600,9 +600,9 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
   add12.io.RightIO.valid := true.B
 
   // Wiring return instruction
-  ret14.io.predicateIn(0).bits.control := true.B
-  ret14.io.predicateIn(0).bits.taskID := 0.U
-  ret14.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret14.io.In.data("field0").bits.data := 1.U
   ret14.io.In.data("field0").bits.predicate := true.B
   ret14.io.In.data("field0").valid := true.B

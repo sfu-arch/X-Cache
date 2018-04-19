@@ -239,7 +239,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !24, !BB_UID !25, !ScalaLabel !26
-  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8))
+  val ret8 = Module(new RetNode(retTypes=List(32), ID=8))
 
 
 
@@ -413,9 +413,9 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   /**
     * Connecting Dataflow signals
     */
-  ret8.io.predicateIn(0).bits.control := true.B
-  ret8.io.predicateIn(0).bits.taskID := 0.U
-  ret8.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret8.io.In.data("field0") <> store6.io.Out(0)  // Manually connected
   io.out <> ret8.io.Out
 

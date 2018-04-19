@@ -298,7 +298,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret i32 %foo.0, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret9 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=9))
+  val ret9 = Module(new RetNode(retTypes=List(32), ID=9))
 
 
 
@@ -481,9 +481,9 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   add7.io.RightIO.bits.predicate := true.B
   add7.io.RightIO.valid := true.B
 
-  ret9.io.predicateIn(0).bits.control := true.B
-  ret9.io.predicateIn(0).bits.taskID := 0.U
-  ret9.io.predicateIn(0).valid := true.B
+  
+  
+  
 
   loop_L_5_LiveOut_0.io.InData <>   phi1.io.Out(param.ret9_in("phi1"))
   ret9.io.In.data("field0") <> loop_L_5_LiveOut_0.io.Out(0)

@@ -319,7 +319,7 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   // [BasicBlock]  pfor.end.continue:
 
   //  ret void, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret8 = Module(new RetNode(NumPredIn = 1, retTypes = List(32), ID = 8))
+  val ret8 = Module(new RetNode(retTypes = List(32), ID = 8))
 
   // [BasicBlock]  offload.pfor.body:
 
@@ -517,9 +517,9 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   /**
     * Connecting Dataflow signals
     */
-  ret8.io.predicateIn(0).bits.control := true.B
-  ret8.io.predicateIn(0).bits.taskID := 0.U
-  ret8.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret8.io.In.data("field0").bits.data := 1.U
   ret8.io.In.data("field0").bits.predicate := true.B
   ret8.io.In.data("field0").valid := true.B

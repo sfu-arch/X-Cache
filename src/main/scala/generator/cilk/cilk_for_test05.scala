@@ -326,7 +326,7 @@ class cilk_for_test05DF(implicit p: Parameters) extends cilk_for_test05DFIO()(p)
   // [BasicBlock]  pfor.end.continue:
 
   //  ret i32 1, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8))
+  val ret8 = Module(new RetNode(retTypes=List(32), ID=8))
 
   // [BasicBlock]  offload.pfor.body:
 
@@ -335,7 +335,7 @@ class cilk_for_test05DF(implicit p: Parameters) extends cilk_for_test05DFIO()(p)
 
 
   //  reattach label %pfor.inc, !UID !43, !BB_UID !44, !ScalaLabel !45
-  val reattach10 = Module(new Reattach(NumPredIn=1, ID=10))
+  val reattach10 = Module(new Reattach(NumPredOps=1, ID=10))
 
 
 
@@ -524,9 +524,9 @@ class cilk_for_test05DF(implicit p: Parameters) extends cilk_for_test05DFIO()(p)
   add5.io.RightIO.valid := true.B
 
   // Wiring return instruction
-  ret8.io.predicateIn(0).bits.control := true.B
-  ret8.io.predicateIn(0).bits.taskID := 0.U
-  ret8.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret8.io.In.data("field0").bits.data := 1.U
   ret8.io.In.data("field0").bits.predicate := true.B
   ret8.io.In.data("field0").valid := true.B

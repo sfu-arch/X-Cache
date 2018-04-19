@@ -308,7 +308,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret i32 %sum.0, !UID !41, !BB_UID !42, !ScalaLabel !43
-  val ret10 = Module(new RetNode(NumPredIn = 1, retTypes = List(32), ID = 10))
+  val ret10 = Module(new RetNode(retTypes = List(32), ID = 10))
 
 
   /* ================================================================== *
@@ -497,9 +497,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   add8.io.RightIO.bits.predicate := true.B
   add8.io.RightIO.valid := true.B
 
-  ret10.io.predicateIn(0).bits.control := true.B
-  ret10.io.predicateIn(0).bits.taskID := 0.U
-  ret10.io.predicateIn(0).valid := true.B
+  
+  
+  
 
   loop_L_7_LiveOut_0.io.InData <> phi1.io.Out(param.ret10_in("phi1"))
   ret10.io.In.data("field0") <> loop_L_7_LiveOut_0.io.Out(0)

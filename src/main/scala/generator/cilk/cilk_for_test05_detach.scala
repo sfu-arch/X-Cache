@@ -427,7 +427,7 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !40, !BB_UID !41, !ScalaLabel !42
-  val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15))
+  val ret15 = Module(new RetNode(retTypes=List(32), ID=15))
 
   // [BasicBlock]  my_if.else:
 
@@ -718,9 +718,9 @@ class cilk_for_test05_detachDF(implicit p: Parameters) extends cilk_for_test05_d
   /**
     * Connecting Dataflow signals
     */
-  ret15.io.predicateIn(0).bits.control := true.B
-  ret15.io.predicateIn(0).bits.taskID := 0.U
-  ret15.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret15.io.In.data("field0").bits.data := 1.U
   ret15.io.In.data("field0").bits.predicate := true.B
   ret15.io.In.data("field0").valid := store12.io.Out(0).valid || store22.io.Out(0).valid  // manual hack

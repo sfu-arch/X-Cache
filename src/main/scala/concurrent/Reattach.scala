@@ -8,17 +8,17 @@ import interfaces._
 import node._
 import utility.UniformPrintfs
 
-class ReattachIO(val NumPredIn: Int)(implicit p: Parameters)
+class ReattachIO(val NumPredOps: Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p) {
-  val predicateIn = Vec(NumPredIn, Flipped(Decoupled(new DataBundle()(p))))
+  val predicateIn = Vec(NumPredOps, Flipped(Decoupled(new DataBundle()(p))))
 }
 
-class Reattach(val NumPredIn: Int, ID: Int)
+class Reattach(val NumPredOps: Int, ID: Int)
               (implicit p: Parameters,
                name: sourcecode.Name,
                file: sourcecode.File)
   extends HandShakingNPS(NumOuts = 1, ID)(new ControlBundle)(p) {
-  override lazy val io = IO(new ReattachIO(NumPredIn))
+  override lazy val io = IO(new ReattachIO(NumPredOps))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
@@ -29,9 +29,9 @@ class Reattach(val NumPredIn: Int, ID: Int)
    *            Registers                      *
    *===========================================*/
 
-  val ctrlPredicate_R = RegInit(VecInit(Seq.fill(NumPredIn){DataBundle.default}))
-  val ctrlReady_R = RegInit(VecInit(Seq.fill(NumPredIn){false.B}))
-  for (i <- 0 until NumPredIn) {
+  val ctrlPredicate_R = RegInit(VecInit(Seq.fill(NumPredOps){DataBundle.default}))
+  val ctrlReady_R = RegInit(VecInit(Seq.fill(NumPredOps){false.B}))
+  for (i <- 0 until NumPredOps) {
     when(io.predicateIn(i).fire()) {
       ctrlReady_R(i) := true.B
       ctrlPredicate_R(i) := io.predicateIn(i).bits
@@ -72,7 +72,7 @@ class Reattach(val NumPredIn: Int, ID: Int)
     state := s_idle
     Reset()
     enable_valid_R := false.B
-    for (i <- 0 until NumPredIn) {
+    for (i <- 0 until NumPredOps) {
       ctrlReady_R(i) := false.B
       ctrlPredicate_R(i) := DataBundle.default
     }

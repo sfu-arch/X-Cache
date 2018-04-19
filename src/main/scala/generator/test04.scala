@@ -426,7 +426,7 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   // [BasicBlock]  while.end:
 
   //  ret void, !UID !51, !BB_UID !52, !ScalaLabel !53
-  val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15))
+  val ret15 = Module(new RetNode(retTypes=List(32), ID=15))
 
 
 
@@ -666,11 +666,11 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   /**
     * Connecting Dataflow signals
     */
-  ret15.io.predicateIn(0).bits.control := true.B
-  ret15.io.predicateIn(0).bits.taskID := 0.U
-  ret15.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret15.io.In.data("field0").bits.data := 1.U
-  ret15.io.In.data("field0").bits.predicate := true.B
+  
   ret15.io.In.data("field0").valid := true.B
   io.out <> ret15.io.Out
 

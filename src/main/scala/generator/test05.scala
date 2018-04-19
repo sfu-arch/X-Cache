@@ -418,7 +418,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
 
   //  ret i32 %2, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val ret20 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=20))
+  val ret20 = Module(new RetNode(retTypes=List(32), ID=20))
 
 
 
@@ -728,9 +728,9 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
 
   // Wiring return instruction
-  ret20.io.predicateIn(0).bits.control := true.B
-  ret20.io.predicateIn(0).bits.taskID := 0.U
-  ret20.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret20.io.In.data("field0") <> load19.io.Out(param.ret20_in("load19"))
   io.out <> ret20.io.Out
 

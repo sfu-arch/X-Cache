@@ -336,7 +336,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   // [BasicBlock]  pfor.preattach:
 
   //  reattach label %pfor.inc, !UID !25, !BB_UID !26, !ScalaLabel !27
-  val reattach7 = Module(new Reattach(NumPredIn=1, ID=7))
+  val reattach7 = Module(new Reattach(NumPredOps=1, ID=7))
 
   // [BasicBlock]  pfor.inc:
 
@@ -355,7 +355,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   // [BasicBlock]  pfor.end.continue:
 
   //  ret void, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val ret11 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=11))
+  val ret11 = Module(new RetNode(retTypes=List(32), ID=11))
 
 
 
@@ -568,9 +568,9 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   /**
     * Connecting Dataflow signals
     */
-  ret11.io.predicateIn(0).bits.control := true.B
-  ret11.io.predicateIn(0).bits.taskID := 0.U
-  ret11.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret11.io.In.data("field0").bits.data := 1.U
   ret11.io.In.data("field0").bits.predicate := true.B
   ret11.io.In.data("field0").valid := true.B

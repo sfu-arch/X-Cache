@@ -461,7 +461,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !66, !BB_UID !67, !ScalaLabel !68
-  val ret21 = Module(new RetNode(NumPredIn = 1, retTypes = List(32), ID = 21))
+  val ret21 = Module(new RetNode(retTypes = List(32), ID = 21))
 
   val tmp_ubranch = Module(new UBranchEndNode(ID = 22))
 
@@ -815,9 +815,9 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   /**
     * Connecting Dataflow signals
     */
-  ret21.io.predicateIn(0).bits.control := true.B
-  ret21.io.predicateIn(0).bits.taskID := 0.U
-  ret21.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret21.io.In.data("field0") <> store19.io.Out(0)
   //  ret21.io.In.data("field0").bits.data := 1.U
   //  ret21.io.In.data("field0").bits.predicate := true.B

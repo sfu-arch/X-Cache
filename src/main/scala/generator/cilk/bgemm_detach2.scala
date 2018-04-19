@@ -397,7 +397,7 @@ class bgemm_detach2DF(implicit p: Parameters) extends bgemm_detach2DFIO()(p) {
   // [BasicBlock]  my_pfor.preattach37:
 
   //  ret void, !UID !56, !BB_UID !57, !ScalaLabel !58
-  val ret12 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=12))
+  val ret12 = Module(new RetNode(retTypes=List(32), ID=12))
 
   // [BasicBlock]  my_offload.pfor.body15:
 
@@ -406,7 +406,7 @@ class bgemm_detach2DF(implicit p: Parameters) extends bgemm_detach2DFIO()(p) {
 
 
   //  reattach label %my_pfor.inc, !UID !61, !BB_UID !62, !ScalaLabel !63
-  val reattach14 = Module(new Reattach(NumPredIn=1, ID=14))
+  val reattach14 = Module(new Reattach(NumPredOps=1, ID=14))
 
 
 
@@ -639,9 +639,9 @@ class bgemm_detach2DF(implicit p: Parameters) extends bgemm_detach2DFIO()(p) {
   /**
     * Connecting Dataflow signals
     */
-  ret12.io.predicateIn(0).bits.control := true.B
-  ret12.io.predicateIn(0).bits.taskID := 0.U
-  ret12.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret12.io.In.data("field0").bits.data := 1.U
   ret12.io.In.data("field0").bits.predicate := true.B
   ret12.io.In.data("field0").valid := true.B

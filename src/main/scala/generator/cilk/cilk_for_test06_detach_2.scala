@@ -274,7 +274,7 @@ class cilk_for_test06_detach_2DF(implicit p: Parameters) extends cilk_for_test06
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !30, !BB_UID !31, !ScalaLabel !32
-  val ret11 = Module(new RetNodeNew(retTypes = List(32), ID = 11))
+  val ret11 = Module(new RetNode(retTypes = List(32), ID = 11))
 
 
   /* ================================================================== *

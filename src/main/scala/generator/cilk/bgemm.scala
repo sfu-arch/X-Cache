@@ -349,7 +349,7 @@ class bgemmDF(implicit p: Parameters) extends bgemmDFIO()(p) {
   // [BasicBlock]  pfor.end.continue46:
 
   //  ret void, !UID !41, !BB_UID !42, !ScalaLabel !43
-  val ret9 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=9))
+  val ret9 = Module(new RetNode(retTypes=List(32), ID=9))
 
   // [BasicBlock]  offload.pfor.body:
 
@@ -358,7 +358,7 @@ class bgemmDF(implicit p: Parameters) extends bgemmDFIO()(p) {
 
 
   //  reattach label %pfor.inc43, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val reattach11 = Module(new Reattach(NumPredIn=1, ID=11))
+  val reattach11 = Module(new Reattach(NumPredOps=1, ID=11))
 
 
 
@@ -553,9 +553,9 @@ class bgemmDF(implicit p: Parameters) extends bgemmDFIO()(p) {
   /**
     * Connecting Dataflow signals
     */
-  ret9.io.predicateIn(0).bits.control := true.B
-  ret9.io.predicateIn(0).bits.taskID := 0.U
-  ret9.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret9.io.In.data("field0").bits.data := 1.U
   ret9.io.In.data("field0").bits.predicate := true.B
   ret9.io.In.data("field0").valid := true.B

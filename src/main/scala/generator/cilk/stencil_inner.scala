@@ -559,7 +559,7 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret void, !UID !78, !BB_UID !79, !ScalaLabel !80
-  val ret27 = Module(new RetNode(NumPredIn = 1, retTypes = List(32), ID = 27))
+  val ret27 = Module(new RetNode(retTypes = List(32), ID = 27))
 
 
   /* ================================================================== *
@@ -943,9 +943,9 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   /**
     * Connecting Dataflow signals
     */
-  ret27.io.predicateIn(0).bits.control := true.B
-  ret27.io.predicateIn(0).bits.taskID := 0.U
-  ret27.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret27.io.In.data("field0").bits.data := 1.U
   ret27.io.In.data("field0").bits.predicate := true.B
   ret27.io.In.data("field0").valid := true.B

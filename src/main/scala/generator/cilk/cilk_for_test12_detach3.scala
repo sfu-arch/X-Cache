@@ -210,7 +210,7 @@ class cilk_for_test12_detach3DF(implicit p: Parameters) extends cilk_for_test12_
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !20, !BB_UID !21, !ScalaLabel !22
-  val ret6 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=6))
+  val ret6 = Module(new RetNode(retTypes=List(32), ID=6))
 
 
 
@@ -365,12 +365,12 @@ class cilk_for_test12_detach3DF(implicit p: Parameters) extends cilk_for_test12_
   /**
     * Connecting Dataflow signals
     */
-  ret6.io.predicateIn(0).bits.control := true.B
-  ret6.io.predicateIn(0).bits.taskID := 0.U
-  ret6.io.predicateIn(0).valid := true.B
+  
+  
+  
 /*
   ret6.io.In.data("field0").bits.data := 1.U
-  ret6.io.In.data("field0").bits.predicate := true.B
+  
   ret6.io.In.data("field0").valid := true.B
   */
   ret6.io.In.data("field0") <> store4.io.Out(0)

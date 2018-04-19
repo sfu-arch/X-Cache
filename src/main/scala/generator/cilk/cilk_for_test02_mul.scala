@@ -189,7 +189,7 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
 
 
   //  ret void, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val ret5 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=5))
+  val ret5 = Module(new RetNode(retTypes=List(32), ID=5))
 
 
 
@@ -350,9 +350,9 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
   /**
     * Connecting Dataflow signals
     */
-  ret5.io.predicateIn(0).bits.control := true.B
-  ret5.io.predicateIn(0).bits.taskID := 0.U
-  ret5.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret5.io.In.data("field0")<> store4.io.Out(0)
   io.out <> ret5.io.Out
 

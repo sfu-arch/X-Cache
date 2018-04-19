@@ -690,7 +690,7 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !114, !BB_UID !115, !ScalaLabel !116
-  val ret35 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=35))
+  val ret35 = Module(new RetNode(retTypes=List(32), ID=35))
 
 
 
@@ -1155,9 +1155,9 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
   /**
     * Connecting Dataflow signals
     */
-  ret35.io.predicateIn(0).bits.control := true.B
-  ret35.io.predicateIn(0).bits.taskID := 0.U
-  ret35.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret35.io.In.data("field0").bits.data := 1.U
   ret35.io.In.data("field0").bits.predicate := true.B
   ret35.io.In.data("field0").valid := true.B

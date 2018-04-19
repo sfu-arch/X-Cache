@@ -350,7 +350,7 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   // [BasicBlock]  my_pfor.preattach11:
 
   //  ret void, !UID !47, !BB_UID !48, !ScalaLabel !49
-  val ret9 = Module(new RetNode(NumPredIn = 1, retTypes = List(32), ID = 9))
+  val ret9 = Module(new RetNode(retTypes = List(32), ID = 9))
 
   // [BasicBlock]  my_offload.pfor.body5:
 
@@ -571,9 +571,9 @@ class cilk_for_test06_detachDF(implicit p: Parameters) extends cilk_for_test06_d
   /**
     * Connecting Dataflow signals
     */
-  ret9.io.predicateIn(0).bits.control := true.B
-  ret9.io.predicateIn(0).bits.taskID := 0.U
-  ret9.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret9.io.In.data("field0").bits.data := 1.U
   ret9.io.In.data("field0").bits.predicate := true.B
   ret9.io.In.data("field0").valid := true.B
