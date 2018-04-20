@@ -22,12 +22,17 @@ import interfaces._
 
 
 // Tester.
-class FPResizeTester(df: FNtoFNNode)
+class FPComputeNodeTester(df: FPComputeNode)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
-  poke(df.io.Input.bits.data, 0x40800000.U)
-  poke(df.io.Input.valid, false.B)
-  poke(df.io.Input.bits.predicate, false.B)
+
+  poke(df.io.LeftIO.bits.data, 0x40800000.U)
+  poke(df.io.LeftIO.valid, false.B)
+  poke(df.io.LeftIO.bits.predicate, false.B)
+
+  poke(df.io.RightIO.bits.data, 0x40800000.U)
+  poke(df.io.RightIO.valid, false.B)
+  poke(df.io.RightIO.bits.predicate, false.B)
 
   poke(df.io.enable.bits.control , false.B)
   poke(df.io.enable.valid, false.B)
@@ -42,8 +47,10 @@ class FPResizeTester(df: FNtoFNNode)
   poke(df.io.Out(0).ready, true.B)
 
 
-  poke(df.io.Input.valid, true.B)
-  poke(df.io.Input.bits.predicate, true.B)
+  poke(df.io.LeftIO.valid, true.B)
+  poke(df.io.RightIO.valid, true.B)
+  poke(df.io.LeftIO.bits.predicate, true.B)
+  poke(df.io.RightIO.bits.predicate, true.B)
 
   println(s"Output: ${peek(df.io.Out(0))}\n")
 
@@ -56,14 +63,14 @@ class FPResizeTester(df: FNtoFNNode)
 
     println(s"t: ${i}\n -------------------------------------")
     step(1)
-  }
- }
+  } 
+}
 
-class FPResizeTests extends  FlatSpec with Matchers {
+class FPComputeTests extends  FlatSpec with Matchers {
    implicit val p = config.Parameters.root((new SinglePrecisionFPConfig).toInstance)
-  it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new FNtoFNNode(S,H,NumOuts = 1, ID = 0)) {
-       c => new FPResizeTester(c)
+  it should "FP MAC tester" in {
+     chisel3.iotesters.Driver(() => new FPComputeNode(NumOuts = 1, ID = 0, opCode = "Mul")(t = S)) {
+       c => new FPComputeNodeTester(c)
      } should be(true)
    }
  }

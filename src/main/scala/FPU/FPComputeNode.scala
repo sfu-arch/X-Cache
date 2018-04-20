@@ -25,7 +25,7 @@ class FPComputeNodeIO(NumOuts: Int)
 }
 
 class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
-                 (sign: Boolean)
+                 (t: FType)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)
@@ -65,11 +65,7 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *===============================================*/
 
   //Instantiate ALU with selected code
-  // S: Single precision 32 bit
-  val FU = Module(new FPUALU(xlen, opCode, H))
-  // D: Double precision
-
-  // H: Half precision
+  val FU = Module(new FPUALU(xlen, opCode, S))
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
 
@@ -98,16 +94,18 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when((~enable_R).toBool) {
-          left_R := DataBundle.default
-          right_R := DataBundle.default
+        // when((~enable_R).toBool) {
+        //   left_R := DataBundle.default
+        //   right_R := DataBundle.default
 
-          left_valid_R := false.B
-          right_valid_R := false.B
+        //   left_valid_R := false.B
+        //   right_valid_R := false.B
 
-          Reset()
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-        }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
+        //   Reset()
+        //   printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+        // }
+
+        when((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
           ValidOut()
           state := s_COMPUTE
         }

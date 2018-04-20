@@ -182,6 +182,6 @@ class FPUALU(val xlen: Int, val opCode: String, t: FType) extends Module {
   FPUControl()
   io.out := t.ieee(mulAddRecFN.io.out)
 
-  printf(p"${Hexadecimal(io.out)}")
+  // printf(p"${Hexadecimal(io.out)}")
 }
 

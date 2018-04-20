@@ -10,6 +10,8 @@ import util._
 import regfile._
 import  junctions._
 import accel._
+import FPU._
+import FType._
 
 case object XLEN       extends Field[Int]
 case object TLEN       extends Field[Int]
@@ -20,7 +22,7 @@ case object VERBOSITY  extends Field[String]
 case object COMPONENTS extends Field[String]
 case object TRACE      extends Field[Boolean]
 case object BuildRFile extends Field[Parameters => AbstractRFile]
-
+case object FTYP        extends Field[FType]
 
 abstract trait CoreParams {
   implicit val p: Parameters
@@ -30,7 +32,7 @@ abstract trait CoreParams {
   val Typ_SZ  = p(TYPSZ)
   val Beats   = Typ_SZ/xlen
   val mshrlen = p(MSHRLEN)
-
+  val Ftyp    = p(FTYP)
   // Debugging dumps
   val log     = p(TRACE)
   val verb    = p(VERBOSITY)
@@ -43,7 +45,7 @@ abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundl
 
 class MiniConfig extends Config((site, here, up) => {
     // Core
-    case XLEN       => 16
+    case XLEN       => 32
     case TLEN       => 5
     case GLEN       => 16
     // # Max bits of cache request tag. 

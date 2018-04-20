@@ -173,6 +173,31 @@ class WriteResp(implicit p: Parameters)
   val done = Bool()
 }
 
+
+//  data : data returned from scratchpad
+class FUResp(implicit p: Parameters)
+  extends ValidT
+    with RouteID {
+  val data = UInt(xlen.W)
+
+  override def toPrintable: Printable = {
+    p"FUResp {\n" +
+      p"  valid  : ${valid}\n" +
+      p"  RouteID: ${RouteID}\n" +
+      p"  data   : 0x${Hexadecimal(data)} }"
+  }
+}
+
+object FUResp {
+  def default(implicit p: Parameters): FUResp = {
+    val wire = Wire(new FUResp)
+    wire.data := 0.U
+    wire.RouteID := 0.U
+    wire.valid := false.B
+    wire
+  }
+}
+
 /**
   * @note Implements ordering between dataflow ops.
   * @param predicate : predicate bit indicating if operations can continue
@@ -242,6 +267,35 @@ object TypBundle {
     wire
   }
 }
+
+/**
+  * FU request to macro function unit
+  *
+  * @param p implicit params
+  * @return [description]
+  */
+//
+// Word aligned to write to
+// Node performing the write
+// Mask indicates which bytes to update.
+class FUReq(implicit p: Parameters)
+  extends RouteID {
+  val a = UInt(xlen.W)
+  val b = UInt(xlen.W)
+  val Typ = UInt(4.W)
+}
+
+object FUReq {
+  def default(implicit p: Parameters): FUReq = {
+    val wire = Wire(new FUReq)
+    wire.a := 0.U
+    wire.b := 0.U
+    wire.RouteID := 0.U
+    wire.Typ := 0.U(4.W)
+    wire
+  }
+}
+
 
 /**
   * Control bundle between branch and

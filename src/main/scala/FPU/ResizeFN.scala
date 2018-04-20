@@ -85,12 +85,13 @@ class FNtoFNNode(Src: FType, Des: FType, NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when((~enable_R).toBool) {
-          Input_R.predicate := false.B
-          Input_valid_R := false.B
-          Reset()
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-        }.elsewhen((io.Input.fire() || Input_valid_R)) {
+        // when((~enable_R).toBool) {
+        //   Input_R.predicate := false.B
+        //   Input_valid_R := false.B
+        //   Reset()
+        //   printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+        // }
+        when((io.Input.fire() || Input_valid_R)) {
           ValidOut()
           state := s_COMPUTE
         }
@@ -102,7 +103,6 @@ class FNtoFNNode(Src: FType, Des: FType, NumOuts: Int, ID: Int)
         // Reset data
         Input_R := DataBundle.default
         Input_valid_R := false.B
-     
         //Reset state
         state := s_IDLE
         //Reset output
