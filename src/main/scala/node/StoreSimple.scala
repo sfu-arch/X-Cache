@@ -93,8 +93,9 @@ class UnTypStore(NumPredOps: Int,
     addr_R := io.GepAddr.bits
     addr_valid_R := true.B
   }
-  succ_bundle_R.foreach(_ := io.enable.bits)
-
+  when(io.enable.fire()) {
+    succ_bundle_R.foreach(_ := io.enable.bits)
+  }
   // ACTION: inData
   when(io.inData.fire()) {
     // Latch the data

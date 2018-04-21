@@ -98,18 +98,6 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-/*
-        when((~enable_R.control).toBool) {
-          left_R := DataBundle.default
-          right_R := DataBundle.default
-
-          left_valid_R := false.B
-          right_valid_R := false.B
-
-          Reset()
-          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Not predicated value -> reset\n", task_ID_R)
-        }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
-*/
         when((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
           ValidOut()
           state := s_COMPUTE

@@ -95,8 +95,9 @@ class UnTypLoad(NumPredOps: Int,
   io.memReq.bits.RouteID := RouteID.U
 
   // Connect successors outputs to the enable status
-  succ_bundle_R.foreach(_ := io.enable.bits)
-
+  when(io.enable.fire()) {
+    succ_bundle_R.foreach(_ := io.enable.bits)
+  }
   /*=============================================
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
@@ -113,18 +114,6 @@ class UnTypLoad(NumPredOps: Int,
             state := s_RECEIVING
           }
         }.otherwise {
-/*
-          addr_R := DataBundle.default
-          addr_valid_R := false.B
-          // Reset data
-          data_R := DataBundle.default
-          data_valid_R := false.B
-          // Reset state.
-          Reset()
-          // Reset state.
-          state := s_idle
-          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": restarted @ %d\n",enable_R.taskID, cycleCount)
-*/
           data_R.predicate :=false.B
           ValidSucc()
           ValidOut()
