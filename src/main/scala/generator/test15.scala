@@ -533,7 +533,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
   val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1)) //@todo Fix NumExits
   val lb_L_1 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1)) //@todo Fix NumExits
-  val lb_L_2 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=1,NumExits=2)) //@todo Fix NumExits
+  val lb_L_2 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=1,NumExits=1)) //@todo Fix NumExits
 
 
   /* ================================================================== *
@@ -584,7 +584,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  br label %for.cond, !UID !7, !BB_UID !8, !ScalaLabel !9
-  val br0 = Module (new UBranchNode(ID = 0))
+  val br0 = Module (new UBranchFastNode(ID = 0))
 
   // [BasicBlock]  for.cond:
 
@@ -601,12 +601,12 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
 
   //  br i1 %cmp, label %for.body, label %for.end18, !UID !16, !BB_UID !17, !ScalaLabel !18
-  val br4 = Module (new CBranchNode(ID = 4))
+  val br4 = Module (new CBranchFastNode(ID = 4))
 
   // [BasicBlock]  for.body:
 
   //  br label %for.cond1, !UID !19, !BB_UID !20, !ScalaLabel !21
-  val br5 = Module (new UBranchNode(ID = 5))
+  val br5 = Module (new UBranchFastNode(ID = 5))
 
   // [BasicBlock]  for.cond1:
 
@@ -619,12 +619,12 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
 
   //  br i1 %cmp2, label %for.body3, label %for.end12, !UID !26, !BB_UID !27, !ScalaLabel !28
-  val br8 = Module (new CBranchNode(ID = 8))
+  val br8 = Module (new CBranchFastNode(ID = 8))
 
   // [BasicBlock]  for.body3:
 
   //  br label %for.cond4, !UID !29, !BB_UID !30, !ScalaLabel !31
-  val br9 = Module (new UBranchNode(ID = 9))
+  val br9 = Module (new UBranchFastNode(ID = 9))
 
   // [BasicBlock]  for.cond4:
 
@@ -637,7 +637,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
 
   //  br i1 %cmp5, label %for.body6, label %for.end, !UID !36, !BB_UID !37, !ScalaLabel !38
-  val br12 = Module (new CBranchNode(ID = 12))
+  val br12 = Module (new CBranchFastNode(ID = 12))
 
   // [BasicBlock]  for.body6:
 
@@ -662,7 +662,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
 
   //  br label %for.inc, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val br18 = Module (new UBranchNode(ID = 18))
+  val br18 = Module (new UBranchFastNode(ID = 18))
 
   // [BasicBlock]  for.inc:
 
@@ -671,7 +671,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
 
   //  br label %for.cond4, !llvm.loop !54, !UID !69, !BB_UID !70, !ScalaLabel !71
-  val br20 = Module (new UBranchNode(ID = 20))
+  val br20 = Module (new UBranchFastNode(ID = 20))
 
   // [BasicBlock]  for.end:
 
@@ -696,7 +696,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
 
   //  br label %for.inc10, !UID !82, !BB_UID !83, !ScalaLabel !84
-  val br26 = Module (new UBranchNode(ID = 26))
+  val br26 = Module (new UBranchFastNode(ID = 26))
 
   // [BasicBlock]  for.inc10:
 
@@ -705,7 +705,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
 
   //  br label %for.cond1, !llvm.loop !87, !UID !90, !BB_UID !91, !ScalaLabel !92
-  val br28 = Module (new UBranchNode(ID = 28))
+  val br28 = Module (new UBranchFastNode(ID = 28))
 
   // [BasicBlock]  for.end12:
 
@@ -734,7 +734,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
 
   //  br label %for.inc16, !UID !105, !BB_UID !106, !ScalaLabel !107
-  val br35 = Module (new UBranchNode(ID = 35))
+  val br35 = Module (new UBranchFastNode(ID = 35))
 
   // [BasicBlock]  for.inc16:
 
@@ -743,7 +743,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
 
   //  br label %for.cond, !llvm.loop !110, !UID !113, !BB_UID !114, !ScalaLabel !115
-  val br37 = Module (new UBranchNode(ID = 37))
+  val br37 = Module (new UBranchFastNode(ID = 37))
 
   // [BasicBlock]  for.end18:
 

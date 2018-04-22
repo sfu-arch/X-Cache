@@ -69,7 +69,7 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
   val liveIn_R_valid = RegInit(VecInit(Seq.fill(NumIns)(false.B)))
 
   val liveOut_R =  Seq.fill(NumOuts)(RegInit(DataBundle.default))
-  val liveOutFire_R = Seq.fill(NumOuts)(RegInit(true.B))
+  val liveOutFire_R = Seq.fill(NumOuts)(RegInit(false.B))
 /*
   val liveOut_R  = RegInit(VecInit(Seq.fill(NumOuts){DataBundle.default}))
   val liveOutValid = RegInit(VecInit(Seq.fill(NumOuts){true.B}))
@@ -80,6 +80,7 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
   val endEnable_R = RegInit(0.U.asTypeOf(io.endEnable))
   val endEnableFire_R = RegNext(init=false.B,next=io.endEnable.fire())
 
+  // Live outs are ready if all have fired
   def IsLiveOutReady(): Bool = {
     if (NumOuts == 0) {
       return true.B
@@ -157,11 +158,16 @@ class LoopBlock(ID: Int, NumIns : Int, NumOuts : Int, NumExits : Int)
           liveIn_R_valid(i) := false.B
         }
       }
-      // If we've seen a valid exit pulse, our liveIn data has been
-      // accepted and we have valid liveOut data then we can end.
-      when(exitFire_R.asUInt().orR && !liveIn_R_valid.asUInt().orR) {
+      // If
+      //  a) our liveIn data has been accepted, and
+      //  b) our live outs are ready, and
+      //  c) we've seen a valid exit pulse,
+      // then we can end.
+      when(exitFire_R.asUInt().orR && !liveIn_R_valid.asUInt().orR && IsLiveOutReady()) {
         exitFire_R.foreach(_ := false.B)
-        when(exit_R.asUInt().orR && IsLiveOutReady() ) {
+        liveOutFire_R.foreach(_ := false.B)
+        // Only exit on final (control=true) exit pulse
+        when(exit_R.asUInt().orR) {
           endEnable_R.bits.control := exit_R.asUInt().orR
           endEnable_R.valid := true.B
           ValidOut() // Set Out() valid
