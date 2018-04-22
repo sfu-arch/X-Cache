@@ -349,7 +349,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   //  br i1 %1, label %my_pfor.detach9, label %my_pfor.end, !UID !9, !BB_UID !10, !ScalaLabel !11
-  val br3 = Module (new CBranchNode(ID = 3))
+  val br3 = Module (new CBranchFastNode(ID = 3))
 
   // [BasicBlock]  my_pfor.detach9:
 

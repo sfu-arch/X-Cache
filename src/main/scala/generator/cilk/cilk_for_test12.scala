@@ -346,7 +346,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end25, !UID !18, !BB_UID !19, !ScalaLabel !20
-  val br5 = Module (new CBranchNode(ID = 5))
+  val br5 = Module (new CBranchFastNode(ID = 5))
 
   // [BasicBlock]  pfor.detach:
 

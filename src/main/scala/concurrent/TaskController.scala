@@ -8,7 +8,6 @@ import interfaces._
 import utility.Constants._
 import junctions._
 
-
 class ParentBundle()(implicit p: Parameters) extends CoreBundle  {
   val sid = UInt(tlen.W)  // Static ID (e.g. parent identifier)
   val did = UInt(tlen.W)  // Dynamic ID (e.g. parent's task #)
@@ -24,7 +23,7 @@ class TaskControllerIO(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent
   val childOut  = Vec(numChild, Decoupled(new Call(argTypes)))            // Requests to sub-block
 }
 
-class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int, depth :Int = 16)
+class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int, depth:Int = 16)
                     (implicit val p: Parameters) extends Module with CoreParams {
 
   // Instantiate TaskController I/O signals
@@ -37,7 +36,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   val taskArb = Module(new RRArbiter(new Call(argTypes), numParent))
   val freeList = Module(new Queue(UInt(tlen.W), 1 << tlen))
   val exeList = Module(new Queue(new Call(argTypes), depth))
-  val parentTable = SyncReadMem(1 << tlen, new ParentBundle())
+  val parentTable = Mem(1 << tlen, new ParentBundle())
 
   for (i <- 0 until numParent) {
     taskArb.io.in(i) <> io.parentIn(i)
@@ -49,13 +48,6 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   parentID.sid := taskArb.io.chosen
   parentID.did := taskArb.io.out.bits.data("field0").taskID
 
-  /*
-  var parentCall = Wire(new Call(argTypes))
-  parentCall := taskArb.io.out.bits
-  for (i <- argTypes.indices) {
-    parentCall.data(s"field$i").taskID := freeList.io.deq.bits.data
-  }
-*/
   /** *************************************************************************
     * Free List
     * Instantiate a queue to hold the unused table task entries. Initialize
@@ -115,6 +107,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   val finalReturn = Wire(Decoupled(new Call(retTypes)))
 
   ChildArb.io.in <> io.childIn
+  ChildArb.io.out.ready := finalReturn.ready
   when(finalReturn.ready) {
     retReg.valid := ChildArb.io.out.valid
     retReg.bits := ChildArb.io.out.bits
@@ -122,15 +115,16 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   retReg.ready := finalReturn.ready
 
   // Lookup the original PID and TID
-  val taskEntry = parentTable(ChildArb.io.out.bits.data("field0").taskID)
-
+  val taskEntryReg = RegInit(0.U.asTypeOf(new ParentBundle()))
+  when (finalReturn.ready) {
+    taskEntryReg := parentTable.read(ChildArb.io.out.bits.data("field0").taskID)
+  }
   // Restore the original TID and PID in the return value.
   finalReturn.valid := retReg.valid
   finalReturn.bits := retReg.bits
-  ChildArb.io.out.ready := finalReturn.ready
   for (i <- retTypes.indices) {
-    finalReturn.bits.data(s"field$i").taskID := taskEntry.did
-    finalReturn.bits.enable.taskID := taskEntry.did
+    finalReturn.bits.data(s"field$i").taskID := taskEntryReg.did
+    finalReturn.bits.enable.taskID := taskEntryReg.did
   }
 
   /***************************************************************************
@@ -141,8 +135,8 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     io.parentOut(i).valid := false.B
     io.parentOut(i).bits := finalReturn.bits
   }
-  finalReturn.ready :=  io.parentOut(taskEntry.sid).ready
-  io.parentOut(taskEntry.sid).valid := finalReturn.valid
+  finalReturn.ready :=  io.parentOut(taskEntryReg.sid).ready
+  io.parentOut(taskEntryReg.sid).valid := finalReturn.valid
 
 }
 
