@@ -236,7 +236,7 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=1,NumExits=1));
+  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=List(1,1),NumOuts=1,NumExits=1));
 /*
   val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
   val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
@@ -517,18 +517,9 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
   br4.io.CmpIO <> icmp3.io.Out(param.br4_in("icmp3"))
 
   // Wiring Call to I/O
-/*
-  io.call5_out <> call5.io.callOut
-  call5.io.retIn <> io.call5_in
-  call5.io.Out.enable.ready := true.B // Manual fix
-  // Wiring Call instruction to the loop header
-  call5.io.In.data("field0") <> lb_L_0.io.liveIn(0)
 
-  // Wiring Call instruction to the loop header
-  call5.io.In.data("field1") <> lb_L_0.io.liveIn(1)
-*/
-  callout5.io.In("field0") <> lb_L_0.io.liveIn(0) // manual
-  callout5.io.In("field1") <> lb_L_0.io.liveIn(1) // manual
+  callout5.io.In("field0") <> lb_L_0.io.liveIn.data("field0")(0) // manual
+  callout5.io.In("field1") <> lb_L_0.io.liveIn.data("field1")(0) // manual
   io.call5_out <> callout5.io.Out(0)
 
   callin5.io.In <> io.call5_in

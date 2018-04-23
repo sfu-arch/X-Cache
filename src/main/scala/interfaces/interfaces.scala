@@ -194,6 +194,12 @@ class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
 class DataBundle(implicit p: Parameters) extends PredicateT with TaskID {
   // Data packet
   val data = UInt(xlen.W)
+  def asControlBundle(): ControlBundle = {
+    val wire = Wire(new ControlBundle)
+    wire.control := this.predicate
+    wire.taskID := this.taskID
+    wire
+  }
 }
 
 
@@ -240,6 +246,14 @@ class ControlBundle(implicit p: Parameters) extends CoreBundle()(p) {
   //Control packet
   val taskID = UInt(tlen.W)
   val control = Bool()
+
+  def asDataBundle(): DataBundle = {
+    val wire = Wire(new DataBundle)
+    wire.data := this.control.asUInt()
+    wire.predicate := this.control
+    wire.taskID := this.taskID
+    wire
+  }
 }
 
 object ControlBundle {

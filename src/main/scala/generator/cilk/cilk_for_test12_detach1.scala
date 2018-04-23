@@ -317,7 +317,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
-  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1));
+  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=List(2,1),NumOuts=0,NumExits=1));
 
 
   /* ================================================================== *
@@ -648,7 +648,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   icmp2.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
 
   // Wiring Binary instruction to the loop header
-  icmp2.io.RightIO <> lb_L_0.io.liveIn(0)
+  icmp2.io.RightIO <> lb_L_0.io.liveIn.data("field0")(0)
 
   // Wiring Branch instruction
   br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
@@ -745,8 +745,8 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   // Wiring Call to I/O
-  callout18.io.In("field0") <> lb_L_0.io.liveIn(0) // manual
-  callout18.io.In("field1") <> lb_L_0.io.liveIn(1) // manual
+  callout18.io.In("field0") <> lb_L_0.io.liveIn.data("field0")(1) // manual
+  callout18.io.In("field1") <> lb_L_0.io.liveIn.data("field1")(0) // manual
 
   io.call18_out <> callout18.io.Out(0)
   callin18.io.Out.enable.ready := true.B

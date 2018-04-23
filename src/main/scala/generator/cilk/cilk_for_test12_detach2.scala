@@ -295,7 +295,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
-  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1));
+  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=List(1,1),NumOuts=0,NumExits=1));
 
 
   /* ================================================================== *
@@ -513,10 +513,6 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   sync7.io.enable <> bb_my_pfor_end.io.Out(param.bb_my_pfor_end_activate("sync7"))
-/*
-  loop_L_0_liveIN_0.io.enable <> bb_my_pfor_end.io.Out(1)
-  loop_L_0_liveIN_1.io.enable <> bb_my_pfor_end.io.Out(2)
-*/
 
 
 
@@ -552,15 +548,6 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
    *                   CONNECTING LOOPHEADERS                           *
    * ================================================================== */
 
-/*
-  // Connecting function argument to the loop header
-  //i32 %n.in
-  loop_L_0_liveIN_0.io.InData <> field0_expand.io.Out(0)
-
-  // Connecting function argument to the loop header
-  //i32* %a.in
-  loop_L_0_liveIN_1.io.InData <> field1_expand.io.Out(0)
-*/
   // Connecting function argument to the loop header
   //i32 %n.in
   lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
@@ -608,7 +595,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   icmp2.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
 
   // Wiring Binary instruction to the loop header
-  icmp2.io.RightIO <> lb_L_0.io.liveIn(0)
+  icmp2.io.RightIO <> lb_L_0.io.liveIn.data("field0")(0)
 
   // Wiring Branch instruction
   br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
@@ -680,7 +667,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   // Wiring Call to I/O
-  callout15.io.In("field0") <> lb_L_0.io.liveIn(1) // manual
+  callout15.io.In("field0") <> lb_L_0.io.liveIn.data("field1")(0) // manual
   callout15.io.In("field1") <> phi1.io.Out(param.call15_in("phi1")) // manual
   io.call15_out <> callout15.io.Out(0)
 

@@ -286,7 +286,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
-  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=3,NumOuts=0,NumExits=1));
+  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=List(1,1,1),NumOuts=0,NumExits=1));
 
 
   /* ================================================================== *
@@ -684,9 +684,9 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   io.out <> ret14.io.Out
 
 
-  callout15.io.In("field0") <> lb_L_0.io.liveIn(1) // manual %n
-  callout15.io.In("field1") <> lb_L_0.io.liveIn(0) // manual %a
-  callout15.io.In("field2") <> lb_L_0.io.liveIn(2) // manual %alloc
+  callout15.io.In("field0") <> lb_L_0.io.liveIn.data("field1")(0) // manual %n
+  callout15.io.In("field1") <> lb_L_0.io.liveIn.data("field0")(0) // manual %a
+  callout15.io.In("field2") <> lb_L_0.io.liveIn.data("field2")(0) // manual %alloc
   io.call15_out <> callout15.io.Out(0)
   callin15.io.Out.enable.ready := true.B
 

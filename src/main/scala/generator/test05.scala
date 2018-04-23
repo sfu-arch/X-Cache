@@ -295,11 +295,8 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-/*
-  val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 2, ID = 0))
-  val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-*/
-  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1));
+
+  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=List(2,1),NumOuts=0,NumExits=1));
 
 
   /* ================================================================== *
@@ -545,10 +542,6 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
   ret20.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret20"))
 
-/*
-  loop_L_0_liveIN_0.io.enable <> bb_for_end.io.Out(9)
-  loop_L_0_liveIN_1.io.enable <> bb_for_end.io.Out(10)
-*/
 
 
 
@@ -607,13 +600,13 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   icmp2.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
 
   // Wiring Binary instruction to the loop header
-  icmp2.io.RightIO <> lb_L_0.io.liveIn(1) // manual
+  icmp2.io.RightIO <> lb_L_0.io.liveIn.data("field1")(0) // manual
 
   // Wiring Branch instruction
   br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
 
   // Wiring GEP instruction to the loop header
-  getelementptr4.io.baseAddress <> lb_L_0.io.liveIn(0) // manual
+  getelementptr4.io.baseAddress <> lb_L_0.io.liveIn.data("field0")(0) // manual
 
   // Wiring GEP instruction to the parent instruction
   getelementptr4.io.idx1 <> phi1.io.Out(param.getelementptr4_in("phi1"))
@@ -636,7 +629,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   mul6.io.RightIO <> load5.io.Out(param.mul6_in("load5"))
 
   // Wiring GEP instruction to the loop header
-  getelementptr7.io.baseAddress <> lb_L_0.io.liveIn(0) // manual
+  getelementptr7.io.baseAddress <> lb_L_0.io.liveIn.data("field0")(1) // manual
 
   // Wiring GEP instruction to the parent instruction
   getelementptr7.io.idx1 <> phi1.io.Out(param.getelementptr7_in("phi1"))

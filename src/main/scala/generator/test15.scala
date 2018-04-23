@@ -531,9 +531,9 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    * ================================================================== */
 
 
-  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1)) //@todo Fix NumExits
-  val lb_L_1 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=0,NumExits=1)) //@todo Fix NumExits
-  val lb_L_2 = Module(new LoopBlock(ID=999,NumIns=2,NumOuts=1,NumExits=1)) //@todo Fix NumExits
+  val lb_L_0 = Module(new LoopBlock(ID=999,NumIns=List(2,1),NumOuts=0,NumExits=1)) //@todo Fix NumExits
+  val lb_L_1 = Module(new LoopBlock(ID=999,NumIns=List(2,3),NumOuts=0,NumExits=1)) //@todo Fix NumExits
+  val lb_L_2 = Module(new LoopBlock(ID=999,NumIns=List(2,2),NumOuts=1,NumExits=1)) //@todo Fix NumExits
 
 
   /* ================================================================== *
@@ -849,7 +849,6 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   lb_L_2.io.latchEnable <>  store33.io.SuccOp(0) // Manually connect to Call instruction
 
 
-
   // There is no detach instruction
 
 
@@ -983,19 +982,19 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32* %a
-  lb_L_0.io.In(0) <> lb_L_1.io.liveIn(0) //InputSplitter.io.Out.data("field0")(0)
+  lb_L_0.io.In(0) <> lb_L_1.io.liveIn.data("field0")(0) //InputSplitter.io.Out.data("field0")(0)
 
   // Connecting function argument to the loop header
   //i32 %n
-  lb_L_0.io.In(1) <> lb_L_1.io.liveIn(1) //InputSplitter.io.Out.data("field1")(0)
+  lb_L_0.io.In(1) <> lb_L_1.io.liveIn.data("field1")(0) //InputSplitter.io.Out.data("field1")(0)
 
   // Connecting function argument to the loop header
   //i32* %a
-  lb_L_1.io.In(0) <> lb_L_2.io.liveIn(0) // InputSplitter.io.Out.data("field0")(1)
+  lb_L_1.io.In(0) <> lb_L_2.io.liveIn.data("field0")(0) // InputSplitter.io.Out.data("field0")(1)
 
   // Connecting function argument to the loop header
   //i32 %n
-  lb_L_1.io.In(1) <> lb_L_2.io.liveIn(1) // InputSplitter.io.Out.data("field1")(1)
+  lb_L_1.io.In(1) <> lb_L_2.io.liveIn.data("field1")(0) // InputSplitter.io.Out.data("field1")(1)
 
   // Connecting function argument to the loop header
   //i32* %a
@@ -1084,7 +1083,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   icmp7.io.LeftIO <> phi6.io.Out(param.icmp7_in("phi6"))
 
   // Wiring Binary instruction to the loop header
-  icmp7.io.RightIO <> lb_L_1.io.liveIn(1)
+  icmp7.io.RightIO <> lb_L_1.io.liveIn.data("field1")(1)
 
   // Wiring Branch instruction
   br8.io.CmpIO <> icmp7.io.Out(param.br8_in("icmp7"))
@@ -1093,13 +1092,13 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   icmp11.io.LeftIO <> phi10.io.Out(param.icmp11_in("phi10"))
 
   // Wiring Binary instruction to the loop header
-  icmp11.io.RightIO <> lb_L_0.io.liveIn(1)
+  icmp11.io.RightIO <> lb_L_0.io.liveIn.data("field1")(0)
 
   // Wiring Branch instruction
   br12.io.CmpIO <> icmp11.io.Out(param.br12_in("icmp11"))
 
   // Wiring GEP instruction to the loop header
-  getelementptr13.io.baseAddress <> lb_L_0.io.liveIn(0)
+  getelementptr13.io.baseAddress <> lb_L_0.io.liveIn.data("field0")(0)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr13.io.idx1 <> phi10.io.Out(param.getelementptr13_in("phi10"))
@@ -1122,7 +1121,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   mul15.io.RightIO <> load14.io.Out(param.mul15_in("load14"))
 
   // Wiring GEP instruction to the loop header
-  getelementptr16.io.baseAddress <> lb_L_0.io.liveIn(0)
+  getelementptr16.io.baseAddress <> lb_L_0.io.liveIn.data("field0")(1)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr16.io.idx1 <> phi10.io.Out(param.getelementptr16_in("phi10"))
@@ -1149,7 +1148,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   add19.io.RightIO.valid := true.B
 
   // Wiring Binary instruction to the loop header
-  sub21.io.LeftIO <>lb_L_1.io.liveIn(1)
+  sub21.io.LeftIO <>lb_L_1.io.liveIn.data("field1")(2)
 
   // Wiring constant
   sub21.io.RightIO.bits.data := 1.U
@@ -1157,7 +1156,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   sub21.io.RightIO.valid := true.B
 
   // Wiring GEP instruction to the loop header
-  getelementptr22.io.baseAddress <> lb_L_1.io.liveIn(0)
+  getelementptr22.io.baseAddress <> lb_L_1.io.liveIn.data("field0")(1)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr22.io.idx1 <> sub21.io.Out(param.getelementptr22_in("sub21"))
@@ -1200,7 +1199,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   add27.io.RightIO.valid := true.B
 
   // Wiring Binary instruction to the loop header
-  sub29.io.LeftIO <> lb_L_2.io.liveIn(1)
+  sub29.io.LeftIO <> lb_L_2.io.liveIn.data("field1")(1)
 
   // Wiring constant
   sub29.io.RightIO.bits.data := 1.U
@@ -1208,7 +1207,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   sub29.io.RightIO.valid := true.B
 
   // Wiring GEP instruction to the loop header
-  getelementptr30.io.baseAddress <> lb_L_2.io.liveIn(0)
+  getelementptr30.io.baseAddress <> lb_L_2.io.liveIn.data("field0")(1)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr30.io.idx1 <> sub29.io.Out(param.getelementptr30_in("sub29"))
