@@ -105,7 +105,7 @@ class PhiNode(NumInputs: Int,
    *============================================*/
   switch(state) {
     is(s_IDLE) {
-      when(mask_valid_R && enable_valid_R && in_data_valid_R(sel)) {
+      when((io.enable.valid || enable_valid_R) && mask_valid_R && in_data_valid_R(sel)) {
         state := s_COMPUTE
         ValidOut()
       }

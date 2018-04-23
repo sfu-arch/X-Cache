@@ -47,7 +47,9 @@ class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0)
     io.In.data(s"field$i").ready := !data_valid_R(i)
   }
 
-  succ_bundle_R.foreach(_ := io.enable.bits)
+  when(io.enable.fire()) {
+    succ_bundle_R.foreach(_ := io.enable.bits)
+  }
   io.Out(0).bits.data := data_R
   io.Out(0).bits.enable := enable_R
 

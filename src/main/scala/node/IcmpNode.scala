@@ -97,8 +97,8 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
 
   switch(state) {
     is(s_IDLE) {
-      when(enable_valid_R) {
-        when((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
+      when(enable_valid_R || io.enable.valid) {
+        when(left_valid_R && right_valid_R) {
           ValidOut()
           state := s_COMPUTE
         }
