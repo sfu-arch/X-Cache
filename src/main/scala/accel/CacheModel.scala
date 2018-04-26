@@ -4,13 +4,11 @@ package accel
 
 import chisel3._
 import chisel3.util._
-
 import junctions._
 import config._
 import interfaces._
 import NastiConstants._
 import accel._
-
 
 class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
   val io = IO(new CacheModuleIO)
@@ -18,38 +16,53 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
   val size  = log2Ceil(nastiXDataBits / 8).U
   val len   = (dataBeats - 1).U
 
-  val data = Mem(nSets, UInt(bBits.W))
-  val tags = Mem(nSets, UInt(tlen.W))
-  val v    = Mem(nSets, Bool())
-  val d    = Mem(nSets, Bool())
+  val data  = Mem(nSets, Vec(bBytes, UInt(8.W))) // nSets deep, block size wide
+  val tags  = Mem(nSets, UInt(tlen.W))
+  val valid = Mem(nSets, Bool())
+  val dirty = Mem(nSets, Bool())
 
-  val req   = io.cpu.req.bits
-  val tag   = req.addr >> (blen + slen).U
-  val idx   = req.addr(blen + slen - 1, blen)
-  val off   = req.addr(blen - 1, 0)
-  val read  = data(idx)
-  val write = (((0 until bBytes) foldLeft 0.U){ (write, i) => write | Mux(
-    ((off / 4.U) === (i / 4).U) && (req.mask >> (i & 0x3).U)(0),
-    ((req.data >> ((8 * (i & 0x3)).U)) & 0xff.U) << (8 * i).U, read & (BigInt(0xff) << (8 * i)).U)
-  })(bBits - 1, 0)
+  val req      = io.cpu.req.bits
+  val tag      = (req.addr >> (blen + slen).U)(tlen,0)
+  val setIdx   = req.addr(blen + slen - 1, blen)  // set index of cache (assumes ways = 1)
+  val byteIdx  = req.addr(blen - 1, 0)            // byte index of block
+  val wordIdx  = req.addr(blen-1, byteOffsetBits)
+
+  val readData  = data(setIdx)
+  val writeMask = Vec(bBytes,Bool())
+  val writeData = Vec(bBytes,UInt(8.W))
+
+  def extractUInt(src : Vec[UInt], len: Int, offset : UInt) : UInt = {
+    val result = Wire(UInt())
+    for (i <- 0 until len) {
+      result((i + 1)*8-1, i * 8) := src(i.U + offset)
+    }
+    result
+  }
+  def insertBytes(src : UInt, dst : Vec[UInt], len: Int, offset : UInt) : Vec[UInt] = {
+    val result = dst;
+    for (i <- 0 until len) {
+      result(i.U + offset) := src((i + 1)*8-1, i * 8)
+    }
+    result
+  }
 
   val sIdle :: sWrite :: sWrAck :: sRead :: Nil = Enum(4)
   val state = RegInit(sIdle)
   val (wCnt, wDone) = Counter(state === sWrite, dataBeats)
   val (rCnt, rDone) = Counter(state === sRead && io.nasti.r.valid, dataBeats)
 
-  io.cpu.resp.bits.data := read >> ((off / 4.U) * xlen.U)
+  io.cpu.resp.bits.data := extractUInt(readData, wBytes, wordIdx)
   io.cpu.resp.valid := false.B
   io.cpu.resp.bits.tag  := tag
-  io.cpu.resp.bits.isSt := req.iswrite
+  io.cpu.resp.bits.iswrite := req.iswrite
   io.cpu.resp.bits.valid := false.B
 
   io.cpu.req.ready := false.B
-  io.nasti.ar.bits := NastiReadAddressChannel(0.U, (req.addr >> blen.U) << blen.U, size, len)
+  io.nasti.ar.bits := NastiReadAddressChannel(0.U, ((req.addr >> blen.U) << blen.U).asUInt(), size, len)
   io.nasti.ar.valid := false.B
-  io.nasti.aw.bits := NastiWriteAddressChannel(0.U, Cat(tags(idx), idx) << blen.U, size, len)
+  io.nasti.aw.bits := NastiWriteAddressChannel(0.U, (Cat(tags(setIdx), setIdx) << blen.U).asUInt(), size, len)
   io.nasti.aw.valid := false.B
-  io.nasti.w.bits := NastiWriteDataChannel(read >> (wCnt * nastiXDataBits.U), None, wDone)
+  io.nasti.w.bits := NastiWriteDataChannel(wCnt, None, wDone)
   io.nasti.w.valid := state === sWrite
   io.nasti.b.ready := state === sWrAck
   io.nasti.r.ready := true.B
@@ -57,27 +70,29 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
   // Dump state
   io.stat := state.asUInt()
 
+  writeData.foreach(_ := 0.U(8.W)) // Default
   switch(state) {
     is(sIdle) {
       when(io.cpu.req.valid) {
-        when(v(idx) && (tags(idx) === tag)) {
+        when(valid(setIdx) && (tags(setIdx) === tag)) {
           when(req.mask.orR) {
-            d(idx)    := true.B
-            data(idx) := write
+            dirty(setIdx) := true.B
+            writeData := insertBytes(io.nasti.r.bits.data, writeData, wBytes, (wCnt<<byteOffsetBits).asUInt())
+            data.write(setIdx, writeData, writeMask)
             printf("[cache] data[%x] <= %x, off: %x, req: %x, mask: %b\n",
-              idx, write, off, io.cpu.req.bits.data, io.cpu.req.bits.mask)
+              setIdx, extractUInt(writeData, bBytes, 0.U), byteIdx, io.cpu.req.bits.data, io.cpu.req.bits.mask)
           }.otherwise {
             printf("[cache] data[%x] => %x, off: %x, resp: %x\n",
-              idx, read, off, io.cpu.resp.bits.data)
+              setIdx, extractUInt(readData, bBytes, 0.U), byteIdx, io.cpu.resp.bits.data)
           }
           io.cpu.req.ready := true.B
           io.cpu.resp.valid := true.B
         }.otherwise {
-          when(d(idx)) {
+          when(dirty(setIdx)) {
             io.nasti.aw.valid := true.B
             state := sWrite
           }.otherwise {
-            data(idx) := 0.U
+            data(setIdx) := 0.U
             io.nasti.ar.valid := true.B
             state := sRead
           }
@@ -91,19 +106,20 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
     }
     is(sWrAck) {
       when(io.nasti.b.valid) {
-        data(idx) := 0.U
+        data(setIdx) := 0.U
         io.nasti.ar.valid := true.B
         state := sRead
       }
     }
     is(sRead) {
       when(io.nasti.r.valid) {
-        data(idx) := read | (io.nasti.r.bits.data << (rCnt * nastiXDataBits.U))
+        writeData := insertBytes(io.nasti.r.bits.data, readData, wBytes, (rCnt<<byteOffsetBits).asUInt())
+        data(setIdx) := writeData
       }
       when(rDone) {
         assert(io.nasti.r.bits.last)
-        tags(idx) := tag
-        v(idx) := true.B
+        tags(setIdx) := tag
+        valid(setIdx) := true.B
         state := sIdle
       }
     }

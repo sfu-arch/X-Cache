@@ -215,7 +215,7 @@ abstract class bgemmDFIO(implicit val p: Parameters) extends Module with CorePar
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val call10_out = Decoupled(new Call(List(32,32,32,32)))
     val call10_in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
+    val CacheResp = Flipped(Valid(new CacheResp))
     val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
   })

@@ -50,7 +50,7 @@ class UnifiedController (ID: Int,
     val ReadOut = Vec(NReads, Output(new ReadResp()))
 
     //orig
-    val CacheResp = Flipped(Valid(new CacheRespT))
+    val CacheResp = Flipped(Valid(new CacheResp))
     val CacheReq = Decoupled(new CacheReq)
 
   })
@@ -62,7 +62,7 @@ class UnifiedController (ID: Int,
  =            Declarations            =
  ====================================*/
   val cacheReq_R = RegInit(CacheReq.default)
-  val cacheResp_R = RegInit(CacheRespT.default)
+  val cacheResp_R = RegInit(CacheResp.default)
 
   // Initialize a vector of register files (as wide as type).
   val WriteController = Module(WControl)

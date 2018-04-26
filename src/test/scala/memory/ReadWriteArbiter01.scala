@@ -21,7 +21,7 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
   //    val WriteCacheReq = Decoupled(new CacheReq)
   //    val WriteCacheResp = Flipped(Valid(new CacheResp))
   //    val CacheReq = Decoupled(new CacheReq)
-  //    val CacheResp = Flipped(Valid(new CacheRespT))
+  //    val CacheResp = Flipped(Valid(new CacheResp))
 
 
 
@@ -79,7 +79,7 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
 
       println(s" Sending Response from Cache ")
       poke(c.io.CacheResp.bits.data, 45)
-      poke(c.io.CacheResp.bits.isSt, peek(c.io.CacheReq.bits.iswrite))
+      poke(c.io.CacheResp.bits.iswrite, peek(c.io.CacheReq.bits.iswrite))
       poke(c.io.CacheResp.bits.tag, peek(c.io.CacheReq.bits.tag))
       poke(c.io.CacheResp.valid, 1)
     }

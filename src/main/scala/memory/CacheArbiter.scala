@@ -24,11 +24,11 @@ abstract class CacheArbiterIO(NumPorts:Int)(implicit val p: Parameters)
   val io = IO(new Bundle {
     val cpu = new Bundle {
       val CacheReq   = Vec(NumPorts, Flipped(Decoupled(new CacheReq)))
-      val CacheResp  = Vec(NumPorts, Output(Valid(new CacheRespT)))
+      val CacheResp  = Vec(NumPorts, Output(Valid(new CacheResp)))
     }
     val cache = new Bundle {
       val CacheReq   = Decoupled(new CacheReq)
-      val CacheResp  = Input(Valid(new CacheRespT))
+      val CacheResp  = Input(Valid(new CacheResp))
     }
   })
 }

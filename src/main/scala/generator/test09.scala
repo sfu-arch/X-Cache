@@ -173,7 +173,7 @@ object Data_test09_FlowParam{
 abstract class test09DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
+    val CacheResp = Flipped(Valid(new CacheResp))
     val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
   })

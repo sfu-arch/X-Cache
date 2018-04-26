@@ -13,7 +13,7 @@ import accel._
 class UnTypMemDataFlow(val ops:Int)(implicit val p: Parameters) extends Module with CoreParams{
 
 	val io = IO(new Bundle{
-		val CacheResp = Flipped(Valid(new CacheRespT))
+		val CacheResp = Flipped(Valid(new CacheResp))
 		val CacheReq = Decoupled(new CacheReq)
 		val Out = Vec(ops, Decoupled(new DataBundle()))
 	})

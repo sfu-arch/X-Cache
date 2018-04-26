@@ -198,7 +198,7 @@ abstract class cilk_for_test06DFIO(implicit val p: Parameters) extends Module wi
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val call9_out = Decoupled(new Call(List(32, 32, 32, 32)))
     val call9_in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
+    val CacheResp = Flipped(Valid(new CacheResp))
     val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
   })
@@ -582,7 +582,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 abstract class cilk_for_test06TopIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
+    val CacheResp = Flipped(Valid(new CacheResp))
     val CacheReq = Decoupled(new CacheReq)
     val out = Decoupled(new Call(List(32)))
   })

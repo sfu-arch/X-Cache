@@ -105,7 +105,7 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
       //NOTE THIS TEST WILL ALWAYS SEND THE SAME RESPONSE REGARDLESS OF THE CACHE REQUEST
 			println(s" Sending Response from Cache ")
 			poke(c.io.CacheResp.bits.data, 45)
-			poke(c.io.CacheResp.bits.isSt, peek(c.io.CacheReq.bits.iswrite))
+			poke(c.io.CacheResp.bits.iswrite, peek(c.io.CacheReq.bits.iswrite))
 			poke(c.io.CacheResp.bits.tag, peek(c.io.CacheReq.bits.tag))
 			poke(c.io.CacheResp.valid, 1)
 		}

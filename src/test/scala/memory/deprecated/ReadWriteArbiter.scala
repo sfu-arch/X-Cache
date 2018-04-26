@@ -20,7 +20,7 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
   //    val WriteCacheReq = Decoupled(new CacheReq)
   //    val WriteCacheResp = Flipped(Valid(new CacheResp))
   //    val CacheReq = Decoupled(new CacheReq)
-  //    val CacheResp = Flipped(Valid(new CacheRespT))
+  //    val CacheResp = Flipped(Valid(new CacheResp))
 
   val sIdle :: sReq :: sDone :: Nil = Enum(3)
   val state = RegInit(sIdle)

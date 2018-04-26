@@ -27,7 +27,7 @@ abstract class RWController(implicit val p: Parameters)
   val io = IO(new Bundle {
     val ReadCacheReq = Flipped(Decoupled(new CacheReq))
     val WriteCacheReq = Flipped(Decoupled(new CacheReq))
-    val CacheResp = Flipped(Valid(new CacheRespT))
+    val CacheResp = Flipped(Valid(new CacheResp))
 
     val ReadCacheResp = Valid(new CacheResp)
     val WriteCacheResp = Valid(new CacheResp)
@@ -87,7 +87,7 @@ class ReadWriteArbiter()
   cacheresp_demux.io.input := io.CacheResp.bits
   //Note RdIdx == 0 , so is isSt for Loads
   //ToDO this could be dangerous - fix this
-  cacheresp_demux.io.sel := io.CacheResp.bits.isSt
+  cacheresp_demux.io.sel := io.CacheResp.bits.iswrite
   //-----------------------------------
 
 //  assert(!io.CacheResp.valid, " CACHE RESPONSE IS VALID ")

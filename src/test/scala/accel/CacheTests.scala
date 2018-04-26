@@ -11,7 +11,7 @@ import config._
 class GoldCache(implicit val p: config.Parameters) extends Module with CacheParams {
   val io = IO(new Bundle {
     val req   = Flipped(Decoupled(new CacheReq))
-    val resp  = Decoupled(new CacheRespT)
+    val resp  = Decoupled(new CacheResp)
     val nasti = new NastiIO
   })
   val size  = log2Ceil(nastiXDataBits / 8).U
@@ -40,7 +40,7 @@ class GoldCache(implicit val p: config.Parameters) extends Module with CachePara
   io.resp.bits.data := read >> ((off / 4.U) * xlen.U)
   io.resp.bits.valid := false.B
   io.resp.valid := false.B
-  io.resp.bits.isSt := req.iswrite
+  io.resp.bits.iswrite := req.iswrite
 
   io.resp.bits.tag := tag
   io.req.ready := false.B
@@ -120,7 +120,7 @@ class CacheTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
   /* Gold Model */
   val gold = Module(new GoldCache)
   val gold_req = Wire(Flipped(Decoupled(new CacheReq)))
-  val gold_resp = Wire(Decoupled(new CacheRespT))
+  val gold_resp = Wire(Decoupled(new CacheResp))
   val gold_mem = Wire(new NastiIO)
 
   gold.io.req <> Queue(gold_req, 32)

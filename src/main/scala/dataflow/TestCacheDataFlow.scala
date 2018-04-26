@@ -1,6 +1,6 @@
 package dataflow
 
-import accel.{CacheReq, CacheRespT}
+import accel.{CacheReq, CacheResp}
 import chisel3._
 import chisel3.util._
 import node._
@@ -15,7 +15,7 @@ class TestCacheDataFlow(implicit val p: Parameters) extends Module with CorePara
 		new Bundle {
 			val start = Input(Bool())
 			val CacheReq = Decoupled(new CacheReq)
-			val CacheResp = Flipped(Valid(new CacheRespT))
+			val CacheResp = Flipped(Valid(new CacheResp))
 			val result = Decoupled(new DataBundle)
 		}
 	)
