@@ -4,7 +4,7 @@ package switches
   * Created by vnaveen0 on 9/9/17.
   */
 
-import accel.CacheReq
+import interfaces._
 import chisel3._
 import chisel3.util._
 import accel._

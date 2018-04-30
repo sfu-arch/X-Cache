@@ -246,8 +246,8 @@ abstract class bgemm_detach2DFIO(implicit val p: Parameters) extends Module with
     val in = Flipped(Decoupled(new Call(List(32,32,32,32,32))))
     val call13_out = Decoupled(new Call(List(32,32,32,32,32,32)))
     val call13_in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheResp))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -280,8 +280,8 @@ class bgemm_detach2DF(implicit p: Parameters) extends bgemm_detach2DFIO()(p) {
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32,32,32,32)))
   InputSplitter.io.In <> io.in

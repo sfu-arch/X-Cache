@@ -6,7 +6,7 @@ import chisel3.Module
 import config.{CoreParams, Parameters}
 import control.BasicBlockNoMaskIO
 import interfaces.{ControlBundle, DataBundle}
-import node.{HandShakingCtrlNPS, HandShakingCtrlNoMaskIO, HandShakingIONPS}
+import node._
 import utility.UniformPrintfs
 
 class SyncIO(NumOuts: Int, NumInc: Int, NumDec: Int)(implicit p: Parameters)
@@ -286,9 +286,8 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
 
   // idState machine
   val s_IDLE :: s_COMPUTE :: s_DONE :: Nil = Enum(3)
-  val state = RegInit(s_IDLE) //Vec(1<<tlen, RegInit(s_IDLE))
-//  val enableID = RegInit(0.U(1<<tlen))
-  val syncCount = RegInit(Vec(Seq.fill(1<<tlen)(0.U(tlen.W))))//Reg(Vec(1<<tlen,UInt(tlen.W)))
+  val state = RegInit(s_IDLE)
+  val syncCount = RegInit(VecInit(Seq.fill(1<<tlen)(0.U(tlen.W))))
 
   /*==========================================*
    *           Predicate Evaluation           *
@@ -332,7 +331,6 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
         when(predicate) {
           state := s_COMPUTE
         }.otherwise {
-//          Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
           ValidOut()
           state := s_DONE
@@ -363,5 +361,87 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
     io.Out(i).bits := enable_R
   }
 
+}
+
+class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
+            (implicit p: Parameters,
+             name: sourcecode.Name,
+             file: sourcecode.File)
+  extends HandShakingCtrlNPS(NumOuts, ID)(p) {
+  override lazy val io = IO(new SyncIO(NumOuts, NumInc, NumDec)(p))
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount,_) = Counter(true.B,32*1024)
+
+  /*==========================================*
+   *          Init the Sync Counters          *
+   *==========================================*/
+  val syncCount = Mem(1 << tlen, UInt(tlen.W))
+  val initCounters = RegInit(true.B)
+  val (initCount, initDone) = Counter(true.B, 1 << tlen)
+
+  when(initDone) {
+    initCounters := false.B
+  }
+  when (initCounters) {
+    syncCount.write(initCount,0.U)
+  }
+
+  /*============================================*
+   *            Update the Counts               *
+   *============================================*/
+
+  val incArb = Module(new Arbiter(new ControlBundle, NumInc))
+  val decArb = Module(new Arbiter(new ControlBundle, NumDec))
+  val updateArb = Module(new Arbiter(new ControlBundle, 2))
+  val doneQueue = Module(new Queue(new ControlBundle(), 4))
+  val update   = RegInit(false.B)
+  val dec      = RegInit(0.U)
+  val updateID = RegInit(0.U)
+
+  incArb.io.in <> io.incIn
+  decArb.io.in <> io.decIn
+  updateArb.io.in(0) <> incArb.io.out // increments are higher priority
+  updateArb.io.in(1) <> decArb.io.out // decrements lower priority
+
+  when(updateArb.io.out.ready) {
+    update := updateArb.io.out.valid && updateArb.io.out.bits.control
+    dec := updateArb.io.chosen
+    updateID := updateArb.io.out.bits.taskID
+  }
+
+  when(initCounters) {
+    updateArb.io.out.ready := false.B
+  }.elsewhen(update) {
+    when(dec === 0.U) {
+      syncCount.write(updateID, syncCount.read(updateID) + 1.U)
+      doneQueue.io.enq.valid := false.B
+      doneQueue.io.enq.bits  := ControlBundle.default
+      updateArb.io.out.ready := true.B
+    }.otherwise {
+      syncCount.write(updateID, syncCount.read(updateID) - 1.U)
+      when(syncCount.read(updateID) === 1.U) {
+        doneQueue.io.enq <> updateArb.io.out
+      }.otherwise {
+        doneQueue.io.enq.valid := false.B
+        doneQueue.io.enq.bits  := ControlBundle.default
+        updateArb.io.out.ready := true.B
+      }
+    }
+  }.otherwise{
+    updateArb.io.out.ready := true.B
+  }
+
+  /*============================================*
+   *            Connect outputs                 *
+   *============================================*/
+  val outPorts = Module(new ExpandNode(NumOuts=NumOuts, ID=0)(new ControlBundle))
+
+  outPorts.io.InData <> doneQueue.io.deq
+  io.Out <> outPorts.io.Out
+
+  io.enable.ready := true.B
 
 }

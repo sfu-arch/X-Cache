@@ -93,7 +93,7 @@ object AllocaResp {
 class ReadReq(implicit p: Parameters)
   extends RouteID {
   val address = UInt(xlen.W)
-//  val taskID = UInt(tlen.W)
+  val taskID = UInt(tlen.W)
   val Typ = UInt(8.W)
 
 }
@@ -102,7 +102,7 @@ object ReadReq {
   def default(implicit p: Parameters): ReadReq = {
     val wire = Wire(new ReadReq)
     wire.address := 0.U
-//    wire.taskID := 0.U
+    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire.Typ := MT_W
     wire
@@ -149,7 +149,7 @@ class WriteReq(implicit p: Parameters)
   val address = UInt((xlen - 10).W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen / 8).W)
-//  val taskID = UInt(tlen.W)
+  val taskID = UInt(tlen.W)
   val Typ = UInt(8.W)
 }
 
@@ -159,7 +159,7 @@ object WriteReq {
     wire.address := 0.U
     wire.data := 0.U
     wire.mask := 0.U
-//    wire.taskID := 0.U
+    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire.Typ := MT_W
     wire
@@ -171,6 +171,45 @@ class WriteResp(implicit p: Parameters)
   extends ValidT
     with RouteID {
   val done = Bool()
+}
+
+class MemReq(implicit p: Parameters) extends CoreBundle()(p) {
+  val addr    = UInt(xlen.W)
+  val data    = UInt(xlen.W)
+  val mask    = UInt((xlen/8).W)
+  val tag     = UInt((List(1,mshrlen).max).W)
+  val taskID  = UInt(tlen.W)
+  val iswrite = Bool()
+}
+
+object MemReq {
+  def default(implicit p: Parameters): MemReq = {
+    val wire = Wire(new MemReq())
+    wire.addr := 0.U
+    wire.data := 0.U
+    wire.mask := 0.U
+    wire.tag  := 0.U
+    wire.taskID := 0.U
+    wire.iswrite  := false.B
+    wire
+  }
+}
+
+class MemResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
+  val data    = UInt(xlen.W)
+  val tag     = UInt((List(1,mshrlen).max).W)
+  val iswrite = Bool()
+}
+
+object MemResp {
+  def default(implicit p: Parameters): MemResp = {
+    val wire = Wire(new MemResp())
+    wire.valid := false.B
+    wire.data := 0.U
+    wire.tag  := 0.U
+    wire.iswrite  := false.B
+    wire
+  }
 }
 
 //class RelayNode output

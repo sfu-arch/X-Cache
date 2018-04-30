@@ -53,20 +53,21 @@ class TypeStackFile(ID: Int,
  ====================================*/
 
   // Initialize a vector of register files (as wide as type).
-  val RegFile = Module(new RFile(Size)(p))
+  val RegFile = Module(new RFile(Size*(1<<tlen))(p))
   val WriteController = Module(WControl)
   val ReadController = Module(RControl)
 
   // Write registers
-  val WriteReq     = RegNext(next = WriteController.io.CacheReq.bits)
-  val WriteValid   = RegNext(init  = false.B,next=WriteController.io.CacheReq.fire())
+  val WriteReq     = RegNext(next = WriteController.io.MemReq.bits)
+  val WriteValid   = RegNext(init  = false.B,next=WriteController.io.MemReq.fire())
 
-  val ReadReq     = RegNext(next = ReadController.io.CacheReq.bits)
-  val ReadValid   = RegNext(init  = false.B, next=ReadController.io.CacheReq.fire())
+  val ReadReq     = RegNext(next = ReadController.io.MemReq.bits)
+  val ReadValid   = RegNext(init  = false.B, next=ReadController.io.MemReq.fire())
 
   
   val xlen_bytes = xlen / 8
   val wordindex = log2Ceil(xlen_bytes)
+  val frameindex = tlen
 
 /*================================================
 =            Wiring up input arbiters            =
@@ -84,45 +85,44 @@ class TypeStackFile(ID: Int,
     io.ReadOut(i) <> ReadController.io.ReadOut(i)
   }
 
-  WriteController.io.CacheReq.ready := true.B
-  ReadController.io.CacheReq.ready := true.B
+  WriteController.io.MemReq.ready := true.B
+  ReadController.io.MemReq.ready := true.B
 
 
-  WriteController.io.CacheResp.valid := false.B
-  ReadController.io.CacheResp.valid := false.B
+  WriteController.io.MemResp.valid := false.B
+  ReadController.io.MemResp.valid := false.B
 
 /*==========================================
 =            Write Controller.             =
 ==========================================*/
 
-  RegFile.io.wen := WriteController.io.CacheReq.fire()
-  RegFile.io.waddr := WriteController.io.CacheReq.bits.addr(wordindex + log2Ceil(Size) - 1, wordindex)
-  RegFile.io.wdata := WriteController.io.CacheReq.bits.data
-  RegFile.io.wmask := WriteController.io.CacheReq.bits.mask
+  RegFile.io.wen := WriteController.io.MemReq.fire()
+  val waddr = Cat(WriteController.io.MemReq.bits.taskID, WriteController.io.MemReq.bits.addr(wordindex + log2Ceil(Size) - 1, wordindex))
+  RegFile.io.waddr := waddr
+  RegFile.io.wdata := WriteController.io.MemReq.bits.data
+  RegFile.io.wmask := WriteController.io.MemReq.bits.mask
 
   
-  WriteController.io.CacheResp.valid    := WriteValid
-  WriteController.io.CacheResp.bits.tag := WriteReq.tag
+  WriteController.io.MemResp.valid    := WriteValid
+  WriteController.io.MemResp.bits.tag := WriteReq.tag
 
 
 /*==============================================
 =            Read Memory Controller            =
 ==============================================*/
+  val raddr = Cat(ReadController.io.MemReq.bits.taskID, ReadController.io.MemReq.bits.addr(wordindex + log2Ceil(Size) - 1, wordindex))
+  RegFile.io.raddr1 := raddr
 
-//  when(ReadController.io.CacheReq.fire()) {
-    RegFile.io.raddr1 := ReadController.io.CacheReq.bits.addr(wordindex + log2Ceil(Size) - 1, wordindex)
-//  }
-
-  ReadController.io.CacheResp.valid     := ReadValid
-  ReadController.io.CacheResp.bits.tag  := ReadReq.tag
-  ReadController.io.CacheResp.bits.data := RegFile.io.rdata1
+  ReadController.io.MemResp.valid     := ReadValid
+  ReadController.io.MemResp.bits.tag  := ReadReq.tag
+  ReadController.io.MemResp.bits.data := RegFile.io.rdata1
 
   /// Printf debugging
   override val printfSigil = "RFile: " + ID + " Type " + (Typ_SZ)
 
 
-  // printf(p"\n : ${ReadController.io.CacheReq.fire()} Tag: ${ReadReq.tag} ")
-  // printf(p"\n Cache Request ${WriteController.io.CacheReq}")
+  // printf(p"\n : ${ReadController.io.MemReq.fire()} Tag: ${ReadReq.tag} ")
+  // printf(p"\n Cache Request ${WriteController.io.MemReq}")
    // printf(p"Demux out:  ${io.WriteOut(0)}")
   // Read in parallel after shifting.
   // seq

@@ -56,8 +56,8 @@ class test15Main(implicit p: Parameters) extends test15MainIO {
   // Wire up the cache and modules under test.
   val test15 = Module(new test15DF())
 
-  cache.io.cpu.req <> test15.io.CacheReq
-  test15.io.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> test15.io.MemReq
+  test15.io.MemResp <> cache.io.cpu.resp
   test15.io.in <> io.in
   io.out <> test15.io.out
 

@@ -7,11 +7,12 @@ import chisel3.util._
 import chisel3.testers._
 import junctions._
 import config._
+import interfaces._
 
 class GoldCache(implicit val p: config.Parameters) extends Module with CacheParams {
   val io = IO(new Bundle {
-    val req   = Flipped(Decoupled(new CacheReq))
-    val resp  = Decoupled(new CacheResp)
+    val req   = Flipped(Decoupled(new MemReq))
+    val resp  = Decoupled(new MemResp)
     val nasti = new NastiIO
   })
   val size  = log2Ceil(nastiXDataBits / 8).U
@@ -118,13 +119,14 @@ class CacheTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
   dut.io.nasti.r <> Queue(dut_mem.r, 32)
 
   /* Gold Model */
-  val gold = Module(new GoldCache)
-  val gold_req = Wire(Flipped(Decoupled(new CacheReq)))
-  val gold_resp = Wire(Decoupled(new CacheResp))
+  val gold = Module(new CacheModel)
+  val gold_req = Wire(Flipped(Decoupled(new MemReq)))
+  val gold_resp = Wire(Decoupled(new MemResp))
   val gold_mem = Wire(new NastiIO)
 
-  gold.io.req <> Queue(gold_req, 32)
-  gold_resp <> Queue(gold.io.resp, 32)
+  gold.io.cpu.req <> Queue(gold_req, 32)
+  val foo = Decoupled(gold.io.cpu.resp)
+  gold_resp <> Queue(foo, 32)
   gold_mem.ar <> Queue(gold.io.nasti.ar, 32)
   gold_mem.aw <> Queue(gold.io.nasti.aw, 32)
   gold_mem.w <> Queue(gold.io.nasti.w, 32)
@@ -180,7 +182,7 @@ class CacheTester(cache: => Cache)(implicit val p: config.Parameters) extends Ba
         assert(dut_mem.w.bits.strb === gold_mem.w.bits.strb)
         assert(dut_mem.w.bits.last === gold_mem.w.bits.last)
         assert(dut_mem.w.bits.strb === ((1 << (nastiXDataBits / 8)) - 1).U) // TODO: release it?
-	mem((dut_mem.aw.bits.addr >> size) + wCnt) := dut_mem.w.bits.data
+	      mem((dut_mem.aw.bits.addr >> size) + wCnt) := dut_mem.w.bits.data
         printf("[write] mem[%x] <= %x\n", (dut_mem.aw.bits.addr >> size) + wCnt, dut_mem.w.bits.data)
         dut_mem.w.ready := true.B
       }

@@ -93,6 +93,7 @@ class UnTypLoad(NumPredOps: Int,
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
+  io.memReq.bits.taskID := addr_R.taskID | enable_R.taskID
 
   // Connect successors outputs to the enable status
   when(io.enable.fire()) {

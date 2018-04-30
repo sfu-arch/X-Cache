@@ -58,8 +58,8 @@ class cilk_for_test06MainDirect(implicit p: Parameters) extends cilk_for_test06M
   val cilk_for_test06_detach = Module(new cilk_for_test06_detachDF())
   val cilk_for_test06_detach2 = Module(new cilk_for_test06_detach_2DF())
 
-  cache.io.cpu.req <> cilk_for_test06_detach2.io.CacheReq
-  cilk_for_test06_detach2.io.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> cilk_for_test06_detach2.io.MemReq
+  cilk_for_test06_detach2.io.MemResp <> cache.io.cpu.resp
   cilk_for_test06.io.in <> io.in
   cilk_for_test06_detach.io.in <> cilk_for_test06.io.call9_out
   cilk_for_test06_detach2.io.in <> cilk_for_test06_detach.io.call10_out
@@ -108,11 +108,11 @@ class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainI
   // requests ports of any type.  Read or write is irrelevant.
   val CacheArbiter = Module(new CacheArbiter(children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test06_detach2(i).io.CacheReq
-    cilk_for_test06_detach2(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+    CacheArbiter.io.cpu.MemReq(i) <> cilk_for_test06_detach2(i).io.MemReq
+    cilk_for_test06_detach2(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
   }
-  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   // tester to cilk_for_test02
   cilk_for_test06.io.in <> io.in

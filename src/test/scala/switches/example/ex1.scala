@@ -5,7 +5,7 @@ package switches.example
   */
 
 
-import accel.CacheReq
+import interfaces._
 import chisel3._
 import chisel3.util._
 import accel._

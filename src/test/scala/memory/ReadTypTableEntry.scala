@@ -18,8 +18,8 @@ class ReadTypTableEntryTests(c: ReadTypTableEntry)
   //    val NodeResp = Decoupled(new ReadResp)
   //
   //    //Memory interface
-  //    val MemReq = Decoupled(new CacheReq)
-  //    val MemResp = Input(new CacheResp)
+  //    val MemReq = Decoupled(new MemReq)
+  //    val MemResp = Input(new MemResp)
   //
   //    // val Output
   //    val output = Decoupled(new ReadResp)

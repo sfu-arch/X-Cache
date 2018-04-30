@@ -1,6 +1,5 @@
 package dataflow
 
-import accel.{CacheReq, CacheResp}
 import chisel3._
 import chisel3.util._
 import node._
@@ -14,8 +13,8 @@ class TestCacheDataFlow(implicit val p: Parameters) extends Module with CorePara
 	val io = IO(
 		new Bundle {
 			val start = Input(Bool())
-			val CacheReq = Decoupled(new CacheReq)
-			val CacheResp = Flipped(Valid(new CacheResp))
+			val MemReq = Decoupled(new MemReq)
+			val MemResp = Flipped(Valid(new MemResp))
 			val result = Decoupled(new DataBundle)
 		}
 	)
@@ -30,8 +29,8 @@ class TestCacheDataFlow(implicit val p: Parameters) extends Module with CorePara
 	val Load1     = Module(new TypLoad(NumPredOps=1,NumSuccOps=0,NumOuts=2,ID=0,RouteID=1))
 
 
-	io.CacheReq <> CacheMem.io.CacheReq
-	CacheMem.io.CacheResp <>io.CacheResp
+	io.MemReq <> CacheMem.io.MemReq
+	CacheMem.io.MemResp <>io.MemResp
 
 	CacheMem.io.ReadIn(0) <> Load.io.memReq
 	Load.io.memResp  <> CacheMem.io.ReadOut(0)

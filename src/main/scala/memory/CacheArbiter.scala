@@ -23,31 +23,31 @@ abstract class CacheArbiterIO(NumPorts:Int)(implicit val p: Parameters)
   extends Module with CoreParams  with UniformPrintfs {
   val io = IO(new Bundle {
     val cpu = new Bundle {
-      val CacheReq   = Vec(NumPorts, Flipped(Decoupled(new CacheReq)))
-      val CacheResp  = Vec(NumPorts, Output(Valid(new CacheResp)))
+      val MemReq   = Vec(NumPorts, Flipped(Decoupled(new MemReq)))
+      val MemResp  = Vec(NumPorts, Output(Valid(new MemResp)))
     }
     val cache = new Bundle {
-      val CacheReq   = Decoupled(new CacheReq)
-      val CacheResp  = Input(Valid(new CacheResp))
+      val MemReq   = Decoupled(new MemReq)
+      val MemResp  = Input(Valid(new MemResp))
     }
   })
 }
 
 class CacheArbiter(NumPorts:Int)(implicit p: Parameters) extends CacheArbiterIO(NumPorts)(p) {
 
-  val reqArb  = Module(new RRArbiter(new CacheReq, NumPorts))
-  reqArb.io.in <> io.cpu.CacheReq
+  val reqArb  = Module(new RRArbiter(new MemReq, NumPorts))
+  reqArb.io.in <> io.cpu.MemReq
   val chosen_reg = RegInit(0.U)
   when (reqArb.io.out.fire()) {
     chosen_reg := reqArb.io.chosen
   }
-  io.cache.CacheReq <> reqArb.io.out
+  io.cache.MemReq <> reqArb.io.out
 
   // Response Demux
   for(i <- 0 until NumPorts) {
-    io.cpu.CacheResp(i) := io.cache.CacheResp
-    io.cpu.CacheResp(i).valid := false.B  // default
+    io.cpu.MemResp(i) := io.cache.MemResp
+    io.cpu.MemResp(i).valid := false.B  // default
   }
-  io.cpu.CacheResp(chosen_reg).valid := io.cache.CacheResp.valid
+  io.cpu.MemResp(chosen_reg).valid := io.cache.MemResp.valid
 
 }

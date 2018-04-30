@@ -431,8 +431,8 @@ object Data_bgemm_detach3_FlowParam{
 abstract class bgemm_detach3DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32,32,32,32))))
-    val CacheResp = Flipped(Valid(new CacheResp))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -465,8 +465,8 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
 		            (RControl=new ReadMemoryController(NumOps=3,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32,32,32,32,32)))
   InputSplitter.io.In <> io.in

@@ -14,7 +14,7 @@ case object NWays extends Field[Int]
 case object NSets extends Field[Int]
 case object CacheBlockBytes extends Field[Int]
 
-class CacheReq(implicit p: Parameters) extends CoreBundle()(p) {
+/*class MemReq(implicit p: Parameters) extends CoreBundle()(p) {
   val addr    = UInt(xlen.W)
   val data    = UInt(xlen.W)
   val mask    = UInt((xlen/8).W)
@@ -22,9 +22,9 @@ class CacheReq(implicit p: Parameters) extends CoreBundle()(p) {
   val iswrite = Bool()
 }
 
-object CacheReq {
-  def default(implicit p: Parameters): CacheReq = {
-    val wire = Wire(new CacheReq())
+object MemReq {
+  def default(implicit p: Parameters): MemReq = {
+    val wire = Wire(new MemReq())
     wire.addr := 0.U
     wire.data := 0.U
     wire.mask := 0.U
@@ -34,27 +34,27 @@ object CacheReq {
   }
 }
 
-class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
+class MemResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
   val data    = UInt(xlen.W)
   val tag     = UInt((List(1,mshrlen).max).W)
   val iswrite = Bool()
 }
 
-object CacheResp {
-  def default(implicit p: Parameters): CacheResp = {
-    val wire = Wire(new CacheResp())
+object MemResp {
+  def default(implicit p: Parameters): MemResp = {
+    val wire = Wire(new MemResp())
     wire.valid := false.B
     wire.data := 0.U
     wire.tag  := 0.U
     wire.iswrite  := false.B
     wire
   }
-}
+}*/
 
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())
-  val req   = Flipped(Decoupled(new CacheReq))
-  val resp  = Output(Valid(new CacheResp))
+  val req   = Flipped(Decoupled(new MemReq))
+  val resp  = Output(Valid(new MemResp))
 }
 
 class CacheModuleIO(implicit p: Parameters) extends CoreBundle()(p) {

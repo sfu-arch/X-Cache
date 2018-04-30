@@ -21,10 +21,9 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 
   //Note if you do not send aligned address -> it will send multiple requests of aligned addresses to memory
   poke(c.io.ReadIn(0).bits.address, 8)
-//  poke(c.io.ReadIn(0).bits.node, 17)
   poke(c.io.ReadIn(0).bits.Typ, 64)
-  //		poke(c.io.ReadIn(0).valid,1)
   poke(c.io.ReadIn(0).bits.RouteID, 0)
+	poke(c.io.ReadIn(0).bits.taskID, 0)
 
 
 
@@ -32,6 +31,7 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
   poke(c.io.WriteIn(0).bits.data, 0)
 //  poke(c.io.WriteIn(0).bits.node, 0)
   poke(c.io.WriteIn(0).bits.RouteID, 0)
+	poke(c.io.WriteIn(0).bits.taskID, 0)
   poke(c.io.WriteIn(0).bits.Typ,0)
   poke(c.io.WriteIn(0).bits.mask,0)
 
@@ -43,7 +43,7 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 		println(s"t = ${t} ------------------------- ")
 
 		if(t > 1 ) {
-			poke(c.io.CacheReq.ready,1)
+			poke(c.io.MemReq.ready,1)
 		}
 
 		if(t > 3 && t < 9) {
@@ -51,8 +51,8 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
         println(s" WriteIn(0) is Ready ")
 				poke(c.io.WriteIn(0).bits.address, 64)
 				poke(c.io.WriteIn(0).bits.data, 45)
-//				poke(c.io.WriteIn(0).bits.node, 16)
 				poke(c.io.WriteIn(0).bits.RouteID, 0)
+				poke(c.io.WriteIn(0).bits.taskID, 0)
 				poke(c.io.WriteIn(0).bits.Typ,64)
 				poke(c.io.WriteIn(0).bits.mask,15)
         poke(c.io.WriteIn(0).valid, 1)
@@ -61,7 +61,7 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 				poke(c.io.WriteIn(0).valid, 0)
 				poke(c.io.WriteIn(0).bits.address, 0)
 				poke(c.io.WriteIn(0).bits.data, 0)
-//				poke(c.io.WriteIn(0).bits.node, 0)
+				poke(c.io.WriteIn(0).bits.taskID, 0)
 				poke(c.io.WriteIn(0).bits.RouteID, 0)
 				poke(c.io.WriteIn(0).bits.Typ,0)
 				poke(c.io.WriteIn(0).bits.mask,0)
@@ -71,8 +71,8 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 			poke(c.io.WriteIn(0).valid, 0)
 			poke(c.io.WriteIn(0).bits.address, 0)
 			poke(c.io.WriteIn(0).bits.data, 0)
-//			poke(c.io.WriteIn(0).bits.node, 0)
 			poke(c.io.WriteIn(0).bits.RouteID, 0)
+			poke(c.io.WriteIn(0).bits.taskID, 0)
 			poke(c.io.WriteIn(0).bits.Typ,0)
 			poke(c.io.WriteIn(0).bits.mask,0)
 		}
@@ -91,9 +91,9 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 			poke(c.io.ReadIn(0).valid, 0)
 		}
 
-		if(peek(c.io.CacheReq.valid) == 1) {
+		if(peek(c.io.MemReq.valid) == 1) {
 
-			println(s" IO CacheReq ${peek(c.io.CacheReq)}")
+			println(s" IO MemReq ${peek(c.io.MemReq)}")
 
 			time = t+1
 
@@ -104,16 +104,16 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 		if(time == t) {
       //NOTE THIS TEST WILL ALWAYS SEND THE SAME RESPONSE REGARDLESS OF THE CACHE REQUEST
 			println(s" Sending Response from Cache ")
-			poke(c.io.CacheResp.bits.data, 45)
-			poke(c.io.CacheResp.bits.iswrite, peek(c.io.CacheReq.bits.iswrite))
-			poke(c.io.CacheResp.bits.tag, peek(c.io.CacheReq.bits.tag))
-			poke(c.io.CacheResp.valid, 1)
+			poke(c.io.MemResp.bits.data, 45)
+			poke(c.io.MemResp.bits.iswrite, peek(c.io.MemReq.bits.iswrite))
+			poke(c.io.MemResp.bits.tag, peek(c.io.MemReq.bits.tag))
+			poke(c.io.MemResp.valid, 1)
 		}
 		else {
-			poke(c.io.CacheResp.valid, 0)
+			poke(c.io.MemResp.valid, 0)
 		}
 
-		println(s" IO CacheReq Valid  ${peek(c.io.CacheReq.valid)}")
+		println(s" IO MemReq Valid  ${peek(c.io.MemReq.valid)}")
 		if(peek(c.io.ReadOut(0).valid) == 1) {
 
 			println(s"^^^^^^^^^^^^^^")

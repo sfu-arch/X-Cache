@@ -57,8 +57,8 @@ class bgemmMainDirect(implicit p: Parameters) extends bgemmMainIO()(p) {
   val bgemm_detach2 = Module(new bgemm_detach2DF())
   val bgemm_detach3 = Module(new bgemm_detach3DF())
 
-  cache.io.cpu.req <> bgemm_detach2.io.CacheReq
-  bgemm_detach2.io.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> bgemm_detach2.io.MemReq
+  bgemm_detach2.io.MemResp <> cache.io.cpu.resp
   bgemm.io.in <> io.in
   bgemm_detach1.io.in <> bgemm.io.call10_out
   bgemm_detach2.io.in <> bgemm_detach1.io.call13_out
@@ -112,11 +112,11 @@ class bgemmMainTM(implicit p: Parameters) extends bgemmMainIO()(p) {
   // Merge requests from two children.
   val CacheArbiter = Module(new CacheArbiter(children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.CacheReq(i) <> bgemm_detach2(i).io.CacheReq
-    bgemm_detach2(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+    CacheArbiter.io.cpu.MemReq(i) <> bgemm_detach2(i).io.MemReq
+    bgemm_detach2(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
   }
-  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   // tester to cilk_for_test02
   bgemm.io.in <> io.in

@@ -38,7 +38,7 @@ class CacheLoader(FilterSize : Int)(implicit val p: Parameters) extends Module w
   }
 
   io.cache.abort := false.B
-  io.cache.req <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.cache.resp
+  io.cache.req <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.cache.resp
 }
 

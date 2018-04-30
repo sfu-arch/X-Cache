@@ -78,21 +78,21 @@ class cilk_for_test12Main(implicit p: Parameters) extends cilk_for_test12MainIO 
   // Merge requests from two children.
   val CacheArbiter = Module(new CacheArbiter(children1+children2+children3+1))
   for (i <- 0 until children1) {
-    CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test12_detach1(i).io.CacheReq
-    cilk_for_test12_detach1(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+    CacheArbiter.io.cpu.MemReq(i) <> cilk_for_test12_detach1(i).io.MemReq
+    cilk_for_test12_detach1(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
   }
   for (i <- 0 until children2) {
-    CacheArbiter.io.cpu.CacheReq(children1+i) <> cilk_for_test12_detach2(i).io.CacheReq
-    cilk_for_test12_detach2(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(children1+i)
+    CacheArbiter.io.cpu.MemReq(children1+i) <> cilk_for_test12_detach2(i).io.MemReq
+    cilk_for_test12_detach2(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(children1+i)
   }
   for (i <- 0 until children3) {
-    CacheArbiter.io.cpu.CacheReq(children2+children1+i) <> cilk_for_test12_detach3(i).io.CacheReq
-    cilk_for_test12_detach3(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(children2+children1+i)
+    CacheArbiter.io.cpu.MemReq(children2+children1+i) <> cilk_for_test12_detach3(i).io.MemReq
+    cilk_for_test12_detach3(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(children2+children1+i)
   }
-  CacheArbiter.io.cpu.CacheReq(children1+children2+children3) <> cilk_for_test12.io.CacheReq
-  cilk_for_test12.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(children1+children2+children3)
-  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  CacheArbiter.io.cpu.MemReq(children1+children2+children3) <> cilk_for_test12.io.MemReq
+  cilk_for_test12.io.MemResp <> CacheArbiter.io.cpu.MemResp(children1+children2+children3)
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   // tester to cilk_for_test02
   cilk_for_test12.io.in <> io.in

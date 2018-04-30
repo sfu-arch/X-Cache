@@ -56,8 +56,8 @@ class test05Main(implicit p: Parameters) extends test05MainIO {
   // Wire up the cache and modules under test.
   val test05 = Module(new test05DF())
 
-  cache.io.cpu.req <> test05.io.CacheReq
-  test05.io.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> test05.io.MemReq
+  test05.io.MemResp <> cache.io.cpu.resp
   test05.io.in <> io.in
   io.out <> test05.io.out
 
@@ -90,13 +90,13 @@ class test05bMain(implicit p: Parameters) extends test05MainIO {
   val test05b = Module(new test05bDF())
   val CacheArbiter = Module(new CacheArbiter(2))
 
-  CacheArbiter.io.cpu.CacheReq(0) <> test05b.io.CacheReq
-  test05b.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(0)
-  CacheArbiter.io.cpu.CacheReq(1) <> test05.io.CacheReq
-  test05.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(1)
+  CacheArbiter.io.cpu.MemReq(0) <> test05b.io.MemReq
+  test05b.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+  CacheArbiter.io.cpu.MemReq(1) <> test05.io.MemReq
+  test05.io.MemResp <> CacheArbiter.io.cpu.MemResp(1)
 
-  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   test05b.io.in <> io.in
   test05.io.in <> test05b.io.call4_out
@@ -133,15 +133,15 @@ class test05cMain(implicit p: Parameters) extends test05MainIO {
   val test05c = Module(new test05cDF())
   val CacheArbiter = Module(new CacheArbiter(3))
 
-  CacheArbiter.io.cpu.CacheReq(0) <> test05.io.CacheReq
-  test05.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(0)
-  CacheArbiter.io.cpu.CacheReq(1) <> test05b.io.CacheReq
-  test05b.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(1)
-  CacheArbiter.io.cpu.CacheReq(2) <> test05.io.CacheReq
-  test05.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(2)
+  CacheArbiter.io.cpu.MemReq(0) <> test05.io.MemReq
+  test05.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+  CacheArbiter.io.cpu.MemReq(1) <> test05b.io.MemReq
+  test05b.io.MemResp <> CacheArbiter.io.cpu.MemResp(1)
+  CacheArbiter.io.cpu.MemReq(2) <> test05.io.MemReq
+  test05.io.MemResp <> CacheArbiter.io.cpu.MemResp(2)
 
-  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   test05c.io.in <> io.in
   test05b.io.in <> test05c.io.call5_out

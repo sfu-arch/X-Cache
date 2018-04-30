@@ -61,13 +61,13 @@ class stencilMainDirect(implicit p: Parameters) extends stencilMainIO {
   val stencil_inner = Module(new stencil_innerDF())
 
   val CacheArbiter = Module(new CacheArbiter(2))
-  CacheArbiter.io.cpu.CacheReq(0) <> stencil_inner.io.CacheReq
-  stencil_inner.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(0)
-  CacheArbiter.io.cpu.CacheReq(1) <> stencil_detach1.io.CacheReq
-  stencil_detach1.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(1)
+  CacheArbiter.io.cpu.MemReq(0) <> stencil_inner.io.MemReq
+  stencil_inner.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+  CacheArbiter.io.cpu.MemReq(1) <> stencil_detach1.io.MemReq
+  stencil_detach1.io.MemResp <> CacheArbiter.io.cpu.MemResp(1)
 
-  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
 
   stencil.io.in <> io.in
@@ -118,14 +118,14 @@ class stencilMainTM(implicit p: Parameters) extends stencilMainIO {
 
   val CacheArbiter = Module(new CacheArbiter(2 * children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.CacheReq(i) <> stencil_inner(i).io.CacheReq
-    stencil_inner(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
-    CacheArbiter.io.cpu.CacheReq(children + i) <> stencil_detach1(i).io.CacheReq
-    stencil_detach1(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(children + i)
+    CacheArbiter.io.cpu.MemReq(i) <> stencil_inner(i).io.MemReq
+    stencil_inner(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
+    CacheArbiter.io.cpu.MemReq(children + i) <> stencil_detach1(i).io.MemReq
+    stencil_detach1(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(children + i)
   }
 
-  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   // tester to cilk_for_test02
   stencil.io.in <> io.in

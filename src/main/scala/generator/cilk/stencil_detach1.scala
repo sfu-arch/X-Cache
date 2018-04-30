@@ -268,8 +268,8 @@ abstract class stencil_detach1DFIO(implicit val p: Parameters) extends Module wi
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val call6_out = Decoupled(new Call(List(32, 32, 32, 32, 32)))
     val call6_in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheResp))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -299,8 +299,8 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
   (RWArbiter = new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32, 32, 32)))
   InputSplitter.io.In <> io.in

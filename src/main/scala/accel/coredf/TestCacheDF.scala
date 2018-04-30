@@ -46,8 +46,8 @@ class TestCacheDF(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(c
   io.stat(0) <> add_result_reg
   io.stat(0).valid := true.B
 
-  io.cache.req <> MemDF.io.CacheReq
-  MemDF.io.CacheResp <> io.cache.resp
+  io.cache.req <> MemDF.io.MemReq
+  MemDF.io.MemResp <> io.cache.resp
 
   switch (state) {
     // Idle
