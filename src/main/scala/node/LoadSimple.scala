@@ -118,7 +118,7 @@ class UnTypLoad(NumPredOps: Int,
           data_R.predicate :=false.B
           ValidSucc()
           ValidOut()
-          data_R := DataBundle.default
+          data_R.predicate := false.B
           // Completion state.
           state := s_Done
 

@@ -687,8 +687,8 @@ class HandShakingCtrlMask(val NumInputs: Int,
   val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
 
   // Mask handshaking
-  val mask_ready_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
-  val mask_valid_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
+  val mask_ready_R = Seq.fill(NumPhi)(RegInit(false.B))
+  val mask_valid_R = Seq.fill(NumPhi)(RegInit(false.B))
 
   /*============================*
    *           Wiring           *
@@ -726,7 +726,11 @@ class HandShakingCtrlMask(val NumInputs: Int,
   }
 
   def IsMaskReady(): Bool = {
-    mask_ready_R.asUInt.andR
+    if (NumPhi == 0) {
+      return true.B
+    } else {
+      VecInit(mask_ready_R).asUInt.andR
+    }
   }
 
   def IsOutValid(): Bool = {
@@ -734,23 +738,26 @@ class HandShakingCtrlMask(val NumInputs: Int,
   }
 
   def IsMaskValid(): Bool = {
-    mask_valid_R.asUInt.andR
+    if (NumPhi == 0) {
+      return true.B
+    } else {
+      VecInit(mask_valid_R).asUInt.andR
+    }
   }
 
   def ValidOut(): Unit = {
     out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
-
-    mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
+    mask_valid_R.foreach {_ := true.B}
   }
 
   def InvalidOut(): Unit = {
     out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
-    mask_valid_R := VecInit(Seq.fill(NumPhi)(false.B))
+    mask_valid_R.foreach {_ := false.B}
   }
 
   def Reset(): Unit = {
     out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
-    mask_ready_R := VecInit(Seq.fill(NumPhi)(false.B))
+    mask_ready_R.foreach {_ := false.B}
   }
 }
 

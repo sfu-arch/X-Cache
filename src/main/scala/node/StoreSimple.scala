@@ -134,7 +134,7 @@ class UnTypStore(NumPredOps: Int,
           }.otherwise {
             ValidSucc()
             ValidOut()
-            //data_R := DataBundle.default
+            data_R.predicate := false.B
             state := s_Done
           }
         }

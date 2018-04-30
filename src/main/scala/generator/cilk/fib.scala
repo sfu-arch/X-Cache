@@ -354,17 +354,17 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   val bb_if_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
 
-  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
+  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 3))
 
   val bb_det_cont = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 4))
 
-  val bb_det_achd2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
+  val bb_det_achd2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
   val bb_det_cont3 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 6))
 
   val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
 
-  val bb_return = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 8))
+  val bb_return = Module(new OOBasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 8))
 
 
 
@@ -514,12 +514,12 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   //Connecting br7 to bb_return
-  bb_return.io.predicateIn <> br7.io.Out(param.br7_brn_bb("bb_return"))
+  bb_return.io.predicateIn(0) <> br7.io.Out(param.br7_brn_bb("bb_return"))
 
 
   //Connecting br18 to bb_return
-  bb_return.io.predicateIn <> br18.io.Out(param.br18_brn_bb("bb_return"))
-
+  bb_return.io.predicateIn(1) <> br18.io.Out(param.br18_brn_bb("bb_return"))
+  //bb_return.io.MaskBB(0).ready := true.B  // Manual
 
   //Connecting detach9 to bb_det_achd
   bb_det_achd.io.predicateIn <> detach9.io.Out(param.detach9_brn_bb("bb_det_achd"))
@@ -582,7 +582,6 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   call10_in.io.enable.enq(ControlBundle.active())
 
   reattach11.io.enable.enq(ControlBundle.active())
-
 
 
   sub12.io.enable <> bb_det_cont.io.Out(param.bb_det_cont_activate("sub12"))
@@ -737,6 +736,8 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   io.call10_out <> call10_out.io.Out(0)
   call10_in.io.In <> io.call10_in
   call10_in.io.Out.enable.ready := true.B // Manual fix
+  reattach11.io.predicateIn(0) <> call10_in.io.Out.data("field0") // manual
+
 
   // Wiring instructions
   call10_out.io.In.data("field0") <> sub8.io.Out(param.call10_in("sub8"))
@@ -758,6 +759,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   io.call14_out <> call14_out.io.Out(0)
   call14_in.io.In <> io.call14_in
   call14_in.io.Out.enable.ready := true.B // Manual fix
+  reattach15.io.predicateIn(0) <> call14_in.io.Out.data("field0") // manual
 
   // Wiring instructions
   call14_out.io.In.data("field0") <> sub12.io.Out(param.call14_in("sub12"))

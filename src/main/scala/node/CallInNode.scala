@@ -36,13 +36,13 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
   val enableFire_R = RegInit(false.B)
 
   val inputReg  = RegInit(0.U.asTypeOf(io.In.bits))
+  val inFire_R = RegInit(false.B)
   val inputReadyReg = RegInit(false.B)
   val outputValidReg = RegInit(VecInit(Seq.fill(argTypes.length + 1)(false.B)))
 
   val s_idle :: s_latched :: Nil = Enum(2)
   val state = RegInit(s_idle)
 
-  io.In.ready := state === s_idle
 
   // Wire up enable READY and VALIDs
   io.enable.ready := ~enableFire_R
@@ -51,7 +51,7 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
     enable_R := io.enable.bits
   }
 
-  val inFire_R = RegInit(false.B)
+  io.In.ready := ~inFire_R
   when(io.In.fire()) {
     inputReg := io.In.bits
     inFire_R := true.B
