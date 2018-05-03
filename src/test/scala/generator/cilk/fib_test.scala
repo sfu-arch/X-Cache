@@ -33,31 +33,29 @@ class fibMainIO(implicit val p: Parameters)  extends Module with CoreParams with
 
 class fibMain(implicit p: Parameters) extends fibMainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
   val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
 
   // Store a copy of all data written to the cache.  This is done since the cache isn't
   // 'write through' to the memory model and we have no easy way of reading the
   // cache contents from the testbench.
-  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
-  }
+/*  when(stackArb.io.cache.MemReq.valid && stackArb.io.cache.MemReq.bits.iswrite) {
+    memCopy.write((stackArb.io.cache.MemReq.bits.addr>>2).asUInt(), stackArb.io.cache.MemReq.bits.data)
+  }*/
   io.dout := memCopy.read((io.addr>>2).asUInt())
 
   val fib = Module(new fibDF())
   val fib_continue = Module(new fib_continueDF())
-  val TC = Module(new TaskController(List(32,32), List(32), 3, 1))
-  val StackArb = Module(new CacheArbiter(2))
-  val Stack = Module(new StackMem(4))
+  val TC = Module(new TaskController(List(32,32), List(32), 3, 1, depth = 1024))
+  val stackArb = Module(new CacheArbiter(2))
+  val stack = Module(new StackMem(4096))
 
   // Merge the memory interfaces and connect to the stack memory
-  StackArb.io.cpu.MemReq(0) <> fib.io.MemReq
-  fib.io.MemResp <> StackArb.io.cpu.MemResp(0)
-  StackArb.io.cpu.MemReq(1) <> fib_continue.io.MemReq
-  fib_continue.io.MemResp <> StackArb.io.cpu.MemResp(1)
-  Stack.io.req <> StackArb.io.cache.MemReq
-  StackArb.io.cache.MemResp <> Stack.io.resp
+  stackArb.io.cpu.MemReq(0) <> fib.io.MemReq
+  fib.io.MemResp <> stackArb.io.cpu.MemResp(0)
+  stackArb.io.cpu.MemReq(1) <> fib_continue.io.MemReq
+  fib_continue.io.MemResp <> stackArb.io.cpu.MemResp(1)
+  stack.io.req <> stackArb.io.cache.MemReq
+  stackArb.io.cache.MemResp <> stack.io.resp
 
   // Continuation
   fib_continue.io.in <> fib.io.call17_out
@@ -94,7 +92,7 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 10)    // n
+  poke(c.io.in.bits.data("field0").data, 5)    // n
   poke(c.io.in.bits.data("field0").predicate, true.B)
   poke(c.io.in.bits.data("field1").data, 1000)   // &r
   poke(c.io.in.bits.data("field1").predicate, true.B)

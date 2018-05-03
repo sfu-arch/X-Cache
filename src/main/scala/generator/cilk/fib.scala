@@ -354,20 +354,19 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   val bb_if_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
 
-  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 3))
+  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
   val bb_det_cont = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 4))
 
-  val bb_det_achd2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
+  val bb_det_achd2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
   val bb_det_cont3 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 6))
 
-  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
+  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 7))
 
-  val bb_return = Module(new OOBasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 8))
+//  val bb_return = Module(new OOBasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 8))
 
-
-
+  val bb_return = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 8))
 
 
 
@@ -410,7 +409,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   //  br label %return, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val br7 = Module (new UBranchNode(ID = 7))
+  val br7 = Module (new UBranchNode(ID = 7)) // manual
 
   // [BasicBlock]  if.end:
 
@@ -424,6 +423,9 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   // [BasicBlock]  det.achd:
 
   //  call void @fib(i32 %sub, i32* %x), !UID !25, !ScalaLabel !26
+  val stackSize = 16 // bytes
+  val gep10 = Module (new GepNodeStack(NumOuts = 1, ID = 10)(numByte1 = 16))
+
   val call10_out = Module(new CallOutNode(ID=10,NumSuccOps=0,argTypes=List(32,32)))
   val call10_in = Module(new CallInNode(ID=499, argTypes=List(32)))
 
@@ -444,6 +446,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   // [BasicBlock]  det.achd2:
 
   //  call void @fib(i32 %sub1, i32* %y), !UID !35, !ScalaLabel !36
+  val gep14 = Module (new GepNodeStack(NumOuts = 1, ID = 14)(numByte1 = 16))
   val call14_out = Module(new CallOutNode(ID=14,NumSuccOps=0,argTypes=List(32,32)))
   val call14_in = Module(new CallInNode(ID=499, argTypes=List(32)))
 
@@ -460,19 +463,24 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   // [BasicBlock]  sync.continue:
 
   //  call void @fib_continue(i32* %x, i32* %y, i32** %rv), !UID !43, !ScalaLabel !44
+  val gep17a = Module (new GepNodeStack(NumOuts = 1, ID = 17)(numByte1 = 16))
+  val gep17b = Module (new GepNodeStack(NumOuts = 1, ID = 17)(numByte1 = 16))
+  val gep17c = Module (new GepNodeStack(NumOuts = 1, ID = 17)(numByte1 = 16))
+
   val call17_out = Module(new CallOutNode(ID=17,NumSuccOps=0,argTypes=List(32,32,32)))
   val call17_in = Module(new CallInNode(ID=499, argTypes=List(32)))
 
 
 
   //  br label %return, !UID !45, !BB_UID !46, !ScalaLabel !47
-  val br18 = Module (new UBranchNode(ID = 18))
+//  val br18 = Module (new UBranchNode(ID = 18, NumPredOps=1)) // manual
 
   // [BasicBlock]  return:
 
   //  ret void, !UID !48, !BB_UID !49, !ScalaLabel !50
   val ret19 = Module(new RetNode(retTypes=List(32), ID=19))
 
+  val ret20 = Module(new RetNode(retTypes=List(32), ID=20)) // manual
 
 
 
@@ -514,11 +522,12 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   //Connecting br7 to bb_return
-  bb_return.io.predicateIn(0) <> br7.io.Out(param.br7_brn_bb("bb_return"))
+//  bb_return.io.predicateIn(0) <> br7.io.Out(param.br7_brn_bb("bb_return"))
+  bb_return.io.predicateIn <> br7.io.Out(param.br7_brn_bb("bb_return")) //manual
 
 
   //Connecting br18 to bb_return
-  bb_return.io.predicateIn(1) <> br18.io.Out(param.br18_brn_bb("bb_return"))
+//  bb_return.io.predicateIn(1) <> br18.io.Out(param.br18_brn_bb("bb_return"))
   //bb_return.io.MaskBB(0).ready := true.B  // Manual
 
   //Connecting detach9 to bb_det_achd
@@ -570,8 +579,6 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   br7.io.enable <> bb_if_then.io.Out(param.bb_if_then_activate("br7"))
 
-
-
   sub8.io.enable <> bb_if_end.io.Out(param.bb_if_end_activate("sub8"))
 
   detach9.io.enable <> bb_if_end.io.Out(param.bb_if_end_activate("detach9"))
@@ -579,8 +586,8 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   call10_out.io.enable <> bb_det_achd.io.Out(param.bb_det_achd_activate("call10"))
+  gep10.io.enable <> bb_det_achd.io.Out(1)
   call10_in.io.enable.enq(ControlBundle.active())
-
   reattach11.io.enable.enq(ControlBundle.active())
 
 
@@ -591,6 +598,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   call14_out.io.enable <> bb_det_achd2.io.Out(param.bb_det_achd2_activate("call14"))
+  gep14.io.enable <> bb_det_achd2.io.Out(1)
   call14_in.io.enable.enq(ControlBundle.active())
 
   reattach15.io.enable.enq(ControlBundle.active())
@@ -607,10 +615,17 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   call17_out.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("call17"))
   call17_in.io.enable.enq(ControlBundle.active())
+  gep17a.io.enable <> bb_sync_continue.io.Out(2)
+  gep17b.io.enable <> bb_sync_continue.io.Out(3)
+  gep17c.io.enable <> bb_sync_continue.io.Out(4)
 
-  br18.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("br18"))
+//  br18.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("br18"))
+//  br18.io.PredOp(0) <> call17_in.io.Out.enable
+  call17_in.io.Out.enable.ready := true.B  // Manual
 
   ret19.io.enable <> bb_return.io.Out(param.bb_return_activate("ret19"))
+
+  ret20.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("br18"))
 
   /* ================================================================== *
    *                   CONNECTING LOOPHEADERS                           *
@@ -720,7 +735,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   store6.io.GepAddr <>  InputSplitter.io.Out.data("field1")(1)
   store6.io.memResp  <> MemCtrl.io.WriteOut(1)
   MemCtrl.io.WriteIn(1) <> store6.io.memReq
-//  store6.io.Out(0).ready := true.B
+//  store6.io.Out(0).ready := true.B  // Manual
 
 
 
@@ -743,7 +758,8 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   call10_out.io.In.data("field0") <> sub8.io.Out(param.call10_in("sub8"))
 
   // Wiring instructions
-  call10_out.io.In.data("field1").enq(DataBundle.active(0.U))// <> alloca0.io.Out(param.call10_in("alloca0"))
+  gep10.io.baseAddress.enq(DataBundle.active(0.U))
+  call10_out.io.In.data("field1") <> gep10.io.Out(0)// <> alloca0.io.Out(param.call10_in("alloca0"))
 
 
 
@@ -765,32 +781,48 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   call14_out.io.In.data("field0") <> sub12.io.Out(param.call14_in("sub12"))
 
   // Wiring instructions
-  call14_out.io.In.data("field1").enq(DataBundle.active(4.U))// <> alloca1.io.Out(param.call14_in("alloca1"))
+  gep14.io.baseAddress.enq(DataBundle.active(4.U))
+  call14_out.io.In.data("field1") <> gep14.io.Out(0)// <> alloca1.io.Out(param.call14_in("alloca1"))
 
 
 
   // Wiring Call to I/O
   io.call17_out <> call17_out.io.Out(0)
   call17_in.io.In <> io.call17_in
-  call17_in.io.Out.enable.ready := true.B // Manual fix
 
   // Wiring instructions
-  call17_out.io.In.data("field0").enq(DataBundle.active(0.U))// <> alloca0.io.Out(param.call17_in("alloca0"))
+  gep17a.io.baseAddress.enq(DataBundle.active(0.U))
+  call17_out.io.In.data("field0") <> gep17a.io.Out(0) // <> alloca0.io.Out(param.call17_in("alloca0"))
 
   // Wiring instructions
-  call17_out.io.In.data("field1").enq(DataBundle.active(4.U))// <> alloca1.io.Out(param.call17_in("alloca1"))
+  gep17b.io.baseAddress.enq(DataBundle.active(4.U))
+  call17_out.io.In.data("field1") <> gep17b.io.Out(0) // <> alloca1.io.Out(param.call17_in("alloca1"))
 
   // Wiring instructions
-  call17_out.io.In.data("field2").enq(DataBundle.active(8.U))// <> alloca2.io.Out(param.call17_in("alloca2"))
+  gep17c.io.baseAddress.enq(DataBundle.active(8.U))
+  call17_out.io.In.data("field2") <> gep17c.io.Out(0) // <> alloca2.io.Out(param.call17_in("alloca2"))
 
 
 
   /**
     * Connecting Dataflow signals
     */
-  ret19.io.In.data("field0") <> store6.io.Out(0)
-  io.out <> ret19.io.Out
 
+
+  ret19.io.In.data("field0") <> store6.io.Out(0)  // manual
+
+  ret20.io.In.data("field0") <>  call17_in.io.Out.data("field0") // Manual fix
+
+  val retArb = Module(new Arbiter(new Call(List(32)),2))
+  // Drop returns from the non-predicated branch
+  retArb.io.in(0).bits := ret19.io.Out.bits
+  retArb.io.in(0).valid := ret19.io.Out.valid && ret19.io.Out.bits.enable.control
+  ret19.io.Out.ready := retArb.io.in(0).ready
+  retArb.io.in(1).bits := ret20.io.Out.bits
+  retArb.io.in(1).valid := ret20.io.Out.valid && ret20.io.Out.bits.enable.control
+  ret20.io.Out.ready := retArb.io.in(1).ready
+
+  io.out <> retArb.io.out
 
 }
 
