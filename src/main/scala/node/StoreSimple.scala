@@ -106,13 +106,14 @@ class UnTypStore(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
+    io.Out(i).bits.taskID := data_R.taskID |  addr_R.taskID | enable_R.taskID
   }
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.data := data_R.data
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
-  io.memReq.bits.taskID := addr_R.taskID | enable_R.taskID
+  io.memReq.bits.taskID := data_R.taskID | addr_R.taskID | enable_R.taskID
   io.memReq.bits.mask := 15.U
   io.memReq.valid := false.B
 

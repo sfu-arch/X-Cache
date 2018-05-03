@@ -18,7 +18,7 @@ class CallOutNodeIO(val argTypes: Seq[Int],
   val In  = Flipped(new VariableDecoupledData(argTypes))   // Requests from calling block(s)
 }
 
-class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0)
+class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0, NoReturn: Bool=false.B)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)
@@ -57,12 +57,16 @@ class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0)
     is(s_idle) {
       when(enable_valid_R && data_valid_R.asUInt.andR) {
         ValidSucc()
-        ValidOut()
+        // Fire outputs if we're not returning (even if control=false.B)
+        // Otherwise don't fire outputs if control = false and assume CallInNode will fake the response
+        when (NoReturn || enable_R.control) {
+          ValidOut()
+        }
         state := s_Done
       }
     }
     is(s_Done) {
-      when(IsOutReady()) {
+      when(IsOutReady() && IsSuccReady()) {
         // Clear all the data valid states.
         data_valid_R.foreach(_ := false.B)
         // Clear all other state

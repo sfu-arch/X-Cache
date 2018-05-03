@@ -86,7 +86,7 @@ class UnTypLoad(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.taskID := addr_R.taskID
+    io.Out(i).bits.taskID := addr_R.taskID | enable_R.taskID
   }
 
   io.memReq.valid := false.B

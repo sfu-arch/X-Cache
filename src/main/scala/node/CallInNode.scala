@@ -60,8 +60,13 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
 
   switch(state) {
     is(s_idle) {
-      when (inFire_R && enableFire_R) {
+      when ((inFire_R || !enable_R.control) && enableFire_R ) {
         state := s_latched
+      }
+      when (!enable_R.control) {
+        for (i <- argTypes.indices) {
+          inputReg.data(s"field$i").predicate := false.B
+        }
       }
     }
     is(s_latched) {
@@ -77,7 +82,7 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
     when(io.Out.data(s"field$i").ready){
       outputValidReg(i) := false.B
     }
-    when(io.In.valid && state === s_idle) {
+    when((inFire_R || !enable_R.control) && enableFire_R && state === s_idle) {
       outputValidReg(i) := true.B
     }
     io.Out.data(s"field$i").valid := outputValidReg(i)
@@ -87,7 +92,7 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
   when(io.Out.enable.ready){
     outputValidReg(argTypes.length) := false.B
   }
-  when(io.In.valid && state === s_idle) {
+  when((inFire_R || !enable_R.control) && enableFire_R && state === s_idle) {
     outputValidReg(argTypes.length) := true.B
   }
   io.Out.enable.valid := outputValidReg(argTypes.length)

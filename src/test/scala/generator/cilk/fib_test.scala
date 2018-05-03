@@ -45,9 +45,9 @@ class fibMain(implicit p: Parameters) extends fibMainIO {
 
   val fib = Module(new fibDF())
   val fib_continue = Module(new fib_continueDF())
-  val TC = Module(new TaskController(List(32,32), List(32), 3, 1, depth = 1024))
+  val TC = Module(new TaskController(List(32,32), List(32), 3, 1))
   val stackArb = Module(new CacheArbiter(2))
-  val stack = Module(new StackMem(4096))
+  val stack = Module(new StackMem(8192))
 
   // Merge the memory interfaces and connect to the stack memory
   stackArb.io.cpu.MemReq(0) <> fib.io.MemReq
@@ -73,10 +73,13 @@ class fibMain(implicit p: Parameters) extends fibMainIO {
 
 }
 
-
-
 class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
+  def fib( n : Int) : Int = n match {
+    case 0 | 1 => n
+    case _ => fib( n-1 ) + fib( n-2 )
+  }
 
+  val n = 10
   val taskID = 0
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
@@ -92,7 +95,7 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 5)    // n
+  poke(c.io.in.bits.data("field0").data, n)    // n
   poke(c.io.in.bits.data("field0").predicate, true.B)
   poke(c.io.in.bits.data("field1").data, 1000)   // &r
   poke(c.io.in.bits.data("field1").predicate, true.B)
@@ -112,19 +115,20 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 500) {
+  while (time < 10000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
       peek(c.io.out.bits.data("field0").predicate) == 1
     ) {
       result = true
+      val expected = fib(n)
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 55) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 67405054" + Console.RESET)
+      if (data != expected) {
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for $expected" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"*** Correct return result received. Run time: $time cycles." + Console.RESET)
+        println(Console.BLUE + s"*** Correct result. Got $data for n=$n. Run time: $time cycles." + Console.RESET)
       }
     }
   }

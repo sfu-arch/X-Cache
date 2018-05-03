@@ -116,20 +116,20 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
    *                   PRINTING MEMORY SYSTEM                           *
    * ================================================================== */
 
-
+/*
   val StackPointer = Module(new Stack(NumOps = 1))
 
   val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=3,NWrites=1)
                 (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
                 (RControl=new ReadMemoryController(NumOps=3,BaseSize=2,NumEntries=2)))
-
-  val ExtMem = Module(new UnifiedController(ID=0,Size=32,NReads=3,NWrites=1)
+*/
+  val MemCtrl = Module(new UnifiedController(ID=0,Size=64*1024,NReads=3,NWrites=1)
                 (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
                 (RControl=new ReadMemoryController(NumOps=3,BaseSize=2,NumEntries=2))
                 (RWArbiter=new ReadWriteArbiter()))
 
-  io.MemReq <> ExtMem.io.MemReq
-  ExtMem.io.MemResp <> io.MemResp
+  io.MemReq <> MemCtrl.io.MemReq
+  MemCtrl.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCallNew(List(1,1,1)))
   InputSplitter.io.In <> io.in
@@ -302,15 +302,15 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
 
   // Wiring Load instruction to the function argument
   load0.io.GepAddr <>  InputSplitter.io.Out.data("field0")(0)
-  load0.io.memResp <> ExtMem.io.ReadOut(0)
-  ExtMem.io.ReadIn(0) <> load0.io.memReq
+  load0.io.memResp <> MemCtrl.io.ReadOut(0)
+  MemCtrl.io.ReadIn(0) <> load0.io.memReq
 
 
 
   // Wiring Load instruction to the function argument
   load1.io.GepAddr <>  InputSplitter.io.Out.data("field1")(0)
-  load1.io.memResp <> ExtMem.io.ReadOut(1)
-  ExtMem.io.ReadIn(1) <> load1.io.memReq
+  load1.io.memResp <> MemCtrl.io.ReadOut(1)
+  MemCtrl.io.ReadIn(1) <> load1.io.memReq
 
 
 
@@ -322,8 +322,8 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
 
   // Wiring Load instruction to the function argument
   load3.io.GepAddr <>  InputSplitter.io.Out.data("field2")(0)
-  load3.io.memResp <> ExtMem.io.ReadOut(2)
-  ExtMem.io.ReadIn(2) <> load3.io.memReq
+  load3.io.memResp <> MemCtrl.io.ReadOut(2)
+  MemCtrl.io.ReadIn(2) <> load3.io.memReq
 
 
 
@@ -333,9 +333,9 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
 
   // Wiring Store instruction to the parent instruction
   store4.io.GepAddr <> load3.io.Out(param.store4_in("load3"))
-  store4.io.memResp  <> ExtMem.io.WriteOut(0)
-  ExtMem.io.WriteIn(0) <> store4.io.memReq
-//  store4.io.Out(0).ready := true.B
+  store4.io.memResp  <> MemCtrl.io.WriteOut(0)
+  MemCtrl.io.WriteIn(0) <> store4.io.memReq
+  store4.io.Out(0).ready := true.B
 
 
 

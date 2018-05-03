@@ -378,6 +378,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   /*==========================================*
    *          Init the Sync Counters          *
    *==========================================*/
+//  val syncCount = RegInit(VecInit(Seq.fill(1<<tlen)(0.U(tlen.W))))
   val syncCount = Mem(1 << tlen, UInt(tlen.W))
   val initCounters = RegInit(true.B)
   val (initCount, initDone) = Counter(true.B, 1 << tlen)
@@ -385,21 +386,22 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   when(initDone) {
     initCounters := false.B
   }
+/*
   when (initCounters) {
     syncCount.write(initCount,0.U)
   }
-
+*/
   /*============================================*
    *            Update the Counts               *
    *============================================*/
 
   val incArb = Module(new Arbiter(new ControlBundle, NumInc))
   val decArb = Module(new Arbiter(new ControlBundle, NumDec))
-  val updateArb = Module(new Arbiter(new ControlBundle, 2))
+  val updateArb = Module(new Arbiter(new ControlBundle(), 2))
   val doneQueue = Module(new Queue(new ControlBundle(), 4))
   val update   = RegInit(false.B)
   val dec      = RegInit(0.U)
-  val updateID = RegInit(0.U)
+  val updateArb_R = RegInit(ControlBundle.default)
 
   incArb.io.in <> io.incIn
   decArb.io.in <> io.decIn
@@ -409,26 +411,34 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   when(updateArb.io.out.ready) {
     update := updateArb.io.out.valid && updateArb.io.out.bits.control
     dec := updateArb.io.chosen
-    updateID := updateArb.io.out.bits.taskID
+    updateArb_R := updateArb.io.out.bits
   }
 
+  doneQueue.io.enq.valid := false.B
+  doneQueue.io.enq.bits  := ControlBundle.default
   when(initCounters) {
     updateArb.io.out.ready := false.B
   }.elsewhen(update) {
     when(dec === 0.U) {
-      syncCount.write(updateID, syncCount.read(updateID) + 1.U)
-      doneQueue.io.enq.valid := false.B
-      doneQueue.io.enq.bits  := ControlBundle.default
+      syncCount.write(updateArb_R.taskID, syncCount.read(updateArb_R.taskID) + 1.U)
+//      syncCount(updateArb_R.taskID) := syncCount(updateArb_R.taskID) + 1.U
       updateArb.io.out.ready := true.B
     }.otherwise {
-      syncCount.write(updateID, syncCount.read(updateID) - 1.U)
-      when(syncCount.read(updateID) === 1.U) {
-        doneQueue.io.enq <> updateArb.io.out
-      }.otherwise {
-        doneQueue.io.enq.valid := false.B
-        doneQueue.io.enq.bits  := ControlBundle.default
-        updateArb.io.out.ready := true.B
-      }
+        when(syncCount.read(updateArb_R.taskID) === 1.U && doneQueue.io.enq.ready) {
+//        when(syncCount(updateArb_R.taskID) === 1.U && doneQueue.io.enq.ready) {
+          syncCount.write(updateArb_R.taskID, syncCount.read(updateArb_R.taskID) - 1.U)
+//          syncCount(updateArb_R.taskID) := syncCount(updateArb_R.taskID) - 1.U
+          doneQueue.io.enq.valid := true.B
+          doneQueue.io.enq.bits := updateArb_R
+          updateArb.io.out.ready := true.B
+//        }.elsewhen(syncCount(updateArb_R.taskID) === 1.U){
+        }.elsewhen(syncCount.read(updateArb_R.taskID) === 1.U){
+          updateArb.io.out.ready := false.B
+        }.otherwise {
+          syncCount.write(updateArb_R.taskID, syncCount.read(updateArb_R.taskID) - 1.U)
+//          syncCount(updateArb_R.taskID) := syncCount(updateArb_R.taskID) - 1.U
+          updateArb.io.out.ready := true.B
+        }
     }
   }.otherwise{
     updateArb.io.out.ready := true.B
@@ -437,11 +447,23 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   /*============================================*
    *            Connect outputs                 *
    *============================================*/
+  val outArb = Module(new Arbiter(new ControlBundle, NumDec))
+
+  outArb.io.in(0).bits := enable_R
+  outArb.io.in(0).valid := enable_valid_R && !enable_R.control
+  when(outArb.io.in(0).ready || enable_R.control) {
+    enable_valid_R := false.B
+  }
+  outArb.io.in(1) <> doneQueue.io.deq
+
   val outPorts = Module(new ExpandNode(NumOuts=NumOuts, ID=0)(new ControlBundle))
 
-  outPorts.io.InData <> doneQueue.io.deq
+  outPorts.io.InData <> outArb.io.out
+  outPorts.io.enable.enq(ControlBundle.active())
+
+ // outPorts.io.InData <> doneQueue.io.deq
   io.Out <> outPorts.io.Out
 
-  io.enable.ready := true.B
+//  io.enable.ready := true.B
 
 }

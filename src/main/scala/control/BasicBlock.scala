@@ -63,7 +63,6 @@ class BasicBlockNode(NumInputs: Int,
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   //Assertion
-  assert(NumPhi >= 1, "NumPhi Cannot be zero")
   /*===========================================*
    *            Registers                      *
    *===========================================*/
@@ -104,7 +103,7 @@ class BasicBlockNode(NumInputs: Int,
 
   // Wire up mask output
   for (i <- 0 until NumPhi) {
-    io.MaskBB(i).bits := Reverse(predicate_in_R.asUInt())
+    io.MaskBB(i).bits := predicate_in_R.asUInt()
   }
 
 

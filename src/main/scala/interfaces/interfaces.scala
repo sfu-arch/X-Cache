@@ -24,7 +24,7 @@ trait RouteID extends CoreBundle {
 }
 
 trait TaskID extends CoreBundle {
-  val taskID = UInt (glen.W)
+  val taskID = UInt (tlen.W)
 }
 
 trait PredicateT extends CoreBundle {
@@ -55,7 +55,6 @@ object AllocaIO {
 // Can be any of the 4MB regions. Size is over provisioned
 class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) with RouteID {
   val size = UInt(xlen.W)
-//  val taskID = UInt(glen.W)
   val numByte = UInt(xlen.W)
 }
 
@@ -64,7 +63,6 @@ object AllocaReq {
     val wire = Wire(new AllocaReq)
     wire.size := 0.U
     wire.numByte := 0.U
-//    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire
   }
@@ -325,18 +323,18 @@ object ControlBundle {
   *       predicate : Bool
   * @return
   */
-class CustomDataBundle[T <: Data](gen: T = UInt(32.W)) extends Bundle {
+class CustomDataBundle[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters) extends CoreBundle()(p) {
   // Data packet
   val data = gen.chiselCloneType
   val predicate = Bool()
-  val taskID = UInt(16.W)
+  val taskID = UInt(tlen.W)
   override def cloneType: this.type = new CustomDataBundle(gen).asInstanceOf[this.type]
 }
 
 object CustomDataBundle {
-  def apply[T <: Data](gen: T = UInt(32.W)): CustomDataBundle[T] = new CustomDataBundle(gen)
+  def apply[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters): CustomDataBundle[T] = new CustomDataBundle(gen)
 
-  def default[T <: Data](gen: T): CustomDataBundle[T] = {
+  def default[T <: Data](gen: T)(implicit p: Parameters): CustomDataBundle[T] = {
     val wire = new CustomDataBundle(gen)
     wire.data := 0.U.asTypeOf(gen)
     wire.predicate := false.B

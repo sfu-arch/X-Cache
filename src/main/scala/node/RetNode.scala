@@ -140,7 +140,7 @@ class RetNode(retTypes: Seq[Int], ID: Int)
   val state = RegInit(s_IDLE)
 
   // Enable signals
-  val enable_R = RegInit(ControlBundle.default)
+//  val enable_R = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
   // Data Inputs
@@ -156,7 +156,8 @@ class RetNode(retTypes: Seq[Int], ID: Int)
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-    enable_R := io.enable.bits
+//    enable_R := io.enable.bits
+    output_R.enable := io.enable.bits
   }
 
   // Latching input data

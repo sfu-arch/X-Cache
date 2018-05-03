@@ -320,7 +320,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
                 (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
                 (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
 */
-  val MemCtrl = Module(new UnifiedController(ID=0,Size=1024,NReads=2,NWrites=2)
+  val MemCtrl = Module(new UnifiedController(ID=0,Size=64*1024,NReads=2,NWrites=2)
                 (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
                 (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
                 (RWArbiter=new ReadWriteArbiter()))
@@ -348,7 +348,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 0))
 
   val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1))
 
@@ -362,9 +362,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   val bb_det_cont3 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 6))
 
-  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 7))
-
-//  val bb_return = Module(new OOBasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 8))
+  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 7))
 
   val bb_return = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 8))
 
@@ -392,6 +390,8 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   //  store i32* %r, i32** %rv, align 4, !UID !8, !ScalaLabel !9
+  val stackSize = 16 // bytes
+  val gep3   = Module (new GepNodeStack(NumOuts = 1, ID = 3)(numByte1 = stackSize))
   val store3 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=3,RouteID=0))
 
 
@@ -423,8 +423,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   // [BasicBlock]  det.achd:
 
   //  call void @fib(i32 %sub, i32* %x), !UID !25, !ScalaLabel !26
-  val stackSize = 16 // bytes
-  val gep10 = Module (new GepNodeStack(NumOuts = 1, ID = 10)(numByte1 = 16))
+  val gep10 = Module (new GepNodeStack(NumOuts = 1, ID = 10)(numByte1 = stackSize))
 
   val call10_out = Module(new CallOutNode(ID=10,NumSuccOps=0,argTypes=List(32,32)))
   val call10_in = Module(new CallInNode(ID=499, argTypes=List(32)))
@@ -446,7 +445,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   // [BasicBlock]  det.achd2:
 
   //  call void @fib(i32 %sub1, i32* %y), !UID !35, !ScalaLabel !36
-  val gep14 = Module (new GepNodeStack(NumOuts = 1, ID = 14)(numByte1 = 16))
+  val gep14 = Module (new GepNodeStack(NumOuts = 1, ID = 14)(numByte1 = stackSize))
   val call14_out = Module(new CallOutNode(ID=14,NumSuccOps=0,argTypes=List(32,32)))
   val call14_in = Module(new CallInNode(ID=499, argTypes=List(32)))
 
@@ -463,9 +462,9 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   // [BasicBlock]  sync.continue:
 
   //  call void @fib_continue(i32* %x, i32* %y, i32** %rv), !UID !43, !ScalaLabel !44
-  val gep17a = Module (new GepNodeStack(NumOuts = 1, ID = 17)(numByte1 = 16))
-  val gep17b = Module (new GepNodeStack(NumOuts = 1, ID = 17)(numByte1 = 16))
-  val gep17c = Module (new GepNodeStack(NumOuts = 1, ID = 17)(numByte1 = 16))
+  val gep17a = Module (new GepNodeStack(NumOuts = 1, ID = 17)(numByte1 = stackSize))
+  val gep17b = Module (new GepNodeStack(NumOuts = 1, ID = 17)(numByte1 = stackSize))
+  val gep17c = Module (new GepNodeStack(NumOuts = 1, ID = 17)(numByte1 = stackSize))
 
   val call17_out = Module(new CallOutNode(ID=17,NumSuccOps=0,argTypes=List(32,32,32)))
   val call17_in = Module(new CallInNode(ID=499, argTypes=List(32)))
@@ -568,6 +567,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   alloca2.io.enable <> bb_entry.io.Out(param.bb_entry_activate("alloca2"))
 */
   store3.io.enable <> bb_entry.io.Out(0)
+  gep3.io.enable <> bb_entry.io.Out(3)
 
   icmp4.io.enable <> bb_entry.io.Out(1)
 
@@ -615,9 +615,10 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   call17_out.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("call17"))
   call17_in.io.enable.enq(ControlBundle.active())
-  gep17a.io.enable <> bb_sync_continue.io.Out(2)
-  gep17b.io.enable <> bb_sync_continue.io.Out(3)
-  gep17c.io.enable <> bb_sync_continue.io.Out(4)
+
+  gep17a.io.enable <> bb_sync_continue.io.Out(1)
+  gep17b.io.enable <> bb_sync_continue.io.Out(2)
+  gep17c.io.enable <> bb_sync_continue.io.Out(3)
 
 //  br18.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("br18"))
 //  br18.io.PredOp(0) <> call17_in.io.Out.enable
@@ -625,7 +626,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   ret19.io.enable <> bb_return.io.Out(param.bb_return_activate("ret19"))
 
-  ret20.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("br18"))
+  ret20.io.enable <> call17_in.io.Out.enable //bb_sync_continue.io.Out(param.bb_sync_continue_activate("br18"))
 
   /* ================================================================== *
    *                   CONNECTING LOOPHEADERS                           *
@@ -708,7 +709,8 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   // Wiring Store instruction to the parent instruction
-  store3.io.GepAddr.enq(DataBundle.active(8.U))// <> alloca2.io.Out(param.store3_in("alloca2"))
+  gep3.io.baseAddress.enq(DataBundle.active(8.U))
+  store3.io.GepAddr <> gep3.io.Out(0) // <> alloca2.io.Out(param.store3_in("alloca2"))
   store3.io.memResp  <> MemCtrl.io.WriteOut(0)
   MemCtrl.io.WriteIn(0) <> store3.io.memReq
   store3.io.Out(0).ready := true.B
