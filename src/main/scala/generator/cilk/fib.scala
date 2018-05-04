@@ -588,7 +588,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   call10_out.io.enable <> bb_det_achd.io.Out(param.bb_det_achd_activate("call10"))
   gep10.io.enable <> bb_det_achd.io.Out(1)
   call10_in.io.enable.enq(ControlBundle.active())
-  reattach11.io.enable.enq(ControlBundle.active())
+  reattach11.io.enable <> call10_in.io.Out.enable//.enq(ControlBundle.active())
 
 
   sub12.io.enable <> bb_det_cont.io.Out(param.bb_det_cont_activate("sub12"))
@@ -602,7 +602,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   call14_in.io.enable.enq(ControlBundle.active())
 
   reattach15.io.enable.enq(ControlBundle.active())
-
+  reattach15.io.enable <> call14_in.io.Out.enable
 
 
   sync16.io.enable <> bb_det_cont3.io.Out(param.bb_det_cont3_activate("sync16"))
@@ -752,7 +752,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   // Wiring Call to I/O
   io.call10_out <> call10_out.io.Out(0)
   call10_in.io.In <> io.call10_in
-  call10_in.io.Out.enable.ready := true.B // Manual fix
+  //call10_in.io.Out.enable.ready := true.B // Manual fix
   reattach11.io.predicateIn(0) <> call10_in.io.Out.data("field0") // manual
 
 
@@ -776,7 +776,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   // Wiring Call to I/O
   io.call14_out <> call14_out.io.Out(0)
   call14_in.io.In <> io.call14_in
-  call14_in.io.Out.enable.ready := true.B // Manual fix
+//  call14_in.io.Out.enable.ready := true.B // Manual fix
   reattach15.io.predicateIn(0) <> call14_in.io.Out.data("field0") // manual
 
   // Wiring instructions

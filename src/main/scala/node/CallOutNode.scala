@@ -53,6 +53,7 @@ class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0, NoReturn: 
   io.Out(0).bits.data := data_R
   io.Out(0).bits.enable := enable_R
 
+  val error = WireInit(false.B)
   switch(state) {
     is(s_idle) {
       when(enable_valid_R && data_valid_R.asUInt.andR) {
@@ -61,6 +62,12 @@ class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0, NoReturn: 
         // Otherwise don't fire outputs if control = false and assume CallInNode will fake the response
         when (NoReturn || enable_R.control) {
           ValidOut()
+          for(i <- argTypes.indices) {
+            when(data_R(s"field$i").taskID =/= enable_R.taskID) {
+              error := true.B
+              printfError("#####%d", error)
+            }
+          }
         }
         state := s_Done
       }

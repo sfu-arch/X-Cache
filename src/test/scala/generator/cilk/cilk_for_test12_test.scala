@@ -57,9 +57,9 @@ class cilk_for_test12Main(implicit p: Parameters) extends cilk_for_test12MainIO 
   val children1 = 1
   val children2 = 1
   val children3 = 8
-  val TaskControllerModule1 = Module(new TaskController(List(32,32,32), List(32), 1, children1,depth=2))
-  val TaskControllerModule2 = Module(new TaskController(List(32,32), List(32), children1, children2,depth=2))
-  val TaskControllerModule3 = Module(new TaskController(List(32,32), List(32), children2, children3,depth=2))
+  val TaskControllerModule1 = Module(new TaskController(List(32,32,32), List(32), 1, children1))
+  val TaskControllerModule2 = Module(new TaskController(List(32,32), List(32), children1, children2))
+  val TaskControllerModule3 = Module(new TaskController(List(32,32), List(32), children2, children3))
   val cilk_for_test12 = Module(new cilk_for_test12DF())
 
   val cilk_for_test12_detach1 = for (i <- 0 until children1) yield {

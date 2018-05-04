@@ -384,13 +384,16 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   val (initCount, initDone) = Counter(true.B, 1 << tlen)
 
   when(initDone) {
+    when (initCounters) {
+      printfInfo("[LOG] " + "[" + module_name + "] " + node_name + ":RAM counters initialized @ %d\n", cycleCount)
+    }
     initCounters := false.B
   }
-/*
+
   when (initCounters) {
     syncCount.write(initCount,0.U)
   }
-*/
+
   /*============================================*
    *            Update the Counts               *
    *============================================*/
@@ -424,6 +427,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
 //      syncCount(updateArb_R.taskID) := syncCount(updateArb_R.taskID) + 1.U
       updateArb.io.out.ready := true.B
     }.otherwise {
+      assert(syncCount.read(updateArb_R.taskID) =/= 0.U)
         when(syncCount.read(updateArb_R.taskID) === 1.U && doneQueue.io.enq.ready) {
 //        when(syncCount(updateArb_R.taskID) === 1.U && doneQueue.io.enq.ready) {
           syncCount.write(updateArb_R.taskID, syncCount.read(updateArb_R.taskID) - 1.U)
@@ -447,23 +451,14 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   /*============================================*
    *            Connect outputs                 *
    *============================================*/
-  val outArb = Module(new Arbiter(new ControlBundle, NumDec))
-
-  outArb.io.in(0).bits := enable_R
-  outArb.io.in(0).valid := enable_valid_R && !enable_R.control
-  when(outArb.io.in(0).ready || enable_R.control) {
-    enable_valid_R := false.B
-  }
-  outArb.io.in(1) <> doneQueue.io.deq
 
   val outPorts = Module(new ExpandNode(NumOuts=NumOuts, ID=0)(new ControlBundle))
 
-  outPorts.io.InData <> outArb.io.out
+  outPorts.io.InData <> doneQueue.io.deq//outArb.io.out
   outPorts.io.enable.enq(ControlBundle.active())
 
- // outPorts.io.InData <> doneQueue.io.deq
   io.Out <> outPorts.io.Out
 
-//  io.enable.ready := true.B
+  io.enable.ready := true.B
 
 }

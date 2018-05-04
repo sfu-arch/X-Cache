@@ -23,7 +23,7 @@ class TaskControllerIO(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent
   val childOut  = Vec(numChild, Decoupled(new Call(argTypes)))            // Requests to sub-block
 }
 
-class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int, depth: Int=16)
+class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int)
                     (implicit val p: Parameters) extends Module with CoreParams {
 
   // Instantiate TaskController I/O signals
@@ -37,7 +37,11 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   val freeList = Module(new Queue(UInt(tlen.W), 1 << tlen))
   val exeList = Module(new Queue(new Call(argTypes), 1 << tlen))
   val parentTable = Mem(1 << tlen, new ParentBundle())
-//  val parentTable =RegInit(VecInit(Seq.fill(1<<tlen)(0.U.asTypeOf(new ParentBundle()))))
+  val numActive = RegInit(0.U(16.W))
+  val activeID = RegInit(VecInit(Seq.fill(1<<tlen)(false.B)))
+  val error_flag = RegInit(false.B)
+
+  //  val parentTable =RegInit(VecInit(Seq.fill(1<<tlen)(0.U.asTypeOf(new ParentBundle()))))
 
   for (i <- 0 until numParent) {
     taskArb.io.in(i) <> io.parentIn(i)
@@ -96,6 +100,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     io.childOut(i).valid := false.B
     readyBits(i) := io.childOut(i).ready
   }
+
   val sel = PriorityEncoder(readyBits)
   io.childOut(sel).valid := exeList.io.deq.valid
   exeList.io.deq.ready := io.childOut(sel).ready
@@ -120,7 +125,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   val taskEntryReg = RegInit(0.U.asTypeOf(new ParentBundle()))
   when (finalReturn.ready) {
     taskEntryReg := parentTable.read(ChildArb.io.out.bits.enable.taskID)
-//    taskEntryReg := parentTable(ChildArb.io.out.bits.enable.taskID)
+    //    taskEntryReg := parentTable(ChildArb.io.out.bits.enable.taskID)
   }
   // Restore the original TID and PID in the return value.
   finalReturn.valid := retReg.valid
@@ -128,6 +133,32 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   for (i <- retTypes.indices) {
     finalReturn.bits.data(s"field$i").taskID := taskEntryReg.did
     finalReturn.bits.enable.taskID := taskEntryReg.did
+  }
+
+  error_flag := false.B
+  when(exeList.io.deq.fire() && !ChildArb.io.out.fire()) {
+    numActive := numActive + 1.U
+  }.elsewhen(!exeList.io.deq.fire() && ChildArb.io.out.fire()) {
+    when(numActive === 0.U) {
+      error_flag := true.B
+      printf("*** Error: numActive under-run %d\n", error_flag)
+    }
+    numActive := numActive - 1.U
+  }
+
+  when(exeList.io.deq.fire()) {
+    when(activeID(exeList.io.deq.bits.enable.taskID) === true.B) {
+      error_flag := true.B
+      printf("*** ID re-used active ID error %d\n", error_flag)
+    }
+    activeID(exeList.io.deq.bits.enable.taskID) := true.B
+  }
+  when(ChildArb.io.out.fire()) {
+    when(activeID(ChildArb.io.out.bits.enable.taskID) === false.B) {
+      error_flag := true.B
+      printf("*** Error: Duplicate ID returned %d\n", error_flag)
+    }
+    activeID(ChildArb.io.out.bits.enable.taskID) := false.B
   }
 
   /***************************************************************************

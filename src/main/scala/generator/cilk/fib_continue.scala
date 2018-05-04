@@ -116,13 +116,6 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
    *                   PRINTING MEMORY SYSTEM                           *
    * ================================================================== */
 
-/*
-  val StackPointer = Module(new Stack(NumOps = 1))
-
-  val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=3,NWrites=1)
-                (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-                (RControl=new ReadMemoryController(NumOps=3,BaseSize=2,NumEntries=2)))
-*/
   val MemCtrl = Module(new UnifiedController(ID=0,Size=64*1024,NReads=3,NWrites=1)
                 (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
                 (RControl=new ReadMemoryController(NumOps=3,BaseSize=2,NumEntries=2))
