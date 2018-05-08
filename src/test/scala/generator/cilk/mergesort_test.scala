@@ -20,7 +20,7 @@ import accel._
 import node._
 
 
-class fibMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+class mergesortMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))
@@ -31,61 +31,96 @@ class fibMainIO(implicit val p: Parameters)  extends Module with CoreParams with
   })
 }
 
-class fibMain(implicit p: Parameters) extends fibMainIO {
+class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
 
+  val cache = Module(new Cache)            // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+
+  // Store a copy of all data written to the cache.  This is done since the cache isn't
+  // 'write through' to the memory model and we have no easy way of reading the
+  // cache contents from the testbench.
+  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
+    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
+  }
+  io.dout := memCopy.read((io.addr>>2).asUInt())
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
+  memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := io.addr
+  memModel.io.init.bits.data := io.din
+  memModel.io.init.valid := io.write
+  cache.io.cpu.abort := false.B
   io.dout := 0.U
 
-//  val fib = Module(new fibDF())
-//  val fib_continue = Module(new fib_continueDF())
-  val NumFibs = 5
-  val fib = for (i <- 0 until NumFibs) yield {
-    val fibby = Module(new fibDF())
-    fibby
+  val NumMergesorts = 1
+  val mergesort = for (i <- 0 until NumMergesorts) yield {
+    val mergesortby = Module(new mergesortDF())
+    mergesortby
   }
-  val fib_continue = for (i <- 0 until NumFibs) yield {
-    val fibby_continue = Module(new fib_continueDF())
-    fibby_continue
+  val mergesort_merge = for (i <- 0 until NumMergesorts) yield {
+    val mergesortby_continue = Module(new mergesort_mergeDF())
+    mergesortby_continue
   }
-  val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumFibs), NumFibs))
-  val StackArb = Module(new CacheArbiter((2*NumFibs)))
+  val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumMergesorts), NumMergesorts))
+  val StackArb = Module(new CacheArbiter((2*NumMergesorts)))
   val Stack = Module(new StackMem((1 << tlen)*4))
 
 
   // Merge the memory interfaces and connect to the stack memory
-  for (i <- 0 until NumFibs) {
+  for (i <- 0 until NumMergesorts) {
     // Connect to memory interface
-    StackArb.io.cpu.MemReq(2*i) <> fib(i).io.MemReq
-    fib(i).io.MemResp <> StackArb.io.cpu.MemResp(2*i)
-    StackArb.io.cpu.MemReq(2*i+1) <> fib_continue(i).io.MemReq
-    fib_continue(i).io.MemResp <> StackArb.io.cpu.MemResp(2*i+1)
+    StackArb.io.cpu.MemReq(2*i) <> mergesort(i).io.StackReq
+    mergesort(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i)
+    StackArb.io.cpu.MemReq(2*i+1) <> mergesort_merge(i).io.StackReq
+    mergesort_merge(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i+1)
 
-    // Connect fib to continuation
-    fib_continue(i).io.in <> fib(i).io.call17_out
-    fib(i).io.call17_in <> fib_continue(i).io.out
+    // Connect mergesort to continuation
+    mergesort_merge(i).io.in <> mergesort(i).io.call24_out
+    mergesort(i).io.call24_in <> mergesort_merge(i).io.out
 
     // Connect to task controller
-    TC.io.parentIn(2*i) <> fib(i).io.call10_out
-    fib(i).io.call10_in <> TC.io.parentOut(2*i)
-    TC.io.parentIn(2*i+1) <> fib(i).io.call14_out
-    fib(i).io.call14_in <> TC.io.parentOut(2*i+1)
-    fib(i).io.in <> TC.io.childOut(i)
-    TC.io.childIn(i) <> fib(i).io.out
+    TC.io.parentIn(2*i) <> mergesort(i).io.call18_out
+    mergesort(i).io.call18_in <> TC.io.parentOut(2*i)
+    TC.io.parentIn(2*i+1) <> mergesort(i).io.call21_out
+    mergesort(i).io.call21_in <> TC.io.parentOut(2*i+1)
+    mergesort(i).io.in <> TC.io.childOut(i)
+    TC.io.childIn(i) <> mergesort(i).io.out
   }
 
   Stack.io.req <> StackArb.io.cache.MemReq
   StackArb.io.cache.MemResp <> Stack.io.resp
-  TC.io.parentIn(2*NumFibs) <> io.in
-  io.out <> TC.io.parentOut(2*NumFibs)
+  TC.io.parentIn(2*NumMergesorts) <> io.in
+  io.out <> TC.io.parentOut(2*NumMergesorts)
 
 }
 
-class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
-  def fib( n : Int) : Int = n match {
-    case 0 | 1 => n
-    case _ => fib( n-1 ) + fib( n-2 )
-  }
+class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
 
-  val n = 13
+    // recursive merge of 2 sorted lists
+    def merge(left: List[Int], right: List[Int]): List[Int] =
+      (left, right) match {
+        case(left, Nil) => left
+        case(Nil, right) => right
+        case(leftHead :: leftTail, rightHead :: rightTail) =>
+          if (leftHead < rightHead) leftHead::merge(leftTail, right)
+          else rightHead :: merge(left, rightTail)
+      }
+
+    def mergeSort(list: List[Int]): List[Int] = {
+      val n = list.length / 2
+      if (n == 0) list // i.e. if list is empty or single value, no sorting needed
+      else {
+        val (left, right) = list.splitAt(n)
+        merge(mergeSort(left), mergeSort(right))
+      }
+    }
+
+  val InputData = List(99, 41, 18, 66, 88, 27, 74, 25, 35, 68,
+    20, 64, 39, 62, 62, 27, 76, 97, 60)
+  val OutputData = mergeSort(InputData)
+
   val taskID = 0
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
@@ -97,14 +132,24 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").taskID, taskID)
   poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field2").data, 0.U)
+  poke(c.io.in.bits.data("field2").taskID, taskID)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
+  poke(c.io.in.bits.data("field3").data, 0.U)
+  poke(c.io.in.bits.data("field3").taskID, taskID)
+  poke(c.io.in.bits.data("field3").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, n)    // n
+  poke(c.io.in.bits.data("field0").data, 5)    // n
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 1000)   // &r
+  poke(c.io.in.bits.data("field1").data, 1000) //
   poke(c.io.in.bits.data("field1").predicate, true.B)
+  poke(c.io.in.bits.data("field2").data, 5)    // n
+  poke(c.io.in.bits.data("field2").predicate, true.B)
+  poke(c.io.in.bits.data("field3").data, 1000) //
+  poke(c.io.in.bits.data("field3").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
@@ -113,6 +158,10 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field2").data, 0)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
+  poke(c.io.in.bits.data("field3").data, 0.U)
+  poke(c.io.in.bits.data("field3").predicate, false.B)
 
   step(1)
 
@@ -128,13 +177,13 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
       peek(c.io.out.bits.data("field0").predicate) == 1
     ) {
       result = true
-      val expected = fib(n)
+      val expected = 99
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != expected) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for $expected" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"*** Correct result. Got $data for n=$n. Run time: $time cycles." + Console.RESET)
+        println(Console.BLUE + s"*** Correct result. Run time: $time cycles." + Console.RESET)
       }
     }
   }
@@ -145,9 +194,9 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
   }
 }
 
-class fibTester1 extends FlatSpec with Matchers {
+class mergesortTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that fib works correctly." in {
+  it should "Check that mergesort works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>
@@ -159,8 +208,8 @@ class fibTester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir",
         "-tts", "0001"),
-      () => new fibMain()) {
-      c => new fibTest01(c)
+      () => new mergesortMain()) {
+      c => new mergesortTest01(c)
     } should be(true)
   }
 }
