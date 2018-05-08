@@ -567,19 +567,21 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=11,NWrites=2)
                 (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
                 (RControl=new ReadMemoryController(NumOps=11,BaseSize=2,NumEntries=2)))
-*/
-  val StackCtrl = Module(new UnifiedController(ID=0,Size=64*1024,NReads=7,NWrites=0)
-                (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-                (RControl=new ReadMemoryController(NumOps=11,BaseSize=2,NumEntries=2))
+
+  val StackCtrl = Module(new UnifiedController(ID=0,Size=64*1024,NReads=7,NWrites=1)
+                (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
+                (RControl=new ReadMemoryController(NumOps=7,BaseSize=2,NumEntries=2))
                 (RWArbiter=new ReadWriteArbiter()))
+*/
+  val StackCtrl = Module(new ReadMemoryController(NumOps=7,BaseSize=2,NumEntries=2))
 
   io.StackReq <> StackCtrl.io.MemReq
   StackCtrl.io.MemResp <> io.StackResp
 
-  val GlblCtrl = Module(new UnifiedController(ID=0,Size=64*1024,NReads=4,NWrites=2)
-  (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-  (RControl=new ReadMemoryController(NumOps=11,BaseSize=2,NumEntries=2))
-  (RWArbiter=new ReadWriteArbiter()))
+  val GlblCtrl = Module(new UnifiedController(ID=1,Size=64*1024,NReads=4,NWrites=2)
+    (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
+    (RControl=new ReadMemoryController(NumOps=4,BaseSize=2,NumEntries=2))
+    (RWArbiter=new ReadWriteArbiter()))
 
   io.GlblReq <> GlblCtrl.io.MemReq
   GlblCtrl.io.MemResp <> io.GlblResp

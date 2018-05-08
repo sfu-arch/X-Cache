@@ -640,27 +640,27 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
 
 //  alloca0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("alloca0"))
 
-  getelementptr1.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr1"))
+  getelementptr1.io.enable <> bb_entry.io.Out(0)
 
-  store2.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store2"))
+  store2.io.enable <> bb_entry.io.Out(1)
 
-  getelementptr3.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr3"))
+  getelementptr3.io.enable <> bb_entry.io.Out(2)
 
-  store4.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store4"))
+  store4.io.enable <> bb_entry.io.Out(3)
 
-  getelementptr5.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr5"))
+  getelementptr5.io.enable <> bb_entry.io.Out(4)
 
-  store6.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store6"))
+  store6.io.enable <> bb_entry.io.Out(5)
 
-  getelementptr7.io.enable <> bb_entry.io.Out(param.bb_entry_activate("getelementptr7"))
+  getelementptr7.io.enable <> bb_entry.io.Out(6)
 
-  store8.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store8"))
+  store8.io.enable <> bb_entry.io.Out(7)
 
-  sub9.io.enable <> bb_entry.io.Out(param.bb_entry_activate("sub9"))
+  sub9.io.enable <> bb_entry.io.Out(8)
 
-  icmp10.io.enable <> bb_entry.io.Out(param.bb_entry_activate("icmp10"))
+  icmp10.io.enable <> bb_entry.io.Out(9)
 
-  br11.io.enable <> bb_entry.io.Out(param.bb_entry_activate("br11"))
+  br11.io.enable <> bb_entry.io.Out(10)
 
 
 

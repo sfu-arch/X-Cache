@@ -64,17 +64,22 @@ class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
     mergesortby_continue
   }
   val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumMergesorts), NumMergesorts))
-  val StackArb = Module(new CacheArbiter((2*NumMergesorts)))
+  val CacheArb = Module(new CacheArbiter(NumMergesorts))
+  val StackArb = Module(new CacheArbiter(2*NumMergesorts))
   val Stack = Module(new StackMem((1 << tlen)*4))
 
 
   // Merge the memory interfaces and connect to the stack memory
   for (i <- 0 until NumMergesorts) {
-    // Connect to memory interface
+    // Connect to stack memory interface
     StackArb.io.cpu.MemReq(2*i) <> mergesort(i).io.StackReq
     mergesort(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i)
     StackArb.io.cpu.MemReq(2*i+1) <> mergesort_merge(i).io.StackReq
     mergesort_merge(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i+1)
+
+    // Connect to cache memory
+    CacheArb.io.cpu.MemReq(i) <> mergesort_merge(i).io.GlblReq
+    mergesort_merge(i).io.GlblResp <> CacheArb.io.cpu.MemResp(i)
 
     // Connect mergesort to continuation
     mergesort_merge(i).io.in <> mergesort(i).io.call24_out
@@ -88,6 +93,9 @@ class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
     mergesort(i).io.in <> TC.io.childOut(i)
     TC.io.childIn(i) <> mergesort(i).io.out
   }
+
+  cache.io.cpu.req <> CacheArb.io.cache.MemReq
+  CacheArb.io.cache.MemResp <> cache.io.cpu.resp
 
   Stack.io.req <> StackArb.io.cache.MemReq
   StackArb.io.cache.MemResp <> Stack.io.resp
@@ -117,9 +125,24 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
       }
     }
 
-  val InputData = List(99, 41, 18, 66, 88, 27, 74, 25, 35, 68,
+  val inDataVec = List(99, 41, 18, 66, 88, 27, 74, 25, 35, 68,
     20, 64, 39, 62, 62, 27, 76, 97, 60)
-  val OutputData = mergeSort(InputData)
+  val outDataVec = mergeSort(inDataVec)
+  val addrVec = List.range(0, 4*inDataVec.length*2, 4)
+
+  poke(c.io.addr, 0.U)
+  poke(c.io.din, 0.U)
+  poke(c.io.write, false.B)
+
+  // Write initial contents to the memory model.
+  for(i <- 0 until addrVec.length) {
+    poke(c.io.addr, addrVec(i))
+    poke(c.io.din, inDataVec(i))
+    poke(c.io.write, true.B)
+    step(1)
+  }
+  poke(c.io.write, false.B)
+  step(1)
 
   val taskID = 0
   // Initializing the signals
@@ -142,13 +165,13 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 5)    // n
+  poke(c.io.in.bits.data("field0").data, 4*inDataVec.length)  // B[]
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 1000) //
+  poke(c.io.in.bits.data("field1").data, 0)                   // iBegin
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 5)    // n
+  poke(c.io.in.bits.data("field2").data, inDataVec.length)    // iEnd
   poke(c.io.in.bits.data("field2").predicate, true.B)
-  poke(c.io.in.bits.data("field3").data, 1000) //
+  poke(c.io.in.bits.data("field3").data, 0)                   // A[]
   poke(c.io.in.bits.data("field3").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -186,6 +209,22 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
         println(Console.BLUE + s"*** Correct result. Run time: $time cycles." + Console.RESET)
       }
     }
+  }
+
+  //  Peek into the CopyMem to see if the expected data is written back to the Cache
+  var valid_data = true
+  for(i <- 0 until addrVec.length) {
+    poke(c.io.addr, addrVec(i))
+    step(1)
+    val data = peek(c.io.dout)
+    if (data != outDataVec(i).toInt) {
+      println(Console.RED + s"*** Incorrect data received addr=${addrVec(i)}. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      fail
+      valid_data = false
+    }
+  }
+  if (valid_data) {
+    println(Console.BLUE + "*** Correct data written back." + Console.RESET)
   }
 
   if(!result) {
