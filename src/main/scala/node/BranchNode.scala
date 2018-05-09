@@ -51,7 +51,8 @@ class CBranchNode(ID: Int)
   //  val data_out_w = WireInit(VecInit(Seq.fill(2)(false.B)))
   val data_out_R = RegInit(VecInit(Seq.fill(2)(false.B)))
 
-  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+//  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
   /*==========================================*
@@ -93,31 +94,36 @@ class CBranchNode(ID: Int)
 
   switch(state) {
     is(s_IDLE) {
-      when(IsEnableValid() && !IsEnable()) {
+      when(IsEnableValid() && cmp_valid_R) {
         state := s_COMPUTE
         ValidOut()
-      }.elsewhen(io.CmpIO.fire()) {
-        state := s_LATCH
-      }
-    }
-    is(s_LATCH) {
-      state := s_COMPUTE
-      when(IsEnableValid()) {
         when(IsEnable()) {
           data_out_R(0) := cmp_R.data.asUInt.orR
           data_out_R(1) := ~cmp_R.data.asUInt.orR
+        }.otherwise {
+          data_out_R := VecInit(Seq.fill(2)(false.B))
+        }
+      }
+    }
+/*    is(s_LATCH) {
+      state := s_COMPUTE
+      when(IsEnableValid()) {
+        when(IsEnable()) {
+        }.otherwise{
+          data_out_R := VecInit(Seq.fill(2)(false.B))
         }
         ValidOut()
       }
     }
-    is(s_COMPUTE) {
+*/
+      is(s_COMPUTE) {
       when(IsOutReady()) {
         // Restarting
-        cmp_R := DataBundle.default
+        //cmp_R := DataBundle.default
         cmp_valid_R := false.B
 
         // Reset output
-        data_out_R := VecInit(Seq.fill(2)(false.B))
+        //data_out_R := VecInit(Seq.fill(2)(false.B))
         //Reset state
         state := s_IDLE
 
