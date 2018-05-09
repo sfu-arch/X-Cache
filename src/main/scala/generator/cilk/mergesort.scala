@@ -410,15 +410,15 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
 
   val bb_if_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 2))
 
-  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
+  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 3))
 
   val bb_det_cont = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 4))
 
-  val bb_det_achd6 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
+  val bb_det_achd6 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
   val bb_det_cont7 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 6))
 
-  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 7))
+  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
 
   val bb_return = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 8))
 
@@ -539,7 +539,7 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   // [BasicBlock]  det.cont7:
 
   //  sync label %sync.continue, !UID !54, !BB_UID !55, !ScalaLabel !56
-  val sync23 = Module(new SyncTC(ID = 23, NumOuts = 1, NumInc = 1, NumDec = 1))
+  val sync23 = Module(new SyncTC2(ID = 23, NumOuts = 1, NumInc = 2, NumDec = 2))
 
   // [BasicBlock]  sync.continue:
 
@@ -683,9 +683,6 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   call18_out.io.enable <> bb_det_achd.io.Out(param.bb_det_achd_activate("call18"))
   call18_in.io.enable.enq(ControlBundle.active())
 
-  reattach19.io.enable.enq(ControlBundle.active())
-
-
 
   detach20.io.enable <> bb_det_cont.io.Out(param.bb_det_cont_activate("detach20"))
 
@@ -694,25 +691,27 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   call21_out.io.enable <> bb_det_achd6.io.Out(param.bb_det_achd6_activate("call21"))
   call21_in.io.enable.enq(ControlBundle.active())
 
-  reattach22.io.enable.enq(ControlBundle.active())
-
 
 
   sync23.io.enable <> bb_det_cont7.io.Out(param.bb_det_cont7_activate("sync23"))
 
+  sync23.io.incIn(0) <> detach17.io.Out(2)
+  sync23.io.incIn(1) <> detach20.io.Out(2)
+  sync23.io.decIn(0) <> reattach19.io.Out(0)
+  sync23.io.decIn(1) <> reattach22.io.Out(0)
 
-  gep24.io.enable <> bb_sync_continue.io.Out(1)
-  call24_out.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("call24"))
+
+  gep24.io.enable <> bb_sync_continue.io.Out(0)
+  call24_out.io.enable <> bb_sync_continue.io.Out(1)
   call24_in.io.enable.enq(ControlBundle.active())
 
-//  br25.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("br25"))
 
 
 
   ret26.io.enable <> bb_return.io.Out(param.bb_return_activate("ret26"))
 
 
-  ret27.io.enable <> call24_in.io.Out.enable //bb_sync_continue.io.Out(param.bb_sync_continue_activate("br18"))
+  ret27.io.enable <> call24_in.io.Out.enable
 
 
 
@@ -946,7 +945,8 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   // Wiring Call to I/O
   io.call18_out <> call18_out.io.Out(0)
   call18_in.io.In <> io.call18_in
-  call18_in.io.Out.enable.ready := true.B // Manual fix
+  reattach19.io.enable <> call18_in.io.Out.enable// call18_in.io.enable.enq(ControlBundle.active())
+  reattach19.io.predicateIn(0) <> call18_in.io.Out.data("field0") // manual
 
   // Wiring Call to the function argument
   call18_out.io.In.data("field0") <> InputSplitter.io.Out.data("field3")(1)
@@ -965,7 +965,9 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   // Wiring Call to I/O
   io.call21_out <> call21_out.io.Out(0)
   call21_in.io.In <> io.call21_in
-  call21_in.io.Out.enable.ready := true.B // Manual fix
+  //call21_in.io.Out.enable.ready := true.B // Manual fix
+  reattach22.io.enable <> call21_in.io.Out.enable// call21_in.io.enable.enq(ControlBundle.active())
+  reattach22.io.predicateIn(0) <> call21_in.io.Out.data("field0") // manual
 
   // Wiring Call to the function argument
   call21_out.io.In.data("field0") <> InputSplitter.io.Out.data("field3")(2)
@@ -984,7 +986,7 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   // Wiring Call to I/O
   io.call24_out <> call24_out.io.Out(0)
   call24_in.io.In <> io.call24_in
-  call24_in.io.Out.enable.ready := true.B // Manual fix
+//  call24_in.io.Out.enable.ready := true.B // Manual fix
 
   // Wiring instructions
   gep24.io.baseAddress.enq(DataBundle.active(0.U))
@@ -998,6 +1000,8 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   ret26.io.In.data("field0").bits.data := 1.U
   ret26.io.In.data("field0").bits.predicate := true.B
   ret26.io.In.data("field0").valid := true.B
+
+  ret27.io.In.data("field0") <> call24_in.io.Out.data("field0")
 
   val retArb = Module(new Arbiter(new Call(List(32)),2))
   // Drop returns from the non-predicated branch

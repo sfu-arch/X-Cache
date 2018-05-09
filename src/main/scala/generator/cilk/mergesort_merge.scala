@@ -616,9 +616,9 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
   val bb_lor_lhs_false = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 4))
 
-  val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 6, BID = 5))
+  val bb_if_then = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 0, BID = 5))
 
-  val bb_if_else = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 6, BID = 6))
+  val bb_if_else = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 0, BID = 6))
 
   val bb_if_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 7))
 
@@ -745,7 +745,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %7 = load i32, i32* %arrayidx, align 4, !UID !56, !ScalaLabel !57
-  val load25 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=25,RouteID=7))
+  val load25 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=25,RouteID=0))
 
 
   //  %arrayidx10 = getelementptr inbounds i32, i32* %0, i32 %j.0, !UID !58, !ScalaLabel !59
@@ -753,7 +753,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %8 = load i32, i32* %arrayidx10, align 4, !UID !60, !ScalaLabel !61
-  val load27 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=27,RouteID=8))
+  val load27 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=27,RouteID=1))
 
 
   //  %cmp11 = icmp ule i32 %7, %8, !UID !62, !ScalaLabel !63
@@ -770,7 +770,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %9 = load i32, i32* %arrayidx12, align 4, !UID !69, !ScalaLabel !70
-  val load31 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=31,RouteID=9))
+  val load31 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=31,RouteID=2))
 
 
   //  %arrayidx13 = getelementptr inbounds i32, i32* %1, i32 %k.0, !UID !71, !ScalaLabel !72
@@ -795,7 +795,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %10 = load i32, i32* %arrayidx14, align 4, !UID !82, !ScalaLabel !83
-  val load37 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=37,RouteID=10))
+  val load37 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=37,RouteID=3))
 
 
   //  %arrayidx15 = getelementptr inbounds i32, i32* %1, i32 %k.0, !UID !84, !ScalaLabel !85
@@ -889,11 +889,11 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //Connecting br21 to bb_if_else
-  bb_if_else.io.predicateIn <> br21.io.Out(param.br21_brn_bb("bb_if_else"))
+  bb_if_else.io.predicateIn(0) <> br21.io.Out(param.br21_brn_bb("bb_if_else"))
 
 
   //Connecting br23 to bb_if_then
-  bb_if_then.io.predicateIn <> br23.io.Out(param.br23_brn_bb("bb_if_then"))
+  bb_if_then.io.predicateIn(0) <> br23.io.Out(param.br23_brn_bb("bb_if_then"))
 
 
   //Connecting br23 to bb_lor_lhs_false
@@ -901,11 +901,11 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //Connecting br29 to bb_if_then
-  bb_if_then.io.predicateIn <> br29.io.Out(param.br29_brn_bb("bb_if_then"))
+  bb_if_then.io.predicateIn(1) <> br29.io.Out(param.br29_brn_bb("bb_if_then"))
 
 
   //Connecting br29 to bb_if_else
-  bb_if_else.io.predicateIn <> br29.io.Out(param.br29_brn_bb("bb_if_else"))
+  bb_if_else.io.predicateIn(1) <> br29.io.Out(param.br29_brn_bb("bb_if_else"))
 
 
   //Connecting br35 to bb_if_end

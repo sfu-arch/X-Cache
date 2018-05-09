@@ -22,7 +22,7 @@ import node._
 
 class mergesortMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32))))
+    val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))
     val din  = Input(UInt(nastiXDataBits.W))
     val write = Input(Bool())
@@ -63,7 +63,7 @@ class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
     val mergesortby_continue = Module(new mergesort_mergeDF())
     mergesortby_continue
   }
-  val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumMergesorts), NumMergesorts))
+  val TC = Module(new TaskController(List(32,32,32,32), List(32), 1+(2*NumMergesorts), NumMergesorts))
   val CacheArb = Module(new CacheArbiter(NumMergesorts))
   val StackArb = Module(new CacheArbiter(2*NumMergesorts))
   val Stack = Module(new StackMem((1 << tlen)*4))
@@ -127,16 +127,17 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
 
   val inDataVec = List(99, 41, 18, 66, 88, 27, 74, 25, 35, 68,
     20, 64, 39, 62, 62, 27, 76, 97, 60)
+  val inAddrVec = List.range(0, 4*inDataVec.length, 4)
   val outDataVec = mergeSort(inDataVec)
-  val addrVec = List.range(0, 4*inDataVec.length*2, 4)
+  val outAddrVec = List.range(inDataVec.length*4, 2*inDataVec.length*4, 4)
 
   poke(c.io.addr, 0.U)
   poke(c.io.din, 0.U)
   poke(c.io.write, false.B)
 
   // Write initial contents to the memory model.
-  for(i <- 0 until addrVec.length) {
-    poke(c.io.addr, addrVec(i))
+  for(i <- 0 until inAddrVec.length) {
+    poke(c.io.addr, inAddrVec(i))
     poke(c.io.din, inDataVec(i))
     poke(c.io.write, true.B)
     step(1)
@@ -213,12 +214,12 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
 
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
-  for(i <- 0 until addrVec.length) {
-    poke(c.io.addr, addrVec(i))
+  for(i <- 0 until outDataVec.length) {
+    poke(c.io.addr, outAddrVec(i))
     step(1)
     val data = peek(c.io.dout)
     if (data != outDataVec(i).toInt) {
-      println(Console.RED + s"*** Incorrect data received addr=${addrVec(i)}. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      println(Console.RED + s"*** Incorrect data received addr=${outAddrVec(i)}. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
       valid_data = false
     }
