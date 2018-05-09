@@ -52,7 +52,6 @@ class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
   memModel.io.init.bits.data := io.din
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
-  io.dout := 0.U
 
   val NumMergesorts = 1
   val mergesort = for (i <- 0 until NumMergesorts) yield {
@@ -201,7 +200,7 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
       peek(c.io.out.bits.data("field0").predicate) == 1
     ) {
       result = true
-      val expected = 99
+      val expected = 1
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != expected) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for $expected" + Console.RESET)

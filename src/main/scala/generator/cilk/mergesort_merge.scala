@@ -641,11 +641,11 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   // [BasicBlock]  entry:
 
   //  %A1 = getelementptr inbounds %struct.continue_struct, %struct.continue_struct* %p, i32 0, i32 0, !UID !2, !ScalaLabel !3
-  val getelementptr0 = Module (new GepTwoNode(NumOuts = 1, ID = 0)(numByte1 = 20, numByte2 = 0))
+  val getelementptr0 = Module (new GepTwoNode(NumOuts = 1, ID = 0)(numByte1 = 20, numByte2 = 4))
 
 
   //  %0 = load i32*, i32** %A1, align 4, !UID !4, !ScalaLabel !5
-  val load1 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=4,ID=1,RouteID=0))
+  val load1 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=1,RouteID=0))
 
 
   //  %B2 = getelementptr inbounds %struct.continue_struct, %struct.continue_struct* %p, i32 0, i32 1, !UID !6, !ScalaLabel !7
@@ -653,11 +653,11 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %1 = load i32*, i32** %B2, align 4, !UID !8, !ScalaLabel !9
-  val load3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=2,ID=3,RouteID=1))
+  val load3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=3,RouteID=1))
 
 
   //  %iBegin3 = getelementptr inbounds %struct.continue_struct, %struct.continue_struct* %p, i32 0, i32 2, !UID !10, !ScalaLabel !11
-  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4)(numByte1 = 20, numByte2 = 8))
+  val getelementptr4 = Module (new GepTwoNode(NumOuts = 1, ID = 4)(numByte1 = 20, numByte2 = 4))
 
 
   //  %2 = load i32, i32* %iBegin3, align 4, !UID !12, !ScalaLabel !13
@@ -665,7 +665,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %iMiddle4 = getelementptr inbounds %struct.continue_struct, %struct.continue_struct* %p, i32 0, i32 3, !UID !14, !ScalaLabel !15
-  val getelementptr6 = Module (new GepTwoNode(NumOuts = 1, ID = 6)(numByte1 = 20, numByte2 = 12))
+  val getelementptr6 = Module (new GepTwoNode(NumOuts = 1, ID = 6)(numByte1 = 20, numByte2 = 4))
 
 
   //  %3 = load i32, i32* %iMiddle4, align 4, !UID !16, !ScalaLabel !17
@@ -673,15 +673,15 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %iEnd5 = getelementptr inbounds %struct.continue_struct, %struct.continue_struct* %p, i32 0, i32 4, !UID !18, !ScalaLabel !19
-  val getelementptr8 = Module (new GepTwoNode(NumOuts = 1, ID = 8)(numByte1 = 20, numByte2 = 16))
+  val getelementptr8 = Module (new GepTwoNode(NumOuts = 1, ID = 8)(numByte1 = 20, numByte2 = 4))
 
 
   //  %4 = load i32, i32* %iEnd5, align 4, !UID !20, !ScalaLabel !21
-  val load9 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=2,ID=9,RouteID=4))
+  val load9 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=9,RouteID=4))
 
 
   //  %iBegin6 = getelementptr inbounds %struct.continue_struct, %struct.continue_struct* %p, i32 0, i32 2, !UID !22, !ScalaLabel !23
-  val getelementptr10 = Module (new GepTwoNode(NumOuts = 1, ID = 10)(numByte1 = 20, numByte2 = 8))
+  val getelementptr10 = Module (new GepTwoNode(NumOuts = 1, ID = 10)(numByte1 = 20, numByte2 = 4))
 
 
   //  %5 = load i32, i32* %iBegin6, align 4, !UID !24, !ScalaLabel !25
@@ -689,7 +689,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %iMiddle7 = getelementptr inbounds %struct.continue_struct, %struct.continue_struct* %p, i32 0, i32 3, !UID !26, !ScalaLabel !27
-  val getelementptr12 = Module (new GepTwoNode(NumOuts = 1, ID = 12)(numByte1 = 20, numByte2 = 12))
+  val getelementptr12 = Module (new GepTwoNode(NumOuts = 1, ID = 12)(numByte1 = 20, numByte2 = 4))
 
 
   //  %6 = load i32, i32* %iMiddle7, align 4, !UID !28, !ScalaLabel !29
@@ -1193,7 +1193,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr2.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  getelementptr2.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
 
   // Wiring GEP instruction to the Constant
   getelementptr2.io.idx1.valid :=  true.B
@@ -1216,7 +1216,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr4.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  getelementptr4.io.baseAddress <> InputSplitter.io.Out.data("field0")(2)
 
   // Wiring GEP instruction to the Constant
   getelementptr4.io.idx1.valid :=  true.B
@@ -1239,7 +1239,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr6.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  getelementptr6.io.baseAddress <> InputSplitter.io.Out.data("field0")(3)
 
   // Wiring GEP instruction to the Constant
   getelementptr6.io.idx1.valid :=  true.B
@@ -1262,7 +1262,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr8.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  getelementptr8.io.baseAddress <> InputSplitter.io.Out.data("field0")(4)
 
   // Wiring GEP instruction to the Constant
   getelementptr8.io.idx1.valid :=  true.B
@@ -1285,7 +1285,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr10.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  getelementptr10.io.baseAddress <> InputSplitter.io.Out.data("field0")(5)
 
   // Wiring GEP instruction to the Constant
   getelementptr10.io.idx1.valid :=  true.B
@@ -1308,7 +1308,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr12.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  getelementptr12.io.baseAddress <> InputSplitter.io.Out.data("field0")(6)
 
   // Wiring GEP instruction to the Constant
   getelementptr12.io.idx1.valid :=  true.B

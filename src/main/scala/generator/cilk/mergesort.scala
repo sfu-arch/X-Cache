@@ -949,16 +949,16 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   reattach19.io.predicateIn(0) <> call18_in.io.Out.data("field0") // manual
 
   // Wiring Call to the function argument
-  call18_out.io.In.data("field0") <> InputSplitter.io.Out.data("field3")(1)
+  call18_out.io.In.data("field0") <> InputSplitter.io.Out.data("field3")(1)   // B[]
 
   // Wiring Call to the function argument
-  call18_out.io.In.data("field1") <> InputSplitter.io.Out.data("field1")(3)
+  call18_out.io.In.data("field1") <> InputSplitter.io.Out.data("field1")(3)   // iBegin
 
   // Wiring instructions
-  call18_out.io.In.data("field2") <> udiv14.io.Out(param.call18_in("udiv14"))
+  call18_out.io.In.data("field2") <> udiv14.io.Out(param.call18_in("udiv14")) // iEnd
 
   // Wiring Call to the function argument
-  call18_out.io.In.data("field3") <> InputSplitter.io.Out.data("field0")(1)
+  call18_out.io.In.data("field3") <> InputSplitter.io.Out.data("field0")(1)   // A[]
 
 
 
@@ -970,16 +970,16 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   reattach22.io.predicateIn(0) <> call21_in.io.Out.data("field0") // manual
 
   // Wiring Call to the function argument
-  call21_out.io.In.data("field0") <> InputSplitter.io.Out.data("field3")(2)
+  call21_out.io.In.data("field0") <> InputSplitter.io.Out.data("field3")(2)     // B[]
 
   // Wiring instructions
-  call21_out.io.In.data("field1") <> udiv14.io.Out(param.call21_in("udiv14"))
+  call21_out.io.In.data("field1") <> udiv14.io.Out(param.call21_in("udiv14"))   // iBegin
 
   // Wiring Call to the function argument
-  call21_out.io.In.data("field2") <> InputSplitter.io.Out.data("field2")(3)
+  call21_out.io.In.data("field2") <> InputSplitter.io.Out.data("field2")(3)     // iEnd
 
   // Wiring Call to the function argument
-  call21_out.io.In.data("field3") <> InputSplitter.io.Out.data("field0")(2)
+  call21_out.io.In.data("field3") <> InputSplitter.io.Out.data("field0")(2)     // A[]
 
 
 
