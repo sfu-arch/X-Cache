@@ -56,7 +56,7 @@ class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
 
-  val NumMergesorts = 1
+  val NumMergesorts = 6
   val mergesort = for (i <- 0 until NumMergesorts) yield {
     val mergesortby = Module(new mergesortDF())
     mergesortby
@@ -127,9 +127,11 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
       }
     }
 
-  val inDataVec = List(99, 41, 18, 66, 88, 27, 74, 25, 35, 68,
-    20, 64, 39, 62, 62, 27, 76, 97, 60)
+//  val inDataVec = List(99, 41, 18, 66, 88, 27, 74, 25, 35, 68,
+//    20, 64, 39, 62, 62, 27, 76, 97, 60)
 //  val inDataVec = List(4,3,2,1)
+  scala.util.Random.setSeed(1234)
+  val inDataVec = List.fill(50)(scala.util.Random.nextInt(256))
   val inAddrVec = List.range(0, 4*inDataVec.length, 4)
   val outDataVec = mergeSort(inDataVec)
   val outAddrVec = List.range(4*inDataVec.length, 4*inDataVec.length*2, 4)

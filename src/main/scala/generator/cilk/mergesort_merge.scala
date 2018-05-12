@@ -1496,7 +1496,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   ret47.io.In.data("field0").valid := true.B
   io.out <> ret47.io.Out
 
-
+/*
   when (lb_L_0.io.endEnable.fire() && lb_L_0.io.endEnable.bits.control) {
     printf("DEBUG: Loop end ID=%d\n",lb_L_0.io.endEnable.bits.taskID)
   }
@@ -1518,7 +1518,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   when (br29.io.Out(param.br29_brn_bb("bb_if_then")).fire() && br29.io.Out(param.br29_brn_bb("bb_if_then")).bits.control)   {printf("DEBUG: branch to if_then\n")}
 
   when (br44.io.Out(0).fire())   {printf("DEBUG: for_inc fired\n")}
-
+*/
 }
 
 import java.io.{File, FileWriter}
