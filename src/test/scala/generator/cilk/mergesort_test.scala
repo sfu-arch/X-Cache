@@ -6,6 +6,7 @@ import chisel3.Module
 import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
+import scala.util.control.Breaks._
 import muxes._
 import config._
 import control._
@@ -56,7 +57,7 @@ class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
 
-  val NumMergesorts = 6
+  val NumMergesorts = 8
   val mergesort = for (i <- 0 until NumMergesorts) yield {
     val mergesortby = Module(new mergesortDF())
     mergesortby
@@ -131,7 +132,7 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
 //    20, 64, 39, 62, 62, 27, 76, 97, 60)
 //  val inDataVec = List(4,3,2,1)
   scala.util.Random.setSeed(1234)
-  val inDataVec = List.fill(50)(scala.util.Random.nextInt(256))
+  val inDataVec = List.fill(100)(scala.util.Random.nextInt(256))
   val inAddrVec = List.range(0, 4*inDataVec.length, 4)
   val outDataVec = mergeSort(inDataVec)
   val outAddrVec = List.range(4*inDataVec.length, 4*inDataVec.length*2, 4)
@@ -205,7 +206,7 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 10000) {
+  while (time < 100000 && !result) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
