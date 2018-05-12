@@ -778,7 +778,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  store i32 %9, i32* %arrayidx13, align 4, !UID !73, !ScalaLabel !74
-  val store33 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=33,RouteID=0))
+  val store33 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=33,RouteID=0))
 
 
   //  %add = add i32 %i.0, 1, !UID !75, !ScalaLabel !76
@@ -786,7 +786,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  br label %if.end, !UID !77, !BB_UID !78, !ScalaLabel !79
-  val br35 = Module (new UBranchNode(ID = 35))
+  val br35 = Module (new UBranchNode(ID = 35, NumPredOps=1))
 
   // [BasicBlock]  if.else:
 
@@ -803,7 +803,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  store i32 %10, i32* %arrayidx15, align 4, !UID !86, !ScalaLabel !87
-  val store39 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=39,RouteID=1))
+  val store39 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, NumOuts=1,ID=39,RouteID=1))
 
 
   //  %add16 = add i32 %j.0, 1, !UID !88, !ScalaLabel !89
@@ -811,7 +811,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  br label %if.end, !UID !90, !BB_UID !91, !ScalaLabel !92
-  val br41 = Module (new UBranchNode(ID = 41))
+  val br41 = Module (new UBranchNode(ID = 41,NumPredOps=1))
 
   // [BasicBlock]  if.end:
 
@@ -1034,6 +1034,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
   add34.io.enable <> bb_if_then.io.Out(param.bb_if_then_activate("add34"))
 
+  br35.io.PredOp(0) <> store33.io.SuccOp(0)
   br35.io.enable <> bb_if_then.io.Out(param.bb_if_then_activate("br35"))
 
 
@@ -1048,6 +1049,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
   add40.io.enable <> bb_if_else.io.Out(param.bb_if_else_activate("add40"))
 
+  br41.io.PredOp(0) <> store39.io.SuccOp(0)
   br41.io.enable <> bb_if_else.io.Out(param.bb_if_else_activate("br41"))
 
 
@@ -1298,7 +1300,6 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   getelementptr10.io.idx2.bits.predicate :=  true.B
   getelementptr10.io.idx2.bits.data :=  2.U
 
-
   // Wiring Load instruction to the parent instruction
   load11.io.GepAddr <> getelementptr10.io.Out(param.load11_in("getelementptr10"))
   load11.io.memResp <> StackCtrl.io.ReadOut(5)
@@ -1402,7 +1403,6 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   // Wiring GEP instruction to the parent instruction
   getelementptr30.io.idx1 <> phi15.io.Out(param.getelementptr30_in("phi15"))
 
-
   // Wiring Load instruction to the parent instruction
   load31.io.GepAddr <> getelementptr30.io.Out(param.load31_in("getelementptr30"))
   load31.io.memResp <> GlblCtrl.io.ReadOut(2)
@@ -1496,6 +1496,28 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   ret47.io.In.data("field0").valid := true.B
   io.out <> ret47.io.Out
 
+
+  when (lb_L_0.io.endEnable.fire() && lb_L_0.io.endEnable.bits.control) {
+    printf("DEBUG: Loop end ID=%d\n",lb_L_0.io.endEnable.bits.taskID)
+  }
+  when (load5.io.Out(0).fire()) {printf("DEBUG: iBeg =%d\n",load5.io.Out(0).bits.data)}
+  when (load7.io.Out(0).fire()) {printf("DEBUG: iMid =%d\n",load7.io.Out(0).bits.data)}
+  when (load9.io.Out(0).fire()) {printf("DEBUG: iEnd =%d\n",load9.io.Out(0).bits.data)}
+  when (phi15.io.Out(0).fire() && phi15.io.Out(0).bits.predicate) {printf("DEBUG: i=%d\n",phi15.io.Out(0).bits.data)}
+  when (phi16.io.Out(0).fire() && phi16.io.Out(0).bits.predicate) {printf("DEBUG: j=%d\n",phi16.io.Out(0).bits.data)}
+  when (phi17.io.Out(0).fire() && phi17.io.Out(0).bits.predicate) {printf("DEBUG: k=%d\n",phi17.io.Out(0).bits.data)}
+
+  when (load25.io.Out(0).fire()) {printf("DEBUG: lor_lhs A[i]= %d\n",load25.io.Out(0).bits.data)}
+  when (load27.io.Out(0).fire()) {printf("DEBUG: lor_lhs A[j]= %d\n",load27.io.Out(0).bits.data)}
+  when (load31.io.Out(0).fire()) {printf("DEBUG: if_then A[i]= %d\n",load31.io.Out(0).bits.data)}
+  when (load37.io.Out(0).fire()) {printf("DEBUG: if_else A[j]= %d\n",load37.io.Out(0).bits.data)}
+
+  when (br21.io.Out(param.br21_brn_bb("bb_if_else")).fire() && br21.io.Out(param.br21_brn_bb("bb_if_else")).bits.control)   {printf("DEBUG: branch to if_else\n")}
+  when (br29.io.Out(param.br29_brn_bb("bb_if_else")).fire() && br21.io.Out(param.br29_brn_bb("bb_if_else")).bits.control)   {printf("DEBUG: branch to if_else\n")}
+  when (br23.io.Out(param.br23_brn_bb("bb_if_then")).fire() && br23.io.Out(param.br23_brn_bb("bb_if_then")).bits.control)   {printf("DEBUG: branch to if_then\n")}
+  when (br29.io.Out(param.br29_brn_bb("bb_if_then")).fire() && br29.io.Out(param.br29_brn_bb("bb_if_then")).bits.control)   {printf("DEBUG: branch to if_then\n")}
+
+  when (br44.io.Out(0).fire())   {printf("DEBUG: for_inc fired\n")}
 
 }
 

@@ -51,7 +51,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
   val task_ID_R = RegNext(next = enable_R.taskID)
 
   // Output register
-  val data_R = RegInit(0.U(xlen.W))
+  val out_data_R = RegInit(DataBundle.default)
 
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
@@ -60,8 +60,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val predicate = left_R.predicate & right_R.predicate & IsEnable()
-  val start = left_valid_R & right_valid_R & IsEnableValid()
+  val predicate = left_R.predicate & right_R.predicate //& IsEnable()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -85,9 +84,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := FU.io.out
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.taskID := left_R.taskID
+    io.Out(i).bits := out_data_R
   }
 
 
@@ -97,9 +94,14 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
 
   switch(state) {
     is(s_IDLE) {
-      when(enable_valid_R || io.enable.valid) {
+      when(enable_valid_R) {
         when(left_valid_R && right_valid_R) {
           ValidOut()
+          when(enable_R.control) {
+            out_data_R.data := FU.io.out
+            out_data_R.predicate := predicate
+            out_data_R.taskID := left_R.taskID | right_R.taskID
+          }
           state := s_COMPUTE
         }
       }
@@ -114,6 +116,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
         right_valid_R := false.B
         //Reset state
         state := s_IDLE
+        out_data_R.predicate := false.B
         //Reset output
         Reset()
         printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_R, cycleCount, FU.io.out)

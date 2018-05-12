@@ -622,7 +622,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 //  br18.io.enable <> bb_sync_continue.io.Out(param.bb_sync_continue_activate("br18"))
 //  br18.io.PredOp(0) <> call17_in.io.Out.enable
-  call17_in.io.Out.enable.ready := true.B  // Manual
+//  call17_in.io.Out.enable.ready := true.B  // Manual
 
   ret19.io.enable <> bb_return.io.Out(param.bb_return_activate("ret19"))
 

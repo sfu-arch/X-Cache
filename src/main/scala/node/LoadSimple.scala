@@ -143,16 +143,17 @@ class UnTypLoad(NumPredOps: Int,
       when(complete) {
         // Clear all the valid states.
         // Reset address
-        addr_R := DataBundle.default
+//        addr_R := DataBundle.default
         addr_valid_R := false.B
         // Reset data
-        data_R := DataBundle.default
+//        data_R := DataBundle.default
         data_valid_R := false.B
         // Reset state.
         Reset()
         // Reset state.
         state := s_idle
         printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n",enable_R.taskID, cycleCount)
+        //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
       }
     }
   }

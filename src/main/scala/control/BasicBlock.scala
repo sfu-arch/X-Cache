@@ -68,6 +68,7 @@ class BasicBlockNode(NumInputs: Int,
    *===========================================*/
   // OP Inputs
   val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(ControlBundle.default)))
+  val predicate_control_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
   val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
   val s_IDLE :: s_LATCH :: Nil = Enum(2)
@@ -91,6 +92,7 @@ class BasicBlockNode(NumInputs: Int,
     io.predicateIn(i).ready := ~predicate_valid_R(i)
     when(io.predicateIn(i).fire()) {
       predicate_in_R(i) <> io.predicateIn(i).bits
+      predicate_control_R(i) <> io.predicateIn(i).bits.control
       predicate_valid_R(i) := true.B
     }
   }
@@ -103,7 +105,7 @@ class BasicBlockNode(NumInputs: Int,
 
   // Wire up mask output
   for (i <- 0 until NumPhi) {
-    io.MaskBB(i).bits := predicate_in_R.asUInt()
+    io.MaskBB(i).bits := predicate_control_R.asUInt()
   }
 
 
@@ -117,15 +119,16 @@ class BasicBlockNode(NumInputs: Int,
         pred_R.control := predicate
         ValidOut()
         state := s_LATCH
+        assert(PopCount(predicate_control_R) < 2.U)
       }
+      PopCount
     }
     is(s_LATCH) {
       when(IsOutReady()) {
         predicate_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
-        predicate_in_R := VecInit(Seq.fill(NumInputs)(ControlBundle.default))
-
+//        predicate_in_R := VecInit(Seq.fill(NumInputs)(ControlBundle.default))
+        pred_R.control := false.B
         Reset()
-
         state := s_IDLE
 
         when(predicate) {
@@ -133,8 +136,6 @@ class BasicBlockNode(NumInputs: Int,
         }.otherwise {
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
         }
-        //Restart predicate bit
-        pred_R.control := false.B
       }
     }
 

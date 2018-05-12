@@ -45,7 +45,7 @@ class PhiNode(NumInputs: Int,
   val in_data_R = RegInit(VecInit(Seq.fill(NumInputs)(DataBundle.default)))
   val in_data_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
-  val in_data_W = WireInit(DataBundle.default)
+  val out_data_R = RegInit(DataBundle.default)
 
   // Mask Input
   val mask_R = RegInit(0.U(NumInputs.W))
@@ -62,7 +62,6 @@ class PhiNode(NumInputs: Int,
    *           Predicate Evaluation           *
    *==========================================*/
 
-  var predicate = in_data_W.predicate & IsEnable()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -70,9 +69,6 @@ class PhiNode(NumInputs: Int,
 
   //Instantiating a MUX
   val sel = OHToUInt(mask_R)
-
-  in_data_W := in_data_R(sel)
-
 
   //wire up mask
   io.Mask.ready := ~mask_valid_R
@@ -92,7 +88,7 @@ class PhiNode(NumInputs: Int,
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits <> in_data_W
+    io.Out(i).bits <> out_data_R
   }
 
   //  when(state === s_COMPUTE){
@@ -105,8 +101,11 @@ class PhiNode(NumInputs: Int,
    *============================================*/
   switch(state) {
     is(s_IDLE) {
-      when((io.enable.valid || enable_valid_R) && mask_valid_R && in_data_valid_R(sel)) {
+      when((enable_valid_R) && mask_valid_R && in_data_valid_R(sel)) {
         state := s_COMPUTE
+        when(enable_R.control) {
+          out_data_R := in_data_R(sel)
+        }
         ValidOut()
       }
     }
@@ -115,8 +114,8 @@ class PhiNode(NumInputs: Int,
         mask_R := 0.U
         mask_valid_R := false.B
 
-        in_data_R := VecInit(Seq.fill(NumInputs)(DataBundle.default))
         in_data_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
+        out_data_R.predicate := false.B
 
         //Reset state
         state := s_IDLE
@@ -124,7 +123,7 @@ class PhiNode(NumInputs: Int,
         Reset()
 
         //Print output
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", in_data_W.taskID, cycleCount, in_data_W.data)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", out_data_R.taskID, cycleCount, out_data_R.data)
 
 
       }

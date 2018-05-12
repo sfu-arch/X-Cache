@@ -36,14 +36,17 @@ class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
   val cache = Module(new Cache)            // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
   val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+//  val memCopy = RegInit(VecInit(Seq.fill(64)(0.U(32.W))))     // Local memory just to keep track of writes to cache for validation
 
   // Store a copy of all data written to the cache.  This is done since the cache isn't
   // 'write through' to the memory model and we have no easy way of reading the
   // cache contents from the testbench.
   when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
     memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
+//    memCopy((cache.io.cpu.req.bits.addr>>2).asUInt()) := cache.io.cpu.req.bits.data
   }
   io.dout := memCopy.read((io.addr>>2).asUInt())
+//  io.dout := memCopy((io.addr>>2).asUInt())
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -126,9 +129,10 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
 
   val inDataVec = List(99, 41, 18, 66, 88, 27, 74, 25, 35, 68,
     20, 64, 39, 62, 62, 27, 76, 97, 60)
+//  val inDataVec = List(4,3,2,1)
   val inAddrVec = List.range(0, 4*inDataVec.length, 4)
   val outDataVec = mergeSort(inDataVec)
-  val outAddrVec = List.range(inDataVec.length*4, 2*inDataVec.length*4, 4)
+  val outAddrVec = List.range(4*inDataVec.length, 4*inDataVec.length*2, 4)
 
   poke(c.io.addr, 0.U)
   poke(c.io.din, 0.U)
@@ -137,6 +141,12 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
   // Write initial contents to the memory model.
   for(i <- 0 until inAddrVec.length) {
     poke(c.io.addr, inAddrVec(i))
+    poke(c.io.din, inDataVec(i))
+    poke(c.io.write, true.B)
+    step(1)
+  }
+  for(i <- 0 until outAddrVec.length) {
+    poke(c.io.addr, outAddrVec(i))
     poke(c.io.din, inDataVec(i))
     poke(c.io.write, true.B)
     step(1)
@@ -214,11 +224,11 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
   for(i <- 0 until outDataVec.length) {
-    poke(c.io.addr, outAddrVec(i))
+    poke(c.io.addr, inAddrVec(i))
     step(1)
     val data = peek(c.io.dout)
-    if (data != outDataVec(i).toInt) {
-      println(Console.RED + s"*** Incorrect data received addr=${outAddrVec(i)}. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+    if (data != outDataVec(i)) {
+      println(Console.RED + s"*** Incorrect data received addr=${inAddrVec(i)}. Got $data. Hoping for ${outDataVec(i)}" + Console.RESET)
       fail
       valid_data = false
     }

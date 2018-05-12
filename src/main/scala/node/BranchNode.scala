@@ -123,7 +123,7 @@ class CBranchNode(ID: Int)
         cmp_valid_R := false.B
 
         // Reset output
-        //data_out_R := VecInit(Seq.fill(2)(false.B))
+        data_out_R := VecInit(Seq.fill(2)(false.B))
         //Reset state
         state := s_IDLE
 
@@ -226,6 +226,7 @@ class UBranchNode(NumPredOps: Int = 0,
       when(IsOutReady()){
         state := s_idle
         Reset()
+        enable_R := ControlBundle.default
         printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
       }
     }
