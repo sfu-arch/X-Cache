@@ -32,7 +32,7 @@ class mergesortMainIO(implicit val p: Parameters)  extends Module with CoreParam
   })
 }
 
-class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
+class mergesortMain(tiles : Int)(implicit p: Parameters) extends mergesortMainIO {
 
   val cache = Module(new Cache)            // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -57,7 +57,7 @@ class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
 
-  val NumMergesorts = 8
+  val NumMergesorts = tiles
   val mergesort = for (i <- 0 until NumMergesorts) yield {
     val mergesortby = Module(new mergesortDF())
     mergesortby
@@ -107,7 +107,7 @@ class mergesortMain(implicit p: Parameters) extends mergesortMainIO {
 
 }
 
-class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
+class mergesortTest01[T <: mergesortMainIO](c: T, len : Int) extends PeekPokeTester(c) {
 
     // recursive merge of 2 sorted lists
     def merge(left: List[Int], right: List[Int]): List[Int] =
@@ -132,7 +132,7 @@ class mergesortTest01[T <: mergesortMainIO](c: T) extends PeekPokeTester(c) {
 //    20, 64, 39, 62, 62, 27, 76, 97, 60)
 //  val inDataVec = List(4,3,2,1)
   scala.util.Random.setSeed(1234)
-  val inDataVec = List.fill(100)(scala.util.Random.nextInt(256))
+  val inDataVec = List.fill(len)(scala.util.Random.nextInt(256))
   val inAddrVec = List.range(0, 4*inDataVec.length, 4)
   val outDataVec = mergeSort(inDataVec)
   val outAddrVec = List.range(4*inDataVec.length, 4*inDataVec.length*2, 4)
@@ -254,14 +254,20 @@ class mergesortTester1 extends FlatSpec with Matchers {
     // -tbn = backend <firrtl|verilator|vcs>
     // -td  = target directory
     // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new mergesortMain()) {
-      c => new mergesortTest01(c)
-    } should be(true)
+    val tile_list = List(1)
+    val len_list = List(25, 50, 100)
+    for (tiles <- tile_list) {
+      for (len <- len_list) {
+        chisel3.iotesters.Driver.execute(
+          Array(
+            // "-ll", "Info",
+            s"-tbn", "verilator",
+            "-td", s"test_run_dir_${tiles}_${len}",
+            "-tts", "0001"),
+          () => new mergesortMain(tiles)) {
+          c => new mergesortTest01(c, len)
+        } should be(true)
+      }
+    }
   }
 }

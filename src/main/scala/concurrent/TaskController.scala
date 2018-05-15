@@ -38,7 +38,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   val exeList = Module(new Queue(new Call(argTypes), 1 << tlen))
   val parentTable = Mem(1 << tlen, new ParentBundle())
   val numActive = RegInit(0.U(16.W))
-  val activeID = RegInit(VecInit(Seq.fill(1<<tlen)(false.B)))
+//  val activeID = RegInit(VecInit(Seq.fill(1<<tlen)(false.B)))
   val error_flag = RegInit(false.B)
 
   //  val parentTable =RegInit(VecInit(Seq.fill(1<<tlen)(0.U.asTypeOf(new ParentBundle()))))
@@ -146,6 +146,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     numActive := numActive - 1.U
   }
 
+/*
   when(exeList.io.deq.fire()) {
     when(activeID(exeList.io.deq.bits.enable.taskID) === true.B) {
       error_flag := true.B
@@ -160,7 +161,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     }
     activeID(ChildArb.io.out.bits.enable.taskID) := false.B
   }
-
+*/
   /***************************************************************************
     * Output Demux
     * Send the return value back to its parent
