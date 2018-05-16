@@ -25,15 +25,14 @@ import utility.UniformPrintfs
 // _ready need to latch ready and valid signals.
 //////////
 
-class FPDivSqrtIO(NumOuts: Int)(implicit p: Parameters)
+class FPDivSqrtIO(NumOuts: Int, argTypes: Seq[Int])(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
-  // Node specific IO
-  // GepAddr: The calculated address comming from GEP node
+  // Divisor or Sqrt
   val a = Flipped(Decoupled(new DataBundle))
-  // Store data.
+  // Dividend
   val b = Flipped(Decoupled(new DataBundle))
   // Memory request
-  val FUReq = Decoupled(new FUReq())
+  val FUReq = Decoupled(new Call(argTypes))
   // Memory response.
   val FUResp = Input(Flipped(new FUResp()))
 }
@@ -49,8 +48,9 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
                   name: sourcecode.Name,
                   file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
-  // Set up StoreIO
-  override lazy val io = IO(new FPDivSqrtIO(NumOuts))
+  override lazy val io = IO(new FPDivSqrtIO(NumOuts, List(xlen,xlen,1)))
+
+  // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
@@ -60,10 +60,12 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   =            Register declarations            =
   =============================================*/
 
-  // OP Inputs
+  // Dividend or Sqrt
   val a_R = RegInit(DataBundle.default)
-  val b_R = RegInit(DataBundle.default)
   val a_valid_R = RegInit(false.B)
+
+  // Divisor
+  val b_R = RegInit(DataBundle.default)
   val b_valid_R = RegInit(false.B)
 
   // FU Response
@@ -75,7 +77,6 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
-  val ReqValid = RegInit(false.B)
 
   /*============================================
   =            Predicate Evaluation            =
@@ -92,32 +93,39 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   io.a.ready := ~a_valid_R
   io.b.ready := ~b_valid_R
 
-  // ACTION: GepAddr
+  // ACTION: A
   io.a.ready := ~a_valid_R
   when(io.a.fire()) {
     a_R := io.a.bits
     a_valid_R := true.B
   }
 
-  // ACTION: inData
+  // ACTION: B
   when(io.b.fire()) {
     // Latch the data
     b_R := io.b.bits
     b_valid_R := true.B
   }
 
+  val predicate = a_R.predicate & b_R.predicate
+
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.predicate := true.B
-    io.Out(i).bits.taskID := a_R.taskID  
+    io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.taskID := a_R.taskID
   }
 
   // Outgoing FU Req ->
-  io.FUReq.bits.a  := a_R.data
-  io.FUReq.bits.b := b_R.data
-  io.FUReq.bits.Typ := Typ
-  io.FUReq.bits.RouteID := RouteID.U
+  io.FUReq.bits.data("field0").data  :=  a_R.data
+  io.FUReq.bits.data("field1").data  :=  b_R.data
+  require((opCode == "DIV" || opCode == "SQRT"), "DIV or SQRT required")
+  val DivOrSqrt = opCode match {
+  case "DIV" => false.B
+  case "SQRT" => true.B
+  }
+  io.FUReq.bits.data("field2").data  := DivOrSqrt
+  io.FUReq.bits.RouteID := ID.U
   io.FUReq.valid := false.B
 
   /*=============================================
@@ -131,9 +139,13 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
       when(enable_valid_R) {
         when(enable_R) {
           when(FU_req_fire) {
-            io.FUReq.valid := true.B
-            when(io.FUReq.ready) {
-              state := s_RECEIVING
+            when(predicate){
+              io.FUReq.valid := true.B
+              when(io.FUReq.ready) {
+                state := s_RECEIVING
+              }
+            }.otherwise {
+              state :=s_RECEIVING
             }
           }
         }.otherwise {
@@ -160,10 +172,10 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
       }
     }
     is(s_RECEIVING) {
-      when(io.FUResp.valid) {
+      when(io.FUResp.valid || ~predicate) {
         // Set data output registers
         data_R.data := io.FUResp.data
-        data_R.predicate := true.B
+        data_R.predicate := predicate
         ValidOut()
         state := s_Done
       }

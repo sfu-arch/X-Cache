@@ -67,7 +67,15 @@ class MiniConfig extends Config((site, here, up) => {
       idBits   = 12,
       dataBits = 32,
       addrBits = 32)
+
+       case FTYP => site(XLEN) match {
+        case 32 => S
+        case 64 => D
+        case 16 => H
+    }
+
   }
+
 )
 
 

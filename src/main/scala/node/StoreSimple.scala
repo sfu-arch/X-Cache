@@ -19,7 +19,7 @@ import utility.UniformPrintfs
 class StoreIO(NumPredOps: Int,
               NumSuccOps: Int,
               NumOuts: Int)(implicit p: Parameters)
-  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new DataBundle) {
+            extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new DataBundle) {
   // Node specific IO
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
@@ -97,10 +97,13 @@ class UnTypStore(NumPredOps: Int,
     data_valid_R := true.B
   }
 
+  val predicate = addr_R.predicate & data_R.predicate
+
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.predicate := true.B
+    io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.taskID := addr_R.taskID
   }
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
@@ -116,13 +119,18 @@ class UnTypStore(NumPredOps: Int,
   val mem_req_fire = addr_valid_R & IsPredValid() & data_valid_R
   val complete = IsSuccReady() & IsOutReady()
 
+
   switch(state) {
     is(s_idle) {
       when(enable_valid_R) {
         when(enable_R) {
           when(mem_req_fire && data_valid_R && addr_valid_R && IsPredValid()) {
-            io.memReq.valid := true.B
-            when(io.memReq.ready) {
+            when(predicate) {
+              io.memReq.valid := true.B
+              when(io.memReq.ready) {
+                state := s_RECEIVING
+              }
+            }.otherwise {
               state := s_RECEIVING
             }
           }
@@ -145,7 +153,7 @@ class UnTypStore(NumPredOps: Int,
       }
     }
     is(s_RECEIVING) {
-      when(io.memResp.valid) {
+      when(io.memResp.valid || ~predicate) {
         ValidSucc()
         ValidOut()
         state := s_Done

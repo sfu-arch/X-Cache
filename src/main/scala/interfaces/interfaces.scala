@@ -422,7 +422,7 @@ class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends Core
   override def cloneType = new CallDecoupled(argTypes).asInstanceOf[this.type]
 }
 
-class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
+class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends ValidT with RouteID {
   val enable = new ControlBundle
   val data   = new VariableData(argTypes)
   override def cloneType = new Call(argTypes).asInstanceOf[this.type]
