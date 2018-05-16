@@ -32,7 +32,7 @@ class FPDivSqrtIO(NumOuts: Int, argTypes: Seq[Int])(implicit p: Parameters)
   // Dividend
   val b = Flipped(Decoupled(new DataBundle))
   // Memory request
-  val FUReq = Decoupled(new Call(argTypes))
+  val FUReq = Decoupled(new FUReq(argTypes))
   // Memory response.
   val FUResp = Input(Flipped(new FUResp()))
 }
@@ -94,7 +94,6 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   io.b.ready := ~b_valid_R
 
   // ACTION: A
-  io.a.ready := ~a_valid_R
   when(io.a.fire()) {
     a_R := io.a.bits
     a_valid_R := true.B
@@ -119,12 +118,21 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   // Outgoing FU Req ->
   io.FUReq.bits.data("field0").data  :=  a_R.data
   io.FUReq.bits.data("field1").data  :=  b_R.data
+  io.FUReq.bits.data("field0").predicate  :=  true.B
+  io.FUReq.bits.data("field1").predicate  :=  true.B
+  io.FUReq.bits.data("field0").taskID  :=  a_R.taskID
+  io.FUReq.bits.data("field1").taskID  :=  b_R.taskID
+
+
   require((opCode == "DIV" || opCode == "SQRT"), "DIV or SQRT required")
   val DivOrSqrt = opCode match {
   case "DIV" => false.B
   case "SQRT" => true.B
   }
   io.FUReq.bits.data("field2").data  := DivOrSqrt
+  io.FUReq.bits.data("field2").predicate := true.B
+  io.FUReq.bits.data("field2").taskID  := 1.U
+
   io.FUReq.bits.RouteID := ID.U
   io.FUReq.valid := false.B
 
@@ -133,7 +141,6 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   =============================================*/
   val FU_req_fire = a_valid_R & b_valid_R
   val complete = IsOutReady()
-
   switch(state) {
     is(s_idle) {
       when(enable_valid_R) {
@@ -143,9 +150,11 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
               io.FUReq.valid := true.B
               when(io.FUReq.ready) {
                 state := s_RECEIVING
+                printf("[LOG] " + "[" + module_name + "] " + node_name + ": Receiving @ %d\n", cycleCount)
               }
             }.otherwise {
               state :=s_RECEIVING
+              printf("[LOG] " + "[" + module_name + "] " + node_name + ": No ACTION @ %d\n", cycleCount)
             }
           }
         }.otherwise {

@@ -268,34 +268,6 @@ object TypBundle {
   }
 }
 
-/**
-  * FU request to macro function unit
-  *
-  * @param p implicit params
-  * @return [description]
-  */
-//
-// Word aligned to write to
-// Node performing the write
-// Mask indicates which bytes to update.
-class FUReq(implicit p: Parameters)
-  extends RouteID {
-  val a = UInt(xlen.W)
-  val b = UInt(xlen.W)
-  val Typ = UInt(4.W)
-}
-
-object FUReq {
-  def default(implicit p: Parameters): FUReq = {
-    val wire = Wire(new FUReq)
-    wire.a := 0.U
-    wire.b := 0.U
-    wire.RouteID := 0.U
-    wire.Typ := 0.U(4.W)
-    wire
-  }
-}
-
 
 /**
   * Control bundle between branch and
@@ -426,4 +398,9 @@ class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends ValidT with R
   val enable = new ControlBundle
   val data   = new VariableData(argTypes)
   override def cloneType = new Call(argTypes).asInstanceOf[this.type]
+}
+
+class FUReq(val argTypes: Seq[Int])(implicit p: Parameters) extends RouteID {
+  val data   = new VariableData(argTypes)
+  override def cloneType = new FUReq(argTypes).asInstanceOf[this.type]
 }

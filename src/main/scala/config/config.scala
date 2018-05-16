@@ -48,7 +48,7 @@ class MiniConfig extends Config((site, here, up) => {
     case XLEN       => 32
     case TLEN       => 5
     case GLEN       => 16
-    // # Max bits of cache request tag. 
+    // # Max bits of cache request tag.
     case MSHRLEN  => 8
     case TYPSZ      => 64
     case VERBOSITY  => "low"
@@ -72,10 +72,9 @@ class MiniConfig extends Config((site, here, up) => {
         case 32 => S
         case 64 => D
         case 16 => H
+        case _ => S
     }
 
   }
 
 )
-
-
