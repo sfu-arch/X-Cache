@@ -20,7 +20,7 @@ import utility.UniformPrintfs
 // Design Doc
 //////////
 /// DRIVER ///
-/// 1. Memory response only available atleast 1 cycle after request
+/// 1. FU response only available atleast 1 cycle after request
 //  2. Need registers for pipeline handshaking e.g., _valid,
 // _ready need to latch ready and valid signals.
 //////////
@@ -31,16 +31,16 @@ class FPDivSqrtIO(NumOuts: Int, argTypes: Seq[Int])(implicit p: Parameters)
   val a = Flipped(Decoupled(new DataBundle))
   // Dividend
   val b = Flipped(Decoupled(new DataBundle))
-  // Memory request
+  // FU request
   val FUReq = Decoupled(new FUReq(argTypes))
-  // Memory response.
+  // FU response.
   val FUResp = Input(Flipped(new FUResp()))
 }
 
 /**
   * @brief Store Node. Implements store operations
   * @details [long description]
-  * @param NumPredOps [Number of predicate memory operations]
+  * @param NumPredOps [Number of predicate FU operations]
   */
 class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
                  (t: FType)
@@ -89,7 +89,7 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   =            Latch inputs. Set output            =
   ================================================  */
 
-  //Initialization READY-VALIDs for GepAddr and Predecessor memory ops
+  //Initialization READY-VALIDs for Dividor and Dividend  FU ops
   io.a.ready := ~a_valid_R
   io.b.ready := ~b_valid_R
 
@@ -144,75 +144,51 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   switch(state) {
     is(s_idle) {
       when(enable_valid_R) {
-        when(enable_R) {
-          when(FU_req_fire) {
-            when(predicate){
-              io.FUReq.valid := true.B
-              when(io.FUReq.ready) {
-                state := s_RECEIVING
-                printf("[LOG] " + "[" + module_name + "] " + node_name + ": Receiving @ %d\n", cycleCount)
-              }
-            }.otherwise {
-              state :=s_RECEIVING
-              printf("[LOG] " + "[" + module_name + "] " + node_name + ": No ACTION @ %d\n", cycleCount)
+        when(a_valid_R && b_valid_R) {
+          when(enable_R.control && FU_req_fire && predicate) {
+            io.FUReq.valid := true.B
+            when(io.FUReq.ready) {
+              state := s_RECEIVING
             }
+          }.otherwise {
+            ValidOut()
+            data_R.predicate := false.B
+            state := s_Done
           }
-        }.otherwise {
-
-          // Reset a.
-          a_R := DataBundle.default
-          a_valid_R := false.B
-
-          // Reset b.
-          b_R := DataBundle.default
-          b_valid_R := false.B
-
-          // Reset data
-          data_R := DataBundle.default
-          data_valid_R := false.B
-
-          // Clear all other state
-          Reset()
-
-          // Reset state.
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
-
         }
       }
     }
     is(s_RECEIVING) {
-      when(io.FUResp.valid || ~predicate) {
+      when(io.FUResp.valid) {
+
         // Set data output registers
         data_R.data := io.FUResp.data
-        data_R.predicate := predicate
+        data_R.predicate := true.B
+        //data_R.valid := true.B
         ValidOut()
+        // Completion state.
         state := s_Done
       }
     }
     is(s_Done) {
       when(complete) {
         // Clear all the valid states.
-
-        // Reset data
-        data_R := DataBundle.default
-        data_valid_R := false.B
-
-        // Reset address
-        a_R := DataBundle.default
+        // Reset a
         a_valid_R := false.B
-
         // Reset b.
-        b_R := DataBundle.default
         b_valid_R := false.B
-
+        // Reset data
+        data_valid_R := false.B
         // Clear all other state
         Reset()
 
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n",enable_R.taskID, cycleCount)
+        //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
       }
     }
   }
+
 
 }

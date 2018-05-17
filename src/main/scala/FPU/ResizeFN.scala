@@ -46,25 +46,28 @@ class FNtoFNNode(Src: FType, Des: FType, NumOuts: Int, ID: Int)
   val Input_R = Reg(new CustomDataBundle((UInt((Src.ieeeWidth).W))))
   val Input_valid_R = RegInit(false.B)
 
+  val task_ID_R = RegNext(next = enable_R.taskID)
+
   //Output register
-  val data_R = Reg(new CustomDataBundle((UInt((Src.ieeeWidth).W))))
+  val out_data_R = Reg(new CustomDataBundle((UInt((Src.ieeeWidth).W))))
 
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
 
-  val predicate = Input_R.predicate & IsEnable()
+  val predicate = Input_R.predicate //  IsEnable()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  //Instantiate FN resize with selected code
-  val recFNsrc = recFNFromFN(Src.expWidth,Src.sigWidth,Input_R.data)
-  val ResizeFU = Module(new RecFNToRecFN(Src.expWidth, Src.sigWidth, Des.expWidth, Des.sigWidth))
-  ResizeFU.io.in             := recFNsrc
-  ResizeFU.io.roundingMode   := "b110".U(3.W)
-  ResizeFU.io.detectTininess := 0.U(1.W)
+  //Instantiate FN resize with selected code. Recoded FU.
+  val recFNsrc = Src.recode(Input_R.data)
+  val FU = Module(new RecFNToRecFN(Src.expWidth, Src.sigWidth, Des.expWidth, Des.sigWidth))
+  FU.io.in             := recFNsrc
+  FU.io.roundingMode   := "b110".U(3.W)
+  FU.io.detectTininess := 0.U(1.W)
+
 
   io.Input.ready := ~Input_valid_R
   when(io.Input.fire()) {
@@ -74,9 +77,15 @@ class FNtoFNNode(Src: FType, Des: FType, NumOuts: Int, ID: Int)
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := Des.ieee(ResizeFU.io.out)
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.taskID := Input_R.taskID
+    //io.Out(i).bits.data := FU.io.out
+    //io.Out(i).bits.predicate := predicate
+    // The taskID's should be identical except in the case
+    // when one input is tied to a constant.  In that case
+    // the taskID will be zero.  Logical OR'ing the IDs
+    // Should produce a valid ID in either case regardless of
+    // which input is constant.
+    //io.Out(i).bits.taskID := left_R.taskID | right_R.taskID
+    io.Out(i).bits := out_data_R
   }
 
   /*============================================*
@@ -85,31 +94,31 @@ class FNtoFNNode(Src: FType, Des: FType, NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        // when((~enable_R).toBool) {
-        //   Input_R.predicate := false.B
-        //   Input_valid_R := false.B
-        //   Reset()
-        //   printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-        // }
-        when((io.Input.fire() || Input_valid_R)) {
+        when(Input_valid_R) {
           ValidOut()
+          when(enable_R.control) {
+            out_data_R.data := Des.ieee(FU.io.out)
+            out_data_R.predicate := predicate
+            out_data_R.taskID := Input_R.taskID
+          }
           state := s_COMPUTE
         }
       }
-
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {
         // Reset data
-        Input_R := DataBundle.default
+        //left_R := DataBundle.default
+        //right_R := DataBundle.default
         Input_valid_R := false.B
         //Reset state
         state := s_IDLE
         //Reset output
+        out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + Src.ieeeWidth + "to" + Des.ieeeWidth + "] " + node_name + ": Output fired @ %d, Value: %x\n", cycleCount, Des.ieee(ResizeFU.io.out))
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: 0x%x\n", task_ID_R, cycleCount, Des.ieee(FU.io.out))
       }
     }
   }
-}
 
+}

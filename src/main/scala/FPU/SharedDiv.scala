@@ -17,7 +17,7 @@ import hardfloat._
 
 class SharedFPUIO(NumOps: Int, argTypes: Seq[Int])
              (implicit p: Parameters) extends CoreBundle()(p) {
-  val InData = Vec(NumOps, Flipped(Decoupled(new Call(argTypes))))
+  val InData = Vec(NumOps, Flipped(Decoupled(new FUReq(argTypes))))
 
   val OutData = Vec(NumOps, Output(new FUResp))
 }
@@ -29,7 +29,7 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
   print(t.expWidth)
   // Arguments for function unit
   val argTypes = List(xlen, xlen, 1)
-  // The function unit 
+  // The function unit
   val ds = Module(new DivSqrtRecFN_small(t.expWidth, t.sigWidth, 0))
   //  Metadata queue associated with function unit
   val RouteQ = Module(new Queue(UInt(tlen.W), PipeDepth))
@@ -38,7 +38,7 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
     * Instantiating Arbiter module and connecting inputs to the output
     * @note we fix the base size to 8
     */
-  val in_arbiter = Module(new ArbiterTree(BaseSize = 2, NumOps = NumOps, new Call(argTypes), Locks = 1))
+  val in_arbiter = Module(new ArbiterTree(BaseSize = 2, NumOps = NumOps, new FUReq(argTypes), Locks = 1))
   val out_demux = Module(new DeMuxTree(BaseSize = 2, NumOps = NumOps, new FUResp))
 
   for(i <- 0 until NumOps){
@@ -47,7 +47,7 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
   }
 
   // Declare metadata queue associated with function unit.
-  // PipeDepth = Function unit pipeline stages 
+  // PipeDepth = Function unit pipeline stages
   // The buffering depth of RouteQ is the maximum number of FU executions
   // that can be outstanding.
   RouteQ.io.enq.valid := in_arbiter.io.out.valid
@@ -78,4 +78,3 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
   printf(p"io.OutData(1): ${io.OutData(1).valid}")
 
 }
-

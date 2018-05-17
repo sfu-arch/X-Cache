@@ -171,6 +171,30 @@ class WriteResp(implicit p: Parameters)
   val done = Bool()
 }
 
+//  data : data returned from scratchpad
+class FUResp(implicit p: Parameters)
+  extends ValidT
+    with RouteID {
+  val data = UInt(xlen.W)
+
+  override def toPrintable: Printable = {
+    p"FUResp {\n" +
+      p"  valid  : ${valid}\n" +
+      p"  RouteID: ${RouteID}\n" +
+      p"  data   : 0x${Hexadecimal(data)} }"
+  }
+}
+
+object FUResp {
+  def default(implicit p: Parameters): FUResp = {
+    val wire = Wire(new FUResp)
+    wire.data := 0.U
+    wire.RouteID := 0.U
+    wire.valid := false.B
+    wire
+  }
+}
+
 class MemReq(implicit p: Parameters) extends CoreBundle()(p) {
   val addr    = UInt(xlen.W)
   val data    = UInt(xlen.W)
@@ -435,4 +459,10 @@ class CallDecoupledVec(val argTypes: Seq[Int])(implicit p: Parameters) extends C
   val enable = Decoupled(new ControlBundle)
   val data   = new VariableDecoupledVec(argTypes)
   override def cloneType = new CallDecoupledVec(argTypes).asInstanceOf[this.type]
+}
+
+// Function unit request type
+class FUReq(val argTypes: Seq[Int])(implicit p: Parameters) extends RouteID {
+  val data   = new VariableData(argTypes)
+  override def cloneType = new FUReq(argTypes).asInstanceOf[this.type]
 }

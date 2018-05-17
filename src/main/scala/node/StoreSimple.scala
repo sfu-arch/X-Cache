@@ -103,6 +103,8 @@ class UnTypStore(NumPredOps: Int,
     data_valid_R := true.B
   }
 
+  val predicate = addr_R.predicate & data_R.predicate
+
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
@@ -127,7 +129,7 @@ class UnTypStore(NumPredOps: Int,
     is(s_idle) {
       when(enable_valid_R) {
         when(data_valid_R && addr_valid_R) {
-          when(enable_R.control && mem_req_fire) {
+          when(enable_R.control && mem_req_fire && predicate) {
             io.memReq.valid := true.B
             when(io.memReq.ready) {
               state := s_RECEIVING

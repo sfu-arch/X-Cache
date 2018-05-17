@@ -25,7 +25,7 @@ import interfaces._
 class FPResizeTester(df: FNtoFNNode)
                   (implicit p: config.Parameters) extends PeekPokeTester(df)  {
 
-  poke(df.io.Input.bits.data, 0x40800000.U)
+  poke(df.io.Input.bits.data, 0x43800000.U)
   poke(df.io.Input.valid, false.B)
   poke(df.io.Input.bits.predicate, false.B)
 
@@ -67,6 +67,3 @@ class FPResizeTests extends  FlatSpec with Matchers {
      } should be(true)
    }
  }
-
-
-
