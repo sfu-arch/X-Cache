@@ -65,8 +65,8 @@ object Data_test11_add_FlowParam{
 abstract class test11_addDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -99,8 +99,8 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32)))
   InputSplitter.io.In <> io.in
@@ -143,7 +143,7 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
 
 
   //  ret i32 %add, !UID !10, !BB_UID !11, !ScalaLabel !12
-  val ret1 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=1))
+  val ret1 = Module(new RetNode(retTypes=List(32), ID=1))
 
 
 
@@ -246,9 +246,9 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
   add0.io.RightIO <> InputSplitter.io.Out.data("field1")
 
   // Wiring return instruction
-  ret1.io.predicateIn(0).bits.control := true.B
-  ret1.io.predicateIn(0).bits.taskID := 0.U
-  ret1.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret1.io.In.data("field0") <> add0.io.Out(param.ret1_in("add0"))
   io.out <> ret1.io.Out
 

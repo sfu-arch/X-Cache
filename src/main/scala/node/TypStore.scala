@@ -110,6 +110,7 @@ class TypStore(NumPredOps: Int,
   io.memReq.bits.data    := buffer(sendptr)
   io.memReq.bits.Typ     := MT_W
   io.memReq.bits.RouteID := RouteID.U
+  io.memReq.bits.taskID  := addr_R.taskID | enable_R.taskID
   io.memReq.bits.mask    := 15.U
   io.memReq.valid := false.B
 
@@ -130,7 +131,7 @@ class TypStore(NumPredOps: Int,
       // Arbitration ready. Move on to the next word
       when(io.memReq.fire()) {
         sendptr := sendptr + 1.U
-        // If last word then move to next state. 
+        // If last word then move to next state.
         when(sendptr === (Beats - 1).U) {
           state := s_RECEIVING
         }
@@ -177,7 +178,7 @@ class TypStore(NumPredOps: Int,
   if (log == true && (comp contains "TYPSTORE")) {
     val x = RegInit(0.U(xlen.W))
     x     := x + 1.U
-  
+
 
     verb match {
       case "high"  => { }

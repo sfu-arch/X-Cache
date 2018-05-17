@@ -14,7 +14,7 @@ case object NWays extends Field[Int]
 case object NSets extends Field[Int]
 case object CacheBlockBytes extends Field[Int]
 
-class CacheReq(implicit p: Parameters) extends CoreBundle()(p) {
+/*class MemReq(implicit p: Parameters) extends CoreBundle()(p) {
   val addr    = UInt(xlen.W)
   val data    = UInt(xlen.W)
   val mask    = UInt((xlen/8).W)
@@ -22,9 +22,9 @@ class CacheReq(implicit p: Parameters) extends CoreBundle()(p) {
   val iswrite = Bool()
 }
 
-object CacheReq {
-  def default(implicit p: Parameters): CacheReq = {
-    val wire = Wire(new CacheReq())
+object MemReq {
+  def default(implicit p: Parameters): MemReq = {
+    val wire = Wire(new MemReq())
     wire.addr := 0.U
     wire.data := 0.U
     wire.mask := 0.U
@@ -34,30 +34,27 @@ object CacheReq {
   }
 }
 
-class CacheResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
-  val data = UInt(xlen.W)
-  val tag  = UInt((List(1,mshrlen).max).W)
+class MemResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
+  val data    = UInt(xlen.W)
+  val tag     = UInt((List(1,mshrlen).max).W)
+  val iswrite = Bool()
 }
 
-class CacheRespT(implicit p: Parameters) extends CacheResp() {
-  val isSt = Bool()
-}
-
-object CacheRespT {
-  def default(implicit p: Parameters): CacheRespT = {
-    val wire = Wire(new CacheRespT())
+object MemResp {
+  def default(implicit p: Parameters): MemResp = {
+    val wire = Wire(new MemResp())
     wire.valid := false.B
     wire.data := 0.U
     wire.tag  := 0.U
-    wire.isSt  := false.B
+    wire.iswrite  := false.B
     wire
   }
-}
+}*/
 
 class CacheIO (implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())
-  val req   = Flipped(Decoupled(new CacheReq))
-  val resp  = Output(Valid(new CacheRespT))
+  val req   = Flipped(Decoupled(new MemReq))
+  val resp  = Output(Valid(new MemResp))
 }
 
 class CacheModuleIO(implicit p: Parameters) extends CoreBundle()(p) {
@@ -73,7 +70,7 @@ trait CacheParams extends CoreParams with HasNastiParameters {
   val bBits  = bBytes << 3
   val blen   = log2Ceil(bBytes)
   val slen   = log2Ceil(nSets)
-  val taglen   = xlen - (slen + blen)
+  val taglen = xlen - (slen + blen)
   val nWords = bBits / xlen
   val wBytes = xlen / 8
   val byteOffsetBits = log2Ceil(wBytes)
@@ -90,11 +87,9 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
   val state = RegInit(s_IDLE)
   // memory
-  val v        = RegInit(0.U(nSets.W))
-  val d        = RegInit(0.U(nSets.W))
-//  val metaMem  = SyncReadMem(nSets, new MetaData)
+  val valid    = RegInit(0.U(nSets.W))
+  val dirty    = RegInit(0.U(nSets.W))
   val metaMem  = Mem(nSets, new MetaData)
-//  val dataMem  = Seq.fill(nWords)(SyncReadMem(nSets, Vec(wBytes, UInt(8.W))))
   val dataMem  = Seq.fill(nWords)(Mem(nSets, Vec(wBytes, UInt(8.W))))
 
   val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
@@ -133,13 +128,13 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val refill_buf = Reg(Vec(dataBeats, UInt(nastiXDataBits.W)))
   val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
-  hit := v(idx_reg) && rmeta.tag === tag_reg
+  hit := valid(idx_reg) && rmeta.tag === tag_reg
 
   // Read Mux
   io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
   io.cpu.resp.bits.tag  := cpu_tag
   io.cpu.resp.bits.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
-  io.cpu.resp.bits.isSt := cpu_iswrite
+  io.cpu.resp.bits.iswrite := cpu_iswrite
   io.cpu.resp.valid     := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.req.ready      := is_idle || (state === s_READ_CACHE && hit)
 
@@ -154,25 +149,25 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   val wmeta = Wire(new MetaData)
   wmeta.tag := tag_reg
 
-  val wmask = Mux(!is_alloc, (cpu_mask << Cat(off_reg, 0.U(byteOffsetBits.W))).zext, -1.S)
+  val wmask = Mux(!is_alloc, (cpu_mask << Cat(off_reg, 0.U(byteOffsetBits.W))).asUInt.zext, -1.S).asUInt()
   val wdata = Mux(!is_alloc, Fill(nWords, cpu_data),
     if (refill_buf.size == 1) io.nasti.r.bits.data
     else Cat(io.nasti.r.bits.data, Cat(refill_buf.init.reverse)))
   when(wen) {
-    v := v.bitSet(idx_reg, true.B)
-    d := d.bitSet(idx_reg, !is_alloc)
+    valid := valid.bitSet(idx_reg, true.B)
+    dirty := dirty.bitSet(idx_reg, !is_alloc)
     when(is_alloc) {
       metaMem.write(idx_reg, wmeta)
     }
     dataMem.zipWithIndex foreach { case (mem, i) =>
       val data = Vec.tabulate(wBytes)(k => wdata(i*xlen+(k+1)*8-1, i*xlen+k*8))
-      mem.write(idx_reg, data, wmask((i+1)*wBytes-1, i*wBytes).toBools)
+      mem.write(idx_reg, data, (wmask((i+1)*wBytes-1, i*wBytes)).toBools)
       mem suggestName s"dataMem_${i}"
     }
   }
 
   io.nasti.ar.bits := NastiReadAddressChannel(
-    0.U, Cat(tag_reg, idx_reg) << blen.U, log2Ceil(nastiXDataBits/8).U, (dataBeats-1).U)
+    0.U, (Cat(tag_reg, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits/8).U, (dataBeats-1).U)
   io.nasti.ar.valid := false.B
   io.nasti.ar.bits.prot := AXPROT(false, false, true)
   io.nasti.ar.bits.user := 0x1f.U
@@ -186,7 +181,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
 
   // write addr
   io.nasti.aw.bits := NastiWriteAddressChannel(
-    0.U, Cat(rmeta.tag, idx_reg) << blen.U, log2Ceil(nastiXDataBits/8).U, (dataBeats-1).U)
+    0.U, (Cat(rmeta.tag, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits/8).U, (dataBeats-1).U)
   io.nasti.aw.valid := false.B
   io.nasti.aw.bits.prot := AXPROT(false, false, true)
   io.nasti.aw.bits.user := 0x1f.U
@@ -205,7 +200,7 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
   //clockCycles := clockCycles + 1.U
 
 
-  val is_dirty = v(idx_reg) && d(idx_reg)
+  val is_dirty = valid(idx_reg) && dirty(idx_reg)
   switch(state) {
     is(s_IDLE) {
       when(io.cpu.req.valid) {

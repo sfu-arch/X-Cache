@@ -212,8 +212,8 @@ object Data_cilk_spawn_test02_FlowParam{
 abstract class cilk_spawn_test02DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -246,8 +246,8 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32)))
   InputSplitter.io.In <> io.in
@@ -317,7 +317,7 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  reattach label %det.cont, !UID !18, !BB_UID !19, !ScalaLabel !20
-  val reattach5 = Module(new Reattach(NumPredIn=1, ID=5))
+  val reattach5 = Module(new Reattach(NumPredOps=1, ID=5))
 
   // [BasicBlock]  det.cont:
 
@@ -335,7 +335,7 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  reattach label %det.cont3, !UID !28, !BB_UID !29, !ScalaLabel !30
-  val reattach9 = Module(new Reattach(NumPredIn=1, ID=9))
+  val reattach9 = Module(new Reattach(NumPredOps=1, ID=9))
 
   // [BasicBlock]  det.cont3:
 
@@ -357,7 +357,7 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   //  ret i32 %add4, !UID !40, !BB_UID !41, !ScalaLabel !42
-  val ret14 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=14))
+  val ret14 = Module(new RetNode(retTypes=List(32), ID=14))
 
 
 
@@ -600,9 +600,9 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
   sync10.io.decIn(1) <> reattach9.io.Out(0)
 
   // Wiring return instruction
-  ret14.io.predicateIn(0).bits.control := true.B
-  ret14.io.predicateIn(0).bits.taskID := 0.U
-  ret14.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret14.io.In.data("field0") <> add13.io.Out(param.ret14_in("add13"))
   io.out <> ret14.io.Out
 

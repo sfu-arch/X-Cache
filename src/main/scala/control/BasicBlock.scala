@@ -63,12 +63,12 @@ class BasicBlockNode(NumInputs: Int,
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   //Assertion
-  assert(NumPhi >= 1, "NumPhi Cannot be zero")
   /*===========================================*
    *            Registers                      *
    *===========================================*/
   // OP Inputs
-  val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+  val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(ControlBundle.default)))
+  val predicate_control_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
   val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
 
   val s_IDLE :: s_LATCH :: Nil = Enum(2)
@@ -78,7 +78,7 @@ class BasicBlockNode(NumInputs: Int,
    *            Valids                         *
    *===========================================*/
 
-  val predicate = predicate_in_R.asUInt().orR
+  val predicate = predicate_in_R.map(_.control).reduceLeft(_ || _)
   val start = predicate_valid_R.asUInt().andR()
 
   /*===============================================*
@@ -91,7 +91,8 @@ class BasicBlockNode(NumInputs: Int,
   for (i <- 0 until NumInputs) {
     io.predicateIn(i).ready := ~predicate_valid_R(i)
     when(io.predicateIn(i).fire()) {
-      predicate_in_R(i) <> io.predicateIn(i).bits.control
+      predicate_in_R(i) <> io.predicateIn(i).bits
+      predicate_control_R(i) <> io.predicateIn(i).bits.control
       predicate_valid_R(i) := true.B
     }
   }
@@ -99,12 +100,12 @@ class BasicBlockNode(NumInputs: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.control := pred_R.control
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits.taskID := predicate_in_R(0).taskID
   }
 
   // Wire up mask output
   for (i <- 0 until NumPhi) {
-    io.MaskBB(i).bits := Reverse(predicate_in_R.asUInt())
+    io.MaskBB(i).bits := predicate_control_R.asUInt()
   }
 
 
@@ -118,13 +119,107 @@ class BasicBlockNode(NumInputs: Int,
         pred_R.control := predicate
         ValidOut()
         state := s_LATCH
+        assert(PopCount(predicate_control_R) < 2.U)
       }
+      PopCount
     }
     is(s_LATCH) {
       when(IsOutReady()) {
         predicate_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
-        predicate_in_R := VecInit(Seq.fill(NumInputs)(false.B))
+//        predicate_in_R := VecInit(Seq.fill(NumInputs)(ControlBundle.default))
+        pred_R.control := false.B
+        Reset()
+        state := s_IDLE
 
+        when(predicate) {
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+        }.otherwise {
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+        }
+      }
+    }
+
+  }
+
+
+}
+
+class OOBasicBlockNode(NumInputs: Int,
+                     NumOuts: Int,
+                     NumPhi: Int,
+                     BID: Int)
+                    (implicit p: Parameters,
+                     name: sourcecode.Name,
+                     file: sourcecode.File)
+  extends HandShakingCtrlMask(NumInputs, NumOuts, NumPhi, BID)(p) {
+
+  override lazy val io = IO(new BasicBlockIO(NumInputs, NumOuts, NumPhi))
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil = node_name + BID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  val predArb = Module(new RRArbiter(new ControlBundle(), NumInputs))
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+
+  predArb.io.in <> io.predicateIn
+
+  val predicate_in_R = RegInit(ControlBundle.default)
+  val predicate_valid_R = RegInit(false.B)
+
+  val s_IDLE :: s_LATCH :: Nil = Enum(2)
+  val state = RegInit(s_IDLE)
+
+  /*===========================================*
+   *            Valids                         *
+   *===========================================*/
+
+  val predicate = predicate_in_R.control
+  val start = predicate_valid_R
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+  val chosen_R = RegInit(0.U.asTypeOf(predArb.io.chosen))
+
+  for (i <- 0 until NumInputs) {
+    predArb.io.out.ready := ~predicate_valid_R
+    when(predArb.io.out.fire()) {
+      predicate_in_R := predArb.io.out.bits
+      predicate_valid_R := true.B
+      chosen_R := predArb.io.chosen
+    }
+  }
+
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits := predicate_in_R
+  }
+
+  // Wire up mask output
+  for (i <- 0 until NumPhi) {
+    io.MaskBB(i).bits := chosen_R
+  }
+
+
+  /*============================================*
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
+
+  switch(state) {
+    is(s_IDLE) {
+      when(predicate_valid_R) {
+        ValidOut()
+        state := s_LATCH
+      }
+    }
+    is(s_LATCH) {
+      when(IsOutReady()) {
+        predicate_valid_R := false.B
         Reset()
 
         state := s_IDLE
@@ -135,15 +230,11 @@ class BasicBlockNode(NumInputs: Int,
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
         }
         //Restart predicate bit
-        pred_R.control := false.B
       }
     }
 
   }
-
-
 }
-
 
 /**
   * @brief BasicBlockIO class definition
@@ -260,8 +351,8 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
   val out_ready_W = out_ready_R.asUInt.andR
   val out_valid_W = out_valid_R.asUInt.andR
 
-  val mask_ready_W = mask_ready_R.asUInt.andR
-  val mask_valid_W = mask_valid_R.asUInt.andR
+  val mask_ready_W = mask_ready_R.reduceLeft(_ && _)
+  val mask_valid_W = mask_valid_R.reduceLeft(_ && _)
 
 
   // Reseting all the latches
@@ -288,14 +379,12 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
 /**
   * @brief BasicBlockIO class definition
   * @details Implimentation of BasickBlockIO
-  * @param NumInputs Number of predecessors
   * @param NumOuts   Number of successor instructions
   */
 
-class BasicBlockNoMaskIO(NumInputs: Int,
-                         NumOuts: Int)
+class BasicBlockNoMaskIO(NumOuts: Int)
                         (implicit p: Parameters)
-  extends HandShakingCtrlNoMaskIO(NumInputs, NumOuts) {
+  extends HandShakingCtrlNoMaskIO(NumOuts) {
   // LeftIO: Left input data for computation
   //  val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
   val predicateIn = Flipped(Decoupled(new ControlBundle()))
@@ -318,17 +407,17 @@ class BasicBlockNoMaskNode(NumInputs: Int,
                            file: sourcecode.File)
   extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
 
-  override lazy val io = IO(new BasicBlockNoMaskIO(NumInputs, NumOuts))
-  override val printfSigil = node_name + BID + " "
+  override lazy val io = IO(new BasicBlockNoMaskIO(NumOuts))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = node_name + BID + " "
 
   /*===========================================*
    *            Registers                      *
    *===========================================*/
-  val predicate_in_R = RegInit(false.B)
+  val predicate_in_R = RegInit(ControlBundle.default)
   val predicate_valid_R = RegInit(false.B)
 
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
@@ -340,14 +429,13 @@ class BasicBlockNoMaskNode(NumInputs: Int,
 
   io.predicateIn.ready := ~predicate_valid_R
   when(io.predicateIn.fire()) {
-    predicate_in_R := io.predicateIn.bits.control
+    predicate_in_R <> io.predicateIn.bits
     predicate_valid_R := true.B
   }
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := predicate_in_R
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits <> predicate_in_R
   }
 
 
@@ -364,27 +452,18 @@ class BasicBlockNoMaskNode(NumInputs: Int,
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {
-        predicate_in_R := false.B
+        predicate_in_R <> ControlBundle.default
         predicate_valid_R := false.B
-
         state := s_IDLE
 
         Reset()
-        when(predicate_in_R) {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output [T] fired @ %d\n", cycleCount)
-        }.otherwise {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output [F] fired @ %d\n", cycleCount)
-        }
+
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output [T] fired @ %d\n",
+          predicate_in_R.taskID, cycleCount)
       }
     }
 
   }
-
-  //At each iteration only on preds can be activated
-  val pred_tem = predicate_in_R.asUInt
-
-  assert(((pred_tem & pred_tem - 1.U) === 0.U),
-    "BasicBlock can not have multiple active preds")
 
 }
 
@@ -400,19 +479,19 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int)(i
                                                                                file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
   val io = IO(new BasicBlockNoMaskFastIO(NumOuts)(p))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
   /*===========================================*
    *            Registers                      *
    *===========================================*/
   val allReady = io.Out.map(_.ready).reduceLeft(_ && _)
 
   io.Out.foreach(_.bits := io.predicateIn.bits)
-  io.Out.foreach(_.valid := io.predicateIn.valid)
+  io.Out.foreach(_.valid := io.predicateIn.valid && allReady)
 
   io.predicateIn.ready := allReady // || allFired
 
@@ -462,18 +541,17 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
   val end_loop_valid_R = RegInit(false.B)
 
   // Output Handshaking
+  val out_R = RegInit(ControlBundle.default)
   val out_val_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
-  val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_fired_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
   val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
 
-  val mask_ready_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
+  val mask_fired_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
   val mask_valid_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
   val mask_value_R = RegInit(0.U(2.W))
-  val mask_ready_W = mask_ready_R.asUInt.andR
 
   val s_START :: s_FEED :: s_END :: Nil = Enum(3)
   val state = RegInit(s_START)
-  val prev_state = RegInit(s_START)
 
   io.activate.ready := ~active_valid_R
   when(io.activate.fire()) {
@@ -481,15 +559,14 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
     active_valid_R := true.B
   }
 
-  io.loopBack.ready := ~loop_back_valid_R
+  io.loopBack.ready := true.B//~loop_back_valid_R
   when(io.loopBack.fire()) {
     loop_back_R <> io.loopBack.bits
     loop_back_valid_R := true.B
   }
 
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := true.B
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits := out_R
   }
 
   // Wire up OUT READYs and VALIDs
@@ -497,7 +574,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
     io.Out(i).valid := out_valid_R(i)
     when(io.Out(i).fire()) {
       // Detecting when to reset
-      out_ready_R(i) := io.Out(i).ready
+      out_fired_R(i) := true.B;
       // Propagating output
       out_valid_R(i) := false.B
     }
@@ -509,7 +586,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
     io.MaskBB(i).valid := mask_valid_R(i)
     when(io.MaskBB(i).fire()) {
       // Detecting when to reset
-      mask_ready_R(i) := io.MaskBB(i).ready
+      mask_fired_R(i) := true.B
       // Propagating mask
       mask_valid_R(i) := false.B
     }
@@ -522,60 +599,46 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
    ==================*/
 
   switch(state) {
-    is(s_START) {
+    is(s_START) {  // First loop
       mask_value_R := 1.U
-    }
-    is(s_END) {
-      mask_value_R := 2.U
-    }
-  }
-
-  switch(state) {
-    is(s_START) {
-      when(io.activate.fire() || active_valid_R) {
-        //Valid the output
-        out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
-        mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
-        state := s_FEED
-        prev_state := s_START
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, 1.U)
-      }
-    }
-    is(s_FEED) {
-      when(out_ready_R.asUInt().andR()) {
-        out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
-        out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
-
-        mask_ready_R := VecInit(Seq.fill(NumPhi)(false.B))
-        mask_valid_R := VecInit(Seq.fill(NumPhi)(false.B))
-
-        state := s_END
-      }
-    }
-    is(s_END) {
-      when(loop_back_valid_R) {
-
-        loop_back_R := ControlBundle.default
-        loop_back_valid_R := false.B
-
-        when(loop_back_R.control) {
+      when(active_valid_R) {
+        when(active_R.control) {
+          //Valid the output
+          out_R := active_R
           out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
           mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
-
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, 2.U)
-
-          state := s_FEED
-
-        }.otherwise{
+          state := s_END
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Active fired @ %d, Mask: %d\n",active_R.taskID, cycleCount, 1.U)
+        }.otherwise {
           active_R := ControlBundle.default
           active_valid_R := false.B
           state := s_START
-
         }
       }
     }
-
-
+    is(s_FEED) {  // Wait for loop feedback signal.
+      mask_value_R := 2.U
+      when(loop_back_valid_R) {
+        loop_back_valid_R := false.B
+        when(loop_back_R.control) {
+          out_R := loop_back_R
+          out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
+          mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
+          state := s_END
+        }.otherwise{
+          active_valid_R := false.B
+          state := s_START
+        }
+      }
+    }
+    is(s_END) {  // Wait until all outputs have fired
+      when(out_fired_R.reduceLeft(_ && _) && mask_fired_R.reduceLeft(_ && _)) {
+        mask_value_R := 2.U
+        out_fired_R := VecInit(Seq.fill(NumOuts)(false.B))
+        mask_fired_R := VecInit(Seq.fill(NumPhi)(false.B))
+        state := s_FEED
+      }
+    }
   }
 
 

@@ -15,12 +15,12 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
 
   val dut = Module(c)
   // -- IO ---
-  //    val ReadCacheReq = Decoupled(new CacheReq)
-  //    val ReadCacheResp = Flipped(Valid(new CacheResp))
-  //    val WriteCacheReq = Decoupled(new CacheReq)
-  //    val WriteCacheResp = Flipped(Valid(new CacheResp))
-  //    val CacheReq = Decoupled(new CacheReq)
-  //    val CacheResp = Flipped(Valid(new CacheRespT))
+  //    val ReadMemReq = Decoupled(new MemReq)
+  //    val ReadMemResp = Flipped(Valid(new MemResp))
+  //    val WriteMemReq = Decoupled(new MemReq)
+  //    val WriteMemResp = Flipped(Valid(new MemResp))
+  //    val MemReq = Decoupled(new MemReq)
+  //    val MemResp = Flipped(Valid(new MemResp))
 
   val sIdle :: sReq :: sDone :: Nil = Enum(3)
   val state = RegInit(sIdle)
@@ -29,7 +29,7 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
 
   val (testCnt, testDone) = Counter(sIdle === sReq, 2)
   // -- --------------------------------------------------
-  dut.io.CacheReq.ready := true.B
+  dut.io.MemReq.ready := true.B
 
   switch(state) {
     is(sIdle) {
@@ -39,65 +39,65 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
 
       //Store Req
 
-      when(dut.io.WriteCacheReq.ready) {
+      when(dut.io.WriteMemReq.ready) {
 
         // dont use printf s inside when
-        printf(p" WriteCacheReq Ready ")
-        dut.io.WriteCacheReq.valid        := true.B
-        dut.io.WriteCacheReq.bits.addr    := 23.U
-        dut.io.WriteCacheReq.bits.data    := 4.U
-        dut.io.WriteCacheReq.bits.iswrite := true.B
-        dut.io.WriteCacheReq.bits.tag     := 1.U
+        printf(p" WriteMemReq Ready ")
+        dut.io.WriteMemReq.valid        := true.B
+        dut.io.WriteMemReq.bits.addr    := 23.U
+        dut.io.WriteMemReq.bits.data    := 4.U
+        dut.io.WriteMemReq.bits.iswrite := true.B
+        dut.io.WriteMemReq.bits.tag     := 1.U
       }
         .otherwise {
-          dut.io.WriteCacheReq.valid := false.B
+          dut.io.WriteMemReq.valid := false.B
         }
 
 
 
-      when(dut.io.ReadCacheReq.ready) {
+      when(dut.io.ReadMemReq.ready) {
 
-        printf(" ReadCacheReq Ready ")
+        printf(" ReadMemReq Ready ")
         //Load Req
-        dut.io.ReadCacheReq.valid := true.B
-        dut.io.ReadCacheReq.bits.addr := 123.U
-        dut.io.ReadCacheReq.bits.data := 432232424.U //garbage
-        dut.io.ReadCacheReq.bits.iswrite := false.B
-        dut.io.ReadCacheReq.bits.tag := 1.U
+        dut.io.ReadMemReq.valid := true.B
+        dut.io.ReadMemReq.bits.addr := 123.U
+        dut.io.ReadMemReq.bits.data := 432232424.U //garbage
+        dut.io.ReadMemReq.bits.iswrite := false.B
+        dut.io.ReadMemReq.bits.tag := 1.U
 
       }
         .otherwise {
-          dut.io.ReadCacheReq.valid  := false.B
+          dut.io.ReadMemReq.valid  := false.B
         }
 
 
-      when(dut.io.ReadCacheReq.ready || dut.io.WriteCacheReq.ready) {
+      when(dut.io.ReadMemReq.ready || dut.io.WriteMemReq.ready) {
         state := sReq
         }
 
-      when(dut.io.CacheReq.valid) {
-        isSt_R := dut.io.CacheReq.bits.iswrite
-        tag_R := dut.io.CacheReq.bits.tag
+      when(dut.io.MemReq.valid) {
+        isSt_R := dut.io.MemReq.bits.iswrite
+        tag_R := dut.io.MemReq.bits.tag
       }
 
-      printf("\n io.CacheReq.valid : %x ", dut.io.CacheReq.valid)
-      printf(" io.CacheReq.isSt : %x ", dut.io.CacheReq.bits.iswrite)
-      printf(" io.CacheReq.tag : %x \n", dut.io.CacheReq.bits.tag)
+      printf("\n io.MemReq.valid : %x ", dut.io.MemReq.valid)
+      printf(" io.MemReq.isSt : %x ", dut.io.MemReq.bits.iswrite)
+      printf(" io.MemReq.tag : %x \n", dut.io.MemReq.bits.tag)
 
-      printf("ReadCacheReq.ready: %x ", dut.io.ReadCacheReq.ready)
-      printf("ReadCacheReq.valid: %x \n", dut.io.ReadCacheReq.valid)
+      printf("ReadMemReq.ready: %x ", dut.io.ReadMemReq.ready)
+      printf("ReadMemReq.valid: %x \n", dut.io.ReadMemReq.valid)
 
-      printf("WriteCacheReq.ready: %x  ", dut.io.WriteCacheReq.ready)
-      printf("WriteCacheReq.valid: %x \n ", dut.io.WriteCacheReq.valid)
+      printf("WriteMemReq.ready: %x  ", dut.io.WriteMemReq.ready)
+      printf("WriteMemReq.valid: %x \n ", dut.io.WriteMemReq.valid)
 
     }
 
     is(sReq) {
       println(" \n state == sReq \n ")
-//      dut.io.CacheResp.data     := 34.U
-//      dut.io.CacheResp.isSt     := isSt_R // will depend on Ld/St
-//      dut.io.CacheResp.valid    := true.B
-//      dut.io.CacheResp.tag      := tag_R
+//      dut.io.MemResp.data     := 34.U
+//      dut.io.MemResp.isSt     := isSt_R // will depend on Ld/St
+//      dut.io.MemResp.valid    := true.B
+//      dut.io.MemResp.tag      := tag_R
 //      state := sDone
     }
 
@@ -110,31 +110,31 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
     }
   }
 
-//        printf(" ^^^^^^^^^^ io.CacheReq.valid : ")
+//        printf(" ^^^^^^^^^^ io.MemReq.valid : ")
 
 //  when(state === sIdle) {
-//    when(c.io.CacheReq.valid) {
-//      printf(" ^^^^^^^^^^ io.CacheReq.valid : ")
+//    when(c.io.MemReq.valid) {
+//      printf(" ^^^^^^^^^^ io.MemReq.valid : ")
 //    }
-//    printf(" ^^^^^^^^^^ io.CacheReq.valid : 0x%x.", dut.io.CacheReq.valid)
-//    printf(s"ReadCacheReq.ready: %x ", dut.io.ReadCacheReq.ready)
-//    printf(s"ReadCacheReq.valid: %x ", dut.io.ReadCacheReq.valid)
+//    printf(" ^^^^^^^^^^ io.MemReq.valid : 0x%x.", dut.io.MemReq.valid)
+//    printf(s"ReadMemReq.ready: %x ", dut.io.ReadMemReq.ready)
+//    printf(s"ReadMemReq.valid: %x ", dut.io.ReadMemReq.valid)
 //
-//    printf(s"WriteCacheReq.ready: %x  ", dut.io.WriteCacheReq.ready)
-//    printf(s"WriteCacheReq.valid: %x  ", dut.io.WriteCacheReq.valid)
+//    printf(s"WriteMemReq.ready: %x  ", dut.io.WriteMemReq.ready)
+//    printf(s"WriteMemReq.valid: %x  ", dut.io.WriteMemReq.valid)
 //
 //
-//    printf(s" ^^^^^   ^^^ io.CacheReq.Valid: %x ", dut.io.CacheReq.valid)
-//    printf(s"io.CacheReq.addr: %x ", dut.io.CacheReq.bits.addr)
-//    printf(s"io.CacheReq.data: %x ", dut.io.CacheReq.bits.data)
-//    printf(s"io.CacheReq.tag:  %x ", dut.io.CacheReq.bits.tag)
-//    printf(s"io.CacheReq.mask: %x ", dut.io.CacheReq.bits.mask)
-//    printf(s"io.CacheReq.iswrite: %x ", dut.io.CacheReq.bits.iswrite)
+//    printf(s" ^^^^^   ^^^ io.MemReq.Valid: %x ", dut.io.MemReq.valid)
+//    printf(s"io.MemReq.addr: %x ", dut.io.MemReq.bits.addr)
+//    printf(s"io.MemReq.data: %x ", dut.io.MemReq.bits.data)
+//    printf(s"io.MemReq.tag:  %x ", dut.io.MemReq.bits.tag)
+//    printf(s"io.MemReq.mask: %x ", dut.io.MemReq.bits.mask)
+//    printf(s"io.MemReq.iswrite: %x ", dut.io.MemReq.bits.iswrite)
 //
 //
 //    printf(s" Read/Write Response ----------")
-//    printf(s"io.write_resp.valid: %x ", dut.io.WriteCacheResp.valid)
-//    printf(s"io.read_resp.valid:  %x ", dut.io.ReadCacheResp.valid)
+//    printf(s"io.write_resp.valid: %x ", dut.io.WriteMemResp.valid)
+//    printf(s"io.read_resp.valid:  %x ", dut.io.ReadMemResp.valid)
 //  }
 
 //  when(testDone) {
@@ -148,47 +148,47 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
 ////    is(sIdle) {
 ////
 ////      printf(" state == Idle ")
-//////      when(dut.io.CacheReq.ready) {
+//////      when(dut.io.MemReq.ready) {
 //////
-//////        printf(" CacheReq Ready ")
+//////        printf(" MemReq Ready ")
 //////        //Load Req
-//////        dut.io.ReadCacheReq.valid         := true.B
-//////        dut.io.ReadCacheReq.bits.addr     := 123.U
-//////        dut.io.ReadCacheReq.bits.data     := 432232424.U //garbage
-//////        dut.io.ReadCacheReq.bits.iswrite  := false.B
-//////        dut.io.ReadCacheReq.bits.tag      := 1.U
+//////        dut.io.ReadMemReq.valid         := true.B
+//////        dut.io.ReadMemReq.bits.addr     := 123.U
+//////        dut.io.ReadMemReq.bits.data     := 432232424.U //garbage
+//////        dut.io.ReadMemReq.bits.iswrite  := false.B
+//////        dut.io.ReadMemReq.bits.tag      := 1.U
 //////
 //////        //Store Req
-//////        dut.io.WriteCacheReq.valid        := true.B
-//////        dut.io.WriteCacheReq.bits.addr    := 23.U
-//////        dut.io.WriteCacheReq.bits.data    := 4.U
-//////        dut.io.WriteCacheReq.bits.iswrite := true.B
-//////        dut.io.WriteCacheReq.bits.tag     := 1.U
+//////        dut.io.WriteMemReq.valid        := true.B
+//////        dut.io.WriteMemReq.bits.addr    := 23.U
+//////        dut.io.WriteMemReq.bits.data    := 4.U
+//////        dut.io.WriteMemReq.bits.iswrite := true.B
+//////        dut.io.WriteMemReq.bits.tag     := 1.U
 //////        state := sReq
 //////      }
 //////        .otherwise {
-//////          dut.io.ReadCacheReq.valid  := false.B
-//////          dut.io.WriteCacheReq.valid := false.B
+//////          dut.io.ReadMemReq.valid  := false.B
+//////          dut.io.WriteMemReq.valid := false.B
 //////        }
 ////
 ////    }
 ////
 ////    is(sReq) {
 ////      println(s" ^^^^  ^^^ Receiving Response ")
-//////      dut.io.CacheResp.data     := 34.U
-//////      dut.io.CacheResp.isSt     := isSt_R // will depend on Ld/St
-//////      dut.io.CacheResp.valid    := true.B
-//////      dut.io.CacheResp.tag      := tag_R
+//////      dut.io.MemResp.data     := 34.U
+//////      dut.io.MemResp.isSt     := isSt_R // will depend on Ld/St
+//////      dut.io.MemResp.valid    := true.B
+//////      dut.io.MemResp.tag      := tag_R
 //////
 //////      state := sDone
 ////    }
 ////
 ////    is(sDone) {
-//////      println(s"io.read_resp.data:    ${dut.io.ReadCacheResp.data}")
-//////      println(s"io.read_resp.tag:     ${dut.io.ReadCacheResp.tag}")
+//////      println(s"io.read_resp.data:    ${dut.io.ReadMemResp.data}")
+//////      println(s"io.read_resp.tag:     ${dut.io.ReadMemResp.tag}")
 //////
-//////      println(s"io.write_resp.data:  ${dut.io.WriteCacheResp.data}")
-//////      println(s"io.write_resp.tag:   ${dut.io.WriteCacheResp.tag}")
+//////      println(s"io.write_resp.data:  ${dut.io.WriteMemResp.data}")
+//////      println(s"io.write_resp.tag:   ${dut.io.WriteMemResp.tag}")
 //////
 //////      state := sIdle
 ////      stop();
@@ -198,12 +198,12 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
 //
 //
 //
-//  when(dut.io.CacheReq.valid) {
+//  when(dut.io.MemReq.valid) {
 //
-//    printf(s" ^^^^^   ^^^ io.CacheReq.Valid: ")
-//    printf(s" ^^^^^   ^^^ Sending Cache Req io.CacheReq.Valid: %x", dut.io.CacheReq.valid)
-//    isSt_R := dut.io.CacheReq.bits.iswrite
-//    tag_R  := dut.io.CacheReq.bits.tag
+//    printf(s" ^^^^^   ^^^ io.MemReq.Valid: ")
+//    printf(s" ^^^^^   ^^^ Sending Cache Req io.MemReq.Valid: %x", dut.io.MemReq.valid)
+//    isSt_R := dut.io.MemReq.bits.iswrite
+//    tag_R  := dut.io.MemReq.bits.tag
 //
 //  }
 //
@@ -212,7 +212,7 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
 //
 //
 //  // Connections
-//  dut.io.CacheReq.ready := (state === sIdle)
+//  dut.io.MemReq.ready := (state === sIdle)
 //}
 
 

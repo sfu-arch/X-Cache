@@ -24,12 +24,12 @@ class ReadTypMemoryControllerTests(c: ReadTypMemoryController)
 	poke(c.io.ReadIn(0).bits.Typ,4)
 	poke(c.io.ReadIn(0).valid,1)
 
-	poke(c.io.CacheReq.ready,true)
-	poke(c.io.CacheResp.valid,false)
+	poke(c.io.MemReq.ready,true)
+	poke(c.io.MemResp.valid,false)
 
 	for (t <- 0 until 4) {
 
-		// printf(s"${c.io.CacheReq.bits}")
+		// printf(s"${c.io.MemReq.bits}")
 		step(1)
 	}
 
@@ -38,32 +38,32 @@ class ReadTypMemoryControllerTests(c: ReadTypMemoryController)
 // 	// poke(c.io.ReadIn(1).bits.Typ,1)
 // 	// poke(c.io.ReadIn(1).valid,1)
 // 	var req  = false
-// 	var tag  = peek(c.io.CacheReq.bits.tag)	
+// 	var tag  = peek(c.io.MemReq.bits.tag)	
 // 	var reqT = 0
 //     // in_arb.io.in(0).bits.RouteID := 0.U
 //     // in_arb.io.in(0).bits.Typ := MT_W
 //     // in_arb.io.in(0).valid := true.B
-// 	poke(c.io.CacheReq.ready,1)
-// 	poke(c.io.CacheResp.valid,false)
+// 	poke(c.io.MemReq.ready,1)
+// 	poke(c.io.MemResp.valid,false)
 // 	for (t <- 0 until 12) {
-// 		if((peek(c.io.CacheReq.valid) == 1) && (peek(c.io.CacheReq.ready) == 1)) {
+// 		if((peek(c.io.MemReq.valid) == 1) && (peek(c.io.MemReq.ready) == 1)) {
 // 			printf(s"t: ${t} ---------------------------- \n")
 // 			req  = true
-// 			tag  = peek(c.io.CacheReq.bits.tag)
+// 			tag  = peek(c.io.MemReq.bits.tag)
 // 			reqT = t
 // 		}
 // 		if ((req == true) && (t > reqT))
 // 		{
-// 			poke(c.io.CacheResp.valid,true)
-// 			poke(c.io.CacheResp.bits.data, 0xdeadbeefL)
+// 			poke(c.io.MemResp.valid,true)
+// 			poke(c.io.MemResp.bits.data, 0xdeadbeefL)
 // 			printf("Tag:%d",tag)
-// 			poke(c.io.CacheResp.bits.tag,peek(c.io.CacheReq.bits.tag))
+// 			poke(c.io.MemResp.bits.tag,peek(c.io.MemReq.bits.tag))
 // 			req = false
 // 		}
 // 		if (req == true) {
-// 			poke(c.io.CacheReq.ready,false)
+// 			poke(c.io.MemReq.ready,false)
 // 		} else {
-// 			poke(c.io.CacheReq.ready,true)
+// 			poke(c.io.MemReq.ready,true)
 // 		}
 
 // //     if(t<11) {

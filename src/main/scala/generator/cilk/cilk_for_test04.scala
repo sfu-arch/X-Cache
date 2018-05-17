@@ -215,8 +215,8 @@ abstract class cilk_for_test04DFIO(implicit val p: Parameters) extends Module wi
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val call9_out = Decoupled(new Call(List(32,32,32,32)))
     val call9_in = Flipped(Decoupled(new Call(List(32))))
-//    val CacheResp = Flipped(Valid(new CacheRespT))
-//    val CacheReq = Decoupled(new CacheReq)
+//    val MemResp = Flipped(Valid(new MemResp))
+//    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -249,8 +249,8 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 */
   val InputSplitter = Module(new SplitCall(List(32,32,32)))
   InputSplitter.io.In <> io.in
@@ -345,7 +345,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   // [BasicBlock]  pfor.end.continue:
 
   //  ret i32 1, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8))
+  val ret8 = Module(new RetNode(retTypes=List(32), ID=8))
 
   // [BasicBlock]  offload.pfor.body:
 
@@ -359,7 +359,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   // [BasicBlock]  my_pfor.preattach:
 
   //  reattach label %pfor.inc, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val reattach11 = Module(new Reattach(NumPredIn=1, ID=11))
+  val reattach11 = Module(new Reattach(NumPredOps=1, ID=11))
 
 
 
@@ -562,9 +562,9 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   add5.io.RightIO.valid := true.B
 
   // Wiring return instruction
-  ret8.io.predicateIn(0).bits.control := true.B
-  ret8.io.predicateIn(0).bits.taskID := 0.U
-  ret8.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret8.io.In.data("field0").bits.data := 1.U
   ret8.io.In.data("field0").bits.predicate := true.B
   ret8.io.In.data("field0").valid := true.B
@@ -601,8 +601,8 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 abstract class cilk_for_test04TopIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -613,10 +613,10 @@ class cilk_for_test04TopA(implicit p: Parameters) extends cilk_for_test04TopIO()
   val cilk_for_test04 = Module(new cilk_for_test04DF())
 
   cilk_for_test04.io.in <> io.in
-  cilk_for_test04_detach.io.CacheResp <> io.CacheResp
+  cilk_for_test04_detach.io.MemResp <> io.MemResp
   cilk_for_test04_detach.io.in <> cilk_for_test04.io.call9_out
   cilk_for_test04.io.call9_in <> cilk_for_test04_detach.io.out
-  io.CacheReq <> cilk_for_test04_detach.io.CacheReq
+  io.MemReq <> cilk_for_test04_detach.io.MemReq
   io.out <> cilk_for_test04.io.out
 }
 
@@ -633,11 +633,11 @@ class cilk_for_test04TopB(implicit p: Parameters) extends cilk_for_test04TopIO()
 
     val CacheArbiter = Module(new CacheArbiter(children))
     for (i <- 0 until children) {
-      CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test04_detach(i).io.CacheReq
-      cilk_for_test04_detach(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+      CacheArbiter.io.cpu.MemReq(i) <> cilk_for_test04_detach(i).io.MemReq
+      cilk_for_test04_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
     }
-    io.CacheReq <> CacheArbiter.io.cache.CacheReq
-    CacheArbiter.io.cache.CacheResp <>  io.CacheResp
+    io.MemReq <> CacheArbiter.io.cache.MemReq
+    CacheArbiter.io.cache.MemResp <>  io.MemResp
     // tester to cilk_for_test02
     cilk_for_test04.io.in <> io.in
 
@@ -672,11 +672,11 @@ class cilk_for_test04TopC(implicit p: Parameters) extends cilk_for_test04TopIO()
 
   val CacheArbiter = Module(new CacheArbiter(children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test04_detach(i).io.CacheReq
-    cilk_for_test04_detach(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+    CacheArbiter.io.cpu.MemReq(i) <> cilk_for_test04_detach(i).io.MemReq
+    cilk_for_test04_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
   }
-  io.CacheReq <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <>  io.CacheResp
+  io.MemReq <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <>  io.MemResp
   // tester to cilk_for_test02
   cilk_for_test04.io.in <> io.in
 

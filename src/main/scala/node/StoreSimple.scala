@@ -1,5 +1,9 @@
 package node
 
+/**
+  * Created by nvedula on 15/5/17.
+  */
+
 import chisel3.{RegInit, _}
 import chisel3.util._
 import org.scalacheck.Prop.False
@@ -19,7 +23,7 @@ import utility.UniformPrintfs
 class StoreIO(NumPredOps: Int,
               NumSuccOps: Int,
               NumOuts: Int)(implicit p: Parameters)
-            extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new DataBundle) {
+  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(new DataBundle) {
   // Node specific IO
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
@@ -89,7 +93,9 @@ class UnTypStore(NumPredOps: Int,
     addr_R := io.GepAddr.bits
     addr_valid_R := true.B
   }
-
+  when(io.enable.fire()) {
+    succ_bundle_R.foreach(_ := io.enable.bits)
+  }
   // ACTION: inData
   when(io.inData.fire()) {
     // Latch the data
@@ -97,19 +103,17 @@ class UnTypStore(NumPredOps: Int,
     data_valid_R := true.B
   }
 
-  val predicate = addr_R.predicate & data_R.predicate
-
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.taskID := addr_R.taskID
+    io.Out(i).bits.taskID := data_R.taskID |  addr_R.taskID | enable_R.taskID
   }
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.data := data_R.data
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
+  io.memReq.bits.taskID := data_R.taskID | addr_R.taskID | enable_R.taskID
   io.memReq.bits.mask := 15.U
   io.memReq.valid := false.B
 
@@ -119,41 +123,26 @@ class UnTypStore(NumPredOps: Int,
   val mem_req_fire = addr_valid_R & IsPredValid() & data_valid_R
   val complete = IsSuccReady() & IsOutReady()
 
-
   switch(state) {
     is(s_idle) {
       when(enable_valid_R) {
-        when(enable_R) {
-          when(mem_req_fire && data_valid_R && addr_valid_R && IsPredValid()) {
-            when(predicate) {
-              io.memReq.valid := true.B
-              when(io.memReq.ready) {
-                state := s_RECEIVING
-              }
-            }.otherwise {
+        when(data_valid_R && addr_valid_R) {
+          when(enable_R.control && mem_req_fire) {
+            io.memReq.valid := true.B
+            when(io.memReq.ready) {
               state := s_RECEIVING
             }
+          }.otherwise {
+            ValidSucc()
+            ValidOut()
+            data_R.predicate := false.B
+            state := s_Done
           }
-        }.otherwise {
-
-          addr_R := DataBundle.default
-          addr_valid_R := false.B
-
-          // Reset data.
-          data_R := DataBundle.default
-          data_valid_R := false.B
-
-          // Clear all other state
-          Reset()
-
-          // Reset state.
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
-
         }
       }
     }
     is(s_RECEIVING) {
-      when(io.memResp.valid || ~predicate) {
+      when(io.memResp.valid) {
         ValidSucc()
         ValidOut()
         state := s_Done
@@ -172,9 +161,11 @@ class UnTypStore(NumPredOps: Int,
         Reset()
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n",enable_R.taskID, cycleCount)
+        //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
       }
     }
   }
+
 
 }

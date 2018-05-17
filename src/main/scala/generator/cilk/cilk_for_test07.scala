@@ -185,8 +185,8 @@ abstract class cilk_for_test07DFIO(implicit val p: Parameters) extends Module wi
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val call8_out = Decoupled(new Call(List(32,32,32,32)))
     val call8_in = Flipped(Decoupled(new Call(List(32))))
-//    val CacheResp = Flipped(Valid(new CacheRespT))
-//    val CacheReq = Decoupled(new CacheReq)
+//    val MemResp = Flipped(Valid(new MemResp))
+//    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -219,8 +219,8 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 */
   val InputSplitter = Module(new SplitCall(List(32,32,32)))
   InputSplitter.io.In <> io.in
@@ -282,7 +282,7 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
   // [BasicBlock]  pfor.end.continue:
 
   //  ret i32 1, !UID !13, !BB_UID !14, !ScalaLabel !15
-  val ret2 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=2))
+  val ret2 = Module(new RetNode(retTypes=List(32), ID=2))
 
   // [BasicBlock]  pfor.detach:
 
@@ -313,7 +313,7 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
 
 
   //  reattach label %pfor.inc, !UID !55, !BB_UID !56, !ScalaLabel !57
-  val reattach9 = Module(new Reattach(NumPredIn=1, ID=9))
+  val reattach9 = Module(new Reattach(NumPredOps=1, ID=9))
 
 
 
@@ -474,9 +474,9 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
     */
 
   // Wiring return instruction
-  ret2.io.predicateIn(0).bits.control := true.B
-  ret2.io.predicateIn(0).bits.taskID := 0.U
-  ret2.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret2.io.In.data("field0").bits.data := 1.U
   ret2.io.In.data("field0").bits.predicate := true.B
   ret2.io.In.data("field0").valid := true.B

@@ -126,8 +126,8 @@ object Data_cilk_for_test04_detach_FlowParam{
 abstract class cilk_for_test04_detachDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -156,8 +156,8 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32,32,32)))
   InputSplitter.io.In <> io.in
@@ -239,7 +239,7 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   // [BasicBlock]  my_pfor.preattach:
 
   //  ret void, !UID !24, !BB_UID !25, !ScalaLabel !26
-  val ret8 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=8))
+  val ret8 = Module(new RetNode(retTypes=List(32), ID=8))
 
 
 
@@ -413,9 +413,9 @@ class cilk_for_test04_detachDF(implicit p: Parameters) extends cilk_for_test04_d
   /**
     * Connecting Dataflow signals
     */
-  ret8.io.predicateIn(0).bits.control := true.B
-  ret8.io.predicateIn(0).bits.taskID := 0.U
-  ret8.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret8.io.In.data("field0") <> store6.io.Out(0)  // Manually connected
   io.out <> ret8.io.Out
 

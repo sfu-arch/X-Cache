@@ -26,7 +26,7 @@ import junctions._
   * It contains all the transformation from indices to their module's name
   */
 
-object Data_test01_FlowParam{
+object Data_test01_FlowParam {
 
   val bb_entry_pred = Map(
     "active" -> 0
@@ -55,32 +55,27 @@ object Data_test01_FlowParam{
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING PORTS DEFINITION                        *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING PORTS DEFINITION                        *
+ * ================================================================== */
 
 
 abstract class test01DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val in = Flipped(Decoupled(new Call(List(32, 32))))
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
 
 
-
-
-  /* ================================================================== *
-   *                   PRINTING MODULE DEFINITION                       *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING MODULE DEFINITION                       *
+ * ================================================================== */
 
 
 class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
-
 
 
   /* ================================================================== *
@@ -88,23 +83,22 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    * ================================================================== */
 
 
-	val StackPointer = Module(new Stack(NumOps = 1))
+  val StackPointer = Module(new Stack(NumOps = 1))
 
-	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
+  val RegisterFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 2, NWrites = 2)
+  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2)))
 
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RWArbiter=new ReadWriteArbiter()))
+  val CacheMem = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 2)
+  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCall(List(32,32)))
+  val InputSplitter = Module(new SplitCall(List(32, 32)))
   InputSplitter.io.In <> io.in
-
 
 
   /* ================================================================== *
@@ -122,11 +116,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
-
-
-
-
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
 
   /* ================================================================== *
@@ -139,16 +129,11 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
   // [BasicBlock]  entry:
 
   //  %mul = mul i32 %a, %b, !UID !8, !ScalaLabel !9
-  val mul0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "mul")(sign=false))
+  val mul0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "mul")(sign = false))
 
 
   //  ret i32 %mul, !UID !10, !BB_UID !11, !ScalaLabel !12
-  val ret1 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=1))
-
-
-
-
-
+  val ret1 = Module(new RetNode(retTypes=List(32),ID=1))
 
 
   /* ================================================================== *
@@ -162,15 +147,14 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
   val param = Data_test01_FlowParam
 
 
-
   /* ================================================================== *
    *                   CONNECTING BASIC BLOCKS TO PREDICATE INSTRUCTIONS*
    * ================================================================== */
 
 
   /**
-     * Connecting basic blocks to predicate instructions
-     */
+    * Connecting basic blocks to predicate instructions
+    */
 
 
   bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
@@ -181,8 +165,6 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
 
 
   // There is no branch instruction
-
-
 
 
   /* ================================================================== *
@@ -197,9 +179,6 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
   mul0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("mul0"))
 
   ret1.io.enable <> bb_entry.io.Out(param.bb_entry_activate("ret1"))
-
-
-
 
 
   /* ================================================================== *
@@ -248,9 +227,9 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
   mul0.io.RightIO <> InputSplitter.io.Out.data("field1")
 
   // Wiring return instruction
-  ret1.io.predicateIn(0).bits.control := true.B
-  ret1.io.predicateIn(0).bits.taskID := 0.U
-  ret1.io.predicateIn(0).valid := true.B
+  //  
+  //  
+  
   ret1.io.In.data("field0") <> mul0.io.Out(param.ret1_in("mul0"))
   io.out <> ret1.io.Out
 
@@ -258,8 +237,10 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
 }
 
 import java.io.{File, FileWriter}
+
 object test01Main extends App {
-  val dir = new File("RTL/test01") ; dir.mkdirs
+  val dir = new File("RTL/test01");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test01DF()))
 

@@ -51,7 +51,8 @@ class CBranchNode(ID: Int)
   //  val data_out_w = WireInit(VecInit(Seq.fill(2)(false.B)))
   val data_out_R = RegInit(VecInit(Seq.fill(2)(false.B)))
 
-  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+//  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
   /*==========================================*
@@ -70,15 +71,15 @@ class CBranchNode(ID: Int)
 
   io.CmpIO.ready := ~cmp_valid_R
   when(io.CmpIO.fire()) {
-    cmp_R <> io.CmpIO.bits
+    cmp_R := io.CmpIO.bits
     cmp_valid_R := true.B
   }
 
   // Wire up Outputs
   io.Out(0).bits.control := data_out_R(0)
-  io.Out(0).bits.taskID := 0.U
+  io.Out(0).bits.taskID := enable_R.taskID
   io.Out(1).bits.control := data_out_R(1)
-  io.Out(1).bits.taskID := 0.U
+  io.Out(1).bits.taskID := enable_R.taskID
 
   /*============================================*
    *            STATE MACHINE                   *
@@ -93,27 +94,32 @@ class CBranchNode(ID: Int)
 
   switch(state) {
     is(s_IDLE) {
-      when(enable_valid_R && ~enable_R) {
+      when(IsEnableValid() && cmp_valid_R) {
         state := s_COMPUTE
         ValidOut()
-      }.elsewhen(io.CmpIO.fire()) {
-        state := s_LATCH
-      }
-    }
-    is(s_LATCH) {
-      state := s_COMPUTE
-      when(enable_valid_R) {
-        when(enable_R) {
+        when(IsEnable()) {
           data_out_R(0) := cmp_R.data.asUInt.orR
           data_out_R(1) := ~cmp_R.data.asUInt.orR
+        }.otherwise {
+          data_out_R := VecInit(Seq.fill(2)(false.B))
+        }
+      }
+    }
+/*    is(s_LATCH) {
+      state := s_COMPUTE
+      when(IsEnableValid()) {
+        when(IsEnable()) {
+        }.otherwise{
+          data_out_R := VecInit(Seq.fill(2)(false.B))
         }
         ValidOut()
       }
     }
-    is(s_COMPUTE) {
+*/
+      is(s_COMPUTE) {
       when(IsOutReady()) {
         // Restarting
-        cmp_R := DataBundle.default
+        //cmp_R := DataBundle.default
         cmp_valid_R := false.B
 
         // Reset output
@@ -122,7 +128,7 @@ class CBranchNode(ID: Int)
         state := s_IDLE
 
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, data_out_R.asUInt())
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n",enable_R.taskID, cycleCount, data_out_R.asUInt())
       }
     }
   }
@@ -167,12 +173,14 @@ class CBranchFastNode(ID: Int)
 
 }
 
-class UBranchNode(ID: Int, NumOuts: Int = 1)
+class UBranchNode(NumPredOps: Int = 0,
+                  NumOuts: Int = 1,
+                  ID: Int)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)
-  extends HandShakingCtrlNPS(NumOuts = NumOuts, ID)(p) {
-  override lazy val io = IO(new HandShakingIONPS(NumOuts = NumOuts)(new ControlBundle)(p))
+  extends HandShaking(NumPredOps, 0, NumOuts, ID)(new ControlBundle)(p) {
+  override lazy val io = IO(new HandShakingIOPS(NumPredOps, 0, NumOuts)(new ControlBundle)(p))
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
@@ -183,18 +191,12 @@ class UBranchNode(ID: Int, NumOuts: Int = 1)
    *            Registers                      *
    *===========================================*/
 
-  // Output register
-  val data_R = RegInit(0.U(xlen.W))
-
   val s_idle :: s_OUTPUT :: Nil = Enum(2)
   val state = RegInit(s_idle)
 
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
-
-  val predicate = IsEnable()
-  val start = IsEnableValid()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -210,43 +212,24 @@ class UBranchNode(ID: Int, NumOuts: Int = 1)
     */
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := predicate
-    io.Out(i).bits.taskID := 0.U
-
+    io.Out(i).bits := enable_R
   }
 
-  /*============================================*
-   *            ACTIONS (possibly dangerous)    *
-   *============================================*/
-
-  when(start & (state === s_idle)) {
-    state := s_OUTPUT
-    ValidOut()
-  }
-
-  /*==========================================*
-   *            Output Handshaking and Reset  *
-   *==========================================*/
-
-
-  val out_ready_W = out_ready_R.asUInt.andR
-  val out_valid_W = out_valid_R.asUInt.andR
-
-  when(out_ready_W & (state === s_OUTPUT)) {
-    //printfInfo("Start restarting output \n")
-    //
-    Reset()
-
-    //Output predication
-    data_R := 0.U
-
-    //Reset state
-    state := s_idle
-    when(predicate) {
-      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+  switch(state){
+    is(s_idle){
+      when(IsEnableValid() && IsPredValid() ){
+        state := s_OUTPUT
+        ValidOut()
+      }
     }
-
-
+    is(s_OUTPUT){
+      when(IsOutReady()){
+        state := s_idle
+        Reset()
+        enable_R := ControlBundle.default
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+      }
+    }
   }
 
 }
@@ -295,7 +278,7 @@ class UBranchEndNode(ID: Int, NumOuts: Int = 1)
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits.control := predicate
-    io.Out(i).bits.taskID := 0.U
+    io.Out(i).bits.taskID := enable_R.taskID
 
   }
 
@@ -444,10 +427,10 @@ class CompareBranchNode(ID: Int, opCode: String)
     io.Out(1).bits.control := false.B
   }
 
-  io.Out(0).bits.taskID := 0.U
+  io.Out(0).bits.taskID := enable_R.taskID
   out_ready_R(0) := io.Out(0).ready
   io.Out(0).valid := out_valid_R(0)
-  io.Out(1).bits.taskID := 0.U
+  io.Out(1).bits.taskID := enable_R.taskID
   out_ready_R(1) := io.Out(1).ready
   io.Out(1).valid := out_valid_R(1)
 
@@ -461,6 +444,10 @@ class CompareBranchNode(ID: Int, opCode: String)
     * valid == 1  ->  cmp = true  then 1
     * valid == 1  ->  cmp = false then 2
     */
+
+  when(state === s_COMPUTE){
+    assert((left_R.taskID === enable_R.taskID) && (right_R.taskID === enable_R.taskID), "Control channel should be in sync with data channel!")
+  }
 
   switch(state) {
     is(s_IDLE) {
@@ -479,8 +466,8 @@ class CompareBranchNode(ID: Int, opCode: String)
           out_ready_R := VecInit(Seq.fill(2)(false.B))
           out_valid_R := VecInit(Seq.fill(2)(false.B))
 
-          printf("[LOG] " + "[" + module_name + "] "
-            + node_name + ": Not predicated value -> reset\n")
+          printf("[LOG] " + "[" + module_name + "] [TID-> %d] "
+            + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
 
         }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
           out_valid_R := VecInit(Seq.fill(2)(true.B))
@@ -504,8 +491,8 @@ class CompareBranchNode(ID: Int, opCode: String)
 
         state := s_IDLE
 
-        printf("[LOG] " + "[" + module_name + "] " + node_name +
-          ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out.asUInt())
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name +
+          ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, FU.io.out.asUInt())
       }
     }
   }

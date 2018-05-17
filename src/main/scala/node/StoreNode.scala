@@ -74,7 +74,7 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
   val data_valid_R = RegInit(false.B)
 
   // Predicate register
-  val enable_R = RegInit(false.B)
+  val enable_R = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
   val nodeID_R = RegInit(ID.U)
@@ -90,7 +90,7 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
   =            Predicate Evaluation            =
   ============================================*/
 
-  val predicate = enable_R
+  val predicate = enable_R.control
 
   val start = addr_valid_R & data_valid_R & enable_valid_R
 
@@ -115,14 +115,14 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
 
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
-    enable_R <> io.enable.bits.control
+    enable_R <> io.enable.bits
     enable_valid_R := true.B
   }
 
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.data := data_R.data
-//  io.memReq.bits.taskID := nodeID_R
+  io.memReq.bits.taskID := addr_R.taskID | enable_R.taskID
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
   io.memReq.bits.mask := 0.U
@@ -139,11 +139,11 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
 
       io.memReq.valid := false.B
 
-      when(start & predicate) {
+      when(start && predicate) {
         when(mem_req_fire) {
           state := s_WAITING
         }
-      }.elsewhen(start & (~predicate).asTypeOf(Bool())) {
+      }.elsewhen(start && !predicate) {
         state := s_Done
       }
 
@@ -175,7 +175,7 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
       data_valid_R := false.B
 
       //Reset enable.
-      enable_R := false.B
+      enable_R := ControlBundle.default
       enable_valid_R := false.B
 
       // Clear all other state
@@ -244,30 +244,30 @@ class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Paramet
   ===========================================*/
 
   //  ACTION: <- Check Out READY and Successors READY
-//  when(state === s_Done) {
-//    // When successors are complete and outputs are ready you can reset.
-//    // data already valid and would be latched in this cycle.
-//
-//    //    when(complete) {
-//    // Clear all the valid states.
-//    // Reset address
-//    addr_R := DataBundle.default
-//    addr_valid_R := false.B
-//    // Reset data.
-//    data_R := DataBundle.default
-//    data_valid_R := false.B
-//
-//    //Reset enable.
-//    enable_R := false.B
-//    enable_valid_R := false.B
-//
-//    // Clear all other state
-//    // Reset:
-//
-//    // Reset state.
-//    state := s_idle
-//    printfInfo("Output fired")
-//
-//  }
+  //  when(state === s_Done) {
+  //    // When successors are complete and outputs are ready you can reset.
+  //    // data already valid and would be latched in this cycle.
+  //
+  //    //    when(complete) {
+  //    // Clear all the valid states.
+  //    // Reset address
+  //    addr_R := DataBundle.default
+  //    addr_valid_R := false.B
+  //    // Reset data.
+  //    data_R := DataBundle.default
+  //    data_valid_R := false.B
+  //
+  //    //Reset enable.
+  //    enable_R := false.B
+  //    enable_valid_R := false.B
+  //
+  //    // Clear all other state
+  //    // Reset:
+  //
+  //    // Reset state.
+  //    state := s_idle
+  //    printfInfo("Output fired")
+  //
+  //  }
 
 }

@@ -173,8 +173,8 @@ object Data_cilk_for_test09_inner_FlowParam{
 abstract class cilk_for_test09_innerDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
-//    val CacheResp = Flipped(Valid(new CacheRespT))
-//    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -195,7 +195,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
    *                   PRINTING MEMORY SYSTEM                           *
    * ================================================================== */
 
-/*
+
 	val StackPointer = Module(new Stack(NumOps = 1))
 
 	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=2)
@@ -207,9 +207,9 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
-*/
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
+
   val InputSplitter = Module(new SplitCall(List(32)))
   InputSplitter.io.In <> io.in
 
@@ -235,7 +235,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
 
   val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond = Module(new LoopHead(NumOuts = 4, NumPhi = 2, BID = 1))
+  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 4, NumPhi = 2, BID = 1))
 
   val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
 
@@ -298,7 +298,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
   // [BasicBlock]  for.end:
 
   //  ret i32 %a.0, !UID !37, !BB_UID !38, !ScalaLabel !39
-  val ret9 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=9))
+  val ret9 = Module(new RetNode(retTypes=List(32), ID=9))
 
 
 
@@ -333,7 +333,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
     */
 
   //Connecting br0 to bb_for_cond
-  bb_for_cond.io.activate <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
+  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
 
 
   //Connecting br4 to bb_for_body
@@ -349,7 +349,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
 
 
   //Connecting br8 to bb_for_cond
-  bb_for_cond.io.loopBack <> br8.io.Out(param.br8_brn_bb("bb_for_cond"))
+  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br8")) <> br8.io.Out(param.br8_brn_bb("bb_for_cond"))
 
 
 
@@ -481,9 +481,9 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
   add7.io.RightIO.bits.predicate := true.B
   add7.io.RightIO.valid := true.B
 
-  ret9.io.predicateIn(0).bits.control := true.B
-  ret9.io.predicateIn(0).bits.taskID := 0.U
-  ret9.io.predicateIn(0).valid := true.B
+  
+  
+  
 
   loop_L_0_LiveOut_0.io.InData <>   phi1.io.Out(param.ret9_in("phi1"))
   ret9.io.In.data("field0") <> loop_L_0_LiveOut_0.io.Out(0)

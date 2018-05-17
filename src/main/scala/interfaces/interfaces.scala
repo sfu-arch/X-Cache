@@ -24,7 +24,7 @@ trait RouteID extends CoreBundle {
 }
 
 trait TaskID extends CoreBundle {
-  val taskID = UInt (glen.W)
+  val taskID = UInt (tlen.W)
 }
 
 trait PredicateT extends CoreBundle {
@@ -55,7 +55,6 @@ object AllocaIO {
 // Can be any of the 4MB regions. Size is over provisioned
 class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) with RouteID {
   val size = UInt(xlen.W)
-//  val taskID = UInt(glen.W)
   val numByte = UInt(xlen.W)
 }
 
@@ -64,7 +63,6 @@ object AllocaReq {
     val wire = Wire(new AllocaReq)
     wire.size := 0.U
     wire.numByte := 0.U
-//    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire
   }
@@ -93,7 +91,7 @@ object AllocaResp {
 class ReadReq(implicit p: Parameters)
   extends RouteID {
   val address = UInt(xlen.W)
-//  val taskID = UInt(tlen.W)
+  val taskID = UInt(tlen.W)
   val Typ = UInt(8.W)
 
 }
@@ -102,7 +100,7 @@ object ReadReq {
   def default(implicit p: Parameters): ReadReq = {
     val wire = Wire(new ReadReq)
     wire.address := 0.U
-//    wire.taskID := 0.U
+    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire.Typ := MT_W
     wire
@@ -149,7 +147,7 @@ class WriteReq(implicit p: Parameters)
   val address = UInt((xlen - 10).W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen / 8).W)
-//  val taskID = UInt(tlen.W)
+  val taskID = UInt(tlen.W)
   val Typ = UInt(8.W)
 }
 
@@ -159,7 +157,7 @@ object WriteReq {
     wire.address := 0.U
     wire.data := 0.U
     wire.mask := 0.U
-//    wire.taskID := 0.U
+    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire.Typ := MT_W
     wire
@@ -173,50 +171,44 @@ class WriteResp(implicit p: Parameters)
   val done = Bool()
 }
 
-
-//  data : data returned from scratchpad
-class FUResp(implicit p: Parameters)
-  extends ValidT
-    with RouteID {
-  val data = UInt(xlen.W)
-
-  override def toPrintable: Printable = {
-    p"FUResp {\n" +
-      p"  valid  : ${valid}\n" +
-      p"  RouteID: ${RouteID}\n" +
-      p"  data   : 0x${Hexadecimal(data)} }"
-  }
+class MemReq(implicit p: Parameters) extends CoreBundle()(p) {
+  val addr    = UInt(xlen.W)
+  val data    = UInt(xlen.W)
+  val mask    = UInt((xlen/8).W)
+  val tag     = UInt((List(1,mshrlen).max).W)
+  val taskID  = UInt(tlen.W)
+  val iswrite = Bool()
 }
 
-object FUResp {
-  def default(implicit p: Parameters): FUResp = {
-    val wire = Wire(new FUResp)
+object MemReq {
+  def default(implicit p: Parameters): MemReq = {
+    val wire = Wire(new MemReq())
+    wire.addr := 0.U
     wire.data := 0.U
-    wire.RouteID := 0.U
-    wire.valid := false.B
-    wire
-  }
-}
-
-/**
-  * @note Implements ordering between dataflow ops.
-  * @param predicate : predicate bit indicating if operations can continue
-  *
-  */
-class AckBundle(implicit p: Parameters) extends CoreBundle()(p) {
-  val taskID = UInt(tlen.W)
-  val predicate = Bool()
-}
-
-object AckBundle {
-  def default(implicit p: Parameters): AckBundle = {
-    val wire = Wire(new AckBundle)
+    wire.mask := 0.U
+    wire.tag  := 0.U
     wire.taskID := 0.U
-    wire.predicate := false.B
+    wire.iswrite  := false.B
     wire
   }
 }
 
+class MemResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
+  val data    = UInt(xlen.W)
+  val tag     = UInt((List(1,mshrlen).max).W)
+  val iswrite = Bool()
+}
+
+object MemResp {
+  def default(implicit p: Parameters): MemResp = {
+    val wire = Wire(new MemResp())
+    wire.valid := false.B
+    wire.data := 0.U
+    wire.tag  := 0.U
+    wire.iswrite  := false.B
+    wire
+  }
+}
 
 //class RelayNode output
 class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
@@ -239,6 +231,12 @@ class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
 class DataBundle(implicit p: Parameters) extends PredicateT with TaskID {
   // Data packet
   val data = UInt(xlen.W)
+  def asControlBundle(): ControlBundle = {
+    val wire = Wire(new ControlBundle)
+    wire.control := this.predicate
+    wire.taskID := this.taskID
+    wire
+  }
 }
 
 
@@ -247,6 +245,13 @@ object DataBundle {
     val wire = Wire(new DataBundle)
     wire.data := 0.U
     wire.predicate := false.B
+    wire.taskID := 0.U
+    wire
+  }
+  def active(data:UInt=0.U)(implicit p: Parameters): DataBundle = {
+    val wire = Wire(new DataBundle)
+    wire.data := data
+    wire.predicate := true.B
     wire.taskID := 0.U
     wire
   }
@@ -268,7 +273,6 @@ object TypBundle {
   }
 }
 
-
 /**
   * Control bundle between branch and
   * basicblock nodes
@@ -279,6 +283,14 @@ class ControlBundle(implicit p: Parameters) extends CoreBundle()(p) {
   //Control packet
   val taskID = UInt(tlen.W)
   val control = Bool()
+
+  def asDataBundle(): DataBundle = {
+    val wire = Wire(new DataBundle)
+    wire.data := this.control.asUInt()
+    wire.predicate := this.control
+    wire.taskID := this.taskID
+    wire
+  }
 }
 
 object ControlBundle {
@@ -311,18 +323,18 @@ object ControlBundle {
   *       predicate : Bool
   * @return
   */
-class CustomDataBundle[T <: Data](gen: T = UInt(32.W)) extends Bundle {
+class CustomDataBundle[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters) extends CoreBundle()(p) {
   // Data packet
   val data = gen.chiselCloneType
   val predicate = Bool()
-  val taskID = UInt(16.W)
+  val taskID = UInt(tlen.W)
   override def cloneType: this.type = new CustomDataBundle(gen).asInstanceOf[this.type]
 }
 
 object CustomDataBundle {
-  def apply[T <: Data](gen: T = UInt(32.W)): CustomDataBundle[T] = new CustomDataBundle(gen)
+  def apply[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters): CustomDataBundle[T] = new CustomDataBundle(gen)
 
-  def default[T <: Data](gen: T = UInt(32.W)): CustomDataBundle[T] = {
+  def default[T <: Data](gen: T)(implicit p: Parameters): CustomDataBundle[T] = {
     val wire = new CustomDataBundle(gen)
     wire.data := 0.U.asTypeOf(gen)
     wire.predicate := false.B
@@ -332,8 +344,9 @@ object CustomDataBundle {
 }
 
 /**
-  * Bundle with arrays of varying types and/or widths
-  *
+  * Bundle with variable (parameterizable) types and/or widths
+  *   VariableData   - bundle of DataBundles of different widths
+  *   VariableCustom - bundle of completely different types
   * These classes create a record with a configurable set of fields like:
   * "data0"
   * "data1", etc.
@@ -352,6 +365,7 @@ object CustomDataBundle {
   *
   */
 
+// Bundle of types specified by the argTypes parameter
 class VariableCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
     i => s"field$i" -> CustomDataBundle(argTypes(i))
@@ -361,6 +375,7 @@ class VariableCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Re
   override def cloneType = new VariableCustom(argTypes).asInstanceOf[this.type]
 }
 
+// Bundle of decoupled types specified by the argTypes parameter
 class VariableDecoupledCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
     i => s"field$i" -> (Decoupled(CustomDataBundle(argTypes(i))))
@@ -370,6 +385,7 @@ class VariableDecoupledCustom(val argTypes: Seq[Bits])(implicit p: Parameters) e
   override def cloneType = new VariableDecoupledCustom(argTypes).asInstanceOf[this.type]
 }
 
+// Bundle of DataBundles with data width specified by the argTypes parameter
 class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
     i => s"field$i" -> new DataBundle()(p.alterPartial({case XLEN => argTypes(i)}))
@@ -379,28 +395,44 @@ class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Recor
   override def cloneType = new VariableData(argTypes).asInstanceOf[this.type]
 }
 
+// Bundle of Decoupled DataBundles with data width specified by the argTypes parameter
 class VariableDecoupledData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
-    i => s"field$i" -> (Decoupled(new DataBundle()(p.alterPartial({case XLEN => argTypes(i)}))))
+    i => s"field$i" -> Decoupled(new DataBundle()(p.alterPartial({case XLEN => argTypes(i)})))
   }
   override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
   def apply(elt: String)= elements(elt)
   override def cloneType = new VariableDecoupledData(argTypes).asInstanceOf[this.type]
 }
 
+// Bundle of Decoupled DataBundle Vectors. Data width is default. Intended for use on outputs
+// of a block (i.e. configurable number of output with configurable number of copies of each output)
+class VariableDecoupledVec(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
+  var elts = Seq.tabulate(argTypes.length) {
+    i => s"field$i" -> Vec(argTypes(i), Decoupled(new DataBundle()(p)))
+  }
+  override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
+  def apply(elt: String)= elements(elt)
+  override def cloneType = new VariableDecoupledVec(argTypes).asInstanceOf[this.type]
+}
+
+// Call type that wraps an enable and variable DataBundle together
+class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
+  val enable = new ControlBundle
+  val data   = new VariableData(argTypes)
+  override def cloneType = new Call(argTypes).asInstanceOf[this.type]
+}
+
+// Call type that wraps a decoupled enable and decoupled variable data bundle together
 class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
   val enable = Decoupled(new ControlBundle)
   val data   = new VariableDecoupledData(argTypes)
   override def cloneType = new CallDecoupled(argTypes).asInstanceOf[this.type]
 }
 
-class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends ValidT with RouteID {
-  val enable = new ControlBundle
-  val data   = new VariableData(argTypes)
-  override def cloneType = new Call(argTypes).asInstanceOf[this.type]
-}
-
-class FUReq(val argTypes: Seq[Int])(implicit p: Parameters) extends RouteID {
-  val data   = new VariableData(argTypes)
-  override def cloneType = new FUReq(argTypes).asInstanceOf[this.type]
+// Call type that wraps a decoupled enable and decoupled vector DataBundle together
+class CallDecoupledVec(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
+  val enable = Decoupled(new ControlBundle)
+  val data   = new VariableDecoupledVec(argTypes)
+  override def cloneType = new CallDecoupledVec(argTypes).asInstanceOf[this.type]
 }

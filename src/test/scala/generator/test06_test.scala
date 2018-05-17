@@ -26,8 +26,8 @@ class test06CacheWrapper()(implicit p: Parameters) extends test06DF()(p)
 
   // Instantiate the AXI Cache
   val cache = Module(new Cache)
-  cache.io.cpu.req <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> cache.io.cpu.resp
   cache.io.cpu.abort := false.B
   // Instantiate a memory model with AXI slave interface for cache
   val memModel = Module(new NastiMemSlave)

@@ -8,6 +8,12 @@ scalaVersion := "2.11.11"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls")
 
+/**
+  D - show durations
+  S - show short stack traces
+  F - show full stack traces
+  W - Without color 
+  **/
 testOptions in Test += Tests.Argument("-oD")
 
 resolvers ++= Seq(

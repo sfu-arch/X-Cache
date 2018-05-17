@@ -22,8 +22,8 @@ class CacheWrapper(val ops:Int)(implicit val p: Parameters) extends Module with 
 
   // Instantiate the AXI Cache
   val cache = Module(new Cache)
-  cache.io.cpu.req <> c.io.CacheReq
-  c.io.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> c.io.MemReq
+  c.io.MemResp <> cache.io.cpu.resp
   cache.io.cpu.abort := false.B
 
   // Instantiate a memory model with AXI slave interface for cache

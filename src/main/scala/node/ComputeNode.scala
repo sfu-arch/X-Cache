@@ -49,14 +49,16 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   val right_R = RegInit(DataBundle.default)
   val right_valid_R = RegInit(false.B)
 
+  val task_ID_R = RegNext(next = enable_R.taskID)
+
   //Output register
-  val data_R = RegInit(0.U(xlen.W))
+  val out_data_R = RegInit(DataBundle.default)
 
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
 
-  val predicate = left_R.predicate & right_R.predicate & IsEnable()
+  val predicate = left_R.predicate & right_R.predicate// & IsEnable()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -81,9 +83,15 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := FU.io.out
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.taskID := left_R.taskID
+    //io.Out(i).bits.data := FU.io.out
+    //io.Out(i).bits.predicate := predicate
+    // The taskID's should be identical except in the case
+    // when one input is tied to a constant.  In that case
+    // the taskID will be zero.  Logical OR'ing the IDs
+    // Should produce a valid ID in either case regardless of
+    // which input is constant.
+    //io.Out(i).bits.taskID := left_R.taskID | right_R.taskID
+    io.Out(i).bits := out_data_R
   }
 
   /*============================================*
@@ -92,34 +100,30 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when((~enable_R).toBool) {
-          left_R := DataBundle.default
-          right_R := DataBundle.default
-
-          left_valid_R := false.B
-          right_valid_R := false.B
-
-          Reset()
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
-        }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
+        when(left_valid_R && right_valid_R) {
           ValidOut()
+          when(enable_R.control) {
+            out_data_R.data := FU.io.out
+            out_data_R.predicate := predicate
+            out_data_R.taskID := left_R.taskID | right_R.taskID
+          }
           state := s_COMPUTE
         }
       }
-
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {
         // Reset data
-        left_R := DataBundle.default
-        right_R := DataBundle.default
+        //left_R := DataBundle.default
+        //right_R := DataBundle.default
         left_valid_R := false.B
         right_valid_R := false.B
         //Reset state
         state := s_IDLE
         //Reset output
+        out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Value: %d\n", cycleCount, FU.io.out)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_R, cycleCount, FU.io.out)
       }
     }
   }

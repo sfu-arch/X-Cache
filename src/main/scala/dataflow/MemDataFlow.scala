@@ -13,8 +13,8 @@ import accel._
 class UnTypMemDataFlow(val ops:Int)(implicit val p: Parameters) extends Module with CoreParams{
 
 	val io = IO(new Bundle{
-		val CacheResp = Flipped(Valid(new CacheRespT))
-		val CacheReq = Decoupled(new CacheReq)
+		val MemResp = Flipped(Valid(new MemResp))
+		val MemReq = Decoupled(new MemReq)
 		val Out = Vec(ops, Decoupled(new DataBundle()))
 	})
 
@@ -31,8 +31,8 @@ class UnTypMemDataFlow(val ops:Int)(implicit val p: Parameters) extends Module w
 	              (RControl=new ReadMemoryController(NumOps=ops*2,BaseSize=2,NumEntries=2))
 	              (RWArbiter=new ReadWriteArbiter()))
 
-	io.CacheReq <> CacheMem.io.CacheReq
-	CacheMem.io.CacheResp <> io.CacheResp
+	io.MemReq <> CacheMem.io.MemReq
+	CacheMem.io.MemResp <> io.MemResp
 
 	val Stores = for (i <- 0 until ops*2) yield {
     val store = Module(new UnTypStore(NumPredOps=0,NumSuccOps=1,NumOuts=1,ID=i,RouteID=i))

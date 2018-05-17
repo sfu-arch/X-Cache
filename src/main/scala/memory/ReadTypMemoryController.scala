@@ -92,6 +92,7 @@ class ReadTypTableEntry(id: Int)(implicit p: Parameters)
   io.MemReq.bits.data := 0.U
   io.MemReq.bits.iswrite := false.B
   io.MemReq.bits.mask := ~0.U
+  io.MemReq.bits.taskID := request_R.taskID
 
   // Memreq valid
   io.MemReq.valid := false.B
@@ -164,9 +165,9 @@ class ReadTypMemoryController(NumOps: Int,
   val alloc_arb = Module(new Arbiter(Bool(), MLPSize))
 
   // Memory request
-  val cachereq_arb = Module(new LockingRRArbiter(new CacheReq, MLPSize, count = Beats))
+  val cachereq_arb = Module(new LockingRRArbiter(new MemReq, MLPSize, count = Beats))
   // Memory response Demux
-  val cacheresp_demux = Module(new Demux(new CacheResp, MLPSize))
+  val cacheresp_demux = Module(new Demux(new MemResp, MLPSize))
 
   // Output arbiter and demuxes
   val out_arb = Module(new LockingRRArbiter(new ReadResp, MLPSize, count = Beats))
@@ -208,10 +209,10 @@ class ReadTypMemoryController(NumOps: Int,
     ReadTable(i).io.NodeReq.valid := alloc_arb.io.in(i).ready
     ReadTable(i).io.NodeReq.bits := in_arb.io.out.bits
 
-    // Table entries -> CacheReq arbiter.
+    // Table entries -> MemReq arbiter.
     cachereq_arb.io.in(i) <> ReadTable(i).io.MemReq
 
-    // CacheResp -> Table entries Demux
+    // MemResp -> Table entries Demux
     ReadTable(i).io.MemResp <> cacheresp_demux.io.outputs(i)
 
     // Table entries -> Output arbiter
@@ -223,13 +224,13 @@ class ReadTypMemoryController(NumOps: Int,
   alloc_arb.io.out.ready := in_arb.io.out.valid
 
   // Cache request arbiter
-  // cachereq_arb.io.out.ready := io.CacheReq.ready
-  io.CacheReq <> cachereq_arb.io.out
+  // cachereq_arb.io.out.ready := io.MemReq.ready
+  io.MemReq <> cachereq_arb.io.out
 
   // Cache response Demux
-  cacheresp_demux.io.en := io.CacheResp.valid
-  cacheresp_demux.io.input := io.CacheResp.bits
-  cacheresp_demux.io.sel := io.CacheResp.bits.tag
+  cacheresp_demux.io.en := io.MemResp.valid
+  cacheresp_demux.io.input := io.MemResp.bits
+  cacheresp_demux.io.sel := io.MemResp.bits.tag
 
   // Output arbiter -> Demux
   out_arb.io.out.ready := true.B

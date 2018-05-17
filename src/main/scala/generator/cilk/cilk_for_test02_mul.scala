@@ -95,8 +95,8 @@ object Data_cilk_for_test02_mul_FlowParam{
 abstract class cilk_for_test02_mulDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -129,8 +129,8 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
 		            (RControl=new ReadMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32,32)))
   InputSplitter.io.In <> io.in
@@ -189,7 +189,7 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
 
 
   //  ret void, !UID !17, !BB_UID !18, !ScalaLabel !19
-  val ret5 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=5))
+  val ret5 = Module(new RetNode(retTypes=List(32), ID=5))
 
 
 
@@ -350,9 +350,9 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
   /**
     * Connecting Dataflow signals
     */
-  ret5.io.predicateIn(0).bits.control := true.B
-  ret5.io.predicateIn(0).bits.taskID := 0.U
-  ret5.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret5.io.In.data("field0")<> store4.io.Out(0)
   io.out <> ret5.io.Out
 

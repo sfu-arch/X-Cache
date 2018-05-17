@@ -166,8 +166,8 @@ object Data_test06_FlowParam{
 abstract class test06DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -200,8 +200,8 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 		            (RControl=new ReadMemoryController(NumOps=3,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32)))
   InputSplitter.io.In <> io.in
@@ -300,7 +300,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
 
   //  ret i32 %2, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret15 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=15))
+  val ret15 = Module(new RetNode(retTypes=List(32), ID=15))
 
 
 
@@ -622,9 +622,9 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
 
   // Wiring return instruction
-  ret15.io.predicateIn(0).bits.control := true.B
-  ret15.io.predicateIn(0).bits.taskID := 0.U
-  ret15.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret15.io.In.data("field0") <> load14.io.Out(param.ret15_in("load14"))
   io.out <> ret15.io.Out
 

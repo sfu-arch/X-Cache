@@ -173,8 +173,8 @@ object Data_test08_FlowParam{
 abstract class test08DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -207,8 +207,8 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32)))
   InputSplitter.io.In <> io.in
@@ -298,7 +298,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret i32 %foo.0, !UID !38, !BB_UID !39, !ScalaLabel !40
-  val ret9 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=9))
+  val ret9 = Module(new RetNode(retTypes=List(32), ID=9))
 
 
 
@@ -481,9 +481,9 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   add7.io.RightIO.bits.predicate := true.B
   add7.io.RightIO.valid := true.B
 
-  ret9.io.predicateIn(0).bits.control := true.B
-  ret9.io.predicateIn(0).bits.taskID := 0.U
-  ret9.io.predicateIn(0).valid := true.B
+  
+  
+  
 
   loop_L_5_LiveOut_0.io.InData <>   phi1.io.Out(param.ret9_in("phi1"))
   ret9.io.In.data("field0") <> loop_L_5_LiveOut_0.io.Out(0)

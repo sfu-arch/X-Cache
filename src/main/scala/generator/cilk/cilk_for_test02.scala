@@ -214,8 +214,8 @@ abstract class cilk_for_test02DFIO(implicit val p: Parameters) extends Module wi
     val in = Flipped(Decoupled(new Call(List(32,32))))
     val call5_out = Decoupled(new Call(List(32,32,32)))
     val call5_in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -248,8 +248,8 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32)))
   InputSplitter.io.In <> io.in
@@ -336,7 +336,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   // [BasicBlock]  pfor.preattach:
 
   //  reattach label %pfor.inc, !UID !25, !BB_UID !26, !ScalaLabel !27
-  val reattach7 = Module(new Reattach(NumPredIn=1, ID=7))
+  val reattach7 = Module(new Reattach(NumPredOps=1, ID=7))
 
   // [BasicBlock]  pfor.inc:
 
@@ -355,7 +355,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   // [BasicBlock]  pfor.end.continue:
 
   //  ret void, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val ret11 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=11))
+  val ret11 = Module(new RetNode(retTypes=List(32), ID=11))
 
 
 
@@ -568,9 +568,9 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   /**
     * Connecting Dataflow signals
     */
-  ret11.io.predicateIn(0).bits.control := true.B
-  ret11.io.predicateIn(0).bits.taskID := 0.U
-  ret11.io.predicateIn(0).valid := true.B
+  
+  
+  
   ret11.io.In.data("field0").bits.data := 1.U
   ret11.io.In.data("field0").bits.predicate := true.B
   ret11.io.In.data("field0").valid := true.B

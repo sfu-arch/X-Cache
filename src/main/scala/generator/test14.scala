@@ -184,8 +184,8 @@ abstract class test14DFIO(implicit val p: Parameters) extends Module with CorePa
     val in = Flipped(Decoupled(new Call(List(32,32))))
     val call5_out = Decoupled(new Call(List(32)))
     val call5_in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -218,8 +218,8 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32)))
   InputSplitter.io.In <> io.in
@@ -319,7 +319,7 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
   // [BasicBlock]  for.end:
 
   //  ret i32 %a.0, !UID !40, !BB_UID !41, !ScalaLabel !42
-  val ret10 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=10))
+  val ret10 = Module(new RetNode(retTypes=List(32), ID=10))
 
 
 
@@ -514,9 +514,9 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
   add8.io.RightIO.bits.predicate := true.B
   add8.io.RightIO.valid := true.B
 
-  ret10.io.predicateIn(0).bits.control := true.B
-  ret10.io.predicateIn(0).bits.taskID := 0.U
-  ret10.io.predicateIn(0).valid := true.B
+  
+  
+  
 
   loop_L_0_LiveOut_0.io.InData <>   phi1.io.Out(param.ret10_in("phi1"))
   ret10.io.In.data("field0") <> loop_L_0_LiveOut_0.io.Out(0)

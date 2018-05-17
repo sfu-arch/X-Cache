@@ -82,43 +82,42 @@ class UnTypLoad(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.predicate := true.B
-    io.Out(i).bits.taskID := addr_R.taskID
+    io.Out(i).bits.taskID := addr_R.taskID | enable_R.taskID
   }
 
   io.memReq.valid := false.B
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
+  io.memReq.bits.taskID := addr_R.taskID | enable_R.taskID
 
+  // Connect successors outputs to the enable status
+  when(io.enable.fire()) {
+    succ_bundle_R.foreach(_ := io.enable.bits)
+  }
   /*=============================================
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
 
-  val mem_req_fire = addr_valid_R & IsPredValid()
+  //val mem_req_fire = addr_valid_R & IsPredValid()
   val complete = IsSuccReady() & IsOutReady()
 
   switch(state) {
     is(s_idle) {
-      when(enable_valid_R) {
-        when(enable_R) {
-          when(mem_req_fire && addr_valid_R && IsPredValid()) {
-            io.memReq.valid := true.B
-            when(io.memReq.ready) {
-              state := s_RECEIVING
-            }
+      when(enable_valid_R && addr_valid_R && IsPredValid()) {
+        when(enable_R.control) {
+          io.memReq.valid := true.B
+          when(io.memReq.ready) {
+            state := s_RECEIVING
           }
         }.otherwise {
-          addr_R := DataBundle.default
-          addr_valid_R := false.B
-          // Reset data
-          data_R := DataBundle.default
-          data_valid_R := false.B
-          // Reset state.
-          Reset()
-          // Reset state.
-          state := s_idle
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
+          data_R.predicate :=false.B
+          ValidSucc()
+          ValidOut()
+          data_R.predicate := false.B
+          // Completion state.
+          state := s_Done
+
         }
       }
     }
@@ -140,16 +139,17 @@ class UnTypLoad(NumPredOps: Int,
       when(complete) {
         // Clear all the valid states.
         // Reset address
-        addr_R := DataBundle.default
+//        addr_R := DataBundle.default
         addr_valid_R := false.B
         // Reset data
-        data_R := DataBundle.default
+//        data_R := DataBundle.default
         data_valid_R := false.B
         // Reset state.
         Reset()
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n",enable_R.taskID, cycleCount)
+        //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
       }
     }
   }

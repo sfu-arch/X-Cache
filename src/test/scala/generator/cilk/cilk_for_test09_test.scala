@@ -54,19 +54,19 @@ class cilk_for_test09MainDirect(implicit p: Parameters) extends cilk_for_test09M
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val cilk_for_test09_detach = Module(new cilk_for_test09_detachDF())
+  val cilk_for_test09_inner = Module(new cilk_for_test09_innerDF())
   val cilk_for_test09 = Module(new cilk_for_test09DF())
 
-//  cache.io.cpu.req <> cilk_for_test09_detach.io.CacheReq
-//  cilk_for_test09_detach.io.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> cilk_for_test09_inner.io.MemReq
+  cilk_for_test09_inner.io.MemResp <> cache.io.cpu.resp
   cilk_for_test09.io.in <> io.in
-  cilk_for_test09_detach.io.in <> cilk_for_test09.io.call12_out
-  cilk_for_test09.io.call12_in <> cilk_for_test09_detach.io.out
+  cilk_for_test09_inner.io.in <> cilk_for_test09.io.call7_out
+  cilk_for_test09.io.call7_in <> cilk_for_test09_inner.io.out
   io.out <> cilk_for_test09.io.out
 
 }
 
-class cilk_for_test09MainTM(ch:Int)(implicit p: Parameters) extends cilk_for_test09MainIO  {
+class cilk_for_test09MainTM(implicit p: Parameters) extends cilk_for_test09MainIO  {
 
   val cache = Module(new Cache)            // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -90,12 +90,12 @@ class cilk_for_test09MainTM(ch:Int)(implicit p: Parameters) extends cilk_for_tes
 
   // Wire up the cache, TM, and modules under test.
 
-  val children = ch
-  val TaskControllerModule = Module(new TaskController(List(32,32), List(32), 1, children))
+  val children = 1
+  val TaskControllerModule = Module(new TaskController(List(32,32,32), List(32), 1, children))
   val cilk_for_test09 = Module(new cilk_for_test09DF())
 
-  val cilk_for_test09_detach = for (i <- 0 until children) yield {
-    val foo = Module(new cilk_for_test09_detachDF())
+  val cilk_for_test09_inner = for (i <- 0 until children) yield {
+    val foo = Module(new cilk_for_test09_innerDF())
     foo
   }
 
@@ -103,33 +103,33 @@ class cilk_for_test09MainTM(ch:Int)(implicit p: Parameters) extends cilk_for_tes
   // requests ports of any type.  Read or write is irrelevant.
   val CacheArbiter = Module(new CacheArbiter(children))
   for (i <- 0 until children) {
-    //CacheArbiter.io.cpu.CacheReq(i) <> cilk_for_test09_detach(i).io.CacheReq
-    //cilk_for_test09_detach(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i)
+    CacheArbiter.io.cpu.MemReq(i) <> cilk_for_test09_inner(i).io.MemReq
+    cilk_for_test09_inner(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
   }
-  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   // tester to cilk_for_test09
   cilk_for_test09.io.in <> io.in
 
   // cilk_for_test09 to task controller
-  TaskControllerModule.io.parentIn(0) <> cilk_for_test09.io.call12_out
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test09.io.call7_out
 
-  // task controller to sub-task cilk_for_test09_detach
+  // task controller to sub-task cilk_for_test09_inner
   for (i <- 0 until children ) {
-    cilk_for_test09_detach(i).io.in <> TaskControllerModule.io.childOut(i)
-    TaskControllerModule.io.childIn(i) <> cilk_for_test09_detach(i).io.out
+    cilk_for_test09_inner(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> cilk_for_test09_inner(i).io.out
   }
 
   // Task controller to cilk_for_test09
-  cilk_for_test09.io.call12_in <> TaskControllerModule.io.parentOut(0)
+  cilk_for_test09.io.call7_in <> TaskControllerModule.io.parentOut(0)
 
   // cilk_for_test09 to tester
   io.out <> cilk_for_test09.io.out
 
 }
 
-class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T, m:Int, n:Int) extends PeekPokeTester(c) {
+class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T) extends PeekPokeTester(c) {
   val pixels = 8
   val inAddrVec = List.range(0, pixels*3*4, 4)
   val inDataVec = List(1,1,1, 0,10,3, 0,2,5,
@@ -168,9 +168,9 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T, m:Int, n:Int) exte
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, m.U)     // Array rgb[] base address
+  poke(c.io.in.bits.data("field0").data, 5.U)     // Array rgb[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, n.U)   // Array xyz[] base address
+  poke(c.io.in.bits.data("field1").data, 10.U)   // Array xyz[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -188,7 +188,7 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T, m:Int, n:Int) exte
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 100000) {
+  while (time < 500) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -196,7 +196,7 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T, m:Int, n:Int) exte
     ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 0) {
+      if (data != 50) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 50" + Console.RESET)
         fail
       } else {
@@ -229,9 +229,8 @@ class cilk_for_test09Test01[T <: cilk_for_test09MainIO](c: T, m:Int, n:Int) exte
   }
 }
 
-class cilk_for_test09Tester1(m:Int, n:Int) extends FlatSpec with Matchers {
+class cilk_for_test09Tester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-
   it should "Check that cilk_for_test09 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -245,13 +244,11 @@ class cilk_for_test09Tester1(m:Int, n:Int) extends FlatSpec with Matchers {
         "-td", "test_run_dir",
         "-tts", "0001"),
       () => new cilk_for_test09MainDirect()) {
-      c => new cilk_for_test09Test01(c,5,5)
+      c => new cilk_for_test09Test01(c)
     } should be(true)
   }
 }
 
-/*
- 
 class cilk_for_test09Tester2 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   // iotester flags:
@@ -259,23 +256,15 @@ class cilk_for_test09Tester2 extends FlatSpec with Matchers {
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  // -td", s"test_run_dir/test09-$ch-$m-$n",
-  for (m <- 50 to 50 by 5) {
-    for (n <- 0 to 20 by 5) {
-      for (ch <- 1 to 10) {
-        it should s"$ch, $m, $n" in {
-          chisel3.iotesters.Driver.execute(
-            Array(
-              "-tbn", "verilator",
-	      "-td", s"test_run_dir/test09-$ch-$m-$n",
-              "-tts", "0001"),
-            () => new cilk_for_test09MainTM(ch)) {
-            c => new cilk_for_test09Test01(c, m, n)
-          } should be(true)
-        }
-      }
-    }
+  it should "Check that cilk_for_test02 works when called via task manager." in {
+    chisel3.iotesters.Driver.execute(
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir",
+        "-tts", "0001"),
+      () => new cilk_for_test09MainTM()) {
+      c => new cilk_for_test09Test01(c)
+    } should be(true)
   }
 }
-
-*/

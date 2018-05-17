@@ -91,7 +91,7 @@ class TypLoad(NumPredOps: Int,
   //  Check if address is valid and data has arrive and predecessors have completed.
   val mem_req_fire = addr_valid_R & IsPredValid()
   io.memReq.bits.address := addr_R.data
-//  io.memReq.bits.taskID := nodeID_R
+  io.memReq.bits.taskID  := addr_R.taskID | enable_R.taskID
   io.memReq.bits.RouteID := RouteID.U
   io.memReq.bits.Typ := MT_W
   io.memReq.valid := false.B
