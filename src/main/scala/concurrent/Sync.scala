@@ -378,8 +378,8 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   /*==========================================*
    *          Init the Sync Counters          *
    *==========================================*/
-//  val syncCount = RegInit(VecInit(Seq.fill(1<<tlen)(0.U(tlen.W))))
-  val syncCount = Mem(1 << tlen, UInt(tlen.W))
+  val syncCount = RegInit(VecInit(Seq.fill(1<<tlen)(0.U(tlen.W))))
+//  val syncCount = Mem(1 << tlen, UInt(tlen.W))
   val initCounters = RegInit(true.B)
   val (initCount, initDone) = Counter(true.B, 1 << tlen)
 
@@ -401,7 +401,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   val incArb = Module(new Arbiter(new ControlBundle, NumInc))
   val decArb = Module(new Arbiter(new ControlBundle, NumDec))
   val updateArb = Module(new Arbiter(new ControlBundle(), 2))
-  val doneQueue = Module(new Queue(new ControlBundle(), 4))
+  val doneQueue = Module(new Queue(new ControlBundle(), 32))
   val update   = RegInit(false.B)
   val dec      = RegInit(0.U)
   val updateArb_R = RegInit(ControlBundle.default)
@@ -435,8 +435,8 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
           doneQueue.io.enq.valid := true.B
           doneQueue.io.enq.bits := updateArb_R
           updateArb.io.out.ready := true.B
-//        }.elsewhen(syncCount(updateArb_R.taskID) === 1.U){
-        }.elsewhen(syncCount.read(updateArb_R.taskID) === 1.U){
+          //        }.elsewhen(syncCount.read(updateArb_R.taskID) === 1.U){
+        }.elsewhen(syncCount(updateArb_R.taskID) === 1.U){
           updateArb.io.out.ready := false.B
         }.otherwise {
           syncCount.write(updateArb_R.taskID, syncCount.read(updateArb_R.taskID) - 1.U)

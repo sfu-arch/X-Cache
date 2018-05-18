@@ -5,6 +5,7 @@ import chisel3.util.{Decoupled, _}
 import config._
 import config.Parameters
 import interfaces._
+import node._
 import utility.Constants._
 import junctions._
 
@@ -36,10 +37,8 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   val taskArb = Module(new RRArbiter(new Call(argTypes), numParent))
   val freeList = Module(new Queue(UInt(tlen.W), 1 << tlen))
   val exeList = Module(new Queue(new Call(argTypes), 1 << tlen))
-  val parentTable = Mem(1 << tlen, new ParentBundle())
-  val numActive = RegInit(0.U(16.W))
-//  val activeID = RegInit(VecInit(Seq.fill(1<<tlen)(false.B)))
-  val error_flag = RegInit(false.B)
+  val parentTable = SyncReadMem(1 << tlen, new ParentBundle())
+  val retExpand = Module(new ExpandNode(NumOuts=2,ID=0)(new Call(retTypes)))
 
   //  val parentTable =RegInit(VecInit(Seq.fill(1<<tlen)(0.U.asTypeOf(new ParentBundle()))))
 
@@ -63,13 +62,15 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   when(initDone) {
     initQueue := false.B
   }
-  val retReg = RegInit(0.U.asTypeOf(Decoupled(new Call(retTypes))))
+
   when(initQueue) {
     freeList.io.enq.bits.data := initCount.asUInt()
     freeList.io.enq.valid := true.B
+    retExpand.io.Out(0).ready := false.B
   }.otherwise {
-    freeList.io.enq.bits.data := retReg.bits.enable.taskID
-    freeList.io.enq.valid := retReg.fire()
+    freeList.io.enq.bits.data := retExpand.io.Out(0).bits.enable.taskID
+    freeList.io.enq.valid := retExpand.io.Out(0).valid
+    retExpand.io.Out(0).ready := freeList.io.enq.ready
   }
   freeList.io.deq.ready := exeList.io.enq.ready && taskArb.io.out.valid
 
@@ -110,30 +111,44 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     * Delay the result by one clock cycle to look up the parent ID and TID
     * Replace the PID and TID with the original from the parent request
     **************************************************************************/
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
+  val state = RegInit(s_IDLE)
   val ChildArb = Module(new RRArbiter(new Call(retTypes), numChild))
-  val finalReturn = Wire(Decoupled(new Call(retTypes)))
 
   ChildArb.io.in <> io.childIn
-  ChildArb.io.out.ready := finalReturn.ready
-  when(finalReturn.ready) {
-    retReg.valid := ChildArb.io.out.valid
-    retReg.bits := ChildArb.io.out.bits
-  }
-  retReg.ready := finalReturn.ready
+  retExpand.io.InData <> ChildArb.io.out
+  retExpand.io.enable.enq(ControlBundle.active(true.B))
 
   // Lookup the original PID and TID
   val taskEntryReg = RegInit(0.U.asTypeOf(new ParentBundle()))
-  when (finalReturn.ready) {
-    taskEntryReg := parentTable.read(ChildArb.io.out.bits.enable.taskID)
-    //    taskEntryReg := parentTable(ChildArb.io.out.bits.enable.taskID)
+  val latchEntry = RegNext(init=false.B, next=ChildArb.io.out.fire())
+  val taskEntry = parentTable.read(ChildArb.io.out.bits.enable.taskID)
+  when (latchEntry) {
+    taskEntryReg := taskEntry
   }
   // Restore the original TID and PID in the return value.
-  finalReturn.valid := retReg.valid
-  finalReturn.bits := retReg.bits
-  for (i <- retTypes.indices) {
-    finalReturn.bits.data(s"field$i").taskID := taskEntryReg.did
-    finalReturn.bits.enable.taskID := taskEntryReg.did
+
+  /***************************************************************************
+    * Output Demux
+    * Send the return value back to its parent
+    **************************************************************************/
+  for (i <- 0 until io.parentOut.length) {
+    io.parentOut(i).valid := false.B
+    io.parentOut(i).bits := retExpand.io.Out(1).bits
+    io.parentOut(i).bits.enable.taskID := taskEntryReg.did
+    for (j <- retTypes.indices) {
+      io.parentOut(i).bits.data(s"field$j").taskID := taskEntryReg.did
+    }
   }
+  retExpand.io.Out(1).ready :=  io.parentOut(taskEntryReg.sid).ready
+  io.parentOut(taskEntryReg.sid).valid := retExpand.io.Out(1).valid
+
+  /***************************************************************************
+    * Debug
+    **************************************************************************/
+
+  val numActive = RegInit(0.U(16.W))
+  val error_flag = RegInit(false.B)
 
   error_flag := false.B
   when(exeList.io.deq.fire() && !ChildArb.io.out.fire()) {
@@ -145,8 +160,8 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     }
     numActive := numActive - 1.U
   }
-
-/*
+  /*
+  val activeID = RegInit(VecInit(Seq.fill(1<<tlen)(false.B)))
   when(exeList.io.deq.fire()) {
     when(activeID(exeList.io.deq.bits.enable.taskID) === true.B) {
       error_flag := true.B
@@ -161,18 +176,21 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     }
     activeID(ChildArb.io.out.bits.enable.taskID) := false.B
   }
-*/
-  /***************************************************************************
-    * Output Demux
-    * Send the return value back to its parent
-    **************************************************************************/
-  for (i <- 0 until io.parentOut.length) {
-    io.parentOut(i).valid := false.B
-    io.parentOut(i).bits := finalReturn.bits
+  val numOut = RegInit(0.U(16.W))
+  when(ChildArb.io.out.fire() && !retExpand.io.Out(1).fire()) {
+    when(numOut === 1.U) {
+      error_flag := true.B
+      printf("*** Error: Lost return in output %d\n", error_flag)
+    }
+    numOut := numOut + 1.U;
+  }.elsewhen(!ChildArb.io.out.fire() && retExpand.io.Out(1).fire()){
+    when(numOut === 0.U) {
+      error_flag := true.B
+      printf("*** Error: numOut under-run %d\n", error_flag)
+    }
+    numOut := numOut - 1.U;
   }
-  finalReturn.ready :=  io.parentOut(taskEntryReg.sid).ready
-  io.parentOut(taskEntryReg.sid).valid := finalReturn.valid
-
+  */
 }
 
 

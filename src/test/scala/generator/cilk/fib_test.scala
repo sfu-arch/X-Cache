@@ -31,13 +31,13 @@ class fibMainIO(implicit val p: Parameters)  extends Module with CoreParams with
   })
 }
 
-class fibMain(implicit p: Parameters) extends fibMainIO {
+class fibMain(tiles : Int)(implicit p: Parameters) extends fibMainIO {
 
   io.dout := 0.U
 
 //  val fib = Module(new fibDF())
 //  val fib_continue = Module(new fib_continueDF())
-  val NumFibs = 2
+  val NumFibs = tiles
   val fib = for (i <- 0 until NumFibs) yield {
     val fibby = Module(new fibDF())
     fibby
@@ -79,13 +79,12 @@ class fibMain(implicit p: Parameters) extends fibMainIO {
 
 }
 
-class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
+class fibTest01[T <: fibMainIO](c : T, n : Int, tiles: Int) extends PeekPokeTester(c) {
   def fib( n : Int) : Int = n match {
     case 0 | 1 => n
     case _ => fib( n-1 ) + fib( n-2 )
   }
 
-  val n = 11
   val taskID = 0
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
@@ -121,7 +120,7 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 10000) {
+  while (time < 100000 && !result) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -134,7 +133,7 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for $expected" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"*** Correct result. Got $data for n=$n. Run time: $time cycles." + Console.RESET)
+        println(Console.BLUE + s"*** Correct result. Got $data for n=$n, t=$tiles. Run time: $time cycles." + Console.RESET)
       }
     }
   }
@@ -147,20 +146,28 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
 
 class fibTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//  val tile_list = List(1,2,4,6)
+//  val n_list = List(8,10,12)
+  val tile_list = List(4)
+  val n_list = List(12)
   it should "Check that fib works correctly." in {
-    // iotester flags:
-    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
-    // -td  = target directory
-    // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new fibMain()) {
-      c => new fibTest01(c)
-    } should be(true)
+    for (tiles <- tile_list) {
+      for (n <- n_list) {
+        // iotester flags:
+        // -ll  = log level <Error|Warn|Info|Debug|Trace>
+        // -tbn = backend <firrtl|verilator|vcs>
+        // -td  = target directory
+        // -tts = seed for RNG
+        chisel3.iotesters.Driver.execute(
+          Array(
+            // "-ll", "Info",
+            "-tbn", "verilator",
+            "-td", s"test_run_dir/fib_t${tiles}_n${n}",
+            "-tts", "0001"),
+          () => new fibMain(tiles)(p.alterPartial({case TLEN => 10}))) {
+          c => new fibTest01(c, n, tiles)
+        } should be(true)
+      }
+    }
   }
 }
