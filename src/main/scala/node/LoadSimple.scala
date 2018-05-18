@@ -66,12 +66,14 @@ class UnTypLoad(NumPredOps: Int,
   =            Predicate Evaluation            =
   ============================================*/
 
+  val predicate = addr_R.predicate
   //  val start = addr_valid_R & IsPredValid & IsEnableValid()
 
   /*================================================
   =            Latch inputs. Wire up output            =
   ================================================*/
 
+  //Initialization READY-VALIDs for GepAddr and Predecessor memory ops
   io.GepAddr.ready := ~addr_valid_R
   when(io.GepAddr.fire()) {
     addr_R := io.GepAddr.bits
@@ -82,6 +84,7 @@ class UnTypLoad(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
+    io.Out(i).bits.predicate := predicate
     io.Out(i).bits.taskID := addr_R.taskID | enable_R.taskID
   }
 
@@ -89,7 +92,7 @@ class UnTypLoad(NumPredOps: Int,
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
-  io.memReq.bits.taskID := addr_R.taskID | enable_R.taskID
+  io.memReq.bits.taskID := addr_R.taskID
 
   // Connect successors outputs to the enable status
   when(io.enable.fire()) {
@@ -105,7 +108,7 @@ class UnTypLoad(NumPredOps: Int,
   switch(state) {
     is(s_idle) {
       when(enable_valid_R && addr_valid_R && IsPredValid()) {
-        when(enable_R.control) {
+        when(enable_R.control && predicate) {
           io.memReq.valid := true.B
           when(io.memReq.ready) {
             state := s_RECEIVING
@@ -127,7 +130,7 @@ class UnTypLoad(NumPredOps: Int,
         // Set data output registers
         data_R.data := io.memResp.data
         data_R.predicate := true.B
-        //data_R.valid := true.B
+
         ValidSucc()
         ValidOut()
         // Completion state.
@@ -153,6 +156,21 @@ class UnTypLoad(NumPredOps: Int,
       }
     }
   }
+  // Trace detail.
+  if (log == true && (comp contains "LOAD")) {
+    val x = RegInit(0.U(xlen.W))
+    x := x + 1.U
 
-
+    verb match {
+      case "high" => {}
+      case "med" => {}
+      case "low" => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},", x, (addr_valid_R))
+        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },", state, data_valid_R, data_R.data, data_R.predicate)
+        printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
+        printf("}")
+      }
+      case everythingElse => {}
+    }
+  }
 }

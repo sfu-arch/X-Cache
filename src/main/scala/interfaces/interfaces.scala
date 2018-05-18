@@ -281,7 +281,7 @@ object DataBundle {
   }
 }
 
-class TypBundle(implicit p: Parameters) extends ValidT with PredicateT {
+class TypBundle(implicit p: Parameters) extends ValidT with PredicateT with TaskID {
   // Type Packet
   val data = UInt(Typ_SZ.W)
 }

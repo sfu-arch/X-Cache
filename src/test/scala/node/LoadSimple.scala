@@ -13,12 +13,12 @@ import utility._
 
 class LoadNodeTests(c: UnTypLoad) extends PeekPokeTester(c) {
     poke(c.io.GepAddr.valid,false)
-    poke(c.io.PredOp(0).valid,false)
+    poke(c.io.PredOp(0).valid, true)
     poke(c.io.memReq.ready,false)
     poke(c.io.memResp.valid,false)
     poke(c.io.SuccOp(0).ready,true)
     poke(c.io.Out(0).ready,true)
-  
+
     for (t <- 0 until 20) {
              step(1)
 
