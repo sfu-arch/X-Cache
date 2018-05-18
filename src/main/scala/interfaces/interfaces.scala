@@ -292,6 +292,7 @@ object TypBundle {
     val wire = Wire(new TypBundle)
     wire.data := 0.U
     wire.predicate := false.B
+    wire.taskID := 0.U
     wire.valid := false.B
     wire
   }
