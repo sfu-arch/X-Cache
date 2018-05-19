@@ -89,7 +89,9 @@ class TypStore(NumPredOps: Int,
     addr_R := io.GepAddr.bits
     addr_valid_R := true.B
   }
-
+  when(io.enable.fire()) {
+    succ_bundle_R.foreach(_ := io.enable.bits)
+  }
   // ACTION: inData
   when(io.inData.fire()) {
     // Latch the data
@@ -101,6 +103,8 @@ class TypStore(NumPredOps: Int,
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
     io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.taskID := enable_R.taskID
+
   }
   val buffer = data_R.data.asTypeOf(Vec(Beats, UInt(xlen.W)))
 
@@ -110,7 +114,7 @@ class TypStore(NumPredOps: Int,
   io.memReq.bits.data    := buffer(sendptr)
   io.memReq.bits.Typ     := MT_W
   io.memReq.bits.RouteID := RouteID.U
-  io.memReq.bits.taskID  := addr_R.taskID | enable_R.taskID
+  io.memReq.bits.taskID  := enable_R.taskID
   io.memReq.bits.mask    := 15.U
   io.memReq.valid := false.B
 

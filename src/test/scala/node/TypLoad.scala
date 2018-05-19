@@ -42,7 +42,7 @@ class TypLoadTests(c: TypLoad) extends PeekPokeTester(c) {
      if (t > 8)
       {
         poke(c.io.memResp.valid, true)
-        poke(c.io.memResp.data, 0x1eadbeef)
+        poke(c.io.memResp.data, 0x1eadbeef+t)
       }
   }
 }
