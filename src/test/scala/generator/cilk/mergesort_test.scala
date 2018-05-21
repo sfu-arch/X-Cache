@@ -67,8 +67,8 @@ class mergesortMain(tiles : Int)(implicit p: Parameters) extends mergesortMainIO
     mergesortby_continue
   }
   val TC = Module(new TaskController(List(32,32,32,32), List(32), 1+(2*NumMergesorts), NumMergesorts))
-  val CacheArb = Module(new CacheArbiter(NumMergesorts))
-  val StackArb = Module(new CacheArbiter(2*NumMergesorts))
+  val CacheArb = Module(new MemArbiter(NumMergesorts))
+  val StackArb = Module(new MemArbiter(2*NumMergesorts))
   val Stack = Module(new StackMem((1 << tlen)*4))
 
 
@@ -255,16 +255,16 @@ class mergesortTester1 extends FlatSpec with Matchers {
     // -td  = target directory
     // -tts = seed for RNG
     val tile_list = List(1)
-    val len_list = List(25, 50, 100)
+    val len_list = List(100)
     for (tiles <- tile_list) {
       for (len <- len_list) {
         chisel3.iotesters.Driver.execute(
           Array(
             // "-ll", "Info",
             s"-tbn", "verilator",
-            "-td", s"test_run_dir_${tiles}_${len}",
+            "-td", s"test_run_dir/mergesort_t${tiles}_l${len}",
             "-tts", "0001"),
-          () => new mergesortMain(tiles)) {
+          () => new mergesortMain(tiles)(p.alterPartial({case TLEN => 8}))) {
           c => new mergesortTest01(c, len)
         } should be(true)
       }

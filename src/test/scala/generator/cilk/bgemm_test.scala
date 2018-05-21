@@ -110,13 +110,13 @@ class bgemmMainTM(implicit p: Parameters) extends bgemmMainIO()(p) {
   }
 
   // Merge requests from two children.
-  val CacheArbiter = Module(new CacheArbiter(children))
+  val MemArbiter = Module(new MemArbiter(children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.MemReq(i) <> bgemm_detach2(i).io.MemReq
-    bgemm_detach2(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
+    MemArbiter.io.cpu.MemReq(i) <> bgemm_detach2(i).io.MemReq
+    bgemm_detach2(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
   }
-  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   // tester to cilk_for_test02
   bgemm.io.in <> io.in

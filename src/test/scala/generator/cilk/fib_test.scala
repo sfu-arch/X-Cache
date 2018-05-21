@@ -31,13 +31,13 @@ class fibMainIO(implicit val p: Parameters)  extends Module with CoreParams with
   })
 }
 
-class fibMain(implicit p: Parameters) extends fibMainIO {
+class fibMain(tiles : Int)(implicit p: Parameters) extends fibMainIO {
 
   io.dout := 0.U
 
 //  val fib = Module(new fibDF())
 //  val fib_continue = Module(new fib_continueDF())
-  val NumFibs = 2
+  val NumFibs = tiles
   val fib = for (i <- 0 until NumFibs) yield {
     val fibby = Module(new fibDF())
     fibby
@@ -47,7 +47,7 @@ class fibMain(implicit p: Parameters) extends fibMainIO {
     fibby_continue
   }
   val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumFibs), NumFibs))
-  val StackArb = Module(new CacheArbiter((2*NumFibs)))
+  val StackArb = Module(new MemArbiter((2*NumFibs)))
   val Stack = Module(new StackMem((1 << tlen)*4))
 
 
@@ -79,13 +79,57 @@ class fibMain(implicit p: Parameters) extends fibMainIO {
 
 }
 
-class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
+class fibMain2(tiles : Int)(implicit p: Parameters) extends fibMainIO {
+
+  io.dout := 0.U
+
+  //  val fib = Module(new fibDF())
+  //  val fib_continue = Module(new fib_continueDF())
+  val NumFibs = tiles
+  val fib = for (i <- 0 until NumFibs) yield {
+    val fibby = Module(new fibDF())
+    fibby
+  }
+  val fib_continue = for (i <- 0 until NumFibs) yield {
+    val fibby_continue = Module(new fib_continueDF())
+    fibby_continue
+  }
+  val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumFibs), NumFibs))
+  val Stack = Module(new InterleavedStack((1 << tlen)*16, List(4,4), 2*NumFibs))
+
+
+  // Merge the memory interfaces and connect to the stack memory
+  for (i <- 0 until NumFibs) {
+    // Connect to memory interface
+    Stack.io.MemReq(2*i) <> fib(i).io.MemReq
+    fib(i).io.MemResp <> Stack.io.MemResp(2*i)
+    Stack.io.MemReq(2*i+1) <> fib_continue(i).io.MemReq
+    fib_continue(i).io.MemResp <> Stack.io.MemResp(2*i+1)
+
+    // Connect fib to continuation
+    fib_continue(i).io.in <> fib(i).io.call17_out
+    fib(i).io.call17_in <> fib_continue(i).io.out
+
+    // Connect to task controller
+    TC.io.parentIn(2*i) <> fib(i).io.call10_out
+    fib(i).io.call10_in <> TC.io.parentOut(2*i)
+    TC.io.parentIn(2*i+1) <> fib(i).io.call14_out
+    fib(i).io.call14_in <> TC.io.parentOut(2*i+1)
+    fib(i).io.in <> TC.io.childOut(i)
+    TC.io.childIn(i) <> fib(i).io.out
+  }
+
+  TC.io.parentIn(2*NumFibs) <> io.in
+  io.out <> TC.io.parentOut(2*NumFibs)
+
+}
+
+class fibTest01[T <: fibMainIO](c : T, n : Int, tiles: Int) extends PeekPokeTester(c) {
   def fib( n : Int) : Int = n match {
     case 0 | 1 => n
     case _ => fib( n-1 ) + fib( n-2 )
   }
 
-  val n = 11
   val taskID = 0
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
@@ -121,7 +165,7 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 10000) {
+  while (time < 100000 && !result) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -131,10 +175,10 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
       val expected = fib(n)
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != expected) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for $expected" + Console.RESET)
+        println(Console.RED + s"*** Incorrect result received. Got $data for n=$n, t=$tiles. Hoping for $expected" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"*** Correct result. Got $data for n=$n. Run time: $time cycles." + Console.RESET)
+        println(Console.BLUE + s"*** Correct result. Got $data for n=$n, t=$tiles. Run time: $time cycles." + Console.RESET)
       }
     }
   }
@@ -145,22 +189,56 @@ class fibTest01[T <: fibMainIO](c: T) extends PeekPokeTester(c) {
   }
 }
 
+object fibTesterParams {
+  val tile_list = List(12)
+//  val tile_list = List(1,2,3,4,5,6,7,8,9,10,11,12)
+  val n_list = List(13)
+}
+
 class fibTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that fib works correctly." in {
-    // iotester flags:
-    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
-    // -td  = target directory
-    // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new fibMain()) {
-      c => new fibTest01(c)
-    } should be(true)
+    for (tiles <- fibTesterParams.tile_list) {
+      for (n <- fibTesterParams.n_list) {
+        // iotester flags:
+        // -ll  = log level <Error|Warn|Info|Debug|Trace>
+        // -tbn = backend <firrtl|verilator|vcs>
+        // -td  = target directory
+        // -tts = seed for RNG
+        chisel3.iotesters.Driver.execute(
+          Array(
+            // "-ll", "Info",
+            "-tbn", "verilator",
+            "-td", s"test_run_dir/fib1_t${tiles}_n${n}",
+            "-tts", "0001"),
+          () => new fibMain(tiles)(p.alterPartial({case TLEN => 10}))) {
+          c => new fibTest01(c, n, tiles)
+        } should be(true)
+      }
+    }
+  }
+}
+
+class fibTester2 extends FlatSpec with Matchers {
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  it should "Check that fib works correctly." in {
+    for (tiles <- fibTesterParams.tile_list) {
+      for (n <- fibTesterParams.n_list) {
+        // iotester flags:
+        // -ll  = log level <Error|Warn|Info|Debug|Trace>
+        // -tbn = backend <firrtl|verilator|vcs>
+        // -td  = target directory
+        // -tts = seed for RNG
+        chisel3.iotesters.Driver.execute(
+          Array(
+            // "-ll", "Info",
+            "-tbn", "verilator",
+            "-td", s"test_run_dir/fib2_t${tiles}_n${n}",
+            "-tts", "0001"),
+          () => new fibMain2(tiles)(p.alterPartial({case TLEN => 10}))) {
+          c => new fibTest01(c, n, tiles)
+        } should be(true)
+      }
+    }
   }
 }

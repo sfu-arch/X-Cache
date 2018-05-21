@@ -101,13 +101,13 @@ class cilk_for_test08MainTM(implicit p: Parameters) extends cilk_for_test08MainI
 
   // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
   // requests ports of any type.  Read or write is irrelevant.
-  val CacheArbiter = Module(new CacheArbiter(children))
+  val MemArbiter = Module(new MemArbiter(children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.MemReq(i) <> cilk_for_test08_detach(i).io.MemReq
-    cilk_for_test08_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
+    MemArbiter.io.cpu.MemReq(i) <> cilk_for_test08_detach(i).io.MemReq
+    cilk_for_test08_detach(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
   }
-  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   // tester to cilk_for_test08
   cilk_for_test08.io.in <> io.in
