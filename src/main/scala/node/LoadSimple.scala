@@ -29,11 +29,18 @@ class LoadIO(NumPredOps: Int,
   // Memory response.
   val memResp = Input(Flipped(new ReadResp()))
 }
-
+/**
+ * @brief Load Node. Implements load operations
+ * @details [load operations can either reference values in a scratchpad or cache]
+ *
+ * @param NumPredOps [Number of predicate memory operations]
+ */
 class UnTypLoad(NumPredOps: Int,
                 NumSuccOps: Int,
                 NumOuts: Int,
-                Typ: UInt = MT_W, ID: Int, RouteID: Int)
+                Typ: UInt = MT_W,
+                ID: Int,
+                RouteID: Int)
                (implicit p: Parameters,
                 name: sourcecode.Name,
                 file: sourcecode.File)
@@ -62,12 +69,6 @@ class UnTypLoad(NumPredOps: Int,
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
-  /*============================================
-  =            Predicate Evaluation            =
-  ============================================*/
-
-  val predicate = addr_R.predicate
-  //  val start = addr_valid_R & IsPredValid & IsEnableValid()
 
   /*================================================
   =            Latch inputs. Wire up output            =
@@ -77,9 +78,17 @@ class UnTypLoad(NumPredOps: Int,
   io.GepAddr.ready := ~addr_valid_R
   when(io.GepAddr.fire()) {
     addr_R := io.GepAddr.bits
-    //addr_R.valid := true.B
     addr_valid_R := true.B
   }
+
+  /*============================================
+  =            Predicate Evaluation            =
+  ============================================*/
+
+  val complete = IsSuccReady() && IsOutReady()
+  val predicate = addr_R.predicate && enable_R.control
+  val mem_req_fire = addr_valid_R && IsPredValid()
+
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
@@ -102,12 +111,10 @@ class UnTypLoad(NumPredOps: Int,
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
 
-  //val mem_req_fire = addr_valid_R & IsPredValid()
-  val complete = IsSuccReady() & IsOutReady()
 
   switch(state) {
     is(s_idle) {
-      when(enable_valid_R && addr_valid_R && IsPredValid()) {
+      when(enable_valid_R && mem_req_fire) {
         when(enable_R.control && predicate) {
           io.memReq.valid := true.B
           when(io.memReq.ready) {
@@ -117,10 +124,8 @@ class UnTypLoad(NumPredOps: Int,
           data_R.predicate :=false.B
           ValidSucc()
           ValidOut()
-          data_R.predicate := false.B
           // Completion state.
           state := s_Done
-
         }
       }
     }
@@ -160,17 +165,16 @@ class UnTypLoad(NumPredOps: Int,
   if (log == true && (comp contains "LOAD")) {
     val x = RegInit(0.U(xlen.W))
     x := x + 1.U
-
     verb match {
       case "high" => {}
       case "med" => {}
       case "low" => {
         printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},", x, (addr_valid_R))
-        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },", state, data_valid_R, data_R.data, data_R.predicate)
+        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\":\"%x,%x,%x\" },", state, data_valid_R, data_R.data, data_R.predicate)
         printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
         printf("}")
-      }
+        }
       case everythingElse => {}
-    }
+      }
   }
 }

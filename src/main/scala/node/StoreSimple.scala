@@ -1,9 +1,5 @@
 package node
 
-/**
-  * Created by nvedula on 15/5/17.
-  */
-
 import chisel3.{RegInit, _}
 import chisel3.util._
 import org.scalacheck.Prop.False
@@ -43,41 +39,34 @@ class StoreIO(NumPredOps: Int,
 class UnTypStore(NumPredOps: Int,
                  NumSuccOps: Int,
                  NumOuts: Int,
-                 Typ: UInt = MT_W, ID: Int, RouteID: Int)
+                 Typ: UInt = MT_W,
+                 ID: Int,
+                 RouteID: Int)
                 (implicit p: Parameters,
                  name: sourcecode.Name,
                  file: sourcecode.File)
   extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new DataBundle)(p) {
 
-  // Set up StoreIO
   override lazy val io = IO(new StoreIO(NumPredOps, NumSuccOps, NumOuts))
+  // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
-
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   /*=============================================
-  =            Register declarations            =
+  =            Registers                        =
   =============================================*/
 
   // OP Inputs
   val addr_R = RegInit(DataBundle.default)
-  val data_R = RegInit(DataBundle.default)
   val addr_valid_R = RegInit(false.B)
+
+  val data_R = RegInit(DataBundle.default)
   val data_valid_R = RegInit(false.B)
 
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
-
-  val ReqValid = RegInit(false.B)
-
-  /*============================================
-  =            Predicate Evaluation            =
-  ============================================*/
-
-//  val predicate = IsEnable()
-//  val start = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
 
   /*================================================
   =            Latch inputs. Set output            =
@@ -93,9 +82,7 @@ class UnTypStore(NumPredOps: Int,
     addr_R := io.GepAddr.bits
     addr_valid_R := true.B
   }
-  when(io.enable.fire()) {
-    succ_bundle_R.foreach(_ := io.enable.bits)
-  }
+
   // ACTION: inData
   when(io.inData.fire()) {
     // Latch the data
@@ -103,43 +90,51 @@ class UnTypStore(NumPredOps: Int,
     data_valid_R := true.B
   }
 
-  val predicate = addr_R.predicate & data_R.predicate
+
+
+  /*============================================
+  =            Predicate Evaluation            =
+  ============================================*/
+  val complete = IsSuccReady() && IsOutReady()
+  val predicate = addr_R.predicate && data_R.predicate && enable_R.control
+  val mem_req_fire = addr_valid_R && data_valid_R && IsPredValid()
+
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
+    io.Out(i).bits.predicate := predicate
     io.Out(i).bits.taskID := data_R.taskID |  addr_R.taskID | enable_R.taskID
   }
   // Outgoing Address Req ->
+  io.memReq.valid := false.B
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.data := data_R.data
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
   io.memReq.bits.taskID := data_R.taskID | addr_R.taskID | enable_R.taskID
   io.memReq.bits.mask := 15.U
-  io.memReq.valid := false.B
 
+
+  // Connect successors outputs to the enable status
+  when(io.enable.fire()) {
+    succ_bundle_R.foreach(_ := io.enable.bits)
+  }
   /*=============================================
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
-  val mem_req_fire = addr_valid_R & IsPredValid() & data_valid_R
-  val complete = IsSuccReady() & IsOutReady()
-
   switch(state) {
     is(s_idle) {
-      when(enable_valid_R) {
-        when(data_valid_R && addr_valid_R) {
-          when(enable_R.control && mem_req_fire && predicate) {
-            io.memReq.valid := true.B
-            when(io.memReq.ready) {
-              state := s_RECEIVING
-            }
-          }.otherwise {
-            ValidSucc()
-            ValidOut()
-            data_R.predicate := false.B
-            state := s_Done
+      when(enable_valid_R && mem_req_fire) {
+        when(enable_R.control && predicate) {
+          io.memReq.valid := true.B
+          when(io.memReq.ready) {
+            state := s_RECEIVING
           }
+        }.otherwise {
+          ValidSucc()
+          ValidOut()
+          state := s_Done
         }
       }
     }
@@ -154,10 +149,10 @@ class UnTypStore(NumPredOps: Int,
       when(complete) {
         // Clear all the valid states.
         // Reset address
-        addr_R := DataBundle.default
+//        addr_R := DataBundle.default
         addr_valid_R := false.B
-        // Reset data.
-        data_R := DataBundle.default
+        // Reset data
+//        data_R := DataBundle.default
         data_valid_R := false.B
         // Clear all other state
         Reset()
@@ -168,6 +163,20 @@ class UnTypStore(NumPredOps: Int,
       }
     }
   }
-
-
+  // Trace detail.
+  if (log == true && (comp contains "STORE")) {
+    val x = RegInit(0.U(xlen.W))
+    x := x + 1.U
+    verb match {
+      case "high" => {}
+      case "med" => {}
+      case "low" => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},", x, (addr_valid_R))
+        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },", state, data_valid_R, data_R.data, io.Out(0).bits.predicate)
+        printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
+        printf("}")
+      }
+      case everythingElse => {}
+    }
+  }
 }

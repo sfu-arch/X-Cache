@@ -1,18 +1,13 @@
 package FPU
 
-import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
-import chisel3.Module
-import chisel3.testers._
+import chisel3.{RegInit, _}
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
 import config._
 import interfaces._
-import muxes._
 import util._
 import node._
 import FType._
-import chisel3.{RegInit, _}
 import org.scalacheck.Prop.False
 import utility.Constants._
 import utility.UniformPrintfs
@@ -72,18 +67,9 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   val data_R = RegInit(DataBundle.default)
   val data_valid_R = RegInit(false.B)
 
-
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
-
-
-  /*============================================
-  =            Predicate Evaluation            =
-  ============================================*/
-
-//  val predicate = IsEnable()
-//  val start = a_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
 
 /*   ================================================
   =            Latch inputs. Set output            =
@@ -106,13 +92,20 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
     b_valid_R := true.B
   }
 
-  val predicate = a_R.predicate & b_R.predicate
+  /*============================================
+  =            Predicate Evaluation            =
+  ============================================*/
+
+  val complete = IsOutReady()
+  val predicate = a_R.predicate && b_R.predicate
+  val FU_req_fire = a_valid_R && b_valid_R
+
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
     io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.taskID := a_R.taskID
+    io.Out(i).bits.taskID := a_R.taskID | b_R.taskID | enable_R.taskID
   }
 
   // Outgoing FU Req ->
@@ -139,23 +132,20 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   /*=============================================
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
-  val FU_req_fire = a_valid_R & b_valid_R
-  val complete = IsOutReady()
   switch(state) {
     is(s_idle) {
-      when(enable_valid_R) {
-        when(a_valid_R && b_valid_R) {
-          when(enable_R.control && FU_req_fire && predicate) {
+      when(enable_valid_R && FU_req_fire) {
+          when(enable_R.control && predicate) {
             io.FUReq.valid := true.B
             when(io.FUReq.ready) {
               state := s_RECEIVING
             }
           }.otherwise {
-            ValidOut()
             data_R.predicate := false.B
+            ValidOut()
+
             state := s_Done
           }
-        }
       }
     }
     is(s_RECEIVING) {
@@ -189,6 +179,20 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
       }
     }
   }
-
-
+  // Trace detail.
+  if (log == true && (comp contains "FPDIV")) {
+    val x = RegInit(0.U(xlen.W))
+    x := x + 1.U
+    verb match {
+      case "high" => {}
+      case "med" => {}
+      case "low" => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"A\": %x},", x, (a_valid_R))
+        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\":\"%x,%x,%x\" },", state, data_valid_R, data_R.data, data_R.predicate)
+        printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
+        printf("}")
+        }
+      case everythingElse => {}
+    }
+  }
 }

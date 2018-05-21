@@ -6,6 +6,8 @@ version := "0.1-SNAPSHOT"
 
 scalaVersion := "2.11.11"
 
+ensimeScalaVersion in ThisBuild := "2.11.11"
+
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls")
 
 /**

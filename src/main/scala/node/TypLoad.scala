@@ -27,7 +27,7 @@ class TypLoadIO(NumPredOps: Int, NumSuccOps: Int, NumOuts: Int)(implicit p: Para
   val memResp = Input(Flipped(new ReadResp()))
 }
 /**
- * @brief Store Node. Implements store operations
+ * @brief Type Load Node. Implements store operations
  * @details [long description]
  *
  * @param NumPredOps [Number of predicate memory operations]
@@ -36,7 +36,8 @@ class TypLoad(NumPredOps: Int,
   NumSuccOps: Int,
   NumOuts: Int,
   ID: Int,
-  RouteID: Int)(implicit p: Parameters,
+  RouteID: Int)
+  (implicit p: Parameters,
   name: sourcecode.Name,
   file: sourcecode.File)
 extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
@@ -64,17 +65,9 @@ extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
   val linebuffer = RegInit(Vec(Seq.fill(Beats)(0.U(xlen.W))))
 
   // State machine
-  val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
+  val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(4)
   val state = RegInit(s_idle)
 
-
-
-  /*============================================
-=            Predicate Evaluation            =
-============================================*/
-
-  val predicate = addr_R.predicate
-  //  val start = addr_valid_R & IsPredValid & IsEnableValid()
 
   /*================================================
   =            Latch inputs. Wire up output            =
@@ -88,6 +81,15 @@ extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
     addr_valid_R := true.B
   }
 
+  /*============================================
+  =            Predicate Evaluation            =
+  ============================================*/
+
+  val complete = IsSuccReady() && IsOutReady()
+  val predicate = addr_R.predicate && enable_R.control
+  val mem_req_fire = addr_valid_R && IsPredValid()
+
+
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
@@ -96,7 +98,6 @@ extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
   }
 
   io.memReq.valid := false.B
-
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.Typ := MT_W
   io.memReq.bits.RouteID := RouteID.U
@@ -111,25 +112,21 @@ extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
 
-  //val mem_req_fire = addr_valid_R & IsPredValid()
-  val complete = IsSuccReady() & IsOutReady()
 
   switch(state) {
     is(s_idle) {
-      when(enable_valid_R && addr_valid_R && IsPredValid()) {
-        when(enable_R.control && predicate) {  // Activate memory operation
-          io.memReq.valid := true.B     // ACTION: Memory Request
-          when(io.memReq.ready) { //   <- Incoming memory arbitration
+      when(enable_valid_R && mem_req_fire) {
+        when(enable_R.control && predicate) {
+          io.memReq.valid := true.B
+          when(io.memReq.ready) {
             state := s_RECEIVING
           }
         }.otherwise {
           data_R.predicate :=false.B
           ValidSucc()
           ValidOut()
-          data_R.predicate := false.B
           // Completion state.
           state := s_Done
-
         }
       }
     }
@@ -152,10 +149,10 @@ extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
       when(complete) {
         // Clear all the valid states.
         // Reset address
-        addr_R := DataBundle.default
+//        addr_R := DataBundle.default
         addr_valid_R := false.B
-        // Reset data.
-        data_R := TypBundle.default
+        // Reset data
+//        data_R := DataBundle.default
         data_valid_R := false.B
         // Clear ptrs
         recvptr := 0.U
@@ -186,96 +183,3 @@ extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(new TypBundle)(p) {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//
-//     // -> Send memory Requests
-//     when((state === s_idle) && (mem_req_fire)) {
-//       io.memReq.valid := true.B
-//       // Arbitration ready. Move on to the next word
-//     }
-//
-//     //  ACTION: Arbitration ready
-//
-//     when((state === s_idle) && io.memReq.fire()) {
-//       state := s_RECEIVING
-//     }
-//
-//     //  ACTION:  <- Incoming Data
-//     when(state === s_RECEIVING && (io.memResp.valid === true.B) && (recvptr =/= (Beats).U)) {
-//       linebuffer(recvptr) := io.memResp.data
-//       recvptr := recvptr + 1.U
-//     }
-//
-//     // Need to wait extra cycle for the last word to update the line buffer
-//     when((state === s_RECEIVING) && (recvptr === (Beats).U)) {
-//       data_R.data := linebuffer.asUInt
-//       data_R.predicate := predicate
-//       data_valid_R := true.B
-//       ValidSucc()
-//       ValidOut()
-//       state := s_Done
-//     }
-//   }.elsewhen(start & ~predicate) {
-//     ValidSucc()
-//     ValidOut()
-//     state := s_Done
-//   }
-//   /*===========================================
-// =            Output Handshaking and Reset   =
-// ===========================================*/
-//
-//   //  ACTION: <- Check Out READY and Successors READY
-//   when(state === s_Done) {
-//     // When successors are complete and outputs are ready you can reset.
-//     // data already valid and would be latched in this cycle.
-//     val complete = IsSuccReady() & IsOutReady()
-//
-//     when(complete) {
-//       // Clear all the valid states.
-//       // Reset address
-//       addr_R := DataBundle.default
-//       // Reset data.
-//       data_R := TypBundle.default
-//       // Clear ptrs
-//       recvptr := 0.U
-//       // Clear all other state
-//       Reset()
-//       // Reset state.
-//       state := s_idle
-//     }
-//   }
-//   // Trace detail.
-//   override val printfSigil = "TYPLOAD" + Typ_SZ + "_" + ID + ":"
-//   if (log == true && (comp contains "TYPLOAD")) {
-//     val x = RegInit(0.U(xlen.W))
-//     x := x + 1.U
-//
-//     verb match {
-//       case "high" => {}
-//       case "med" => {}
-//       case "low" => {
-//         printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},", x, (addr_valid_R))
-//         printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },", state, data_valid_R, data_R.data, data_R.predicate)
-//         printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
-//         printf("}")
-//       }
-//       case everythingElse => {}
-//     }
-//   }
-// }
