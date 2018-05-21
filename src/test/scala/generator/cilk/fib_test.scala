@@ -47,7 +47,7 @@ class fibMain(tiles : Int)(implicit p: Parameters) extends fibMainIO {
     fibby_continue
   }
   val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumFibs), NumFibs))
-  val StackArb = Module(new CacheArbiter((2*NumFibs)))
+  val StackArb = Module(new MemArbiter((2*NumFibs)))
   val Stack = Module(new StackMem((1 << tlen)*4))
 
 
@@ -74,6 +74,51 @@ class fibMain(tiles : Int)(implicit p: Parameters) extends fibMainIO {
 
   Stack.io.req <> StackArb.io.cache.MemReq
   StackArb.io.cache.MemResp <> Stack.io.resp
+  TC.io.parentIn(2*NumFibs) <> io.in
+  io.out <> TC.io.parentOut(2*NumFibs)
+
+}
+
+class fibMain2(tiles : Int)(implicit p: Parameters) extends fibMainIO {
+
+  io.dout := 0.U
+
+  //  val fib = Module(new fibDF())
+  //  val fib_continue = Module(new fib_continueDF())
+  val NumFibs = tiles
+  val fib = for (i <- 0 until NumFibs) yield {
+    val fibby = Module(new fibDF())
+    fibby
+  }
+  val fib_continue = for (i <- 0 until NumFibs) yield {
+    val fibby_continue = Module(new fib_continueDF())
+    fibby_continue
+  }
+  val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumFibs), NumFibs))
+  val Stack = Module(new InterleavedStack((1 << tlen)*16, List(4,4), 2*NumFibs))
+
+
+  // Merge the memory interfaces and connect to the stack memory
+  for (i <- 0 until NumFibs) {
+    // Connect to memory interface
+    Stack.io.MemReq(2*i) <> fib(i).io.MemReq
+    fib(i).io.MemResp <> Stack.io.MemResp(2*i)
+    Stack.io.MemReq(2*i+1) <> fib_continue(i).io.MemReq
+    fib_continue(i).io.MemResp <> Stack.io.MemResp(2*i+1)
+
+    // Connect fib to continuation
+    fib_continue(i).io.in <> fib(i).io.call17_out
+    fib(i).io.call17_in <> fib_continue(i).io.out
+
+    // Connect to task controller
+    TC.io.parentIn(2*i) <> fib(i).io.call10_out
+    fib(i).io.call10_in <> TC.io.parentOut(2*i)
+    TC.io.parentIn(2*i+1) <> fib(i).io.call14_out
+    fib(i).io.call14_in <> TC.io.parentOut(2*i+1)
+    fib(i).io.in <> TC.io.childOut(i)
+    TC.io.childIn(i) <> fib(i).io.out
+  }
+
   TC.io.parentIn(2*NumFibs) <> io.in
   io.out <> TC.io.parentOut(2*NumFibs)
 
@@ -130,7 +175,7 @@ class fibTest01[T <: fibMainIO](c : T, n : Int, tiles: Int) extends PeekPokeTest
       val expected = fib(n)
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != expected) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for $expected" + Console.RESET)
+        println(Console.RED + s"*** Incorrect result received. Got $data for n=$n, t=$tiles. Hoping for $expected" + Console.RESET)
         fail
       } else {
         println(Console.BLUE + s"*** Correct result. Got $data for n=$n, t=$tiles. Run time: $time cycles." + Console.RESET)
@@ -144,15 +189,17 @@ class fibTest01[T <: fibMainIO](c : T, n : Int, tiles: Int) extends PeekPokeTest
   }
 }
 
+object fibTesterParams {
+  val tile_list = List(12)
+//  val tile_list = List(1,2,3,4,5,6,7,8,9,10,11,12)
+  val n_list = List(13)
+}
+
 class fibTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-//  val tile_list = List(1,2,4,6)
-//  val n_list = List(8,10,12)
-  val tile_list = List(4)
-  val n_list = List(12)
   it should "Check that fib works correctly." in {
-    for (tiles <- tile_list) {
-      for (n <- n_list) {
+    for (tiles <- fibTesterParams.tile_list) {
+      for (n <- fibTesterParams.n_list) {
         // iotester flags:
         // -ll  = log level <Error|Warn|Info|Debug|Trace>
         // -tbn = backend <firrtl|verilator|vcs>
@@ -162,9 +209,33 @@ class fibTester1 extends FlatSpec with Matchers {
           Array(
             // "-ll", "Info",
             "-tbn", "verilator",
-            "-td", s"test_run_dir/fib_t${tiles}_n${n}",
+            "-td", s"test_run_dir/fib1_t${tiles}_n${n}",
             "-tts", "0001"),
           () => new fibMain(tiles)(p.alterPartial({case TLEN => 10}))) {
+          c => new fibTest01(c, n, tiles)
+        } should be(true)
+      }
+    }
+  }
+}
+
+class fibTester2 extends FlatSpec with Matchers {
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  it should "Check that fib works correctly." in {
+    for (tiles <- fibTesterParams.tile_list) {
+      for (n <- fibTesterParams.n_list) {
+        // iotester flags:
+        // -ll  = log level <Error|Warn|Info|Debug|Trace>
+        // -tbn = backend <firrtl|verilator|vcs>
+        // -td  = target directory
+        // -tts = seed for RNG
+        chisel3.iotesters.Driver.execute(
+          Array(
+            // "-ll", "Info",
+            "-tbn", "verilator",
+            "-td", s"test_run_dir/fib2_t${tiles}_n${n}",
+            "-tts", "0001"),
+          () => new fibMain2(tiles)(p.alterPartial({case TLEN => 10}))) {
           c => new fibTest01(c, n, tiles)
         } should be(true)
       }

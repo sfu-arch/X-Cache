@@ -60,14 +60,14 @@ class stencilMainDirect(implicit p: Parameters) extends stencilMainIO {
   val stencil_detach1 = Module(new stencil_detach1DF())
   val stencil_inner = Module(new stencil_innerDF())
 
-  val CacheArbiter = Module(new CacheArbiter(2))
-  CacheArbiter.io.cpu.MemReq(0) <> stencil_inner.io.MemReq
-  stencil_inner.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
-  CacheArbiter.io.cpu.MemReq(1) <> stencil_detach1.io.MemReq
-  stencil_detach1.io.MemResp <> CacheArbiter.io.cpu.MemResp(1)
+  val MemArbiter = Module(new MemArbiter(2))
+  MemArbiter.io.cpu.MemReq(0) <> stencil_inner.io.MemReq
+  stencil_inner.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
+  MemArbiter.io.cpu.MemReq(1) <> stencil_detach1.io.MemReq
+  stencil_detach1.io.MemResp <> MemArbiter.io.cpu.MemResp(1)
 
-  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
 
   stencil.io.in <> io.in
@@ -116,16 +116,16 @@ class stencilMainTM(implicit p: Parameters) extends stencilMainIO {
     inner
   }
 
-  val CacheArbiter = Module(new CacheArbiter(2 * children))
+  val MemArbiter = Module(new MemArbiter(2 * children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.MemReq(i) <> stencil_inner(i).io.MemReq
-    stencil_inner(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
-    CacheArbiter.io.cpu.MemReq(children + i) <> stencil_detach1(i).io.MemReq
-    stencil_detach1(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(children + i)
+    MemArbiter.io.cpu.MemReq(i) <> stencil_inner(i).io.MemReq
+    stencil_inner(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
+    MemArbiter.io.cpu.MemReq(children + i) <> stencil_detach1(i).io.MemReq
+    stencil_detach1(i).io.MemResp <> MemArbiter.io.cpu.MemResp(children + i)
   }
 
-  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   // tester to cilk_for_test02
   stencil.io.in <> io.in
