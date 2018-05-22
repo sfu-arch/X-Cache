@@ -12,11 +12,12 @@ import muxes._
 import util._
 import node._
 import FType._
+import hardfloat._
 
 /**
  * [FPComputeNodeIO description]
  */
-class FPComputeNodeIO(NumOuts: Int)
+class FPCompareNodeIO(NumOuts: Int)
                    (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
   // LeftIO: Left input data for computation
@@ -27,9 +28,9 @@ class FPComputeNodeIO(NumOuts: Int)
 }
 
 /**
- * [FPComputeNode description]
+ * [FPCompareNode description]
  */
-class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
+class FPCompareNode(NumOuts: Int, ID: Int, opCode: String)
                  (t: FType)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
@@ -72,9 +73,9 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *===============================================*/
 
   //Instantiate ALU with selected code. IEEE ALU. IEEE in/IEEE out
-  val FU = Module(new FPUALU(xlen, opCode, t))
-  FU.io.in1 := left_R.data
-  FU.io.in2 := right_R.data
+  val FU = Module(new CompareRecFN(t.expWidth, t.sigWidth))
+  FU.io.a   := t.recode(left_R.data)
+  FU.io.b   := t.recode(right_R.data)
 
   io.LeftIO.ready := ~left_valid_R
   when(io.LeftIO.fire()) {
@@ -110,7 +111,14 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
         when(left_valid_R && right_valid_R) {
           ValidOut()
           when(enable_R.control) {
-            out_data_R.data := FU.io.out
+            require(opCode == "<LT" | opCode == ">GT" | opCode == "=EQ")
+            val x =
+            opCode match {
+              case "<LT" => FU.io.lt
+              case ">GT" => FU.io.gt
+              case "=EQ" => FU.io.eq
+            }
+            out_data_R.data      := x
             out_data_R.predicate := predicate
             out_data_R.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
           }
@@ -131,7 +139,7 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
         //Reset output
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %x\n", task_ID_R, cycleCount, FU.io.out)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %x\n", task_ID_R, cycleCount, io.Out(0).bits.data)
       }
     }
   }
