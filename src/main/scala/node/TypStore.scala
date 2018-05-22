@@ -71,7 +71,7 @@ class TypStore(NumPredOps: Int,
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
-  val sendptr = RegInit(0.U(log2Ceil(Beats + 1).W))
+  val sendptr = Counter(Beats)
   val buffer = data_R.data.asTypeOf(Vec(Beats, UInt(xlen.W)))
 
 /*================================================
@@ -117,13 +117,11 @@ class TypStore(NumPredOps: Int,
   // Outgoing Address Req ->
   io.memReq.valid := false.B
   io.memReq.bits.address := addr_R.data
-  io.memReq.bits.data    := buffer(sendptr)
+  io.memReq.bits.data    := buffer(sendptr.value)
   io.memReq.bits.Typ := MT_W
   io.memReq.bits.RouteID := RouteID.U
   io.memReq.bits.taskID  := enable_R.taskID | addr_R.taskID | data_R.taskID
   io.memReq.bits.mask    := 15.U
-
-
 
   // Connect successors outputs to the enable status
   when(io.enable.fire()) {
@@ -139,9 +137,9 @@ class TypStore(NumPredOps: Int,
           io.memReq.valid := true.B
           // Arbitration ready. Move on to the next word
           when(io.memReq.fire()) {
-            sendptr := sendptr + 1.U
+            sendptr.inc()
             // If last word then move to next state.
-            when(sendptr === (Beats - 1).U) {
+            when(sendptr.value === (Beats - 1).U) {
               state := s_RECEIVING
             }
           }
@@ -177,7 +175,7 @@ class TypStore(NumPredOps: Int,
       // data_R := TypBundle.default
       data_valid_R  := false.B
       // Clear ptrs
-      sendptr := 0.U
+      sendptr.value := 0.U
       // Clear all other state
       Reset()
       // Reset state.
