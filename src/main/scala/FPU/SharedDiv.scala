@@ -74,7 +74,5 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
 
   printf(p"io out0 = ${Hexadecimal(io.OutData(0).data)}")
   printf(p"io.OutData(0): ${io.OutData(0).valid}")
-  printf(p"io out1 = ${Hexadecimal(io.OutData(1).data)}")
-  printf(p"io.OutData(1): ${io.OutData(1).valid}")
 
 }

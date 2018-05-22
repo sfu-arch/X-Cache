@@ -105,7 +105,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
           when(enable_R.control) {
             out_data_R.data := FU.io.out
             out_data_R.predicate := predicate
-            out_data_R.taskID := left_R.taskID | right_R.taskID
+            out_data_R.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
           }
           state := s_COMPUTE
         }

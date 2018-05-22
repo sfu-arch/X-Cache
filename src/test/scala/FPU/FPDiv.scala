@@ -61,7 +61,7 @@ class FPDivNodeTester(c: FPDivSqrtNode) extends PeekPokeTester(c) {
 class FPDivNodeTests extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "FPDivSqrt Node tester" in {
-    chisel3.iotesters.Driver(() => new FPDivSqrtNode(NumOuts=1,ID=1,opCode = "SQRT")(t = S)) { c =>
+    chisel3.iotesters.Driver(() => new FPDivSqrtNode(NumOuts=1,ID=1,RouteID=0,opCode = "SQRT")(t = S)) { c =>
       new FPDivNodeTester(c)
     } should be(true)
   }

@@ -13,7 +13,9 @@ import util._
 import node._
 import FType._
 
-
+/**
+ * [FPComputeNodeIO description]
+ */
 class FPComputeNodeIO(NumOuts: Int)
                    (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
@@ -24,6 +26,9 @@ class FPComputeNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle()))
 }
 
+/**
+ * [FPComputeNode description]
+ */
 class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
                  (t: FType)
                  (implicit p: Parameters,
@@ -107,7 +112,7 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
           when(enable_R.control) {
             out_data_R.data := FU.io.out
             out_data_R.predicate := predicate
-            out_data_R.taskID := left_R.taskID | right_R.taskID
+            out_data_R.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
           }
           state := s_COMPUTE
         }

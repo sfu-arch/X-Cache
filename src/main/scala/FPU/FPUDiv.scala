@@ -20,7 +20,9 @@ import utility.UniformPrintfs
 // _ready need to latch ready and valid signals.
 //////////
 
-class FPDivSqrtIO(NumOuts: Int, argTypes: Seq[Int])(implicit p: Parameters)
+class FPDivSqrtIO(NumOuts: Int,
+                  argTypes: Seq[Int])
+                 (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
   // Divisor or Sqrt
   val a = Flipped(Decoupled(new DataBundle))
@@ -33,12 +35,15 @@ class FPDivSqrtIO(NumOuts: Int, argTypes: Seq[Int])(implicit p: Parameters)
 }
 
 /**
-  * @brief Store Node. Implements store operations
+  * @brief FP Node. Implements store operations
   * @details [long description]
-  * @param NumPredOps [Number of predicate FU operations]
+  * @param NumOuts [Number of FU operations]
   */
-class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
-                 (t: FType)
+class FPDivSqrtNode(NumOuts: Int,
+                    ID: Int,
+                    RouteID: Int,
+                    opCode: String)
+                    (t: FType)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)
@@ -48,11 +53,12 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+
 
   /*=============================================
-  =            Register declarations            =
+  =            Registers                        =
   =============================================*/
 
   // Dividend or Sqrt
@@ -97,7 +103,7 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   ============================================*/
 
   val complete = IsOutReady()
-  val predicate = a_R.predicate && b_R.predicate
+  val predicate = a_R.predicate && b_R.predicate && enable_R.control
   val FU_req_fire = a_valid_R && b_valid_R
 
 
@@ -109,12 +115,15 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   }
 
   // Outgoing FU Req ->
+
+
+  io.FUReq.valid := false.B
   io.FUReq.bits.data("field0").data  :=  a_R.data
   io.FUReq.bits.data("field1").data  :=  b_R.data
   io.FUReq.bits.data("field0").predicate  :=  true.B
   io.FUReq.bits.data("field1").predicate  :=  true.B
-  io.FUReq.bits.data("field0").taskID  :=  a_R.taskID
-  io.FUReq.bits.data("field1").taskID  :=  b_R.taskID
+  io.FUReq.bits.data("field0").taskID  :=  a_R.taskID | b_R.taskID | enable_R.taskID
+  io.FUReq.bits.data("field1").taskID  :=  a_R.taskID | b_R.taskID | enable_R.taskID
 
 
   require((opCode == "DIV" || opCode == "SQRT"), "DIV or SQRT required")
@@ -126,8 +135,7 @@ class FPDivSqrtNode(NumOuts: Int, ID: Int, opCode: String)
   io.FUReq.bits.data("field2").predicate := true.B
   io.FUReq.bits.data("field2").taskID  := 1.U
 
-  io.FUReq.bits.RouteID := ID.U
-  io.FUReq.valid := false.B
+  io.FUReq.bits.RouteID := RouteID.U
 
   /*=============================================
   =            ACTIONS (possibly dangerous)     =
