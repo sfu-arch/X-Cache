@@ -378,8 +378,8 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   /*==========================================*
    *          Init the Sync Counters          *
    *==========================================*/
-  val syncCount = RegInit(VecInit(Seq.fill(1<<tlen)(0.U(tlen.W))))
-//  val syncCount = Mem(1 << tlen, UInt(tlen.W))
+//  val syncCount = RegInit(VecInit(Seq.fill(1<<tlen)(0.U(tlen.W))))
+  val syncCount = Mem(1 << tlen, UInt(tlen.W))
   val initCounters = RegInit(true.B)
   val (initCount, initDone) = Counter(true.B, 1 << tlen)
 

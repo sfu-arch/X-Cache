@@ -147,7 +147,8 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     * Debug
     **************************************************************************/
 
-  val numActive = RegInit(0.U(16.W))
+  val numActive = RegInit(0.U(24.W))
+  val maxActive = RegInit(0.U(24.W))
   val error_flag = RegInit(false.B)
 
   error_flag := false.B
@@ -156,10 +157,14 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   }.elsewhen(!exeList.io.deq.fire() && ChildArb.io.out.fire()) {
     when(numActive === 0.U) {
       error_flag := true.B
-      printf("*** Error: numActive under-run %d\n", error_flag)
+      printf("*** Error: numActive under-run %d.\n", error_flag)
     }
     numActive := numActive - 1.U
   }
+  when (numActive > maxActive) {
+    maxActive := numActive
+  }
+
   /*
   val activeID = RegInit(VecInit(Seq.fill(1<<tlen)(false.B)))
   when(exeList.io.deq.fire()) {

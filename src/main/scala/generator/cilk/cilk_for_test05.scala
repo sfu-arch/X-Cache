@@ -593,13 +593,13 @@ class cilk_for_test05TopB(implicit p: Parameters) extends cilk_for_test05TopIO()
     foo
   }
 
-  val CacheArbiter = Module(new CacheArbiter(children))
+  val MemArbiter = Module(new MemArbiter(children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.MemReq(i) <> cilk_for_test05_detach(i).io.MemReq
-    cilk_for_test05_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
+    MemArbiter.io.cpu.MemReq(i) <> cilk_for_test05_detach(i).io.MemReq
+    cilk_for_test05_detach(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
   }
-  io.MemReq <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <>  io.MemResp
+  io.MemReq <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <>  io.MemResp
   // tester to cilk_for_test02
   cilk_for_test05.io.in <> io.in
 
@@ -632,13 +632,13 @@ class cilk_for_test05TopC(implicit p: Parameters) extends cilk_for_test05TopIO()
     foo
   }
 
-  val CacheArbiter = Module(new CacheArbiter(children))
+  val MemArbiter = Module(new MemArbiter(children))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.MemReq(i) <> cilk_for_test05_detach(i).io.MemReq
-    cilk_for_test05_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
+    MemArbiter.io.cpu.MemReq(i) <> cilk_for_test05_detach(i).io.MemReq
+    cilk_for_test05_detach(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
   }
-  io.MemReq <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <>  io.MemResp
+  io.MemReq <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <>  io.MemResp
 
   cilk_for_test05.io.in <> io.in
 
