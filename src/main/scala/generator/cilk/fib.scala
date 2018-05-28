@@ -828,11 +828,60 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 }
 
+abstract class fibTopIO(implicit val p: Parameters) extends Module with CoreParams {
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32,32))))
+    val out = Decoupled(new Call(List(32)))
+  })
+}
+
+class fibTop(tiles : Int)(implicit p: Parameters) extends fibTopIO()(p) {
+  val NumFibs = tiles
+  val fib = for (i <- 0 until NumFibs) yield {
+    val fibby = Module(new fibDF())
+    fibby
+  }
+  val fib_continue = for (i <- 0 until NumFibs) yield {
+    val fibby_continue = Module(new fib_continueDF())
+    fibby_continue
+  }
+  val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumFibs), NumFibs))
+  val StackArb = Module(new CacheArbiter((2*NumFibs)))
+  val Stack = Module(new StackMem((1 << tlen)*4))
+
+
+  // Merge the memory interfaces and connect to the stack memory
+  for (i <- 0 until NumFibs) {
+    // Connect to memory interface
+    StackArb.io.cpu.MemReq(2*i) <> fib(i).io.MemReq
+    fib(i).io.MemResp <> StackArb.io.cpu.MemResp(2*i)
+    StackArb.io.cpu.MemReq(2*i+1) <> fib_continue(i).io.MemReq
+    fib_continue(i).io.MemResp <> StackArb.io.cpu.MemResp(2*i+1)
+
+    // Connect fib to continuation
+    fib_continue(i).io.in <> fib(i).io.call17_out
+    fib(i).io.call17_in <> fib_continue(i).io.out
+
+    // Connect to task controller
+    TC.io.parentIn(2*i) <> fib(i).io.call10_out
+    fib(i).io.call10_in <> TC.io.parentOut(2*i)
+    TC.io.parentIn(2*i+1) <> fib(i).io.call14_out
+    fib(i).io.call14_in <> TC.io.parentOut(2*i+1)
+    fib(i).io.in <> TC.io.childOut(i)
+    TC.io.childIn(i) <> fib(i).io.out
+  }
+
+  Stack.io.req <> StackArb.io.cache.MemReq
+  StackArb.io.cache.MemResp <> Stack.io.resp
+  TC.io.parentIn(2*NumFibs) <> io.in
+  io.out <> TC.io.parentOut(2*NumFibs)
+}
+
 import java.io.{File, FileWriter}
 object fibMain extends App {
   val dir = new File("RTL/fib") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibDF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibTop(4)(p.alterPartial({case TLEN => 10}))))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
