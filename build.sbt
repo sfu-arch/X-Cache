@@ -4,7 +4,8 @@ organization := "sfu.arch"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.11.12"
+//scalaVersion := "2.12.4"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls")
 
