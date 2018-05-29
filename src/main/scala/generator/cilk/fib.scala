@@ -846,7 +846,7 @@ class fibTop(tiles : Int)(implicit p: Parameters) extends fibTopIO()(p) {
     fibby_continue
   }
   val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumFibs), NumFibs))
-  val StackArb = Module(new CacheArbiter((2*NumFibs)))
+  val StackArb = Module(new MemArbiter((2*NumFibs)))
   val Stack = Module(new StackMem((1 << tlen)*4))
 
 
@@ -879,11 +879,11 @@ class fibTop(tiles : Int)(implicit p: Parameters) extends fibTopIO()(p) {
 
 import java.io.{File, FileWriter}
 object fibMain extends App {
-  val dir = new File("RTL/fib") ; dir.mkdirs
+  val dir = new File("RTL/fibTop") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibTop(4)(p.alterPartial({case TLEN => 10}))))
 
-  val verilogFile = new File(dir, s"${chirrtl.main}.v")
+  val verilogFile = new File(dir, s"/${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
   val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
   val compiledStuff = compileResult.getEmittedCircuit
