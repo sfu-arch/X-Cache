@@ -95,7 +95,7 @@ class fibMain2(tiles : Int)(implicit p: Parameters) extends fibMainIO {
     fibby_continue
   }
   val TC = Module(new TaskController(List(32,32), List(32), 1+(2*NumFibs), NumFibs))
-  val Stack = Module(new InterleavedStack((1 << tlen)*16, List(4,4), 2*NumFibs))
+  val Stack = Module(new InterleavedStack((1 << tlen)*16, List(3,2), 2*NumFibs))
 
 
   // Merge the memory interfaces and connect to the stack memory
@@ -190,9 +190,9 @@ class fibTest01[T <: fibMainIO](c : T, n : Int, tiles: Int) extends PeekPokeTest
 }
 
 object fibTesterParams {
-  val tile_list = List(12)
-//  val tile_list = List(1,2,3,4,5,6,7,8,9,10,11,12)
-  val n_list = List(13)
+//  val tile_list = List(12)
+  val tile_list = List(1,2,3,4,5,6,7,8,9,10,11,12)
+  val n_list = List(12)
 }
 
 class fibTester1 extends FlatSpec with Matchers {

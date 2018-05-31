@@ -4,18 +4,19 @@ fi
 
 #BEGIN_TIME=`date`
 APPS=( \
-    'cilk_for_test04TopA' \
-    'cilk_for_test04TopB' \
-    'cilk_for_test04TopC' \
-    'cilk_for_test05TopA' \
-    'cilk_for_test05TopB' \
-    'cilk_for_test05TopC' \
-    'cilk_for_test06TopA' \
-    'cilk_for_test06TopB' \
-    'cilk_for_test06TopC' \
-    'cilk_for_test08TopA' \
-    'cilk_for_test08TopB' \
-    'cilk_for_test08TopC' \
+    # 'cilk_for_test04TopA' \
+    # 'cilk_for_test04TopB' \
+    # 'cilk_for_test04TopC' \
+    # 'cilk_for_test05TopA' \
+    # 'cilk_for_test05TopB' \
+    # 'cilk_for_test05TopC' \
+    # 'cilk_for_test06TopA' \
+    # 'cilk_for_test06TopB' \
+    # 'cilk_for_test06TopC' \
+    # 'cilk_for_test08TopA' \
+    # 'cilk_for_test08TopB' \
+    # 'cilk_for_test08TopC' \
+    'fibTop' \
 )
 
 for app in ${APPS[@]}; do
