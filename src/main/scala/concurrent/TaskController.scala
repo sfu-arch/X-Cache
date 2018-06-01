@@ -157,7 +157,7 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   }.elsewhen(!exeList.io.deq.fire() && ChildArb.io.out.fire()) {
     when(numActive === 0.U) {
       error_flag := true.B
-      printf("*** Error: numActive under-run %d.\n", error_flag)
+      printf("*** Error: numActive under-run. maxActive = %d. error_flag = %d\n", maxActive, error_flag)
     }
     numActive := numActive - 1.U
   }

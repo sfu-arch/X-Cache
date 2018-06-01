@@ -372,26 +372,27 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*==========================================*
    *          Init the Sync Counters          *
    *==========================================*/
-//  val syncCount = RegInit(VecInit(Seq.fill(1<<tlen)(0.U(tlen.W))))
-  val syncCount = Mem(1 << tlen, UInt(tlen.W))
+  //  val syncCount = RegInit(VecInit(Seq.fill(1<<tlen)(0.U(tlen.W))))
+  val countBits = BigInt(math.min(NumInc, NumDec)).bitLength
+  val syncCount = SyncReadMem(1 << tlen, UInt(countBits.W))
   val initCounters = RegInit(true.B)
   val (initCount, initDone) = Counter(true.B, 1 << tlen)
 
   when(initDone) {
-    when (initCounters) {
+    when(initCounters) {
       printfInfo("[LOG] " + "[" + module_name + "] " + node_name + ":RAM counters initialized @ %d\n", cycleCount)
     }
     initCounters := false.B
   }
 
-  when (initCounters) {
-    syncCount.write(initCount,0.U)
+  when(initCounters) {
+    syncCount.write(initCount, 0.U)
   }
 
   /*============================================*
@@ -402,9 +403,12 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   val decArb = Module(new Arbiter(new ControlBundle, NumDec))
   val updateArb = Module(new Arbiter(new ControlBundle(), 2))
   val doneQueue = Module(new Queue(new ControlBundle(), 32))
-  val update   = RegInit(false.B)
-  val dec      = RegInit(0.U)
+  val dec_R = RegInit(0.U)
   val updateArb_R = RegInit(ControlBundle.default)
+  val update_R = RegInit(false.B)
+
+  val s_IDLE :: s_WRITE :: s_WAIT :: Nil = Enum(3)
+  val state = RegInit(s_IDLE)
 
   incArb.io.in <> io.incIn
   decArb.io.in <> io.decIn
@@ -412,40 +416,67 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   updateArb.io.in(1) <> decArb.io.out // decrements lower priority
 
   when(updateArb.io.out.ready) {
-    update := updateArb.io.out.valid && updateArb.io.out.bits.control
-    dec := updateArb.io.chosen
+    update_R := updateArb.io.out.valid && updateArb.io.out.bits.control
+    dec_R := updateArb.io.chosen
     updateArb_R := updateArb.io.out.bits
   }
 
   doneQueue.io.enq.valid := false.B
-  doneQueue.io.enq.bits  := ControlBundle.default
-  when(initCounters) {
-    updateArb.io.out.ready := false.B
-  }.elsewhen(update) {
-    when(dec === 0.U) {
-      syncCount.write(updateArb_R.taskID, syncCount.read(updateArb_R.taskID) + 1.U)
-//      syncCount(updateArb_R.taskID) := syncCount(updateArb_R.taskID) + 1.U
-      updateArb.io.out.ready := true.B
-    }.otherwise {
-      assert(syncCount.read(updateArb_R.taskID) =/= 0.U)
-        when(syncCount.read(updateArb_R.taskID) === 1.U && doneQueue.io.enq.ready) {
-//        when(syncCount(updateArb_R.taskID) === 1.U && doneQueue.io.enq.ready) {
-          syncCount.write(updateArb_R.taskID, syncCount.read(updateArb_R.taskID) - 1.U)
-//          syncCount(updateArb_R.taskID) := syncCount(updateArb_R.taskID) - 1.U
+  doneQueue.io.enq.bits := ControlBundle.default
+
+  //  val currCount_R = RegInit(0.U(tlen.W))
+  val currCount = syncCount.read(updateArb_R.taskID)
+  val updateCount = WireInit(0.U(countBits.W))
+
+  switch(state) {
+    is(s_IDLE) {
+      when(initCounters) {
+        updateArb.io.out.ready := false.B
+        state := s_IDLE
+      }.elsewhen(update_R) {
+        updateArb.io.out.ready := false.B
+        state := s_WRITE
+      }.otherwise {
+        updateArb.io.out.ready := true.B
+        state := s_IDLE
+      }
+    }
+    is(s_WRITE) {
+      // Update count
+      when(dec_R === 0.U) {
+        updateCount := currCount + 1.U
+      }.otherwise{
+        assert(currCount =/= 0.U)
+        updateCount := currCount - 1.U
+      }
+      syncCount.write(updateArb_R.taskID, updateCount)
+      // If decrementing to zero then last re-attach has arrived.
+      when(updateCount === 0.U) {
+        when(doneQueue.io.enq.ready) {
           doneQueue.io.enq.valid := true.B
           doneQueue.io.enq.bits := updateArb_R
           updateArb.io.out.ready := true.B
-          //        }.elsewhen(syncCount.read(updateArb_R.taskID) === 1.U){
-        }.elsewhen(syncCount(updateArb_R.taskID) === 1.U){
-          updateArb.io.out.ready := false.B
+          state := s_IDLE
         }.otherwise {
-          syncCount.write(updateArb_R.taskID, syncCount.read(updateArb_R.taskID) - 1.U)
-//          syncCount(updateArb_R.taskID) := syncCount(updateArb_R.taskID) - 1.U
-          updateArb.io.out.ready := true.B
+          updateArb.io.out.ready := false.B
+          state := s_WAIT
         }
+      }.otherwise{
+        updateArb.io.out.ready := true.B
+        state := s_IDLE
+      }
+  }
+    is(s_WAIT) {
+      when(doneQueue.io.enq.ready) {
+        doneQueue.io.enq.valid := true.B
+        doneQueue.io.enq.bits := updateArb_R
+        updateArb.io.out.ready := true.B
+        state := s_IDLE
+      }.otherwise{
+        updateArb.io.out.ready := true.B
+        state := s_WAIT
+      }
     }
-  }.otherwise{
-    updateArb.io.out.ready := true.B
   }
 
   /*============================================*
