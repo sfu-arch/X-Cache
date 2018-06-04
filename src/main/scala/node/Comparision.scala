@@ -21,15 +21,25 @@ object CmpOpCode {
 
   val CompMap = Map(
   "EQ" -> EQ,
+  "eq" -> EQ,
   "NE" -> NE,
+  "ne" -> NE,
   "UGT" -> UGT,
+  "ugt" -> UGT,
   "UGE" -> UGE,
+  "uge" -> UGE,
   "ULT" -> ULT,
+  "ult" -> ULT,
   "ULE" -> ULE,
+  "ule" -> ULE,
   "SGT" -> SGT,
+  "sgt" -> SGT,
   "SGE" -> SGE,
+  "sge" -> SGE,
   "SLT" -> SLT,
+  "slt" -> SLT,
   "SLE" -> SLE
+  "sle" -> SLE
   )
 }
 

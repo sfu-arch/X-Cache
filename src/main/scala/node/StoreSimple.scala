@@ -42,7 +42,7 @@ class StoreIO(NumPredOps: Int,
   */
 class UnTypStore(NumPredOps: Int,
                  NumSuccOps: Int,
-                 NumOuts: Int,
+                 NumOuts: Int = 1,
                  Typ: UInt = MT_W, ID: Int, RouteID: Int)
                 (implicit p: Parameters,
                  name: sourcecode.Name,
@@ -161,7 +161,7 @@ class UnTypStore(NumPredOps: Int,
         Reset()
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n",enable_R.taskID, cycleCount)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, data: %d\n",enable_R.taskID, cycleCount, data_R.data)
         //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
       }
     }
