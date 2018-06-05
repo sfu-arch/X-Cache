@@ -1,13 +1,13 @@
 package dataflow
 
 import chisel3.{Flipped, Module, _}
-import chisel3.util.{Decoupled, _}
+import chisel3.util._
 import config._
 import config.Parameters
 import interfaces._
 import node._
-import utility.Constants._
-import junctions._
+import util._
+import utility.UniformPrintfs
 
 class ParentBundle()(implicit p: Parameters) extends CoreBundle  {
   val sid = UInt(tlen.W)  // Static ID (e.g. parent identifier)
@@ -25,10 +25,12 @@ class TaskControllerIO(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent
 }
 
 class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int)
-                    (implicit val p: Parameters) extends Module with CoreParams {
+                    (implicit val p: Parameters)
+  extends Module with CoreParams with UniformPrintfs {
 
   // Instantiate TaskController I/O signals
   val io = IO(new TaskControllerIO(argTypes, retTypes, numParent, numChild))
+  // Printf debugging
 
   /** *************************************************************************
     * Input Arbiter
@@ -39,6 +41,8 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   val exeList = Module(new Queue(new Call(argTypes), 1 << tlen))
   val parentTable = SyncReadMem(1 << tlen, new ParentBundle())
   val retExpand = Module(new ExpandNode(NumOuts=2,ID=0)(new Call(retTypes)))
+  val (initCount, initDone) = Counter(true.B, 1 << tlen)
+  val initQueue = RegInit(true.B)
 
   //  val parentTable =RegInit(VecInit(Seq.fill(1<<tlen)(0.U.asTypeOf(new ParentBundle()))))
 
@@ -57,8 +61,6 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     * Instantiate a queue to hold the unused table task entries. Initialize
     * it on startup
     * *************************************************************************/
-  val initQueue = RegInit(true.B)
-  val (initCount, initDone) = Counter(true.B, 1 << tlen)
   when(initDone) {
     initQueue := false.B
   }
@@ -147,22 +149,16 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     * Debug
     **************************************************************************/
 
-  val numActive = RegInit(0.U(24.W))
   val maxActive = RegInit(0.U(24.W))
   val error_flag = RegInit(false.B)
 
-  error_flag := false.B
-  when(exeList.io.deq.fire() && !ChildArb.io.out.fire()) {
-    numActive := numActive + 1.U
-  }.elsewhen(!exeList.io.deq.fire() && ChildArb.io.out.fire()) {
-    when(numActive === 0.U) {
-      error_flag := true.B
-      printf("*** Error: numActive under-run. maxActive = %d. error_flag = %d\n", maxActive, error_flag)
-    }
-    numActive := numActive - 1.U
-  }
-  when (numActive > maxActive) {
+  val numActive = (1 << tlen).U - freeList.io.count -1.U
+  val numActive_R = RegNext(numActive)
+  when (!initQueue && numActive > maxActive) {
     maxActive := numActive
+  }
+  when(numActive_R === 1.U && numActive === 0.U) {
+    printf("*** maxActive: %d\n", maxActive)
   }
 
   /*
