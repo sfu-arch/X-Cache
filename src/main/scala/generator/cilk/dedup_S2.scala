@@ -301,8 +301,8 @@ abstract class S2DFIO(implicit val p: Parameters) extends Module with CoreParams
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val call13_out = Decoupled(new Call(List(32,32,32)))
     val call13_in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -335,8 +335,8 @@ class S2DF(implicit p: Parameters) extends S2DFIO()(p) {
 		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32,32)))
   InputSplitter.io.In <> io.in
@@ -463,7 +463,7 @@ class S2DF(implicit p: Parameters) extends S2DFIO()(p) {
 
 
   //  reattach label %det.cont, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val reattach14 = Module(new Reattach(NumPredIn=1, ID=14))
+  val reattach14 = Module(new Reattach(NumPredOps=1, ID=14))
 
   // [BasicBlock]  det.cont:
 
@@ -490,7 +490,7 @@ class S2DF(implicit p: Parameters) extends S2DFIO()(p) {
   // [BasicBlock]  if.end6:
 
   //  ret void, !UID !64, !BB_UID !65, !ScalaLabel !66
-  val ret20 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=20))
+  val ret20 = Module(new RetNode(retTypes=List(32), ID=20))
 
 
 
@@ -808,9 +808,6 @@ class S2DF(implicit p: Parameters) extends S2DFIO()(p) {
   /**
     * Connecting Dataflow signals
     */
-  ret20.io.predicateIn(0).bits.control := true.B
-  ret20.io.predicateIn(0).bits.taskID := 0.U
-  ret20.io.predicateIn(0).valid := true.B
   ret20.io.In.data("field0").bits.data := 1.U
   ret20.io.In.data("field0").bits.predicate := true.B
   ret20.io.In.data("field0").valid := true.B

@@ -295,8 +295,8 @@ abstract class dedupDFIO(implicit val p: Parameters) extends Module with CorePar
     val call1_in = Flipped(Decoupled(new Call(List(32))))
     val call11_out = Decoupled(new Call(List(32,32,32)))
     val call11_in = Flipped(Decoupled(new Call(List(32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -329,8 +329,8 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 		            (RControl=new ReadMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
 		            (RWArbiter=new ReadWriteArbiter()))
 
-  io.CacheReq <> CacheMem.io.CacheReq
-  CacheMem.io.CacheResp <> io.CacheResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCall(List(32,32)))
   InputSplitter.io.In <> io.in
@@ -401,7 +401,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
 
   //  reattach label %det.cont, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val reattach2 = Module(new Reattach(NumPredIn=1, ID=2))
+  val reattach2 = Module(new Reattach(NumPredOps=1,ID=2))
 
   // [BasicBlock]  det.cont:
 
@@ -445,7 +445,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
 
   //  reattach label %det.cont2, !UID !45, !BB_UID !46, !ScalaLabel !47
-  val reattach12 = Module(new Reattach(NumPredIn=1, ID=12))
+  val reattach12 = Module(new Reattach(NumPredOps=1, ID=12))
 
   // [BasicBlock]  det.cont2:
 
@@ -475,7 +475,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
 
   //  ret void, !UID !68, !BB_UID !69, !ScalaLabel !70
-  val ret19 = Module(new RetNode(NumPredIn=1, retTypes=List(32), ID=19))
+  val ret19 = Module(new RetNode(retTypes=List(32), ID=19))
 
 
 
@@ -793,9 +793,6 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   /**
     * Connecting Dataflow signals
     */
-  ret19.io.predicateIn(0).bits.control := true.B
-  ret19.io.predicateIn(0).bits.taskID := 0.U
-  ret19.io.predicateIn(0).valid := true.B
   ret19.io.In.data("field0").bits.data := 1.U
   ret19.io.In.data("field0").bits.predicate := true.B
   ret19.io.In.data("field0").valid := true.B
@@ -807,8 +804,8 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 class dedupTopIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32,32))))
-    val CacheResp = Flipped(Valid(new CacheRespT))
-    val CacheReq = Decoupled(new CacheReq)
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -836,23 +833,23 @@ class dedupTop()(implicit p: Parameters) extends dedupTopIO  {
   val S4TC = Module(new TaskController(List(32,32), List(32), 1, S4Tiles))
 
   // Connect cache interfaces to a cache arbiter
-  val CacheArbiter = Module(new CacheArbiter(1+S2Tiles+S3Tiles+S4Tiles))
-  CacheArbiter.io.cpu.CacheReq(0) <> dedup.io.CacheReq
-  dedup.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(0)
+  val MemArbiter = Module(new MemArbiter(1+S2Tiles+S3Tiles+S4Tiles))
+  MemArbiter.io.cpu.MemReq(0) <> dedup.io.MemReq
+  dedup.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
   for (i <- 0 until S2Tiles) {
-    CacheArbiter.io.cpu.CacheReq(i+1) <> dedup_S2(i).io.CacheReq
-    dedup_S2(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i+1)
+    MemArbiter.io.cpu.MemReq(i+1) <> dedup_S2(i).io.MemReq
+    dedup_S2(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i+1)
   }
   for (i <- 0 until S3Tiles) {
-    CacheArbiter.io.cpu.CacheReq(i+1+S2Tiles) <> dedup_S3(i).io.CacheReq
-    dedup_S3(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i+1+S2Tiles)
+    MemArbiter.io.cpu.MemReq(i+1+S2Tiles) <> dedup_S3(i).io.MemReq
+    dedup_S3(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i+1+S2Tiles)
   }
   for (i <- 0 until S4Tiles) {
-    CacheArbiter.io.cpu.CacheReq(i+1+S2Tiles+S3Tiles) <> dedup_S4(i).io.CacheReq
-    dedup_S4(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i+1+S2Tiles+S3Tiles)
+    MemArbiter.io.cpu.MemReq(i+1+S2Tiles+S3Tiles) <> dedup_S4(i).io.MemReq
+    dedup_S4(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i+1+S2Tiles+S3Tiles)
   }
-  io.CacheReq <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> io.CacheResp
+  io.MemReq <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> io.MemResp
 
   // tester to dedup
   dedup.io.in <> io.in

@@ -59,17 +59,17 @@ class dedupMainDirect(implicit p: Parameters) extends dedupMainIO {
   val dedup_S3 = Module(new S3DF())
   val dedup_S4 = Module(new S4DF())
 
-  val CacheArbiter = Module(new CacheArbiter(4))
-  CacheArbiter.io.cpu.CacheReq(0) <> dedup.io.CacheReq
-  dedup.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(0)
-  CacheArbiter.io.cpu.CacheReq(1) <> dedup_S2.io.CacheReq
-  dedup_S2.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(1)
-  CacheArbiter.io.cpu.CacheReq(2) <> dedup_S3.io.CacheReq
-  dedup_S3.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(2)
-  CacheArbiter.io.cpu.CacheReq(3) <> dedup_S4.io.CacheReq
-  dedup_S4.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(3)
-  cache.io.cpu.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cpu.resp
+  val MemArbiter = Module(new MemArbiter(4))
+  MemArbiter.io.cpu.MemReq(0) <> dedup.io.MemReq
+  dedup.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
+  MemArbiter.io.cpu.MemReq(1) <> dedup_S2.io.MemReq
+  dedup_S2.io.MemResp <> MemArbiter.io.cpu.MemResp(1)
+  MemArbiter.io.cpu.MemReq(2) <> dedup_S3.io.MemReq
+  dedup_S3.io.MemResp <> MemArbiter.io.cpu.MemResp(2)
+  MemArbiter.io.cpu.MemReq(3) <> dedup_S4.io.MemReq
+  dedup_S4.io.MemResp <> MemArbiter.io.cpu.MemResp(3)
+  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   dedup.io.in <> io.in                      // top level
   io.out <> dedup.io.out
@@ -134,23 +134,23 @@ class dedupMainTM(implicit p: Parameters) extends dedupMainIO  {
   val S4TC = Module(new TaskController(List(32,32), List(32), 1, S4Tiles))
 
   // Connect cache interfaces to a cache arbiter
-  val CacheArbiter = Module(new CacheArbiter(1+S2Tiles+S3Tiles+S4Tiles))
-  CacheArbiter.io.cpu.CacheReq(0) <> dedup.io.CacheReq
-  dedup.io.CacheResp <> CacheArbiter.io.cpu.CacheResp(0)
+  val MemArbiter = Module(new MemArbiter(1+S2Tiles+S3Tiles+S4Tiles))
+  MemArbiter.io.cpu.MemReq(0) <> dedup.io.MemReq
+  dedup.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
   for (i <- 0 until S2Tiles) {
-    CacheArbiter.io.cpu.CacheReq(i+1) <> dedup_S2(i).io.CacheReq
-    dedup_S2(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i+1)
+    MemArbiter.io.cpu.MemReq(i+1) <> dedup_S2(i).io.MemReq
+    dedup_S2(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i+1)
   }
   for (i <- 0 until S3Tiles) {
-    CacheArbiter.io.cpu.CacheReq(i+1+S2Tiles) <> dedup_S3(i).io.CacheReq
-    dedup_S3(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i+1+S2Tiles)
+    MemArbiter.io.cpu.MemReq(i+1+S2Tiles) <> dedup_S3(i).io.MemReq
+    dedup_S3(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i+1+S2Tiles)
   }
   for (i <- 0 until S4Tiles) {
-    CacheArbiter.io.cpu.CacheReq(i+1+S2Tiles+S3Tiles) <> dedup_S4(i).io.CacheReq
-    dedup_S4(i).io.CacheResp <> CacheArbiter.io.cpu.CacheResp(i+1+S2Tiles+S3Tiles)
+    MemArbiter.io.cpu.MemReq(i+1+S2Tiles+S3Tiles) <> dedup_S4(i).io.MemReq
+    dedup_S4(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i+1+S2Tiles+S3Tiles)
   }
-  cache.io.cache.req <> CacheArbiter.io.cache.CacheReq
-  CacheArbiter.io.cache.CacheResp <> cache.io.cache.resp
+  cache.io.cache.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cache.resp
 
   // tester to dedup
   dedup.io.in <> io.in

@@ -38,7 +38,7 @@ object CmpOpCode {
   "sge" -> SGE,
   "SLT" -> SLT,
   "slt" -> SLT,
-  "SLE" -> SLE
+  "SLE" -> SLE,
   "sle" -> SLE
   )
 }
