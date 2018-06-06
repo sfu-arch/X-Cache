@@ -312,9 +312,6 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
 
-
-
-
   /* ================================================================== *
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
@@ -391,7 +388,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
   // [BasicBlock]  offload.pfor.body:
 
   //  call void @cilk_for_test12_detach1(i32 %n, i32* %a, i32* %result), !UID !53, !ScalaLabel !54
-//  val call15 = Module(new CallNode(ID=15,argTypes=List(32,32,32),retTypes=List(32)))
+  //  val call15 = Module(new CallNode(ID=15,argTypes=List(32,32,32),retTypes=List(32)))
   val callout15 = Module(new CallOutNode(ID=4,NumSuccOps=1,argTypes=List(32,32,32))) // Manually changed
   val callin15 = Module(new CallInNode(ID=499,argTypes=List(32)))
 
@@ -432,7 +429,7 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
     */
 
   //Connecting br2 to bb_pfor_cond
-//  bb_pfor_cond.io.activate <> br2.io.Out(param.br2_brn_bb("bb_pfor_cond"))
+  //  bb_pfor_cond.io.activate <> br2.io.Out(param.br2_brn_bb("bb_pfor_cond"))
   lb_L_0.io.enable <> br2.io.Out(param.br2_brn_bb("bb_pfor_cond"))  // manually added
 
   bb_pfor_cond.io.activate <> lb_L_0.io.activate // manually corrected
@@ -443,14 +440,14 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
   //Connecting br5 to bb_pfor_end25
-//  bb_pfor_end25.io.predicateIn <> br5.io.Out(param.br5_brn_bb("bb_pfor_end25"))
+  //  bb_pfor_end25.io.predicateIn <> br5.io.Out(param.br5_brn_bb("bb_pfor_end25"))
   lb_L_0.io.loopExit(0) <> br5.io.Out(param.br5_brn_bb("bb_pfor_end25")) // Manual
   bb_pfor_end25.io.predicateIn <> lb_L_0.io.endEnable
 
 
   //Connecting br8 to bb_pfor_cond
   bb_pfor_cond.io.loopBack <> br8.io.Out(param.br8_brn_bb("bb_pfor_cond"))
-//  lb_L_0.io.latchEnable   <> br8.io.Out(1) // manual
+  //  lb_L_0.io.latchEnable   <> br8.io.Out(1) // manual
   lb_L_0.io.latchEnable   <> callout15.io.SuccOp(0) // manual
 
 
@@ -522,11 +519,11 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
 
-//  call15.io.In.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call15"))
+  //  call15.io.In.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call15"))
   callout15.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("call15"))
   callin15.io.enable.enq(ControlBundle.active())
 
-//  reattach16.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach16"))
+  //  reattach16.io.enable <> bb_offload_pfor_body.io.Out(param.bb_offload_pfor_body_activate("reattach16"))
   reattach16.io.enable.enq(ControlBundle.active())
 
 

@@ -105,7 +105,7 @@ class BasicBlockNode(NumInputs: Int,
 
   // Wire up mask output
   for (i <- 0 until NumPhi) {
-    io.MaskBB(i).bits := predicate_control_R.asUInt()
+    io.MaskBB(i).bits := Reverse(predicate_control_R.asUInt())
   }
 
 

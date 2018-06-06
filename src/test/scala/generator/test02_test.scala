@@ -21,21 +21,54 @@ import node._
 import junctions._
 
 
-class test02CacheWrapper()(implicit p: Parameters) extends test02DF()(p)
-  with CacheParams {
+class test02MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+  val io = IO( new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+    val addr = Input(UInt(nastiXAddrBits.W))
+    val din  = Input(UInt(nastiXDataBits.W))
+    val write = Input(Bool())
+    val dout = Output(UInt(nastiXDataBits.W))
+    val out = Decoupled(new Call(List(32)))
+  })
+}
 
-  // Instantiate the AXI Cache
-  val cache = Module(new Cache)
-  cache.io.cpu.req <> CacheMem.io.MemReq
-  CacheMem.io.MemResp <> cache.io.cpu.resp
-  cache.io.cpu.abort := false.B
-  // Instantiate a memory model with AXI slave interface for cache
-  val memModel = Module(new NastiMemSlave)
+class test02Main(implicit p: Parameters) extends test02MainIO {
+
+  val cache = Module(new Cache)            // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+
+  // Store a copy of all data written to the cache.  This is done since the cache isn't
+  // 'write through' to the memory model and we have no easy way of reading the
+  // cache contents from the testbench.
+  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
+    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
+  }
+  io.dout := memCopy.read((io.addr>>2).asUInt())
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
   memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := io.addr
+  memModel.io.init.bits.data := io.din
+  memModel.io.init.valid := io.write
+  cache.io.cpu.abort := false.B
+
+  // Wire up the cache and modules under test.
+  val test02 = Module(new test02DF())
+
+  cache.io.cpu.req <> test02.io.MemReq
+  test02.io.MemResp <> cache.io.cpu.resp
+  test02.io.in <> io.in
+  io.out <> test02.io.out
 
 }
 
-class test02Test01(c: test02CacheWrapper) extends PeekPokeTester(c) {
+
+
+
+
+class test02Test01[T <: test02MainIO](c: T) extends PeekPokeTester(c) {
 
 
   /**
@@ -87,7 +120,7 @@ class test02Test01(c: test02CacheWrapper) extends PeekPokeTester(c) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 11) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 105")
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 11")
         fail
       } else {
         println(Console.BLUE + s"*** Correct result received @ cycle: $time.")
@@ -116,7 +149,7 @@ class test02Tester extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir",
         "-tts", "0001"),
-      () => new test02CacheWrapper()) {
+      () => new test02Main()) {
       c => new test02Test01(c)
     } should be(true)
   }
