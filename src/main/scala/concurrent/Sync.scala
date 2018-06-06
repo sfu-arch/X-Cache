@@ -4,7 +4,6 @@ import chisel3._
 import chisel3.util._
 import chisel3.Module
 import config.{CoreParams, Parameters}
-import control.BasicBlockNoMaskIO
 import interfaces.{ControlBundle, DataBundle}
 import node._
 import utility.UniformPrintfs
@@ -402,7 +401,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   val incArb = Module(new Arbiter(new ControlBundle, NumInc))
   val decArb = Module(new Arbiter(new ControlBundle, NumDec))
   val updateArb = Module(new Arbiter(new ControlBundle(), 2))
-  val doneQueue = Module(new Queue(new ControlBundle(), 32))
+  val doneQueue = Module(new Queue(new ControlBundle(), 128))
   val dec_R = RegInit(0.U)
   val updateArb_R = RegInit(ControlBundle.default)
   val update_R = RegInit(false.B)
@@ -465,7 +464,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
         updateArb.io.out.ready := true.B
         state := s_IDLE
       }
-  }
+    }
     is(s_WAIT) {
       when(doneQueue.io.enq.ready) {
         doneQueue.io.enq.valid := true.B
@@ -483,6 +482,8 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
    *            Connect outputs                 *
    *============================================*/
 
+
+
   val outPorts = Module(new ExpandNode(NumOuts=NumOuts, ID=0)(new ControlBundle))
 
   outPorts.io.InData <> doneQueue.io.deq//outArb.io.out
@@ -491,5 +492,6 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   io.Out <> outPorts.io.Out
 
   io.enable.ready := true.B
+
 
 }

@@ -16,7 +16,7 @@ class StackMemIO(implicit p: Parameters) extends CoreBundle()(p) with CoreParams
   val resp  = Output(Valid(new MemResp))
 }
 
-class StackMem(val size : Int)(implicit val p: Parameters) extends Module with CoreParams {
+class StackMem(size : Int)(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new StackMemIO)
 
 //  val mem = Mem(size*(1<<tlen), UInt(xlen.W))
@@ -26,7 +26,6 @@ class StackMem(val size : Int)(implicit val p: Parameters) extends Module with C
 
   io.req.ready := true.B
 
-//  val addr = Cat(io.req.bits.taskID, io.req.bits.addr(wordindex + log2Ceil(size) - 1, wordindex))
   val addr = io.req.bits.addr(wordindex + log2Ceil(size) - 1, wordindex)
   when(io.req.fire() && io.req.bits.iswrite) {
     mem.write(addr, io.req.bits.data)

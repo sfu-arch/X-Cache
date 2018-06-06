@@ -881,7 +881,7 @@ import java.io.{File, FileWriter}
 object fibMain extends App {
   val dir = new File("RTL/fibTop") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibTop(4)(p.alterPartial({case TLEN => 10}))))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibTop(8)(p.alterPartial({case TLEN => 10}))))
 
   val verilogFile = new File(dir, s"/${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

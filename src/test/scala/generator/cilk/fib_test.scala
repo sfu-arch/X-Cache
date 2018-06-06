@@ -191,8 +191,9 @@ class fibTest01[T <: fibMainIO](c : T, n : Int, tiles: Int) extends PeekPokeTest
 
 object fibTesterParams {
 //  val tile_list = List(12)
-  val tile_list = List(1,2,3,4,5,6,7,8,9,10,11,12)
-  val n_list = List(12)
+//  val tile_list = List(1,2,3,4,5,6,7,8,9,10,11,12)
+  val tile_list = List(1,2,3,4,5,6,7,8)
+  val n_list = List(15)
 }
 
 class fibTester1 extends FlatSpec with Matchers {
@@ -211,7 +212,7 @@ class fibTester1 extends FlatSpec with Matchers {
             "-tbn", "verilator",
             "-td", s"test_run_dir/fib1_t${tiles}_n${n}",
             "-tts", "0001"),
-          () => new fibMain(tiles)(p.alterPartial({case TLEN => 10}))) {
+          () => new fibMain(tiles)(p.alterPartial({case TLEN => 11}))) {
           c => new fibTest01(c, n, tiles)
         } should be(true)
       }
@@ -235,7 +236,7 @@ class fibTester2 extends FlatSpec with Matchers {
             "-tbn", "verilator",
             "-td", s"test_run_dir/fib2_t${tiles}_n${n}",
             "-tts", "0001"),
-          () => new fibMain2(tiles)(p.alterPartial({case TLEN => 10}))) {
+          () => new fibMain2(tiles)(p.alterPartial({case TLEN => 11}))) {
           c => new fibTest01(c, n, tiles)
         } should be(true)
       }
