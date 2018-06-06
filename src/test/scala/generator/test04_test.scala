@@ -21,20 +21,6 @@ import node._
 import junctions._
 
 
-//class test04CacheWrapper()(implicit p: Parameters) extends test04DF()(p)
-  //with CacheParams {
-
-  //// Instantiate the AXI Cache
-  //val cache = Module(new Cache)
-  //cache.io.cpu.req <> CacheMem.io.MemReq
-  //CacheMem.io.MemResp <> cache.io.cpu.resp
-  //cache.io.cpu.abort := false.B
-  //// Instantiate a memory model with AXI slave interface for cache
-  //val memModel = Module(new NastiMemSlave)
-  //memModel.io.nasti <> cache.io.nasti
-
-//}
-
 class test04MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
