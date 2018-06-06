@@ -21,21 +21,69 @@ import node._
 import junctions._
 
 
-class test04CacheWrapper()(implicit p: Parameters) extends test04DF()(p)
-  with CacheParams {
+//class test04CacheWrapper()(implicit p: Parameters) extends test04DF()(p)
+  //with CacheParams {
 
-  // Instantiate the AXI Cache
-  val cache = Module(new Cache)
-  cache.io.cpu.req <> CacheMem.io.MemReq
-  CacheMem.io.MemResp <> cache.io.cpu.resp
-  cache.io.cpu.abort := false.B
-  // Instantiate a memory model with AXI slave interface for cache
-  val memModel = Module(new NastiMemSlave)
+  //// Instantiate the AXI Cache
+  //val cache = Module(new Cache)
+  //cache.io.cpu.req <> CacheMem.io.MemReq
+  //CacheMem.io.MemResp <> cache.io.cpu.resp
+  //cache.io.cpu.abort := false.B
+  //// Instantiate a memory model with AXI slave interface for cache
+  //val memModel = Module(new NastiMemSlave)
+  //memModel.io.nasti <> cache.io.nasti
+
+//}
+
+class test04MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+  val io = IO( new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+    val addr = Input(UInt(nastiXAddrBits.W))
+    val din  = Input(UInt(nastiXDataBits.W))
+    val write = Input(Bool())
+    val dout = Output(UInt(nastiXDataBits.W))
+    val out = Decoupled(new Call(List(32)))
+  })
+}
+
+class test04Main(implicit p: Parameters) extends test04MainIO {
+
+  val cache = Module(new Cache)            // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+
+  // Store a copy of all data written to the cache.  This is done since the cache isn't
+  // 'write through' to the memory model and we have no easy way of reading the
+  // cache contents from the testbench.
+  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
+    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
+  }
+  io.dout := memCopy.read((io.addr>>2).asUInt())
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
   memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := io.addr
+  memModel.io.init.bits.data := io.din
+  memModel.io.init.valid := io.write
+  cache.io.cpu.abort := false.B
+
+  // Wire up the cache and modules under test.
+  val test04 = Module(new test04DF())
+
+  cache.io.cpu.req <> test04.io.MemReq
+  test04.io.MemResp <> cache.io.cpu.resp
+  test04.io.in <> io.in
+  io.out <> test04.io.out
 
 }
 
-class test04Test01(c: test04CacheWrapper) extends PeekPokeTester(c) {
+
+
+
+
+//class test04Test01(c: test04CacheWrapper) extends PeekPokeTester(c) {
+class test04Test01[T <: test04MainIO](c: T) extends PeekPokeTester(c) {
 
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.bits.enable.taskID, 0.U)
@@ -107,7 +155,7 @@ class test04Tester extends FlatSpec with Matchers {
        "-tbn", "verilator",
        "-td", "test_run_dir",
        "-tts", "0001"),
-     () => new test04CacheWrapper()) {
+     () => new test04Main()) {
      c => new test04Test01(c)
     } should be(true)
   }
