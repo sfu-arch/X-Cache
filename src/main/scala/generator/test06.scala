@@ -83,19 +83,20 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
   val alloc1 = Module(new AllocaNode(NumOuts=2, RouteID=1, ID=1, FrameSize=12))
 
   //  %arrayidx = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 0
-  val arrayidx = Module (new GepTwoNode(NumOuts = 1, ID = 2)(numByte1=8, numByte2=4))
+  //  val arrayidx = Module (new GepTwoNode(NumOuts = 1, ID = 2)(numByte1=8, numByte2=4))
+  val arrayidx = Module (new GepArrayTwoNode(NumOuts = 1, ID = 2)(numByte = 4)(size = 2))
 
   //  store i32 %a, i32* %arrayidx, align 4
   val st_3 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=3, RouteID=0))
 
   //  %arrayidx1 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 1
-  val arrayidx1 = Module(new GepTwoNode(NumOuts=1, ID=4)(numByte1=8, numByte2=4))
+  val arrayidx1 = Module(new GepArrayTwoNode(NumOuts=1, ID=4)(numByte = 4)(size = 2))
 
   //  store i32 %b, i32* %arrayidx1, align 4
   val st_5 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=5, RouteID=1))
 
   //  %arrayidx2 = getelementptr inbounds [2 x i32], [2 x i32]* %alloc0, i32 0, i32 0
-  val arrayidx2 = Module(new GepTwoNode(NumOuts=1, ID=6)(numByte1=8, numByte2=4))
+  val arrayidx2 = Module(new GepArrayTwoNode(NumOuts=1, ID=6)(numByte = 4)(size = 2))
 
   //  %0 = load i32, i32* %arrayidx2, align 4
   val ld_7 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1, ID=7, RouteID=0))
@@ -110,13 +111,13 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
   val add = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "add")(sign=false))
 
   //  %arrayidx4 = getelementptr inbounds [1 x i32], [1 x i32]* %alloc1, i32 0, i32 0
-  val arrayidx4 = Module(new GepTwoNode(NumOuts=1, ID=11)(numByte1=8, numByte2=4))
+  val arrayidx4 = Module(new GepArrayTwoNode(NumOuts=1, ID=11)(numByte=4)(size = 1))
 
   //  store i32 %add, i32* %arrayidx4, align 4
   val st_12 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=12, RouteID=2))
 
   //  %arrayidx5 = getelementptr inbounds [1 x i32], [1 x i32]* %alloc1, i32 0, i32 0
-  val arrayidx5 = Module(new GepTwoNode(NumOuts=1, ID=13)(numByte1=8, numByte2=4))
+  val arrayidx5 = Module(new GepArrayTwoNode(NumOuts=1, ID=13)(numByte=4)(size = 1))
 
   //  %2 = load i32, i32* %arrayidx5, align 4
   val ld_14 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1, ID=14, RouteID=2))
