@@ -889,11 +889,11 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //Connecting br21 to bb_if_else
-  bb_if_else.io.predicateIn(0) <> br21.io.Out(param.br21_brn_bb("bb_if_else"))
+  bb_if_else.io.predicateIn(1) <> br21.io.Out(param.br21_brn_bb("bb_if_else"))
 
 
   //Connecting br23 to bb_if_then
-  bb_if_then.io.predicateIn(0) <> br23.io.Out(param.br23_brn_bb("bb_if_then"))
+  bb_if_then.io.predicateIn(1) <> br23.io.Out(param.br23_brn_bb("bb_if_then"))
 
 
   //Connecting br23 to bb_lor_lhs_false
@@ -901,19 +901,19 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //Connecting br29 to bb_if_then
-  bb_if_then.io.predicateIn(1) <> br29.io.Out(param.br29_brn_bb("bb_if_then"))
+  bb_if_then.io.predicateIn(0) <> br29.io.Out(param.br29_brn_bb("bb_if_then"))
 
 
   //Connecting br29 to bb_if_else
-  bb_if_else.io.predicateIn(1) <> br29.io.Out(param.br29_brn_bb("bb_if_else"))
+  bb_if_else.io.predicateIn(0) <> br29.io.Out(param.br29_brn_bb("bb_if_else"))
 
 
   //Connecting br35 to bb_if_end
-  bb_if_end.io.predicateIn(param.bb_if_end_pred("br35")) <> br35.io.Out(param.br35_brn_bb("bb_if_end"))
+  bb_if_end.io.predicateIn(1) <> br35.io.Out(param.br35_brn_bb("bb_if_end"))
 
 
   //Connecting br41 to bb_if_end
-  bb_if_end.io.predicateIn(param.bb_if_end_pred("br41")) <> br41.io.Out(param.br41_brn_bb("bb_if_end"))
+  bb_if_end.io.predicateIn(0) <> br41.io.Out(param.br41_brn_bb("bb_if_end"))
 
 
   //Connecting br44 to bb_for_inc
