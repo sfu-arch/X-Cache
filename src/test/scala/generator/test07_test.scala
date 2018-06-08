@@ -18,22 +18,10 @@ import arbiters._
 import loop._
 import accel._
 import node._
+import junctions._
 
-//class test09CacheWrapper()(implicit p: Parameters) extends test09DF()(p)
-  //with CacheParams {
 
-  //// Instantiate the AXI Cache
-  //val cache = Module(new Cache)
-  //cache.io.cpu.req <> CacheMem.io.MemReq
-  //CacheMem.io.MemResp <> cache.io.cpu.resp
-  //cache.io.cpu.abort := false.B
-  //// Instantiate a memory model with AXI slave interface for cache
-  //val memModel = Module(new NastiMemSlave)
-  //memModel.io.nasti <> cache.io.nasti
-
-//}
-
-class test09MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+class test07MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))
@@ -44,7 +32,7 @@ class test09MainIO(implicit val p: Parameters)  extends Module with CoreParams w
   })
 }
 
-class test09Main(implicit p: Parameters) extends test09MainIO {
+class test07Main(implicit p: Parameters) extends test07MainIO {
 
   val cache = Module(new Cache)            // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -67,51 +55,49 @@ class test09Main(implicit p: Parameters) extends test09MainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val test09 = Module(new test09DF())
+  val test07 = Module(new test07DF())
 
-  cache.io.cpu.req <> test09.io.MemReq
-  test09.io.MemResp <> cache.io.cpu.resp
-  test09.io.in <> io.in
-  io.out <> test09.io.out
+  cache.io.cpu.req <> test07.io.MemReq
+  test07.io.MemResp <> cache.io.cpu.resp
+  test07.io.in <> io.in
+  io.out <> test07.io.out
 
 }
 
 
 
-
-//class test09Test01(c: test09CacheWrapper) extends PeekPokeTester(c) {
-class test09Test01[T <: test09MainIO](c: T) extends PeekPokeTester(c) {
-
-
-  /**
-  *  test09DF interface:
-  *
-  *    data_0 = Flipped(Decoupled(new DataBundle))
-   *    val pred = Decoupled(new Bool())
-   *    val start = Input(new Bool())
-   *    val result = Decoupled(new DataBundle)
-   */
+//class test07Test01(c: test07CacheWrapper) extends PeekPokeTester(c) {
+class test07Test01[T <: test07MainIO](c: T) extends PeekPokeTester(c) {
 
 
-  // Initializing the signals
-
-  poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.out.ready, true.B)
+  poke(c.io.in.bits.enable.taskID, 0.U)
+  poke(c.io.in.valid, false.B)
+  //poke(c.io.in.bits.data("field0").data, 0.U)
+  //poke(c.io.in.bits.data("field0").predicate, false.B)
+  //poke(c.io.in.bits.data("field0").taskID, 0.U)
+  //poke(c.io.in.bits.data("field1").data, 0.U)
+  //poke(c.io.in.bits.data("field1").predicate, false.B)
+  //poke(c.io.in.bits.data("field1").taskID, 0.U)
+  poke(c.io.out.ready, false.B)
   step(1)
-  poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.bits.data("field0").data, 100.U)
-  poke(c.io.in.bits.data("field0").predicate, true.B)
+  poke(c.io.in.bits.enable.taskID, 3.U)
+  poke(c.io.in.valid, true.B)
+  //poke(c.io.in.bits.data("field0").data, 5.U)
+  //poke(c.io.in.bits.data("field0").predicate, true.B)
+  //poke(c.io.in.bits.data("field0").taskID, 3.U)
+  //poke(c.io.in.bits.data("field1").data, 3.U)
+  //poke(c.io.in.bits.data("field1").predicate, true.B)
+  //poke(c.io.in.bits.data("field1").taskID, 3.U)
   poke(c.io.out.ready, true.B)
   step(1)
-  poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-
+  poke(c.io.in.valid, false.B)
+  //poke(c.io.in.bits.data("field0").data, 0.U)
+  //poke(c.io.in.bits.data("field0").predicate, false.B)
+  //poke(c.io.in.bits.data("field1").data, 0.U)
+  //poke(c.io.in.bits.data("field1").predicate, false.B)
   step(1)
   var time = 1  //Cycle counter
   var result = false
@@ -120,14 +106,16 @@ class test09Test01[T <: test09MainIO](c: T) extends PeekPokeTester(c) {
     step(1)
     //println(s"Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1){
+      peek(c.io.out.bits.data("field0").predicate) == 1
+      ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 5) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 5")
+      val expected = 95
+      if (data != expected) {
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for $expected" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"*** Correct result received.")
+        println(Console.BLUE + "*** Correct result received." + Console.RESET)
       }
     }
   }
@@ -136,12 +124,11 @@ class test09Test01[T <: test09MainIO](c: T) extends PeekPokeTester(c) {
     println("*** Timeout.")
     fail
   }
-
 }
 
-class test09Tester extends FlatSpec with Matchers {
+class test07Tester extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that test09 works correctly." in {
+  it should "Check that test07 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>
@@ -153,8 +140,8 @@ class test09Tester extends FlatSpec with Matchers {
        "-tbn", "verilator",
        "-td", "test_run_dir",
        "-tts", "0001"),
-     () => new test09Main()) {
-     c => new test09Test01(c)
+     () => new test07Main()) {
+     c => new test07Test01(c)
     } should be(true)
   }
 }
