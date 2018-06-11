@@ -20,58 +20,122 @@ import accel._
 import node._
 import junctions._
 
-class test11CacheWrapper()(implicit p: Parameters) extends test11DF()(p)
-  with CacheParams {
-  /*  val io2 = IO(new Bundle {
-      val init  = Flipped(Valid(new InitParams()(p)))
-    })
-    */
-  // Instantiate the AXI Cache
-  val cache = Module(new Cache)
-  cache.io.cpu.req <> CacheMem.io.MemReq
-  CacheMem.io.MemResp <> cache.io.cpu.resp
-  cache.io.cpu.abort := false.B
-  // Instantiate a memory model with AXI slave interface for cache
-  val memModel = Module(new NastiMemSlave)
-  memModel.io.nasti <> cache.io.nasti
-  //memModel.io.init <> io2.init
+//class test11CacheWrapper()(implicit p: Parameters) extends test11DF()(p)
+  //with CacheParams {
+  ///*  val io2 = IO(new Bundle {
+      //val init  = Flipped(Valid(new InitParams()(p)))
+    //})
+    //*/
+  //// Instantiate the AXI Cache
+  //val cache = Module(new Cache)
+  //cache.io.cpu.req <> CacheMem.io.MemReq
+  //CacheMem.io.MemResp <> cache.io.cpu.resp
+  //cache.io.cpu.abort := false.B
+  //// Instantiate a memory model with AXI slave interface for cache
+  //val memModel = Module(new NastiMemSlave)
+  //memModel.io.nasti <> cache.io.nasti
+  ////memModel.io.init <> io2.init
 
-  val raminit = RegInit(true.B)
-  val addrVec = VecInit(0.U,1.U,2.U,3.U)
-  val dataVec = VecInit(1.U,2.U,3.U,4.U)
-  val (count_out, count_done) = Counter(raminit, addrVec.length)
-  memModel.io.init.bits.addr := addrVec(count_out)
-  memModel.io.init.bits.data := dataVec(count_out)
-  when (!count_done) {
-    memModel.io.init.valid := true.B
-  }.otherwise {
-    memModel.io.init.valid := false.B
-    raminit := false.B
-  }
+  //val raminit = RegInit(true.B)
+  //val addrVec = VecInit(0.U,1.U,2.U,3.U)
+  //val dataVec = VecInit(1.U,2.U,3.U,4.U)
+  //val (count_out, count_done) = Counter(raminit, addrVec.length)
+  //memModel.io.init.bits.addr := addrVec(count_out)
+  //memModel.io.init.bits.data := dataVec(count_out)
+  //when (!count_done) {
+    //memModel.io.init.valid := true.B
+  //}.otherwise {
+    //memModel.io.init.valid := false.B
+    //raminit := false.B
+  //}
 
-}
+//}
 
-abstract class test11MainIO(implicit val p: Parameters) extends Module with CoreParams {
-  val io = IO(new Bundle {
+//abstract class test11MainIO(implicit val p: Parameters) extends Module with CoreParams {
+  //val io = IO(new Bundle {
+    //val in = Flipped(Decoupled(new Call(List(32,32,32))))
+    //val out = Decoupled(new Call(List(32)))
+  //})
+//}
+
+//class test11Main(implicit p: Parameters) extends test11MainIO()(p) {
+
+  //val test11_add = Module(new test11_addDF())
+  //val test11 = Module(new test11CacheWrapper())
+
+  //test11.io.in <> io.in
+  //io.out <> test11.io.out
+
+  //test11_add.io.in <> test11.io.call8_out
+  //test11.io.call8_in <> test11_add.io.out
+
+//}
+
+
+class test11MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+  val io = IO( new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
+    val addr = Input(UInt(nastiXAddrBits.W))
+    val din  = Input(UInt(nastiXDataBits.W))
+    val write = Input(Bool())
+    val dout = Output(UInt(nastiXDataBits.W))
     val out = Decoupled(new Call(List(32)))
+
   })
 }
 
-class test11Main(implicit p: Parameters) extends test11MainIO()(p) {
+class test11MainDirect(implicit p: Parameters) extends test11MainIO{
 
+  val cache = Module(new Cache)            // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+
+  // Store a copy of all data written to the cache.  This is done since the cache isn't
+  // 'write through' to the memory model and we have no easy way of reading the
+  // cache contents from the testbench.
+  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
+    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
+  }
+  io.dout := memCopy.read((io.addr>>2).asUInt())
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
+  memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := io.addr
+  memModel.io.init.bits.data := io.din
+  memModel.io.init.valid := io.write
+  cache.io.cpu.abort := false.B
+
+  // Wire up the cache and modules under test.
   val test11_add = Module(new test11_addDF())
-  val test11 = Module(new test11CacheWrapper())
+  val test11 = Module(new test11DF())
+
+
+  val MemArbiter = Module(new MemArbiter(2))
+
+
+  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+
+  MemArbiter.io.cpu.MemReq(0) <> test11_add.io.MemReq
+  test11_add.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
+
+  MemArbiter.io.cpu.MemReq(1) <> test11.io.MemReq
+  test11.io.MemResp <> MemArbiter.io.cpu.MemResp(1)
+
+  test11.io.call_8_in <> test11_add.io.out
+  test11_add.io.in <> test11.io.call_8_out
 
   test11.io.in <> io.in
   io.out <> test11.io.out
 
-  test11_add.io.in <> test11.io.call8_out
-  test11.io.call8_in <> test11_add.io.out
-
 }
 
-class test11Test01(c: test11Main) extends PeekPokeTester(c) {
+
+
+//class test11Test01(c: test11Main) extends PeekPokeTester(c) {
+class test11Test01[T <: test11MainDirect](c: T) extends PeekPokeTester(c) {
 
 
   /**
@@ -118,7 +182,7 @@ class test11Test01(c: test11Main) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 1  //Cycle counter
   var result = false
-  while (time < 200) {
+  while (time < 400) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
@@ -156,7 +220,7 @@ class test11Tester extends FlatSpec with Matchers {
        "-tbn", "verilator",
        "-td", "test_run_dir",
        "-tts", "0001"),
-     () => new test11Main()) {
+     () => new test11MainDirect()) {
      c => new test11Test01(c)
     } should be(true)
   }

@@ -1,252 +1,57 @@
 package dataflow
 
+import accel._
+import arbiters._
 import chisel3._
 import chisel3.util._
-import chisel3.Module
+import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
-import org.scalatest.{FlatSpec, Matchers}
-import muxes._
 import config._
 import control._
-import util._
 import interfaces._
-import regfile._
-import memory._
-import stack._
-import arbiters._
-import loop._
-import accel._
-import node._
 import junctions._
-
-
-/**
-  * This Object should be initialized at the first step
-  * It contains all the transformation from indices to their module's name
-  */
-
-object Data_test11_FlowParam{
-
-  val bb_entry_pred = Map(
-    "active" -> 0
-  )
-
-
-  val bb_for_cond_pred = Map(
-    "br0" -> 0,
-    "br13" -> 1
-  )
-
-
-  val bb_for_inc_pred = Map(
-    "br11" -> 0
-  )
-
-
-  val bb_for_body_pred = Map(
-    "br3" -> 0
-  )
-
-
-  val bb_for_end_pred = Map(
-    "br3" -> 0
-  )
-
-
-  val br0_brn_bb = Map(
-    "bb_for_cond" -> 0
-  )
-
-
-  val br3_brn_bb = Map(
-    "bb_for_body" -> 0,
-    "bb_for_end" -> 1
-  )
-
-
-  val br11_brn_bb = Map(
-    "bb_for_inc" -> 0
-  )
-
-
-  val br13_brn_bb = Map(
-    "bb_for_cond" -> 0
-  )
-
-
-  val bb_entry_activate = Map(
-    "br0" -> 0
-  )
-
-
-  val bb_for_cond_activate = Map(
-    "phi1" -> 0,
-    "icmp2" -> 1,
-    "br3" -> 2
-  )
-
-
-  val bb_for_body_activate = Map(
-    "getelementptr4" -> 0,
-    "load5" -> 1,
-    "getelementptr6" -> 2,
-    "load7" -> 3,
-    "call8" -> 4,
-    "getelementptr9" -> 5,
-    "store10" -> 6,
-    "br11" -> 7
-  )
-
-
-  val bb_for_inc_activate = Map(
-    "add12" -> 0,
-    "br13" -> 1
-  )
-
-
-  val bb_for_end_activate = Map(
-    "ret14" -> 0
-  )
-
-
-  val phi1_phi_in = Map(
-    "const_0" -> 0,
-    "add12" -> 1
-  )
-
-
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !11, !ScalaLabel !12
-  val phi1_in = Map(
-    "add12" -> 0
-  )
-
-
-  //  %cmp = icmp ult i32 %i.0, 5, !UID !13, !ScalaLabel !14
-  val icmp2_in = Map(
-    "phi1" -> 0
-  )
-
-
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !15, !BB_UID !16, !ScalaLabel !17
-  val br3_in = Map(
-    "icmp2" -> 0
-  )
-
-
-  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.0, !UID !18, !ScalaLabel !19
-  val getelementptr4_in = Map(
-    "field0" -> 0,
-    "phi1" -> 1
-  )
-
-
-  //  %0 = load i32, i32* %arrayidx, align 4, !UID !20, !ScalaLabel !21
-  val load5_in = Map(
-    "getelementptr4" -> 0
-  )
-
-
-  //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.0, !UID !22, !ScalaLabel !23
-  val getelementptr6_in = Map(
-    "field1" -> 0,
-    "phi1" -> 2
-  )
-
-
-  //  %1 = load i32, i32* %arrayidx1, align 4, !UID !24, !ScalaLabel !25
-  val load7_in = Map(
-    "getelementptr6" -> 0
-  )
-
-
-  //  %call = tail call i32 @test11_add(i32 %0, i32 %1), !UID !26, !ScalaLabel !27
-  val call8_in = Map(
-    "load5" -> 0,
-    "load7" -> 0,
-    "" -> 0
-  )
-
-
-  //  %arrayidx2 = getelementptr inbounds i32, i32* %c, i32 %i.0, !UID !28, !ScalaLabel !29
-  val getelementptr9_in = Map(
-    "field2" -> 0,
-    "phi1" -> 3
-  )
-
-
-  //  store i32 %call, i32* %arrayidx2, align 4, !UID !30, !ScalaLabel !31
-  val store10_in = Map(
-    "call8" -> 0,
-    "getelementptr9" -> 0
-  )
-
-
-  //  %inc = add i32 %i.0, 1, !UID !35, !ScalaLabel !36
-  val add12_in = Map(
-    "phi1" -> 4
-  )
-
-
-  //  ret i32 1, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val ret14_in = Map(
-
-  )
-
-
-}
-
-
+import loop._
+import memory._
+import muxes._
+import node._
+import org.scalatest._
+import regfile._
+import stack._
+import util._
 
 
   /* ================================================================== *
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-
 abstract class test11DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
-    val call8_out = Decoupled(new Call(List(32,32)))
-    val call8_in = Flipped(Decoupled(new Call(List(32))))
+    val call_8_out = Decoupled(new Call(List(32,32)))
+    val call_8_in = Flipped(Decoupled(new Call(List(32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
 
-
-
-
-  /* ================================================================== *
-   *                   PRINTING MODULE DEFINITION                       *
-   * ================================================================== */
-
-
 class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
 
-
   /* ================================================================== *
-   *                   PRINTING MEMORY SYSTEM                           *
+   *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
+  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
+		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
+		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
+		 (RWArbiter=new ReadWriteArbiter()))
 
-	val StackPointer = Module(new Stack(NumOps = 1))
+  io.MemReq <> MemCtrl.io.MemReq
+  MemCtrl.io.MemResp <> io.MemResp
 
-	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=1)
-		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
-
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=2,NWrites=1)
-		            (WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RWArbiter=new ReadWriteArbiter()))
-
-  io.MemReq <> CacheMem.io.MemReq
-  CacheMem.io.MemResp <> io.MemResp
-
-  val InputSplitter = Module(new SplitCall(List(32,32,32)))
+  val InputSplitter = Module(new SplitCallNew(List(1,1,1)))
   InputSplitter.io.In <> io.in
 
 
@@ -255,10 +60,7 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-
-  val loop_L_10_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_10_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_10_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
+  val Loop_0 = Module(new LoopBlock(NumIns=List(1,1,1), NumOuts = 0, NumExits=1, ID = 0))
 
 
 
@@ -266,21 +68,15 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
+  val entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  //Initializing BasicBlocks: 
+  val for_cond = Module(new LoopHead(NumOuts = 5, NumPhi=1, BID = 1))
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 2))
 
-  val bb_for_cond = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
+  val for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3))
 
-  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 2))
-
-  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
-
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 4))
-
-
-
+  val for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4))
 
 
 
@@ -288,326 +84,287 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
+  //  br label %for.cond
+  val br_0 = Module(new UBranchNode(ID = 0))
 
-  //Initializing Instructions: 
+  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ]
+  val i_0 = Module(new PhiNode(NumInputs = 2, NumOuts = 5, ID = 1))
 
-  // [BasicBlock]  entry:
+  //  %cmp = icmp ult i32 %i.0, 5
+  val cmp = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
 
-  //  br label %for.cond, !UID !8, !BB_UID !9, !ScalaLabel !10
-  val br0 = Module (new UBranchNode(ID = 0))
+  //  br i1 %cmp, label %for.body, label %for.end
+  val br_3 = Module(new CBranchNode(ID = 3))
 
-  // [BasicBlock]  for.cond:
+  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.0
+  val arrayidx = Module(new GepArrayOneNode(NumOuts=1, ID=4)(numByte=0)(size=0))
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ], !UID !11, !ScalaLabel !12
-  val phi1 = Module (new PhiNode(NumInputs = 2, NumOuts = 5, ID = 1))
+  //  %0 = load i32, i32* %arrayidx, align 4
+  val ld_5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=5, RouteID=0))
 
+  //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.0
+  val arrayidx1 = Module(new GepArrayOneNode(NumOuts=1, ID=6)(numByte=0)(size=0))
 
-  //  %cmp = icmp ult i32 %i.0, 5, !UID !13, !ScalaLabel !14
-  val icmp2 = Module (new IcmpNode(NumOuts = 1, ID = 2, opCode = "ULT")(sign=false))
+  //  %1 = load i32, i32* %arrayidx1, align 4
+  val ld_7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=7, RouteID=1))
 
+  //  %call = call i32 @test11_add(i32 %0, i32 %1)
+  val call_8_out = Module(new CallOutNode(ID = 8, NumSuccOps = 0, argTypes = List(32,32)))
 
-  //  br i1 %cmp, label %for.body, label %for.end, !UID !15, !BB_UID !16, !ScalaLabel !17
-  val br3 = Module (new CBranchNode(ID = 3))
+  val call_8_in = Module(new CallInNode(ID = 8, argTypes = List(32)))
 
-  // [BasicBlock]  for.body:
+  //  %arrayidx2 = getelementptr inbounds i32, i32* %c, i32 %i.0
+  val arrayidx2 = Module(new GepArrayOneNode(NumOuts=1, ID=9)(numByte=0)(size=0))
 
-  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.0, !UID !18, !ScalaLabel !19
-  val getelementptr4 = Module (new GepOneNode(NumOuts = 1, ID = 4)(numByte1 = 1))
+  //  store i32 %call, i32* %arrayidx2, align 4
+  val st_10 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=10, RouteID=0))
 
+  //  br label %for.inc
+  val br_11 = Module(new UBranchNode(NumPredOps=1, ID = 11))
 
-  //  %0 = load i32, i32* %arrayidx, align 4, !UID !20, !ScalaLabel !21
-  val load5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=5,RouteID=0))
+  //  %inc = add i32 %i.0, 1
+  val inc = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign=false))
 
+  //  br label %for.cond, !llvm.loop !7
+  val br_13 = Module(new UBranchNode(NumOuts=2, ID = 13))
 
-  //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.0, !UID !22, !ScalaLabel !23
-  val getelementptr6 = Module (new GepOneNode(NumOuts = 1, ID = 6)(numByte1 = 1))
-
-
-  //  %1 = load i32, i32* %arrayidx1, align 4, !UID !24, !ScalaLabel !25
-  val load7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=7,RouteID=1))
-
-
-  //  %call = tail call i32 @test11_add(i32 %0, i32 %1), !UID !26, !ScalaLabel !27
-  val call8 = Module(new CallNode(ID=8,argTypes=List(32,32),retTypes=List(32)))
-
-
-  //  %arrayidx2 = getelementptr inbounds i32, i32* %c, i32 %i.0, !UID !28, !ScalaLabel !29
-  val getelementptr9 = Module (new GepOneNode(NumOuts = 1, ID = 9)(numByte1 = 1))
-
-
-  //  store i32 %call, i32* %arrayidx2, align 4, !UID !30, !ScalaLabel !31
-  val store10 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, NumOuts=1,ID=10,RouteID=0))
+  //  ret i32 1
+  val ret_14 = Module(new RetNode(retTypes=List(32), ID = 14))
 
 
-  //  br label %for.inc, !UID !32, !BB_UID !33, !ScalaLabel !34
-  val br11 = Module (new UBranchNode(ID = 11))
 
-  // [BasicBlock]  for.inc:
+  /* ================================================================== *
+   *                   PRINTING CONSTANTS NODES                         *
+   * ================================================================== */
 
-  //  %inc = add i32 %i.0, 1, !UID !35, !ScalaLabel !36
-  val add12 = Module (new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign=false))
+  //i32 0
+  val const0 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 0))
+
+  //i32 5
+  val const1 = Module(new ConstNode(value = 5, NumOuts = 1, ID = 1))
+
+  //i32 1
+  val const2 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 2))
+
+  //i32 1
+  val const3 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 3))
 
 
-  //  br label %for.cond, !llvm.loop !37, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val br13 = Module (new UBranchNode(ID = 13))
 
-  // [BasicBlock]  for.end:
+  /* ================================================================== *
+   *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
+   * ================================================================== */
 
-  //  ret i32 1, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val ret14 = Module(new RetNode(retTypes=List(32), ID=14))
+  entry.io.predicateIn <> InputSplitter.io.Out.enable
 
+  for_cond.io.activate <> Loop_0.io.activate
+
+  for_cond.io.loopBack <> br_13.io.Out(0)
+
+  for_body.io.predicateIn <> br_3.io.Out(0)
+
+  for_inc.io.predicateIn <> br_11.io.Out(0)
+
+  for_end.io.predicateIn <> Loop_0.io.endEnable
+
+
+
+  /* ================================================================== *
+   *                   PRINTING PARALLEL CONNECTIONS                    *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP -> PREDICATE INSTRUCTION                    *
+   * ================================================================== */
+
+  Loop_0.io.enable <> br_0.io.Out(0)
+
+  Loop_0.io.latchEnable <> br_13.io.Out(1)
+
+  Loop_0.io.loopExit(0) <> br_3.io.Out(1)
+
+
+
+  /* ================================================================== *
+   *                   ENDING INSTRUCTIONS                              *
+   * ================================================================== */
+
+  br_11.io.PredOp(0) <> st_10.io.SuccOp(0)
+
+
+
+  /* ================================================================== *
+   *                   LOOP INPUT DATA DEPENDENCIES                     *
+   * ================================================================== */
+
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+
+  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field2")(0)
+
+
+
+  /* ================================================================== *
+   *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
+   * ================================================================== */
+
+  arrayidx.io.baseAddress <> Loop_0.io.liveIn.data("field0")(0)
+
+  arrayidx1.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+
+  arrayidx2.io.baseAddress <> Loop_0.io.liveIn.data("field2")(0)
+
+
+
+  /* ================================================================== *
+   *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   BASICBLOCK -> ENABLE INSTRUCTION                 *
+   * ================================================================== */
+
+  br_0.io.enable <> entry.io.Out(0)
+
+
+  const0.io.enable <> for_cond.io.Out(0)
+
+  const1.io.enable <> for_cond.io.Out(1)
+
+  i_0.io.enable <> for_cond.io.Out(2)
+
+  cmp.io.enable <> for_cond.io.Out(3)
+
+  br_3.io.enable <> for_cond.io.Out(4)
+
+
+  arrayidx.io.enable <> for_body.io.Out(0)
+
+  ld_5.io.enable <> for_body.io.Out(1)
+
+  arrayidx1.io.enable <> for_body.io.Out(2)
+
+  ld_7.io.enable <> for_body.io.Out(3)
+
+  call_8_in.io.enable.enq(ControlBundle.active())
+
+  call_8_out.io.enable <> for_body.io.Out(4)
+
+  arrayidx2.io.enable <> for_body.io.Out(5)
+
+  st_10.io.enable <> for_body.io.Out(6)
+
+  br_11.io.enable <> for_body.io.Out(7)
+
+
+  const2.io.enable <> for_inc.io.Out(0)
+
+  inc.io.enable <> for_inc.io.Out(1)
+
+  br_13.io.enable <> for_inc.io.Out(2)
+
+
+  const3.io.enable <> for_end.io.Out(0)
+
+  ret_14.io.enable <> for_end.io.Out(1)
 
 
 
 
   /* ================================================================== *
-   *                   INITIALIZING PARAM                               *
+   *                   CONNECTING PHI NODES                             *
    * ================================================================== */
 
-
-  /**
-    * Instantiating parameters
-    */
-  val param = Data_test11_FlowParam
+  i_0.io.Mask <> for_cond.io.MaskBB(0)
 
 
 
   /* ================================================================== *
-   *                   CONNECTING BASIC BLOCKS TO PREDICATE INSTRUCTIONS*
+   *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
-
-
-  /**
-     * Connecting basic blocks to predicate instructions
-     */
-
-
-  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
-
-  /**
-    * Connecting basic blocks to predicate instructions
-    */
-
-  //Connecting br0 to bb_for_cond
-  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br0")) <> br0.io.Out(param.br0_brn_bb("bb_for_cond"))
-
-
-  //Connecting br3 to bb_for_body
-  bb_for_body.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_for_body"))
-
-
-  //Connecting br3 to bb_for_end
-  bb_for_end.io.predicateIn <> br3.io.Out(param.br3_brn_bb("bb_for_end"))
-
-
-  //Connecting br11 to bb_for_inc
-  bb_for_inc.io.predicateIn <> br11.io.Out(param.br11_brn_bb("bb_for_inc"))
-
-
-  //Connecting br13 to bb_for_cond
-  bb_for_cond.io.predicateIn(param.bb_for_cond_pred("br13")) <> br13.io.Out(param.br13_brn_bb("bb_for_cond"))
-
 
 
 
   /* ================================================================== *
-   *                   CONNECTING BASIC BLOCKS TO INSTRUCTIONS          *
+   *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
 
+  MemCtrl.io.ReadIn(0) <> ld_5.io.memReq
 
-  /**
-    * Wiring enable signals to the instructions
-    */
+  ld_5.io.memResp <> MemCtrl.io.ReadOut(0)
 
-  br0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("br0"))
+  MemCtrl.io.ReadIn(1) <> ld_7.io.memReq
 
+  ld_7.io.memResp <> MemCtrl.io.ReadOut(1)
 
+  MemCtrl.io.WriteIn(0) <> st_10.io.memReq
 
-  phi1.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("phi1"))
-
-  icmp2.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("icmp2"))
-
-  br3.io.enable <> bb_for_cond.io.Out(param.bb_for_cond_activate("br3"))
-
-
-
-  getelementptr4.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("getelementptr4"))
-
-  load5.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("load5"))
-
-  getelementptr6.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("getelementptr6"))
-
-  load7.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("load7"))
-
-  call8.io.In.enable <> bb_for_body.io.Out(param.bb_for_body_activate("call8"))
-
-  getelementptr9.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("getelementptr9"))
-
-  store10.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("store10"))
-
-  br11.io.enable <> bb_for_body.io.Out(param.bb_for_body_activate("br11"))
-
-
-
-  add12.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("add12"))
-
-  br13.io.enable <> bb_for_inc.io.Out(param.bb_for_inc_activate("br13"))
-
-
-
-  ret14.io.enable <> bb_for_end.io.Out(param.bb_for_end_activate("ret14"))
-
-  loop_L_10_liveIN_0.io.enable <> bb_for_end.io.Out(1)
-  loop_L_10_liveIN_1.io.enable <> bb_for_end.io.Out(2)
-  loop_L_10_liveIN_2.io.enable <> bb_for_end.io.Out(3)
-
-
-
+  st_10.io.memResp <> MemCtrl.io.WriteOut(0)
 
 
 
   /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
+   *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
+  i_0.io.InData(0) <> const0.io.Out(0)
 
-  // Connecting function argument to the loop header
-  //i32* %a
-  loop_L_10_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  cmp.io.RightIO <> const1.io.Out(0)
 
-  // Connecting function argument to the loop header
-  //i32* %b
-  loop_L_10_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+  inc.io.RightIO <> const2.io.Out(0)
 
-  // Connecting function argument to the loop header
-  //i32* %c
-  loop_L_10_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
+  ret_14.io.In.data("field0") <> const3.io.Out(0)
+
+  cmp.io.LeftIO <> i_0.io.Out(0)
+
+  arrayidx.io.idx1 <> i_0.io.Out(1)
+
+  arrayidx1.io.idx1 <> i_0.io.Out(2)
+
+  arrayidx2.io.idx1 <> i_0.io.Out(3)
+
+  inc.io.LeftIO <> i_0.io.Out(4)
+
+  br_3.io.CmpIO <> cmp.io.Out(0)
+
+  ld_5.io.GepAddr <> arrayidx.io.Out.data(0)
+
+  call_8_out.io.In("field0") <> ld_5.io.Out.data(0)
+
+  ld_7.io.GepAddr <> arrayidx1.io.Out.data(0)
+
+  call_8_out.io.In("field1") <> ld_7.io.Out.data(0)
+
+  st_10.io.inData <> call_8_in.io.Out.data("field0")
+
+  st_10.io.GepAddr <> arrayidx2.io.Out.data(0)
+
+  i_0.io.InData(1) <> inc.io.Out(0)
+
+  st_10.io.Out(0).ready := true.B
 
 
 
   /* ================================================================== *
-   *                   DUMPING PHI NODES                                *
+   *                   PRINTING CALLIN AND CALLOUT INTERFACE            *
    * ================================================================== */
 
+  call_8_in.io.In <> io.call_8_in
 
-  /**
-    * Connecting PHI Masks
-    */
-  //Connect PHI node
+  io.call_8_out <> call_8_out.io.Out(0)
 
-  phi1.io.InData(param.phi1_phi_in("const_0")).bits.data := 0.U
-  phi1.io.InData(param.phi1_phi_in("const_0")).bits.predicate := true.B
-  phi1.io.InData(param.phi1_phi_in("const_0")).valid := true.B
-
-  phi1.io.InData(param.phi1_phi_in("add12")) <> add12.io.Out(param.phi1_in("add12"))
-
-  /**
-    * Connecting PHI Masks
-    */
-  //Connect PHI node
-
-  phi1.io.Mask <> bb_for_cond.io.MaskBB(0)
-
-
+  call_8_in.io.Out.enable.ready := true.B
 
   /* ================================================================== *
-   *                   DUMPING DATAFLOW                                 *
+   *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-
-  /**
-    * Connecting Dataflow signals
-    */
-
-  // Wiring instructions
-  icmp2.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
-
-  // Wiring constant
-  icmp2.io.RightIO.bits.data := 5.U
-  icmp2.io.RightIO.bits.predicate := true.B
-  icmp2.io.RightIO.valid := true.B
-
-  // Wiring Branch instruction
-  br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
-
-  // Wiring GEP instruction to the loop header
-  getelementptr4.io.baseAddress <> loop_L_10_liveIN_0.io.Out(param.getelementptr4_in("field0"))
-
-  // Wiring GEP instruction to the parent instruction
-  getelementptr4.io.idx1 <> phi1.io.Out(param.getelementptr4_in("phi1"))
-
-
-  // Wiring Load instruction to the parent instruction
-  load5.io.GepAddr <> getelementptr4.io.Out(param.load5_in("getelementptr4"))
-  load5.io.memResp <> RegisterFile.io.ReadOut(0)
-  RegisterFile.io.ReadIn(0) <> load5.io.memReq
-
-
-
-
-  // Wiring GEP instruction to the loop header
-  getelementptr6.io.baseAddress <> loop_L_10_liveIN_1.io.Out(param.getelementptr6_in("field1"))
-
-  // Wiring GEP instruction to the parent instruction
-  getelementptr6.io.idx1 <> phi1.io.Out(param.getelementptr6_in("phi1"))
-
-
-  // Wiring Load instruction to the parent instruction
-  load7.io.GepAddr <> getelementptr6.io.Out(param.load7_in("getelementptr6"))
-  load7.io.memResp <> RegisterFile.io.ReadOut(1)
-  RegisterFile.io.ReadIn(1) <> load7.io.memReq
-
-
-
-
-  // Wiring Call to I/O
-  io.call8_out <> call8.io.callOut
-  call8.io.retIn <> io.call8_in
-  call8.io.Out.enable.ready := true.B // Manual fix
-
-  // Wiring instructions
-  call8.io.In.data("field0") <> load5.io.Out(param.call8_in("load5"))
-
-  // Wiring instructions
-  call8.io.In.data("field1") <> load7.io.Out(param.call8_in("load7"))
-
-
-
-  // Wiring GEP instruction to the loop header
-  getelementptr9.io.baseAddress <> loop_L_10_liveIN_2.io.Out(param.getelementptr9_in("field2"))
-
-  // Wiring GEP instruction to the parent instruction
-  getelementptr9.io.idx1 <> phi1.io.Out(param.getelementptr9_in("phi1"))
-
-
-  store10.io.inData <> call8.io.Out.data("field0")  // Manual fix
-
-
-  // Wiring Store instruction to the parent instruction
-  store10.io.GepAddr <> getelementptr9.io.Out(param.store10_in("getelementptr9"))
-  store10.io.memResp  <> RegisterFile.io.WriteOut(0)
-  RegisterFile.io.WriteIn(0) <> store10.io.memReq
-  store10.io.Out(0).ready := true.B
-
-
-
-  // Wiring instructions
-  add12.io.LeftIO <> phi1.io.Out(param.add12_in("phi1"))
-
-  // Wiring constant
-  add12.io.RightIO.bits.data := 1.U
-  add12.io.RightIO.bits.predicate := true.B
-  add12.io.RightIO.valid := true.B
-
-  // Wiring return instruction
-  
-  
-  
-  ret14.io.In.data("field0").bits.data := 1.U
-  ret14.io.In.data("field0").bits.predicate := true.B
-  ret14.io.In.data("field0").valid := true.B
-  io.out <> ret14.io.Out
-
+  io.out <> ret_14.io.Out
 
 }
 
@@ -624,4 +381,3 @@ object test11Main extends App {
   verilogWriter.write(compiledStuff.value)
   verilogWriter.close()
 }
-

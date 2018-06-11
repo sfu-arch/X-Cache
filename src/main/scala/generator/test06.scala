@@ -138,6 +138,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
   val const1 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 1))
 
   //i32 0
+
   val const2 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 2))
 
   //i32 1
