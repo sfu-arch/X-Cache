@@ -390,10 +390,6 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
     initCounters := false.B
   }
 
-  when(initCounters) {
-    syncCount.write(initCount, 0.U)
-  }
-
   /*============================================*
    *            Update the Counts               *
    *============================================*/
@@ -423,10 +419,31 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   doneQueue.io.enq.valid := false.B
   doneQueue.io.enq.bits := ControlBundle.default
 
-  //  val currCount_R = RegInit(0.U(tlen.W))
-  val currCount = syncCount.read(updateArb_R.taskID)
+  // Counter RAM
+  val updateAddr  = WireInit(0.U((1<<tlen).W))
   val updateCount = WireInit(0.U(countBits.W))
 
+  // Mux write address and data
+  val currCount = syncCount.read(updateArb_R.taskID)
+  when(initCounters) {
+    updateAddr := initCount
+    updateCount := 0.U
+  }.elsewhen(state === s_WRITE){
+    updateAddr := updateArb_R.taskID
+    when(dec_R === 0.U) {
+      updateCount := currCount + 1.U
+    }.otherwise{
+      assert(currCount =/= 0.U)
+      updateCount := currCount - 1.U
+    }
+  }
+  // Write enable
+  when(initCounters || state === s_WRITE) {
+    syncCount.write(updateAddr, updateCount)
+  }
+
+
+  updateArb.io.out.ready := false.B
   switch(state) {
     is(s_IDLE) {
       when(initCounters) {
@@ -442,14 +459,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
     }
     is(s_WRITE) {
       // Update count
-      when(dec_R === 0.U) {
-        updateCount := currCount + 1.U
-      }.otherwise{
-        assert(currCount =/= 0.U)
-        updateCount := currCount - 1.U
-      }
-      syncCount.write(updateArb_R.taskID, updateCount)
-      // If decrementing to zero then last re-attach has arrived.
+       // If decrementing to zero then last re-attach has arrived.
       when(updateCount === 0.U) {
         when(doneQueue.io.enq.ready) {
           doneQueue.io.enq.valid := true.B

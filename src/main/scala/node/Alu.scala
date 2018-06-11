@@ -23,6 +23,7 @@ object AluOpCode {
   val PassB = 14
   val Mul = 15
   val Div = 16
+  val Mod = 17
 
   val opMap = Map(
     "Add" -> Add,
@@ -51,7 +52,9 @@ object AluOpCode {
     "Mul" -> Mul,
     "mul" -> Mul,
     "Udiv" -> Div,
-    "udiv" -> Div)
+    "udiv" -> Div,
+    "Urem" -> Mod,
+    "urem" -> Mod)
 
 
   val length = 14
@@ -109,7 +112,8 @@ class UALU(val xlen: Int, val opCode: String) extends Module {
     AluOpCode.PassA -> io.in1,
     AluOpCode.PassB -> io.in2,
     AluOpCode.Mul -> (io.in1 * io.in2),
-    AluOpCode.Div -> (io.in1 / io.in2)
+    AluOpCode.Div -> (io.in1 / io.in2),
+    AluOpCode.Mod -> (io.in1 % io.in2)
   )
 
   assert(!AluOpCode.opMap.get(opCode).isEmpty, "Wrong ALU OP!")
