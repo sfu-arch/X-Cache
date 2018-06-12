@@ -51,7 +51,7 @@ class saxpyDF(implicit p: Parameters) extends saxpyDFIO()(p) {
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  //val StackPointer = Module(new Stack(NumOps = 0))
+  //val StackPointer = Module(new Stack(NumOps = 0))  // Manual fix
 
   val InputSplitter = Module(new SplitCallNew(List(1,1,1,1)))
   InputSplitter.io.In <> io.in
@@ -99,7 +99,7 @@ class saxpyDF(implicit p: Parameters) extends saxpyDFIO()(p) {
   val br_3 = Module(new CBranchNode(ID = 3))
 
   //  %arrayidx = getelementptr inbounds i32, i32* %x, i32 %i.0
-  val arrayidx = Module(new GepArrayOneNode(NumOuts=1, ID=4)(numByte=0)(size=0))
+  val arrayidx = Module(new GepArrayOneNode(NumOuts=1, ID=4)(numByte=4)(size=1)) // Manual fix
 
   //  %0 = load i32, i32* %arrayidx, align 4
   val ld_5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=5, RouteID=0))
@@ -108,7 +108,7 @@ class saxpyDF(implicit p: Parameters) extends saxpyDFIO()(p) {
   val mul = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign=false))
 
   //  %arrayidx1 = getelementptr inbounds i32, i32* %y, i32 %i.0
-  val arrayidx1 = Module(new GepArrayOneNode(NumOuts=1, ID=7)(numByte=0)(size=0))
+  val arrayidx1 = Module(new GepArrayOneNode(NumOuts=1, ID=7)(numByte=4)(size=1)) // Manual fix
 
   //  %1 = load i32, i32* %arrayidx1, align 4
   val ld_8 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=8, RouteID=1))
@@ -117,7 +117,7 @@ class saxpyDF(implicit p: Parameters) extends saxpyDFIO()(p) {
   val add = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "add")(sign=false))
 
   //  %arrayidx2 = getelementptr inbounds i32, i32* %y, i32 %i.0
-  val arrayidx2 = Module(new GepArrayOneNode(NumOuts=1, ID=10)(numByte=0)(size=0))
+  val arrayidx2 = Module(new GepArrayOneNode(NumOuts=1, ID=10)(numByte=4)(size=1)) // Manual fix
 
   //  store i32 %add, i32* %arrayidx2, align 4
   val st_11 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=11, RouteID=0))
