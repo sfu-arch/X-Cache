@@ -181,7 +181,7 @@ class cilk_for_test04Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
   }
 
   TC.io.parentIn(0) <> cilk_for_testDF.io.call_9_out
-  cilk_for_testDF.io.call_9_out <> TC.io.parentOut(0)
+  cilk_for_testDF.io.call_9_in <> TC.io.parentOut(0)
 
 
   CacheArb.io.cpu.MemReq(NumTiles) <> io.req
@@ -196,28 +196,61 @@ class cilk_for_test04Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
 }
 
 
-class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n : Int, tiles: Int) extends PeekPokeTester(c) {
+class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int) extends PeekPokeTester(c) {
 
-  val inAddrVec = List("h0".U, "h4".U, "h8".U, "hC".U, "h10".U,
-    "h20".U, "h24".U, "h28".U, "h2C".U, "h30".U)
-  val inDataVec = List(1.U, 2.U, 3.U, 4.U, 5.U,
-    1.U, 2.U, 3.U, 4.U, 5.U)
-  val outAddrVec = List("h40".U, "h44".U, "h48".U, "h4C".U, "h50".U)
-  val outDataVec = List(2.U, 4.U, 6.U, 8.U, 10.U)
+  def MemRead(addr: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.iswrite, 0)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    while (peek(c.io.resp.valid) == 0) {
+      step(1)
+    }
+    val result = peek(c.io.resp.bits.data)
+    result
+  }
 
-  poke(c.io.addr, 0.U)
-  poke(c.io.din, 0.U)
-  poke(c.io.write, false.B)
-  var i = 0
+  def MemWrite(addr: Int, data: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.data, data)
+    poke(c.io.req.bits.iswrite, 1)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    poke(c.io.req.valid, 0)
+    1
+  }
+
+
+  //  val inAddrVec = List("h0", "h4", "h8", "hC", "h10", "h20", "h24", "h28", "h2C", "h30")
+  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10, 0x20, 0x24, 0x28, 0x28, 0x2c, 0x30)
+  val inDataVec = List(1, 2, 3, 4, 5, 1, 2, 3, 4, 5)
+  //  val outAddrVec = List("h40", "h44", "h48", "h4C", "h50")
+  val outAddrVec = List(0x40, 0x44, 0x48, 0x4c, 0x50)
+  val outDataVec = List(2, 4, 6, 8, 10)
 
   // Write initial contents to the memory model.
-  for (i <- 0 until 10) {
-    poke(c.io.addr, inAddrVec(i))
-    poke(c.io.din, inDataVec(i))
-    poke(c.io.write, true.B)
-    step(1)
+  for (i <- 0 until 5) {
+    MemWrite(inAddrVec(i), inDataVec(i))
   }
-  poke(c.io.write, false.B)
+  for (i <- 0 until 5) {
+    MemWrite(outAddrVec(i), inDataVec(i))
+  }
+
+  //  step(1)
+
+
   step(1)
 
   // Initializing the signals
@@ -279,11 +312,9 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n : Int, tiles: In
 
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
-  for (i <- 0 until 5) {
-    poke(c.io.addr, outAddrVec(i))
-    step(1)
-    val data = peek(c.io.dout)
-    if (data != outDataVec(i).toInt) {
+  for (i <- 0 until outDataVec.length) {
+    val data = MemRead(inAddrVec(i))
+    if (data != outDataVec(i)) {
       println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
       valid_data = false
@@ -314,28 +345,28 @@ class cilk_for_test04Tester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir",
         "-tts", "0001"),
-      () => new cilk_for_test04MainDirect()) {
-      c => new cilk_for_test04Test01(c)
+      () => new cilk_for_test04Main1(tiles = 1)(p.alterPartial({case TLEN => 11}))) {
+      c => new cilk_for_test04Test01(c, 5, 1)
     } should be(true)
   }
 }
 
-class cilk_for_test04Tester2 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  // iotester flags:
-  // -ll  = log level <Error|Warn|Info|Debug|Trace>
-  // -tbn = backend <firrtl|verilator|vcs>
-  // -td  = target directory
-  // -tts = seed for RNG
-  it should "Check that cilk_for_test02 works when called via task manager." in {
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new cilk_for_test04MainTM()) {
-      c => new cilk_for_test04Test01(c)
-    } should be(true)
-  }
-}
+//class cilk_for_test04Tester2 extends FlatSpec with Matchers {
+//  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//  // iotester flags:
+//  // -ll  = log level <Error|Warn|Info|Debug|Trace>
+//  // -tbn = backend <firrtl|verilator|vcs>
+//  // -td  = target directory
+//  // -tts = seed for RNG
+//  it should "Check that cilk_for_test02 works when called via task manager." in {
+//    chisel3.iotesters.Driver.execute(
+//      Array(
+//        // "-ll", "Info",
+//        "-tbn", "verilator",
+//        "-td", "test_run_dir",
+//        "-tts", "0001"),
+//      () => new cilk_for_test04MainTM()) {
+//      c => new cilk_for_test04Test01(c)
+//    } should be(true)
+//  }
+//}
