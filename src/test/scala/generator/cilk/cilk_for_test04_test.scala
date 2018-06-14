@@ -326,12 +326,6 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
   }
 
 
-  if(peek(c.io.out.valid) == 0){
-    result = false
-    println(Console.RED + s"*** Execution didn't finish" + Console.RESET)
-    fail
-  }
-
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
     fail
