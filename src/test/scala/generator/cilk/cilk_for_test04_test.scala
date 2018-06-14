@@ -20,119 +20,6 @@ import accel._
 import node._
 
 
-//class cilk_for_test04MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-//  val io = IO( new CoreBundle {
-//    val in = Flipped(Decoupled(new Call(List(32,32,32))))
-//    val addr = Input(UInt(nastiXAddrBits.W))
-//    val din  = Input(UInt(nastiXDataBits.W))
-//    val write = Input(Bool())
-//    val dout = Output(UInt(nastiXDataBits.W))
-//    val out = Decoupled(new Call(List(32)))
-//  })
-//}
-//
-//class cilk_for_test04MainDirect(implicit p: Parameters) extends cilk_for_test04MainIO {
-//
-//  val cache = Module(new Cache)            // Simple Nasti Cache
-//  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-//  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
-//
-//  // Store a copy of all data written to the cache.  This is done since the cache isn't
-//  // 'write through' to the memory model and we have no easy way of reading the
-//  // cache contents from the testbench.
-//  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-//    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
-//  }
-//  io.dout := memCopy.read((io.addr>>2).asUInt())
-//
-//  // Connect the wrapper I/O to the memory model initialization interface so the
-//  // test bench can write contents at start.
-//  memModel.io.nasti <> cache.io.nasti
-//  memModel.io.init.bits.addr := io.addr
-//  memModel.io.init.bits.data := io.din
-//  memModel.io.init.valid := io.write
-//  cache.io.cpu.abort := false.B
-//
-//  // Wire up the cache and modules under test.
-//  val cilk_for_test04_detach = Module(new cilk_for_test04_detachDF())
-//  val cilk_for_test04 = Module(new cilk_for_test04DF())
-//
-//  cache.io.cpu.req <> cilk_for_test04_detach.io.MemReq
-//  cilk_for_test04_detach.io.MemResp <> cache.io.cpu.resp
-//  cilk_for_test04.io.in <> io.in
-//  cilk_for_test04_detach.io.in <> cilk_for_test04.io.call9_out
-//  cilk_for_test04.io.call9_in <> cilk_for_test04_detach.io.out
-//  io.out <> cilk_for_test04.io.out
-//
-//}
-//
-//class cilk_for_test04MainTM(implicit p: Parameters) extends cilk_for_test04MainIO  {
-//
-//  val cache = Module(new Cache)            // Simple Nasti Cache
-//  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-//  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
-//
-//  // Store a copy of all data written to the cache.  This is done since the cache isn't
-//  // 'write through' to the memory model and we have no easy way of reading the
-//  // cache contents from the testbench.
-//  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-//    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
-//  }
-//  io.dout := memCopy.read((io.addr>>2).asUInt())
-//
-//  // Connect the wrapper I/O to the memory model initialization interface so the
-//  // test bench can write contents at start.
-//  memModel.io.nasti <> cache.io.nasti
-//  memModel.io.init.bits.addr := io.addr
-//  memModel.io.init.bits.data := io.din
-//  memModel.io.init.valid := io.write
-//  cache.io.cpu.abort := false.B
-//
-//  // Wire up the cache, TM, and modules under test.
-//
-//  val children = 2
-//  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
-//  val cilk_for_test04 = Module(new cilk_for_test04DF())
-//
-//  val cilk_for_test04_detach = for (i <- 0 until children) yield {
-//    val foo = Module(new cilk_for_test04_detachDF())
-//    foo
-//  }
-//
-//  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
-//  // requests ports of any type.  Read or write is irrelevant.
-//  val MemArbiter = Module(new MemArbiter(children))
-//  for (i <- 0 until children) {
-//    MemArbiter.io.cpu.MemReq(i) <> cilk_for_test04_detach(i).io.MemReq
-//    cilk_for_test04_detach(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
-//  }
-//  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
-//  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
-//  /*
-//  cache.io.cpu.req <> cilk_for_test04_detach(0).io.MemReq
-//  cilk_for_test04_detach(0).io.MemResp <> cache.io.cpu.resp
-//  */
-//  // tester to cilk_for_test02
-//  cilk_for_test04.io.in <> io.in
-//
-//  // cilk_for_test02 to task controller
-//  TaskControllerModule.io.parentIn(0) <> cilk_for_test04.io.call9_out
-//
-//  // task controller to sub-task cilk_for_test04_detach
-//  for (i <- 0 until children ) {
-//    cilk_for_test04_detach(i).io.in <> TaskControllerModule.io.childOut(i)
-//    TaskControllerModule.io.childIn(i) <> cilk_for_test04_detach(i).io.out
-//  }
-//
-//  // Task controller to cilk_for_test02
-//  cilk_for_test04.io.call9_in <> TaskControllerModule.io.parentOut(0)
-//
-//  // cilk_for_test02 to tester
-//  io.out <> cilk_for_test04.io.out
-//
-//}
-
-
 class cilk_for_test04MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
@@ -233,10 +120,8 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
   }
 
 
-  //  val inAddrVec = List("h0", "h4", "h8", "hC", "h10", "h20", "h24", "h28", "h2C", "h30")
   val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10, 0x20, 0x24, 0x28, 0x2c, 0x30)
   val inDataVec = List(1, 2, 3, 4, 5, 1, 2, 3, 4, 5)
-  //  val outAddrVec = List("h40", "h44", "h48", "h4C", "h50")
   val outAddrVec = List(0x40, 0x44, 0x48, 0x4c, 0x50)
   val outDataVec = List(2, 4, 6, 8, 10)
 
