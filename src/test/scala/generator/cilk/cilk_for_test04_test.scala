@@ -293,7 +293,7 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 200) {
+  while (time < 20000 && !result) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -352,7 +352,7 @@ class cilk_for_test04Tester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir",
         "-tts", "0001"),
-      () => new cilk_for_test04Main1(tiles = 1)(p.alterPartial({case TLEN => 11}))) {
+      () => new cilk_for_test04Main1(tiles = 1)(p.alterPartial({case TLEN => 6}))) {
       c => new cilk_for_test04Test01(c, 5, 1)
     } should be(true)
   }
