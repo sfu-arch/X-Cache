@@ -160,11 +160,11 @@ class cilk_for_test04Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
 
   val NumTiles = tiles
   val cilk_for_tiles = for (i <- 0 until NumTiles) yield {
-    val cilk04 = Module(new cilk_for_test04DF())
+    val cilk04 = Module(new cilk_for_test04_detach1DF())
     cilk04
   }
 
-  val TC = Module(new TaskController(List(32, 32, 32), List(32), 1, numChild = NumTiles))
+  val TC = Module(new TaskController(List(32, 32, 32, 32), List(32), 1, numChild = NumTiles))
   val CacheArb = Module(new MemArbiter(NumTiles + 1))
 
 
@@ -234,18 +234,18 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
 
 
   //  val inAddrVec = List("h0", "h4", "h8", "hC", "h10", "h20", "h24", "h28", "h2C", "h30")
-  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10, 0x20, 0x24, 0x28, 0x28, 0x2c, 0x30)
+  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10, 0x20, 0x24, 0x28, 0x2c, 0x30)
   val inDataVec = List(1, 2, 3, 4, 5, 1, 2, 3, 4, 5)
   //  val outAddrVec = List("h40", "h44", "h48", "h4C", "h50")
   val outAddrVec = List(0x40, 0x44, 0x48, 0x4c, 0x50)
   val outDataVec = List(2, 4, 6, 8, 10)
 
   // Write initial contents to the memory model.
-  for (i <- 0 until 5) {
+  for (i <- 0 until 10) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
   for (i <- 0 until 5) {
-    MemWrite(outAddrVec(i), inDataVec(i))
+    MemWrite(outAddrVec(i), 0)
   }
 
   //  step(1)
@@ -263,7 +263,7 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
   poke(c.io.in.bits.data("field1").taskID, 5.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
   poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 5.U)
+  poke(c.io.in.bits.data("field2").taskID, 5.U)
   poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
@@ -311,9 +311,10 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
   }
 
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
+
   var valid_data = true
   for (i <- 0 until outDataVec.length) {
-    val data = MemRead(inAddrVec(i))
+    val data = MemRead(outAddrVec(i))
     if (data != outDataVec(i)) {
       println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
@@ -324,6 +325,12 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
   }
 
+
+  if(peek(c.io.out.valid) == 0){
+    result = false
+    println(Console.RED + s"*** Execution didn't finish" + Console.RESET)
+    fail
+  }
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)

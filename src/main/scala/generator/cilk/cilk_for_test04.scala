@@ -107,7 +107,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   val br_6 = Module(new UBranchNode(NumOuts = 2, ID = 6))
 
   //  sync label %pfor.end.continue, !UID !28, !BB_UID !29
-  val sync_7 = Module(new Sync(ID = 7, NumInc = 1, NumDec = 1, NumOuts = 1))
+  val sync_7 = Module(new SyncTC(ID = 7, NumInc = 1, NumDec = 1, NumOuts = 1))
 
   //  ret i32 1, !UID !30, !BB_UID !31
   val ret_8 = Module(new RetNode(retTypes = List(32), ID = 8))

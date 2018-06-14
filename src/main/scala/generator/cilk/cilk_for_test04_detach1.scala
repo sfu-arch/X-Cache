@@ -30,6 +30,7 @@ abstract class cilk_for_test04_detach1DFIO(implicit val p: Parameters) extends M
     val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
+    val out = Decoupled(new Call(List(32)))
   })
 }
 
@@ -98,7 +99,7 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
   val br_7 = Module(new UBranchNode(ID = 7))
 
   //  ret void
-  val ret_8 = Module(new RetNode(retTypes=List(), ID = 8))
+  val ret_8 = Module(new RetNode(retTypes=List(32), ID = 8))
 
 
 
@@ -238,7 +239,7 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
 
   Gep_5.io.baseAddress <> InputSplitter.io.Out.data("field3")(0)
 
-  st_6.io.Out(0).ready := true.B
+//  st_6.io.Out(0).ready := true.B
 
 
 
@@ -246,6 +247,7 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
+  ret_8.io.In.data("field0") <> st_6.io.Out(0)  // manual
   io.out <> ret_8.io.Out
 
 }
