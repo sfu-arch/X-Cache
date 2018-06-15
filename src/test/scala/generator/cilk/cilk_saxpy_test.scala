@@ -252,7 +252,7 @@ class cilk_saxpyTest01[T <: saxpyMainIO](c: T, n:Int, ch:Int) extends PeekPokeTe
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 10000) {
+  while (time < 100000 && !result) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -320,16 +320,18 @@ class cilk_saxpyTester2 extends FlatSpec with Matchers {
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  for (ch <- 3 to 3) {
-    it should s"Test: $ch tiles" in {
+  val tile_list = List(1,2,4,8)
+
+  for (tile <- tile_list) {
+    it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
         Array(
           // "-ll", "Info",
           "-tbn", "verilator",
           "-td", "test_run_dir",
           "-tts", "0001"),
-        () => new cilk_saxpyMainTM(ch)) {
-        c => new cilk_saxpyTest01(c, 10, ch)
+        () => new cilk_saxpyMainTM(tile)(p.alterPartial({case TLEN => 10}))) {
+        c => new cilk_saxpyTest01(c, 400, tile)
       } should be(true)
     }
   }
