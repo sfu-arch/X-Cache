@@ -18,125 +18,157 @@ import arbiters._
 import loop._
 import accel._
 import node._
+import junctions._
 
-class test12CacheWrapper()(implicit p: Parameters) extends test12DF()(p)
-  with CacheParams {
-  /*  val io2 = IO(new Bundle {
-      val init  = Flipped(Valid(new InitParams()(p)))
-    })
-    */
-  // Instantiate the AXI Cache
-  val cache = Module(new Cache)
-  cache.io.cpu.req <> CacheMem.io.MemReq
-  CacheMem.io.MemResp <> cache.io.cpu.resp
-  cache.io.cpu.abort := false.B
-  // Instantiate a memory model with AXI slave interface for cache
-  val memModel = Module(new NastiMemSlave)
-  memModel.io.nasti <> cache.io.nasti
-  //memModel.io.init <> io2.init
+class test12MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+  val io = IO( new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32))))
+    val addr = Input(UInt(nastiXAddrBits.W))
+    val din  = Input(UInt(nastiXDataBits.W))
+    val write = Input(Bool())
+    val dout = Output(UInt(nastiXDataBits.W))
+    val out = Decoupled(new Call(List(32)))
 
-  val raminit = RegInit(true.B)
-  val addrVec = VecInit(0.U, 1.U, 2.U, 3.U)
-  val dataVec = VecInit(1.U, 2.U, 3.U, 4.U)
-  val (count_out, count_done) = Counter(raminit, addrVec.length)
-  when(!count_done) {
-    memModel.io.init.bits.addr := addrVec(count_out)
-    memModel.io.init.bits.data := dataVec(count_out)
-    memModel.io.init.valid := true.B
-  }.otherwise {
-    memModel.io.init.valid := false.B
-    raminit := false.B
+  })
+}
+
+class test12MainDirect(implicit p: Parameters) extends test12MainIO{
+
+  val cache = Module(new Cache)            // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+
+  // Store a copy of all data written to the cache.  This is done since the cache isn't
+  // 'write through' to the memory model and we have no easy way of reading the
+  // cache contents from the testbench.
+  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
+    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
   }
+  io.dout := memCopy.read((io.addr>>2).asUInt())
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
+  memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := io.addr
+  memModel.io.init.bits.data := io.din
+  memModel.io.init.valid := io.write
+  cache.io.cpu.abort := false.B
+
+  // Wire up the cache and modules under test.
+  val test12 = Module(new test12DF())
+  val test12_inner = Module(new test12_innerDF())
+
+
+  val MemArbiter = Module(new MemArbiter(2))
+
+
+  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+
+  MemArbiter.io.cpu.MemReq(0) <> test12_inner.io.MemReq
+  test12_inner.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
+
+  MemArbiter.io.cpu.MemReq(1) <> test12.io.MemReq
+  test12.io.MemResp <> MemArbiter.io.cpu.MemResp(1)
+
+  test12.io.call_5_in <> test12_inner.io.out
+  test12_inner.io.in <> test12.io.call_5_out
+
+  test12.io.in <> io.in
+  io.out <> test12.io.out
 
 }
 
-class test12Test01(c: test12CacheWrapper) extends PeekPokeTester(c) {
+
+
+class test12Test01[T <: test12MainDirect](c: T) extends PeekPokeTester(c) {
 
 
   /**
-    * test12DF interface:
-    *
-    * data_0 = Flipped(Decoupled(new DataBundle))
-    * val pred = Decoupled(new Bool())
-    * val start = Input(new Bool())
-    * val result = Decoupled(new DataBundle)
-    */
-
-
-  /*
-    val initList = List((0,1), (1,2), (2,3), (3,4))
-    for ((addr,data) <- initList) {
-      poke(c.io2.init.bits.addr, addr)
-      poke(c.io2.init.bits.data, data)
-      poke(c.io2.init.valid, true.B)
-      step(1)
-    }
-    poke(c.io2.init.valid, false.B)
+  *  test11DF interface:
+  *
+  *    in = Flipped(new CallDecoupled(List(...)))
+  *    out = new CallDecoupled(List(32))
   */
+
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
+//  poke(c.io.in.bits.data("field1").data, 0.U)
+//  poke(c.io.in.bits.data("field1").predicate, false.B)
+//  poke(c.io.in.bits.data("field2").data, 0.U)
+//  poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.data("field0").data, 10.U)
   poke(c.io.in.bits.data("field0").predicate, true.B)
+//  poke(c.io.in.bits.data("field1").data, 4.U)
+//  poke(c.io.in.bits.data("field1").predicate, true.B)
+//  poke(c.io.in.bits.data("field2").data, 8.U)
+//  poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
+//  poke(c.io.in.bits.data("field1").data, 0.U)
+//  poke(c.io.in.bits.data("field1").predicate, false.B)
+//  poke(c.io.in.bits.data("field2").data, 0.U)
+//  poke(c.io.in.bits.data("field2").predicate, false.B)
 
   step(1)
 
   // NOTE: Don't use assert().  It seems to terminate the writing of VCD files
   // early (before the error) which makes debugging very difficult. Check results
   // using if() and fail command.
-  var time = 1 //Cycle counter
+  var time = 1  //Cycle counter
   var result = false
-  while (time < 600) {
+  while (time < 400) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
     if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1) {
+      peek(c.io.out.bits.data("field0").predicate) == 1){
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 475) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
+        println(Console.RED + s"[LOG] *** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"*** Correct result received." + Console.RESET)
+        println(Console.BLUE + s"[LOG] *** Correct result received." + Console.RESET)
       }
     }
   }
 
-  if (!result) {
+  if(!result) {
     println("*** Timeout.")
     fail
   }
+
 }
 
 class test12Tester extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that test12 works correctly." in {
+  it should "Check that test11 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>
     // -td  = target directory
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new test12CacheWrapper()) {
-      c => new test12Test01(c)
+     Array(
+//       "-ll", "Info",
+       "-tbn", "verilator",
+       "-td", "test_run_dir",
+       "-tts", "0001"),
+     () => new test12MainDirect()) {
+     c => new test12Test01(c)
     } should be(true)
   }
 }
