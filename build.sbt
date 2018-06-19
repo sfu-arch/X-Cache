@@ -40,7 +40,6 @@ libraryDependencies ++= Seq(
 )
 
 // Berkley hardfloat. locally published (built with chisel2 scala 2.11)
-libraryDependencies += "edu.berkeley.cs" %% "chisel" % "latest.release"
 libraryDependencies ++= Seq("edu.berkeley.cs" %% "hardfloat" % "1.2")
 
 

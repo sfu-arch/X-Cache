@@ -19,7 +19,8 @@ object Main extends App {
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new TypeMemDataFlow()))
 
   val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
-  new firrtl.VerilogCompiler compile (
-  firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm), verilog)
+  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+  val compiledStuff = compileResult.getEmittedCircuit
+  verilog.write(compiledStuff.value)
   verilog.close
 }

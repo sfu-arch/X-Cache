@@ -3,17 +3,22 @@ package FPU
 import hardfloat._
 import chisel3.Module
 import chisel3._
-import chisel3.util._ 
-import FType._ 
+import chisel3.util._
+import FType._
 
 case class FType(exp: Int, sig: Int) {
   def ieeeWidth = exp + sig
-  def expWidth  = exp
-  def sigWidth  = sig
+
+  def expWidth = exp
+
+  def sigWidth = sig
+
   def recodedWidth = ieeeWidth + 1
 
-  def qNaN = UInt((BigInt(7) << (exp + sig - 3)) + (BigInt(1) << (sig - 2)), exp + sig + 1)
+  def qNaN = ((BigInt(7) << (exp + sig - 3)) + (BigInt(1) << (sig - 2))).U((exp + sig + 1).W)
+
   def isNaN(x: UInt) = x(sig + exp - 1, sig + exp - 3).andR
+
   def isSNaN(x: UInt) = isNaN(x) && !x(sig - 2)
 
   def classify(x: UInt) = {
@@ -28,12 +33,12 @@ case class FType(exp: Int, sig: Int) {
     val isZero = code === 0.U
     val isInf = isSpecial && !code(0)
     val isNaN = code.andR
-    val isSNaN = isNaN && !x(sig-2)
-    val isQNaN = isNaN && x(sig-2)
+    val isSNaN = isNaN && !x(sig - 2)
+    val isQNaN = isNaN && x(sig - 2)
 
     Cat(isQNaN, isSNaN, isInf && !sign, isNormal && !sign,
-        isSubnormal && !sign, isZero && !sign, isZero && sign,
-        isSubnormal && sign, isNormal && sign, isInf && sign)
+      isSubnormal && !sign, isZero && !sign, isZero && sign,
+      isSubnormal && sign, isNormal && sign, isInf && sign)
   }
 
   // convert between formats, ignoring rounding, range, NaN
@@ -45,19 +50,20 @@ case class FType(exp: Int, sig: Int) {
     val expOut = {
       val expCode = expIn(exp, exp - 2)
       val commonCase = (expIn + (1 << to.exp).U) - (1 << exp).U
-      Mux(expCode === 0.U || expCode >= 6.U, Cat(expCode, commonCase(to.exp - 3,0)), commonCase(to.exp,0))
+      Mux(expCode === 0.U || expCode >= 6.U, Cat(expCode, commonCase(to.exp - 3, 0)), commonCase(to.exp, 0))
     }
     Cat(sign, expOut, fractOut)
   }
 
   def recode(x: UInt) = hardfloat.recFNFromFN(exp, sig, x)
+
   def ieee(x: UInt) = hardfloat.fNFromRecFN(exp, sig, x)
 }
 
 object FType {
   val S = new FType(8, 24)
   val D = new FType(11, 53)
-  val H  = new FType(5, 11)
+  val H = new FType(5, 11)
 }
 
 /**
@@ -78,7 +84,7 @@ object FPAluOpCode {
     "mul" -> Mul,
     "Mac" -> Mac,
     "mac" -> Mac
-   )
+  )
   val length = 8
 }
 
@@ -124,32 +130,32 @@ class FPUALU(val xlen: Int, val opCode: String, t: FType) extends Module {
      for each element in the dataflow.
      If we decode, then a MUX would be needed within the hardware.
   */
-  def FPUControl(): Unit = { 
+  def FPUControl(): Unit = {
     FPAluOpCode.opMap(opCode) match {
-      case FPAluOpCode.Add  =>  { // b + c
-                        mulAddRecFN.io.op := 0.U
-                        mulAddRecFN.io.a := dummy1.io.out
-                        mulAddRecFN.io.b := in1RecFN
-                        mulAddRecFN.io.c := in2RecFN
-                      }
-      case FPAluOpCode.Sub  =>  { // b - c
-                        mulAddRecFN.io.op := 1.U
-                        mulAddRecFN.io.a := dummy1.io.out
-                        mulAddRecFN.io.b := in1RecFN
-                        mulAddRecFN.io.c := in2RecFN
-                      }
-      case FPAluOpCode.Mul  =>  { // a*b
-                        mulAddRecFN.io.op := 0.U
-                        mulAddRecFN.io.a := in1RecFN
-                        mulAddRecFN.io.b := in2RecFN
-                        mulAddRecFN.io.c := dummy0.io.out
-                      }
-      case FPAluOpCode.Mac  =>  { // a*b + c
-                        mulAddRecFN.io.op := 0.U
-                        mulAddRecFN.io.a := in1RecFN
-                        mulAddRecFN.io.b := in2RecFN
-                        mulAddRecFN.io.c := dummy0.io.out
-                      }
+      case FPAluOpCode.Add => { // b + c
+        mulAddRecFN.io.op := 0.U
+        mulAddRecFN.io.a := dummy1.io.out
+        mulAddRecFN.io.b := in1RecFN
+        mulAddRecFN.io.c := in2RecFN
+      }
+      case FPAluOpCode.Sub => { // b - c
+        mulAddRecFN.io.op := 1.U
+        mulAddRecFN.io.a := dummy1.io.out
+        mulAddRecFN.io.b := in1RecFN
+        mulAddRecFN.io.c := in2RecFN
+      }
+      case FPAluOpCode.Mul => { // a*b
+        mulAddRecFN.io.op := 0.U
+        mulAddRecFN.io.a := in1RecFN
+        mulAddRecFN.io.b := in2RecFN
+        mulAddRecFN.io.c := dummy0.io.out
+      }
+      case FPAluOpCode.Mac => { // a*b + c
+        mulAddRecFN.io.op := 0.U
+        mulAddRecFN.io.a := in1RecFN
+        mulAddRecFN.io.b := in2RecFN
+        mulAddRecFN.io.c := dummy0.io.out
+      }
     }
   }
 
@@ -160,13 +166,13 @@ class FPUALU(val xlen: Int, val opCode: String, t: FType) extends Module {
   val dummy1 = Module(new INToRecFN(t.ieeeWidth, t.expWidth, t.sigWidth))
   dummy1.io.signedIn := false.B
   dummy1.io.in := 1.U((t.ieeeWidth).W)
-  dummy1.io.roundingMode :=  "b110".U(3.W)
+  dummy1.io.roundingMode := "b110".U(3.W)
   dummy1.io.detectTininess := 0.U(1.W)
 
   val dummy0 = Module(new INToRecFN(t.ieeeWidth, t.expWidth, t.sigWidth))
   dummy0.io.signedIn := false.B
   dummy0.io.in := 0.U((t.ieeeWidth).W)
-  dummy0.io.roundingMode :=  "b110".U(3.W)
+  dummy0.io.roundingMode := "b110".U(3.W)
   dummy0.io.detectTininess := 0.U(1.W)
 
   /* Recode inputs into ieee format */
@@ -174,7 +180,7 @@ class FPUALU(val xlen: Int, val opCode: String, t: FType) extends Module {
   val in2RecFN = t.recode(io.in2)
 
   val mulAddRecFN = Module(new MulAddRecFN(t.expWidth, t.sigWidth))
-  mulAddRecFN.io.roundingMode   := "b110".U(3.W)
+  mulAddRecFN.io.roundingMode := "b110".U(3.W)
   mulAddRecFN.io.detectTininess := 0.U(1.W)
 
   assert(!FPAluOpCode.opMap.get(opCode).isEmpty, "Wrong ALU OP!")
