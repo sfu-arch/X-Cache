@@ -4,9 +4,9 @@ organization := "sfu.arch"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.11.12"
 
-ensimeScalaVersion in ThisBuild := "2.11.11"
+//ensimeScalaVersion in ThisBuild := "2.11.12"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls")
 
@@ -40,6 +40,7 @@ libraryDependencies ++= Seq(
 )
 
 // Berkley hardfloat. locally published (built with chisel2 scala 2.11)
+libraryDependencies += "edu.berkeley.cs" %% "chisel" % "latest.release"
 libraryDependencies ++= Seq("edu.berkeley.cs" %% "hardfloat" % "1.2")
 
 
