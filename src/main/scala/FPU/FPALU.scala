@@ -158,13 +158,13 @@ class FPUALU(val xlen: Int, val opCode: String, t: FType) extends Module {
     use implement b + c as 1 * b + c on a MAC.
   */
   val dummy1 = Module(new INToRecFN(t.ieeeWidth, t.expWidth, t.sigWidth))
-  dummy1.io.signedIn := Bool(false)
+  dummy1.io.signedIn := false.B
   dummy1.io.in := 1.U((t.ieeeWidth).W)
   dummy1.io.roundingMode :=  "b110".U(3.W)
   dummy1.io.detectTininess := 0.U(1.W)
 
   val dummy0 = Module(new INToRecFN(t.ieeeWidth, t.expWidth, t.sigWidth))
-  dummy0.io.signedIn := Bool(false)
+  dummy0.io.signedIn := false.B
   dummy0.io.in := 0.U((t.ieeeWidth).W)
   dummy0.io.roundingMode :=  "b110".U(3.W)
   dummy0.io.detectTininess := 0.U(1.W)
