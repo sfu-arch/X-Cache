@@ -1,9 +1,5 @@
 package node
 
-/**
-  * Created by nvedula on 15/5/17.
-  */
-
 import chisel3._
 import chisel3.util._
 import org.scalacheck.Prop.False
@@ -33,11 +29,18 @@ class LoadIO(NumPredOps: Int,
   // Memory response.
   val memResp = Input(Flipped(new ReadResp()))
 }
-
+/**
+ * @brief Load Node. Implements load operations
+ * @details [load operations can either reference values in a scratchpad or cache]
+ *
+ * @param NumPredOps [Number of predicate memory operations]
+ */
 class UnTypLoad(NumPredOps: Int,
                 NumSuccOps: Int,
                 NumOuts: Int,
-                Typ: UInt = MT_W, ID: Int, RouteID: Int)
+                Typ: UInt = MT_W,
+                ID: Int,
+                RouteID: Int)
                (implicit p: Parameters,
                 name: sourcecode.Name,
                 file: sourcecode.File)
@@ -66,26 +69,31 @@ class UnTypLoad(NumPredOps: Int,
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
-  /*============================================
-  =            Predicate Evaluation            =
-  ============================================*/
-
-  //  val start = addr_valid_R & IsPredValid & IsEnableValid()
 
   /*================================================
   =            Latch inputs. Wire up output            =
   ================================================*/
 
+  //Initialization READY-VALIDs for GepAddr and Predecessor memory ops
   io.GepAddr.ready := ~addr_valid_R
   when(io.GepAddr.fire()) {
     addr_R := io.GepAddr.bits
-    //addr_R.valid := true.B
     addr_valid_R := true.B
   }
+
+  /*============================================
+  =            Predicate Evaluation            =
+  ============================================*/
+
+  val complete = IsSuccReady() && IsOutReady()
+  val predicate = addr_R.predicate && enable_R.control
+  val mem_req_fire = addr_valid_R && IsPredValid()
+
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
+    io.Out(i).bits.predicate := predicate
     io.Out(i).bits.taskID := addr_R.taskID | enable_R.taskID
   }
 
@@ -93,7 +101,7 @@ class UnTypLoad(NumPredOps: Int,
   io.memReq.bits.address := addr_R.data
   io.memReq.bits.Typ := Typ
   io.memReq.bits.RouteID := RouteID.U
-  io.memReq.bits.taskID := addr_R.taskID | enable_R.taskID
+  io.memReq.bits.taskID := addr_R.taskID
 
   // Connect successors outputs to the enable status
   when(io.enable.fire()) {
@@ -103,13 +111,11 @@ class UnTypLoad(NumPredOps: Int,
   =            ACTIONS (possibly dangerous)     =
   =============================================*/
 
-  //val mem_req_fire = addr_valid_R & IsPredValid()
-  val complete = IsSuccReady() & IsOutReady()
 
   switch(state) {
     is(s_idle) {
-      when(enable_valid_R && addr_valid_R && IsPredValid()) {
-        when(enable_R.control) {
+      when(enable_valid_R && mem_req_fire) {
+        when(enable_R.control && predicate) {
           io.memReq.valid := true.B
           when(io.memReq.ready) {
             state := s_RECEIVING
@@ -118,10 +124,8 @@ class UnTypLoad(NumPredOps: Int,
           data_R.predicate :=false.B
           ValidSucc()
           ValidOut()
-          data_R.predicate := false.B
           // Completion state.
           state := s_Done
-
         }
       }
     }
@@ -131,7 +135,7 @@ class UnTypLoad(NumPredOps: Int,
         // Set data output registers
         data_R.data := io.memResp.data
         data_R.predicate := true.B
-        //data_R.valid := true.B
+
         ValidSucc()
         ValidOut()
         // Completion state.
@@ -157,74 +161,20 @@ class UnTypLoad(NumPredOps: Int,
       }
     }
   }
-
-  //  when(start & predicate) {
-  //    // ACTION:  Memory request
-  //    //  Check if address is valid and predecessors have completed.
-  //
-  //    // ACTION: Outgoing Address Req ->
-  //    when((state === s_idle) && (mem_req_fire)) {
-  //      io.memReq.valid := true.B
-  //    }
-  //
-  //    //  ACTION: Arbitration ready
-  //    //   <- Incoming memory arbitration
-  //    when((state === s_idle) && (io.memReq.ready === true.B) && (io.memReq.valid === true.B)) {
-  //      state := s_RECEIVING
-  //    }
-  //
-  //    // Data detected only one cycle later.
-  //    // Memory should supply only one cycle after arbitration.
-  //    //  ACTION:  <- Incoming Data
-  //    when(state === s_RECEIVING && io.memResp.valid) {
-  //      // Set data output registers
-  //      data_R.data := io.memResp.data
-  //      data_R.predicate := predicate
-  //      //data_R.valid := true.B
-  //      ValidSucc()
-  //      ValidOut()
-  //      // Completion state.
-  //      state := s_Done
-  //    }
-  //  }.elsewhen(start && !predicate && state =/= s_Done) {
-  //    //    ValidSucc()
-  //    //    ValidOut()
-  //    //    state := s_Done
-  //    addr_R := DataBundle.default
-  //    addr_valid_R := false.B
-  //    // Reset data
-  //    data_R := DataBundle.default
-  //    data_valid_R := false.B
-  //    // Reset state.
-  //    Reset()
-  //    // Reset state.
-  //    state := s_idle
-  //    printf("[LOG] " + "[" + module_name + "] " + node_name + ": restarted @ %d\n", cycleCount)
-  //  }
-  //  /*===========================================
-  //  =            Output Handshaking and Reset   =
-  //  ===========================================*/
-  //
-  //  //  ACTION: <- Check Out READY and Successors READY
-  //  when(state === s_Done) {
-  //    // When successors are complete and outputs are ready you can reset.
-  //    // data already valid and would be latched in this cycle.
-  //    when(complete) {
-  //      // Clear all the valid states.
-  //      // Reset address
-  //      addr_R := DataBundle.default
-  //      addr_valid_R := false.B
-  //      // Reset data
-  //      data_R := DataBundle.default
-  //      data_valid_R := false.B
-  //      // Reset state.
-  //      Reset()
-  //      // Reset state.
-  //      state := s_idle
-  //      when(predicate) {
-  //        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
-  //      }
-  //    }
-  //  }
-
+  // Trace detail.
+  if (log == true && (comp contains "LOAD")) {
+    val x = RegInit(0.U(xlen.W))
+    x := x + 1.U
+    verb match {
+      case "high" => {}
+      case "med" => {}
+      case "low" => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},", x, (addr_valid_R))
+        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\":\"%x,%x,%x\" },", state, data_valid_R, data_R.data, data_R.predicate)
+        printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
+        printf("}")
+        }
+      case everythingElse => {}
+      }
+  }
 }

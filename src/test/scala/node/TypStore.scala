@@ -31,14 +31,14 @@ class TypStoreTests(c: TypStore) extends PeekPokeTester(c) {
         poke(c.io.GepAddr.bits.data, 12)
         poke(c.io.GepAddr.bits.predicate, true)
         poke(c.io.inData.valid, true)
-        poke(c.io.inData.bits.data, 0x1eadbeef1eadbeeeL)
+        poke(c.io.inData.bits.data, 0xbeef1eadbeeeL)
         poke(c.io.inData.bits.predicate,true)
 // //         poke(c.io.inData.bits.valid,true)
         poke(c.io.enable.bits.control,true)
         poke(c.io.enable.valid,true)
       }
 
-      printf(s"t: ${t}  c.io.memReq: ${peek(c.io.memReq)} \n")
+       printf(s"t: ${t}  c.io.memReq: ${peek(c.io.memReq)} \n")
       if((peek(c.io.memReq.valid) == 1) && (t > 4))
       {
         poke(c.io.memReq.ready,true)
@@ -50,7 +50,7 @@ class TypStoreTests(c: TypStore) extends PeekPokeTester(c) {
         // poke(c.io.memResp.data,t)
         poke(c.io.memResp.valid,true)
       }
-          
+
 
     // }
   }

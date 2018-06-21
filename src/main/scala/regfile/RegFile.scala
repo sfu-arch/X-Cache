@@ -18,7 +18,7 @@ import config._
  * @param size: Number of registers
  *
  */
-class RegFileIO(size: Int)(implicit p: Parameters) extends CoreBundle()(p) {
+class RegFileBundle(size: Int)(implicit p: Parameters) extends CoreBundle()(p) {
   val raddr1 = Input(UInt(max(1,log2Ceil(size)).W))
   val rdata1 = Output(UInt(xlen.W))
   val raddr2 = Input(UInt(max(1,log2Ceil(size)).W))
@@ -31,7 +31,7 @@ class RegFileIO(size: Int)(implicit p: Parameters) extends CoreBundle()(p) {
 
 
 abstract class AbstractRFile(size: Int)(implicit val p: Parameters) extends Module with CoreParams {
-   val io = IO(new RegFileIO(size))
+   val io = IO(new RegFileBundle(size))
 }
 /**
  * @brief Scratchpad registerfile

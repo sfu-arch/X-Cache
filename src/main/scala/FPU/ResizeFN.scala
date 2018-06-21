@@ -1,4 +1,4 @@
-package node
+package FPU
 
 import chisel3._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
@@ -7,30 +7,31 @@ import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
 import config._
+import hardfloat._
 import interfaces._
 import muxes._
 import util._
+import node._
+import FType._
 
-
-class ComputeNodeIO(NumOuts: Int)
+class FNtoFNNodeIO(Src: FType, Des: FType,NumOuts: Int)
                    (implicit p: Parameters)
-  extends HandShakingIONPS(NumOuts)(new DataBundle) {
+  extends HandShakingIONPS(NumOuts)(new CustomDataBundle(UInt((Des.ieeeWidth).W))) {
   // LeftIO: Left input data for computation
-  val LeftIO = Flipped(Decoupled(new DataBundle()))
-
-  // RightIO: Right input data for computation
-  val RightIO = Flipped(Decoupled(new DataBundle()))
+  //Input for floating point width
+    val Input = Flipped(Decoupled(new CustomDataBundle(UInt((Src.ieeeWidth).W))))
+    // Output gets initialized as part of Handshaking.
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
-                 (sign: Boolean)
+class FNtoFNNode(Src: FType, Des: FType, NumOuts: Int, ID: Int)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)
-  extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
-  override lazy val io = IO(new ComputeNodeIO(NumOuts))
+  extends HandShakingNPS(NumOuts, ID)(new CustomDataBundle(UInt((Des.ieeeWidth).W)))(p) {
+  override lazy val io = IO(new FNtoFNNodeIO(Src,Des, NumOuts))
 
-  // Printf debugging
+
+// Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
 
@@ -42,43 +43,36 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *            Registers                      *
    *===========================================*/
   // Left Input
-  val left_R = RegInit(DataBundle.default)
-  val left_valid_R = RegInit(false.B)
-
-  // Right Input
-  val right_R = RegInit(DataBundle.default)
-  val right_valid_R = RegInit(false.B)
+  val Input_R = Reg(new CustomDataBundle((UInt((Src.ieeeWidth).W))))
+  val Input_valid_R = RegInit(false.B)
 
   val task_ID_R = RegNext(next = enable_R.taskID)
 
   //Output register
-  val out_data_R = RegInit(DataBundle.default)
+  val out_data_R = Reg(new CustomDataBundle((UInt((Src.ieeeWidth).W))))
 
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
 
-  val predicate = left_R.predicate & right_R.predicate// & IsEnable()
+  val predicate = Input_R.predicate //  IsEnable()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  //Instantiate ALU with selected code
-  val FU = Module(new UALU(xlen, opCode))
-  FU.io.in1 := left_R.data
-  FU.io.in2 := right_R.data
+  //Instantiate FN resize with selected code. Recoded FU.
+  val recFNsrc = Src.recode(Input_R.data)
+  val FU = Module(new RecFNToRecFN(Src.expWidth, Src.sigWidth, Des.expWidth, Des.sigWidth))
+  FU.io.in             := recFNsrc
+  FU.io.roundingMode   := "b110".U(3.W)
+  FU.io.detectTininess := 0.U(1.W)
 
-  io.LeftIO.ready := ~left_valid_R
-  when(io.LeftIO.fire()) {
-    left_R <> io.LeftIO.bits
-    left_valid_R := true.B
-  }
 
-  io.RightIO.ready := ~right_valid_R
-  when(io.RightIO.fire()) {
-    right_R <> io.RightIO.bits
-    right_valid_R := true.B
+  io.Input.ready := ~Input_valid_R
+  when(io.Input.fire()) {
+    Input_R <> io.Input.bits
+    Input_valid_R := true.B
   }
 
   // Wire up Outputs
@@ -100,12 +94,12 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when(left_valid_R && right_valid_R) {
+        when(Input_valid_R) {
           ValidOut()
           when(enable_R.control) {
-            out_data_R.data := FU.io.out
+            out_data_R.data := Des.ieee(FU.io.out)
             out_data_R.predicate := predicate
-            out_data_R.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
+            out_data_R.taskID := Input_R.taskID
           }
           state := s_COMPUTE
         }
@@ -116,14 +110,13 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         // Reset data
         //left_R := DataBundle.default
         //right_R := DataBundle.default
-        left_valid_R := false.B
-        right_valid_R := false.B
+        Input_valid_R := false.B
         //Reset state
         state := s_IDLE
         //Reset output
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n", task_ID_R, cycleCount, FU.io.out, left_R.data, right_R.data)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: 0x%x\n", task_ID_R, cycleCount, Des.ieee(FU.io.out))
       }
     }
   }

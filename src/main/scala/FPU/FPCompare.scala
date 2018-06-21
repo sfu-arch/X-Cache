@@ -1,4 +1,4 @@
-package node
+package FPU
 
 import chisel3._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
@@ -10,9 +10,14 @@ import config._
 import interfaces._
 import muxes._
 import util._
+import node._
+import FType._
+import hardfloat._
 
-
-class ComputeNodeIO(NumOuts: Int)
+/**
+ * [FPComputeNodeIO description]
+ */
+class FPCompareNodeIO(NumOuts: Int)
                    (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
   // LeftIO: Left input data for computation
@@ -22,8 +27,11 @@ class ComputeNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle()))
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
-                 (sign: Boolean)
+/**
+ * [FPCompareNode description]
+ */
+class FPCompareNode(NumOuts: Int, ID: Int, opCode: String)
+                 (t: FType)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)
@@ -64,10 +72,10 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  //Instantiate ALU with selected code
-  val FU = Module(new UALU(xlen, opCode))
-  FU.io.in1 := left_R.data
-  FU.io.in2 := right_R.data
+  //Instantiate ALU with selected code. IEEE ALU. IEEE in/IEEE out
+  val FU = Module(new CompareRecFN(t.expWidth, t.sigWidth))
+  FU.io.a   := t.recode(left_R.data)
+  FU.io.b   := t.recode(right_R.data)
 
   io.LeftIO.ready := ~left_valid_R
   when(io.LeftIO.fire()) {
@@ -103,13 +111,21 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         when(left_valid_R && right_valid_R) {
           ValidOut()
           when(enable_R.control) {
-            out_data_R.data := FU.io.out
+            require(opCode == "<LT" | opCode == ">GT" | opCode == "=EQ")
+            val x =
+            opCode match {
+              case "<LT" => FU.io.lt
+              case ">GT" => FU.io.gt
+              case "=EQ" => FU.io.eq
+            }
+            out_data_R.data      := x
             out_data_R.predicate := predicate
             out_data_R.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
           }
           state := s_COMPUTE
         }
       }
+
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {
@@ -123,7 +139,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         //Reset output
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n", task_ID_R, cycleCount, FU.io.out, left_R.data, right_R.data)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %x\n", task_ID_R, cycleCount, io.Out(0).bits.data)
       }
     }
   }

@@ -1,9 +1,5 @@
 package node
 
-/**
-  * Created by nvedula on 15/5/17.
-  */
-
 import chisel3.{RegInit, _}
 import chisel3.util._
 import org.scalacheck.Prop.False
@@ -51,6 +47,7 @@ class UnTypStore(NumPredOps: Int,
 
   // Set up StoreIO
   override lazy val io = IO(new StoreIO(NumPredOps, NumSuccOps, NumOuts))
+  // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
@@ -166,6 +163,20 @@ class UnTypStore(NumPredOps: Int,
       }
     }
   }
-
-
+  // Trace detail.
+  if (log == true && (comp contains "STORE")) {
+    val x = RegInit(0.U(xlen.W))
+    x := x + 1.U
+    verb match {
+      case "high" => {}
+      case "med" => {}
+      case "low" => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},", x, (addr_valid_R))
+        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\": \"%x,%x,%x\" },", state, data_valid_R, data_R.data, io.Out(0).bits.predicate)
+        printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
+        printf("}")
+      }
+      case everythingElse => {}
+    }
+  }
 }

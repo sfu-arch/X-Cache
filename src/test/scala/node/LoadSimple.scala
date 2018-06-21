@@ -1,24 +1,43 @@
 package node
 
-/**
-  * Created by nvedula on 15/5/17.
-  */
-
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
-
 import config._
 import utility._
 
 class LoadNodeTests(c: UnTypLoad) extends PeekPokeTester(c) {
-    poke(c.io.GepAddr.valid,false)
-    poke(c.io.PredOp(0).valid,false)
-    poke(c.io.memReq.ready,false)
-    poke(c.io.memResp.valid,false)
-    poke(c.io.SuccOp(0).ready,true)
-    poke(c.io.Out(0).ready,true)
-  
+  def N = false
+  def Y = true
+  val Control = Map(
+        "Default"  -> List(N,N,N,N,N,N,N,N,N,N),
+        "Active"   -> List(N,N, N,N, Y, N,N, Y,Y),
+        "Input"   -> List(Y,Y, Y,Y, Y, N,N, Y,Y),
+        "~Input"    -> List(Y,Y, Y,N, Y, N,N, Y,Y),
+        "~Control"    -> List(Y,N, Y,N, Y, N,N, Y,Y)
+      ).withDefaultValue(List(N,N,N,N,N,N,N,N,N,N))
+
+  val sigs = Seq(c.io.enable.valid, c.io.enable.bits.control,
+    c.io.GepAddr.valid, c.io.GepAddr.bits.predicate,
+    c.io.PredOp(0).valid,
+    c.io.memReq.ready,c.io.memResp.valid,
+    c.io.SuccOp(0).ready,c.io.Out(0).ready
+    )
+
+  sigs zip Control("Default") map {case(s,d) => poke(s,d)}
+  sigs zip Control("Active") map {case(s,d) => poke(s,d)}
+
+  // Enable1.valid,
+  // Enable1.control,
+  // Input1.valid,
+  // Input1.data,
+  // Input1.predicate,
+  // Pred op.valid,
+  // memReq.valid,
+  // memreq.ready,
+  // Succ_op,
+  // io.Out
+
     for (t <- 0 until 20) {
              step(1)
 
@@ -27,11 +46,8 @@ class LoadNodeTests(c: UnTypLoad) extends PeekPokeTester(c) {
       //IF ready is set
       // send address
       if (peek(c.io.GepAddr.ready) == 1) {
-        poke(c.io.GepAddr.valid, true)
-        poke(c.io.GepAddr.bits.predicate,true)
+        sigs zip Control("~Control") map {case(s,d) => poke(s,d)}
         poke(c.io.GepAddr.bits.data, 12)
-        poke(c.io.enable.valid,true)
-        poke(c.io.enable.bits.control,true)
       }
 
        if((peek(c.io.memReq.valid) == 1) && (t > 4))
@@ -41,84 +57,17 @@ class LoadNodeTests(c: UnTypLoad) extends PeekPokeTester(c) {
 
       if (t > 5 && peek(c.io.memReq.ready) == 1)
       {
-        // poke(c.io.memReq.ready,false)
         poke(c.io.memResp.data,t)
         poke(c.io.memResp.valid,true)
       }
-       printf(s"t: ${t}  io.Out: ${peek(c.io.Out(0))} \n")
+       // printf(s"t: ${t}  io.Out: ${peek(c.io.Out(0))} \n")
       // //Response is before request -- so that it is true in the next cycle
       // //NOte: Response should be received atleast after a cycle of memory request
       // // Otherwise it is undefined behaviour
-      // if (is_k) {
-      //   //since response is available atleast next cycle onwards
-      //   poke(c.io.memResp.valid, true)
-      //   poke(c.io.memResp.data, 34)
-
-      //   printf(s"\n t: ${t} MemResponse received \n")
-      //   printf(s"t: ${t}  io.Memresp_valid: ${peek(c.io.memResp.valid)} \n")
-      //   is_k = false
-
-      // }
-
-      // //Memory is always ready to receive the memory requests
-      // //TODO make them as single signal
-      // poke(c.io.memReq.ready, true)
-      // //When StoreNode requests the data print the contents
-
-      // if (peek(c.io.memReq.valid) == 1) {
-      //   if (!is_k) is_k = true
-
-      //   printf(s"\n t: ${t} MemRequest Sent \n")
-      //   printf(s"t: ${t}  io.Memreq_addr: ${peek(c.io.memReq.bits.address)} " +
-      //     s"io.memReq.nodeid : ${peek(c.io.memReq.bits.node)} \n")
-
-
-      // }
-
-
-
-      // //at some clock - send src mem-op is done executing
-      // if (t > 4) {
-      //   if (peek(c.io.PredOp(0).ready) == 1) {
-      //     poke(c.io.PredOp(0).valid, true)
-      //     printf(s"\n t:${t} PredOp(0) Fire \n")
-      //   }
-      //   else {
-      //     poke(c.io.PredOp(0).valid, false)
-      //   }
-
-      // }
-      // else {
-      //   poke(c.io.PredOp(0).valid, false)
-      // }
-
-      // if (t > 5) {
-      //   if (peek(c.io.PredOp(1).ready) == 1) {
-      //     poke(c.io.PredOp(1).valid, true)
-      //     printf(s"\n t:${t} PredOp(1) Fire \n")
-      //   }
-      //   else {
-      //     poke(c.io.PredOp(1).valid, false)
-      //   }
-
-      // }
-      // else {
-      //   poke(c.io.PredOp(1).valid, false)
-      // }
-
 
     }
 
 }
-
-//class LoadNodeTester extends ChiselFlatSpec {
-//behavior of "LoadNode"
-//backends foreach {backend =>
-//it should s"correctly find decoupled behaviour -  $backend" in {
-//Driver(() => new LoadNode(32), backend)((c) => new LoadNodeTests(c)) should be (true)
-//}
-//}
-//}
 
 import Constants._
 

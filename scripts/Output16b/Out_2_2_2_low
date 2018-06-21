@@ -1,0 +1,30 @@
+[0m[[0minfo[0m] [0mLoading project definition from /Users/ashriram/Documents/Chisel/dataflow-lib/project[0m
+[0m[[0minfo[0m] [0mSet current project to dataflowLib (in build file:/Users/ashriram/Documents/Chisel/dataflow-lib/)[0m
+[0m[[0minfo[0m] [0mRunning verilogmain.TypeStackFileVerilog16b -td /tmp/build-stuff/ -tbn verilator -tts 1 --OpSize 2 --BaseSize 2 --EntrySize 2 --AF low[0m
+[[35minfo[0m] [0.004] Elaborating design...
+[[35minfo[0m] [0.520] Done elaborating.
+Total FIRRTL Compile Time: 1264.8 ms
+verilator --cc TypeStackFile.v --assert -Wno-fatal -Wno-WIDTH -Wno-STMTDLY --trace -O1 --top-module TypeStackFile +define+TOP_TYPE=VTypeStackFile +define+PRINTF_COND=!TypeStackFile.reset +define+STOP_COND=!TypeStackFile.reset -CFLAGS -Wno-undefined-bool-conversion -O1 -DTOP_TYPE=VTypeStackFile -DVL_USER_FINISH -include VTypeStackFile.h -Mdir /tmp/build-stuff/verilogmain.TypeStackFileVerilog16b424396332 --exe /tmp/build-stuff/verilogmain.TypeStackFileVerilog16b424396332/TypeStackFile-harness.cpp
+clang++  -I.  -MMD -I/usr/local/Cellar/verilator/3.900/share/verilator/include -I/usr/local/Cellar/verilator/3.900/share/verilator/include/vltstd -DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -Wno-char-subscripts -Wno-parentheses-equality -Wno-sign-compare -Wno-uninitialized -Wno-unused-parameter -Wno-unused-variable -fbracket-depth=4096 -Qunused-arguments     -Wno-undefined-bool-conversion -O1 -DTOP_TYPE=VTypeStackFile -DVL_USER_FINISH -include VTypeStackFile.h   -c -o TypeStackFile-harness.o /tmp/build-stuff/verilogmain.TypeStackFileVerilog16b424396332/TypeStackFile-harness.cpp
+clang++  -I.  -MMD -I/usr/local/Cellar/verilator/3.900/share/verilator/include -I/usr/local/Cellar/verilator/3.900/share/verilator/include/vltstd -DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -Wno-char-subscripts -Wno-parentheses-equality -Wno-sign-compare -Wno-uninitialized -Wno-unused-parameter -Wno-unused-variable -fbracket-depth=4096 -Qunused-arguments     -Wno-undefined-bool-conversion -O1 -DTOP_TYPE=VTypeStackFile -DVL_USER_FINISH -include VTypeStackFile.h   -c -o verilated.o /usr/local/Cellar/verilator/3.900/share/verilator/include/verilated.cpp
+clang++  -I.  -MMD -I/usr/local/Cellar/verilator/3.900/share/verilator/include -I/usr/local/Cellar/verilator/3.900/share/verilator/include/vltstd -DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -Wno-char-subscripts -Wno-parentheses-equality -Wno-sign-compare -Wno-uninitialized -Wno-unused-parameter -Wno-unused-variable -fbracket-depth=4096 -Qunused-arguments     -Wno-undefined-bool-conversion -O1 -DTOP_TYPE=VTypeStackFile -DVL_USER_FINISH -include VTypeStackFile.h   -c -o verilated_vcd_c.o /usr/local/Cellar/verilator/3.900/share/verilator/include/verilated_vcd_c.cpp
+/usr/bin/perl /usr/local/Cellar/verilator/3.900/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include VTypeStackFile.cpp > VTypeStackFile__ALLcls.cpp
+/usr/bin/perl /usr/local/Cellar/verilator/3.900/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include VTypeStackFile__Trace.cpp VTypeStackFile__Syms.cpp VTypeStackFile__Trace__Slow.cpp > VTypeStackFile__ALLsup.cpp
+clang++  -I.  -MMD -I/usr/local/Cellar/verilator/3.900/share/verilator/include -I/usr/local/Cellar/verilator/3.900/share/verilator/include/vltstd -DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -Wno-char-subscripts -Wno-parentheses-equality -Wno-sign-compare -Wno-uninitialized -Wno-unused-parameter -Wno-unused-variable -fbracket-depth=4096 -Qunused-arguments     -Wno-undefined-bool-conversion -O1 -DTOP_TYPE=VTypeStackFile -DVL_USER_FINISH -include VTypeStackFile.h   -c -o VTypeStackFile__ALLcls.o VTypeStackFile__ALLcls.cpp
+clang++  -I.  -MMD -I/usr/local/Cellar/verilator/3.900/share/verilator/include -I/usr/local/Cellar/verilator/3.900/share/verilator/include/vltstd -DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 -Wno-char-subscripts -Wno-parentheses-equality -Wno-sign-compare -Wno-uninitialized -Wno-unused-parameter -Wno-unused-variable -fbracket-depth=4096 -Qunused-arguments     -Wno-undefined-bool-conversion -O1 -DTOP_TYPE=VTypeStackFile -DVL_USER_FINISH -include VTypeStackFile.h   -c -o VTypeStackFile__ALLsup.o VTypeStackFile__ALLsup.cpp
+      Archiving VTypeStackFile__ALL.a ...
+ar r VTypeStackFile__ALL.a VTypeStackFile__ALLcls.o VTypeStackFile__ALLsup.o
+ranlib VTypeStackFile__ALL.a
+clang++    TypeStackFile-harness.o verilated.o verilated_vcd_c.o VTypeStackFile__ALL.a    -o VTypeStackFile -lm -lstdc++  2>&1 | c++filt
+sim start on ashriram-laptop.local at Fri Jul 28 10:36:22 2017
+inChannelName: 00007174.in
+outChannelName: 00007174.out
+cmdChannelName: 00007174.cmd
+STARTING /tmp/build-stuff/verilogmain.TypeStackFileVerilog16b424396332/VTypeStackFile
+[[35minfo[0m] [0.002] SEED 1
+
+ Time :4
+Enabling waves..
+Exit Code: 0
+[[35minfo[0m] [0.025] RAN 4 CYCLES PASSED
+[0m[[32msuccess[0m] [0mTotal time: 6 s, completed Jul 28, 2017 10:36:22 AM[0m

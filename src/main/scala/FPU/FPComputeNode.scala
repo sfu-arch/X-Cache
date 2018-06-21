@@ -1,4 +1,4 @@
-package node
+package FPU
 
 import chisel3._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
@@ -10,9 +10,13 @@ import config._
 import interfaces._
 import muxes._
 import util._
+import node._
+import FType._
 
-
-class ComputeNodeIO(NumOuts: Int)
+/**
+ * [FPComputeNodeIO description]
+ */
+class FPComputeNodeIO(NumOuts: Int)
                    (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
   // LeftIO: Left input data for computation
@@ -22,8 +26,11 @@ class ComputeNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle()))
 }
 
-class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
-                 (sign: Boolean)
+/**
+ * [FPComputeNode description]
+ */
+class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
+                 (t: FType)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)
@@ -64,8 +71,8 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  //Instantiate ALU with selected code
-  val FU = Module(new UALU(xlen, opCode))
+  //Instantiate ALU with selected code. IEEE ALU. IEEE in/IEEE out
+  val FU = Module(new FPUALU(xlen, opCode, t))
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
 
@@ -110,6 +117,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
           state := s_COMPUTE
         }
       }
+
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {
@@ -123,7 +131,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         //Reset output
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n", task_ID_R, cycleCount, FU.io.out, left_R.data, right_R.data)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %x\n", task_ID_R, cycleCount, FU.io.out)
       }
     }
   }

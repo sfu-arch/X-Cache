@@ -10,6 +10,8 @@ import util._
 import regfile._
 import  junctions._
 import accel._
+import FPU._
+import FType._
 
 case object XLEN       extends Field[Int]
 case object TLEN       extends Field[Int]
@@ -20,7 +22,7 @@ case object VERBOSITY  extends Field[String]
 case object COMPONENTS extends Field[String]
 case object TRACE      extends Field[Boolean]
 case object BuildRFile extends Field[Parameters => AbstractRFile]
-
+case object FTYP        extends Field[FType]
 
 abstract trait CoreParams {
   implicit val p: Parameters
@@ -30,7 +32,7 @@ abstract trait CoreParams {
   val Typ_SZ  = p(TYPSZ)
   val Beats   = Typ_SZ/xlen
   val mshrlen = p(MSHRLEN)
-
+  val Ftyp    = p(FTYP)
   // Debugging dumps
   val log     = p(TRACE)
   val verb    = p(VERBOSITY)
@@ -46,11 +48,11 @@ class MiniConfig extends Config((site, here, up) => {
     case XLEN       => 32
     case TLEN       => 10
     case GLEN       => 16
-    // # Max bits of cache request tag. 
+    // # Max bits of cache request tag.
     case MSHRLEN  => 8
     case TYPSZ      => 64
     case VERBOSITY  => "low"
-    case COMPONENTS => "TYPLOAD;TYPOP"
+    case COMPONENTS => "TYPLOAD;TYPOP;TYPSTORE"
     // Max size of type memory system may see
     case TRACE      => true
     case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))
@@ -65,7 +67,14 @@ class MiniConfig extends Config((site, here, up) => {
       idBits   = 12,
       dataBits = 32,
       addrBits = 32)
+
+       case FTYP => site(XLEN) match {
+        case 32 => S
+        case 64 => D
+        case 16 => H
+        case _ => S
+    }
+
   }
+
 )
-
-
