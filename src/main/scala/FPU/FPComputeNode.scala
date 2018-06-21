@@ -117,7 +117,6 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
           state := s_COMPUTE
         }
       }
-
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {

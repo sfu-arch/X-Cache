@@ -41,7 +41,7 @@ class FPDivSqrtIO(NumOuts: Int,
   */
 class FPDivSqrtNode(NumOuts: Int,
                     ID: Int,
-                    RouteID: Int,
+                    RouteID: Int = 0,
                     opCode: String)
                     (t: FType)
                  (implicit p: Parameters,

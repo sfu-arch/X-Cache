@@ -36,7 +36,7 @@ class SharedFPUTests(c: SharedFPU)
 class SharedFPUTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new HALFPrecisionFPConfig).toInstance)
   it should "Memory Controller tester" in {
-    chisel3.iotesters.Driver(() => new SharedFPU(NumOps=2, PipeDepth=5)(t = p(FTYP))(p)) {
+    chisel3.iotesters.Driver(() => new SharedFPU(NumOps=2, PipeDepth=5)(t = p(FTYP))) {
       c => new SharedFPUTests(c)
     } should be(true)
   }
