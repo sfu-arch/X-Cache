@@ -77,7 +77,7 @@ class dedup_S2DF(implicit p: Parameters) extends dedup_S2DFIO()(p) {
 
   val bb_if_else4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 4))
 
-  val bb_if_end5 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 5))
+  val bb_if_end5 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi = 0, BID = 5))
 
   val bb_sync_continue6 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
@@ -165,9 +165,9 @@ class dedup_S2DF(implicit p: Parameters) extends dedup_S2DFIO()(p) {
 
   bb_if_else4.io.predicateIn <> br_6.io.Out(1)
 
-  bb_if_end5.io.predicateIn <> br_10.io.Out(0)
+  bb_if_end5.io.predicateIn(0) <> br_10.io.Out(0)
 
-  bb_if_end5.io.predicateIn <> br_13.io.Out(0)
+  bb_if_end5.io.predicateIn(1) <> br_13.io.Out(0)
 
   bb_sync_continue6.io.predicateIn <> sync_14.io.Out(0)
 

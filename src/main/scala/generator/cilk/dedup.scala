@@ -108,7 +108,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   val call_1_in = Module(new CallInNode(ID = 1, argTypes = List(32)))
 
   //  reattach label %det.cont
-  val reattach_2 = Module(new Reattach(NumPredOps= 1, ID = 2))
+  //val reattach_2 = Module(new Reattach(NumPredOps= 1, ID = 2))
 
   //  br label %while.cond
   val br_3 = Module(new UBranchNode(ID = 3))
@@ -152,7 +152,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   val call_15_in = Module(new CallInNode(ID = 15, argTypes = List(32)))
 
   //  reattach label %det.cont4
-  val reattach_16 = Module(new Reattach(NumPredOps= 1, ID = 16))
+  //val reattach_16 = Module(new Reattach(NumPredOps= 1, ID = 16))
 
   //  %add = add nsw i32 %pos.0, 2
   val binaryOp_add17 = Module(new ComputeNode(NumOuts = 1, ID = 17, opCode = "add")(sign=false))
@@ -160,7 +160,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   //  %add5 = add i32 %wptr.0, 1
   val binaryOp_add518 = Module(new ComputeNode(NumOuts = 1, ID = 18, opCode = "add")(sign=false))
 
-  //  %rem = urem i32 %add5, 7
+  //  %rem = urem i32 %add5, 127
   val binaryOp_rem19 = Module(new ComputeNode(NumOuts = 1, ID = 19, opCode = "urem")(sign=false))
 
   //  br label %if.end
@@ -217,8 +217,8 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   //i32 1
   val const5 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 5))
 
-  //i32 7
-  val const6 = Module(new ConstNode(value = 7, NumOuts = 1, ID = 6))
+  //i32 127
+  val const6 = Module(new ConstNode(value = 127, NumOuts = 1, ID = 6))
 
   //i32 9999
   val const7 = Module(new ConstNode(value = 9999, NumOuts = 1, ID = 7))
@@ -267,8 +267,8 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   sync_26.io.incIn(0) <> detach_0.io.Out(2)
   sync_26.io.incIn(1) <> detach_14.io.Out(2)
 
-  sync_26.io.decIn(0) <> reattach_2.io.Out(0)
-  sync_26.io.decIn(1) <> reattach_16.io.Out(0)
+  sync_26.io.decIn(0) <> call_1_in.io.Out.enable//reattach_2.io.Out(0)
+  sync_26.io.decIn(1) <> call_15_in.io.Out.enable//reattach_16.io.Out(0)
 
 
 
@@ -489,7 +489,8 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   st_28.io.inData <> const8.io.Out(0)
 
-  reattach_2.io.predicateIn(0) <> call_1_in.io.Out.data("field0")
+  call_1_in.io.Out.data("field0").ready := true.B
+//  reattach_2.io.predicateIn(0) <> DataBundle.active()//call_1_in.io.Out.data("field0")
 
   Gep_arrayidx6.io.idx1 <> phi_pos_04.io.Out(0)
 
@@ -519,7 +520,8 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   br_13.io.CmpIO <> icmp_cmp212.io.Out(0)
 
-  reattach_16.io.predicateIn(0) <> call_15_in.io.Out.data("field0")
+  call_15_in.io.Out.data("field0").ready := true.B
+//  reattach_16.io.predicateIn(0) <> DataBundle.active()//call_15_in.io.Out.data("field0")
 
   phi_pos_121.io.InData(0) <> binaryOp_add17.io.Out(0)
 
@@ -563,7 +565,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   io.call_1_out <> call_1_out.io.Out(0)
 
-  reattach_2.io.enable <> call_1_in.io.Out.enable
+//  reattach_2.io.enable <> call_1_in.io.Out.enable
 
 
 
@@ -575,7 +577,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   io.call_15_out <> call_15_out.io.Out(0)
 
-  reattach_16.io.enable <> call_15_in.io.Out.enable
+//  reattach_16.io.enable <> call_15_in.io.Out.enable
 
 
 

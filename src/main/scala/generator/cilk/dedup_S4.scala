@@ -148,7 +148,7 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
   //  %add8 = add i32 %rptr.0, 1
   val binaryOp_add820 = Module(new ComputeNode(NumOuts = 1, ID = 20, opCode = "add")(sign=false))
 
-  //  %rem = urem i32 %add8, 7
+  //  %rem = urem i32 %add8, 127
   val binaryOp_rem21 = Module(new ComputeNode(NumOuts = 1, ID = 21, opCode = "urem")(sign=false))
 
   //  br label %if.end
@@ -190,8 +190,8 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
   //i32 1
   val const6 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 6))
 
-  //i32 7
-  val const7 = Module(new ConstNode(value = 7, NumOuts = 1, ID = 7))
+  //i32 127
+  val const7 = Module(new ConstNode(value = 127, NumOuts = 1, ID = 7))
 
 
 
