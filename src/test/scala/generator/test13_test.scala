@@ -58,18 +58,8 @@ class test13MainDirect(implicit p: Parameters) extends test13MainIO{
   val test13 = Module(new test13DF())
 
 
-  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
-  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
-
-
-  MemArbiter.io.cpu.MemReq(0) <> test13_inner.io.MemReq
-  test13_inner.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
-
-  MemArbiter.io.cpu.MemReq(1) <> test13.io.MemReq
-  test13.io.MemResp <> MemArbiter.io.cpu.MemResp(1)
-
-  test13.io.call_5_in <> test13_inner.io.out
-  test13_inner.io.in <> test13.io.call_5_out
+  cache.io.cpu.req <> test13.io.MemReq
+  test13.io.MemResp<> cache.io.cpu.resp
 
   test13.io.in <> io.in
   io.out <> test13.io.out
@@ -101,7 +91,7 @@ class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 10.U)
+  poke(c.io.in.bits.data("field0").data, 100.U)
   poke(c.io.in.bits.data("field0").predicate, true.B)
 //  poke(c.io.in.bits.data("field1").data, 4.U)
 //  poke(c.io.in.bits.data("field1").predicate, true.B)
@@ -125,7 +115,7 @@ class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 1  //Cycle counter
   var result = false
-  while (time < 400) {
+  while (time < 600) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
@@ -133,7 +123,7 @@ class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
       peek(c.io.out.bits.data("field0").predicate) == 1){
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 475) {
+      if (data != 125) {
         println(Console.RED + s"[LOG] *** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
         fail
       } else {
