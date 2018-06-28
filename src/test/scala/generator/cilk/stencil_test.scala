@@ -71,10 +71,10 @@ class stencilMainDirect(implicit p: Parameters) extends stencilMainIO {
 
 
   stencil.io.in <> io.in
-  stencil_detach1.io.in <> stencil.io.call9_out
-  stencil_inner.io.in <> stencil_detach1.io.call6_out
-  stencil_detach1.io.call6_in <> stencil_inner.io.out
-  stencil.io.call9_in <> stencil_detach1.io.out
+  stencil_detach1.io.in <> stencil.io.call_9_out
+  stencil_inner.io.in <> stencil_detach1.io.call_6_out
+  stencil_detach1.io.call_6_in <> stencil_inner.io.out
+  stencil.io.call_9_in <> stencil_detach1.io.out
   io.out <> stencil.io.out
 
 }
@@ -131,18 +131,18 @@ class stencilMainTM(implicit p: Parameters) extends stencilMainIO {
   stencil.io.in <> io.in
 
   // cilk_for_test02 to task controller
-  TaskControllerModule.io.parentIn(0) <> stencil.io.call9_out
+  TaskControllerModule.io.parentIn(0) <> stencil.io.call_9_out
 
   // task controller to sub-task stencil_detach1
   for (i <- 0 until children) {
     stencil_detach1(i).io.in <> TaskControllerModule.io.childOut(i)
-    stencil_inner(i).io.in <> stencil_detach1(i).io.call6_out
-    stencil_detach1(i).io.call6_in <> stencil_inner(i).io.out
+    stencil_inner(i).io.in <> stencil_detach1(i).io.call_6_out
+    stencil_detach1(i).io.call_6_in <> stencil_inner(i).io.out
     TaskControllerModule.io.childIn(i) <> stencil_detach1(i).io.out
   }
 
   // Task controller to cilk_for_test02
-  stencil.io.call9_in <> TaskControllerModule.io.parentOut(0)
+  stencil.io.call_9_in <> TaskControllerModule.io.parentOut(0)
 
   // cilk_for_test02 to tester
   io.out <> stencil.io.out
