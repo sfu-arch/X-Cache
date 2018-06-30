@@ -320,7 +320,7 @@ class cilk_saxpyTester2 extends FlatSpec with Matchers {
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  val tile_list = List(1,2,4,8)
+  val tile_list = List(3)
 
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
@@ -330,7 +330,7 @@ class cilk_saxpyTester2 extends FlatSpec with Matchers {
           "-tbn", "verilator",
           "-td", "test_run_dir",
           "-tts", "0001"),
-        () => new cilk_saxpyMainTM(tile)(p.alterPartial({case TLEN => 10}))) {
+        () => new cilk_saxpyMainTM(tile)(p.alterPartial({case TLEN => 4}))) {
         c => new cilk_saxpyTest01(c, 400, tile)
       } should be(true)
     }

@@ -332,12 +332,62 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   io.out <> ret_8.io.Out
 
 }
+class cilk_saxpyMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+  val io = IO( new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
+    val CacheResp = Flipped(Valid(new MemResp))
+    val CacheReq = Decoupled(new MemReq)
+    val out = Decoupled(new Call(List(32)))
+  })
+}
+
+class cilk_saxpyTop(children :Int=3)(implicit p: Parameters) extends cilk_saxpyMainIO  {
+
+  // Wire up the cache, TM, and modules under test.
+
+  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
+  val saxpy = Module(new cilk_saxpyDF())
+
+  val saxpy_detach = for (i <- 0 until children) yield {
+    val foo = Module(new cilk_saxpy_detach1DF())
+    foo
+  }
+
+  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
+  // requests ports of any type.  Read or write is irrelevant.
+  val CacheArbiter = Module(new MemArbiter(children))
+  for (i <- 0 until children) {
+    CacheArbiter.io.cpu.MemReq(i) <> saxpy_detach(i).io.MemReq
+    saxpy_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
+  }
+  io.CacheReq <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> io.CacheResp
+
+  // tester to saxpy
+  saxpy.io.in <> io.in
+
+  // saxpy to task controller
+  TaskControllerModule.io.parentIn(0) <> saxpy.io.call_9_out
+
+  // task controller to sub-task saxpy_detach
+  for (i <- 0 until children ) {
+    saxpy_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> saxpy_detach(i).io.out
+  }
+
+  // Task controller to saxpy
+  saxpy.io.call_9_in <> TaskControllerModule.io.parentOut(0)
+
+  // saxpy to tester
+  io.out <> saxpy.io.out
+
+}
 
 import java.io.{File, FileWriter}
 object cilk_saxpyMain extends App {
-  val dir = new File("RTL/cilk_saxpy") ; dir.mkdirs
+  val dir = new File("RTL/cilk_saxpyTop") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_saxpyDF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_saxpyTop(3)(p.alterPartial({case TLEN => 6}))))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

@@ -337,11 +337,61 @@ class vector_scaleDF(implicit p: Parameters) extends vector_scaleDFIO()(p) {
 
 }
 
+class vector_scaleMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+  val io = IO( new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32,32,32,32,32))))
+    val CacheResp = Flipped(Valid(new MemResp))
+    val CacheReq = Decoupled(new MemReq)
+    val out = Decoupled(new Call(List(32)))
+  })
+}
+
+class vector_scaleTop(implicit p: Parameters) extends vector_scaleMainIO  {
+
+  val children = 3
+  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
+  val vector_scale = Module(new vector_scaleDF())
+
+  val vector_scale_detach = for (i <- 0 until children) yield {
+    val foo = Module(new vector_scale_detach1DF())
+    foo
+  }
+
+  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
+  // requests ports of any type.  Read or write is irrelevant.
+  val CacheArbiter = Module(new MemArbiter(children))
+  for (i <- 0 until children) {
+    CacheArbiter.io.cpu.MemReq(i) <> vector_scale_detach(i).io.MemReq
+    vector_scale_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
+  }
+  io.CacheReq <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> io.CacheResp
+
+  // tester to vector_scale
+  vector_scale.io.in <> io.in
+
+  // vector_scale to task controller
+  TaskControllerModule.io.parentIn(0) <> vector_scale.io.call_9_out
+
+  // task controller to sub-task vector_scale_detach
+  for (i <- 0 until children ) {
+    vector_scale_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> vector_scale_detach(i).io.out
+  }
+
+  // Task controller to vector_scale
+  vector_scale.io.call_9_in <> TaskControllerModule.io.parentOut(0)
+
+  // vector_scale to tester
+  io.out <> vector_scale.io.out
+
+}
+
 import java.io.{File, FileWriter}
 object vector_scaleMain extends App {
-  val dir = new File("RTL/vector_scale") ; dir.mkdirs
+  val dir = new File("RTL/vector_scaleTop") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new vector_scaleDF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new vector_scaleTop()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
