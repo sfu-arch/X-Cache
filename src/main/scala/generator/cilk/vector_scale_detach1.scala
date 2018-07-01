@@ -122,7 +122,7 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
   val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "mul")(sign=false))
 
   //  %7 = ashr i32 %6, 8, !UID !15
-  val binaryOp_12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "ashr")(sign=false))
+  val binaryOp_12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "ShiftRight")(sign=false))  // Manual
 
   //  %8 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !16
   val Gep_13 = Module(new GepArrayOneNode(NumOuts=1, ID=13)(numByte=4)(size=1))

@@ -391,7 +391,7 @@ import java.io.{File, FileWriter}
 object vector_scaleMain extends App {
   val dir = new File("RTL/vector_scaleTop") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new vector_scaleTop()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new vector_scaleTop()(p.alterPartial({case TLEN => 6}))))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

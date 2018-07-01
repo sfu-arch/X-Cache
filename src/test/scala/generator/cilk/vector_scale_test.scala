@@ -66,41 +66,30 @@ class vector_scaleMainDirect(implicit p: Parameters) extends vector_scaleMainIO 
 
 }
 
-class vector_scaleMainTM(implicit p: Parameters) extends vector_scaleMainIO  {
+class vector_scaleMainTM(children :Int=3)(implicit p: Parameters) extends vector_scaleMainIO  {
 
-  val cache = Module(new PerfectCacheModel())            // Simple Nasti Cache
+  val cache = Module(new Cache)            // Simple Nasti Cache
   val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
 
   // Store a copy of all data written to the cache.  This is done since the cache isn't
   // 'write through' to the memory model and we have no easy way of reading the
   // cache contents from the testbench.
-/*
   when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
     memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
   }
   io.dout := memCopy.read((io.addr>>2).asUInt())
-*/
-  when(cache.io.cache.req.valid && cache.io.cache.req.bits.iswrite) {
-    memCopy.write((cache.io.cache.req.bits.addr>>2).asUInt(), cache.io.cache.req.bits.data)
-  }
-  io.dout := memCopy.read((io.addr>>2).asUInt())
+
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-/*
   val memModel = Module(new NastiMemSlave(latency = 0)) // Model of DRAM to connect to Cache
   memModel.io.nasti <> cache.io.nasti
   memModel.io.init.bits.addr := io.addr
   memModel.io.init.bits.data := io.din
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
-*/
-  cache.io.init.bits.addr := io.addr
-  cache.io.init.bits.data := io.din
-  cache.io.init.valid := io.write
 
   // Wire up the cache, TM, and modules under test.
 
-  val children = 3
   val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val vector_scale = Module(new vector_scaleDF())
 
@@ -116,8 +105,8 @@ class vector_scaleMainTM(implicit p: Parameters) extends vector_scaleMainIO  {
     CacheArbiter.io.cpu.MemReq(i) <> vector_scale_detach(i).io.MemReq
     vector_scale_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
   }
-  cache.io.cache.req <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> cache.io.cache.resp
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   // tester to vector_scale
   vector_scale.io.in <> io.in
@@ -288,7 +277,7 @@ class vector_scaleTester2 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir",
         "-tts", "0001"),
-      () => new vector_scaleMainTM()(p.alterPartial({case TLEN => 6}))) {
+      () => new vector_scaleMainTM(3)(p.alterPartial({case TLEN => 6}))) {
       c => new vector_scaleTest01(c)
     } should be(true)
   }
