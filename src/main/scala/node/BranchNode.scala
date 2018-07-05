@@ -51,7 +51,7 @@ class CBranchNode(ID: Int)
   //  val data_out_w = WireInit(VecInit(Seq.fill(2)(false.B)))
   val data_out_R = RegInit(VecInit(Seq.fill(2)(false.B)))
 
-//  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
+  //  val s_IDLE :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
@@ -105,18 +105,7 @@ class CBranchNode(ID: Int)
         }
       }
     }
-/*    is(s_LATCH) {
-      state := s_COMPUTE
-      when(IsEnableValid()) {
-        when(IsEnable()) {
-        }.otherwise{
-          data_out_R := VecInit(Seq.fill(2)(false.B))
-        }
-        ValidOut()
-      }
-    }
-*/
-      is(s_COMPUTE) {
+    is(s_COMPUTE) {
       when(IsOutReady()) {
         // Restarting
         //cmp_R := DataBundle.default
@@ -128,7 +117,7 @@ class CBranchNode(ID: Int)
         state := s_IDLE
 
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n",enable_R.taskID, cycleCount, data_out_R.asUInt())
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_out_R.asUInt())
       }
     }
   }
@@ -215,15 +204,15 @@ class UBranchNode(NumPredOps: Int = 0,
     io.Out(i).bits := enable_R
   }
 
-  switch(state){
-    is(s_idle){
-      when(IsEnableValid() && IsPredValid() ){
+  switch(state) {
+    is(s_idle) {
+      when(IsEnableValid() && IsPredValid()) {
         state := s_OUTPUT
         ValidOut()
       }
     }
-    is(s_OUTPUT){
-      when(IsOutReady()){
+    is(s_OUTPUT) {
+      when(IsOutReady()) {
         state := s_idle
         Reset()
         enable_R := ControlBundle.default
@@ -445,7 +434,7 @@ class CompareBranchNode(ID: Int, opCode: String)
     * valid == 1  ->  cmp = false then 2
     */
 
-  when(state === s_COMPUTE){
+  when(state === s_COMPUTE) {
     assert((left_R.taskID === enable_R.taskID) && (right_R.taskID === enable_R.taskID), "Control channel should be in sync with data channel!")
   }
 

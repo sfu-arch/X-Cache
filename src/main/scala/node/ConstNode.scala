@@ -22,14 +22,6 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
   /*===========================================*
    *            Registers                      *
    *===========================================*/
-  // Left Input
-  //val left_R = RegInit(DataBundle.default)
-  //val left_valid_R = RegInit(false.B)
-
-  // Right Input
-  //val right_R = RegInit(DataBundle.default)
-  //val right_valid_R = RegInit(false.B)
-
   //val task_ID_R = RegNext(next = enable_R.taskID)
   val task_ID_W = io.enable.bits.taskID
 
@@ -53,14 +45,14 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
 
   //io.LeftIO.ready := ~left_valid_R
   //when(io.LeftIO.fire()) {
-    //left_R <> io.LeftIO.bits
-    //left_valid_R := true.B
+  //left_R <> io.LeftIO.bits
+  //left_valid_R := true.B
   //}
 
   //io.RightIO.ready := ~right_valid_R
   //when(io.RightIO.fire()) {
-    //right_R <> io.RightIO.bits
-    //right_valid_R := true.B
+  //right_R <> io.RightIO.bits
+  //right_valid_R := true.B
   //}
 
   // Wire up Outputs
@@ -84,7 +76,8 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
       when(io.enable.fire()) {
         ValidOut()
         when(io.enable.bits.control) {
-          out_data_R.data := value.U
+
+          out_data_R.data := math.abs(value).U
           out_data_R.predicate := io.enable.bits.control
           out_data_R.taskID := task_ID_W
         }
@@ -103,39 +96,37 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
         //Reset output
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_W, cycleCount, value.U)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_W, cycleCount, math.abs(value).U)
       }
     }
   }
-
-
 
 
   //val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   //val state = RegInit(s_IDLE)
 
   //for (i <- 0 until NumOuts) {
-    //io.Out(i).bits.data := value.U
-    //io.Out(i).bits.predicate := enable_R.control
-    //io.Out(i).bits.taskID := enable_R.taskID
+  //io.Out(i).bits.data := value.U
+  //io.Out(i).bits.predicate := enable_R.control
+  //io.Out(i).bits.taskID := enable_R.taskID
   //}
 
   //switch(state) {
-    //is(s_IDLE) {
-      //when(enable_valid_R) {
-        //ValidOut()
-        //state := s_COMPUTE
-      //}
-    //}
-    //is(s_COMPUTE) {
-      //when(IsOutReady()) {
-        ////Reset state
-        //state := s_IDLE
-        ////Reset output
-        //Reset()
-        //printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, value.U)
-      //}
-    //}
+  //is(s_IDLE) {
+  //when(enable_valid_R) {
+  //ValidOut()
+  //state := s_COMPUTE
+  //}
+  //}
+  //is(s_COMPUTE) {
+  //when(IsOutReady()) {
+  ////Reset state
+  //state := s_IDLE
+  ////Reset output
+  //Reset()
+  //printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, value.U)
+  //}
+  //}
   //}
 
 

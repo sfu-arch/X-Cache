@@ -138,7 +138,7 @@ class saxpyTest01[T <: saxpyMainIO](c: T, n:Int, ch:Int) extends PeekPokeTester(
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 10000) {
+  while (time < 5000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
