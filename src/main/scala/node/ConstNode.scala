@@ -38,23 +38,6 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  //Instantiate ALU with selected code
-  //val FU = Module(new UALU(xlen, opCode))
-  //FU.io.in1 := left_R.data
-  //FU.io.in2 := right_R.data
-
-  //io.LeftIO.ready := ~left_valid_R
-  //when(io.LeftIO.fire()) {
-  //left_R <> io.LeftIO.bits
-  //left_valid_R := true.B
-  //}
-
-  //io.RightIO.ready := ~right_valid_R
-  //when(io.RightIO.fire()) {
-  //right_R <> io.RightIO.bits
-  //right_valid_R := true.B
-  //}
-
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     //io.Out(i).bits.data := FU.io.out
@@ -86,49 +69,13 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {
-        // Reset data
-        //left_R := DataBundle.default
-        //right_R := DataBundle.default
-        //left_valid_R := false.B
-        //right_valid_R := false.B
         //Reset state
         state := s_IDLE
-        //Reset output
         out_data_R.predicate := false.B
         Reset()
         printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_W, cycleCount, math.abs(value).U)
       }
     }
   }
-
-
-  //val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
-  //val state = RegInit(s_IDLE)
-
-  //for (i <- 0 until NumOuts) {
-  //io.Out(i).bits.data := value.U
-  //io.Out(i).bits.predicate := enable_R.control
-  //io.Out(i).bits.taskID := enable_R.taskID
-  //}
-
-  //switch(state) {
-  //is(s_IDLE) {
-  //when(enable_valid_R) {
-  //ValidOut()
-  //state := s_COMPUTE
-  //}
-  //}
-  //is(s_COMPUTE) {
-  //when(IsOutReady()) {
-  ////Reset state
-  //state := s_IDLE
-  ////Reset output
-  //Reset()
-  //printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, value.U)
-  //}
-  //}
-  //}
-
-
 }
 

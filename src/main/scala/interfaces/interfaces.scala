@@ -352,9 +352,8 @@ object ControlBundle {
   *       predicate : Bool
   * @return
   */
-class CustomDataBundle[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters) extends CoreBundle()(p) {
+class CustomDataBundle[T <: Data](gen: T)(implicit p: Parameters) extends CoreBundle()(p) {
   // Data packet
-  //  val data = gen.chiselCloneType
   val data = chiselTypeOf(gen)
   val predicate = Bool()
   val taskID = UInt(tlen.W)
@@ -363,7 +362,7 @@ class CustomDataBundle[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters) e
 }
 
 object CustomDataBundle {
-  def apply[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters): CustomDataBundle[T] = new CustomDataBundle(gen)
+  def apply[T <: Data](gen: T)(implicit p: Parameters): CustomDataBundle[T] = new CustomDataBundle(gen)
 
   def default[T <: Data](gen: T)(implicit p: Parameters): CustomDataBundle[T] = {
     val wire = new CustomDataBundle(gen)

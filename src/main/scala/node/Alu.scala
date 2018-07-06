@@ -1,7 +1,7 @@
 package node
 
 import chisel3._
-import chisel3.util._ 
+import chisel3.util._
 
 /**
   * List of compute operations which we can support
@@ -133,14 +133,29 @@ class UALU(val xlen: Int, val opCode: String) extends Module {
   * @param opCode opcode which indicates ALU operation
   * @param xlen   bit width of the inputs
   */
-class SALU(val xlen: Int, val opCode: String) extends Module {
+
+
+class CALU[T <: Data](gen : T)(val xlen: Int, val opCode: String) extends Module {
   val io = IO(new Bundle {
-    val in1 = Input(SInt(xlen.W))
-    val in2 = Input(SInt(xlen.W))
-    val out = Output(SInt(xlen.W))
+    val in1 = Input(gen)
+    val in2 = Input(gen)
+    val out = Output(gen)
   })
+
+  val input_1 =
+    if(io.in1.isInstanceOf[UInt])
+      io.in1.asUInt()
+  else
+      io.in1.asTypeOf(SInt)
+
+  val input_2 =
+    if(io.in2.isInstanceOf[SInt])
+      io.in2.asUInt()
+  else
+      io.in2.asTypeOf(SInt)
+
     val aluOp = Array(
-    AluOpCode.Add -> (io.in1 + io.in2),
+    AluOpCode.Add -> (input_1 + input_2),
     AluOpCode.Sub -> (io.in1 - io.in2),
     AluOpCode.And -> (io.in1 & io.in2),
     AluOpCode.Or -> (io.in1 | io.in2),
