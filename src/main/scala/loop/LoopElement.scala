@@ -30,7 +30,7 @@ class LoopElementIO()(implicit p: Parameters) extends CoreBundle() {
     * Module output
     */
   val outData = new Bundle{
-    val data  = Output(CustomDataBundle()) // Defaults to UInt(32.W)
+    val data  = Output(CustomDataBundle(UInt(32.W))) // Defaults to UInt(32.W)
     val valid = Output(Bool())
   }
 }

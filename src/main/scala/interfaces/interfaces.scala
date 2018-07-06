@@ -352,7 +352,7 @@ object ControlBundle {
   *       predicate : Bool
   * @return
   */
-class CustomDataBundle[T <: Data](gen: T)(implicit p: Parameters) extends CoreBundle()(p) {
+class CustomDataBundle[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters) extends CoreBundle()(p) {
   // Data packet
   val data = chiselTypeOf(gen)
   val predicate = Bool()
