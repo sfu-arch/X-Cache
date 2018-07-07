@@ -56,7 +56,7 @@ class saxpyMain(implicit p: Parameters) extends saxpyMainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val saxpy = Module(new saxpyDF())
+  val saxpy = Module(new cilk_saxpyDF())
 
   cache.io.cpu.req <> saxpy.io.MemReq
   saxpy.io.MemResp <> cache.io.cpu.resp
