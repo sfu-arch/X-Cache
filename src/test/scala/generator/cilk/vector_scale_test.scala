@@ -90,7 +90,7 @@ class vector_scaleMainTM(children :Int=3)(implicit p: Parameters) extends vector
 
   // Wire up the cache, TM, and modules under test.
 
-  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
+  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(), 1, children))
   val vector_scale = Module(new vector_scaleDF())
 
   val vector_scale_detach = for (i <- 0 until children) yield {
@@ -129,10 +129,14 @@ class vector_scaleMainTM(children :Int=3)(implicit p: Parameters) extends vector
 }
 
 class vector_scaleTest01[T <: vector_scaleMainIO](c: T) extends PeekPokeTester(c) {
-  val inDataVec = List(-4,-22,9,221,178,152,80,98,163,40,239,169,89,179,98,69,117,196,16,44,12,59,
-    23,14,68,13,57,137,175,195,165,68,199,71,34,-6,249,139,118,157,76,254,71,190,179,66,157,193,7,
-    198,-18,44,2,182,236,247,221,190,129,141,131,192,106,227,8,166,246,154,202,-19,56,24,-19,25,
-    111,57,-12,13,-5,21,108,154,242,7,82,95,0,200,31,26,238,59,115,89,183,21,152,174,200,100)
+//  val inDataVec = List(-4,-22,9,221,178,152,80,98,163,40,239,169,89,179,98,69,117,196,16,44,12,59,
+//    23,14,68,13,57,137,175,195,165,68,199,71,34,-6,249,139,118,157,76,254,71,190,179,66,157,193,7,
+//    198,-18,44,2,182,236,247,221,190,129,141,131,192,106,227,8,166,246,154,202,-19,56,24,-19,25,
+//    111,57,-12,13,-5,21,108,154,242,7,82,95,0,200,31,26,238,59,115,89,183,21,152,174,200,100)
+  val inDataVec = List(0,0,9,221,178,152,80,98,163,40,239,169,89,179,98,69,117,196,16,44,12,59,
+    23,14,68,13,57,137,175,195,165,68,199,71,34,0,249,139,118,157,76,254,71,190,179,66,157,193,7,
+    198,0,44,2,182,236,247,221,190,129,141,131,192,106,227,8,166,246,154,202,0,56,24,0,25,
+    111,57,0,13,0,21,108,154,242,7,82,95,0,200,31,26,238,59,115,89,183,21,152,174,200,100)
   val inAddrVec = List.range(0, 4*inDataVec.length, 4)
   val outAddrVec = List.range(1024, 1024+(4*inDataVec.length), 4)
   val outDataVec = List(0,0,28,255,255,255,250,255,255,125,255,255,255,255,255,215,255,255,50,
@@ -206,17 +210,9 @@ class vector_scaleTest01[T <: vector_scaleMainIO](c: T) extends PeekPokeTester(c
   while (time < 10000 && !result) {
     time += 1
     step(1)
-    if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1
-      ) {
+    if (peek(c.io.out.valid) == 1 && peek(c.io.out.bits.enable.control) == 1) {
       result = true
-      val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 1) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
-        fail
-      } else {
-        println(Console.BLUE + s"*** Correct return result received. Run time: $time cycles." + Console.RESET)
-      }
+      println(Console.BLUE + s"*** Return received. Run time: $time cycles." + Console.RESET)
     }
   }
 
@@ -270,7 +266,7 @@ class vector_scaleTester2 extends FlatSpec with Matchers {
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  it should "Check that cilk_for_test02 works when called via task manager." in {
+  it should "Check that vector_scale works correctly." in {
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",

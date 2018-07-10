@@ -31,7 +31,7 @@ abstract class vector_scale_detach1DFIO(implicit val p: Parameters) extends Modu
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
@@ -110,7 +110,7 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
   val br_7 = Module(new UBranchNode(ID = 7))
 
   //  ret void
-  val ret_8 = Module(new RetNode(retTypes=List(32), ID = 8))
+  val ret_8 = Module(new RetNode2(retTypes=List(), ID = 8))
 
   //  %4 = getelementptr inbounds i32, i32* %a.in, i32 %i.0.in, !UID !12
   val Gep_9 = Module(new GepArrayOneNode(NumOuts=1, ID=9)(numByte=4)(size=1))
@@ -176,7 +176,7 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
   val const4 = Module(new ConstNode(value = 255, NumOuts = 1, ID = 4))
 
   //i32 1
-  val const5 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 5))
+  //val const5 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 5))
 
 
   /* ================================================================== *
@@ -266,9 +266,9 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
   br_7.io.enable <> bb_my_if_end92.io.Out(0)
 
 
-  ret_8.io.enable <> bb_my_pfor_preattach3.io.Out(0)
-  const5.io.enable <> bb_my_pfor_preattach3.io.Out(1)
-
+  ret_8.io.In.enable  <> bb_my_pfor_preattach3.io.Out(0)
+  //const5.io.enable <> bb_my_pfor_preattach3.io.Out(1)
+  bb_my_pfor_preattach3.io.Out(1).ready := true.B
 
   const2.io.enable <> bb_my_if_else4.io.Out(0)
 
@@ -430,7 +430,7 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
   st_20.io.Out(0).ready := true.B
 
-  ret_8.io.In.data("field0") <> const5.io.Out(0)
+//  ret_8.io.In.data("field0") <> const5.io.Out(0)
 
 
   /* ================================================================== *
