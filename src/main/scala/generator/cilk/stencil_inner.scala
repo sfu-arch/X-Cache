@@ -31,7 +31,7 @@ abstract class stencil_innerDFIO(implicit val p: Parameters) extends Module with
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
@@ -77,9 +77,9 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
 
   val bb_if_then54 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 13, BID = 4))
 
-  val bb_if_end5 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 5))
+  val bb_if_end5 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi = 0, BID = 5))
 
-  val bb_if_end116 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 6))
+  val bb_if_end116 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi = 0, BID = 6))
 
   val bb_for_inc7 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 7))
 
@@ -173,7 +173,7 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   val br_26 = Module(new UBranchNode(NumOuts=2, ID = 26))
 
   //  ret void, !UID !37, !BB_UID !38
-  val ret_27 = Module(new RetNode(retTypes=List(32), ID = 27))
+  val ret_27 = Module(new RetNode2(retTypes=List(), ID = 27))
 
 
 
@@ -226,13 +226,13 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
 
   bb_if_then54.io.predicateIn <> br_11.io.Out(0)
 
-  bb_if_end5.io.predicateIn <> br_11.io.Out(1)
+  bb_if_end5.io.predicateIn(0) <> br_11.io.Out(1)
 
-  bb_if_end5.io.predicateIn <> br_22.io.Out(0)
+  bb_if_end5.io.predicateIn(1) <> br_22.io.Out(0)
 
-  bb_if_end116.io.predicateIn <> br_9.io.Out(1)
+  bb_if_end116.io.predicateIn(0) <> br_9.io.Out(1)
 
-  bb_if_end116.io.predicateIn <> br_23.io.Out(0)
+  bb_if_end116.io.predicateIn(1)<> br_23.io.Out(0)
 
   bb_for_inc7.io.predicateIn <> br_24.io.Out(0)
 
@@ -392,7 +392,7 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   br_26.io.enable <> bb_for_inc7.io.Out(2)
 
 
-  ret_27.io.enable <> bb_for_end8.io.Out(0)
+  ret_27.io.In.enable <> bb_for_end8.io.Out(0)
 
 
 
@@ -501,9 +501,7 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
 
   st_21.io.inData <> binaryOp_add1020.io.Out(0)
 
-//  ret_27.io.In.data("field0") <> st_21.io.Out(0)
   st_21.io.Out(0).ready := true.B
-  ret_27.io.In.data("field0") <> DataBundle.active(1.U)
 
   phi_nc_01.io.InData(1) <> binaryOp_inc25.io.Out(0)
 

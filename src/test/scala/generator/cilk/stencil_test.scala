@@ -160,9 +160,9 @@ class stencilTest01[T <: stencilMainIO](c: T) extends PeekPokeTester(c) {
   val outAddrVec = List.range(4 * inDataVec.length, 2 * 4 * inDataVec.length, 4)
   val outDataVec = List(
     3, 4, 4, 3,
-    4, 5, 5, 4,
-    4, 5, 5, 4,
-    3, 3, 4, 3
+    4, 6, 6, 4,
+    4, 5, 6, 4,
+    3, 4, 4, 3
   )
   poke(c.io.addr, 0.U)
   poke(c.io.din, 0.U)

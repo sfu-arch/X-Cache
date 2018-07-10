@@ -30,10 +30,10 @@ abstract class stencil_detach1DFIO(implicit val p: Parameters) extends Module wi
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val call_6_out = Decoupled(new Call(List(32, 32, 32, 32, 32)))
-    val call_6_in = Flipped(Decoupled(new Call(List(32))))
+    val call_6_in = Flipped(Decoupled(new Call(List())))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
@@ -108,7 +108,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   //  call void @stencil_inner(i32* %in.in, i32* %out.in, i32 %0, i32 %1, i32 %2), !UID !9
   val call_6_out = Module(new CallOutNode(ID = 6, NumSuccOps = 0, argTypes = List(32,32,32,32,32)))
 
-  val call_6_in = Module(new CallInNode(ID = 6, argTypes = List(32)))
+  val call_6_in = Module(new CallInNode(ID = 6, argTypes = List()))
 
   //  br label %my_for.inc, !UID !10, !BB_UID !11
   val br_7 = Module(new UBranchNode(ID = 7, NumPredOps = 1))  // Manually changed to UBranch with predicate
@@ -153,7 +153,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   val br_20 = Module(new UBranchNode(ID = 20))
 
   //  ret void
-  val ret_21 = Module(new RetNode(retTypes=List(32), ID = 21))
+  val ret_21 = Module(new RetNode2(retTypes=List(), ID = 21))
 
 
 
@@ -258,7 +258,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   call_6_out.io.In("field2") <> Loop_0.io.liveIn.data("field2")(0)
 
-  call_6_out.io.In("field3") <> Loop_0.io.liveIn.data("field2")(0)
+  call_6_out.io.In("field3") <> Loop_0.io.liveIn.data("field3")(0)
 
 
 
@@ -339,7 +339,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   br_20.io.enable <> bb_my_for_end4.io.Out(14)
 
 
-  ret_21.io.enable <> bb_my_pfor_preattach5.io.Out(0)
+  ret_21.io.In.enable <> bb_my_pfor_preattach5.io.Out(0)
 
 
 
@@ -417,7 +417,6 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   br_5.io.CmpIO <> icmp_4.io.Out(0)
 
   //br_7.io.CmpIO <> call_6_in.io.Out.data("field0")  // manually removed
-  call_6_in.io.Out.data("field0").ready := true.B
 
   phi_3.io.InData(1) <> binaryOp_8.io.Out(0)
 
@@ -440,7 +439,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   st_19.io.GepAddr <> Gep_18.io.Out.data(0)
 
   st_19.io.Out(0).ready := true.B // manually enabled
-  ret_21.io.In.data("field0") <> DataBundle.active(1.U)//st_19.io.Out(0)  // manually removed
+  //ret_21.io.In.data("field0") <> DataBundle.active(1.U)//st_19.io.Out(0)  // manually removed
 
   binaryOp_0.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
 
