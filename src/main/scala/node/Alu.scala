@@ -133,47 +133,45 @@ class UALU(val xlen: Int, val opCode: String) extends Module {
   * @param opCode opcode which indicates ALU operation
   * @param xlen   bit width of the inputs
   */
+class CALU[T <: Data](gen : +T)(val xlen: Int, val opCode: String) extends Module {
+  val io = IO(new Bundle {
+    val in1 = Input(gen)
+    val in2 = Input(gen)
+    val out = Output(gen)
+  })
+
+  val input_1 =
+    if(io.in1.isInstanceOf[UInt])
+      io.in1.asUInt()
+  else
+      io.in1.asTypeOf(SInt)
+
+  val input_2 =
+    if(io.in2.isInstanceOf[SInt])
+      io.in2.asUInt()
+  else
+      io.in2.asTypeOf(SInt)
+
+    val aluOp = Array(
+    AluOpCode.Add -> (input_1 + input_2),
+    AluOpCode.Sub -> (io.in1 - io.in2),
+    AluOpCode.And -> (io.in1 & io.in2),
+    AluOpCode.Or -> (io.in1 | io.in2),
+    AluOpCode.Xor -> (io.in1 ^ io.in2),
+    AluOpCode.Xnor -> (~(io.in1 ^ io.in2)),
+    AluOpCode.ShiftLeft -> (io.in1 << io.in2(4, 0).asUInt),
+    AluOpCode.ShiftRight -> (io.in1 >> io.in2.asUInt),
+    AluOpCode.ShiftRightLogical -> (io.in1 >> io.in2(4, 0).asUInt),
+    AluOpCode.SetLessThan -> (io.in1.asSInt < io.in2.asSInt),
+    AluOpCode.SetLessThanUnsigned -> (io.in1 < io.in2),
+    AluOpCode.PassA -> io.in1,
+    AluOpCode.PassB -> io.in2
+  )
+
+  assert(!AluOpCode.opMap.get(opCode).isEmpty, "Wrong ALU OP!")
+
+  io.out := AluGenerator(AluOpCode.opMap(opCode), aluOp)
 
 
-//class CALU[T <: Data](gen : T)(val xlen: Int, val opCode: String) extends Module {
-  //val io = IO(new Bundle {
-    //val in1 = Input(gen)
-    //val in2 = Input(gen)
-    //val out = Output(gen)
-  //})
-
-  //val input_1 =
-    //if(io.in1.isInstanceOf[UInt])
-      //io.in1.asUInt()
-  //else
-      //io.in1.asTypeOf(SInt)
-
-  //val input_2 =
-    //if(io.in2.isInstanceOf[SInt])
-      //io.in2.asUInt()
-  //else
-      //io.in2.asTypeOf(SInt)
-
-    //val aluOp = Array(
-    //AluOpCode.Add -> (input_1 + input_2),
-    //AluOpCode.Sub -> (io.in1 - io.in2),
-    //AluOpCode.And -> (io.in1 & io.in2),
-    //AluOpCode.Or -> (io.in1 | io.in2),
-    //AluOpCode.Xor -> (io.in1 ^ io.in2),
-    //AluOpCode.Xnor -> (~(io.in1 ^ io.in2)),
-    //AluOpCode.ShiftLeft -> (io.in1 << io.in2(4, 0).asUInt),
-    //AluOpCode.ShiftRight -> (io.in1 >> io.in2.asUInt),
-    //AluOpCode.ShiftRightLogical -> (io.in1 >> io.in2(4, 0).asUInt),
-    //AluOpCode.SetLessThan -> (io.in1.asSInt < io.in2.asSInt),
-    //AluOpCode.SetLessThanUnsigned -> (io.in1 < io.in2),
-    //AluOpCode.PassA -> io.in1,
-    //AluOpCode.PassB -> io.in2
-  //)
-
-  //assert(!AluOpCode.opMap.get(opCode).isEmpty, "Wrong ALU OP!")
-
-  //io.out := AluGenerator(AluOpCode.opMap(opCode), aluOp)
-
-
-//}
+}
 
