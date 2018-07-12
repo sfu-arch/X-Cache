@@ -60,7 +60,7 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
         ValidOut()
         when(io.enable.bits.control) {
 
-          out_data_R.data := math.abs(value).U
+          out_data_R.data := value.asUInt()
           out_data_R.predicate := io.enable.bits.control
           out_data_R.taskID := task_ID_W
         }
