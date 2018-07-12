@@ -60,7 +60,8 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
         ValidOut()
         when(io.enable.bits.control) {
 
-          out_data_R.data := value.asUInt()
+          // NOTE: Remember when you are casting signed values you have put the width as well
+          out_data_R.data := value.asSInt(xlen.W).asUInt()
           out_data_R.predicate := io.enable.bits.control
           out_data_R.taskID := task_ID_W
         }
@@ -73,7 +74,9 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
         state := s_IDLE
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_W, cycleCount, math.abs(value).U)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
+          node_name + ": Output fired @ %d, Value: %d\n",
+          task_ID_W, cycleCount, value.asSInt(xlen.W))
       }
     }
   }
