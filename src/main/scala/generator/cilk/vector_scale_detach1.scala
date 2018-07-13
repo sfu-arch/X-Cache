@@ -16,7 +16,6 @@ import memory._
 import muxes._
 import node._
 import org.scalatest._
-import org.scalatest.Matchers._
 import regfile._
 import stack._
 import util._
@@ -69,7 +68,7 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
   val bb_my_if_then1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 1))
 
-  val bb_my_if_end92 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 2))
+  val bb_my_if_end92 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 2))
 
   val bb_my_pfor_preattach3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
@@ -77,7 +76,7 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
   val bb_my_if_then75 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 5))
 
-  val bb_my_if_end6 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi = 0, BID = 6)) // manual
+  val bb_my_if_end6 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 6)) // manual
 
 
 
@@ -179,6 +178,7 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
   val const5 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 5))
 
 
+
   /* ================================================================== *
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
@@ -187,9 +187,9 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
   bb_my_if_then1.io.predicateIn <> br_3.io.Out(0)
 
-  bb_my_if_end92.io.predicateIn <> br_6.io.Out(0)
+  bb_my_if_end92.io.predicateIn(0) <> br_6.io.Out(0)
 
-  bb_my_if_end92.io.predicateIn <> br_22.io.Out(0)
+  bb_my_if_end92.io.predicateIn(1) <> br_22.io.Out(0)
 
   bb_my_pfor_preattach3.io.predicateIn <> br_7.io.Out(0)
 
