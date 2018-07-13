@@ -64,8 +64,8 @@ class LoopBlock(ID: Int, NumIns : Seq[Int], NumOuts : Int, NumExits : Int)
   val activate_R  = RegInit(ControlBundle.default)
   val activate_R_valid = RegInit(false.B)
 
-  val inputReady = RegInit(VecInit(Seq.fill(NumIns.length)(true.B)))
-  val liveIn_R  = RegInit(VecInit(Seq.fill(NumIns.length){DataBundle.default}))
+  val inputReady = Seq.fill(NumIns.length)(RegInit(true.B))             //RegInit(VecInit(Seq.fill(NumIns.length)(true.B)))
+  val liveIn_R   = Seq.fill(NumIns.length)(RegInit(DataBundle.default)) //RegInit(VecInit(Seq.fill(NumIns.length){DataBundle.default}))
   val liveIn_R_valid = for(i <- NumIns.indices) yield {
     val validReg = Seq.fill(NumIns(i)){RegInit(false.B)}
     validReg
@@ -75,7 +75,7 @@ class LoopBlock(ID: Int, NumIns : Seq[Int], NumOuts : Int, NumExits : Int)
     allValid
   }
 
-  val liveOut_R =  Seq.fill(NumOuts)(RegInit(DataBundle.default))
+  val liveOut_R     =  Seq.fill(NumOuts)(RegInit(DataBundle.default))
   val liveOutFire_R = Seq.fill(NumOuts)(RegInit(false.B))
 
   val exit_R = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
@@ -84,6 +84,13 @@ class LoopBlock(ID: Int, NumIns : Seq[Int], NumOuts : Int, NumExits : Int)
   val endEnable_R = RegInit(0.U.asTypeOf(io.endEnable))
   val endEnableFire_R = RegNext(init=false.B,next=io.endEnable.fire())
 
+  def IsInputLatched(): Bool = {
+    if (NumIns.length == 0) {
+      return true.B
+    } else {
+      !inputReady.reduceLeft(_ || _)
+    }
+  }
   // Live outs are ready if all have fired
   def IsLiveOutReady(): Bool = {
     if (NumOuts == 0) {
@@ -131,7 +138,7 @@ class LoopBlock(ID: Int, NumIns : Seq[Int], NumOuts : Int, NumExits : Int)
   switch(state) {
     is(s_idle) {
       // Wait for input data to be latched and enable to have fired
-      when (!inputReady.asUInt.orR && IsEnableValid()) {
+      when (IsInputLatched && IsEnableValid()) {
         when (IsEnable) {
           // Set the loop liveIN data as valid
           liveIn_R_valid.foreach(_.foreach(_ := true.B))
