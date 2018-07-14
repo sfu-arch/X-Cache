@@ -100,6 +100,13 @@ class LoopBlock(ID: Int, NumIns : Seq[Int], NumOuts : Int, NumExits : Int)
     }
   }
 
+  def IsAllValid():Bool = {
+    if (NumIns.length == 0) {
+      return true.B
+    } else {
+      !allValid.reduceLeft(_ || _)
+    }
+  }
   // Note about hidden signals from handshaking:
   //   enable_valid_R is enable.fire()
   //   enable_R is latched io.enable.bits.control
@@ -176,7 +183,7 @@ class LoopBlock(ID: Int, NumIns : Seq[Int], NumOuts : Int, NumExits : Int)
       //  b) our live outs are ready, and
       //  c) we've seen a valid exit pulse,
       // then we can end.
-      when(exitFire_R.asUInt().orR && !allValid.reduceLeft(_ || _) && IsLiveOutReady()) {
+      when(exitFire_R.asUInt().orR && IsAllValid() && IsLiveOutReady()) {
         exitFire_R.foreach(_ := false.B)
         liveOutFire_R.foreach(_ := false.B)
         // Only exit on final (control=true) exit pulse

@@ -35,12 +35,12 @@ import node._
 
 class test16MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+    val in = Flipped(Decoupled(new Call(List(32))))
     val addr = Input(UInt(nastiXAddrBits.W))
     val din  = Input(UInt(nastiXDataBits.W))
     val write = Input(Bool())
     val dout = Output(UInt(nastiXDataBits.W))
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
@@ -114,20 +114,12 @@ class test16Test01[T <: test16MainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   var time = 1  //Cycle counter
   var result = false
-  while (time < 200) {
+  while (time < 1000 && !result) {
     time += 1
     step(1)
-    //println(s"Cycle: $time")
-    if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1){
+    if (peek(c.io.out.valid) == 1){
       result = true
-      val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 105) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 105")
-        fail
-      } else {
-        println(Console.BLUE + "*** Correct result received.")
-      }
+      println(Console.BLUE + "*** Return received.")
     }
   }
 
@@ -140,7 +132,7 @@ class test16Test01[T <: test16MainIO](c: T) extends PeekPokeTester(c) {
 
 class test16Tester extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that test08 works correctly." in {
+  it should "Check that test16 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>

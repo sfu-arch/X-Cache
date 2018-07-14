@@ -58,7 +58,7 @@ class test16DF(implicit p: Parameters) extends test16DFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(1), NumOuts = 0, NumExits=1, ID = 0))
+  val Loop_0 = Module(new LoopBlock(NumIns=List(), NumOuts = 0, NumExits=1, ID = 0))
 
 
 
