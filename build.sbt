@@ -15,7 +15,7 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:refle
   F - show full stack traces
   W - Without color 
   **/
-testOptions in Test += Tests.Argument("-oD")
+testOptions in Test += Tests.Argument("-oDF")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),

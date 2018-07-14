@@ -30,7 +30,7 @@ abstract class test16DFIO(implicit val p: Parameters) extends Module with CorePa
     val in = Flipped(Decoupled(new Call(List(32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
@@ -49,7 +49,7 @@ class test16DF(implicit p: Parameters) extends test16DFIO()(p) {
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(0)))
+  val InputSplitter = Module(new SplitCallNew(List(1)))
   InputSplitter.io.In <> io.in
 
 
@@ -58,7 +58,7 @@ class test16DF(implicit p: Parameters) extends test16DFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(), NumOuts = 0, NumExits=1, ID = 0))
+  val Loop_0 = Module(new LoopBlock(NumIns=List(1), NumOuts = 0, NumExits=1, ID = 0))
 
 
 
@@ -104,7 +104,7 @@ class test16DF(implicit p: Parameters) extends test16DFIO()(p) {
   val br_6 = Module(new UBranchNode(NumOuts=2, ID = 6))
 
   //  ret void
-  val ret_7 = Module(new RetNode(retTypes=List(), ID = 7))
+  val ret_7 = Module(new RetNode2(retTypes=List(), ID = 7))
 
 
 
@@ -211,7 +211,7 @@ class test16DF(implicit p: Parameters) extends test16DFIO()(p) {
   br_6.io.enable <> bb_for_inc3.io.Out(2)
 
 
-  ret_7.io.enable <> bb_for_end4.io.Out(0)
+  ret_7.io.In.enable <> bb_for_end4.io.Out(0)
 
 
 
