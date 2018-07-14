@@ -30,7 +30,7 @@ abstract class stencilDFIO(implicit val p: Parameters) extends Module with CoreP
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val call_9_out = Decoupled(new Call(List(32, 32, 32)))
-    val call_9_in = Flipped(Decoupled(new Call(List(32))))
+    val call_9_in = Flipped(Decoupled(new Call(List())))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
@@ -119,7 +119,7 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   //  call void @stencil_detach1(i32 %pos.0, i32* %in, i32* %out)
   val call_9_out = Module(new CallOutNode(ID = 9, NumSuccOps = 0, argTypes = List(32,32,32)))
 
-  val call_9_in = Module(new CallInNode(ID = 9, argTypes = List(32)))
+  val call_9_in = Module(new CallInNode(ID = 9, argTypes = List()))
 
   //  reattach label %pfor.inc
   val reattach_10 = Module(new Reattach(NumPredOps= 1, ID = 10))
@@ -304,8 +304,8 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
 
   phi_pos_01.io.InData(1) <> binaryOp_inc75.io.Out(0)
 
-  reattach_10.io.predicateIn(0) <> call_9_in.io.Out.data("field0")
-
+//  reattach_10.io.predicateIn(0) <> call_9_in.io.Out.data("field0")
+  reattach_10.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 
   /* ================================================================== *
