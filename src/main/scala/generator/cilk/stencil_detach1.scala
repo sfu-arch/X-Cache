@@ -16,7 +16,6 @@ import memory._
 import muxes._
 import node._
 import org.scalatest._
-import org.scalatest.Matchers._
 import regfile._
 import stack._
 import util._
@@ -111,7 +110,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   val call_6_in = Module(new CallInNode(ID = 6, argTypes = List()))
 
   //  br label %my_for.inc, !UID !10, !BB_UID !11
-  val br_7 = Module(new UBranchNode(ID = 7, NumPredOps = 1))  // Manually changed to UBranch with predicate
+  val br_7 = Module(new UBranchNode(ID = 7, NumPredOps = 1))
 
   //  %4 = add i32 %2, 1, !UID !12
   val binaryOp_8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
@@ -416,7 +415,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   br_5.io.CmpIO <> icmp_4.io.Out(0)
 
-  //br_7.io.CmpIO <> call_6_in.io.Out.data("field0")  // manually removed
+//  br_7.io.CmpIO <> call_6_in.io.Out.data("field0")
 
   phi_3.io.InData(1) <> binaryOp_8.io.Out(0)
 
@@ -438,9 +437,6 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   st_19.io.GepAddr <> Gep_18.io.Out.data(0)
 
-  st_19.io.Out(0).ready := true.B // manually enabled
-  //ret_21.io.In.data("field0") <> DataBundle.active(1.U)//st_19.io.Out(0)  // manually removed
-
   binaryOp_0.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
 
   binaryOp_1.io.LeftIO <> InputSplitter.io.Out.data("field0")(1)
@@ -448,6 +444,8 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   Gep_12.io.baseAddress <> InputSplitter.io.Out.data("field2")(1)
 
   Gep_18.io.baseAddress <> InputSplitter.io.Out.data("field2")(2)
+
+  st_19.io.Out(0).ready := true.B
 
 
 
@@ -459,8 +457,8 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   io.call_6_out <> call_6_out.io.Out(0)
 
-//  br_7.io.PredOp(4294967295) <> call_6_in.io.Out.enable  // manually fixed
   br_7.io.PredOp(0) <> call_6_in.io.Out.enable
+
 
 
   /* ================================================================== *

@@ -16,7 +16,6 @@ import memory._
 import muxes._
 import node._
 import org.scalatest._
-import org.scalatest.Matchers._
 import regfile._
 import stack._
 import util._
@@ -77,9 +76,9 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
 
   val bb_if_then54 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 13, BID = 4))
 
-  val bb_if_end5 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi = 0, BID = 5))
+  val bb_if_end5 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 5))
 
-  val bb_if_end116 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi = 0, BID = 6))
+  val bb_if_end116 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 6))
 
   val bb_for_inc7 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 7))
 
@@ -232,7 +231,7 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
 
   bb_if_end116.io.predicateIn(0) <> br_9.io.Out(1)
 
-  bb_if_end116.io.predicateIn(1)<> br_23.io.Out(0)
+  bb_if_end116.io.predicateIn(1) <> br_23.io.Out(0)
 
   bb_for_inc7.io.predicateIn <> br_24.io.Out(0)
 
@@ -501,9 +500,9 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
 
   st_21.io.inData <> binaryOp_add1020.io.Out(0)
 
-  st_21.io.Out(0).ready := true.B
-
   phi_nc_01.io.InData(1) <> binaryOp_inc25.io.Out(0)
+
+  st_21.io.Out(0).ready := true.B
 
 
 

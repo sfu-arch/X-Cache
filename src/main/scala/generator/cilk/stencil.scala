@@ -16,7 +16,6 @@ import memory._
 import muxes._
 import node._
 import org.scalatest._
-import org.scalatest.Matchers._
 import regfile._
 import stack._
 import util._
@@ -33,7 +32,7 @@ abstract class stencilDFIO(implicit val p: Parameters) extends Module with CoreP
     val call_9_in = Flipped(Decoupled(new Call(List())))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
@@ -114,7 +113,7 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   val sync_7 = Module(new SyncTC(ID = 7, NumInc=1, NumDec=1, NumOuts=1))
 
   //  ret void, !UID !17, !BB_UID !18
-  val ret_8 = Module(new RetNode(retTypes=List(32), ID = 8))
+  val ret_8 = Module(new RetNode2(retTypes=List(), ID = 8))
 
   //  call void @stencil_detach1(i32 %pos.0, i32* %in, i32* %out)
   val call_9_out = Module(new CallOutNode(ID = 9, NumSuccOps = 0, argTypes = List(32,32,32)))
@@ -248,7 +247,7 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   sync_7.io.enable <> bb_pfor_end4.io.Out(0)
 
 
-  ret_8.io.enable <> bb_pfor_end_continue5.io.Out(0)
+  ret_8.io.In.enable <> bb_pfor_end_continue5.io.Out(0)
 
 
   call_9_in.io.enable.enq(ControlBundle.active())
@@ -308,6 +307,7 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   reattach_10.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 
+
   /* ================================================================== *
    *                   PRINTING CALLIN AND CALLOUT INTERFACE            *
    * ================================================================== */
@@ -323,7 +323,7 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   /* ================================================================== *
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
-  ret_8.io.In.data("field0") <> DataBundle.active(1.U)
+
   io.out <> ret_8.io.Out
 
 }

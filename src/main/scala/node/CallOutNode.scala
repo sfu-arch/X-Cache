@@ -60,14 +60,14 @@ class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0, NoReturn: 
         ValidSucc()
         // Fire outputs if we're not returning (even if control=false.B)
         // Otherwise don't fire outputs if control = false and assume CallInNode will fake the response
-        when (NoReturn || enable_R.control) {
+        //when (NoReturn) || enable_R.control) {
           ValidOut()
           for(i <- argTypes.indices) {
             when(data_R(s"field$i").taskID =/= enable_R.taskID) {
               error := true.B
               printfError("#####%d", error)
             }
-          }
+        //  }
         }
         state := s_Done
       }

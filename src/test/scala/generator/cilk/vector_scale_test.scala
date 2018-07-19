@@ -31,40 +31,6 @@ class vector_scaleMainIO(implicit val p: Parameters)  extends Module with CorePa
   })
 }
 
-class vector_scaleMainDirect(implicit p: Parameters) extends vector_scaleMainIO {
-
-  val cache = Module(new Cache)            // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave(latency = 0)) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
-
-  // Store a copy of all data written to the cache.  This is done since the cache isn't
-  // 'write through' to the memory model and we have no easy way of reading the
-  // cache contents from the testbench.
-  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
-  }
-  io.dout := memCopy.read((io.addr>>2).asUInt())
-
-  // Connect the wrapper I/O to the memory model initialization interface so the
-  // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := io.addr
-  memModel.io.init.bits.data := io.din
-  memModel.io.init.valid := io.write
-  cache.io.cpu.abort := false.B
-
-  // Wire up the cache and modules under test.
-  val vector_scale_detach = Module(new vector_scale_detach1DF())
-  val vector_scale = Module(new vector_scaleDF())
-
-  cache.io.cpu.req <> vector_scale_detach.io.MemReq
-  vector_scale_detach.io.MemResp <> cache.io.cpu.resp
-  vector_scale.io.in <> io.in
-  vector_scale_detach.io.in <> vector_scale.io.call_9_out
-  vector_scale.io.call_9_in <> vector_scale_detach.io.out
-  io.out <> vector_scale.io.out
-
-}
 
 class vector_scaleMainTM(children :Int=3)(implicit p: Parameters) extends vector_scaleMainIO  {
 
@@ -128,7 +94,7 @@ class vector_scaleMainTM(children :Int=3)(implicit p: Parameters) extends vector
 
 }
 
-class vector_scaleTest01[T <: vector_scaleMainIO](c: T) extends PeekPokeTester(c) {
+class vector_scaleTest01[T <: vector_scaleMainIO](c: T, tiles: Int) extends PeekPokeTester(c) {
 //  val inDataVec = List(-4,-22,9,221,178,152,80,98,163,40,239,169,89,179,98,69,117,196,16,44,12,59,
 //    23,14,68,13,57,137,175,195,165,68,199,71,34,-6,249,139,118,157,76,254,71,190,179,66,157,193,7,
 //    198,-18,44,2,182,236,247,221,190,129,141,131,192,106,227,8,166,246,154,202,-19,56,24,-19,25,
@@ -212,7 +178,7 @@ class vector_scaleTest01[T <: vector_scaleMainIO](c: T) extends PeekPokeTester(c
     step(1)
     if (peek(c.io.out.valid) == 1 && peek(c.io.out.bits.enable.control) == 1) {
       result = true
-      println(Console.BLUE + s"*** Return received. Run time: $time cycles." + Console.RESET)
+      println(Console.BLUE + s"*** Return received for t=$tiles.. Run time: $time cycles." + Console.RESET)
     }
   }
 
@@ -232,49 +198,32 @@ class vector_scaleTest01[T <: vector_scaleMainIO](c: T) extends PeekPokeTester(c
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
   }
 
-
   if(!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
     fail
   }
 }
 
-class vector_scaleTester1 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that vector_scale works correctly." in {
-    // iotester flags:
-    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
-    // -td  = target directory
-    // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-     Array(
-       // "-ll", "Info",
-       "-tbn", "verilator",
-       "-td", "test_run_dir",
-       "-tts", "0001"),
-     () => new vector_scaleMainDirect()) {
-     c => new vector_scaleTest01(c)
-    } should be(true)
-  }
-}
 
-class vector_scaleTester2 extends FlatSpec with Matchers {
+class vector_scaleTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  it should "Check that vector_scale works correctly." in {
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new vector_scaleMainTM(3)(p.alterPartial({case TLEN => 6}))) {
-      c => new vector_scaleTest01(c)
-    } should be(true)
+  val tile_list = List(1,2,4,8)
+  for (tile <- tile_list) {
+    it should s"Test: $tile tiles" in {
+      chisel3.iotesters.Driver.execute(
+        Array(
+          // "-ll", "Info",
+          "-tbn", "verilator",
+          "-td", "test_run_dir",
+          "-tts", "0001"),
+        () => new vector_scaleMainTM(tile)(p.alterPartial({ case TLEN => 6 }))) {
+        c => new vector_scaleTest01(c,tile)
+      } should be(true)
+    }
   }
 }
