@@ -50,7 +50,7 @@ class Reattach(val NumPredOps: Int, ID: Int)
   val predicate = ctrlPredicate_R(0).predicate
 
   io.Out(0).bits.control := ctrlPredicate_R(0).predicate
-  io.Out(0).bits.taskID := ctrlPredicate_R(0).taskID
+  io.Out(0).bits.taskID := ctrlPredicate_R(0).taskID | enable_R.taskID
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *

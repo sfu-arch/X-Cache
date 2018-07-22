@@ -25,18 +25,16 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class cilk_for_test06DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class cilk_for_test06_detach2DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val call_9_out = Decoupled(new Call(List(32, 32, 32, 32)))
-    val call_9_in = Flipped(Decoupled(new Call(List(32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
-class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p) {
+class cilk_for_test06_detach2DF(implicit p: Parameters) extends cilk_for_test06_detach2DFIO()(p) {
 
 
   /* ================================================================== *
@@ -51,7 +49,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(1,1,1)))
+  val InputSplitter = Module(new SplitCallNew(List(1,3,3,1,1)))
   InputSplitter.io.In <> io.in
 
 
@@ -60,27 +58,15 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(1,1,1), NumOuts = 0, NumExits=1, ID = 0))
-
 
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_my_pfor_body50 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 14, BID = 0))
 
-  val bb_pfor_cond1 = Module(new LoopHead(NumOuts = 5, NumPhi=1, BID = 1))
-
-  val bb_pfor_detach2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
-
-  val bb_pfor_inc123 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 3, NumPhi=0, BID = 3))
-
-  val bb_pfor_end144 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4))
-
-  val bb_pfor_end_continue155 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
-
-  val bb_offload_pfor_body6 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
+  val bb_my_pfor_preattach1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
 
 
@@ -88,40 +74,41 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  br label %pfor.cond, !UID !2, !BB_UID !3
-  val br_0 = Module(new UBranchNode(ID = 0))
+  //  %0 = getelementptr inbounds [5 x i32], [5 x i32]* %a.in, i32 %i.0.in, !UID !1
+  val Gep_0 = Module(new GepArrayOneNode(NumOuts=1, ID=0)(numByte=4)(size=5))
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc13, %pfor.inc12 ], !UID !4
-  val phi_i_01 = Module(new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
+  //  %1 = getelementptr inbounds [5 x i32], [5 x i32]* %0, i32 0, i32 %j.0.in, !UID !2
+  val Gep_1 = Module(new GepArrayTwoNode(NumOuts=1, ID=1)(numByte=4)(size=5))
 
-  //  %cmp = icmp slt i32 %i.0, 5, !UID !5
-  val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
+  //  %2 = load i32, i32* %1, align 4, !UID !3
+  val ld_2 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=2, RouteID=0))
 
-  //  br i1 %cmp, label %pfor.detach, label %pfor.end14, !UID !6, !BB_UID !7
-  val br_3 = Module(new CBranchNode(ID = 3))
+  //  %3 = getelementptr inbounds [5 x i32], [5 x i32]* %b.in, i32 %i.0.in, !UID !4
+  val Gep_3 = Module(new GepArrayOneNode(NumOuts=1, ID=3)(numByte=4)(size=5))
 
-  //  detach label %offload.pfor.body, label %pfor.inc12, !UID !8, !BB_UID !9
-  val detach_4 = Module(new Detach(ID = 4))
+  //  %4 = getelementptr inbounds [5 x i32], [5 x i32]* %3, i32 0, i32 %j.0.in, !UID !5
+  val Gep_4 = Module(new GepArrayTwoNode(NumOuts=1, ID=4)(numByte=4)(size=5))
 
-  //  %inc13 = add nsw i32 %i.0, 1, !UID !10
-  val binaryOp_inc135 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
+  //  %5 = load i32, i32* %4, align 4, !UID !6
+  val ld_5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=5, RouteID=1))
 
-  //  br label %pfor.cond, !llvm.loop !11, !UID !13, !BB_UID !14
-  val br_6 = Module(new UBranchNode(NumOuts=2, ID = 6))
+  //  %6 = add nsw i32 %2, %5, !UID !7
+  val binaryOp_6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "add")(sign=false))
 
-  //  sync label %pfor.end.continue15, !UID !15, !BB_UID !16
-  val sync_7 = Module(new SyncTC(ID = 7, NumInc=1, NumDec=1, NumOuts=1))
+  //  %7 = getelementptr inbounds [5 x i32], [5 x i32]* %c.in, i32 %i.0.in, !UID !8
+  val Gep_7 = Module(new GepArrayOneNode(NumOuts=1, ID=7)(numByte=4)(size=5))
 
-  //  ret i32 1, !UID !17, !BB_UID !18
-  val ret_8 = Module(new RetNode2(retTypes=List(32), ID = 8))
+  //  %8 = getelementptr inbounds [5 x i32], [5 x i32]* %7, i32 0, i32 %j.0.in, !UID !9
+  val Gep_8 = Module(new GepArrayTwoNode(NumOuts=1, ID=8)(numByte=4)(size=5))
 
-  //  call void @cilk_for_test06_detach1([5 x i32]* %a, i32 %i.0, [5 x i32]* %b, [5 x i32]* %c)
-  val call_9_out = Module(new CallOutNode(ID = 9, NumSuccOps = 0, argTypes = List(32,32,32,32)))
+  //  store i32 %6, i32* %8, align 4, !UID !10
+  val st_9 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=9, RouteID=0))
 
-  val call_9_in = Module(new CallInNode(ID = 9, argTypes = List()))
+  //  br label %my_pfor.preattach, !UID !11, !BB_UID !12
+  val br_10 = Module(new UBranchNode(ID = 10, NumPredOps = 1))
 
-  //  reattach label %pfor.inc12
-  val reattach_10 = Module(new Reattach(NumPredOps=1, ID = 10))
+  //  ret void
+  val ret_11 = Module(new RetNode2(retTypes=List(), ID = 11))
 
 
 
@@ -132,14 +119,11 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   //i32 0
   val const0 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 0))
 
-  //i32 5
-  val const1 = Module(new ConstNode(value = 5, NumOuts = 1, ID = 1))
+  //i32 0
+  val const1 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 1))
 
-  //i32 1
-  val const2 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 2))
-
-  //i32 1
-  val const3 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 3))
+  //i32 0
+  val const2 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 2))
 
 
 
@@ -147,21 +131,9 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_my_pfor_body50.io.predicateIn <> InputSplitter.io.Out.enable
 
-  bb_pfor_cond1.io.activate <> Loop_0.io.activate
-
-  bb_pfor_cond1.io.loopBack <> br_6.io.Out(0)
-
-  bb_pfor_detach2.io.predicateIn <> br_3.io.Out(0)
-
-  bb_pfor_inc123.io.predicateIn(0) <> detach_4.io.Out(0)
-
-  bb_pfor_end144.io.predicateIn <> Loop_0.io.endEnable
-
-  bb_pfor_end_continue155.io.predicateIn <> sync_7.io.Out(0)
-
-  bb_offload_pfor_body6.io.predicateIn <> detach_4.io.Out(1)
+  bb_my_pfor_preattach1.io.predicateIn <> br_10.io.Out(0)
 
 
 
@@ -169,21 +141,11 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
 
-  sync_7.io.incIn(0) <> detach_4.io.Out(2)
-
-  sync_7.io.decIn(0) <> reattach_10.io.Out(0)
-
 
 
   /* ================================================================== *
    *                   LOOP -> PREDICATE INSTRUCTION                    *
    * ================================================================== */
-
-  Loop_0.io.enable <> br_0.io.Out(0)
-
-  Loop_0.io.latchEnable <> br_6.io.Out(1)
-
-  Loop_0.io.loopExit(0) <> br_3.io.Out(1)
 
 
 
@@ -197,23 +159,11 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
-
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
-
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field2")(0)
-
 
 
   /* ================================================================== *
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
-
-  call_9_out.io.In("field0") <> Loop_0.io.liveIn.data("field0")(0)
-
-  call_9_out.io.In("field2") <> Loop_0.io.liveIn.data("field1")(0)
-
-  call_9_out.io.In("field3") <> Loop_0.io.liveIn.data("field2")(0)
 
 
 
@@ -227,41 +177,36 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   BASICBLOCK -> ENABLE INSTRUCTION                 *
    * ================================================================== */
 
-  br_0.io.enable <> bb_entry0.io.Out(0)
+  const0.io.enable <> bb_my_pfor_body50.io.Out(0)
 
+  const1.io.enable <> bb_my_pfor_body50.io.Out(1)
 
-  const0.io.enable <> bb_pfor_cond1.io.Out(0)
+  const2.io.enable <> bb_my_pfor_body50.io.Out(2)
 
-  const1.io.enable <> bb_pfor_cond1.io.Out(1)
+  Gep_0.io.enable <> bb_my_pfor_body50.io.Out(3)
 
-  phi_i_01.io.enable <> bb_pfor_cond1.io.Out(2)
+  Gep_1.io.enable <> bb_my_pfor_body50.io.Out(4)
 
-  icmp_cmp2.io.enable <> bb_pfor_cond1.io.Out(3)
+  ld_2.io.enable <> bb_my_pfor_body50.io.Out(5)
 
-  br_3.io.enable <> bb_pfor_cond1.io.Out(4)
+  Gep_3.io.enable <> bb_my_pfor_body50.io.Out(6)
 
+  Gep_4.io.enable <> bb_my_pfor_body50.io.Out(7)
 
-  detach_4.io.enable <> bb_pfor_detach2.io.Out(0)
+  ld_5.io.enable <> bb_my_pfor_body50.io.Out(8)
 
+  binaryOp_6.io.enable <> bb_my_pfor_body50.io.Out(9)
 
-  const2.io.enable <> bb_pfor_inc123.io.Out(0)
+  Gep_7.io.enable <> bb_my_pfor_body50.io.Out(10)
 
-  binaryOp_inc135.io.enable <> bb_pfor_inc123.io.Out(1)
+  Gep_8.io.enable <> bb_my_pfor_body50.io.Out(11)
 
-  br_6.io.enable <> bb_pfor_inc123.io.Out(2)
+  st_9.io.enable <> bb_my_pfor_body50.io.Out(12)
 
+  br_10.io.enable <> bb_my_pfor_body50.io.Out(13)
+  br_10.io.PredOp(0) <> st_9.io.SuccOp(0)
 
-  sync_7.io.enable <> bb_pfor_end144.io.Out(0)
-
-
-  const3.io.enable <> bb_pfor_end_continue155.io.Out(0)
-
-  ret_8.io.In.enable <> bb_pfor_end_continue155.io.Out(1)
-
-
-  call_9_in.io.enable.enq(ControlBundle.active())
-
-  call_9_out.io.enable <> bb_offload_pfor_body6.io.Out(0)
+  ret_11.io.In.enable <> bb_my_pfor_preattach1.io.Out(0)
 
 
 
@@ -269,8 +214,6 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
-
-  phi_i_01.io.Mask <> bb_pfor_cond1.io.MaskBB(0)
 
 
 
@@ -284,6 +227,18 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
 
+  MemCtrl.io.ReadIn(0) <> ld_2.io.memReq
+
+  ld_2.io.memResp <> MemCtrl.io.ReadOut(0)
+
+  MemCtrl.io.ReadIn(1) <> ld_5.io.memReq
+
+  ld_5.io.memResp <> MemCtrl.io.ReadOut(1)
+
+  MemCtrl.io.WriteIn(0) <> st_9.io.memReq
+
+  st_9.io.memResp <> MemCtrl.io.WriteOut(0)
+
 
 
   /* ================================================================== *
@@ -296,38 +251,49 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  phi_i_01.io.InData(0) <> const0.io.Out(0)
+  Gep_1.io.idx1 <> const0.io.Out(0)
 
-  icmp_cmp2.io.RightIO <> const1.io.Out(0)
+  Gep_4.io.idx1 <> const1.io.Out(0)
 
-  binaryOp_inc135.io.RightIO <> const2.io.Out(0)
+  Gep_8.io.idx1 <> const2.io.Out(0)
 
-  ret_8.io.In.data("field0") <> const3.io.Out(0)
+  Gep_1.io.baseAddress <> Gep_0.io.Out.data(0)
 
-  icmp_cmp2.io.LeftIO <> phi_i_01.io.Out(0)
+  ld_2.io.GepAddr <> Gep_1.io.Out.data(0)
 
-  binaryOp_inc135.io.LeftIO <> phi_i_01.io.Out(1)
+  binaryOp_6.io.LeftIO <> ld_2.io.Out.data(0)
 
-  call_9_out.io.In("field1") <> phi_i_01.io.Out(2)
+  Gep_4.io.baseAddress <> Gep_3.io.Out.data(0)
 
-  br_3.io.CmpIO <> icmp_cmp2.io.Out(0)
+  ld_5.io.GepAddr <> Gep_4.io.Out.data(0)
 
-  phi_i_01.io.InData(1) <> binaryOp_inc135.io.Out(0)
+  binaryOp_6.io.RightIO <> ld_5.io.Out.data(0)
 
-  //reattach_10.io.predicateIn(0) <> call_9_in.io.Out.data("field0")
-  reattach_10.io.predicateIn(0).enq(DataBundle.active(1.U))
+  st_9.io.inData <> binaryOp_6.io.Out(0)
 
+  Gep_8.io.baseAddress <> Gep_7.io.Out.data(0)
 
+  st_9.io.GepAddr <> Gep_8.io.Out.data(0)
 
-  /* ================================================================== *
-   *                   PRINTING CALLIN AND CALLOUT INTERFACE            *
-   * ================================================================== */
+  Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
 
-  call_9_in.io.In <> io.call_9_in
+  Gep_0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
 
-  io.call_9_out <> call_9_out.io.Out(0)
+  Gep_3.io.idx1 <> InputSplitter.io.Out.data("field1")(1)
 
-  reattach_10.io.enable <> call_9_in.io.Out.enable
+  Gep_7.io.idx1 <> InputSplitter.io.Out.data("field1")(2)
+
+  Gep_1.io.idx2 <> InputSplitter.io.Out.data("field2")(0)
+
+  Gep_4.io.idx2 <> InputSplitter.io.Out.data("field2")(1)
+
+  Gep_8.io.idx2 <> InputSplitter.io.Out.data("field2")(2)
+
+  Gep_3.io.baseAddress <> InputSplitter.io.Out.data("field3")(0)
+
+  Gep_7.io.baseAddress <> InputSplitter.io.Out.data("field4")(0)
+
+  st_9.io.Out(0).ready := true.B
 
 
 
@@ -335,15 +301,15 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out <> ret_8.io.Out
+  io.out <> ret_11.io.Out
 
 }
 
 import java.io.{File, FileWriter}
-object cilk_for_test06Main extends App {
-  val dir = new File("RTL/cilk_for_test06") ; dir.mkdirs
+object cilk_for_test06_detach2Main extends App {
+  val dir = new File("RTL/cilk_for_test06_detach2") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test06DF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test06_detach2DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

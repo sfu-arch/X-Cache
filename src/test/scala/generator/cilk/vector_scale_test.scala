@@ -178,7 +178,7 @@ class vector_scaleTest01[T <: vector_scaleMainIO](c: T, tiles: Int) extends Peek
     step(1)
     if (peek(c.io.out.valid) == 1 && peek(c.io.out.bits.enable.control) == 1) {
       result = true
-      println(Console.BLUE + s"*** Return received for t=$tiles.. Run time: $time cycles." + Console.RESET)
+      println(Console.BLUE + s"*** Return received for t=$tiles. Run time: $time cycles." + Console.RESET)
     }
   }
 

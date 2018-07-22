@@ -33,43 +33,7 @@ class cilk_for_test06MainIO(implicit val p: Parameters) extends Module with Core
   })
 }
 
-class cilk_for_test06MainDirect(implicit p: Parameters) extends cilk_for_test06MainIO()(p) {
-  val cache = Module(new Cache) // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
-
-  // Store a copy of all data written to the cache.  This is done since the cache isn't
-  // 'write through' to the memory model and we have no easy way of reading the
-  // cache contents from the testbench.
-  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr >> 2).asUInt(), cache.io.cpu.req.bits.data)
-  }
-  io.dout := memCopy.read((io.addr >> 2).asUInt())
-
-  // Connect the wrapper I/O to the memory model initialization interface so the
-  // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := io.addr
-  memModel.io.init.bits.data := io.din
-  memModel.io.init.valid := io.write
-  cache.io.cpu.abort := false.B
-
-  val cilk_for_test06 = Module(new cilk_for_test06DF())
-  val cilk_for_test06_detach = Module(new cilk_for_test06_detachDF())
-  val cilk_for_test06_detach2 = Module(new cilk_for_test06_detach_2DF())
-
-  cache.io.cpu.req <> cilk_for_test06_detach2.io.MemReq
-  cilk_for_test06_detach2.io.MemResp <> cache.io.cpu.resp
-  cilk_for_test06.io.in <> io.in
-  cilk_for_test06_detach.io.in <> cilk_for_test06.io.call9_out
-  cilk_for_test06_detach2.io.in <> cilk_for_test06_detach.io.call10_out
-  cilk_for_test06_detach.io.call10_in <> cilk_for_test06_detach2.io.out
-  cilk_for_test06.io.call9_in <> cilk_for_test06_detach.io.out
-  io.out <> cilk_for_test06.io.out
-
-}
-
-class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainIO()(p) {
+class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for_test06MainIO()(p) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -91,16 +55,16 @@ class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainI
   memModel.io.init.valid := io.write
   cache.io.cpu.abort := false.B
 
-  val children = 1
-  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(32), 1, children))
+  val children = tiles
+  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))
   val cilk_for_test06 = Module(new cilk_for_test06DF())
 
-  val cilk_for_test06_detach = for (i <- 0 until children) yield {
-    val detach = Module(new cilk_for_test06_detachDF())
-    detach
+  val cilk_for_test06_detach1 = for (i <- 0 until children) yield {
+    val detach1 = Module(new cilk_for_test06_detach1DF())
+    detach1
   }
   val cilk_for_test06_detach2 = for (i <- 0 until children) yield {
-    val detach2 = Module(new cilk_for_test06_detach_2DF)
+    val detach2 = Module(new cilk_for_test06_detach2DF)
     detach2
   }
 
@@ -118,25 +82,25 @@ class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainI
   cilk_for_test06.io.in <> io.in
 
   // cilk_for_test02 to task controller
-  TaskControllerModule.io.parentIn(0) <> cilk_for_test06.io.call9_out
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test06.io.call_9_out
 
   // task controller to sub-task cilk_for_test06_detach
   for (i <- 0 until children) {
-    cilk_for_test06_detach(i).io.in <> TaskControllerModule.io.childOut(i)
-    cilk_for_test06_detach2(i).io.in <> cilk_for_test06_detach(i).io.call10_out
-    cilk_for_test06_detach(i).io.call10_in <> cilk_for_test06_detach2(i).io.out
-    TaskControllerModule.io.childIn(i) <> cilk_for_test06_detach(i).io.out
+    cilk_for_test06_detach1(i).io.in <> TaskControllerModule.io.childOut(i)
+    cilk_for_test06_detach2(i).io.in <> cilk_for_test06_detach1(i).io.call_10_out
+    cilk_for_test06_detach1(i).io.call_10_in <> cilk_for_test06_detach2(i).io.out
+    TaskControllerModule.io.childIn(i) <> cilk_for_test06_detach1(i).io.out
   }
 
   // Task controller to cilk_for_test02
-  cilk_for_test06.io.call9_in <> TaskControllerModule.io.parentOut(0)
+  cilk_for_test06.io.call_9_in <> TaskControllerModule.io.parentOut(0)
 
   // cilk_for_test02 to tester
   io.out <> cilk_for_test06.io.out
 
 }
 
-class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTester(c) {
+class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T, tiles : Int) extends PeekPokeTester(c) {
 
 
   val inAddrVec = List.range(0, 200, 4) // byte addresses
@@ -206,7 +170,7 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
   // using if() and fail command.
   var time = 0 //Cycle counter
   var result = false
-  while (time < 1000) {
+  while (time < 5000 && !result) {
     time += 1
     step(1)
     //println(s"Cycle: $time")
@@ -216,10 +180,10 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 1) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
+        println(Console.RED + s"*** Incorrect return result received. Got $data. Hoping for 1" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"*** Correct result received. Run time: $time cycles." + Console.RESET)
+        println(Console.BLUE + s"*** Return received for t=$tiles. $time cycles." + Console.RESET)
       }
     }
   }
@@ -245,42 +209,30 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
   }
 }
 
+
 class cilk_for_test06Tester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that cilk_for_test06 works correctly." in {
-    // iotester flags:
-    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
-    // -td  = target directory
-    // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new cilk_for_test06MainDirect()) {
-      c => new cilk_for_test06Test01(c)
-    } should be(true)
-  }
-}
-
-class cilk_for_test06Tester2 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  val testParams = p.alterPartial({
+    case TLEN => 5
+    case TRACE => false
+  })
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  it should "Check that cilk_for_test06 works when called via task manager." in {
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir",
-        "-tts", "0001"),
-      () => new cilk_for_test06MainTM()) {
-      c => new cilk_for_test06Test01(c)
-    } should be(true)
+  val tile_list = List(1,2,4,8)
+  for (tile <- tile_list) {
+    it should s"Test: $tile tiles" in {
+      chisel3.iotesters.Driver.execute(
+        Array(
+          "-ll", "Error",
+          "-tbn", "verilator",
+          "-td", "test_run_dir",
+          "-tts", "0001"),
+        () => new cilk_for_test06MainTM(tile)(testParams)) {
+        c => new cilk_for_test06Test01(c,tile)
+      } should be(true)
+    }
   }
 }
