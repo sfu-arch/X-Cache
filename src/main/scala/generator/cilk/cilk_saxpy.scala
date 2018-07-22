@@ -16,8 +16,6 @@ import memory._
 import muxes._
 import node._
 import org.scalatest._
-//import org.scalatest.FlatSpec._
-import org.scalatest.Matchers._
 import regfile._
 import stack._
 import util._
@@ -29,8 +27,8 @@ import util._
 
 abstract class cilk_saxpyDFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
-    val call_9_out = Decoupled(new Call(List(32,32,32,32)))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
+    val call_9_out = Decoupled(new Call(List(32, 32, 32, 32)))
     val call_9_in = Flipped(Decoupled(new Call(List(32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
@@ -76,7 +74,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   val bb_pfor_detach2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
-  val bb_pfor_inc3 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 3, BID = 3))
+  val bb_pfor_inc3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3))
 
   val bb_pfor_end4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4))
 
@@ -97,7 +95,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   val phi_i_01 = Module(new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
 
   //  %cmp = icmp slt i32 %i.0, %n, !UID !5
-  val cmp = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
+  val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end, !UID !6, !BB_UID !7
   val br_3 = Module(new CBranchNode(ID = 3))
@@ -115,12 +113,12 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   val sync_7 = Module(new SyncTC(ID = 7, NumInc=1, NumDec=1, NumOuts=1))
 
   //  ret i32 1, !UID !17, !BB_UID !18
-  val ret_8 = Module(new RetNode(retTypes=List(32), ID = 8))
+  val ret_8 = Module(new RetNode2(retTypes=List(32), ID = 8))
 
   //  call void @cilk_saxpy_detach1(i32* %x, i32 %i.0, i32 %a, i32* %y)
   val call_9_out = Module(new CallOutNode(ID = 9, NumSuccOps = 0, argTypes = List(32,32,32,32)))
 
-  val call_9_in = Module(new CallInNode(ID = 9, argTypes = List(32)))
+  val call_9_in = Module(new CallInNode(ID = 9, argTypes = List()))
 
   //  reattach label %pfor.inc
   val reattach_10 = Module(new Reattach(NumPredOps= 1, ID = 10))
@@ -155,8 +153,6 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   bb_pfor_detach2.io.predicateIn <> br_3.io.Out(0)
 
   bb_pfor_inc3.io.predicateIn <> detach_4.io.Out(0)
-
-//  bb_pfor_inc3.io.predicateIn <> reattach_10.io.Out(0)
 
   bb_pfor_end4.io.predicateIn <> Loop_0.io.endEnable
 
@@ -212,7 +208,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  cmp.io.RightIO <> Loop_0.io.liveIn.data("field0")(0)
+  icmp_cmp2.io.RightIO <> Loop_0.io.liveIn.data("field0")(0)
 
   call_9_out.io.In("field0") <> Loop_0.io.liveIn.data("field1")(0)
 
@@ -239,7 +235,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   phi_i_01.io.enable <> bb_pfor_cond1.io.Out(1)
 
-  cmp.io.enable <> bb_pfor_cond1.io.Out(2)
+  icmp_cmp2.io.enable <> bb_pfor_cond1.io.Out(2)
 
   br_3.io.enable <> bb_pfor_cond1.io.Out(3)
 
@@ -259,16 +255,12 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   const2.io.enable <> bb_pfor_end_continue5.io.Out(0)
 
-  ret_8.io.enable <> bb_pfor_end_continue5.io.Out(1)
+  ret_8.io.In.enable <> bb_pfor_end_continue5.io.Out(1)
 
 
   call_9_in.io.enable.enq(ControlBundle.active())
 
   call_9_out.io.enable <> bb_offload_pfor_body6.io.Out(0)
-
-  reattach_10.io.predicateIn(0) <> call_9_in.io.Out.data("field0") // manual
-  reattach_10.io.enable <> call_9_in.io.Out.enable // manual
-//  reattach_10.io.enable.enq(ControlBundle.active())
 
 
 
@@ -294,6 +286,12 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
 
   /* ================================================================== *
+   *                   PRINT SHARED CONNECTIONS                         *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
@@ -303,15 +301,18 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   ret_8.io.In.data("field0") <> const2.io.Out(0)
 
-  cmp.io.LeftIO <> phi_i_01.io.Out(0)
+  icmp_cmp2.io.LeftIO <> phi_i_01.io.Out(0)
 
   binaryOp_inc5.io.LeftIO <> phi_i_01.io.Out(1)
 
   call_9_out.io.In("field1") <> phi_i_01.io.Out(2)
 
-  br_3.io.CmpIO <> cmp.io.Out(0)
+  br_3.io.CmpIO <> icmp_cmp2.io.Out(0)
 
   phi_i_01.io.InData(1) <> binaryOp_inc5.io.Out(0)
+
+  //reattach_10.io.predicateIn(0) <> call_9_in.io.Out.data("field0")
+  reattach_10.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 
 
@@ -323,7 +324,9 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   io.call_9_out <> call_9_out.io.Out(0)
 
-//  call_9_in.io.Out.enable.ready := true.B // Manual
+  reattach_10.io.enable <> call_9_in.io.Out.enable
+
+
 
   /* ================================================================== *
    *                   PRINTING OUTPUT INTERFACE                        *
@@ -332,62 +335,12 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   io.out <> ret_8.io.Out
 
 }
-class cilk_saxpyMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
-    val CacheResp = Flipped(Valid(new MemResp))
-    val CacheReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
-  })
-}
-
-class cilk_saxpyTop(children :Int=3)(implicit p: Parameters) extends cilk_saxpyMainIO  {
-
-  // Wire up the cache, TM, and modules under test.
-
-  val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
-  val saxpy = Module(new cilk_saxpyDF())
-
-  val saxpy_detach = for (i <- 0 until children) yield {
-    val foo = Module(new cilk_saxpy_detach1DF())
-    foo
-  }
-
-  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
-  // requests ports of any type.  Read or write is irrelevant.
-  val CacheArbiter = Module(new MemArbiter(children))
-  for (i <- 0 until children) {
-    CacheArbiter.io.cpu.MemReq(i) <> saxpy_detach(i).io.MemReq
-    saxpy_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
-  }
-  io.CacheReq <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> io.CacheResp
-
-  // tester to saxpy
-  saxpy.io.in <> io.in
-
-  // saxpy to task controller
-  TaskControllerModule.io.parentIn(0) <> saxpy.io.call_9_out
-
-  // task controller to sub-task saxpy_detach
-  for (i <- 0 until children ) {
-    saxpy_detach(i).io.in <> TaskControllerModule.io.childOut(i)
-    TaskControllerModule.io.childIn(i) <> saxpy_detach(i).io.out
-  }
-
-  // Task controller to saxpy
-  saxpy.io.call_9_in <> TaskControllerModule.io.parentOut(0)
-
-  // saxpy to tester
-  io.out <> saxpy.io.out
-
-}
 
 import java.io.{File, FileWriter}
 object cilk_saxpyMain extends App {
-  val dir = new File("RTL/cilk_saxpyTop") ; dir.mkdirs
+  val dir = new File("RTL/cilk_saxpy") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_saxpyTop(3)(p.alterPartial({case TLEN => 6}))))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_saxpyDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

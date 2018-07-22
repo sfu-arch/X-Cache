@@ -16,8 +16,6 @@ import memory._
 import muxes._
 import node._
 import org.scalatest._
-//import org.scalatest.FlatSpec._
-import org.scalatest.Matchers._
 import regfile._
 import stack._
 import util._
@@ -29,10 +27,10 @@ import util._
 
 abstract class cilk_saxpy_detach1DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
@@ -98,13 +96,13 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
   val Gep_6 = Module(new GepArrayOneNode(NumOuts=1, ID=6)(numByte=4)(size=1))
 
   //  store i32 %5, i32* %6, align 4, !UID !8
-  val st_7 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=7, RouteID=0))
+  val st_7 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=7, RouteID=0))
 
   //  br label %my_pfor.preattach, !UID !9, !BB_UID !10
-  val br_8 = Module(new UBranchNode(ID = 8))
+  val br_8 = Module(new UBranchNode(ID = 8, NumPredOps = 1))
 
   //  ret void
-  val ret_9 = Module(new RetNode(retTypes=List(32), ID = 9))
+  val ret_9 = Module(new RetNode2(retTypes=List(), ID = 9))
 
 
 
@@ -181,9 +179,9 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
   st_7.io.enable <> bb_my_pfor_body0.io.Out(7)
 
   br_8.io.enable <> bb_my_pfor_body0.io.Out(8)
+  br_8.io.PredOp(0) <> st_7.io.SuccOp(0)
 
-
-  ret_9.io.enable <> bb_my_pfor_preattach1.io.Out(0)
+  ret_9.io.In.enable <> bb_my_pfor_preattach1.io.Out(0)
 
 
 
@@ -219,6 +217,12 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
 
 
   /* ================================================================== *
+   *                   PRINT SHARED CONNECTIONS                         *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
@@ -250,7 +254,7 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
 
   Gep_6.io.baseAddress <> InputSplitter.io.Out.data("field3")(1)
 
-//  st_7.io.Out(0).ready := true.B
+  st_7.io.Out(0).ready := true.B
 
 
 
@@ -258,7 +262,6 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  ret_9.io.In.data("field0") <> st_7.io.Out(0)  // manual
   io.out <> ret_9.io.Out
 
 }
