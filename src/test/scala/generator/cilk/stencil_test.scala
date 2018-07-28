@@ -229,6 +229,10 @@ class stencilTest01[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
 
 class stencilTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  val testParams = p.alterPartial({
+    case TLEN => 8
+    case TRACE => false
+  })
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -243,7 +247,7 @@ class stencilTester1 extends FlatSpec with Matchers {
           "-tbn", "verilator",
           "-td", "test_run_dir",
           "-tts", "0001"),
-        () => new stencilMainTM(tile)(p.alterPartial({case TLEN => 8}))) {
+        () => new stencilMainTM(tile)(testParams)) {
         c => new stencilTest01(c,tile)
       } should be(true)
     }

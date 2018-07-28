@@ -207,6 +207,10 @@ class vector_scaleTest01[T <: vector_scaleMainIO](c: T, tiles: Int) extends Peek
 
 class vector_scaleTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  val testParams = p.alterPartial({
+    case TLEN => 6
+    case TRACE => false
+  })
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -221,7 +225,7 @@ class vector_scaleTester1 extends FlatSpec with Matchers {
           "-tbn", "verilator",
           "-td", "test_run_dir",
           "-tts", "0001"),
-        () => new vector_scaleMainTM(tile)(p.alterPartial({ case TLEN => 6 }))) {
+        () => new vector_scaleMainTM(tile)(testParams)) {
         c => new vector_scaleTest01(c,tile)
       } should be(true)
     }
