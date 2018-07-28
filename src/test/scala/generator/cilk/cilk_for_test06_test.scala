@@ -25,10 +25,8 @@ import node._
 class cilk_for_test06MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val addr = Input(UInt(nastiXAddrBits.W)) // Initialization address
-    val din = Input(UInt(nastiXDataBits.W)) // Initialization data
-    val write = Input(Bool()) // Initialization write strobe
-    val dout = Output(UInt(nastiXDataBits.W))
+    val req  = Flipped(Decoupled(new MemReq))
+    val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -37,22 +35,13 @@ class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
-
-  // Store a copy of all data written to the cache.  This is done since the cache isn't
-  // 'write through' to the memory model and we have no easy way of reading the
-  // cache contents from the testbench.
-  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr >> 2).asUInt(), cache.io.cpu.req.bits.data)
-  }
-  io.dout := memCopy.read((io.addr >> 2).asUInt())
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
   memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := io.addr
-  memModel.io.init.bits.data := io.din
-  memModel.io.init.valid := io.write
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
 
   val children = tiles
@@ -70,11 +59,14 @@ class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for
 
   // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
   // requests ports of any type.  Read or write is irrelevant.
-  val MemArbiter = Module(new MemArbiter(children))
+  val MemArbiter = Module(new MemArbiter(children+1))
   for (i <- 0 until children) {
     MemArbiter.io.cpu.MemReq(i) <> cilk_for_test06_detach2(i).io.MemReq
     cilk_for_test06_detach2(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
   }
+  MemArbiter.io.cpu.MemReq(children) <> io.req
+  io.resp <> MemArbiter.io.cpu.MemResp(children)
+
   cache.io.cpu.req <> MemArbiter.io.cache.MemReq
   MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
@@ -102,6 +94,39 @@ class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for
 
 class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T, tiles : Int) extends PeekPokeTester(c) {
 
+  def MemRead(addr:Int):BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.iswrite, 0)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    while (peek(c.io.resp.valid) == 0) {
+      step(1)
+    }
+    val result = peek(c.io.resp.bits.data)
+    result
+  }
+
+  def MemWrite(addr:Int, data:Int):BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.data, data)
+    poke(c.io.req.bits.iswrite, 1)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    poke(c.io.req.valid, 0)
+    1
+  }
 
   val inAddrVec = List.range(0, 200, 4) // byte addresses
   val inA = List.range(0, 25) // 5x5 array of uint32
@@ -117,19 +142,12 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T, tiles : Int) exten
   writeResult.map(_.toString() + "\n").foreach(writer.write)
   writer.close()
 
-  poke(c.io.addr, 0.U)
-  poke(c.io.din, 0.U)
-  poke(c.io.write, false.B)
   var i = 0
 
   // Write initial contents to the memory model.
-  for (i <- 0 until inDataVec.length) {
-    poke(c.io.addr, inAddrVec(i))
-    poke(c.io.din, inDataVec(i))
-    poke(c.io.write, true.B)
-    step(1)
+  for(i <- 0 until inDataVec.length) {
+    MemWrite(inAddrVec(i), inDataVec(i))
   }
-  poke(c.io.write, false.B)
   step(1)
 
 
@@ -187,12 +205,14 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T, tiles : Int) exten
       }
     }
   }
-  //  Peek into the CopyMem to see if the expected data is written back to the Cache
+
+  // Pause to make sure all writes have made it through arbiter to memory
+  step(100)
+
+  //  Read back expected results
   var valid_data = true
   for (i <- 0 until outDataVec.length) {
-    poke(c.io.addr, outAddrVec(i))
-    step(1)
-    val data = peek(c.io.dout)
+    val data = MemRead(outAddrVec(i))
     if (data != outDataVec(i).toInt) {
       println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
