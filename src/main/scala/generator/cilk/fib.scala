@@ -418,7 +418,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   //  call void @fib(i32 %sub, i32* %x), !UID !25, !ScalaLabel !26
   val gep10 = Module(new GepNodeStack(NumOuts = 1, ID = 10)(numByte1 = stackSize))
 
-  val call10_out = Module(new CallOutNode(ID = 10, NumSuccOps = 0, argTypes = List(32, 32)))
+  val call10_out = Module(new CallOutNode2(ID = 10, NumSuccOps = 0, argTypes = List(32, 32)))
   val call10_in = Module(new CallInNode(ID = 499, argTypes = List(32)))
 
 
@@ -438,7 +438,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   //  call void @fib(i32 %sub1, i32* %y), !UID !35, !ScalaLabel !36
   val gep14 = Module(new GepNodeStack(NumOuts = 1, ID = 14)(numByte1 = stackSize))
-  val call14_out = Module(new CallOutNode(ID = 14, NumSuccOps = 0, argTypes = List(32, 32)))
+  val call14_out = Module(new CallOutNode2(ID = 14, NumSuccOps = 0, argTypes = List(32, 32)))
   val call14_in = Module(new CallInNode(ID = 499, argTypes = List(32)))
 
 
