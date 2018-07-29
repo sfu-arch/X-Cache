@@ -348,16 +348,6 @@ class cilk_saxpyTopIO(implicit val p: Parameters)  extends Module with CoreParam
 
 class cilk_saxpyTop(children :Int)(implicit p: Parameters) extends cilk_saxpyTopIO  {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-
-  // Connect the wrapper I/O to the memory model initialization interface so the
-  // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := 0.U
-  memModel.io.init.bits.data := 0.U
-  memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
 
   // Wire up the cache, TM, and modules under test.
 
@@ -371,16 +361,13 @@ class cilk_saxpyTop(children :Int)(implicit p: Parameters) extends cilk_saxpyTop
 
   // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
   // requests ports of any type.  Read or write is irrelevant.
-  val CacheArbiter = Module(new MemArbiter(children+1))
+  val CacheArbiter = Module(new MemArbiter(children))
   for (i <- 0 until children) {
     CacheArbiter.io.cpu.MemReq(i) <> saxpy_detach(i).io.MemReq
     saxpy_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
   }
-  CacheArbiter.io.cpu.MemReq(children) <> io.MemReq
-  io.MemResp <> CacheArbiter.io.cpu.MemResp(children)
-
-  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+  io.MemReq <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> io.MemResp
 
 
   // tester to saxpy

@@ -1037,7 +1037,7 @@ class mergesortTop(tiles : Int)(implicit p: Parameters) extends mergesortTopIO {
     val mergesortby_continue = Module(new mergesort_mergeDF())
     mergesortby_continue
   }
-  val TC = Module(new TaskController(List(32,32,32,32), List(32), (2*NumMergesorts), NumMergesorts))
+  val TC = Module(new TaskController(List(32,32,32,32), List(32), 1+(2*NumMergesorts), NumMergesorts))
   val CacheArb = Module(new MemArbiter(NumMergesorts+1))
   val StackArb = Module(new MemArbiter(2*NumMergesorts))
   val Stack = Module(new StackMem((1 << tlen)*4))
