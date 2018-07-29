@@ -9,6 +9,7 @@ import chisel3.testers._
 import chisel3.iotesters._
 import config._
 import control._
+import dataflow.vector_scaleMain.p
 import interfaces._
 import junctions._
 import loop._
@@ -338,12 +339,74 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   io.out <> ret_8.io.Out
 
 }
+class cilk_for_test06TopIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+  val io = IO(new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
+    val out = Decoupled(new Call(List(32)))
+  })
+}
+
+class cilk_for_test06Top(tiles: Int)(implicit p: Parameters) extends cilk_for_test06TopIO()(p) {
+
+
+  val children = tiles
+  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))
+  val cilk_for_test06 = Module(new cilk_for_test06DF())
+
+  val cilk_for_test06_detach1 = for (i <- 0 until children) yield {
+    val detach1 = Module(new cilk_for_test06_detach1DF())
+    detach1
+  }
+  val cilk_for_test06_detach2 = for (i <- 0 until children) yield {
+    val detach2 = Module(new cilk_for_test06_detach2DF)
+    detach2
+  }
+
+  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
+  // requests ports of any type.  Read or write is irrelevant.
+  val MemArbiter = Module(new MemArbiter(children))
+  for (i <- 0 until children) {
+    MemArbiter.io.cpu.MemReq(i) <> cilk_for_test06_detach2(i).io.MemReq
+    cilk_for_test06_detach2(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
+  }
+
+  io.MemReq <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> io.MemResp
+
+  // tester to cilk_for_test02
+  cilk_for_test06.io.in <> io.in
+
+  // cilk_for_test02 to task controller
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test06.io.call_9_out
+
+  // task controller to sub-task cilk_for_test06_detach
+  for (i <- 0 until children) {
+    cilk_for_test06_detach1(i).io.in <> TaskControllerModule.io.childOut(i)
+    cilk_for_test06_detach2(i).io.in <> cilk_for_test06_detach1(i).io.call_10_out
+    cilk_for_test06_detach1(i).io.call_10_in <> cilk_for_test06_detach2(i).io.out
+    TaskControllerModule.io.childIn(i) <> cilk_for_test06_detach1(i).io.out
+  }
+
+  // Task controller to cilk_for_test02
+  cilk_for_test06.io.call_9_in <> TaskControllerModule.io.parentOut(0)
+
+  // cilk_for_test02 to tester
+  io.out <> cilk_for_test06.io.out
+
+}
+
 
 import java.io.{File, FileWriter}
 object cilk_for_test06Main extends App {
-  val dir = new File("RTL/cilk_for_test06") ; dir.mkdirs
+  val dir = new File("RTL/cilk_for_test06Top") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test06DF()))
+  val testParams = p.alterPartial({
+    case TLEN => 6
+    case TRACE => false
+  })
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test06Top(4)(testParams)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

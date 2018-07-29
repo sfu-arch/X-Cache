@@ -17,6 +17,7 @@ import stack._
 import arbiters._
 import loop._
 import accel._
+import dataflow.vector_scaleMain.p
 import node._
 import junctions._
 
@@ -1015,12 +1016,77 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   io.out <> retArb.io.out
 
 }
+class mergesortTopIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+  val io = IO( new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
+    val out = Decoupled(new Call(List(32)))
+  })
+}
+
+
+class mergesortTop(tiles : Int)(implicit p: Parameters) extends mergesortTopIO {
+
+  val NumMergesorts = tiles
+  val mergesort = for (i <- 0 until NumMergesorts) yield {
+    val mergesortby = Module(new mergesortDF())
+    mergesortby
+  }
+  val mergesort_merge = for (i <- 0 until NumMergesorts) yield {
+    val mergesortby_continue = Module(new mergesort_mergeDF())
+    mergesortby_continue
+  }
+  val TC = Module(new TaskController(List(32,32,32,32), List(32), (2*NumMergesorts), NumMergesorts))
+  val CacheArb = Module(new MemArbiter(NumMergesorts+1))
+  val StackArb = Module(new MemArbiter(2*NumMergesorts))
+  val Stack = Module(new StackMem((1 << tlen)*4))
+
+
+  // Merge the memory interfaces and connect to the stack memory
+  for (i <- 0 until NumMergesorts) {
+    // Connect to stack memory interface
+    StackArb.io.cpu.MemReq(2*i) <> mergesort(i).io.StackReq
+    mergesort(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i)
+    StackArb.io.cpu.MemReq(2*i+1) <> mergesort_merge(i).io.StackReq
+    mergesort_merge(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i+1)
+
+    // Connect to cache memory
+    CacheArb.io.cpu.MemReq(i) <> mergesort_merge(i).io.GlblReq
+    mergesort_merge(i).io.GlblResp <> CacheArb.io.cpu.MemResp(i)
+
+    // Connect mergesort to continuation
+    mergesort_merge(i).io.in <> mergesort(i).io.call24_out
+    mergesort(i).io.call24_in <> mergesort_merge(i).io.out
+
+    // Connect to task controller
+    TC.io.parentIn(2*i) <> mergesort(i).io.call18_out
+    mergesort(i).io.call18_in <> TC.io.parentOut(2*i)
+    TC.io.parentIn(2*i+1) <> mergesort(i).io.call21_out
+    mergesort(i).io.call21_in <> TC.io.parentOut(2*i+1)
+    mergesort(i).io.in <> TC.io.childOut(i)
+    TC.io.childIn(i) <> mergesort(i).io.out
+  }
+
+  io.MemReq <> CacheArb.io.cache.MemReq
+  CacheArb.io.cache.MemResp <> io.MemResp
+
+  Stack.io.req <> StackArb.io.cache.MemReq
+  StackArb.io.cache.MemResp <> Stack.io.resp
+  TC.io.parentIn(2*NumMergesorts) <> io.in
+  io.out <> TC.io.parentOut(2*NumMergesorts)
+
+}
 
 import java.io.{File, FileWriter}
 object mergesortMain extends App {
-  val dir = new File("RTL/mergesort") ; dir.mkdirs
+  val dir = new File("RTL/mergesortTop") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new mergesortDF()))
+  val testParams = p.alterPartial({
+    case TLEN => 11
+    case TRACE => false
+  })
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new mergesortTop(4)(testParams)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

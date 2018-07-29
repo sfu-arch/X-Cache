@@ -17,6 +17,7 @@ import stack._
 import arbiters._
 import loop._
 import accel._
+import dataflow.vector_scaleMain.p
 import node._
 import junctions._
 
@@ -858,7 +859,11 @@ object fibMain extends App {
   val dir = new File("RTL/fibTop");
   dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibTop(3)(p.alterPartial({ case TLEN => 11 }))))
+  val testParams = p.alterPartial({
+    case TLEN => 11
+    case TRACE => false
+  })
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibTop(4)(testParams)))
 
   val verilogFile = new File(dir, s"/${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

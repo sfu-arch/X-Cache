@@ -380,8 +380,8 @@ class mergesortTest01[T <: mergesortMainIO](c: T, len : Int) extends PeekPokeTes
 }
 
 object mergesortTesterParams {
-//  val tile_list = List(1,2,3,4,5,6,7,8)
-  val tile_list = List(1,2,4,8)
+//  val tile_list = List(1,2,4,8)
+  val tile_list = List(4)
   val len_list = List(100)
 }
 

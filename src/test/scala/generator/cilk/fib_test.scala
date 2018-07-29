@@ -187,9 +187,8 @@ class fibTest01[T <: fibMainIO](c : T, n : Int, tiles: Int) extends PeekPokeTest
 }
 
 object fibTesterParams {
-//  val tile_list = List(12)
-//  val tile_list = List(1,2,3,4,5,6,7,8,9,10,11,12)
-  val tile_list = List(1,2,4,8)
+//  val tile_list = List(1,2,4,8)
+  val tile_list = List(4)
   val n_list = List(15)
 }
 

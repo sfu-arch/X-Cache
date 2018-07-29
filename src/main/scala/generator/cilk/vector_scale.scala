@@ -346,9 +346,9 @@ class vector_scaleMainIO(implicit val p: Parameters)  extends Module with CorePa
   })
 }
 
-class vector_scaleTop(implicit p: Parameters) extends vector_scaleMainIO  {
+class vector_scaleTop(tiles : Int)(implicit p: Parameters) extends vector_scaleMainIO  {
 
-  val children = 3
+  val children = tiles
   val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(32), 1, children))
   val vector_scale = Module(new vector_scaleDF())
 
@@ -391,7 +391,11 @@ import java.io.{File, FileWriter}
 object vector_scaleMain extends App {
   val dir = new File("RTL/vector_scaleTop") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new vector_scaleTop()(p.alterPartial({case TLEN => 6}))))
+  val testParams = p.alterPartial({
+    case TLEN => 6
+    case TRACE => false
+  })
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new vector_scaleTop(4)(testParams)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

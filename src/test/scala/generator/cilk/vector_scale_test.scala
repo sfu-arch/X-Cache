@@ -216,14 +216,15 @@ class vector_scaleTester1 extends FlatSpec with Matchers {
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  val tile_list = List(1,2,4,8)
+  val tile_list = List(4)
+//  val tile_list = List(1,2,4,8)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
         Array(
           // "-ll", "Info",
           "-tbn", "verilator",
-          "-td", "test_run_dir/vector_scale_${tile}",
+          "-td", s"test_run_dir/vector_scale_${tile}",
           "-tts", "0001"),
         () => new vector_scaleMainTM(tile)(testParams)) {
         c => new vector_scaleTest01(c,tile)

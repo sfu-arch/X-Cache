@@ -238,14 +238,15 @@ class stencilTester1 extends FlatSpec with Matchers {
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  val tile_list = List(1,2,4,8)
+//  val tile_list = List(1,2,4,8)
+  val tile_list = List(4)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
         Array(
           "-ll", "Error",
           "-tbn", "verilator",
-          "-td", "test_run_dir/stencil_${tile}",
+          "-td", s"test_run_dir/stencil_${tile}",
           "-tts", "0001"),
         () => new stencilMainTM(tile)(testParams)) {
         c => new stencilTest01(c,tile)

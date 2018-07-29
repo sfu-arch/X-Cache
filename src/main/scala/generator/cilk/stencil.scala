@@ -9,6 +9,7 @@ import chisel3.testers._
 import chisel3.iotesters._
 import config._
 import control._
+import dataflow.vector_scaleMain.p
 import interfaces._
 import junctions._
 import loop._
@@ -327,12 +328,76 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   io.out <> ret_8.io.Out
 
 }
+class stencilTopIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+  val io = IO(new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32))))
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
+    val out = Decoupled(new Call(List()))
+  })
+}
+
+
+class stencilTop(tiles: Int)(implicit p: Parameters) extends stencilTopIO {
+
+
+  // Wire up the cache, TM, and modules under test.
+
+  val children = tiles
+  val TaskControllerModule = Module(new TaskController(List(32, 32, 32), List(), 1, children))
+  val stencil = Module(new stencilDF())
+
+  val stencil_detach1 = for (i <- 0 until children) yield {
+    val detach1 = Module(new stencil_detach1DF())
+    detach1
+  }
+  val stencil_inner = for (i <- 0 until children) yield {
+    val inner = Module(new stencil_innerDF())
+    inner
+  }
+
+  val MemArbiter = Module(new MemArbiter(2 * children))
+  for (i <- 0 until children) {
+    MemArbiter.io.cpu.MemReq(i) <> stencil_inner(i).io.MemReq
+    stencil_inner(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
+    MemArbiter.io.cpu.MemReq(children + i) <> stencil_detach1(i).io.MemReq
+    stencil_detach1(i).io.MemResp <> MemArbiter.io.cpu.MemResp(children + i)
+  }
+
+  io.MemReq <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> io.MemResp
+
+  // tester to cilk_for_test02
+  stencil.io.in <> io.in
+
+  // cilk_for_test02 to task controller
+  TaskControllerModule.io.parentIn(0) <> stencil.io.call_9_out
+
+  // task controller to sub-task stencil_detach1
+  for (i <- 0 until children) {
+    stencil_detach1(i).io.in <> TaskControllerModule.io.childOut(i)
+    stencil_inner(i).io.in <> stencil_detach1(i).io.call_6_out
+    stencil_detach1(i).io.call_6_in <> stencil_inner(i).io.out
+    TaskControllerModule.io.childIn(i) <> stencil_detach1(i).io.out
+  }
+
+  // Task controller to cilk_for_test02
+  stencil.io.call_9_in <> TaskControllerModule.io.parentOut(0)
+
+  // cilk_for_test02 to tester
+  io.out <> stencil.io.out
+
+}
 
 import java.io.{File, FileWriter}
 object stencilMain extends App {
   val dir = new File("RTL/stencil") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new stencilDF()))
+  val testParams = p.alterPartial({
+    case TLEN => 6
+    case TRACE => false
+  })
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new stencilTop(4)(testParams)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
