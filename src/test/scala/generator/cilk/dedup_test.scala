@@ -246,7 +246,7 @@ class dedupTester1 extends FlatSpec with Matchers {
         Array(
           // "-ll", "Info",
           "-tbn", "verilator",
-          "-td", "test_run_dir",
+          "-td", "test_run_dir/dedup_${tile}",
           "-tts", "0001"),
         () => new dedupMainTM(tile)(p.alterPartial({case TLEN => 8}))) {
         c => new dedupTest01(c,tile)

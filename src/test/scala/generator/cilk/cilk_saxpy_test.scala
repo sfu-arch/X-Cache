@@ -244,7 +244,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
         Array(
           // "-ll", "Info",
           "-tbn", "verilator",
-          "-td", "test_run_dir",
+          "-td", "test_run_dir/cilk_saxpy_${tile}",
           "-tts", "0001"),
         () => new cilk_saxpyMainTM(tile)(testParams)) {
         c => new cilk_saxpyTest01(c, 400, tile)

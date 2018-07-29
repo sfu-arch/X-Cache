@@ -245,7 +245,7 @@ class stencilTester1 extends FlatSpec with Matchers {
         Array(
           "-ll", "Error",
           "-tbn", "verilator",
-          "-td", "test_run_dir",
+          "-td", "test_run_dir/stencil_${tile}",
           "-tts", "0001"),
         () => new stencilMainTM(tile)(testParams)) {
         c => new stencilTest01(c,tile)

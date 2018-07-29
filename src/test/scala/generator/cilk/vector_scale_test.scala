@@ -223,7 +223,7 @@ class vector_scaleTester1 extends FlatSpec with Matchers {
         Array(
           // "-ll", "Info",
           "-tbn", "verilator",
-          "-td", "test_run_dir",
+          "-td", "test_run_dir/vector_scale_${tile}",
           "-tts", "0001"),
         () => new vector_scaleMainTM(tile)(testParams)) {
         c => new vector_scaleTest01(c,tile)

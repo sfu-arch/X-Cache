@@ -403,7 +403,7 @@ class mergesortTester1 extends FlatSpec with Matchers {
           Array(
             // "-ll", "Info",
             s"-tbn", "verilator",
-            "-td", s"test_run_dir/mergesort_t${tiles}_l${len}",
+            "-td", s"test_run_dir/mergesort_${tiles}_l${len}",
             "-tts", "0001"),
           () => new mergesortMain1(tiles)(testParams)) {
           c => new mergesortTest01(c, len)

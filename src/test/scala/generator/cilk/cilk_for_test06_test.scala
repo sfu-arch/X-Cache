@@ -248,7 +248,7 @@ class cilk_for_test06Tester1 extends FlatSpec with Matchers {
         Array(
           "-ll", "Error",
           "-tbn", "verilator",
-          "-td", "test_run_dir",
+          "-td", s"test_run_dir/cilk_for_test06_${tile}",
           "-tts", "0001"),
         () => new cilk_for_test06MainTM(tile)(testParams)) {
         c => new cilk_for_test06Test01(c,tile)

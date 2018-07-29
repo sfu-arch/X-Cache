@@ -207,7 +207,7 @@ class fibTester1 extends FlatSpec with Matchers {
           Array(
             // "-ll", "Info",
             "-tbn", "verilator",
-            "-td", s"test_run_dir/fib1_t${tiles}_n${n}",
+            "-td", s"test_run_dir/fib_${tiles}_n${n}",
             "-tts", "0001"),
           () => new fibMain(tiles)(p.alterPartial({case TLEN => 11 case TRACE => false}))) {
           c => new fibTest01(c, n, tiles)
