@@ -496,7 +496,7 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
 
 
   //  %div = udiv i32 %add, 2, !UID !32, !ScalaLabel !33
-  val udiv14 = Module (new ComputeNode(NumOuts = 3, ID = 14, opCode = "udiv")(sign=false))
+  val udiv14 = Module (new ComputeNode(NumOuts = 3, ID = 14, opCode = "lshr")(sign=false))
 
 
   //  %iMiddle5 = getelementptr inbounds %struct.continue_struct, %struct.continue_struct* %p, i32 0, i32 3, !UID !34, !ScalaLabel !35
@@ -911,7 +911,7 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   udiv14.io.LeftIO <> add13.io.Out(param.udiv14_in("add13"))
 
   // Wiring constant
-  udiv14.io.RightIO.bits.data := 2.U
+  udiv14.io.RightIO.bits.data := 1.U
   udiv14.io.RightIO.bits.predicate := true.B
   udiv14.io.RightIO.valid := true.B
 

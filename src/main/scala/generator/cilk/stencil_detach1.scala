@@ -87,7 +87,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    * ================================================================== */
 
   //  %0 = udiv i32 %pos.0.in, 4, !UID !1
-  val binaryOp_0 = Module(new ComputeNode(NumOuts = 3, ID = 0, opCode = "udiv")(sign=false))
+  val binaryOp_0 = Module(new ComputeNode(NumOuts = 3, ID = 0, opCode = "lshr")(sign=false))
 
   //  %1 = and i32 %pos.0.in, 3, !UID !2
   val binaryOp_1 = Module(new ComputeNode(NumOuts = 3, ID = 1, opCode = "and")(sign=false))
@@ -161,7 +161,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    * ================================================================== */
 
   //i32 4
-  val const0 = Module(new ConstNode(value = 4, NumOuts = 1, ID = 0))
+  val const0 = Module(new ConstNode(value = 2, NumOuts = 1, ID = 0))
 
   //i32 3
   val const1 = Module(new ConstNode(value = 3, NumOuts = 1, ID = 1))
