@@ -76,7 +76,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   val bb_my_for_inc3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3))
 
-  val bb_my_for_end4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 15, BID = 4))
+  val bb_my_for_end4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 13, BID = 4))
 
   val bb_my_pfor_preattach5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
@@ -86,7 +86,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  %0 = udiv i32 %pos.0.in, 4, !UID !1
+  //  %0 = lshr i32 %pos.0.in, 2, !UID !1
   val binaryOp_0 = Module(new ComputeNode(NumOuts = 3, ID = 0, opCode = "lshr")(sign=false))
 
   //  %1 = and i32 %pos.0.in, 3, !UID !2
@@ -133,26 +133,23 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   //  %9 = add i32 %8, 9, !UID !19
   val binaryOp_14 = Module(new ComputeNode(NumOuts = 1, ID = 14, opCode = "add")(sign=false))
 
-  //  %10 = udiv i32 %9, 9, !UID !20
-  val binaryOp_15 = Module(new ComputeNode(NumOuts = 1, ID = 15, opCode = "udiv")(sign=false))
+  //  %10 = mul i32 %0, 4, !UID !20
+  val binaryOp_15 = Module(new ComputeNode(NumOuts = 1, ID = 15, opCode = "mul")(sign=false))
 
-  //  %11 = mul i32 %0, 4, !UID !21
-  val binaryOp_16 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "mul")(sign=false))
+  //  %11 = add i32 %10, %1, !UID !21
+  val binaryOp_16 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "add")(sign=false))
 
-  //  %12 = add i32 %11, %1, !UID !22
-  val binaryOp_17 = Module(new ComputeNode(NumOuts = 1, ID = 17, opCode = "add")(sign=false))
+  //  %12 = getelementptr inbounds i32, i32* %out.in, i32 %11, !UID !22
+  val Gep_17 = Module(new GepArrayOneNode(NumOuts=1, ID=17)(numByte=4)(size=1))
 
-  //  %13 = getelementptr inbounds i32, i32* %out.in, i32 %12, !UID !23
-  val Gep_18 = Module(new GepArrayOneNode(NumOuts=1, ID=18)(numByte=4)(size=1))
+  //  store i32 %9, i32* %12, align 4, !UID !23
+  val st_18 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=18, RouteID=0))
 
-  //  store i32 %10, i32* %13, align 4, !UID !24
-  val st_19 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=19, RouteID=0))
-
-  //  br label %my_pfor.preattach, !UID !25, !BB_UID !26
-  val br_20 = Module(new UBranchNode(ID = 20))
+  //  br label %my_pfor.preattach, !UID !24, !BB_UID !25
+  val br_19 = Module(new UBranchNode(ID = 19))
 
   //  ret void
-  val ret_21 = Module(new RetNode2(retTypes=List(), ID = 21))
+  val ret_20 = Module(new RetNode2(retTypes=List(), ID = 20))
 
 
 
@@ -160,7 +157,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING CONSTANTS NODES                         *
    * ================================================================== */
 
-  //i32 4
+  //i32 2
   val const0 = Module(new ConstNode(value = 2, NumOuts = 1, ID = 0))
 
   //i32 3
@@ -181,11 +178,8 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   //i32 9
   val const6 = Module(new ConstNode(value = 9, NumOuts = 1, ID = 6))
 
-  //i32 9
-  val const7 = Module(new ConstNode(value = 9, NumOuts = 1, ID = 7))
-
   //i32 4
-  val const8 = Module(new ConstNode(value = 4, NumOuts = 1, ID = 8))
+  val const7 = Module(new ConstNode(value = 4, NumOuts = 1, ID = 7))
 
 
 
@@ -205,7 +199,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   bb_my_for_end4.io.predicateIn <> Loop_0.io.endEnable
 
-  bb_my_pfor_preattach5.io.predicateIn <> br_20.io.Out(0)
+  bb_my_pfor_preattach5.io.predicateIn <> br_19.io.Out(0)
 
 
 
@@ -313,32 +307,28 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   const7.io.enable <> bb_my_for_end4.io.Out(2)
 
-  const8.io.enable <> bb_my_for_end4.io.Out(3)
+  binaryOp_10.io.enable <> bb_my_for_end4.io.Out(3)
 
-  binaryOp_10.io.enable <> bb_my_for_end4.io.Out(4)
+  binaryOp_11.io.enable <> bb_my_for_end4.io.Out(4)
 
-  binaryOp_11.io.enable <> bb_my_for_end4.io.Out(5)
+  Gep_12.io.enable <> bb_my_for_end4.io.Out(5)
 
-  Gep_12.io.enable <> bb_my_for_end4.io.Out(6)
+  ld_13.io.enable <> bb_my_for_end4.io.Out(6)
 
-  ld_13.io.enable <> bb_my_for_end4.io.Out(7)
+  binaryOp_14.io.enable <> bb_my_for_end4.io.Out(7)
 
-  binaryOp_14.io.enable <> bb_my_for_end4.io.Out(8)
+  binaryOp_15.io.enable <> bb_my_for_end4.io.Out(8)
 
-  binaryOp_15.io.enable <> bb_my_for_end4.io.Out(9)
+  binaryOp_16.io.enable <> bb_my_for_end4.io.Out(9)
 
-  binaryOp_16.io.enable <> bb_my_for_end4.io.Out(10)
+  Gep_17.io.enable <> bb_my_for_end4.io.Out(10)
 
-  binaryOp_17.io.enable <> bb_my_for_end4.io.Out(11)
+  st_18.io.enable <> bb_my_for_end4.io.Out(11)
 
-  Gep_18.io.enable <> bb_my_for_end4.io.Out(12)
-
-  st_19.io.enable <> bb_my_for_end4.io.Out(13)
-
-  br_20.io.enable <> bb_my_for_end4.io.Out(14)
+  br_19.io.enable <> bb_my_for_end4.io.Out(12)
 
 
-  ret_21.io.In.enable <> bb_my_pfor_preattach5.io.Out(0)
+  ret_20.io.In.enable <> bb_my_pfor_preattach5.io.Out(0)
 
 
 
@@ -365,9 +355,9 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   ld_13.io.memResp <> MemCtrl.io.ReadOut(0)
 
-  MemCtrl.io.WriteIn(0) <> st_19.io.memReq
+  MemCtrl.io.WriteIn(0) <> st_18.io.memReq
 
-  st_19.io.memResp <> MemCtrl.io.WriteOut(0)
+  st_18.io.memResp <> MemCtrl.io.WriteOut(0)
 
 
 
@@ -397,15 +387,13 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   binaryOp_15.io.RightIO <> const7.io.Out(0)
 
-  binaryOp_16.io.RightIO <> const8.io.Out(0)
-
   binaryOp_10.io.LeftIO <> binaryOp_0.io.Out(1)
 
-  binaryOp_16.io.LeftIO <> binaryOp_0.io.Out(2)
+  binaryOp_15.io.LeftIO <> binaryOp_0.io.Out(2)
 
   binaryOp_11.io.RightIO <> binaryOp_1.io.Out(1)
 
-  binaryOp_17.io.RightIO <> binaryOp_1.io.Out(2)
+  binaryOp_16.io.RightIO <> binaryOp_1.io.Out(2)
 
   icmp_4.io.LeftIO <> phi_3.io.Out(0)
 
@@ -427,15 +415,13 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   binaryOp_14.io.LeftIO <> ld_13.io.Out.data(0)
 
-  binaryOp_15.io.LeftIO <> binaryOp_14.io.Out(0)
+  st_18.io.inData <> binaryOp_14.io.Out(0)
 
-  st_19.io.inData <> binaryOp_15.io.Out(0)
+  binaryOp_16.io.LeftIO <> binaryOp_15.io.Out(0)
 
-  binaryOp_17.io.LeftIO <> binaryOp_16.io.Out(0)
+  Gep_17.io.idx1 <> binaryOp_16.io.Out(0)
 
-  Gep_18.io.idx1 <> binaryOp_17.io.Out(0)
-
-  st_19.io.GepAddr <> Gep_18.io.Out.data(0)
+  st_18.io.GepAddr <> Gep_17.io.Out.data(0)
 
   binaryOp_0.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
 
@@ -443,9 +429,9 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   Gep_12.io.baseAddress <> InputSplitter.io.Out.data("field2")(1)
 
-  Gep_18.io.baseAddress <> InputSplitter.io.Out.data("field2")(2)
+  Gep_17.io.baseAddress <> InputSplitter.io.Out.data("field2")(2)
 
-  st_19.io.Out(0).ready := true.B
+  st_18.io.Out(0).ready := true.B
 
 
 
@@ -465,7 +451,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out <> ret_21.io.Out
+  io.out <> ret_20.io.Out
 
 }
 

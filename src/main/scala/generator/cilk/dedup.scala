@@ -161,8 +161,8 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   //  %add5 = add i32 %wptr.0, 1
   val binaryOp_add518 = Module(new ComputeNode(NumOuts = 1, ID = 18, opCode = "add")(sign=false))
 
-  //  %rem = urem i32 %add5, 127
-  val binaryOp_rem19 = Module(new ComputeNode(NumOuts = 1, ID = 19, opCode = "urem")(sign=false))
+  //  %and = and i32 %add5, 127
+  val binaryOp_and19 = Module(new ComputeNode(NumOuts = 1, ID = 19, opCode = "and")(sign=false))
 
   //  br label %if.end
   val br_20 = Module(new UBranchNode(ID = 20))
@@ -170,7 +170,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   //  %pos.1 = phi i32 [ %add, %det.cont4 ], [ %pos.0, %while.body ]
   val phi_pos_121 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 21))
 
-  //  %wptr.1 = phi i32 [ %rem, %det.cont4 ], [ %wptr.0, %while.body ]
+  //  %wptr.1 = phi i32 [ %and, %det.cont4 ], [ %wptr.0, %while.body ]
   val phi_wptr_122 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 22))
 
   //  br label %while.cond
@@ -388,7 +388,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   binaryOp_add518.io.enable <> bb_det_cont47.io.Out(4)
 
-  binaryOp_rem19.io.enable <> bb_det_cont47.io.Out(5)
+  binaryOp_and19.io.enable <> bb_det_cont47.io.Out(5)
 
   br_20.io.enable <> bb_det_cont47.io.Out(6)
 
@@ -484,7 +484,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   binaryOp_add518.io.RightIO <> const5.io.Out(0)
 
-  binaryOp_rem19.io.RightIO <> const6.io.Out(0)
+  binaryOp_and19.io.RightIO <> const6.io.Out(0)
 
   st_25.io.inData <> const7.io.Out(0)
 
@@ -526,9 +526,9 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   phi_pos_121.io.InData(0) <> binaryOp_add17.io.Out(0)
 
-  binaryOp_rem19.io.LeftIO <> binaryOp_add518.io.Out(0)
+  binaryOp_and19.io.LeftIO <> binaryOp_add518.io.Out(0)
 
-  phi_wptr_122.io.InData(0) <> binaryOp_rem19.io.Out(0)
+  phi_wptr_122.io.InData(0) <> binaryOp_and19.io.Out(0)
 
   phi_pos_04.io.InData(1) <> phi_pos_121.io.Out(0)
 

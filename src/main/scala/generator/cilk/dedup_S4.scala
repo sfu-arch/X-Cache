@@ -148,13 +148,13 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
   //  %add8 = add i32 %rptr.0, 1
   val binaryOp_add820 = Module(new ComputeNode(NumOuts = 1, ID = 20, opCode = "add")(sign=false))
 
-  //  %rem = urem i32 %add8, 127
-  val binaryOp_rem21 = Module(new ComputeNode(NumOuts = 1, ID = 21, opCode = "urem")(sign=false))
+  //  %and = and i32 %add8, 127
+  val binaryOp_and21 = Module(new ComputeNode(NumOuts = 1, ID = 21, opCode = "and")(sign=false))
 
   //  br label %if.end
   val br_22 = Module(new UBranchNode(NumPredOps=3, ID = 22))
 
-  //  %rptr.1 = phi i32 [ %rem, %if.then ], [ %rptr.0, %while.body ]
+  //  %rptr.1 = phi i32 [ %and, %if.then ], [ %rptr.0, %while.body ]
   val phi_rptr_123 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 23))
 
   //  br label %while.cond
@@ -348,7 +348,7 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
 
   binaryOp_add820.io.enable <> bb_if_then3.io.Out(17)
 
-  binaryOp_rem21.io.enable <> bb_if_then3.io.Out(18)
+  binaryOp_and21.io.enable <> bb_if_then3.io.Out(18)
 
   br_22.io.enable <> bb_if_then3.io.Out(19)
 
@@ -433,7 +433,7 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
 
   binaryOp_add820.io.RightIO <> const6.io.Out(0)
 
-  binaryOp_rem21.io.RightIO <> const7.io.Out(0)
+  binaryOp_and21.io.RightIO <> const7.io.Out(0)
 
   Gep_arrayidx2.io.idx1 <> phi_rptr_01.io.Out(0)
 
@@ -481,9 +481,9 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
 
   ret_25.io.In.data("field0") <> Loop_0.io.Out(0)// st_19.io.Out(0) Manual
 
-  binaryOp_rem21.io.LeftIO <> binaryOp_add820.io.Out(0)
+  binaryOp_and21.io.LeftIO <> binaryOp_add820.io.Out(0)
 
-  phi_rptr_123.io.InData(0) <> binaryOp_rem21.io.Out(0)
+  phi_rptr_123.io.InData(0) <> binaryOp_and21.io.Out(0)
 
   phi_rptr_01.io.InData(1) <> phi_rptr_123.io.Out(0)
 
