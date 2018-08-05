@@ -411,7 +411,7 @@ object cilk_saxpyMain extends App {
     case TLEN => 6
     case TRACE => false
   })
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_saxpyTop(4)(testParams)))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_saxpyTop(3)(testParams)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

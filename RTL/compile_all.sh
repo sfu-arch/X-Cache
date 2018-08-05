@@ -16,7 +16,7 @@ APPS=( \
     # 'cilk_for_test08TopA' \
     # 'cilk_for_test08TopB' \
     # 'cilk_for_test08TopC' \
-    'fibTop' \
+    'cilk_saxpyTop' \
 )
 
 for app in ${APPS[@]}; do
