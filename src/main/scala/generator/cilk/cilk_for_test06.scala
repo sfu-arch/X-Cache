@@ -73,9 +73,9 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   val bb_pfor_cond1 = Module(new LoopHead(NumOuts = 5, NumPhi=1, BID = 1))
 
-  val bb_pfor_detach2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_pfor_detach2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 2))
 
-  val bb_pfor_inc123 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 3, NumPhi=0, BID = 3))
+  //val bb_pfor_inc123 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 3, NumPhi=0, BID = 3))
 
   val bb_pfor_end144 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4))
 
@@ -99,16 +99,16 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end14, !UID !6, !BB_UID !7
-  val br_3 = Module(new CBranchNode(ID = 3))
+  val br_3 = Module(new CBranchFastNode(ID = 3))
 
   //  detach label %offload.pfor.body, label %pfor.inc12, !UID !8, !BB_UID !9
-  val detach_4 = Module(new Detach(ID = 4))
+  //val detach_4 = Module(new Detach(ID = 4))
 
   //  %inc13 = add nsw i32 %i.0, 1, !UID !10
   val binaryOp_inc135 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
 
   //  br label %pfor.cond, !llvm.loop !11, !UID !13, !BB_UID !14
-  val br_6 = Module(new UBranchNode(NumOuts=2, ID = 6))
+  //val br_6 = Module(new UBranchNode(NumOuts=2, ID = 6))
 
   //  sync label %pfor.end.continue15, !UID !15, !BB_UID !16
   val sync_7 = Module(new SyncTC(ID = 7, NumInc=1, NumDec=1, NumOuts=1))
@@ -131,16 +131,16 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    * ================================================================== */
 
   //i32 0
-  val const0 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 0))
+  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
 
   //i32 5
-  val const1 = Module(new ConstNode(value = 5, NumOuts = 1, ID = 1))
+  val const1 = Module(new ConstFastNode(value = 5, ID = 1))
 
   //i32 1
-  val const2 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 2))
+  val const2 = Module(new ConstFastNode(value = 1, ID = 2))
 
   //i32 1
-  val const3 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 3))
+  val const3 = Module(new ConstFastNode(value = 1, ID = 3))
 
 
 
@@ -152,17 +152,20 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   bb_pfor_cond1.io.activate <> Loop_0.io.activate
 
-  bb_pfor_cond1.io.loopBack <> br_6.io.Out(0)
+  //bb_pfor_cond1.io.loopBack <> br_6.io.Out(0)
+  bb_pfor_cond1.io.loopBack <> bb_pfor_detach2.io.Out(0)
 
   bb_pfor_detach2.io.predicateIn <> br_3.io.Out(0)
 
-  bb_pfor_inc123.io.predicateIn(0) <> detach_4.io.Out(0)
+  //bb_pfor_inc123.io.predicateIn(0) <> detach_4.io.Out(0)
+  //bb_pfor_inc123.io.predicateIn(0) <> bb_pfor_detach2.io.Out(1)
 
   bb_pfor_end144.io.predicateIn <> Loop_0.io.endEnable
 
   bb_pfor_end_continue155.io.predicateIn <> sync_7.io.Out(0)
 
-  bb_offload_pfor_body6.io.predicateIn <> detach_4.io.Out(1)
+  //bb_offload_pfor_body6.io.predicateIn <> detach_4.io.Out(1)
+  bb_offload_pfor_body6.io.predicateIn <> bb_pfor_detach2.io.Out(1)
 
 
 
@@ -170,7 +173,8 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
 
-  sync_7.io.incIn(0) <> detach_4.io.Out(2)
+  //sync_7.io.incIn(0) <> detach_4.io.Out(2)
+  sync_7.io.incIn(0) <> bb_pfor_detach2.io.Out(2)
 
   sync_7.io.decIn(0) <> reattach_10.io.Out(0)
 
@@ -182,7 +186,8 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   Loop_0.io.enable <> br_0.io.Out(0)
 
-  Loop_0.io.latchEnable <> br_6.io.Out(1)
+  //Loop_0.io.latchEnable <> br_6.io.Out(1)
+  Loop_0.io.latchEnable <> bb_pfor_detach2.io.Out(3)
 
   Loop_0.io.loopExit(0) <> br_3.io.Out(1)
 
@@ -242,14 +247,15 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   br_3.io.enable <> bb_pfor_cond1.io.Out(4)
 
 
-  detach_4.io.enable <> bb_pfor_detach2.io.Out(0)
+  //detach_4.io.enable <> bb_pfor_detach2.io.Out(0)
 
 
-  const2.io.enable <> bb_pfor_inc123.io.Out(0)
+  //const2.io.enable <> bb_pfor_inc123.io.Out(0)
+  const2.io.enable <> bb_pfor_detach2.io.Out(4)
 
-  binaryOp_inc135.io.enable <> bb_pfor_inc123.io.Out(1)
+  binaryOp_inc135.io.enable <> bb_pfor_detach2.io.Out(5)
 
-  br_6.io.enable <> bb_pfor_inc123.io.Out(2)
+  //br_6.io.enable <> bb_pfor_detach2.io.Out(5)
 
 
   sync_7.io.enable <> bb_pfor_end144.io.Out(0)
@@ -297,13 +303,13 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  phi_i_01.io.InData(0) <> const0.io.Out(0)
+  phi_i_01.io.InData(0) <> const0.io.Out
 
-  icmp_cmp2.io.RightIO <> const1.io.Out(0)
+  icmp_cmp2.io.RightIO <> const1.io.Out
 
-  binaryOp_inc135.io.RightIO <> const2.io.Out(0)
+  binaryOp_inc135.io.RightIO <> const2.io.Out
 
-  ret_8.io.In.data("field0") <> const3.io.Out(0)
+  ret_8.io.In.data("field0") <> const3.io.Out
 
   icmp_cmp2.io.LeftIO <> phi_i_01.io.Out(0)
 

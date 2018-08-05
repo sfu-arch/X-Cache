@@ -816,9 +816,7 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := VecInit(Seq.fill(NumOuts) {
-      true.B
-    })
+    out_valid_R := VecInit(Seq.fill(NumOuts) {true.B})
   }
 
   def InvalidOut(): Unit = {

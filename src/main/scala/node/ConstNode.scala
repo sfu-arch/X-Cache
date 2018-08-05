@@ -5,6 +5,7 @@ import chisel3.Module
 import config._
 import interfaces.{ControlBundle, DataBundle}
 import util._
+import utility.UniformPrintfs
 
 class ConstNode(value: Int, NumOuts: Int, ID: Int)
                (implicit p: Parameters,
@@ -81,4 +82,45 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
     }
   }
 }
+
+
+
+class ConstFastNode(value: Int, ID: Int)
+               (implicit val p: Parameters,
+                name: sourcecode.Name,
+                file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new Bundle{
+    val enable = Flipped(Decoupled(new ControlBundle))
+    val Out = Decoupled(new DataBundle)
+  })
+
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+
+  io.Out.bits.data := value.asSInt(xlen.W).asUInt()
+  io.Out.bits.taskID := io.enable.bits.taskID
+  io.Out.bits.predicate := io.enable.bits.control
+
+  val task_ID = io.enable.bits.taskID
+
+  when(io.Out.ready && io.enable.valid){
+    io.Out.valid := true.B
+    io.enable.ready := true.B
+    printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
+      node_name + ": Output fired @ %d, Value: %d\n",
+      task_ID, cycleCount, value.asSInt(xlen.W))
+  }.otherwise{
+    io.Out.valid := false.B
+    io.enable.ready := false.B
+  }
+
+}
+
+
 
