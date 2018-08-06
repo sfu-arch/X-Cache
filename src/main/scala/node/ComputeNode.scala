@@ -143,7 +143,7 @@ class TypeComputeNodeIO[T <: Data](gen: T)(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new CustomDataBundle(gen)))
 }
 
-@deprecated("ComputeNode is depricated please start using type compute node", "dataflow-lib 1.0")
+//@deprecated("ComputeNode is depricated please start using type compute node", "dataflow-lib 1.0")
 class TypeComputeNode[T <: Data](gen: T)(NumOuts: Int, ID: Int, opCode: String)
                                 (implicit p: Parameters,
                                  name: sourcecode.Name,
@@ -299,8 +299,8 @@ class LoopCounterCompute(val ID: Int, val step: Int)
   val task_ID_R = RegNext(next = enable_R.taskID)
 
   //Output register
-  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
-  val state = RegInit(s_IDLE)
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
 
 
   val predicate = enable_R.control
@@ -329,44 +329,52 @@ class LoopCounterCompute(val ID: Int, val step: Int)
    *            State Machine                   *
    *============================================*/
 
-  io.Out.bits.data := input_R.data + step.U
-  io.Out.bits.predicate := predicate
-  io.Out.bits.taskID := input_R.taskID | io.enable.bits.taskID
-
-  when(input_valid_R) {
-    io.Out.valid := true.B
-  }.otherwise {
-    io.Out.valid := false.B
-  }
-
+  io.Out.valid := false.B
+  io.Out.bits := input_R
 
   switch(state) {
-    is(s_IDLE) {
-      when(io.enable.valid) {
-        when(input_valid_R) {
-          when(io.enable.bits.control) {
-            when(io.inputCount.fire()) {
-              io.Out.bits.data := fast_out
-            }
+    is(s_idle) {
+
+      io.Out.bits.data := fast_out
+      io.Out.bits.taskID := io.inputCount.bits.taskID
+      io.Out.bits.predicate := enable_R.control
+
+      when(enable_valid_R || io.enable.fire) {
+        when(input_valid_R || io.inputCount.fire) {
+          io.Out.valid := true.B
+
+          when(io.Out.fire){
+            input_R := DataBundle.default
+            input_valid_R := false.B
+
+            enable_R := ControlBundle.default
+            enable_valid_R := false.B
+
+            state := s_idle
+          }.otherwise{
+
+            state := s_fire
           }
-          state := s_COMPUTE
+
+          printf("[LOG] " + "[" + module_name + "] " +
+            "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
+            task_ID_R, cycleCount, io.Out.bits.data, input_R.data, step.U)
         }
       }
     }
-    is(s_COMPUTE) {
+    is(s_fire) {
+      io.Out.valid := true.B
       when(io.Out.ready) {
-        // Reset data
+        input_R := DataBundle.default
         input_valid_R := false.B
-        //Reset state
-        state := s_IDLE
-        //Reset output
-        printf("[LOG] " + "[" + module_name + "] " +
-          "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
-          task_ID_R, cycleCount, io.Out.bits.data, input_R.data, step.U)
+
+        enable_R := ControlBundle.default
+        enable_valid_R := false.B
+
+        state := s_idle
       }
     }
   }
-
 
 }
 

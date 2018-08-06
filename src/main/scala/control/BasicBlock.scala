@@ -474,6 +474,7 @@ class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
 }
 
+
 class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int)(implicit val p: Parameters,
                                                                                name: sourcecode.Name,
                                                                                file: sourcecode.File)
@@ -498,7 +499,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int)(i
 }
 
 
-class BasicBlockNoMaskFastNode2(BID: Int, val NumInputs: Int, val NumOuts: Int)
+class BasicBlockNoMaskFastNode2(BID: Int, val NumOuts: Int)
                                (implicit val p: Parameters,
                                 name: sourcecode.Name, file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
@@ -509,15 +510,6 @@ class BasicBlockNoMaskFastNode2(BID: Int, val NumInputs: Int, val NumOuts: Int)
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
   override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
-  /*===========================================*
-   *            Registers                      *
-   *===========================================*/
-  //  val allReady = io.Out.map(_.ready).reduceLeft(_ && _)
-  //
-  //  io.Out.foreach(_.bits := io.predicateIn.bits)
-  //  io.Out.foreach(_.valid := io.predicateIn.valid && allReady)
-  //
-  //  io.predicateIn.ready := allReady // || allFired
 
   /*===========================================*
  *            Registers                      *
@@ -526,32 +518,12 @@ class BasicBlockNoMaskFastNode2(BID: Int, val NumInputs: Int, val NumOuts: Int)
   val out_ready_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
   val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
   val out_R = RegInit(VecInit(Seq.fill(NumOuts)(ControlBundle.default)))
-  //  val out_R = RegInit(ControlBundle.default)
 
-//  val allReady = io.Out.map(_.ready).reduceLeft(_ && _)
+  val predicate_in_R = RegInit(ControlBundle.default)
+  val predicate_valid_R = RegInit(false.B)
+
   val allReady = out_ready_R.reduceLeft(_ && _)
-  io.predicateIn.ready := allReady // || allFired
 
-  when(io.predicateIn.fire()) {
-    io.Out.foreach(_.bits <> io.predicateIn.bits)
-    io.Out.foreach(_.valid <> true.B)
-    out_valid_R.foreach( _ := true.B)
-
-    for(i <- 0 until NumOuts){
-      out_R(i) <> io.predicateIn.bits
-    }
-
-  }.otherwise {
-    for (i <- 0 until NumOuts) {
-      io.Out(i).bits <> out_R(i)
-      io.Out(i).valid := out_valid_R(i)
-    }
-  }
-
-
-
-
-  // Wire up OUT READYs and VALIDs
   for (i <- 0 until NumOuts) {
     when(io.Out(i).fire()) {
       // Detecting when to reset
@@ -562,30 +534,59 @@ class BasicBlockNoMaskFastNode2(BID: Int, val NumInputs: Int, val NumOuts: Int)
   }
 
 
-  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
-  val state = RegInit(s_IDLE)
-
-  /*===============================================*
-   *            Latch inputs. Wire up output       *
-   *===============================================*/
-
-  //  out_valid_R.foreach(_ := io.predicateIn.valid)
-
-
-  /*============================================*
-   *            ACTIONS (possibly dangerous)    *
-   *============================================*/
-
-  when(out_ready_R.asUInt().andR()) {
-
-    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
-//    out_R.seq.fill(NumOuts,ControlBundle.default)
-    out_R := VecInit(Seq.fill(NumOuts)(ControlBundle.default))
-
-    printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output [T] fired @ %d\n",
-      1.U, cycleCount)
+  io.predicateIn.ready := ~predicate_valid_R
+  when(io.predicateIn.fire()) {
+    predicate_in_R <> io.predicateIn.bits
+    predicate_valid_R := true.B
   }
 
+  /*============================================*
+   *            ACTIONS                         *
+   *============================================*/
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
+
+  for (i <- 0 until NumOuts) {
+    when(io.predicateIn.fire) {
+      io.Out(i).valid := true.B
+    }.otherwise {
+      io.Out(i).valid := out_valid_R(i)
+    }
+  }
+
+  //Value initilization
+  io.Out.map(_.bits).foreach(_ := predicate_in_R)
+
+
+  switch(state) {
+    is(s_idle) {
+      io.predicateIn.ready := true.B
+      io.Out.map(_.bits).foreach(_ := io.predicateIn.bits)
+
+      // State change
+      when(io.predicateIn.fire) {
+        state := s_fire
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+          + node_name + ": Output [T] fired @ %d\n", 1.U, cycleCount)
+      }
+
+    }
+    is(s_fire) {
+      io.predicateIn.ready := false.B
+
+      io.Out.map(_.bits).foreach(_ := predicate_in_R)
+
+      // Restarting the registers
+      when(allReady) {
+        predicate_in_R := ControlBundle.default
+        predicate_valid_R := false.B
+
+        out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+        out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
+        state := s_idle
+      }
+    }
+  }
 
 }
 
