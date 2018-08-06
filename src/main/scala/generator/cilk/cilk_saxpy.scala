@@ -73,12 +73,12 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   //  val bb_pfor_detach2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 2))
   //  val bb_pfor_detach2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 2))
-  val bb_pfor_detach2 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 5, BID = 2))
+  val bb_pfor_detach2 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 6, BID = 2))
 
   //  val bb_pfor_inc3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 3))
 
   //  val bb_pfor_end4 = Module(new BasicBlockNoMaskFastNode2()(NumInputs = 1, NumOuts = 1, BID = 4))
-  val bb_pfor_end4 = Module(new BasicBlockNoMaskFastNode2( NumOuts = 1, BID = 4))
+  val bb_pfor_end4 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 4))
 
   val bb_pfor_end_continue5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
@@ -96,7 +96,8 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   val phi_i_01 = Module(new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
 
   //  %cmp = icmp slt i32 %i.0, %n, !UID !5
-  val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
+  //  val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
+  val icmp_cmp2 = Module(new IcmpFastNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end, !UID !6, !BB_UID !7
   //  val br_3 = Module(new CBranchNode(ID = 3))
@@ -106,8 +107,8 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   //  val detach_4 = Module(new Detach(ID = 4))
 
   //  %inc = add nsw i32 %i.0, 1, !UID !10
-//  val binaryOp_inc5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
-  val binaryOp_inc5 = Module(new LoopCounterCompute(ID = 5, step = 1))
+  val binaryOp_inc5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
+  //  val binaryOp_inc5 = Module(new LoopCounterCompute(ID = 5, step = 1))
 
   //  br label %pfor.cond, !llvm.loop !11, !UID !13, !BB_UID !14
   //  val br_6 = Module(new UBranchNode(NumOuts=2, ID = 6))
@@ -137,7 +138,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   //i32 1
   //  val const1 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 1))
-//  val const1 = Module(new ConstFastNode(value = 1, ID = 1))
+  val const1 = Module(new ConstFastNode(value = 1, ID = 1))
 
   //i32 1
   //  val const2 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 2))
@@ -247,7 +248,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
 
   //  const1.io.enable <> bb_pfor_inc3.io.Out(0)
-//  const1.io.enable <> bb_pfor_detach2.io.Out(3)
+  const1.io.enable <> bb_pfor_detach2.io.Out(5)
 
   //  binaryOp_inc5.io.enable <> bb_pfor_inc3.io.Out(1)
   binaryOp_inc5.io.enable <> bb_pfor_detach2.io.Out(3)
@@ -296,19 +297,19 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   phi_i_01.io.InData(0) <> const0.io.Out
 
-//  binaryOp_inc5.io.RightIO <> const1.io.Out
+  binaryOp_inc5.io.RightIO <> const1.io.Out
 
   ret_8.io.In.data("field0") <> const2.io.Out
 
   icmp_cmp2.io.LeftIO <> phi_i_01.io.Out(0)
 
-  binaryOp_inc5.io.inputCount <> phi_i_01.io.Out(1)
+  binaryOp_inc5.io.LeftIO <> phi_i_01.io.Out(1)
 
   call_9_out.io.In("field1") <> phi_i_01.io.Out(2)
 
-  br_3.io.CmpIO <> icmp_cmp2.io.Out(0)
+  br_3.io.CmpIO <> icmp_cmp2.io.Out
 
-  phi_i_01.io.InData(1) <> binaryOp_inc5.io.Out
+  phi_i_01.io.InData(1) <> binaryOp_inc5.io.Out(0)
 
   //reattach_10.io.predicateIn(0) <> call_9_in.io.Out.data("field0")
   reattach_10.io.predicateIn(0).enq(DataBundle.active(1.U))
