@@ -73,11 +73,11 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   val bb_pfor_cond1 = Module(new LoopHead(NumOuts = 5, NumPhi=1, BID = 1))
 
-  val bb_pfor_detach2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 2))
+  val bb_pfor_detach2 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 6, BID = 2))
 
   //val bb_pfor_inc123 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 3, NumPhi=0, BID = 3))
 
-  val bb_pfor_end144 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4))
+  val bb_pfor_end144 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 4))
 
   val bb_pfor_end_continue155 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
@@ -96,7 +96,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   val phi_i_01 = Module(new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
 
   //  %cmp = icmp slt i32 %i.0, 5, !UID !5
-  val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
+  val icmp_cmp2 = Module(new IcmpFastNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end14, !UID !6, !BB_UID !7
   val br_3 = Module(new CBranchFastNode(ID = 3))
@@ -317,7 +317,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   call_9_out.io.In("field1") <> phi_i_01.io.Out(2)
 
-  br_3.io.CmpIO <> icmp_cmp2.io.Out(0)
+  br_3.io.CmpIO <> icmp_cmp2.io.Out
 
   phi_i_01.io.InData(1) <> binaryOp_inc135.io.Out(0)
 

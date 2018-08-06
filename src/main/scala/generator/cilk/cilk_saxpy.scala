@@ -96,7 +96,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   val phi_i_01 = Module(new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
 
   //  %cmp = icmp slt i32 %i.0, %n, !UID !5
-  //  val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
+//    val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
   val icmp_cmp2 = Module(new IcmpFastNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end, !UID !6, !BB_UID !7
