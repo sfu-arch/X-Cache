@@ -34,7 +34,7 @@ class cilk_saxpyMainIO(implicit val p: Parameters)  extends Module with CorePara
 class cilk_saxpyMainTM(children :Int)(implicit p: Parameters) extends cilk_saxpyMainIO  {
 
   val cache = Module(new Cache)            // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiMemSlave(latency=40)) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -140,7 +140,13 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n:Int, ch:Int) extends PeekP
     MemWrite(inAddrVec(i), inDataVec(i))
   }
   step(1)
-
+/*
+  // Flush cache
+  for(i <- 0 until inDataVec.length) {
+    MemWrite(inAddrVec(i)+4096, 0)
+  }
+  step(1)
+*/
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
@@ -188,7 +194,7 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n:Int, ch:Int) extends PeekP
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 100000 && !result) {
+  while (time < 500000 && !result) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -204,6 +210,9 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n:Int, ch:Int) extends PeekP
       }
     }
   }
+
+  // Wait a bit to make sure all data is written back
+  step(1000)
 
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
@@ -236,8 +245,8 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-//  val tile_list = List(1,2,4,8)
-  val tile_list = List(4)
+  val tile_list = List(1,2,4,8)
+//  val tile_list = List(3)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
@@ -247,7 +256,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
           "-td", s"test_run_dir/cilk_saxpy_${tile}",
           "-tts", "0001"),
         () => new cilk_saxpyMainTM(tile)(testParams)) {
-        c => new cilk_saxpyTest01(c, 400, tile)
+        c => new cilk_saxpyTest01(c, 400, tile) // 500 for intel FPGA test
       } should be(true)
     }
   }

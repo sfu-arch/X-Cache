@@ -16,7 +16,7 @@ class NastiMemSlaveIO(implicit p: Parameters) extends CoreBundle()(p) with Cache
   val nasti = Flipped(new NastiIO)
 }
 
-class NastiMemSlave(val depth : Int = 1<<16, latency : Int = 20)(implicit val p: Parameters) extends Module with CacheParams {
+class NastiMemSlave(val depth : Int = 1<<24, latency : Int = 20)(implicit val p: Parameters) extends Module with CacheParams {
 
   val io = IO(new NastiMemSlaveIO()(p))
 
@@ -39,7 +39,8 @@ class NastiMemSlave(val depth : Int = 1<<16, latency : Int = 20)(implicit val p:
   val memState = RegInit(sMemIdle)
   val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, dataBeats)
   val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, dataBeats)
-  val (waitCnt, waitDone) = Counter(memState === sMemWait, latency)
+  //val (waitCnt, waitDone) = Counter(memState === sMemWait, latency)
+  val waitCnt = RegInit(0.U(16.W))
 
   when (io.init.valid) {
     mem.write((io.init.bits.addr >>2).asUInt(), io.init.bits.data)
@@ -82,11 +83,13 @@ class NastiMemSlave(val depth : Int = 1<<16, latency : Int = 20)(implicit val p:
       }
     }
     is(sMemWait) {
-      when(waitDone) {
+      waitCnt := waitCnt+1.U;
+      when(waitCnt === (latency-1).U) {
         memState := sMemRead
       }
     }
     is(sMemRead) {
+      waitCnt := 0.U;
       when(dutMem.r.ready) {
         printf("[read] mem[%x] => %x\n", (dutMem.ar.bits.addr >> size) + rCnt, dutMem.r.bits.data)
       }
