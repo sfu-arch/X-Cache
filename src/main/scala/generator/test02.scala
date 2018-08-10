@@ -64,7 +64,7 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 8, BID = 0))
 
 
 
@@ -73,16 +73,16 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    * ================================================================== */
 
   //  %div.mask = and i32 %a, -2
-  val binaryOp_div_mask0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "and")(sign=false))
+  val binaryOp_div_mask0 = Module(new ComputeFastNode(NumOuts = 1, ID = 0, opCode = "and")(sign=false))
 
   //  %cmp = icmp eq i32 %div.mask, 8
-  val icmp_cmp1 = Module(new IcmpNode(NumOuts = 1, ID = 1, opCode = "eq")(sign=false))
+  val icmp_cmp1 = Module(new IcmpFastNode(NumOuts = 1, ID = 1, opCode = "eq")(sign=false))
 
   //  %add = add i32 %b, %a
-  val binaryOp_add2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "add")(sign=false))
+  val binaryOp_add2 = Module(new ComputeFastNode(NumOuts = 1, ID = 2, opCode = "add")(sign=false))
 
   //  %add. = select i1 %cmp, i32 %add, i32 0
-  val select_add_3 = Module(new SelectNode(NumOuts = 1, ID = 3))
+  val select_add_3 = Module(new SelectFastNode(NumOuts = 1, ID = 3))
 
   //  ret i32 %add.
   val ret_4 = Module(new RetNode(retTypes=List(32), ID = 4))
@@ -94,13 +94,13 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    * ================================================================== */
 
   //i32 -2
-  val const0 = Module(new ConstNode(value = -2, NumOuts = 1, ID = 0))
+  val const0 = Module(new ConstFastNode(value = -2, ID = 0))
 
   //i32 8
-  val const1 = Module(new ConstNode(value = 8, NumOuts = 1, ID = 1))
+  val const1 = Module(new ConstFastNode(value = 8, ID = 1))
 
   //i32 0
-  val const2 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 2))
+  val const2 = Module(new ConstFastNode(value = 0, ID = 2))
 
 
 
@@ -199,19 +199,19 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  binaryOp_div_mask0.io.RightIO <> const0.io.Out(0)
+  binaryOp_div_mask0.io.RightIO <> const0.io.Out
 
-  icmp_cmp1.io.RightIO <> const1.io.Out(0)
+  icmp_cmp1.io.RightIO <> const1.io.Out
 
-  select_add_3.io.InData2 <> const2.io.Out(0)
+  select_add_3.io.InData2 <> const2.io.Out
 
-  icmp_cmp1.io.LeftIO <> binaryOp_div_mask0.io.Out(0)
+  icmp_cmp1.io.LeftIO <> binaryOp_div_mask0.io.Out
 
-  select_add_3.io.Select <> icmp_cmp1.io.Out(0)
+  select_add_3.io.Select <> icmp_cmp1.io.Out
 
-  select_add_3.io.InData1 <> binaryOp_add2.io.Out(0)
+  select_add_3.io.InData1 <> binaryOp_add2.io.Out
 
-  ret_4.io.In.data("field0") <> select_add_3.io.Out(0)
+  ret_4.io.In.data("field0") <> select_add_3.io.Out
 
   binaryOp_div_mask0.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
 

@@ -343,7 +343,7 @@ class LoopCounterCompute(val ID: Int, val step: Int)
         when(input_valid_R || io.inputCount.fire) {
           io.Out.valid := true.B
 
-          when(io.Out.fire){
+          when(io.Out.fire) {
             input_R := DataBundle.default
             input_valid_R := false.B
 
@@ -351,7 +351,7 @@ class LoopCounterCompute(val ID: Int, val step: Int)
             enable_valid_R := false.B
 
             state := s_idle
-          }.otherwise{
+          }.otherwise {
 
             state := s_fire
           }
@@ -379,10 +379,10 @@ class LoopCounterCompute(val ID: Int, val step: Int)
 }
 
 class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
-                  (sign: Boolean)
-                  (implicit val p: Parameters,
-                   name: sourcecode.Name,
-                   file: sourcecode.File)
+                     (sign: Boolean)
+                     (implicit val p: Parameters,
+                      name: sourcecode.Name,
+                      file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
   val io = IO(new Bundle {
@@ -419,18 +419,22 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
 
   val task_ID_R = RegNext(next = enable_R.taskID)
 
-  val predicate = left_R.predicate & right_R.predicate & enable_R.control
+  //  val predicate = left_R.predicate & right_R.predicate & enable_R.control
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  val s_idle :: s_fire :: Nil = Enum(2)
-  val state = RegInit(s_idle)
+
+  val left_input = (io.LeftIO.bits.data & Fill(xlen, io.LeftIO.valid)) | (left_R.data & Fill(xlen, left_valid_R))
+  val right_input = (io.RightIO.bits.data & Fill(xlen, io.RightIO.valid)) | (right_R.data & Fill(xlen, right_valid_R))
+  val enable_input = (io.enable.bits.control & Fill(xlen, io.enable.valid)) | (enable_R.control & Fill(xlen, enable_valid_R))
+
+  val output_valid_W = WireInit(false.B)
 
   val FU = Module(new UALU(xlen, opCode))
-  FU.io.in1 := left_R.data
-  FU.io.in2 := right_R.data
+  FU.io.in1 := left_input
+  FU.io.in2 := right_input
 
   io.LeftIO.ready := ~left_valid_R
   when(io.LeftIO.fire()) {
@@ -445,36 +449,40 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
   }
 
   io.enable.ready := ~enable_valid_R
-  when(io.enable.fire()){
+  when(io.enable.fire()) {
     enable_R <> io.enable.bits
     enable_valid_R := true.B
   }
 
+  //Pipeline registers
+  val output_R = RegNext(FU.io.out)
+  val output_valid_R = RegNext(output_valid_W)
+
+
   // Defalut values
-  io.Out.valid := false.B
+  io.Out.valid := output_valid_R
   io.Out.bits.taskID := 0.U
-  io.Out.bits.data := FU.io.out
-  io.Out.bits.predicate := false.B
+  io.Out.bits.data := output_R
+  io.Out.bits.predicate := enable_input
 
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
 
   switch(state) {
     is(s_idle) {
       io.Out.bits.data := FU.io.out
       io.Out.bits.taskID := task_ID_R
-      io.Out.bits.predicate := predicate
+
+      output_valid_W := false.B
 
       when(enable_valid_R || io.enable.fire) {
         when((left_valid_R || io.LeftIO.fire) && (right_valid_R || io.RightIO.fire)) {
 
-          FU.io.in1 := io.LeftIO.bits.data
-          FU.io.in2 := io.RightIO.bits.data
-          io.Out.bits.predicate := true.B
-
-          io.Out.valid := true.B
+          output_valid_W := true.B
 
           when(io.Out.fire) {
 
@@ -493,15 +501,15 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
           }
 
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-            + node_name + ": Output fired @ %d, Value: %d\n",
-            task_ID_R, cycleCount, FU.io.out)
+            + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
+            task_ID_R, cycleCount, FU.io.out, FU.io.in1, FU.io.in2)
 
         }
       }
     }
 
     is(s_fire) {
-      io.Out.valid := true.B
+      output_valid_W := true.B
       when(io.Out.fire) {
         left_R := DataBundle.default
         left_valid_R := false.B
@@ -511,6 +519,8 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
 
         enable_R := ControlBundle.default
         enable_valid_R := false.B
+
+        output_valid_R := false.B
 
         state := s_idle
       }

@@ -76,7 +76,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
   val mul = Module(new ComputeFastNode(NumOuts = 1, ID = 0, opCode = "mul")(sign=false))
 
   //  ret i32 %mul
-  val ret_1 = Module(new RetNode(retTypes=List(32), ID = 1))
+  val ret_1 = Module(new RetNode2(retTypes=List(32), ID = 1))
 
 
 
@@ -130,7 +130,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
 
   mul.io.enable <> entry.io.Out(0)
 
-  ret_1.io.enable <> entry.io.Out(1)
+  ret_1.io.In.enable <> entry.io.Out(1)
 
 
 

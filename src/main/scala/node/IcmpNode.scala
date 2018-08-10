@@ -174,12 +174,17 @@ class IcmpFastNode(NumOuts: Int, ID: Int, opCode: String)
    *            Latch inputs. Wire up output       *
    *===============================================*/
 
-  val s_idle :: s_fire :: Nil = Enum(2)
-  val state = RegInit(s_idle)
 
   val FU = Module(new UCMP(xlen, opCode))
-  FU.io.in1 := left_R.data
-  FU.io.in2 := right_R.data
+
+  val left_input  = (io.LeftIO.bits.data  & Fill(xlen, io.LeftIO.valid)) | (left_R.data & Fill(xlen, left_valid_R))
+  val right_input = (io.RightIO.bits.data & Fill(xlen, io.RightIO.valid)) | (right_R.data & Fill(xlen, right_valid_R))
+  val enable_input = (io.enable.bits.control & Fill(xlen, io.enable.valid)) | (enable_R.control & Fill(xlen, enable_valid_R))
+
+  val output_valid_W = WireInit(false.B)
+
+  FU.io.in1 := left_input
+  FU.io.in2 := right_input
 
   io.LeftIO.ready := ~left_valid_R
   when(io.LeftIO.fire()) {
@@ -194,21 +199,28 @@ class IcmpFastNode(NumOuts: Int, ID: Int, opCode: String)
   }
 
   io.enable.ready := ~enable_valid_R
-  when(io.enable.fire()){
+  when(io.enable.fire()) {
     enable_R <> io.enable.bits
     enable_valid_R := true.B
   }
 
+  //Pipeline registers
+  val output_R = RegNext(FU.io.out)
+  val output_valid_R = RegNext(output_valid_W)
+
+
   // Defalut values
-  io.Out.valid := false.B
+  io.Out.valid := output_valid_R
   io.Out.bits.taskID := 0.U
-  io.Out.bits.data := FU.io.out
-  io.Out.bits.predicate := false.B
+  io.Out.bits.data := output_R
+  io.Out.bits.predicate := enable_input
 
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
    *============================================*/
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
 
   switch(state) {
     is(s_idle) {
@@ -216,10 +228,12 @@ class IcmpFastNode(NumOuts: Int, ID: Int, opCode: String)
       io.Out.bits.taskID := task_ID_R
       io.Out.bits.predicate := predicate
 
+      output_valid_W := false.B
+
       when(enable_valid_R || io.enable.fire) {
         when((left_valid_R || io.LeftIO.fire) && (right_valid_R || io.RightIO.fire)) {
 
-          io.Out.valid := true.B
+          output_valid_W := true.B
 
           when(io.Out.fire) {
 
@@ -246,7 +260,8 @@ class IcmpFastNode(NumOuts: Int, ID: Int, opCode: String)
     }
 
     is(s_fire) {
-      io.Out.valid := true.B
+      output_valid_W := true.B
+
       when(io.Out.fire) {
         left_R := DataBundle.default
         left_valid_R := false.B
