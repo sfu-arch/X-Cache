@@ -64,7 +64,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
+  val entry = Module(new BasicBlockNoMaskFastNode2(NumOuts = 2, BID = 0))
 
 
 
@@ -73,7 +73,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    * ================================================================== */
 
   //  %mul = mul i32 %a, %b
-  val mul = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "mul")(sign=false))
+  val mul = Module(new ComputeFastNode(NumOuts = 1, ID = 0, opCode = "mul")(sign=false))
 
   //  ret i32 %mul
   val ret_1 = Module(new RetNode(retTypes=List(32), ID = 1))
@@ -151,7 +151,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  ret_1.io.In.data("field0") <> mul.io.Out(0)
+  ret_1.io.In.data("field0") <> mul.io.Out
 
   mul.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
 

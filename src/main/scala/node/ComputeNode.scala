@@ -378,3 +378,145 @@ class LoopCounterCompute(val ID: Int, val step: Int)
 
 }
 
+class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
+                  (sign: Boolean)
+                  (implicit val p: Parameters,
+                   name: sourcecode.Name,
+                   file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new Bundle {
+    //Control Signal
+    val enable = Flipped(Decoupled(new ControlBundle))
+
+    //Input data
+    val LeftIO = Flipped(Decoupled(new DataBundle()))
+    val RightIO = Flipped(Decoupled(new DataBundle()))
+
+    val Out = Decoupled(new DataBundle)
+  })
+
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+  // Left Input
+  val left_R = RegInit(DataBundle.default)
+  val left_valid_R = RegInit(false.B)
+
+  // Right Input
+  val right_R = RegInit(DataBundle.default)
+  val right_valid_R = RegInit(false.B)
+
+  val enable_R = RegInit(ControlBundle.default)
+  val enable_valid_R = RegInit(false.B)
+
+  val task_ID_R = RegNext(next = enable_R.taskID)
+
+  val predicate = left_R.predicate & right_R.predicate & enable_R.control
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
+
+  val FU = Module(new UALU(xlen, opCode))
+  FU.io.in1 := left_R.data
+  FU.io.in2 := right_R.data
+
+  io.LeftIO.ready := ~left_valid_R
+  when(io.LeftIO.fire()) {
+    left_R <> io.LeftIO.bits
+    left_valid_R := true.B
+  }
+
+  io.RightIO.ready := ~right_valid_R
+  when(io.RightIO.fire()) {
+    right_R <> io.RightIO.bits
+    right_valid_R := true.B
+  }
+
+  io.enable.ready := ~enable_valid_R
+  when(io.enable.fire()){
+    enable_R <> io.enable.bits
+    enable_valid_R := true.B
+  }
+
+  // Defalut values
+  io.Out.valid := false.B
+  io.Out.bits.taskID := 0.U
+  io.Out.bits.data := FU.io.out
+  io.Out.bits.predicate := false.B
+
+
+  /*============================================*
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
+
+  switch(state) {
+    is(s_idle) {
+      io.Out.bits.data := FU.io.out
+      io.Out.bits.taskID := task_ID_R
+      io.Out.bits.predicate := predicate
+
+      when(enable_valid_R || io.enable.fire) {
+        when((left_valid_R || io.LeftIO.fire) && (right_valid_R || io.RightIO.fire)) {
+
+          FU.io.in1 := io.LeftIO.bits.data
+          FU.io.in2 := io.RightIO.bits.data
+          io.Out.bits.predicate := true.B
+
+          io.Out.valid := true.B
+
+          when(io.Out.fire) {
+
+            left_R := DataBundle.default
+            left_valid_R := false.B
+
+            right_R := DataBundle.default
+            right_valid_R := false.B
+
+            enable_R := ControlBundle.default
+            enable_valid_R := false.B
+
+            state := s_idle
+          }.otherwise {
+            state := s_fire
+          }
+
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %d\n",
+            task_ID_R, cycleCount, FU.io.out)
+
+        }
+      }
+    }
+
+    is(s_fire) {
+      io.Out.valid := true.B
+      when(io.Out.fire) {
+        left_R := DataBundle.default
+        left_valid_R := false.B
+
+        right_R := DataBundle.default
+        right_valid_R := false.B
+
+        enable_R := ControlBundle.default
+        enable_valid_R := false.B
+
+        state := s_idle
+      }
+    }
+  }
+
+}
+
+
