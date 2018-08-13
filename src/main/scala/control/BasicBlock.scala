@@ -673,6 +673,7 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
     }
   }
 
+
   // Wire up MASK Readys and Valids
   for (i <- 0 until NumPhi) {
     io.MaskBB(i).bits := mask_value_R
