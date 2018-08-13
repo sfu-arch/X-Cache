@@ -246,14 +246,21 @@ class IcmpFastNode(NumOuts: Int, ID: Int, opCode: String)
             enable_R := ControlBundle.default
             enable_valid_R := false.B
 
+
+            printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+              + node_name + ": Output fired @ %d, Value: %d\n",
+              task_ID_R, cycleCount, FU.io.out)
+
             state := s_idle
           }.otherwise {
+
+            printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+              + node_name + ": Output fired @ %d, Value: %d\n",
+              task_ID_R, cycleCount, FU.io.out)
+
             state := s_fire
           }
 
-          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-            + node_name + ": Output fired @ %d, Value: %d\n",
-            task_ID_R, cycleCount, FU.io.out)
 
         }
       }

@@ -557,6 +557,8 @@ class BasicBlockNoMaskFastNode2(BID: Int, val NumOuts: Int)
   //Value initilization
   io.Out.map(_.bits).foreach(_ := predicate_in_R)
 
+  val task_ID = io.predicateIn.bits.taskID
+
 
   switch(state) {
     is(s_idle) {
@@ -567,7 +569,7 @@ class BasicBlockNoMaskFastNode2(BID: Int, val NumOuts: Int)
       when(io.predicateIn.fire) {
         state := s_fire
         printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-          + node_name + ": Output [T] fired @ %d\n", 1.U, cycleCount)
+          + node_name + ": Output [T] fired @ %d\n", task_ID, cycleCount)
       }
 
     }

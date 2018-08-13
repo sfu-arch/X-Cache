@@ -98,10 +98,10 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
   val binaryOp_add5 = Module(new ComputeFastNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
 
   //  %mul = mul i32 %add, %b
-  val binaryOp_mul6 = Module(new ComputeNode(NumOuts = 2, ID = 6, opCode = "mul")(sign = false))
+  val binaryOp_mul6 = Module(new ComputeFastNode(NumOuts = 2, ID = 6, opCode = "mul")(sign = false))
 
   //  %inc = add nuw nsw i32 %i.07, 1
-  val binaryOp_inc7 = Module(new ComputeNode(NumOuts = 2, ID = 7, opCode = "add")(sign = false))
+  val binaryOp_inc7 = Module(new ComputeFastNode(NumOuts = 2, ID = 7, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, %n
   val icmp_exitcond8 = Module(new IcmpFastNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
@@ -126,13 +126,13 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
    * ================================================================== */
 
   //i32 0
-  val const0 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 0))
+  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
 
   //i32 0
-  val const1 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 1))
+  val const1 = Module(new ConstFastNode(value = 0, ID = 1))
 
   //i32 1
-  val const2 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 2))
+  val const2 = Module(new ConstFastNode(value = 1, ID = 2))
 
 
   /* ================================================================== *
@@ -278,11 +278,11 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  icmp_cmp50.io.RightIO <> const0.io.Out(0)
+  icmp_cmp50.io.RightIO <> const0.io.Out
 
-  phi_i_073.io.InData(0) <> const1.io.Out(0)
+  phi_i_073.io.InData(0) <> const1.io.Out
 
-  binaryOp_inc7.io.RightIO <> const2.io.Out(0)
+  binaryOp_inc7.io.RightIO <> const2.io.Out
 
   br_1.io.CmpIO <> icmp_cmp50.io.Out
 
@@ -290,7 +290,7 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
 
   binaryOp_add5.io.LeftIO <> phi_sum_064.io.Out(0)
 
-  binaryOp_mul6.io.LeftIO <> binaryOp_add5.io.Out
+  binaryOp_mul6.io.LeftIO <> binaryOp_add5.io.Out(0)
 
   phi_sum_064.io.InData(1) <> binaryOp_mul6.io.Out(0)
 
