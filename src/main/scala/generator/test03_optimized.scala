@@ -83,7 +83,8 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
   val icmp_cmp50 = Module(new IcmpFastNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
 
   //  br i1 %cmp5, label %for.body.preheader, label %for.end
-  val br_1 = Module(new CBranchNode(ID = 1))
+  //  val br_1 = Module(new CBranchNode(ID = 1))
+  val br_1 = Module(new CBranchFastNodeVariable(ID = 1))
 
   //  br label %for.body
   val br_2 = Module(new UBranchFastNode(ID = 2))
@@ -107,9 +108,10 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
   val icmp_exitcond8 = Module(new IcmpFastNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.end.loopexit, label %for.body
-  val br_9 = Module(new CBranchNode(ID = 9))
+  //  val br_9 = Module(new CBranchNode(ID = 9))
+  val br_9 = Module(new CBranchFastNodeVariable(NumFalse = 2, ID = 9))
 
-  val tmp_br = Module(new UBranchNode(ID = 100, NumOuts = 2))
+  //  val tmp_br = Module(new UBranchNode(ID = 100, NumOuts = 2))
 
   //  br label %for.end
   val br_10 = Module(new UBranchFastNode(ID = 10))
@@ -141,16 +143,18 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
 
   bb_entry0.io.predicateIn <> InputSplitter.io.Out.enable
 
-  bb_for_body_preheader1.io.predicateIn <> br_1.io.Out(0)
+  //  bb_for_body_preheader1.io.predicateIn <> br_1.io.Out(0)
+  bb_for_body_preheader1.io.predicateIn <> br_1.io.TrueOutput(0)
 
   bb_for_body2.io.activate <> Loop_0.io.activate
 
-  tmp_br.io.enable <> br_9.io.Out(1)
-  bb_for_body2.io.loopBack <> tmp_br.io.Out(0)
+  //  tmp_br.io.enable <> br_9.io.Out(1)
+  bb_for_body2.io.loopBack <> br_9.io.FalseOutput(0)
 
   bb_for_end_loopexit3.io.predicateIn <> Loop_0.io.endEnable
 
-  bb_for_end4.io.predicateIn(0) <> br_1.io.Out(1)
+  //  bb_for_end4.io.predicateIn(0) <> br_1.io.Out(1)
+  bb_for_end4.io.predicateIn(0) <> br_1.io.FalseOutput(0)
 
   bb_for_end4.io.predicateIn(1) <> br_10.io.Out(0)
 
@@ -166,9 +170,9 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
 
   Loop_0.io.enable <> br_2.io.Out(0)
 
-  Loop_0.io.latchEnable <> tmp_br.io.Out(1)
+  Loop_0.io.latchEnable <> br_9.io.FalseOutput(1)
 
-  Loop_0.io.loopExit(0) <> br_9.io.Out(0)
+  Loop_0.io.loopExit(0) <> br_9.io.TrueOutput(0)
 
 
   /* ================================================================== *
@@ -284,7 +288,7 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
 
   binaryOp_inc7.io.RightIO <> const2.io.Out
 
-  br_1.io.CmpIO <> icmp_cmp50.io.Out
+  br_1.io.CmpIO <> icmp_cmp50.io.Out(0)
 
   binaryOp_inc7.io.LeftIO <> phi_i_073.io.Out(0)
 
@@ -298,7 +302,7 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
 
   icmp_exitcond8.io.LeftIO <> binaryOp_inc7.io.Out(1)
 
-  br_9.io.CmpIO <> icmp_exitcond8.io.Out
+  br_9.io.CmpIO <> icmp_exitcond8.io.Out(0)
 
   ret_12.io.In.data("field0") <> phi_sum_0_lcssa11.io.Out(0)
 

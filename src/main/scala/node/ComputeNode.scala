@@ -458,7 +458,6 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
   }
 
   // Defalut values for output
-
   output_R.foreach(_.data := FU.io.out)
   output_R.foreach(_.predicate := enable_R.control)
   output_R.foreach(_.taskID := task_input)
