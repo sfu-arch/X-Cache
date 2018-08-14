@@ -417,7 +417,8 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
   val enable_R = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
-  val output_R = Seq.fill(NumOuts)(RegInit(DataBundle.default))
+  //  val output_R = Seq.fill(NumOuts)(RegInit(DataBundle.default))
+  val output_R = RegInit(DataBundle.default)
   val output_valid_R = Seq.fill(NumOuts)(RegInit(false.B))
 
   val fire_R = Seq.fill(NumOuts)(RegInit(false.B))
@@ -430,7 +431,11 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
 
 
   val left_input = (io.LeftIO.bits.data & Fill(xlen, io.LeftIO.valid)) | (left_R.data & Fill(xlen, left_valid_R))
+  val left_predicate = (io.LeftIO.bits.predicate & Fill(xlen, io.LeftIO.valid)) | (left_R.predicate & Fill(xlen, left_valid_R))
+
   val right_input = (io.RightIO.bits.data & Fill(xlen, io.RightIO.valid)) | (right_R.data & Fill(xlen, right_valid_R))
+  val right_predicate = (io.RightIO.bits.predicate & Fill(xlen, io.RightIO.valid)) | (right_R.predicate & Fill(xlen, right_valid_R))
+
   val enable_input = (io.enable.bits.control & Fill(xlen, io.enable.valid)) | (enable_R.control & Fill(xlen, enable_valid_R))
 
   //  val output_valid_W = WireInit(false.B)
@@ -440,13 +445,13 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
   FU.io.in2 := right_input
 
   io.LeftIO.ready := ~left_valid_R
-  when(io.LeftIO.fire()) {
+  when(io.LeftIO.fire() && io.LeftIO.bits.predicate) {
     left_R <> io.LeftIO.bits
     left_valid_R := true.B
   }
 
   io.RightIO.ready := ~right_valid_R
-  when(io.RightIO.fire()) {
+  when(io.RightIO.fire() && io.RightIO.bits.predicate) {
     right_R <> io.RightIO.bits
     right_valid_R := true.B
   }
@@ -458,12 +463,15 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
   }
 
   // Defalut values for output
-  output_R.foreach(_.data := FU.io.out)
-  output_R.foreach(_.predicate := enable_R.control)
-  output_R.foreach(_.taskID := task_input)
+
+  val predicate = enable_input & right_predicate & left_predicate
+
+  output_R.data := FU.io.out
+  output_R.predicate := predicate
+  output_R.taskID := task_input
 
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits <> output_R(i)
+    io.Out(i).bits <> output_R
     io.Out(i).valid <> output_valid_R(i)
   }
 
@@ -493,9 +501,9 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
 
         state := s_fire
 
-          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-            + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
-            task_input, cycleCount, FU.io.out, FU.io.in1, FU.io.in2)
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+          + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
+          task_input, cycleCount, FU.io.out, FU.io.in1, FU.io.in2)
       }
     }
 
@@ -512,7 +520,7 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
         enable_R := ControlBundle.default
         enable_valid_R := false.B
 
-        output_R.foreach(_ := DataBundle.default)
+        output_R := DataBundle.default
         output_valid_R.foreach(_ := false.B)
 
         fire_R.foreach(_ := false.B)

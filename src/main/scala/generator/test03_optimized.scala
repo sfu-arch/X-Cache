@@ -90,10 +90,12 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
   val br_2 = Module(new UBranchFastNode(ID = 2))
 
   //  %i.07 = phi i32 [ %inc, %for.body ], [ 0, %for.body.preheader ]
-  val phi_i_073 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 3))
+  //   val phi_i_073 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 3))
+  val phi_i_073 = Module(new PhiFastNode(ID = 3))
 
   //  %sum.06 = phi i32 [ %mul, %for.body ], [ %a, %for.body.preheader ]
-  val phi_sum_064 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4))
+  //  val phi_sum_064 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4))
+  val phi_sum_064 = Module(new PhiFastNode(ID = 4))
 
   //  %add = add i32 %sum.06, %a
   val binaryOp_add5 = Module(new ComputeFastNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))

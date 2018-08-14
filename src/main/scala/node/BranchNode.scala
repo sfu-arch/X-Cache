@@ -220,7 +220,7 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
 
   // Latching CMP input
   io.CmpIO.ready := ~cmp_valid
-  when(io.CmpIO.fire) {
+  when(io.CmpIO.fire && io.CmpIO.bits.predicate) {
     cmp_R <> io.CmpIO.bits
     cmp_valid := true.B
   }
@@ -274,9 +274,6 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
   val fire_true_mask = (fire_true_R zip io.TrueOutput.map(_.fire)).map { case (a, b) => a | b }
   val fire_false_mask = (fire_false_R zip io.FalseOutput.map(_.fire)).map { case (a, b) => a | b }
 
-
-  //  io.TrueOutput.foreach(_.bits := true_output)
-  //  io.FalseOutput.foreach(_.bits := false_output)
 
   //Output register
   val s_idle :: s_fire :: Nil = Enum(2)

@@ -207,7 +207,7 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 
   icmp_cmp1.io.LeftIO <> binaryOp_div_mask0.io.Out(0)
 
-  select_add_3.io.Select <> icmp_cmp1.io.Out
+  select_add_3.io.Select <> icmp_cmp1.io.Out(0)
 
   select_add_3.io.InData1 <> binaryOp_add2.io.Out(0)
 

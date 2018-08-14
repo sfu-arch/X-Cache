@@ -199,13 +199,13 @@ class SelectFastNode(NumOuts: Int, ID: Int)
    *===============================================*/
 
   io.InData1.ready := ~indata1_valid_R
-  when(io.InData1.fire()) {
+  when(io.InData1.fire() && io.InData1.bits.predicate) {
     indata1_R <> io.InData1.bits
     indata1_valid_R := true.B
   }
 
   io.InData2.ready := ~indata2_valid_R
-  when(io.InData2.fire()) {
+  when(io.InData2.fire() && io.InData2.bits.predicate) {
     indata2_R <> io.InData2.bits
     indata2_valid_R := true.B
   }
