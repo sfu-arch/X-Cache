@@ -229,6 +229,8 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
   val select_input = (io.InData(sel).bits.data & Fill(xlen, io.InData(sel).valid)) | (in_data_R(sel).data & Fill(xlen, in_data_valid_R(sel)))
   val select_predicate = (io.InData(sel).bits.predicate & Fill(xlen, io.InData(sel).valid)) | (in_data_R(sel).predicate & Fill(xlen, in_data_valid_R(sel)))
 
+  val enable_input = (io.enable.bits.control & io.enable.valid) | (enable_R.control & enable_valid_R)
+
   val task_input = (io.enable.bits.taskID | enable_R.taskID)
 
   // Wireing outputs
@@ -248,11 +250,63 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
   val fire_mask = (fire_R zip io.Out.map(_.fire)).map { case (a, b) => a | b }
 
   //Output register
-  val s_idle :: s_fire :: Nil = Enum(2)
+  val s_idle :: s_fire :: s_not_predicated :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
   switch(state) {
     is(s_idle) {
+
+      when(enable_valid_R || io.enable.fire) {
+        when(enable_input) {
+          when(in_data_valid_R(sel) || io.InData(sel).fire) {
+            io.Out.foreach(_.valid := true.B)
+
+            when(io.Out.map(_.fire).reduce(_ & _)) {
+              in_data_R.foreach(_ := DataBundle.default)
+              in_data_valid_R.foreach(_ := false.B)
+
+              //mask_R := 0.U
+              mask_valid_R := false.B
+
+              enable_R := ControlBundle.default
+              enable_valid_R := false.B
+
+              out_valid_R.foreach(_ := false.B)
+
+              fire_R.foreach(_ := false.B)
+
+              state := s_idle
+
+            }.otherwise {
+              state := s_fire
+            }
+
+            //Print output
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+              + node_name + ": Output fired @ %d, Value: %d\n",
+              io.InData(sel).bits.taskID, cycleCount, io.InData(sel).bits.data)
+          }
+        }.otherwise {
+          // Wireing outputs
+          io.Out.map(_.bits) foreach (_.data := 0.U)
+          io.Out.map(_.bits) foreach (_.predicate := enable_input)
+          io.Out.map(_.bits) foreach (_.taskID := task_input)
+          io.Out.map(_.valid) foreach (_ := false.B)
+          io.Out.foreach(_.valid := true.B)
+
+          when(io.Out.map(_.fire).reduce(_ & _)) {
+            enable_R := ControlBundle.default
+            enable_valid_R := false.B
+
+            fire_R.foreach(_ := false.B)
+
+            state := s_idle
+          }.otherwise {
+            state := s_not_predicated
+          }
+        }
+      }
+
 
       when((enable_valid_R || io.enable.fire)
         && (in_data_valid_R(sel) || io.InData(sel).fire)) {
@@ -310,6 +364,22 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
 
       }
 
+    }
+    is(s_not_predicated) {
+      io.Out.map(_.bits) foreach (_.data := 0.U)
+      io.Out.map(_.bits) foreach (_.predicate := enable_input)
+      io.Out.map(_.bits) foreach (_.taskID := task_input)
+      io.Out.map(_.valid) foreach (_ := false.B)
+      io.Out.foreach(_.valid := true.B)
+
+      when(io.Out.map(_.fire).reduce(_ & _)) {
+        enable_R := ControlBundle.default
+        enable_valid_R := false.B
+
+        fire_R.foreach(_ := false.B)
+
+        state := s_idle
+      }
     }
   }
 
