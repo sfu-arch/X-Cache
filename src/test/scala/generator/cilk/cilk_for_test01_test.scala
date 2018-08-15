@@ -222,7 +222,7 @@ class cilk_for_test01Tester1 extends FlatSpec with Matchers {
       Array(
         // "-ll", "Info",
         "-tbn", "verilator",
-        "-td", "test_run_dir",
+        "-td", "test_run_dir/cilk_for_test01",
         "-tts", "0001"),
       () => new cilk_for_test01Main1(tiles = 1)(p.alterPartial({ case TLEN => 6 }))) {
       c => new cilk_for_test01Test01(c, 5, 1)

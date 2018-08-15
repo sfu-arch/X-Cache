@@ -64,9 +64,9 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 0))
+  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 8, BID = 0))
 
-  val bb_my_pfor_preattach1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  val bb_my_pfor_preattach1 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 1, BID = 1))
 
 
 
@@ -87,7 +87,7 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
   val ld_3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=3, RouteID=1))
 
   //  %4 = add i32 %1, %3, !UID !10
-  val binaryOp_4 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign=false))
+  val binaryOp_4 = Module(new ComputeFastNode(NumOuts = 1, ID = 4, opCode = "add")(sign = false))
 
   //  %5 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !11
   val Gep_5 = Module(new GepArrayOneNode(NumOuts=1, ID=5)(numByte=4)(size=1))
@@ -96,10 +96,10 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
   val st_6 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=6, RouteID=0))
 
   //  br label %my_pfor.preattach, !UID !13, !BB_UID !14
-  val br_7 = Module(new UBranchNode(ID = 7))
+  val br_7 = Module(new UBranchFastNode(ID = 7))
 
   //  ret void
-  val ret_8 = Module(new RetNode(retTypes=List(32), ID = 8))
+  val ret_8 = Module(new RetNode2(retTypes = List(32), ID = 8))
 
 
 
@@ -176,7 +176,7 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
   br_7.io.enable <> bb_my_pfor_body0.io.Out(7)
 
 
-  ret_8.io.enable <> bb_my_pfor_preattach1.io.Out(0)
+  ret_8.io.In.enable <> bb_my_pfor_preattach1.io.Out(0)
 
 
 

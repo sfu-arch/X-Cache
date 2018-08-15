@@ -62,9 +62,9 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 7, BID = 0))
+  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 7, BID = 0))
 
-  val bb_my_pfor_preattach1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  val bb_my_pfor_preattach1 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 1, BID = 1))
 
 
   /* ================================================================== *
@@ -75,22 +75,22 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
   val Gep_0 = Module(new GepArrayOneNode(NumOuts = 1, ID = 0)(numByte = 4)(size = 1))
 
   //  %1 = load i32, i32* %0, align 4, !UID !2
-  val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 1, RouteID = 0))
+  val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 1, RouteID = 0))
 
   //  %2 = mul i32 %1, 2, !UID !3
-  val binaryOp_2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "mul")(sign = false))
+  val binaryOp_2 = Module(new ComputeFastNode(NumOuts = 1, ID = 2, opCode = "mul")(sign = false))
 
   //  %3 = getelementptr inbounds i32, i32* %b.in, i32 %i.0.in, !UID !4
   val Gep_3 = Module(new GepArrayOneNode(NumOuts = 1, ID = 3)(numByte = 4)(size = 1))
 
   //  store i32 %2, i32* %3, align 4, !UID !5
-  val st_4 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 4, RouteID = 0))
+  val st_4 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 0, ID = 4, RouteID = 0))
 
   //  br label %my_pfor.preattach, !UID !6, !BB_UID !7
-  val br_5 = Module(new UBranchNode(ID = 5))
+  val br_5 = Module(new UBranchFastNode(ID = 5))
 
   //  ret void
-  val ret_6 = Module(new RetNode(retTypes = List(32), ID = 6))
+  val ret_6 = Module(new RetNode2(retTypes = List(32), ID = 6))
 
 
   /* ================================================================== *
@@ -159,7 +159,7 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
   br_5.io.enable <> bb_my_pfor_body0.io.Out(6)
 
 
-  ret_6.io.enable <> bb_my_pfor_preattach1.io.Out(0)
+  ret_6.io.In.enable <> bb_my_pfor_preattach1.io.Out(0)
 
 
   /* ================================================================== *
@@ -213,6 +213,8 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
   Gep_3.io.baseAddress <> InputSplitter.io.Out.data("field2")(0)
 
   //  st_4.io.Out(0).ready := true.B
+
+  st_4.io.PredOp(0) <> ld_1.io.SuccOp(0) //manual
 
 
   /* ================================================================== *

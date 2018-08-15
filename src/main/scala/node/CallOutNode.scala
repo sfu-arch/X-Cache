@@ -65,7 +65,7 @@ class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0, NoReturn: 
           for(i <- argTypes.indices) {
             when(data_R(s"field$i").taskID =/= enable_R.taskID) {
               error := true.B
-              printfError("#####%d", error)
+              printfError("#####%d\n", error)
             }
         //  }
         }

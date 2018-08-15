@@ -489,6 +489,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int)(i
   /*===========================================*
    *            Registers                      *
    *===========================================*/
+
   val allReady = io.Out.map(_.ready).reduceLeft(_ && _)
 
   io.Out.foreach(_.bits := io.predicateIn.bits)
@@ -498,7 +499,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int, val NumOuts: Int)(i
 
 }
 
-
+@deprecated("BasicBlockNoMaskFastNode2 is deprecated. It doesn't handle some corner cases. Please use BasicBlockNoMaskFastNode3", "dataflow-lib 1.0")
 class BasicBlockNoMaskFastNode2(BID: Int, val NumOuts: Int)
                                (implicit val p: Parameters,
                                 name: sourcecode.Name, file: sourcecode.File)
@@ -586,6 +587,114 @@ class BasicBlockNoMaskFastNode2(BID: Int, val NumOuts: Int)
         out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
         out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
         state := s_idle
+      }
+    }
+  }
+
+}
+
+/**
+  * BasicBlockNoMaskFastNode3
+  * It has only single input and it fires its output at the same cycle as it
+  * receives its input.
+  *
+  * @param BID
+  * @param NumOuts
+  * @param p
+  * @param name
+  * @param file
+  */
+class BasicBlockNoMaskFastNode3(BID: Int, val NumOuts: Int)
+                               (implicit val p: Parameters,
+                                name: sourcecode.Name, file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new BasicBlockNoMaskFastIO(NumOuts)(p))
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
+
+  /*===========================================*
+ *            Registers                      *
+ *===========================================*/
+
+  val predicate_in_R = RegInit(ControlBundle.default)
+  val predicate_valid_R = RegInit(false.B)
+
+  val out_valid_R = Seq.fill(NumOuts)(RegInit(false.B))
+
+  val fire_R = Seq.fill(NumOuts)(RegInit(false.B))
+
+  val task_input = (io.predicateIn.bits.taskID | predicate_in_R.taskID)
+
+
+  val predicate_input = (io.predicateIn.bits.control & io.predicateIn.valid) | (predicate_in_R.control & predicate_valid_R)
+
+  for (i <- 0 until NumOuts) {
+    when(io.Out(i).fire) {
+      fire_R(i) := true.B
+    }
+  }
+
+  io.predicateIn.ready := ~predicate_valid_R
+  when(io.predicateIn.fire()) {
+    predicate_in_R <> io.predicateIn.bits
+    predicate_valid_R := true.B
+  }
+
+  val fire_mask = (fire_R zip io.Out.map(_.fire)).map { case (a, b) => a | b }
+
+  /*============================================*
+   *            ACTIONS                         *
+   *============================================*/
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
+
+  //Value initilization
+  io.Out.map(_.bits.control).foreach(_ := predicate_input)
+  io.Out.map(_.bits.taskID).foreach(_ := task_input)
+  io.Out.foreach(_.valid := false.B)
+
+
+  switch(state) {
+    is(s_idle) {
+      // State change
+      when(io.predicateIn.fire) {
+
+        io.Out.foreach(_.valid := true.B)
+
+
+        when(fire_mask.reduce(_ & _)) {
+          predicate_in_R := ControlBundle.default
+          predicate_valid_R := false.B
+          out_valid_R.foreach(_ := false.B)
+          fire_R.foreach(_ := false.B)
+
+          state := s_idle
+        }.otherwise {
+
+          state := s_fire
+        }
+
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+          + node_name + ": Output [T] fired @ %d\n", task_input, cycleCount)
+      }
+
+    }
+    is(s_fire) {
+
+      io.Out.foreach(_.valid := true.B)
+
+      when(fire_mask.reduce(_ & _)) {
+        predicate_in_R := ControlBundle.default
+        predicate_valid_R := false.B
+        out_valid_R.foreach(_ := false.B)
+        fire_R.foreach(_ := false.B)
+
+        state := s_idle
+
       }
     }
   }
