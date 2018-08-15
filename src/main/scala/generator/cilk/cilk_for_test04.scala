@@ -152,8 +152,6 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
   bb_pfor_inc3.io.predicateIn <> detach_4.io.Out(0)
 
-  //  bb_pfor_inc3.io.predicateIn <> reattach_10.io.Out(0)
-
   bb_pfor_end4.io.predicateIn <> Loop_0.io.endEnable
 
   bb_pfor_end_continue5.io.predicateIn <> sync_7.io.Out(0)

@@ -53,7 +53,7 @@ class test03Main(implicit p: Parameters) extends test03MainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  //  val test03 = Module(new test03DF())
+  //    val test03 = Module(new test03DF())
   val test03 = Module(new test03_optimizedDF())
 
   cache.io.cpu.req <> test03.io.MemReq

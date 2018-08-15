@@ -307,7 +307,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   call_9_out.io.In("field1") <> phi_i_01.io.Out(2)
 
-  br_3.io.CmpIO <> icmp_cmp2.io.Out
+  br_3.io.CmpIO <> icmp_cmp2.io.Out(0)
 
   phi_i_01.io.InData(1) <> binaryOp_inc5.io.Out(0)
 

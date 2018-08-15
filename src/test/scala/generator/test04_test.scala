@@ -55,7 +55,7 @@ class test04Main(implicit p: Parameters) extends test04MainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  //    val test04 = Module(new test04DF())
+  //  val test04 = Module(new test04DF())
   val test04 = Module(new test04_optimizedDF())
 
   cache.io.cpu.req <> test04.io.MemReq
@@ -100,7 +100,7 @@ class test04Test01[T <: test04MainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   var time = 1 //Cycle counter
   var result = false
-  while (time < 600) {
+  while (time < 1500) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -113,7 +113,7 @@ class test04Test01[T <: test04MainIO](c: T) extends PeekPokeTester(c) {
         println(s"*** Incorrect result received. Got $data. Hoping for $expected")
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE + s"*** Correct result received @ cycle: $time." + Console.RESET)
       }
     }
   }
