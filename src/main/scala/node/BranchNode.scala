@@ -133,6 +133,7 @@ class CBranchFastIO()(implicit p: Parameters) extends CoreBundle {
   val Out = Vec(2, Decoupled(new ControlBundle))
 }
 
+@deprecated("CBranchFastNode is deprecated. It doesn't handle all the corner cases. Please use CBranchFastNodeVariable", "dataflow-lib 1.0")
 class CBranchFastNode(ID: Int)
                      (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {

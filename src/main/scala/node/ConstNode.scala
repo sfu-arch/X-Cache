@@ -152,7 +152,7 @@ class ConstFastNode(value: Int, ID: Int)
    *===============================================*/
 
 
-  val enable_input = (io.enable.bits.control & Fill(xlen, io.enable.valid)) | (enable_R.control & Fill(xlen, enable_valid_R))
+  val enable_input = (io.enable.bits.control & io.enable.valid) | (enable_R.control & enable_valid_R)
 
   //  io.Out.bits.data := value.asSInt(xlen.W).asUInt()
   val output_value = value.asSInt(xlen.W).asUInt()
@@ -197,7 +197,7 @@ class ConstFastNode(value: Int, ID: Int)
 
         printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
           + node_name + ": Output fired @ %d, Value: %d\n",
-          task_input, cycleCount, output_value)
+          task_input, cycleCount, output_value.asSInt())
       }
     }
 

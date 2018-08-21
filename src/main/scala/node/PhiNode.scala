@@ -150,7 +150,9 @@ class PhiNode(NumInputs: Int,
   * @param name
   * @param file
   */
-class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
+class PhiFastNodealaammairali
+
+val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
                  (implicit val p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)
