@@ -1,5 +1,8 @@
 package dataflow
 
+import java.io.PrintWriter
+import java.io.File
+
 import chisel3._
 import chisel3.util._
 import chisel3.Module
@@ -119,6 +122,17 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
     1
   }
 
+  def dumpMemory(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until outDataVec.length) {
+      val data = MemRead(outAddrVec(i))
+      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+    }
+    pw.close
+
+  }
+
 
   val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
   val inDataVec = List(1, 2, 3, 4, 5)
@@ -201,11 +215,13 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
   }
   if (valid_data) {
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
+    dumpMemory("memory.txt")
   }
 
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
+    dumpMemory("memory.txt")
     fail
   }
 }

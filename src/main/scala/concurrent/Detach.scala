@@ -86,6 +86,8 @@ class DetachFastIO()(implicit p: Parameters) extends CoreBundle {
   val Out = Vec(3, Decoupled(new ControlBundle))
 }
 
+
+@deprecated("DetachFast is deprecated. It doesn't handle all the corner cases. DetachFastNode", "dataflow-lib 1.0")
 class DetachFast(ID: Int)(implicit val p: Parameters,
                           name: sourcecode.Name,
                           file: sourcecode.File)

@@ -680,5 +680,129 @@ class CompareBranchNode(ID: Int, opCode: String)
 }
 
 
+/**
+  * This class is the fast version of CBranch which the IO supports
+  * a vector of output for each side True/False
+  *
+  * @param NumPredOps Number of parents
+  * @param NumOuts    Number of outputs
+  * @param ID         Node id
+  */
+
+class UBranchFastNodeVariable(val NumOutputs: Int = 1, val ID: Int)
+                             (implicit val p: Parameters,
+                              name: sourcecode.Name,
+                              file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new Bundle {
+    //Control signal
+    val enable = Flipped(Decoupled(new ControlBundle))
+
+    //Output
+    val Out = Vec(NumOutputs, Decoupled(new ControlBundle))
+  })
+
+  // Printf debugging
+  override val printfSigil = "Node (CBR) ID: " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  //Latching control signal
+  val enable_R = RegInit(ControlBundle.default)
+  val enable_valid_R = RegInit(false.B)
+
+  val output_R = RegInit(ControlBundle.default)
+  val output_valid_R = Seq.fill(NumOutputs)(RegInit(false.B))
+  val fire_R = Seq.fill(NumOutputs)(RegInit(false.B))
+
+  val predicate = (io.enable.bits.control & io.enable.valid) | (enable_R.control & enable_valid_R)
+  val task_id = (io.enable.bits.taskID & io.enable.valid) | (enable_R.taskID & enable_valid_R)
+
+
+  // Latching enable signal
+  io.enable.ready := ~enable_valid_R
+  when(io.enable.fire) {
+    enable_R <> io.enable.bits
+    enable_valid_R := true.B
+  }
+
+  // Defalut values for Trueoutput
+  //
+  //
+  output_R.control := predicate
+  output_R.taskID := task_id
+
+  for (i <- 0 until NumOutputs) {
+    io.Out(i).bits <> ControlBundle.default(predicate, task_id)
+    io.Out(i).valid <> output_valid_R(i)
+  }
+
+  for (i <- 0 until NumOutputs) {
+    when(io.Out(i).fire) {
+      fire_R(i) := true.B
+    }
+  }
+
+
+  val fire_mask = (fire_R zip io.Out.map(_.fire)).map { case (a, b) => a | b }
+
+
+  //Output register
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
+
+  switch(state) {
+    is(s_idle) {
+
+      io.Out.foreach(_.valid := false.B)
+
+      when((enable_valid_R || io.enable.fire)) {
+
+        io.Out.foreach(_.valid := true.B)
+
+        //Check if we can restart the state at the same cycle
+        when(io.Out.map(_.fire).reduce(_ & _)) {
+          //Latching control signal
+          enable_R := ControlBundle.default
+          enable_valid_R := false.B
+
+          output_R := ControlBundle.default
+          output_valid_R.foreach(_ := false.B)
+          fire_R.foreach(_ := false.B)
+
+          state := s_idle
+        }.otherwise {
+          state := s_fire
+        }
+
+
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+          node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+      }
+    }
+    is(s_fire) {
+      io.Out.foreach(_.bits := output_R)
+      (io.Out.map(_.valid) zip output_valid_R).map { case (a, b) => a := b }
+
+      //Now we can restart the states
+      when(fire_mask.reduce(_ & _)) {
+
+        //Latching control signal
+        enable_R := ControlBundle.default
+        enable_valid_R := false.B
+
+        output_R := ControlBundle.default
+        output_valid_R.foreach(_ := false.B)
+        fire_R.foreach(_ := false.B)
+
+      }
+
+    }
+  }
+}
 
 
