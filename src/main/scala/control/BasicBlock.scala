@@ -399,7 +399,7 @@ class BasicBlockNoMaskIO(NumOuts: Int)
   * @param BID       BasicBlock ID
   */
 
-class BasicBlockNoMaskNode(NumInputs: Int,
+class BasicBlockNoMaskNode(NumInputs: Int = 1,
                            NumOuts: Int,
                            BID: Int)
                           (implicit p: Parameters,

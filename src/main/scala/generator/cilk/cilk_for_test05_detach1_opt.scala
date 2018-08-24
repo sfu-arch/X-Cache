@@ -93,7 +93,8 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
   val icmp_4 = Module(new IcmpFastNode(NumOuts = 1, ID = 4, opCode = "ugt")(sign = false))
 
   //  br i1 %4, label %my_if.then, label %my_if.else, !UID !6, !BB_UID !7
-  val br_5 = Module(new CBranchNode(ID = 5))
+  //  val br_5 = Module(new CBranchNode(ID = 5))
+  val br_5 = Module(new CBranchFastNode(ID = 5))
 
   //  %5 = getelementptr inbounds i32, i32* %a.in, i32 %i.0.in, !UID !8
   val Gep_6 = Module(new GepArrayOneNode(NumOuts = 1, ID = 6)(numByte = 4)(size = 1))
@@ -120,7 +121,7 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
   val br_13 = Module(new UBranchFastNode(ID = 13))
 
   //  br label %my_pfor.preattach, !UID !17, !BB_UID !18
-  val br_14 = Module(new UBranchNode(ID = 14))
+  val br_14 = Module(new UBranchFastNode(ID = 14))
 
   //  ret void
   val ret_15 = Module(new RetNode2(retTypes = List(), ID = 15))
