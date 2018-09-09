@@ -194,7 +194,7 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n:Int, ch:Int) extends PeekP
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 500000 && !result) {
+  while (time < 50000 && !result) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
@@ -219,9 +219,13 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n:Int, ch:Int) extends PeekP
   for(i <- 0 until outDataVec.length) {
     val data = MemRead(outAddrVec(i))
     if (data != outDataVec(i).toInt) {
-      println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      //println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      println(Console.RED + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data -- Hoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
       valid_data = false
+    }
+    else {
+      println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
     }
   }
   if (valid_data) {
@@ -246,7 +250,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
 //  val tile_list = List(1,2,4,8)
-  val tile_list = List(4)
+  val tile_list = List(1)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(

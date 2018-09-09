@@ -48,6 +48,19 @@ class GepNodeStackIO(NumOuts: Int)
 
 }
 
+class GepNodeIO(NumIns: Int, NumOuts: Int)
+               (implicit p: Parameters)
+  extends HandShakingIONPS(NumOuts)(new DataBundle) {
+
+  // Inputs should be fed only when Ready is HIGH
+  // Inputs are always latched.
+  // If Ready is LOW; Do not change the inputs as this will cause a bug
+  val baseAddress = Flipped(Decoupled(new DataBundle()))
+  val idx = Vec(NumIns, Flipped(Decoupled(new DataBundle())))
+
+}
+
+
 class GepOneNode(NumOuts: Int, ID: Int)
                 (numByte1: Int)
                 (implicit p: Parameters,
@@ -810,7 +823,7 @@ class GepArrayTwoNode(NumOuts: Int, ID: Int)
 
 
 /**
-  * GetElementPtrNode
+  * GetElementPtrNodeIO
   * GEP node calculates memory addresses for Load and Store instructions
   * Features:
   * It has a list of sizes -> compile
@@ -823,17 +836,31 @@ class GepIO(NumIns: Int, NumOuts: Int)
 
   // Input indexes
   // Indexes can be either constant our coming from other nodes
-  val In = Vec(NumIns, Flipped((Decoupled(new DataBundle))))
+  val BaseAddress = Flipped(Decoupled(new DataBundle))
+
+  val InIndex = Vec(NumIns, Flipped((Decoupled(new DataBundle))))
 
   val enable = Flipped(Decoupled(new ControlBundle))
 
   val Out = Vec(NumOuts, Decoupled(new DataBundle))
 }
 
-class GepNode(NumIns: Int, NumOuts: Int, AraySize: Seq[Int], ID: Int)
-             (implicit val p: Parameters,
-              name: sourcecode.Name,
-              file: sourcecode.File)
+
+/**
+  * GetElementPtrNode
+  * GEP node calculates memory addresses for Load and Store instructions
+  * Features:
+  * It has a list of sizes -> compile
+  * It has a list of indexes -> runtime
+  *
+  * @ArraySize: Is a list of list containig integer values for each element of a datastructure.
+  *             The first element of ArraySize is always the overall size of the type.
+  */
+
+class GepFastNode(NumIns: Int, NumOuts: Int, ArraySize: List[List[Int]], ID: Int)
+                 (implicit val p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
   lazy val io = IO(new GepIO(NumIns, NumOuts))
@@ -847,55 +874,78 @@ class GepNode(NumIns: Int, NumOuts: Int, AraySize: Seq[Int], ID: Int)
 
 
   // Latching inputs
-  val input_data = Seq.fill(NumIns)(RegInit(DataBundle.default))
-  val input_valid = Seq.fill(NumIns)(RegInit(false.B))
+  val badd_data_R = RegInit(DataBundle.default)
+  val badd_valid_R = RegInit(false.B)
 
-  val enable_control = RegInit(ControlBundle.default)
-  val enable_valid = RegInit(false.B)
+  val inputidx_data_R = Seq.fill(NumIns)(RegInit(DataBundle.default))
+  val inputidx_valid_R = Seq.fill(NumIns)(RegInit(false.B))
+
+  val enable_control_R = RegInit(ControlBundle.default)
+  val enable_valid_R = RegInit(false.B)
 
   val output_R = RegInit(DataBundle.default)
   val output_valid_R = Seq.fill(NumOuts)(RegInit(false.B))
 
   val fire_R = Seq.fill(NumOuts)(RegInit(false.B))
-  val task_input = (io.enable.bits.taskID | enable_control.taskID)
+  val task_input = (io.enable.bits.taskID | enable_control_R.taskID)
 
 
   // Predicating inputs
+
+  val badd_data_predicate = (io.BaseAddress.bits.data & Fill(xlen, io.BaseAddress.valid)) | (badd_data_R.data & Fill(xlen, badd_valid_R))
+  val badd_predicate = (io.BaseAddress.bits.predicate & Fill(xlen, io.BaseAddress.valid)) | (badd_data_R.predicate & Fill(xlen, badd_valid_R))
+
   val input_data_predicated = for (i <- 0 until NumIns) yield {
-    val input_pred = (io.In(i).bits.data & Fill(xlen, io.In(i).valid)) |
-      (input_data(i).data & Fill(xlen, input_valid(i)))
+    val input_pred = (io.InIndex(i).bits.data & Fill(xlen, io.InIndex(i).valid)) |
+      (inputidx_data_R(i).data & Fill(xlen, inputidx_valid_R(i)))
     input_pred
   }
 
   val input_pred_predicated = for (i <- 0 until NumIns) yield {
-    val input_pred = (io.In(i).bits.predicate & Fill(xlen, io.In(i).valid)) |
-      (input_data(i).predicate & Fill(xlen, input_valid(i)))
+    val input_pred = (io.InIndex(i).bits.predicate & Fill(xlen, io.InIndex(i).valid)) |
+      (inputidx_data_R(i).predicate & Fill(xlen, inputidx_valid_R(i)))
     input_pred
   }
 
 
-  // Computing the address
-  val data_out = (input_data_predicated zip AraySize).map { case (a, b) => a * b.U }.reduce(_ + _)
+  // Calculating the address
+  val data_out = badd_data_predicate +
+    (input_data_predicated zip ArraySize).map {
+      case (a, b) =>
+        if (b.length == 1) {
+          a * b(0).U
+        }
+        else {
+          val table = VecInit(b.map(_.U))
+          table(a)
+        }
+    }.reduce(_ + _)
 
   // Handshaking protocol
-  for (i <- 0 until NumIns) {
-    io.In(i).ready := ~input_valid(i)
-    when(io.In(i).fire() && io.In(i).bits.predicate) {
-      input_data_predicated(i) <> io.In(i).bits
-      input_valid(i) := true.B
-    }
-
+  io.BaseAddress.ready := ~badd_valid_R
+  when(io.BaseAddress.fire() && io.BaseAddress.bits.predicate) {
+    badd_data_R <> io.BaseAddress.bits
+    badd_valid_R := true.B
   }
 
-  io.enable.ready := ~enable_valid
+
+  for (i <- 0 until NumIns) {
+    io.InIndex(i).ready := ~inputidx_valid_R(i)
+    when(io.InIndex(i).fire() && io.InIndex(i).bits.predicate) {
+      inputidx_data_R(i) <> io.InIndex(i).bits
+      inputidx_valid_R(i) := true.B
+    }
+  }
+
+  io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
-    enable_control <> io.enable.bits
-    enable_valid := true.B
+    enable_control_R <> io.enable.bits
+    enable_valid_R := true.B
   }
 
 
   // Defalut values for output
-  val predicate = enable_control.control & input_pred_predicated.reduce(_ & _)
+  val predicate = enable_control_R.control & input_pred_predicated.reduce(_ & _)
 
   output_R.data := data_out
   output_R.predicate := predicate
@@ -922,9 +972,9 @@ class GepNode(NumIns: Int, NumOuts: Int, AraySize: Seq[Int], ID: Int)
   switch(state) {
     is(s_idle) {
 
-      val input_fire = (input_valid zip io.In.map(_.fire)).map { case (a, b) => a || b }
+      val input_fire = (inputidx_valid_R zip io.InIndex.map(_.fire)).map { case (a, b) => a || b }
 
-      when((enable_valid || io.enable.fire) && input_fire.reduce(_ || _)) {
+      when((enable_valid_R || io.enable.fire) && input_fire.reduce(_ || _)) {
 
         output_valid_R.foreach(_ := true.B)
 
@@ -940,11 +990,14 @@ class GepNode(NumIns: Int, NumOuts: Int, AraySize: Seq[Int], ID: Int)
 
       when(fire_mask.reduce(_ & _)) {
 
-        input_data.foreach(_ := DataBundle.default)
-        input_valid.foreach(_ := false.B)
+        badd_data_R := DataBundle.default
+        badd_valid_R := false.B
 
-        enable_control := ControlBundle.default
-        enable_valid := false.B
+        inputidx_data_R.foreach(_ := DataBundle.default)
+        inputidx_valid_R.foreach(_ := false.B)
+
+        enable_control_R := ControlBundle.default
+        enable_valid_R := false.B
 
         output_R := DataBundle.default
         output_valid_R.foreach(_ := false.B)
@@ -955,17 +1008,118 @@ class GepNode(NumIns: Int, NumOuts: Int, AraySize: Seq[Int], ID: Int)
       }
     }
   }
-
-
-  //  printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-  //    + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
-  //    task_input, cycleCount, FU.io.out.asUInt(), left_input.asUInt(), right_input.asUInt())
 }
 
 
+class GepNode(NumIns: Int, NumOuts: Int, ArraySize: List[List[Int]], ID: Int)
+             (implicit p: Parameters,
+              name: sourcecode.Name,
+              file: sourcecode.File)
+  extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
+  override lazy val io = IO(new GepNodeIO(NumIns, NumOuts))
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+  // Addr Inputs
+  val base_addr_R = RegInit(DataBundle.default)
+  val base_addr_valid_R = RegInit(false.B)
+
+  // Index 1 input
+  val idx_R = Seq.fill(NumIns)(RegInit(DataBundle.default))
+  val idx_valid_R = Seq.fill(NumIns)(RegInit(false.B))
 
 
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
+  val state = RegInit(s_IDLE)
 
+  /*==========================================*
+   *           Predicate Evaluation           *
+   *==========================================*/
+
+  val predicate = IsEnable()
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+  io.baseAddress.ready := ~base_addr_valid_R
+  when(io.baseAddress.fire()) {
+    base_addr_R <> io.baseAddress.bits
+    base_addr_valid_R := true.B
+  }
+
+  for (i <- 0 until NumIns) {
+    io.idx(i).ready := ~idx_valid_R(i)
+    when(io.idx(i).fire()) {
+      idx_R(i) <> io.idx(i).bits
+      idx_valid_R(i) := true.B
+    }
+  }
+
+  // Calculating the address
+  val data_out = base_addr_R.data +
+    (idx_R.map {
+      _.data
+    } zip ArraySize).map {
+      case (a, b) =>
+        if (b.length == 1) {
+          a * b(0).U
+        }
+        else {
+          val table = VecInit(b.map(_.U))
+          table(a)
+        }
+    }.reduce(_ + _)
+
+
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.data := data_out
+    io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.taskID := base_addr_R.taskID
+  }
+
+
+  /*============================================*
+   *            STATES                          *
+   *============================================*/
+
+  switch(state) {
+    is(s_IDLE) {
+      when(enable_valid_R) {
+        when(idx_valid_R.reduce(_ & _) && base_addr_valid_R) {
+          ValidOut()
+          state := s_COMPUTE
+        }
+      }
+
+    }
+    is(s_COMPUTE) {
+      when(IsOutReady()) {
+        // Reset output
+        idx_R.foreach(_ := DataBundle.default)
+        base_addr_R := DataBundle.default
+
+        idx_valid_R.foreach(_ := false.B)
+        base_addr_valid_R := false.B
+
+        // Reset state
+        state := s_IDLE
+
+        // Reset output
+        Reset()
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+          node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_out)
+      }
+    }
+  }
+}
 
 
 
