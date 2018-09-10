@@ -28,4 +28,8 @@ done
 printf "%s\n" ${APPS[@]} | xargs -n1 --max-procs=${CONCURRENT} -I APP bash -c 'echo "Compiling FPGA for APP"; cd APP/APP*; source build.sh >& make_compile.log'
 
 
+#END_TIME=`date`
 
+#sendEmail -f smargerm@sfu.ca -t smargerm@sfu.ca -s mailgate.sfu.ca \
+#          -u "compile_hybrids.sh complete" \
+#          -m "Begin: ${BEGIN_TIME}\nEnd  : ${END_TIME}"

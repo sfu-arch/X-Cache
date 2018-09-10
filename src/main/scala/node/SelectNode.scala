@@ -10,6 +10,7 @@ import config._
 import interfaces._
 import muxes._
 import util._
+import utility.UniformPrintfs
 
 
 class SelectNodeIO(NumOuts: Int)
@@ -136,6 +137,167 @@ class SelectNode(NumOuts: Int, ID: Int)
         out_data_R.predicate := false.B
         Reset()
         printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_R, cycleCount, output_data.data)
+      }
+    }
+  }
+
+}
+
+
+class SelectFastNode(NumOuts: Int, ID: Int)
+                    (implicit val p: Parameters,
+                     name: sourcecode.Name,
+                     file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new Bundle {
+    // Input data 1
+    val InData1 = Flipped(Decoupled(new DataBundle))
+
+    // Input data 2
+    val InData2 = Flipped(Decoupled(new DataBundle))
+
+    // Select input data
+    val Select = Flipped(Decoupled(new DataBundle))
+
+    // Enable signal
+    val enable = Flipped(Decoupled(new ControlBundle))
+
+    val Out = Decoupled(new DataBundle)
+
+  })
+
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  //  override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+  // Indata1 Input
+  val indata1_R = RegInit(DataBundle.default)
+  val indata1_valid_R = RegInit(false.B)
+
+  // Indata2 Input
+  val indata2_R = RegInit(DataBundle.default)
+  val indata2_valid_R = RegInit(false.B)
+
+  // Select Input
+  val select_R = RegInit(DataBundle.default)
+  val select_valid_R = RegInit(false.B)
+
+  val enable_R = RegInit(ControlBundle.default)
+  val enable_valid_R = RegInit(false.B)
+
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+  io.InData1.ready := ~indata1_valid_R
+  when(io.InData1.fire() && io.InData1.bits.predicate) {
+    indata1_R <> io.InData1.bits
+    indata1_valid_R := true.B
+  }
+
+  io.InData2.ready := ~indata2_valid_R
+  when(io.InData2.fire() && io.InData2.bits.predicate) {
+    indata2_R <> io.InData2.bits
+    indata2_valid_R := true.B
+  }
+
+  io.Select.ready := ~select_valid_R
+  when(io.Select.fire()) {
+    select_R <> io.Select.bits
+    select_valid_R := true.B
+  }
+
+  io.enable.ready := ~enable_valid_R
+  when(io.enable.fire()) {
+    enable_R <> io.enable.bits
+    enable_valid_R := true.B
+  }
+
+  val in1_input = (io.InData1.bits.data & Fill(xlen, io.InData1.valid)) | (indata1_R.data & Fill(xlen, indata1_valid_R))
+  val in2_input = (io.InData2.bits.data & Fill(xlen, io.InData2.valid)) | (indata2_R.data & Fill(xlen, indata2_valid_R))
+
+  val select_input = (io.Select.bits.data & Fill(xlen, io.Select.valid)) | (select_R.data & Fill(xlen, select_valid_R))
+
+  val enable_input = (io.enable.bits.control & Fill(xlen, io.enable.valid)) | (enable_R.control & Fill(xlen, enable_valid_R))
+
+  val output_data = Mux(select_input(0).toBool(), in1_input, in2_input)
+  val predicate = enable_input
+
+  val task_ID_R = RegNext(next = enable_R.taskID)
+
+  io.Out.valid := false.B
+  io.Out.bits.taskID := 0.U
+  io.Out.bits.data := output_data
+  io.Out.bits.predicate := predicate
+
+  /*============================================*
+   *            State Machine                   *
+   *============================================*/
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
+
+  switch(state) {
+    is(s_idle) {
+      when(enable_valid_R || io.enable.fire) {
+        when((indata1_valid_R || io.InData1.fire) &&
+          (indata2_valid_R || io.InData2.fire) &&
+          (select_valid_R || io.Select.fire)) {
+
+          io.Out.valid := true.B
+
+          when(io.Out.fire) {
+            indata1_R := DataBundle.default
+            indata1_valid_R := false.B
+
+            indata2_R := DataBundle.default
+            indata2_valid_R := false.B
+
+            select_R := DataBundle.default
+            select_valid_R := false.B
+
+            enable_R := ControlBundle.default
+            enable_valid_R := false.B
+
+            state := s_idle
+
+          }.otherwise {
+            state := s_fire
+          }
+
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %d : %d ? %d (S:%d)\n",
+            task_ID_R, cycleCount, output_data, in1_input, in2_input, select_input)
+
+        }
+      }
+    }
+    is(s_fire) {
+      io.Out.valid := true.B
+      when(io.Out.fire) {
+        indata1_R := DataBundle.default
+        indata1_valid_R := false.B
+
+        indata2_R := DataBundle.default
+        indata2_valid_R := false.B
+
+        select_R := DataBundle.default
+        select_valid_R := false.B
+
+        enable_R := ControlBundle.default
+        enable_valid_R := false.B
+
+        state := s_idle
+
+
       }
     }
   }

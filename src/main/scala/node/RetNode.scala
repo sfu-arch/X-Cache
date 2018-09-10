@@ -121,9 +121,9 @@ class RetNodeIO(val retTypes: Seq[Int])(implicit p: Parameters)
 }
 
 class RetNode(retTypes: Seq[Int], ID: Int)
-                (implicit val p: Parameters,
-                 name: sourcecode.Name,
-                 file: sourcecode.File) extends Module
+             (implicit val p: Parameters,
+              name: sourcecode.Name,
+              file: sourcecode.File) extends Module
   with CoreParams with UniformPrintfs {
 
   val node_name = name.value
@@ -140,7 +140,7 @@ class RetNode(retTypes: Seq[Int], ID: Int)
   val state = RegInit(s_IDLE)
 
   // Enable signals
-//  val enable_R = RegInit(ControlBundle.default)
+  //  val enable_R = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
   // Data Inputs
@@ -156,7 +156,7 @@ class RetNode(retTypes: Seq[Int], ID: Int)
   io.enable.ready := ~enable_valid_R
   when(io.enable.fire()) {
     enable_valid_R := io.enable.valid
-//    enable_R := io.enable.bits
+    //    enable_R := io.enable.bits
     output_R.enable := io.enable.bits
   }
 
@@ -210,14 +210,14 @@ class RetNode2IO(val retTypes: Seq[Int])(implicit p: Parameters)
   extends Bundle {
   //  val enable = Flipped(Decoupled(new ControlBundle()))
   //  val In = Flipped(new VariableDecoupledData(retTypes)) // Data to be returned
-  val In  = Flipped(new CallDecoupled(retTypes))
+  val In = Flipped(new CallDecoupled(retTypes))
   val Out = Decoupled(new Call(retTypes)) // Returns to calling block(s)
 }
 
 class RetNode2(retTypes: Seq[Int], ID: Int)
-             (implicit val p: Parameters,
-              name: sourcecode.Name,
-              file: sourcecode.File) extends Module
+              (implicit val p: Parameters,
+               name: sourcecode.Name,
+               file: sourcecode.File) extends Module
   with CoreParams with UniformPrintfs {
 
   val node_name = name.value
@@ -297,7 +297,9 @@ class RetNode2(retTypes: Seq[Int], ID: Int)
         out_ready_R := false.B
 
         state := s_IDLE
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d\n", output_R.enable.taskID, cycleCount)
+        printf("[LOG] " + "[" + module_name + "] "
+          + "[TID->%d] " + node_name +
+          ": Output fired @ %d\n", output_R.enable.taskID, cycleCount)
       }
     }
   }

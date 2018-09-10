@@ -328,6 +328,13 @@ object ControlBundle {
     wire
   }
 
+  def default(control: Bool, task: UInt)(implicit p: Parameters): ControlBundle = {
+    val wire = Wire(new ControlBundle)
+    wire.control := control
+    wire.taskID := task
+    wire
+  }
+
   def active(taskID: UInt = 0.U)(implicit p: Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := true.B
@@ -341,6 +348,7 @@ object ControlBundle {
     wire.taskID := taskID
     wire
   }
+
 }
 
 

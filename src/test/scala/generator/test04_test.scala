@@ -21,11 +21,11 @@ import node._
 import junctions._
 
 
-class test04MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+class test04MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+  val io = IO(new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val addr = Input(UInt(nastiXAddrBits.W))
-    val din  = Input(UInt(nastiXDataBits.W))
+    val din = Input(UInt(nastiXDataBits.W))
     val write = Input(Bool())
     val dout = Output(UInt(nastiXDataBits.W))
     val out = Decoupled(new Call(List(32)))
@@ -34,17 +34,17 @@ class test04MainIO(implicit val p: Parameters)  extends Module with CoreParams w
 
 class test04Main(implicit p: Parameters) extends test04MainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
   // Store a copy of all data written to the cache.  This is done since the cache isn't
   // 'write through' to the memory model and we have no easy way of reading the
   // cache contents from the testbench.
   when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
+    memCopy.write((cache.io.cpu.req.bits.addr >> 2).asUInt(), cache.io.cpu.req.bits.data)
   }
-  io.dout := memCopy.read((io.addr>>2).asUInt())
+  io.dout := memCopy.read((io.addr >> 2).asUInt())
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -55,7 +55,8 @@ class test04Main(implicit p: Parameters) extends test04MainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val test04 = Module(new test04DF())
+  //  val test04 = Module(new test04DF())
+  val test04 = Module(new test04_optimizedDF())
 
   cache.io.cpu.req <> test04.io.MemReq
   test04.io.MemResp <> cache.io.cpu.resp
@@ -63,9 +64,6 @@ class test04Main(implicit p: Parameters) extends test04MainIO {
   io.out <> test04.io.out
 
 }
-
-
-
 
 
 //class test04Test01(c: test04CacheWrapper) extends PeekPokeTester(c) {
@@ -100,14 +98,14 @@ class test04Test01[T <: test04MainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
   step(1)
-  var time = 1  //Cycle counter
+  var time = 1 //Cycle counter
   var result = false
-  while (time < 600) {
+  while (time < 1500) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
       peek(c.io.out.bits.data("field0").predicate) == 1
-      ) {
+    ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       val expected = 1
@@ -115,12 +113,12 @@ class test04Test01[T <: test04MainIO](c: T) extends PeekPokeTester(c) {
         println(s"*** Incorrect result received. Got $data. Hoping for $expected")
         fail
       } else {
-        println("*** Correct result received.")
+        println(Console.BLUE + s"*** Correct result received @ cycle: $time." + Console.RESET)
       }
     }
   }
 
-  if(!result) {
+  if (!result) {
     println("*** Timeout.")
     fail
   }
@@ -136,13 +134,13 @@ class test04Tester extends FlatSpec with Matchers {
     // -td  = target directory
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
-     Array(
-       // "-ll", "Info",
-       "-tbn", "verilator",
-       "-td", "test_run_dir",
-       "-tts", "0001"),
-     () => new test04Main()) {
-     c => new test04Test01(c)
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir/test04",
+        "-tts", "0001"),
+      () => new test04Main()) {
+      c => new test04Test01(c)
     } should be(true)
   }
 }

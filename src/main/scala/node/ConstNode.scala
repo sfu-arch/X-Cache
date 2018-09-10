@@ -5,6 +5,7 @@ import chisel3.Module
 import config._
 import interfaces.{ControlBundle, DataBundle}
 import util._
+import utility.UniformPrintfs
 
 class ConstNode(value: Int, NumOuts: Int, ID: Int)
                (implicit p: Parameters,
@@ -81,4 +82,138 @@ class ConstNode(value: Int, NumOuts: Int, ID: Int)
     }
   }
 }
+
+
+//class ConstFastNode(value: Int, ID: Int)
+//               (implicit val p: Parameters,
+//                name: sourcecode.Name,
+//                file: sourcecode.File)
+//  extends Module with CoreParams with UniformPrintfs {
+//
+//  val io = IO(new Bundle{
+//    val enable = Flipped(Decoupled(new ControlBundle))
+//    val Out = Decoupled(new DataBundle)
+//  })
+//
+//  val node_name = name.value
+//  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+//
+//  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+//  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+//
+//
+//  io.Out.bits.data := value.asSInt(xlen.W).asUInt()
+//  io.Out.bits.taskID := io.enable.bits.taskID
+//  io.Out.bits.predicate := io.enable.bits.control
+//
+//  val task_ID = io.enable.bits.taskID
+//
+//  when(io.Out.ready && io.enable.valid){
+//    io.Out.valid := true.B
+//    io.enable.ready := true.B
+//    printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
+//      node_name + ": Output fired @ %d, Value: %d\n",
+//      task_ID, cycleCount, value.asSInt(xlen.W))
+//  }.otherwise{
+//    io.Out.valid := false.B
+//    io.enable.ready := false.B
+//  }
+//
+//}
+
+class ConstFastNode(value: Int, ID: Int)
+                   (implicit val p: Parameters,
+                    name: sourcecode.Name,
+                    file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new Bundle {
+    val enable = Flipped(Decoupled(new ControlBundle))
+    val Out = Decoupled(new DataBundle)
+  })
+
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+  val enable_R = RegInit(ControlBundle.default)
+  val enable_valid_R = RegInit(false.B)
+
+  val task_input = (io.enable.bits.taskID | enable_R.taskID)
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+
+  val enable_input = (io.enable.bits.control & io.enable.valid) | (enable_R.control & enable_valid_R)
+
+  //  io.Out.bits.data := value.asSInt(xlen.W).asUInt()
+  val output_value = value.asSInt(xlen.W).asUInt()
+
+  io.enable.ready := ~enable_valid_R
+  when(io.enable.fire()) {
+    enable_R <> io.enable.bits
+    enable_valid_R := true.B
+  }
+
+  // Defalut values for output
+
+  val predicate = enable_input
+
+  io.Out.bits.data := output_value
+  io.Out.bits.predicate := predicate
+  io.Out.bits.taskID := task_input
+  io.Out.valid := false.B
+
+  /*============================================*
+   *            ACTIONS (possibly dangerous)    *
+   *============================================*/
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
+
+  switch(state) {
+    is(s_idle) {
+
+      io.Out.valid := false.B
+
+      when(enable_valid_R || io.enable.fire) {
+        io.Out.valid := true.B
+
+        when(io.Out.fire) {
+          enable_R := ControlBundle.default
+          enable_valid_R := false.B
+          state := s_idle
+        }.otherwise {
+
+          state := s_fire
+        }
+
+        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+          + node_name + ": Output fired @ %d, Value: %d\n",
+          task_input, cycleCount, output_value.asSInt())
+      }
+    }
+
+    is(s_fire) {
+      io.Out.valid := true.B
+
+      when(io.Out.fire) {
+
+        enable_R := ControlBundle.default
+        enable_valid_R := false.B
+
+        state := s_idle
+      }
+    }
+  }
+
+}
+
 

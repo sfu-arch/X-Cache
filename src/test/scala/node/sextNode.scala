@@ -27,10 +27,10 @@ class sextTester(df: SextNode)
   //poke(df.io.Input.valid, true.B)
   //poke(df.io.Out(0).ready, true.B)
 
-  println(s"Output: ${peek(df.io.Out(0))}\n")
+  println(s"Output: ${peek(df.io.Out)}\n")
   step(1)
 
-  println(s"Output: ${peek(df.io.Out(0))}\n")
+  println(s"Output: ${peek(df.io.Out)}\n")
 
  }
 
@@ -40,7 +40,7 @@ class sextTester(df: SextNode)
 class sextTests extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new SextNode(SrcW = 32, DesW = 64, NumOuts=1)) {
+    chisel3.iotesters.Driver(() => new SextNode()) {
        c => new sextTester(c)
      } should be(true)
    }
