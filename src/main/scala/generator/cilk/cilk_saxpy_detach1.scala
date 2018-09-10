@@ -73,7 +73,8 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
 
   //  %0 = getelementptr inbounds i32, i32* %x.in, i32 %i.0.in, !UID !1
   //    val Gep_0 = Module(new GepArrayOneNode(NumOuts = 1, ID = 0)(numByte = 4)(size = 1))
-  val Gep_0 = Module(new GepNode(NumIns = 1, NumOuts = 1, ArraySize = List(List(4)), ID = 0))
+  //  val Gep_0 = Module(new GepNode(NumIns = 1, NumOuts = 1, ArraySize = List(List(4)), ID = 0))
+  val Gep_0 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 0)(ElementSize = 4, ArraySize = List()))
 
   //  %1 = load i32, i32* %0, align 4, !UID !2
   val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 1, RouteID = 0))

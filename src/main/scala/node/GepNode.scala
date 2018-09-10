@@ -1011,7 +1011,8 @@ class GepFastNode(NumIns: Int, NumOuts: Int, ArraySize: List[List[Int]], ID: Int
 }
 
 
-class GepNode(NumIns: Int, NumOuts: Int, ArraySize: List[List[Int]], ID: Int)
+class GepNode(NumIns: Int, NumOuts: Int, ID: Int)
+             (ElementSize: Int, ArraySize: List[Int])
              (implicit p: Parameters,
               name: sourcecode.Name,
               file: sourcecode.File)
@@ -1038,6 +1039,9 @@ class GepNode(NumIns: Int, NumOuts: Int, ArraySize: List[List[Int]], ID: Int)
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
 
+  //We support only geps with 1 or 2 inputs
+  assert(NumIns <= 2)
+
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
@@ -1063,19 +1067,34 @@ class GepNode(NumIns: Int, NumOuts: Int, ArraySize: List[List[Int]], ID: Int)
   }
 
   // Calculating the address
+  val seek_value =
+    if (ArraySize.isEmpty) {
+      0.U
+    }
+    else if (ArraySize.length == 1) {
+      idx_R(1).data * ArraySize(0).U
+    }
+    else {
+      val table = VecInit(ArraySize.map(_.U))
+      table(idx_R(1).data)
+    }
+
   val data_out = base_addr_R.data +
-    (idx_R.map {
-      _.data
-    } zip ArraySize).map {
-      case (a, b) =>
-        if (b.length == 1) {
-          a * b(0).U
-        }
-        else {
-          val table = VecInit(b.map(_.U))
-          table(a)
-        }
-    }.reduce(_ + _)
+    (idx_R(0).data * ElementSize.U) + seek_value
+
+  //  val data_out = base_addr_R.data +
+  //    (idx_R.map {
+  //      _.data
+  //    } zip ArraySize).map {
+  //      case (a, b) =>
+  //        if (b.length == 1) {
+  //          a * b(0).U
+  //        }
+  //        else {
+  //          val table = VecInit(b.map(_.U))
+  //          table(a)
+  //        }
+  //    }.reduce(_ + _)
 
 
   // Wire up Outputs
