@@ -4,6 +4,11 @@
 # but an image with a JVM speeds up the build a bit.
 image: amsharifian/docker-gitlab-runner
 
+tags:
+  - llvm
+  - chisel
+  - dandelion
+
 before_script:
   # Enable the usage of sources over https
   #- apt-get update -yqq
