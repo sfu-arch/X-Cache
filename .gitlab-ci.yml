@@ -23,8 +23,8 @@
 #     - sbt compile
 
 job1:
-#   image: 
-    name: ubuntu-16.04
+  image: 
+    name: ubuntu:16.04
     entrypoint: ["/bin/bash", "-c", "-l"]
   tags:
     - llvm
