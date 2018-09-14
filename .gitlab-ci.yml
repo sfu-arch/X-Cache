@@ -25,10 +25,10 @@
 job1:
   image: 
     name: gitlab/gitlab-runner
-    entrypoint: ["/bin/bash", "-c"]
+    entrypoint: ["/bin/bash", "-c", "-l"]
   tags:
     - llvm
     - chisel
   script:
-    - sbt compile
+    # - sbt compile
     - echo "RUN"
