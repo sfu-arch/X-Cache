@@ -26,7 +26,7 @@ job1:
 #   image: 
 #     name: ubuntu:16.04
 #     entrypoint: ["/bin/bash", "-c", "-l"]
-  image: ubuntu:16.04
+  image: java:8
   tags:
     - llvm
     - chisel
