@@ -15,23 +15,24 @@ job1:
 #   image: 
 #     name: ubuntu:16.04
 #     entrypoint: ["/bin/bash", "-c", "-l"]
-  image: java:8
+#   image: java:8
+  image: amsharifian/docker-gitlab-runner
   tags:
     - llvm
     - chisel
     
-  before_script:
-    #   # Enable the usage of sources over https
-    - apt-get update -yqq
-    - apt-get install apt-transport-https -yqq
-    #   Add keyserver for SBT
-    - echo "deb http://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list
-    - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823
-    #   Install SBT
-    - apt-get update -yqq
-    - apt-get install sbt -yqq
-     # Log the sbt version
-    - sbt sbtVersion
+#   before_script:
+#     #   # Enable the usage of sources over https
+#     - apt-get update -yqq
+#     - apt-get install apt-transport-https -yqq
+#     #   Add keyserver for SBT
+#     - echo "deb http://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list
+#     - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823
+#     #   Install SBT
+#     - apt-get update -yqq
+#     - apt-get install sbt -yqq
+#      # Log the sbt version
+#     - sbt sbtVersion
   script:
     - sbt compile
     - echo "RUN"
