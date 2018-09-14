@@ -23,8 +23,9 @@
 #     - sbt compile
 
 job1:
-  image: amsharifian/docker-gitlab-runner
-  entrypoint: ["/bin/sh"]
+  image: 
+    - name: amsharifian/docker-gitlab-runner
+    - entrypoint: ["/bin/sh", "-c"]
   tags:
     - llvm
     - chisel
