@@ -23,9 +23,9 @@
 #     - sbt compile
 
 job1:
-  image: 
-    name: gitlab/gitlab-runner
-    entrypoint: ["/bin/bash", "-c", "-l"]
+#   image: 
+    # name: gitlab/gitlab-runner
+    # entrypoint: ["/bin/bash", "-c", "-l"]
   tags:
     - llvm
     - chisel
