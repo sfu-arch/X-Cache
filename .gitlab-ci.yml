@@ -20,7 +20,7 @@ job1:
     - llvm
     - chisel
     
-    # before_script:
+  before_script:
     #   # Enable the usage of sources over https
     - apt-get update -yqq
     - apt-get install apt-transport-https -yqq
