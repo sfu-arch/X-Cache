@@ -24,6 +24,9 @@
 
 job1:
   image: amsharifian/docker-gitlab-runner
+  tags:
+    - llvm
+    - chisel
   script:
     - sbt compile
     - echo "RUN"
