@@ -24,8 +24,8 @@
 
 job1:
   image: 
-    - name: amsharifian/docker-gitlab-runner
-    - entrypoint: ["/bin/sh", "-c"]
+    name: amsharifian/docker-gitlab-runner
+    entrypoint: ["/bin/bash"]
   tags:
     - llvm
     - chisel
