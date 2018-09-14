@@ -24,11 +24,11 @@
 
 job1:
 #   image: 
-    # name: gitlab/gitlab-runner
-    # entrypoint: ["/bin/bash", "-c", "-l"]
+    name: ubuntu:16.04
+    entrypoint: ["/bin/bash", "-c", "-l"]
   tags:
     - llvm
     - chisel
   script:
-    # - sbt compile
+    - sbt compile
     - echo "RUN"
