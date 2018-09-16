@@ -166,8 +166,11 @@ class Cache(implicit val p: Parameters) extends Module with CacheParams {
     }
   }
 
+  //First elemt is ID and it looks like ID tags a memory request
+  // ID : Is AXI request ID
+  // @todo: Change @id value for each cache
   io.nasti.ar.bits := NastiReadAddressChannel(
-    0.U, (Cat(tag_reg, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits/8).U, (dataBeats-1).U)
+    id = 0.U, (Cat(tag_reg, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits / 8).U, (dataBeats - 1).U)
   io.nasti.ar.valid := false.B
   io.nasti.ar.bits.prot := AXPROT(false, false, true)
   io.nasti.ar.bits.user := 0x1f.U
