@@ -56,6 +56,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   InputSplitter.io.In <> io.in
 
 
+
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
@@ -179,6 +180,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   sync_7.io.decIn(0) <> reattach_10.io.Out(0)
 
 
+
   /* ================================================================== *
    *                   LOOP -> PREDICATE INSTRUCTION                    *
    * ================================================================== */
@@ -191,9 +193,11 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   Loop_0.io.loopExit(0) <> br_3.io.Out(1)
 
 
+
   /* ================================================================== *
    *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -209,6 +213,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   Loop_0.io.In(3) <> InputSplitter.io.Out.data("field3")(0)
 
 
+
   /* ================================================================== *
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
@@ -222,9 +227,11 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   call_9_out.io.In("field3") <> Loop_0.io.liveIn.data("field3")(0)
 
 
+
   /* ================================================================== *
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -269,6 +276,8 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   call_9_out.io.enable <> bb_offload_pfor_body6.io.Out(0)
 
 
+
+
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
@@ -276,9 +285,11 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   phi_i_01.io.Mask <> bb_pfor_cond1.io.MaskBB(0)
 
 
+
   /* ================================================================== *
    *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -286,9 +297,11 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
    * ================================================================== */
 
 
+
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -315,6 +328,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   reattach_10.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 
+
   /* ================================================================== *
    *                   PRINTING CALLIN AND CALLOUT INTERFACE            *
    * ================================================================== */
@@ -324,6 +338,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   io.call_9_out <> call_9_out.io.Out(0)
 
   reattach_10.io.enable <> call_9_in.io.Out.enable
+
 
 
   /* ================================================================== *

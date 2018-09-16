@@ -391,7 +391,7 @@ class stencilTop(tiles: Int)(implicit p: Parameters) extends stencilTopIO {
 
 import java.io.{File, FileWriter}
 object stencilMain extends App {
-  val dir = new File("RTL/stencil") ; dir.mkdirs
+  val dir = new File("RTL/stencilTop") ; dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case TLEN => 6
