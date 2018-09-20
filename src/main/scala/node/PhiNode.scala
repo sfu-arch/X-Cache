@@ -260,7 +260,6 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
         when(enable_input) {
           when(in_data_valid_R(sel) || io.InData(sel).fire) {
             io.Out.foreach(_.valid := true.B)
-
             when(io.Out.map(_.fire).reduce(_ & _)) {
               in_data_R.foreach(_ := DataBundle.default)
               in_data_valid_R.foreach(_ := false.B)
@@ -308,36 +307,36 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
       }
 
 
-      when((enable_valid_R || io.enable.fire)
-        && (in_data_valid_R(sel) || io.InData(sel).fire)) {
-
-        io.Out.foreach(_.valid := true.B)
-
-        when(io.Out.map(_.fire).reduce(_ & _)) {
-          in_data_R.foreach(_ := DataBundle.default)
-          in_data_valid_R.foreach(_ := false.B)
-
-          //mask_R := 0.U
-          mask_valid_R := false.B
-
-          enable_R := ControlBundle.default
-          enable_valid_R := false.B
-
-          out_valid_R.foreach(_ := false.B)
-
-          fire_R.foreach(_ := false.B)
-
-          state := s_idle
-
-        }.otherwise {
-          state := s_fire
-        }
-
-        //Print output
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-          + node_name + ": Output fired @ %d, Value: %d\n",
-          io.InData(sel).bits.taskID, cycleCount, io.InData(sel).bits.data)
-      }
+//      when((enable_valid_R || io.enable.fire)
+//        && (in_data_valid_R(sel) || io.InData(sel).fire)) {
+//
+//        io.Out.foreach(_.valid := true.B)
+//
+//        when(io.Out.map(_.fire).reduce(_ & _)) {
+//          in_data_R.foreach(_ := DataBundle.default)
+//          in_data_valid_R.foreach(_ := false.B)
+//
+//          //mask_R := 0.U
+//          mask_valid_R := false.B
+//
+//          enable_R := ControlBundle.default
+//          enable_valid_R := false.B
+//
+//          out_valid_R.foreach(_ := false.B)
+//
+//          fire_R.foreach(_ := false.B)
+//
+//          state := s_idle
+//
+//        }.otherwise {
+//          state := s_fire
+//        }
+//
+//        //Print output
+//        printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+//          + node_name + ": Output fired @ %d, Value: %d\n",
+//          io.InData(sel).bits.taskID, cycleCount, io.InData(sel).bits.data)
+//      }
     }
 
     is(s_fire) {
