@@ -64,7 +64,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val entry = Module(new BasicBlockNoMaskFastNode2(NumOuts = 2, BID = 0))
+  val entry = Module(new BasicBlockNoMaskFastNode3(NumOuts = 2, BID = 0))
 
 
 

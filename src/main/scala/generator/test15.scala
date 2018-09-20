@@ -1,5 +1,6 @@
 package dataflow
 
+import FPU._
 import accel._
 import arbiters._
 import chisel3._
@@ -49,7 +50,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(1,1)))
+  val InputSplitter = Module(new SplitCallNew(List(3,5)))
   InputSplitter.io.In <> io.in
 
 
@@ -58,11 +59,11 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(1,2), NumOuts = 0, NumExits=1, ID = 0))
+  val Loop_0 = Module(new LoopBlock(NumIns=List(1,1), NumOuts = 0, NumExits=1, ID = 0))
 
-  val Loop_1 = Module(new LoopBlock(NumIns=List(3,2), NumOuts = 0, NumExits=1, ID = 1))
+  val Loop_1 = Module(new LoopBlock(NumIns=List(1,1,2,2), NumOuts = 0, NumExits=1, ID = 1))
 
-  val Loop_2 = Module(new LoopBlock(NumIns=List(2,2), NumOuts = 1, NumExits=1, ID = 2))
+  val Loop_2 = Module(new LoopBlock(NumIns=List(1,1,1,1,1,2), NumOuts = 1, NumExits=1, ID = 2))
 
 
 
@@ -70,31 +71,27 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 11, BID = 0))
 
-  val bb_for_cond1 = Module(new LoopHead(NumOuts = 7, NumPhi=2, BID = 1))
+  val bb_for_cond1_preheader1 = Module(new LoopHead(NumOuts = 5, NumPhi=2, BID = 1))
 
-  val bb_for_body2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_for_cond5_preheader_preheader2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
-  val bb_for_cond13 = Module(new LoopHead(NumOuts = 4, NumPhi=1, BID = 3))
+  val bb_for_cond_cleanup3 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 4, NumPhi=1, BID = 3))
 
-  val bb_for_body34 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4))
+  val bb_for_cond5_preheader4 = Module(new LoopHead(NumOuts = 3, NumPhi=1, BID = 4))
 
-  val bb_for_cond45 = Module(new LoopHead(NumOuts = 4, NumPhi=1, BID = 5))
+  val bb_for_body8_preheader5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
-  val bb_for_body66 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 7, BID = 6))
+  val bb_for_cond_cleanup3_loopexit6 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_for_inc7 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 7))
+  val bb_for_cond_cleanup37 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 10, BID = 7))
 
-  val bb_for_end8 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 8))
+  val bb_for_cond_cleanup7_loopexit8 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 8))
 
-  val bb_for_inc109 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 9))
+  val bb_for_cond_cleanup79 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 8, BID = 9))
 
-  val bb_for_end1210 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 9, BID = 10))
-
-  val bb_for_inc1611 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 11))
-
-  val bb_for_end1812 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 12))
+  val bb_for_body810 = Module(new LoopHead(NumOuts = 11, NumPhi=1, BID = 10))
 
 
 
@@ -102,125 +99,125 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  br label %for.cond
-  val br_0 = Module(new UBranchNode(ID = 0))
+  //  %cmp240 = icmp eq i32 %n, 0
+  val icmp_cmp2400 = Module(new IcmpFastNode(NumOuts = 1, ID = 0, opCode = "eq")(sign=false))
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc17, %for.inc16 ]
-  val phi_i_01 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1))
+  //  %sub15 = add i32 %n, -1
+  val binaryOp_sub151 = Module(new ComputeFastNode(NumOuts = 1, ID = 1, opCode = "add")(sign=false))
 
-  //  %result.0 = phi i32 [ 0, %entry ], [ %add, %for.inc16 ]
-  val phi_result_02 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
+  //  %arrayidx16 = getelementptr inbounds i32, i32* %a, i32 %sub15
+  val Gep_arrayidx162 = Module(new GepNode(NumIns = 1, NumOuts=1, ID=2)(ElementSize = 4, ArraySize = List()))
 
-  //  %cmp = icmp ult i32 %i.0, 3
-  val icmp_cmp3 = Module(new IcmpNode(NumOuts = 1, ID = 3, opCode = "ult")(sign=false))
+  //  %cmp638 = icmp eq i32 %n, 0
+  val icmp_cmp6383 = Module(new IcmpFastNode(NumOuts = 1, ID = 3, opCode = "eq")(sign=false))
 
-  //  br i1 %cmp, label %for.body, label %for.end18
-  val br_4 = Module(new CBranchNode(ID = 4))
+  //  %sub = add i32 %n, -1
+  val binaryOp_sub4 = Module(new ComputeFastNode(NumOuts = 1, ID = 4, opCode = "add")(sign=false))
 
-  //  br label %for.cond1
-  val br_5 = Module(new UBranchNode(ID = 5))
+  //  %arrayidx10 = getelementptr inbounds i32, i32* %a, i32 %sub
+  val Gep_arrayidx105 = Module(new GepNode(NumIns = 1, NumOuts=1, ID=5)(ElementSize = 4, ArraySize = List()))
 
-  //  %j.0 = phi i32 [ 0, %for.body ], [ %inc11, %for.inc10 ]
-  val phi_j_06 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 6))
+  //  br label %for.cond1.preheader
+  val br_6 = Module(new UBranchNode(ID = 6))
 
-  //  %cmp2 = icmp ult i32 %j.0, %n
-  val icmp_cmp27 = Module(new IcmpNode(NumOuts = 1, ID = 7, opCode = "ult")(sign=false))
+  //  %i.043 = phi i32 [ 0, %entry ], [ %inc19, %for.cond.cleanup3 ]
+  val phi_i_0437 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 7))
 
-  //  br i1 %cmp2, label %for.body3, label %for.end12
-  val br_8 = Module(new CBranchNode(ID = 8))
+  //  %result.042 = phi i32 [ 0, %entry ], [ %add, %for.cond.cleanup3 ]
+  val phi_result_0428 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 8))
 
-  //  br label %for.cond4
-  val br_9 = Module(new UBranchNode(ID = 9))
+  //  br i1 %cmp240, label %for.cond.cleanup3, label %for.cond5.preheader.preheader
+  val br_9 = Module(new CBranchFastNodeVariable(ID = 9))
 
-  //  %k.0 = phi i32 [ 0, %for.body3 ], [ %inc, %for.inc ]
-  val phi_k_010 = Module(new PhiNode(NumInputs = 2, NumOuts = 4, ID = 10))
+  //  br label %for.cond5.preheader
+  val br_10 = Module(new UBranchNode(ID = 10))
 
-  //  %cmp5 = icmp ult i32 %k.0, %n
-  val icmp_cmp511 = Module(new IcmpNode(NumOuts = 1, ID = 11, opCode = "ult")(sign=false))
+  //  %add.lcssa = phi i32 [ %add, %for.cond.cleanup3 ]
+  val phi_add_lcssa11 = Module(new PhiFastNode(NumInputs = 1, NumOutputs = 1, ID = 11))
 
-  //  br i1 %cmp5, label %for.body6, label %for.end
-  val br_12 = Module(new CBranchNode(ID = 12))
-
-  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %k.0
-  val Gep_arrayidx13 = Module(new GepArrayOneNode(NumOuts=1, ID=13)(numByte=4)(size=1))
-
-  //  %0 = load i32, i32* %arrayidx, align 4
-  val ld_14 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=14, RouteID=0))
-
-  //  %mul = mul i32 2, %0
-  val binaryOp_mul15 = Module(new ComputeNode(NumOuts = 1, ID = 15, opCode = "mul")(sign=false))
-
-  //  %arrayidx7 = getelementptr inbounds i32, i32* %a, i32 %k.0
-  val Gep_arrayidx716 = Module(new GepArrayOneNode(NumOuts=1, ID=16)(numByte=4)(size=1))
-
-  //  store i32 %mul, i32* %arrayidx7, align 4
-  val st_17 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=17, RouteID=0))
-
-  //  br label %for.inc
-  val br_18 = Module(new UBranchNode(NumPredOps=1, ID = 18))
-
-  //  %inc = add i32 %k.0, 1
-  val binaryOp_inc19 = Module(new ComputeNode(NumOuts = 1, ID = 19, opCode = "add")(sign=false))
-
-  //  br label %for.cond4, !llvm.loop !6
-  val br_20 = Module(new UBranchNode(NumOuts=2, ID = 20))
-
-  //  %sub = sub i32 %n, 1
-  val binaryOp_sub21 = Module(new ComputeNode(NumOuts = 1, ID = 21, opCode = "sub")(sign=false))
-
-  //  %arrayidx8 = getelementptr inbounds i32, i32* %a, i32 %sub
-  val Gep_arrayidx822 = Module(new GepArrayOneNode(NumOuts=2, ID=22)(numByte=4)(size=1))
-
-  //  %1 = load i32, i32* %arrayidx8, align 4
-  val ld_23 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=23, RouteID=1))
-
-  //  %inc9 = add i32 %1, 1
-  val binaryOp_inc924 = Module(new ComputeNode(NumOuts = 1, ID = 24, opCode = "add")(sign=false))
-
-  //  store i32 %inc9, i32* %arrayidx8, align 4
-  val st_25 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=25, RouteID=1))
-
-  //  br label %for.inc10
-  val br_26 = Module(new UBranchNode(NumPredOps=1, ID = 26))
-
-  //  %inc11 = add i32 %j.0, 1
-  val binaryOp_inc1127 = Module(new ComputeNode(NumOuts = 1, ID = 27, opCode = "add")(sign=false))
-
-  //  br label %for.cond1, !llvm.loop !21
-  val br_28 = Module(new UBranchNode(NumOuts=2, ID = 28))
-
-  //  %sub13 = sub i32 %n, 1
-  val binaryOp_sub1329 = Module(new ComputeNode(NumOuts = 1, ID = 29, opCode = "sub")(sign=false))
-
-  //  %arrayidx14 = getelementptr inbounds i32, i32* %a, i32 %sub13
-  val Gep_arrayidx1430 = Module(new GepArrayOneNode(NumOuts=2, ID=30)(numByte=4)(size=1))
-
-  //  %2 = load i32, i32* %arrayidx14, align 4
-  val ld_31 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=2, ID=31, RouteID=2))
-
-  //  %inc15 = add i32 %2, 1
-  val binaryOp_inc1532 = Module(new ComputeNode(NumOuts = 1, ID = 32, opCode = "add")(sign=false))
-
-  //  store i32 %inc15, i32* %arrayidx14, align 4
-  val st_33 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=33, RouteID=2))
-
-  //  %add = add i32 %result.0, %2
-  val binaryOp_add34 = Module(new ComputeNode(NumOuts = 1, ID = 34, opCode = "add")(sign=false))
-
-  //  br label %for.inc16
-  val br_35 = Module(new UBranchNode(NumPredOps=1, ID = 35))
-
-  //  %inc17 = add i32 %i.0, 1
-  val binaryOp_inc1736 = Module(new ComputeNode(NumOuts = 1, ID = 36, opCode = "add")(sign=false))
-
-  //  br label %for.cond, !llvm.loop !24
-  val br_37 = Module(new UBranchNode(NumOuts=2, ID = 37))
-
-  //  %div = sdiv i32 %result.0, 2
-  val binaryOp_div38 = Module(new ComputeNode(NumOuts = 1, ID = 38, opCode = "sdiv")(sign=false))
+  //  %div = sdiv i32 %add.lcssa, 2
+  val binaryOp_div12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "udiv")(sign=false))
 
   //  ret i32 %div
-  val ret_39 = Module(new RetNode(retTypes=List(32), ID = 39))
+  val ret_13 = Module(new RetNode2(retTypes=List(32), ID = 13))
+
+  //  %j.041 = phi i32 [ %inc13, %for.cond.cleanup7 ], [ 0, %for.cond5.preheader.preheader ]
+  val phi_j_04114 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 14))
+
+  //  br i1 %cmp638, label %for.cond.cleanup7, label %for.body8.preheader
+  val br_15 = Module(new CBranchFastNodeVariable(ID = 15))
+
+  //  br label %for.body8
+  val br_16 = Module(new UBranchNode(ID = 16))
+
+  //  br label %for.cond.cleanup3
+  val br_17 = Module(new UBranchNode(ID = 17))
+
+  //  %0 = load i32, i32* %arrayidx16, align 4, !tbaa !2
+  val ld_18 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=2, ID=18, RouteID=0))
+
+  //  %inc17 = add i32 %0, 1
+  val binaryOp_inc1719 = Module(new ComputeNode(NumOuts = 1, ID = 19, opCode = "add")(sign=false))
+
+  //  store i32 %inc17, i32* %arrayidx16, align 4, !tbaa !2
+  val st_20 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=20, RouteID=0))
+
+  //  %add = add i32 %0, %result.042
+  val binaryOp_add21 = Module(new ComputeNode(NumOuts = 2, ID = 21, opCode = "add")(sign=false))
+
+  //  %inc19 = add nuw nsw i32 %i.043, 1
+  val binaryOp_inc1922 = Module(new ComputeNode(NumOuts = 2, ID = 22, opCode = "add")(sign=false))
+
+  //  %exitcond45 = icmp eq i32 %inc19, 3
+  val icmp_exitcond4523 = Module(new IcmpNode(NumOuts = 1, ID = 23, opCode = "eq")(sign=false))
+
+  //  br i1 %exitcond45, label %for.cond.cleanup, label %for.cond1.preheader
+  val br_24 = Module(new CBranchFastNodeVariable(NumFalse = 2, ID = 24))
+
+  //  br label %for.cond.cleanup7
+  val br_25 = Module(new UBranchNode(ID = 25))
+
+  //  %1 = load i32, i32* %arrayidx10, align 4, !tbaa !2
+  val ld_26 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=26, RouteID=1))
+
+  //  %inc11 = add i32 %1, 1
+  val binaryOp_inc1127 = Module(new ComputeNode(NumOuts = 1, ID = 27, opCode = "add")(sign=false))
+
+  //  store i32 %inc11, i32* %arrayidx10, align 4, !tbaa !2
+  val st_28 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=28, RouteID=1))
+
+  //  %inc13 = add nuw i32 %j.041, 1
+  val binaryOp_inc1329 = Module(new ComputeNode(NumOuts = 2, ID = 29, opCode = "add")(sign=false))
+
+  //  %exitcond44 = icmp eq i32 %inc13, %n
+  val icmp_exitcond4430 = Module(new IcmpNode(NumOuts = 1, ID = 30, opCode = "eq")(sign=false))
+
+  //  br i1 %exitcond44, label %for.cond.cleanup3.loopexit, label %for.cond5.preheader
+  val br_31 = Module(new CBranchNode(ID = 31))
+
+  //  %k.039 = phi i32 [ %inc, %for.body8 ], [ 0, %for.body8.preheader ]
+  val phi_k_03932 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 32))
+
+  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %k.039
+  val Gep_arrayidx33 = Module(new GepNode(NumIns = 1, NumOuts=2, ID=33)(ElementSize = 4, ArraySize = List()))
+
+  //  %2 = load i32, i32* %arrayidx, align 4, !tbaa !2
+  val ld_34 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=34, RouteID=2))
+
+  //  %mul = shl i32 %2, 1
+  val binaryOp_mul35 = Module(new ComputeNode(NumOuts = 1, ID = 35, opCode = "shl")(sign=false))
+
+  //  store i32 %mul, i32* %arrayidx, align 4, !tbaa !2
+  val st_36 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=36, RouteID=2))
+
+  //  %inc = add nuw i32 %k.039, 1
+  val binaryOp_inc37 = Module(new ComputeNode(NumOuts = 2, ID = 37, opCode = "add")(sign=false))
+
+  //  %exitcond = icmp eq i32 %inc, %n
+  val icmp_exitcond38 = Module(new IcmpNode(NumOuts = 1, ID = 38, opCode = "eq")(sign=false))
+
+  //  br i1 %exitcond, label %for.cond.cleanup7.loopexit, label %for.body8
+  val br_39 = Module(new CBranchNode(ID = 39))
 
 
 
@@ -229,46 +226,52 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    * ================================================================== */
 
   //i32 0
-  val const0 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 0))
+  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
+
+  //i32 -1
+  val const1 = Module(new ConstFastNode(value = -1, ID = 1))
 
   //i32 0
-  val const1 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 1))
+  val const2 = Module(new ConstFastNode(value = 0, ID = 2))
+
+  //i32 -1
+  val const3 = Module(new ConstFastNode(value = -1, ID = 3))
+
+  //i32 0
+  val const4 = Module(new ConstFastNode(value = 0, ID = 4))
+
+  //i32 0
+  val const5 = Module(new ConstFastNode(value = 0, ID = 5))
+
+  //i32 2
+  val const6 = Module(new ConstFastNode(value = 2, ID = 6))
+
+  //i32 0
+  val const7 = Module(new ConstFastNode(value = 0, ID = 7))
+
+  //i32 1
+  val const8 = Module(new ConstFastNode(value = 1, ID = 8))
+
+  //i32 1
+  val const9 = Module(new ConstFastNode(value = 1, ID = 9))
 
   //i32 3
-  val const2 = Module(new ConstNode(value = 3, NumOuts = 1, ID = 2))
+  val const10 = Module(new ConstFastNode(value = 3, ID = 10))
+
+  //i32 1
+  val const11 = Module(new ConstFastNode(value = 1, ID = 11))
+
+  //i32 1
+  val const12 = Module(new ConstFastNode(value = 1, ID = 12))
 
   //i32 0
-  val const3 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 3))
-
-  //i32 0
-  val const4 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 4))
-
-  //i32 2
-  val const5 = Module(new ConstNode(value = 2, NumOuts = 1, ID = 5))
+  val const13 = Module(new ConstFastNode(value = 0, ID = 13))
 
   //i32 1
-  val const6 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 6))
+  val const14 = Module(new ConstFastNode(value = 1, ID = 14))
 
   //i32 1
-  val const7 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 7))
-
-  //i32 1
-  val const8 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 8))
-
-  //i32 1
-  val const9 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 9))
-
-  //i32 1
-  val const10 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 10))
-
-  //i32 1
-  val const11 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 11))
-
-  //i32 1
-  val const12 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 12))
-
-  //i32 2
-  val const13 = Module(new ConstNode(value = 2, NumOuts = 1, ID = 13))
+  val const15 = Module(new ConstFastNode(value = 1, ID = 15))
 
 
 
@@ -278,35 +281,35 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
   bb_entry0.io.predicateIn <> InputSplitter.io.Out.enable
 
-  bb_for_cond1.io.activate <> Loop_2.io.activate
+  bb_for_cond1_preheader1.io.activate <> Loop_2.io.endEnable
 
-  bb_for_cond1.io.loopBack <> br_37.io.Out(0)
+  bb_for_cond1_preheader1.io.loopBack <> br_24.io.TrueOutput(0)
 
-  bb_for_body2.io.predicateIn <> br_4.io.Out(0)
+  bb_for_cond5_preheader_preheader2.io.predicateIn <> br_9.io.TrueOutput(0)
 
-  bb_for_cond13.io.activate <> Loop_1.io.activate
+  bb_for_cond_cleanup3.io.predicateIn(0) <> Loop_2.io.endEnable
 
-  bb_for_cond13.io.loopBack <> br_28.io.Out(0)
+  bb_for_cond5_preheader4.io.activate <> Loop_1.io.endEnable
 
-  bb_for_body34.io.predicateIn <> br_8.io.Out(0)
+  bb_for_cond5_preheader4.io.loopBack <> br_31.io.Out(0)
 
-  bb_for_cond45.io.activate <> Loop_0.io.activate
+  bb_for_body8_preheader5.io.predicateIn <> br_15.io.TrueOutput(0)
 
-  bb_for_cond45.io.loopBack <> br_20.io.Out(0)
+  bb_for_cond_cleanup3_loopexit6.io.predicateIn <> Loop_1.io.endEnable
 
-  bb_for_body66.io.predicateIn <> br_12.io.Out(0)
+  bb_for_cond_cleanup37.io.predicateIn <> br_9.io.FalseOutput(0)
 
-  bb_for_inc7.io.predicateIn <> br_18.io.Out(0)
+  bb_for_cond_cleanup37.io.predicateIn <> br_17.io.Out(0)
 
-  bb_for_end8.io.predicateIn <> Loop_0.io.endEnable
+  bb_for_cond_cleanup7_loopexit8.io.predicateIn <> Loop_0.io.endEnable
 
-  bb_for_inc109.io.predicateIn <> br_26.io.Out(0)
+  bb_for_cond_cleanup79.io.predicateIn <> br_15.io.FalseOutput(0)
 
-  bb_for_end1210.io.predicateIn <> Loop_1.io.endEnable
+  bb_for_cond_cleanup79.io.predicateIn <> br_25.io.Out(0)
 
-  bb_for_inc1611.io.predicateIn <> br_35.io.Out(0)
+  bb_for_body810.io.activate <> Loop_0.io.endEnable
 
-  bb_for_end1812.io.predicateIn <> Loop_2.io.endEnable
+  bb_for_body810.io.loopBack <> br_39.io.Out(0)
 
 
 
@@ -320,23 +323,23 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   LOOP -> PREDICATE INSTRUCTION                    *
    * ================================================================== */
 
-  Loop_0.io.enable <> br_9.io.Out(0)
+  Loop_0.io.enable <> br_16.io.Out(0)
 
-  Loop_0.io.latchEnable <> br_20.io.Out(1)
+  Loop_0.io.latchEnable <> br_39.io.Out(1)
 
-  Loop_0.io.loopExit(0) <> br_12.io.Out(1)
+  Loop_0.io.loopExit(0) <> br_39.io.Out(1)
 
-  Loop_1.io.enable <> br_5.io.Out(0)
+  Loop_1.io.enable <> br_10.io.Out(0)
 
-  Loop_1.io.latchEnable <> br_28.io.Out(1)
+  Loop_1.io.latchEnable <> br_31.io.Out(1)
 
-  Loop_1.io.loopExit(0) <> br_8.io.Out(1)
+  Loop_1.io.loopExit(0) <> br_31.io.Out(1)
 
-  Loop_2.io.enable <> br_0.io.Out(0)
+  Loop_2.io.enable <> br_6.io.Out(0)
 
-  Loop_2.io.latchEnable <> br_37.io.Out(1)
+  Loop_2.io.latchEnable <> br_24.io.FalseOutput(0)
 
-  Loop_2.io.loopExit(0) <> br_4.io.Out(1)
+  Loop_2.io.loopExit(0) <> br_24.io.FalseOutput(1)
 
 
 
@@ -344,29 +347,35 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
 
-  br_35.io.PredOp(0) <> st_33.io.SuccOp(0)
-
-  br_26.io.PredOp(0) <> st_25.io.SuccOp(0)
-
-  br_18.io.PredOp(0) <> st_17.io.SuccOp(0)
-
 
 
   /* ================================================================== *
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> Loop_1.io.liveIn.data("field0")(1)
+  Loop_0.io.In(0) <> Loop_1.io.liveIn.data("field1")(0)
 
-  Loop_0.io.In(1) <> Loop_1.io.liveIn.data("field1")(1)
+  Loop_0.io.In(1) <> Loop_1.io.liveIn.data("field2")(0)
 
-  Loop_1.io.In(0) <> Loop_2.io.liveIn.data("field0")(0)
+  Loop_1.io.In(0) <> Loop_2.io.liveIn.data("field1")(0)
 
-  Loop_1.io.In(1) <> Loop_2.io.liveIn.data("field1")(1)
+  Loop_1.io.In(1) <> Loop_2.io.liveIn.data("field2")(0)
 
-  Loop_2.io.In(0) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_1.io.In(2) <> Loop_2.io.liveIn.data("field3")(0)
 
-  Loop_2.io.In(1) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_1.io.In(3) <> Loop_2.io.liveIn.data("field4")(0)
+
+  Loop_2.io.In(0) <> icmp_cmp2400.io.Out(0)
+
+  Loop_2.io.In(1) <> icmp_cmp6383.io.Out(0)
+
+  Loop_2.io.In(2) <> InputSplitter.io.Out.data("field0")(0)
+
+  Loop_2.io.In(3) <> InputSplitter.io.Out.data("field1")(1)
+
+  Loop_2.io.In(4) <> Gep_arrayidx105.io.Out.data(0)
+
+  Loop_2.io.In(5) <> Gep_arrayidx162.io.Out.data(0)
 
 
 
@@ -374,21 +383,23 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  icmp_cmp511.io.RightIO <> Loop_0.io.liveIn.data("field0")(0)
+  Gep_arrayidx33.io.baseAddress <> Loop_0.io.liveIn.data("field0")(0)
 
-  Gep_arrayidx13.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  icmp_exitcond38.io.RightIO <> Loop_0.io.liveIn.data("field1")(0)
 
-  Gep_arrayidx716.io.baseAddress <> Loop_0.io.liveIn.data("field1")(1)
+  br_15.io.CmpIO <> Loop_1.io.liveIn.data("field0")(0)
 
-  icmp_cmp27.io.RightIO <> Loop_1.io.liveIn.data("field0")(0)
+  icmp_exitcond4430.io.RightIO <> Loop_1.io.liveIn.data("field2")(1)
 
-  binaryOp_sub21.io.LeftIO <> Loop_1.io.liveIn.data("field0")(2)
+  ld_26.io.GepAddr <> Loop_1.io.liveIn.data("field3")(0)
 
-  Gep_arrayidx822.io.baseAddress <> Loop_1.io.liveIn.data("field1")(0)
+  st_28.io.GepAddr <> Loop_1.io.liveIn.data("field3")(1)
 
-  binaryOp_sub1329.io.LeftIO <> Loop_2.io.liveIn.data("field0")(1)
+  br_9.io.CmpIO <> Loop_2.io.liveIn.data("field0")(0)
 
-  Gep_arrayidx1430.io.baseAddress <> Loop_2.io.liveIn.data("field1")(0)
+  ld_18.io.GepAddr <> Loop_2.io.liveIn.data("field5")(0)
+
+  st_20.io.GepAddr <> Loop_2.io.liveIn.data("field5")(1)
 
 
 
@@ -396,7 +407,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
 
-  Loop_2.io.liveOut(0) <> phi_result_02.io.Out(1)
+  Loop_2.io.liveOut(0) <> binaryOp_add21.io.Out(0)
 
 
 
@@ -404,125 +415,127 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   BASICBLOCK -> ENABLE INSTRUCTION                 *
    * ================================================================== */
 
-  br_0.io.enable <> bb_entry0.io.Out(0)
+  const0.io.enable <> bb_entry0.io.Out(0)
 
+  const1.io.enable <> bb_entry0.io.Out(1)
 
-  const0.io.enable <> bb_for_cond1.io.Out(0)
+  const2.io.enable <> bb_entry0.io.Out(2)
 
-  const1.io.enable <> bb_for_cond1.io.Out(1)
+  const3.io.enable <> bb_entry0.io.Out(3)
 
-  const2.io.enable <> bb_for_cond1.io.Out(2)
+  icmp_cmp2400.io.enable <> bb_entry0.io.Out(4)
 
-  phi_i_01.io.enable <> bb_for_cond1.io.Out(3)
+  binaryOp_sub151.io.enable <> bb_entry0.io.Out(5)
 
-  phi_result_02.io.enable <> bb_for_cond1.io.Out(4)
+  Gep_arrayidx162.io.enable <> bb_entry0.io.Out(6)
 
-  icmp_cmp3.io.enable <> bb_for_cond1.io.Out(5)
+  icmp_cmp6383.io.enable <> bb_entry0.io.Out(7)
 
-  br_4.io.enable <> bb_for_cond1.io.Out(6)
+  binaryOp_sub4.io.enable <> bb_entry0.io.Out(8)
 
+  Gep_arrayidx105.io.enable <> bb_entry0.io.Out(9)
 
-  br_5.io.enable <> bb_for_body2.io.Out(0)
+  br_6.io.enable <> bb_entry0.io.Out(10)
 
 
-  const3.io.enable <> bb_for_cond13.io.Out(0)
+  const4.io.enable <> bb_for_cond1_preheader1.io.Out(0)
 
-  phi_j_06.io.enable <> bb_for_cond13.io.Out(1)
+  const5.io.enable <> bb_for_cond1_preheader1.io.Out(1)
 
-  icmp_cmp27.io.enable <> bb_for_cond13.io.Out(2)
+  phi_i_0437.io.enable <> bb_for_cond1_preheader1.io.Out(2)
 
-  br_8.io.enable <> bb_for_cond13.io.Out(3)
+  phi_result_0428.io.enable <> bb_for_cond1_preheader1.io.Out(3)
 
+  br_9.io.enable <> bb_for_cond1_preheader1.io.Out(4)
 
-  br_9.io.enable <> bb_for_body34.io.Out(0)
 
+  br_10.io.enable <> bb_for_cond5_preheader_preheader2.io.Out(0)
 
-  const4.io.enable <> bb_for_cond45.io.Out(0)
 
-  phi_k_010.io.enable <> bb_for_cond45.io.Out(1)
+  const6.io.enable <> bb_for_cond_cleanup3.io.Out(0)
 
-  icmp_cmp511.io.enable <> bb_for_cond45.io.Out(2)
+  phi_add_lcssa11.io.enable <> bb_for_cond_cleanup3.io.Out(1)
 
-  br_12.io.enable <> bb_for_cond45.io.Out(3)
+  binaryOp_div12.io.enable <> bb_for_cond_cleanup3.io.Out(2)
 
+  ret_13.io.In.enable <> bb_for_cond_cleanup3.io.Out(3)
 
-  const5.io.enable <> bb_for_body66.io.Out(0)
 
-  Gep_arrayidx13.io.enable <> bb_for_body66.io.Out(1)
+  const7.io.enable <> bb_for_cond5_preheader4.io.Out(0)
 
-  ld_14.io.enable <> bb_for_body66.io.Out(2)
+  phi_j_04114.io.enable <> bb_for_cond5_preheader4.io.Out(1)
 
-  binaryOp_mul15.io.enable <> bb_for_body66.io.Out(3)
+  br_15.io.enable <> bb_for_cond5_preheader4.io.Out(2)
 
-  Gep_arrayidx716.io.enable <> bb_for_body66.io.Out(4)
 
-  st_17.io.enable <> bb_for_body66.io.Out(5)
+  br_16.io.enable <> bb_for_body8_preheader5.io.Out(0)
 
-  br_18.io.enable <> bb_for_body66.io.Out(6)
 
+  br_17.io.enable <> bb_for_cond_cleanup3_loopexit6.io.Out(0)
 
-  const6.io.enable <> bb_for_inc7.io.Out(0)
 
-  binaryOp_inc19.io.enable <> bb_for_inc7.io.Out(1)
+  const8.io.enable <> bb_for_cond_cleanup37.io.Out(0)
 
-  br_20.io.enable <> bb_for_inc7.io.Out(2)
+  const9.io.enable <> bb_for_cond_cleanup37.io.Out(1)
 
+  const10.io.enable <> bb_for_cond_cleanup37.io.Out(2)
 
-  const7.io.enable <> bb_for_end8.io.Out(0)
+  ld_18.io.enable <> bb_for_cond_cleanup37.io.Out(3)
 
-  const8.io.enable <> bb_for_end8.io.Out(1)
+  binaryOp_inc1719.io.enable <> bb_for_cond_cleanup37.io.Out(4)
 
-  binaryOp_sub21.io.enable <> bb_for_end8.io.Out(2)
+  st_20.io.enable <> bb_for_cond_cleanup37.io.Out(5)
 
-  Gep_arrayidx822.io.enable <> bb_for_end8.io.Out(3)
+  binaryOp_add21.io.enable <> bb_for_cond_cleanup37.io.Out(6)
 
-  ld_23.io.enable <> bb_for_end8.io.Out(4)
+  binaryOp_inc1922.io.enable <> bb_for_cond_cleanup37.io.Out(7)
 
-  binaryOp_inc924.io.enable <> bb_for_end8.io.Out(5)
+  icmp_exitcond4523.io.enable <> bb_for_cond_cleanup37.io.Out(8)
 
-  st_25.io.enable <> bb_for_end8.io.Out(6)
+  br_24.io.enable <> bb_for_cond_cleanup37.io.Out(9)
 
-  br_26.io.enable <> bb_for_end8.io.Out(7)
 
+  br_25.io.enable <> bb_for_cond_cleanup7_loopexit8.io.Out(0)
 
-  const9.io.enable <> bb_for_inc109.io.Out(0)
 
-  binaryOp_inc1127.io.enable <> bb_for_inc109.io.Out(1)
+  const11.io.enable <> bb_for_cond_cleanup79.io.Out(0)
 
-  br_28.io.enable <> bb_for_inc109.io.Out(2)
+  const12.io.enable <> bb_for_cond_cleanup79.io.Out(1)
 
+  ld_26.io.enable <> bb_for_cond_cleanup79.io.Out(2)
 
-  const10.io.enable <> bb_for_end1210.io.Out(0)
+  binaryOp_inc1127.io.enable <> bb_for_cond_cleanup79.io.Out(3)
 
-  const11.io.enable <> bb_for_end1210.io.Out(1)
+  st_28.io.enable <> bb_for_cond_cleanup79.io.Out(4)
 
-  binaryOp_sub1329.io.enable <> bb_for_end1210.io.Out(2)
+  binaryOp_inc1329.io.enable <> bb_for_cond_cleanup79.io.Out(5)
 
-  Gep_arrayidx1430.io.enable <> bb_for_end1210.io.Out(3)
+  icmp_exitcond4430.io.enable <> bb_for_cond_cleanup79.io.Out(6)
 
-  ld_31.io.enable <> bb_for_end1210.io.Out(4)
+  br_31.io.enable <> bb_for_cond_cleanup79.io.Out(7)
 
-  binaryOp_inc1532.io.enable <> bb_for_end1210.io.Out(5)
 
-  st_33.io.enable <> bb_for_end1210.io.Out(6)
+  const13.io.enable <> bb_for_body810.io.Out(0)
 
-  binaryOp_add34.io.enable <> bb_for_end1210.io.Out(7)
+  const14.io.enable <> bb_for_body810.io.Out(1)
 
-  br_35.io.enable <> bb_for_end1210.io.Out(8)
+  const15.io.enable <> bb_for_body810.io.Out(2)
 
+  phi_k_03932.io.enable <> bb_for_body810.io.Out(3)
 
-  const12.io.enable <> bb_for_inc1611.io.Out(0)
+  Gep_arrayidx33.io.enable <> bb_for_body810.io.Out(4)
 
-  binaryOp_inc1736.io.enable <> bb_for_inc1611.io.Out(1)
+  ld_34.io.enable <> bb_for_body810.io.Out(5)
 
-  br_37.io.enable <> bb_for_inc1611.io.Out(2)
+  binaryOp_mul35.io.enable <> bb_for_body810.io.Out(6)
 
+  st_36.io.enable <> bb_for_body810.io.Out(7)
 
-  const13.io.enable <> bb_for_end1812.io.Out(0)
+  binaryOp_inc37.io.enable <> bb_for_body810.io.Out(8)
 
-  binaryOp_div38.io.enable <> bb_for_end1812.io.Out(1)
+  icmp_exitcond38.io.enable <> bb_for_body810.io.Out(9)
 
-  ret_39.io.enable <> bb_for_end1812.io.Out(2)
+  br_39.io.enable <> bb_for_body810.io.Out(10)
 
 
 
@@ -531,13 +544,15 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
 
-  phi_i_01.io.Mask <> bb_for_cond1.io.MaskBB(0)
+  phi_i_0437.io.Mask <> bb_for_cond1_preheader1.io.MaskBB(0)
 
-  phi_result_02.io.Mask <> bb_for_cond1.io.MaskBB(1)
+  phi_result_0428.io.Mask <> bb_for_cond1_preheader1.io.MaskBB(1)
 
-  phi_j_06.io.Mask <> bb_for_cond13.io.MaskBB(0)
+  phi_add_lcssa11.io.Mask <> bb_for_cond_cleanup3.io.MaskBB(0)
 
-  phi_k_010.io.Mask <> bb_for_cond45.io.MaskBB(0)
+  phi_j_04114.io.Mask <> bb_for_cond5_preheader4.io.MaskBB(0)
+
+  phi_k_03932.io.Mask <> bb_for_body810.io.MaskBB(0)
 
 
 
@@ -551,29 +566,29 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
 
-  MemCtrl.io.ReadIn(0) <> ld_14.io.memReq
+  MemCtrl.io.ReadIn(0) <> ld_18.io.memReq
 
-  ld_14.io.memResp <> MemCtrl.io.ReadOut(0)
+  ld_18.io.memResp <> MemCtrl.io.ReadOut(0)
 
-  MemCtrl.io.WriteIn(0) <> st_17.io.memReq
+  MemCtrl.io.WriteIn(0) <> st_20.io.memReq
 
-  st_17.io.memResp <> MemCtrl.io.WriteOut(0)
+  st_20.io.memResp <> MemCtrl.io.WriteOut(0)
 
-  MemCtrl.io.ReadIn(1) <> ld_23.io.memReq
+  MemCtrl.io.ReadIn(1) <> ld_26.io.memReq
 
-  ld_23.io.memResp <> MemCtrl.io.ReadOut(1)
+  ld_26.io.memResp <> MemCtrl.io.ReadOut(1)
 
-  MemCtrl.io.WriteIn(1) <> st_25.io.memReq
+  MemCtrl.io.WriteIn(1) <> st_28.io.memReq
 
-  st_25.io.memResp <> MemCtrl.io.WriteOut(1)
+  st_28.io.memResp <> MemCtrl.io.WriteOut(1)
 
-  MemCtrl.io.ReadIn(2) <> ld_31.io.memReq
+  MemCtrl.io.ReadIn(2) <> ld_34.io.memReq
 
-  ld_31.io.memResp <> MemCtrl.io.ReadOut(2)
+  ld_34.io.memResp <> MemCtrl.io.ReadOut(2)
 
-  MemCtrl.io.WriteIn(2) <> st_33.io.memReq
+  MemCtrl.io.WriteIn(2) <> st_36.io.memReq
 
-  st_33.io.memResp <> MemCtrl.io.WriteOut(2)
+  st_36.io.memResp <> MemCtrl.io.WriteOut(2)
 
 
 
@@ -587,105 +602,113 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  phi_i_01.io.InData(0) <> const0.io.Out(0)
+  icmp_cmp2400.io.RightIO <> const0.io.Out
 
-  phi_result_02.io.InData(0) <> const1.io.Out(0)
+  binaryOp_sub151.io.RightIO <> const1.io.Out
 
-  icmp_cmp3.io.RightIO <> const2.io.Out(0)
+  icmp_cmp6383.io.RightIO <> const2.io.Out
 
-  phi_j_06.io.InData(0) <> const3.io.Out(0)
+  binaryOp_sub4.io.RightIO <> const3.io.Out
 
-  phi_k_010.io.InData(0) <> const4.io.Out(0)
+  phi_i_0437.io.InData(0) <> const4.io.Out
 
-  binaryOp_mul15.io.LeftIO <> const5.io.Out(0)
+  phi_result_0428.io.InData(0) <> const5.io.Out
 
-  binaryOp_inc19.io.RightIO <> const6.io.Out(0)
+  binaryOp_div12.io.RightIO <> const6.io.Out
 
-  binaryOp_sub21.io.RightIO <> const7.io.Out(0)
+  phi_j_04114.io.InData(1) <> const7.io.Out
 
-  binaryOp_inc924.io.RightIO <> const8.io.Out(0)
+  binaryOp_inc1719.io.RightIO <> const8.io.Out
 
-  binaryOp_inc1127.io.RightIO <> const9.io.Out(0)
+  binaryOp_inc1922.io.RightIO <> const9.io.Out
 
-  binaryOp_sub1329.io.RightIO <> const10.io.Out(0)
+  icmp_exitcond4523.io.RightIO <> const10.io.Out
 
-  binaryOp_inc1532.io.RightIO <> const11.io.Out(0)
+  binaryOp_inc1127.io.RightIO <> const11.io.Out
 
-  binaryOp_inc1736.io.RightIO <> const12.io.Out(0)
+  binaryOp_inc1329.io.RightIO <> const12.io.Out
 
-  binaryOp_div38.io.RightIO <> const13.io.Out(0)
+  phi_k_03932.io.InData(1) <> const13.io.Out
 
-  icmp_cmp3.io.LeftIO <> phi_i_01.io.Out(0)
+  binaryOp_mul35.io.RightIO <> const14.io.Out
 
-  binaryOp_inc1736.io.LeftIO <> phi_i_01.io.Out(1)
+  binaryOp_inc37.io.RightIO <> const15.io.Out
 
-  binaryOp_add34.io.LeftIO <> phi_result_02.io.Out(0)
+  Gep_arrayidx162.io.idx(0) <> binaryOp_sub151.io.Out(0)
 
-  br_4.io.CmpIO <> icmp_cmp3.io.Out(0)
+  Gep_arrayidx105.io.idx(0) <> binaryOp_sub4.io.Out(0)
 
-  icmp_cmp27.io.LeftIO <> phi_j_06.io.Out(0)
+  binaryOp_inc1922.io.LeftIO <> phi_i_0437.io.Out(0)
 
-  binaryOp_inc1127.io.LeftIO <> phi_j_06.io.Out(1)
+  binaryOp_add21.io.RightIO <> phi_result_0428.io.Out(0)
 
-  br_8.io.CmpIO <> icmp_cmp27.io.Out(0)
+  binaryOp_div12.io.LeftIO <> phi_add_lcssa11.io.Out(0)
 
-  icmp_cmp511.io.LeftIO <> phi_k_010.io.Out(0)
+  ret_13.io.In.data("field0") <> binaryOp_div12.io.Out(0)
 
-  Gep_arrayidx13.io.idx1 <> phi_k_010.io.Out(1)
+  binaryOp_inc1329.io.LeftIO <> phi_j_04114.io.Out(0)
 
-  Gep_arrayidx716.io.idx1 <> phi_k_010.io.Out(2)
+  binaryOp_inc1719.io.LeftIO <> ld_18.io.Out.data(0)
 
-  binaryOp_inc19.io.LeftIO <> phi_k_010.io.Out(3)
+  binaryOp_add21.io.LeftIO <> ld_18.io.Out.data(0)
 
-  br_12.io.CmpIO <> icmp_cmp511.io.Out(0)
+  st_20.io.inData <> binaryOp_inc1719.io.Out(0)
 
-  ld_14.io.GepAddr <> Gep_arrayidx13.io.Out.data(0)
+  phi_result_0428.io.InData(1) <> binaryOp_add21.io.Out(1)
 
-  binaryOp_mul15.io.RightIO <> ld_14.io.Out.data(0)
+  phi_i_0437.io.InData(1) <> binaryOp_inc1922.io.Out(1)
 
-  st_17.io.inData <> binaryOp_mul15.io.Out(0)
+  icmp_exitcond4523.io.LeftIO <> binaryOp_inc1922.io.Out(0)
 
-  st_17.io.GepAddr <> Gep_arrayidx716.io.Out.data(0)
+  br_24.io.CmpIO <> icmp_exitcond4523.io.Out(0)
 
-  phi_k_010.io.InData(1) <> binaryOp_inc19.io.Out(0)
+  binaryOp_inc1127.io.LeftIO <> ld_26.io.Out.data(0)
 
-  Gep_arrayidx822.io.idx1 <> binaryOp_sub21.io.Out(0)
+  st_28.io.inData <> binaryOp_inc1127.io.Out(0)
 
-  ld_23.io.GepAddr <> Gep_arrayidx822.io.Out.data(0)
+  phi_j_04114.io.InData(0) <> binaryOp_inc1329.io.Out(0)
 
-  st_25.io.GepAddr <> Gep_arrayidx822.io.Out.data(1)
+  icmp_exitcond4430.io.LeftIO <> binaryOp_inc1329.io.Out(0)
 
-  binaryOp_inc924.io.LeftIO <> ld_23.io.Out.data(0)
+  br_31.io.CmpIO <> icmp_exitcond4430.io.Out(0)
 
-  st_25.io.inData <> binaryOp_inc924.io.Out(0)
+  Gep_arrayidx33.io.idx(0) <> phi_k_03932.io.Out(1)
 
-  phi_j_06.io.InData(1) <> binaryOp_inc1127.io.Out(0)
+  binaryOp_inc37.io.LeftIO <> phi_k_03932.io.Out(0)
 
-  Gep_arrayidx1430.io.idx1 <> binaryOp_sub1329.io.Out(0)
+  ld_34.io.GepAddr <> Gep_arrayidx33.io.Out.data(0)
 
-  ld_31.io.GepAddr <> Gep_arrayidx1430.io.Out.data(0)
+  st_36.io.GepAddr <> Gep_arrayidx33.io.Out.data(1)
 
-  st_33.io.GepAddr <> Gep_arrayidx1430.io.Out.data(1)
+  binaryOp_mul35.io.LeftIO <> ld_34.io.Out.data(0)
 
-  binaryOp_inc1532.io.LeftIO <> ld_31.io.Out.data(0)
+  st_36.io.inData <> binaryOp_mul35.io.Out(0)
 
-  binaryOp_add34.io.RightIO <> ld_31.io.Out.data(1)
+  phi_k_03932.io.InData(0) <> binaryOp_inc37.io.Out(0)
 
-  st_33.io.inData <> binaryOp_inc1532.io.Out(0)
+  icmp_exitcond38.io.LeftIO <> binaryOp_inc37.io.Out(0)
 
-  phi_result_02.io.InData(1) <> binaryOp_add34.io.Out(0)
+  br_39.io.CmpIO <> icmp_exitcond38.io.Out(0)
 
-  phi_i_01.io.InData(1) <> binaryOp_inc1736.io.Out(0)
+  phi_add_lcssa11.io.InData(0) <> Loop_2.io.Out(0)
 
-  ret_39.io.In.data("field0") <> binaryOp_div38.io.Out(0)
+  Gep_arrayidx162.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
 
-  binaryOp_div38.io.LeftIO <> Loop_2.io.Out(0)
+  Gep_arrayidx105.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
 
-  st_17.io.Out(0).ready := true.B
+  icmp_cmp2400.io.LeftIO <> InputSplitter.io.Out.data("field1")(0)
 
-  st_25.io.Out(0).ready := true.B
+  binaryOp_sub151.io.LeftIO <> InputSplitter.io.Out.data("field1")(0)
 
-  st_33.io.Out(0).ready := true.B
+  icmp_cmp6383.io.LeftIO <> InputSplitter.io.Out.data("field1")(0)
+
+  binaryOp_sub4.io.LeftIO <> InputSplitter.io.Out.data("field1")(0)
+
+  st_20.io.Out(0).ready := true.B
+
+  st_28.io.Out(0).ready := true.B
+
+  st_36.io.Out(0).ready := true.B
 
 
 
@@ -693,7 +716,7 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out <> ret_39.io.Out
+  io.out <> ret_13.io.Out
 
 }
 

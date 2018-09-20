@@ -7,7 +7,7 @@ import interfaces.{ControlBundle, DataBundle}
 import util._
 import utility.UniformPrintfs
 
-class ConstNode(value: Int, NumOuts: Int, ID: Int)
+class ConstNode(value: Int, NumOuts: Int = 1, ID: Int)
                (implicit p: Parameters,
                 name: sourcecode.Name,
                 file: sourcecode.File)
