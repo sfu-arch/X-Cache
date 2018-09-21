@@ -13,12 +13,12 @@ import org.scalatest.{Matchers, FlatSpec}
 
 
 class SuperCacheUnitTests(c: NCache) extends PeekPokeTester(c) {
-  c.io.cpu.MemReq(0).valid := false.B
-  c.io.nasti.ar.ready := false.B
-  c.io.nasti.aw.ready := false.B
-  c.io.nasti.w.ready := false.B
-  c.io.nasti.r.ready := false.B
-  c.io.nasti.b.ready := false.B
+  poke(c.io.cpu.MemReq(0).valid, false.B)
+  poke(c.io.nasti.ar.ready, false.B)
+  poke(c.io.nasti.aw.ready, false.B)
+  poke(c.io.nasti.w.ready, false.B)
+  poke(c.io.nasti.r.ready, false.B)
+  poke(c.io.nasti.b.ready, false.B)
   step(1)
 }
 
