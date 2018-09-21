@@ -363,7 +363,7 @@ object ControlBundle {
   */
 class CustomDataBundle[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters) extends CoreBundle( )(p) {
   // Data packet
-  val data      = chiselTypeOf(gen)
+  val data      = gen.cloneType
   val predicate = Bool( )
   val taskID    = UInt(tlen.W)
 
