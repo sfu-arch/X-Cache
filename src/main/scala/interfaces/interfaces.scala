@@ -214,6 +214,7 @@ object MemReq {
     wire.tag := 0.U
     wire.taskID := 0.U
     wire.iswrite := false.B
+    wire.tile := 0.U
     wire
   }
 }
@@ -222,6 +223,16 @@ class MemResp(implicit p: Parameters) extends CoreBundle( )(p) with ValidT {
   val data    = UInt(xlen.W)
   val tag     = UInt((List(1, mshrlen).max).W)
   val iswrite = Bool( )
+  val tile    = UInt(xlen.W)
+
+  def clone_and_set_tile_id(tile: UInt): MemResp = {
+    val wire = Wire(new MemResp( ))
+    wire.data := this.data
+    wire.tag := this.tag
+    wire.iswrite := this.iswrite
+    wire.tile := tile
+    wire
+  }
 }
 
 object MemResp {
@@ -231,6 +242,7 @@ object MemResp {
     wire.data := 0.U
     wire.tag := 0.U
     wire.iswrite := false.B
+    wire.tile := 0.U
     wire
   }
 }

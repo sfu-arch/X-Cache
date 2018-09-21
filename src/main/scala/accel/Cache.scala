@@ -127,7 +127,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   }
 
   def IsWBACK(): Bool = {
-    state === s_WRITE_BACK.asUInt
+    io.stat === s_WRITE_BACK.asUInt
   }
 
   val rmeta = Reg(new MetaData)
@@ -141,6 +141,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   hit := valid(idx_reg) && rmeta.tag === tag_reg
 
   // Read Mux
+  io.cpu.resp.bits.tile := 0.U
   io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i + 1) * xlen - 1, i * xlen))(off_reg)
   io.cpu.resp.bits.tag := cpu_tag
   io.cpu.resp.bits.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)

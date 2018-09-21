@@ -6,7 +6,7 @@ import chisel3._
 import chisel3.Module
 import chisel3.util._
 import junctions._
-import muxes.DemuxGen
+import muxes.{Demux, DemuxGen}
 
 import scala.collection.immutable
 
@@ -15,6 +15,7 @@ import scala.collection.immutable
 import config._
 import utility._
 import interfaces._
+import scala.math._
 
 
 class NCacheIO(val NumTiles: Int = 1, NumBanks: Int)(implicit val p: Parameters)
@@ -44,6 +45,8 @@ class CacheSlotsBundle(val NumTiles: Int)(implicit val p: Parameters) extends Bu
   def fire(): Bool = {
     alloc && ready
   }
+
+  override def cloneType = new CacheSlotsBundle(NumTiles).asInstanceOf[this.type]
 }
 
 object CacheSlotsBundle {
@@ -52,6 +55,7 @@ object CacheSlotsBundle {
     wire.alloc := false.B
     wire.tile := 0.U
     wire.ready := false.B
+    wire.bits := MemResp.default
     wire.bits.valid := false.B
     wire
   }
@@ -62,6 +66,7 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
   //  Declare a vector of cache objects
   val caches = for (i <- 0 until NumBanks) yield {
     val cache1 = Module(new Cache(i))
+    io.stat(i) := cache1.io.stat
     cache1
   }
 
@@ -69,6 +74,9 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
    *    Wiring  Cache to CPU  *
    *============================*/
   assert(isPow2(NumBanks) && NumBanks != 0)
+  //
+  val NumBankBits = max(1, log2Ceil(NumBanks))
+  val NumTileBits = max(1, log2Ceil(NumBanks))
 
   //  Per-Tile state
   val fetch_queue   = Module(new Queue(new MemReq( ), 32))
@@ -81,7 +89,7 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
   //  val slots         = RegInit(VecInit(Seq.fill(NumTiles)(VecInit(Seq.fill(NumBanks)(CacheSlotsBundle.default(NumTiles))))))
   val cache_ready   = VecInit(caches.map(_.io.cpu.req.ready))
   val cache_req_io  = VecInit(caches.map(_.io.cpu.req))
-  val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(0.U(log2Ceil(NumSlots).W))))
+  val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(0.U(max(1, log2Ceil(NumSlots)).W))))
 
 
   //  Per-tile Structures
@@ -119,9 +127,6 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
   fetch_queue.io.deq.ready := slot_arbiter.io.out.ready
   slot_arbiter.io.out.ready := fetch_queue.io.deq.valid
 
-  //  Wiring up queue with appropriate cache
-  cache_req_io(bank_idx).bits := fetch_queue.io.deq.bits
-  cache_req_io(bank_idx).valid := fetch_queue.io.deq.fire
 
   //  Queueing Logic.
   when(fetch_queue.io.deq.fire && cache_ready(bank_idx)) {
@@ -145,6 +150,18 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
   }
 
 
+  //  Wiring up queue with appropriate cache
+  val reqdemux = Module(new DemuxGen(new MemReq, NumBanks))
+  reqdemux.io.en := fetch_queue.io.deq.fire
+  reqdemux.io.input := fetch_queue.io.deq.bits
+  reqdemux.io.sel := bank_idx
+
+  for (i <- 0 until NumBanks) {
+    cache_req_io(i).bits := reqdemux.io.outputs(i)
+    cache_req_io(i).valid := reqdemux.io.valids(i)
+  }
+
+
   for (i <- 0 until NumBanks) {
     when(caches(i).io.cpu.resp.valid) {
       slots(cache_serving(i)).ready := true.B
@@ -152,14 +169,28 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
     }
   }
 
-  val resp_arbiter = Module(new RRArbiter(new MemResp, NumSlots))
+  val resp_arbiter = Module(new RRArbiter(
+    new MemResp, NumSlots))
+
   for (i <- 0 until NumSlots) {
     resp_arbiter.io.in(i).bits := slots(i).bits
+    resp_arbiter.io.in(i).bits.tile := slots(i).tile
     resp_arbiter.io.in(i).valid := slots(i).fire
     when(resp_arbiter.io.in(i).fire) {
       slots(i).alloc := false.B
       slots(i).ready := false.B
     }
+  }
+
+  val resp_tile = resp_arbiter.io.out.bits.tile
+  val resp_slot = resp_arbiter.io.chosen
+  io.cpu.MemResp foreach {
+    _.valid := false.B
+  }
+
+  io.cpu.MemResp(resp_tile).bits := slots(resp_slot).bits
+  when(resp_arbiter.io.out.fire( )) {
+    io.cpu.MemResp(resp_tile).valid := true.B
   }
 
   /*============================*
@@ -250,4 +281,20 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
     caches(i).io.nasti.b.bits := nasti_b_demux.io.outputs(i)
   }
 
+}
+
+import java.io.{File, FileWriter}
+
+object NCacheMain extends App {
+  val dir = new File("RTL/NCache");
+  dir.mkdirs
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new NCache(1, 1)))
+
+  val verilogFile   = new File(dir, s"${chirrtl.main}.v")
+  val verilogWriter = new FileWriter(verilogFile)
+  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+  val compiledStuff = compileResult.getEmittedCircuit
+  verilogWriter.write(compiledStuff.value)
+  verilogWriter.close( )
 }
