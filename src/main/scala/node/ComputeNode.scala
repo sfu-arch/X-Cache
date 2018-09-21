@@ -125,7 +125,10 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         //Reset output
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n", task_ID_R, cycleCount, FU.io.out, left_R.data, right_R.data)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
+            node_name + ": Output fired @ %d, Value: %d (%d + %d)\n", task_ID_R, cycleCount, FU.io.out, left_R.data, right_R.data)
+        }
       }
     }
   }
@@ -242,9 +245,11 @@ class TypeComputeNode[T <: Data](gen: T)(NumOuts: Int, ID: Int, opCode: String)
         //Reset output
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-          + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
-          task_ID_R, cycleCount, FU.io.out, left_R.data.asInstanceOf[Bits], right_R.data.asInstanceOf[Bits])
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
+            task_ID_R, cycleCount, FU.io.out, left_R.data.asInstanceOf[Bits], right_R.data.asInstanceOf[Bits])
+        }
       }
     }
   }
@@ -356,9 +361,11 @@ class LoopCounterCompute(val ID: Int, val step: Int)
             state := s_fire
           }
 
-          printf("[LOG] " + "[" + module_name + "] " +
-            "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
-            task_ID_R, cycleCount, io.Out.bits.data, input_R.data, step.U)
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] " +
+              "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
+              task_ID_R, cycleCount, io.Out.bits.data, input_R.data, step.U)
+          }
         }
       }
     }
@@ -501,9 +508,11 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
 
         state := s_fire
 
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-          + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
-          task_input, cycleCount, FU.io.out.asUInt(), left_input.asUInt(), right_input.asUInt())
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
+            task_input, cycleCount, FU.io.out.asUInt(), left_input.asUInt(), right_input.asUInt())
+        }
       }
     }
 

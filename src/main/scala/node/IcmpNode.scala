@@ -119,7 +119,11 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
         out_data_R.predicate := false.B
         //Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", task_ID_R, cycleCount, FU.io.out)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
+            node_name + ": Output fired @ %d, Value: %d (%d ? %d)\n",
+            task_ID_R, cycleCount, FU.io.out, FU.io.in1, FU.io.in2)
+        }
       }
     }
   }
@@ -408,9 +412,11 @@ class IcmpFastNode(NumOuts: Int, ID: Int, opCode: String)
 
         state := s_fire
 
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-          + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
-          task_input, cycleCount, FU.io.out, FU.io.in1, FU.io.in2)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
+            task_input, cycleCount, FU.io.out, FU.io.in1, FU.io.in2)
+        }
       }
     }
 

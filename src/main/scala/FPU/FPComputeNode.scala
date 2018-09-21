@@ -130,7 +130,10 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
         //Reset output
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %x\n", task_ID_R, cycleCount, FU.io.out)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %x\n", task_ID_R, cycleCount, FU.io.out)
+        }
       }
     }
   }

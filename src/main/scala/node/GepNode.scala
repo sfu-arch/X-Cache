@@ -162,7 +162,10 @@ class GepOneNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+            node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        }
       }
     }
   }
@@ -980,9 +983,11 @@ class GepFastNode(NumIns: Int, NumOuts: Int, ArraySize: List[List[Int]], ID: Int
 
         state := s_fire
 
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-          + node_name + ": Output fired @ %d, Value: %d \n",
-          task_input, cycleCount, data_out.asUInt())
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %d \n",
+            task_input, cycleCount, data_out.asUInt())
+        }
       }
     }
 
@@ -1133,8 +1138,10 @@ class GepNode(NumIns: Int, NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
-          node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_out)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+            node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_out)
+        }
       }
     }
   }

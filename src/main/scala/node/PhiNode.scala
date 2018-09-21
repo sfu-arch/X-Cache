@@ -118,7 +118,10 @@ class PhiNode(NumInputs: Int,
         Reset()
 
         //Print output
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", out_data_R.taskID, cycleCount, out_data_R.data)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %d\n", out_data_R.taskID, cycleCount, out_data_R.data)
+        }
 
 
       }
@@ -281,9 +284,11 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
             }
 
             //Print output
-            printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-              + node_name + ": Output fired @ %d, Value: %d\n",
-              io.InData(sel).bits.taskID, cycleCount, io.InData(sel).bits.data)
+            if (log) {
+              printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+                + node_name + ": Output fired @ %d, Value: %d\n",
+                io.InData(sel).bits.taskID, cycleCount, io.InData(sel).bits.data)
+            }
           }
         }.otherwise {
           // Wireing outputs

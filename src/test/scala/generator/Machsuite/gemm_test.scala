@@ -119,10 +119,10 @@ class gemmTest01[T <: gemmMainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
-  val inAddrVec = List.range(0, 4*8, 4)
-  val inDataVec = List(0,1,2,3,4,5,6,7)
-  val outAddrVec = List.range(0, 4*8, 4)
-  val outDataVec = List(0,2,4,6,8,10,12,15)
+  val inAddrVec = List.range(0, 4 * 200, 4)
+  val inDataVec = List.fill(200)(0)
+  val outAddrVec = List.range(0, 4 * 100, 4)
+  val outDataVec = List.fill(200)(1)
 
   // Write initial contents to the memory model.
   for (i <- 0 until inDataVec.length) {

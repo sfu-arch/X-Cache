@@ -117,7 +117,10 @@ class CBranchNode(ID: Int)
         state := s_IDLE
 
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_out_R.asUInt())
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+            node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_out_R.asUInt())
+        }
       }
     }
   }
@@ -317,8 +320,10 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
         }
 
 
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
-          node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+            node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+        }
       }
     }
     is(s_fire) {
@@ -407,7 +412,10 @@ class UBranchNode(NumPredOps: Int = 0,
         state := s_idle
         Reset()
         enable_R := ControlBundle.default
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            + node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+        }
       }
     }
   }
@@ -487,7 +495,9 @@ class UBranchEndNode(ID: Int, NumOuts: Int = 1)
     Reset()
 
     state := s_idle
-    printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+    if (log) {
+      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+    }
 
 
   }
@@ -646,8 +656,10 @@ class CompareBranchNode(ID: Int, opCode: String)
           out_ready_R := VecInit(Seq.fill(2)(false.B))
           out_valid_R := VecInit(Seq.fill(2)(false.B))
 
-          printf("[LOG] " + "[" + module_name + "] [TID-> %d] "
-            + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] [TID-> %d] "
+              + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
+          }
 
         }.elsewhen((io.LeftIO.fire() || left_valid_R) && (io.RightIO.fire() || right_valid_R)) {
           out_valid_R := VecInit(Seq.fill(2)(true.B))
@@ -671,8 +683,10 @@ class CompareBranchNode(ID: Int, opCode: String)
 
         state := s_IDLE
 
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name +
-          ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, FU.io.out.asUInt())
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name +
+            ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, FU.io.out.asUInt())
+        }
       }
     }
   }
@@ -780,8 +794,10 @@ class UBranchFastNodeVariable(val NumOutputs: Int = 1, val ID: Int)
         }
 
 
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
-          node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+            node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+        }
       }
     }
     is(s_fire) {

@@ -132,9 +132,14 @@ class BasicBlockNode(NumInputs: Int,
         state := s_IDLE
 
         when(predicate) {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] " +
+              node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+          }
         }.otherwise {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+          }
         }
       }
     }
@@ -225,9 +230,14 @@ class OOBasicBlockNode(NumInputs: Int,
         state := s_IDLE
 
         when(predicate) {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] " + node_name +
+              ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+          }
         }.otherwise {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+          }
         }
         //Restart predicate bit
       }
@@ -366,9 +376,13 @@ class BasicBlockLoopHeadNode(NumInputs: Int,
     //Reset state
     state := s_idle
     when(predicate) {
-      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+      if (log) {
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+      }
     }.otherwise {
-      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+      if (log) {
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d -> 0 predicate\n", cycleCount)
+      }
     }
     //Restart predicate bit
     pred_R.control := false.B
@@ -458,8 +472,10 @@ class BasicBlockNoMaskNode(NumInputs: Int = 1,
 
         Reset()
 
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output [T] fired @ %d\n",
-          predicate_in_R.taskID, cycleCount)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output [T] fired @ %d\n",
+            predicate_in_R.taskID, cycleCount)
+        }
       }
     }
 
@@ -569,8 +585,10 @@ class BasicBlockNoMaskFastNode2(BID: Int, val NumOuts: Int)
       // State change
       when(io.predicateIn.fire) {
         state := s_fire
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-          + node_name + ": Output [T] fired @ %d\n", task_ID, cycleCount)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            + node_name + ": Output [T] fired @ %d\n", task_ID, cycleCount)
+        }
       }
 
     }
@@ -678,8 +696,10 @@ class BasicBlockNoMaskFastNode3(BID: Int, val NumOuts: Int)
           state := s_fire
         }
 
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-          + node_name + ": Output [T] fired @ %d\n", task_input, cycleCount)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            + node_name + ": Output [T] fired @ %d\n", task_input, cycleCount)
+        }
       }
 
     }
@@ -813,7 +833,10 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
           out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
           mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
           state := s_END
-          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Active fired @ %d, Mask: %d\n", active_R.taskID, cycleCount, 1.U)
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Active fired @ %d, Mask: %d\n",
+              active_R.taskID, cycleCount, 1.U)
+          }
         }.otherwise {
           active_R := ControlBundle.default
           active_valid_R := false.B

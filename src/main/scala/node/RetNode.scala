@@ -198,7 +198,11 @@ class RetNode(retTypes: Seq[Int], ID: Int)
         out_ready_R := false.B
 
         state := s_IDLE
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", output_R.enable.taskID, cycleCount, output_R.data(s"field0").data)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %d\n",
+            output_R.enable.taskID, cycleCount, output_R.data(s"field0").data)
+        }
       }
     }
   }
@@ -297,9 +301,11 @@ class RetNode2(retTypes: Seq[Int], ID: Int)
         out_ready_R := false.B
 
         state := s_IDLE
-        printf("[LOG] " + "[" + module_name + "] "
-          + "[TID->%d] " + node_name +
-          ": Output fired @ %d\n", output_R.enable.taskID, cycleCount)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] "
+            + "[TID->%d] " + node_name +
+            ": Output fired @ %d\n", output_R.enable.taskID, cycleCount)
+        }
       }
     }
   }
