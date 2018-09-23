@@ -21,25 +21,30 @@ import scala.math._
 
 class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters) extends Module with CoreParams {
   /** The I/O for this queue */
-  val io            = new QueueIO(gen, entries)
-  val q             = Module(new Queue(gen, 32))
-  val recycle_valid = RegInit(false.B)
-  val recycle       = RegNext(q.io.deq)
+  val io = new QueueIO(gen, entries)
 
-  io.enq.ready := q.io.enq.ready & (~recycle_valid).toBool
-  q.io.enq.valid := io.enq.valid | recycle_valid
-  q.io.enq.bits := io.enq.bits
-  io.deq <> q.io.deq
+  val fetch_queue = Module(new Queue(gen, 2))
+
+  fetch_queue.io.enq.bits <> io.enq.bits
+
+  //  Pipe registers
+  val pipe = Module(new Pipe(gen, entries))
+  pipe.io.enq.bits <> fetch_queue.io.deq.bits
+  pipe.io.enq.valid := false.B
+
+  fetch_queue.io.enq.valid := io.enq.valid | pipe.io.deq.valid
+  io.enq.ready := fetch_queue.io.enq.ready & (~pipe.io.deq.valid).toBool
 
   // Recycle the request.
-  when(recycle_valid) {
-    q.io.enq.bits <> recycle
-    q.io.enq.valid := true.B
-    recycle_valid := false.B
+  when(pipe.io.deq.valid) {
+    fetch_queue.io.enq.bits <> pipe.io.deq.bits
   }
 
-  /** Create a queue and supply a DecoupledIO containing the product. */
+  def recycle() = {
+    pipe.io.enq.valid := true.B
+  }
 
+  io.deq <> fetch_queue.io.deq
 }
 
 class NCacheIO(val NumTiles: Int = 1, val NumBanks: Int = 1)(implicit val p: Parameters)
@@ -152,7 +157,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   }
 
   //  Handshaking fetch queue with slot arbiter
-  fetch_queue.io.deq.ready := slot_arbiter.io.out.ready
+  fetch_queue.io.deq.ready := slot_arbiter.io.out.valid
   slot_arbiter.io.out.ready := fetch_queue.io.deq.valid
 
   //  Wiring up queue with appropriate cache
@@ -216,7 +221,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   }
 
   //  Debug statements
-  printf(p"FPipe DEQ: ${fetch_pipe.io.deq} \n FQ: ${fetch_queue.io.deq} \n")
+  printf(p"Slots: ${slot_arbiter.io.out} \n FQ: ${fetch_queue.io.deq} \n")
 
   /*============================*
    *    Wiring  Cache to NASTI  *
@@ -255,7 +260,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   val cache_wback = caches map {
     _.IsWBACK( )
   }
-  nasti_aw_arbiter.io.out.ready := io.nasti.aw.ready & ~(cache_wback.reduceLeft(_ | _))
+  nasti_aw_arbiter.io.out.ready := io.nasti.aw.ready & (~(cache_wback.reduceLeft(_ | _)))
 
   //  Cache->NASTI W . Sequence of cache io.nasti.w.bits
   val cache_nasti_w_bits = caches.map {
