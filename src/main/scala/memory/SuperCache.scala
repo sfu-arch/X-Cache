@@ -1,6 +1,7 @@
 package memory
 
 
+import Chisel.experimental.chiselName
 import accel.Cache
 import chisel3._
 import chisel3.Module
@@ -17,6 +18,29 @@ import utility._
 import interfaces._
 import scala.math._
 
+
+class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters) extends Module with CoreParams {
+  /** The I/O for this queue */
+  val io            = new QueueIO(gen, entries)
+  val q             = Module(new Queue(gen, 32))
+  val recycle_valid = RegInit(false.B)
+  val recycle       = RegNext(q.io.deq)
+
+  io.enq.ready := q.io.enq.ready & (~recycle_valid).toBool
+  q.io.enq.valid := io.enq.valid | recycle_valid
+  q.io.enq.bits := io.enq.bits
+  io.deq <> q.io.deq
+
+  // Recycle the request.
+  when(recycle_valid) {
+    q.io.enq.bits <> recycle
+    q.io.enq.valid := true.B
+    recycle_valid := false.B
+  }
+
+  /** Create a queue and supply a DecoupledIO containing the product. */
+
+}
 
 class NCacheIO(val NumTiles: Int = 1, val NumBanks: Int = 1)(implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
@@ -78,12 +102,15 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   val NumBankBits = max(1, log2Ceil(NumBanks))
   val NumTileBits = max(1, log2Ceil(NumBanks))
 
-  //  Per-Tile state
-  val fetch_queue   = Module(new Queue(new MemReq( ), 32))
-  val recycle_valid = RegInit(false.B)
-  val recycle       = RegNext(fetch_queue.io.deq)
-  val NumSlots      = NumTiles * NumBanks
-  val slots         = RegInit(VecInit(Seq.fill(NumSlots)(CacheSlotsBundle.default(NumTiles))))
+  //  Per-Tile stateink
+  val fetch_queue = Module(new Queue(new MemReq( ), 3))
+
+  //  Pipe registers
+  val fetch_pipe = Module(new Pipe(new MemReq( ), 2))
+  fetch_pipe.io.enq.bits <> fetch_queue.io.enq.bits
+
+  val NumSlots = NumTiles * NumBanks
+  val slots    = RegInit(VecInit(Seq.fill(NumSlots)(CacheSlotsBundle.default(NumTiles))))
 
   // Per-Cache bank state
   //  val slots         = RegInit(VecInit(Seq.fill(NumTiles)(VecInit(Seq.fill(NumBanks)(CacheSlotsBundle.default(NumTiles))))))
@@ -100,21 +127,22 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
 
   //  Arbiter to queue
   //  Wire up everything but chosen.
-  fetch_queue.io.enq.bits.addr := fetch_arbiter.io.out.bits.addr
-  fetch_queue.io.enq.bits.data := fetch_arbiter.io.out.bits.data
-  fetch_queue.io.enq.bits.mask := fetch_arbiter.io.out.bits.mask
-  fetch_queue.io.enq.bits.tag := fetch_arbiter.io.out.bits.tag
-  fetch_queue.io.enq.bits.taskID := fetch_arbiter.io.out.bits.taskID
-  fetch_queue.io.enq.bits.iswrite := fetch_arbiter.io.out.bits.iswrite
+  fetch_queue.io.enq.bits <> fetch_arbiter.io.out.bits.clone_and_set_tile_id(fetch_arbiter.io.chosen)
   //  Set chosen now. [HACK]. This is to avoid setting sink twice.
-  fetch_queue.io.enq.bits.tile := fetch_arbiter.io.chosen
+  fetch_pipe.io.enq.bits <> fetch_queue.io.deq.bits
+  fetch_pipe.io.enq.valid := false.B
+
 
   //  enqueue into queue from arbiter.
-  fetch_queue.io.enq.valid := fetch_arbiter.io.out.fire
-  fetch_arbiter.io.out.ready := fetch_queue.io.enq.ready & (~recycle_valid).toBool
+  fetch_queue.io.enq.valid := fetch_arbiter.io.out.valid | fetch_pipe.io.deq.valid
+  fetch_arbiter.io.out.ready := fetch_queue.io.enq.ready & (~fetch_pipe.io.deq.valid).toBool
 
-  //  Calculate cache bank.
-  val bank_idx = fetch_queue.io.deq.bits.addr(xlen - 1, caches(0).bankbitindex)
+  //  If NumBanks are 0 then use the default bank indexing
+  var bank_idx = if (NumBanks == 1) {
+    0.U
+  } else {
+    fetch_queue.io.deq.bits.addr(caches(0).bankbitindex + NumBankBits - 1, caches(0).bankbitindex)
+  }
 
   //  Slot allocation arbiter
   val slot_arbiter = Module(new RRArbiter(new Bool, NumSlots))
@@ -147,14 +175,12 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
     }.otherwise {
       //    Cache is not ready
       //      Recycling logic
-      recycle_valid := true.B
+      fetch_pipe.io.enq.valid := true.B
     }
   }
   // Recycle the request.
-  when(recycle_valid) {
-    fetch_queue.io.enq.bits <> recycle
-    fetch_queue.io.enq.valid := true.B
-    recycle_valid := false.B
+  when(fetch_pipe.io.deq.valid) {
+    fetch_queue.io.enq.bits <> fetch_pipe.io.deq.bits
   }
 
 
@@ -190,7 +216,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   }
 
   //  Debug statements
-  printf(p"${cache_req_io(0)} \n")
+  printf(p"FPipe DEQ: ${fetch_pipe.io.deq} \n FQ: ${fetch_queue.io.deq} \n")
 
   /*============================*
    *    Wiring  Cache to NASTI  *
