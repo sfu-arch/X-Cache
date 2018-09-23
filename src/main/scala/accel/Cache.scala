@@ -98,6 +98,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   val cpu_data    = Reg(io.cpu.req.bits.data.cloneType)
   val cpu_mask    = Reg(io.cpu.req.bits.mask.cloneType)
   val cpu_tag     = Reg(io.cpu.req.bits.tag.cloneType)
+  val cpu_tile    = Reg(io.cpu.req.bits.tile.cloneType)
   val cpu_iswrite = Reg(io.cpu.req.bits.iswrite.cloneType)
 
   // Counters
@@ -141,9 +142,9 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   hit := valid(idx_reg) && rmeta.tag === tag_reg
 
   // Read Mux
-  io.cpu.resp.bits.tile := 0.U
   io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i + 1) * xlen - 1, i * xlen))(off_reg)
   io.cpu.resp.bits.tag := cpu_tag
+  io.cpu.resp.bits.tile := cpu_tile
   io.cpu.resp.bits.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.resp.bits.iswrite := cpu_iswrite
   io.cpu.resp.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)

@@ -18,7 +18,7 @@ import interfaces._
 import scala.math._
 
 
-class NCacheIO(val NumTiles: Int = 1, NumBanks: Int)(implicit val p: Parameters)
+class NCacheIO(val NumTiles: Int = 1, val NumBanks: Int = 1)(implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
   val io = IO(new Bundle {
     val cpu   = new Bundle {
@@ -38,7 +38,7 @@ class NastiWriteBundle(implicit val p: Parameters) extends Bundle {
 
 class CacheSlotsBundle(val NumTiles: Int)(implicit val p: Parameters) extends Bundle {
   val bits  = new MemResp
-  val tile  = UInt(log2Ceil(NumTiles).W)
+  val tile  = UInt(max(1, log2Ceil(NumTiles)).W)
   val alloc = new Bool
   val ready = new Bool
 
@@ -61,7 +61,7 @@ object CacheSlotsBundle {
   }
 }
 
-class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCacheIO(NumTiles, NumBanks)(p) {
+class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) extends NCacheIO(NumTiles, NumBanks)(p) {
 
   //  Declare a vector of cache objects
   val caches = for (i <- 0 until NumBanks) yield {
@@ -81,7 +81,7 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
   //  Per-Tile state
   val fetch_queue   = Module(new Queue(new MemReq( ), 32))
   val recycle_valid = RegInit(false.B)
-  val recycle       = RegInit(fetch_queue.io.deq.bits)
+  val recycle       = RegNext(fetch_queue.io.deq)
   val NumSlots      = NumTiles * NumBanks
   val slots         = RegInit(VecInit(Seq.fill(NumSlots)(CacheSlotsBundle.default(NumTiles))))
 
@@ -110,7 +110,7 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
   fetch_queue.io.enq.bits.tile := fetch_arbiter.io.chosen
 
   //  enqueue into queue from arbiter.
-  fetch_queue.io.enq.valid := fetch_arbiter.io.out.valid
+  fetch_queue.io.enq.valid := fetch_arbiter.io.out.fire
   fetch_arbiter.io.out.ready := fetch_queue.io.enq.ready & (~recycle_valid).toBool
 
   //  Calculate cache bank.
@@ -127,38 +127,34 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
   fetch_queue.io.deq.ready := slot_arbiter.io.out.ready
   slot_arbiter.io.out.ready := fetch_queue.io.deq.valid
 
+  //  Wiring up queue with appropriate cache
+  cache_req_io foreach { rq =>
+    rq.valid := false.B
+    rq.bits <> fetch_queue.io.deq.bits
+  }
 
   //  Queueing Logic.
-  when(fetch_queue.io.deq.fire && cache_ready(bank_idx)) {
-    //  Fetch queue fires only if slot is free.
-    //  Slot is free and cache is ready
+  when(fetch_queue.io.deq.fire) {
+    when(cache_ready(bank_idx)) {
+      //  Fetch queue fires only if slot is free.
+      //  Slot is free and cache is ready
 
-    slots(slot_idx).tile := fetch_queue.io.deq.bits.tile
-    slots(slot_idx).alloc := true.B
-    // Setting cache metadata before sending request request.
-    cache_serving(bank_idx) := slot_idx
-  }.otherwise {
-    //    Cache is not ready
-    //      Recycling logic
-    recycle_valid := true.B
+      slots(slot_idx).tile := 0.U
+      slots(slot_idx).alloc := true.B
+      // Setting cache metadata before sending request request.
+      cache_req_io(bank_idx).valid := true.B
+      cache_serving(bank_idx) := slot_idx
+    }.otherwise {
+      //    Cache is not ready
+      //      Recycling logic
+      recycle_valid := true.B
+    }
   }
   // Recycle the request.
   when(recycle_valid) {
     fetch_queue.io.enq.bits <> recycle
     fetch_queue.io.enq.valid := true.B
     recycle_valid := false.B
-  }
-
-
-  //  Wiring up queue with appropriate cache
-  val reqdemux = Module(new DemuxGen(new MemReq, NumBanks))
-  reqdemux.io.en := fetch_queue.io.deq.fire
-  reqdemux.io.input := fetch_queue.io.deq.bits
-  reqdemux.io.sel := bank_idx
-
-  for (i <- 0 until NumBanks) {
-    cache_req_io(i).bits := reqdemux.io.outputs(i)
-    cache_req_io(i).valid := reqdemux.io.valids(i)
   }
 
 
@@ -192,6 +188,9 @@ class NCache(NumTiles: Int, NumBanks: Int)(implicit p: Parameters) extends NCach
   when(resp_arbiter.io.out.fire( )) {
     io.cpu.MemResp(resp_tile).valid := true.B
   }
+
+  //  Debug statements
+  printf(p"${cache_req_io(0)} \n")
 
   /*============================*
    *    Wiring  Cache to NASTI  *
