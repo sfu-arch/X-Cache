@@ -171,7 +171,7 @@ class gemmTest01[T <: gemmMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 800000) {
+  while (time < 80000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&
