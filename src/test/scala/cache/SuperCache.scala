@@ -39,7 +39,7 @@ class SuperCacheUnitTests(c: NCache) extends PeekPokeTester(c) {
   poke(c.io.cpu.MemReq(0).bits.tile, 0.U)
   poke(c.io.cpu.MemReq(0).bits.iswrite, false.B)
   poke(c.io.cpu.MemReq(0).valid, true.B)
-  step(6)
+  step(10)
 }
 
 class SuperCacheUnitTester extends FlatSpec with Matchers {

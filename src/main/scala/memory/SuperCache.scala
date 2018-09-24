@@ -21,16 +21,19 @@ import scala.math._
 
 class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters) extends Module with CoreParams {
   /** The I/O for this queue */
-  val io = new QueueIO(gen, entries)
+  val genType = gen.cloneType
+
+  val io = IO(new QueueIO(genType, entries) {
+    val recycle = Input(new Bool( ))
+  })
 
   val fetch_queue = Module(new Queue(gen, 2))
+  val pipe        = Module(new Pipe(genType, entries))
 
-  fetch_queue.io.enq.bits <> io.enq.bits
+  fetch_queue.io.enq.bits := io.enq.bits
 
-  //  Pipe registers
-  val pipe = Module(new Pipe(gen, entries))
   pipe.io.enq.bits <> fetch_queue.io.deq.bits
-  pipe.io.enq.valid := false.B
+  pipe.io.enq.valid := io.recycle
 
   fetch_queue.io.enq.valid := io.enq.valid | pipe.io.deq.valid
   io.enq.ready := fetch_queue.io.enq.ready & (~pipe.io.deq.valid).toBool
@@ -40,11 +43,9 @@ class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters)
     fetch_queue.io.enq.bits <> pipe.io.deq.bits
   }
 
-  def recycle() = {
-    pipe.io.enq.valid := true.B
-  }
-
   io.deq <> fetch_queue.io.deq
+  io.count := fetch_queue.io.count
+
 }
 
 class NCacheIO(val NumTiles: Int = 1, val NumBanks: Int = 1)(implicit val p: Parameters)
@@ -59,6 +60,7 @@ class NCacheIO(val NumTiles: Int = 1, val NumBanks: Int = 1)(implicit val p: Par
     val stat  = Output(Vec(NumBanks, UInt(xlen.W)))
   })
 }
+
 
 class NastiWriteBundle(implicit val p: Parameters) extends Bundle {
   val aw = new NastiWriteAddressChannel( )
@@ -108,13 +110,9 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   val NumTileBits = max(1, log2Ceil(NumBanks))
 
   //  Per-Tile stateink
-  val fetch_queue = Module(new Queue(new MemReq( ), 3))
+  val fetch_queue = Module(new PeekQueue(new MemReq( ), 4))
 
-  //  Pipe registers
-  val fetch_pipe = Module(new Pipe(new MemReq( ), 2))
-  fetch_pipe.io.enq.bits <> fetch_queue.io.enq.bits
-
-  val NumSlots = NumTiles * NumBanks
+  val NumSlots = NumTiles * NumBanks * 20
   val slots    = RegInit(VecInit(Seq.fill(NumSlots)(CacheSlotsBundle.default(NumTiles))))
 
   // Per-Cache bank state
@@ -133,15 +131,9 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   //  Arbiter to queue
   //  Wire up everything but chosen.
   fetch_queue.io.enq.bits <> fetch_arbiter.io.out.bits.clone_and_set_tile_id(fetch_arbiter.io.chosen)
-  //  Set chosen now. [HACK]. This is to avoid setting sink twice.
-  fetch_pipe.io.enq.bits <> fetch_queue.io.deq.bits
-  fetch_pipe.io.enq.valid := false.B
-
-
-  //  enqueue into queue from arbiter.
-  fetch_queue.io.enq.valid := fetch_arbiter.io.out.valid | fetch_pipe.io.deq.valid
-  fetch_arbiter.io.out.ready := fetch_queue.io.enq.ready & (~fetch_pipe.io.deq.valid).toBool
-
+  fetch_queue.io.enq.valid := fetch_arbiter.io.out.valid
+  fetch_arbiter.io.out.ready := fetch_queue.io.enq.ready
+  fetch_queue.io.recycle := false.B
   //  If NumBanks are 0 then use the default bank indexing
   var bank_idx = if (NumBanks == 1) {
     0.U
@@ -166,6 +158,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
     rq.bits <> fetch_queue.io.deq.bits
   }
 
+
   //  Queueing Logic.
   when(fetch_queue.io.deq.fire) {
     when(cache_ready(bank_idx)) {
@@ -180,14 +173,9 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
     }.otherwise {
       //    Cache is not ready
       //      Recycling logic
-      fetch_pipe.io.enq.valid := true.B
+      fetch_queue.io.recycle := true.B
     }
   }
-  // Recycle the request.
-  when(fetch_pipe.io.deq.valid) {
-    fetch_queue.io.enq.bits <> fetch_pipe.io.deq.bits
-  }
-
 
   for (i <- 0 until NumBanks) {
     when(caches(i).io.cpu.resp.valid) {
@@ -221,7 +209,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   }
 
   //  Debug statements
-  printf(p"Slots: ${slot_arbiter.io.out} \n FQ: ${fetch_queue.io.deq} \n")
+  printf(p"\nRecycle: ${fetch_queue.io.recycle} \n Arbiter : ${fetch_arbiter.io.out} \n Queue: ${fetch_queue.io.enq}")
 
   /*============================*
    *    Wiring  Cache to NASTI  *
