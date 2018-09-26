@@ -21,7 +21,7 @@ import node._
 import junctions._
 
 
-class cacheMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+class cacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))
@@ -32,7 +32,7 @@ class cacheMainIO(implicit val p: Parameters)  extends Module with CoreParams wi
   })
 }
 
-class cacheMain(implicit p: Parameters) extends cacheMainIO {
+class cacheDFMain(implicit p: Parameters) extends cacheDFMainIO {
 
   val cache = Module(new Cache)            // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -66,10 +66,7 @@ class cacheMain(implicit p: Parameters) extends cacheMainIO {
 }
 
 
-
-
-
-class cacheTest01[T <: cacheMainIO](c: T) extends PeekPokeTester(c) {
+class cacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
 
 
   /**
@@ -154,7 +151,7 @@ class cacheTester extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/cacheTest",
         "-tts", "0001"),
-      () => new cacheMain()) {
+      () => new cacheDFMain()) {
       c => new cacheTest01(c)
     } should be(true)
   }
