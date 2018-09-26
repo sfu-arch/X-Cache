@@ -18,33 +18,31 @@ import arbiters._
 import loop._
 import accel._
 import node._
-import junctions._
 
-
-class test17MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+class test17MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+  val io = IO(new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val addr = Input(UInt(nastiXAddrBits.W))
-    val din  = Input(UInt(nastiXDataBits.W))
+    val din = Input(UInt(nastiXDataBits.W))
     val write = Input(Bool())
     val dout = Output(UInt(nastiXDataBits.W))
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
 class test17Main(implicit p: Parameters) extends test17MainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
   // Store a copy of all data written to the cache.  This is done since the cache isn't
   // 'write through' to the memory model and we have no easy way of reading the
   // cache contents from the testbench.
   when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
+    memCopy.write((cache.io.cpu.req.bits.addr >> 2).asUInt(), cache.io.cpu.req.bits.data)
   }
-  io.dout := memCopy.read((io.addr>>2).asUInt())
+  io.dout := memCopy.read((io.addr >> 2).asUInt())
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -62,27 +60,32 @@ class test17Main(implicit p: Parameters) extends test17MainIO {
   test17.io.in <> io.in
   io.out <> test17.io.out
 
+  if (p(TRACE) == false) {
+    println(Console.RED + "****** Trace option is off. *********" + Console.RESET)
+  }
+  else
+    println(Console.BLUE + "****** Trace option is on. *********" + Console.RESET)
+
+
 }
-
-
-
 
 
 class test17Test01[T <: test17MainIO](c: T) extends PeekPokeTester(c) {
 
 
   /**
-    * test17DF interface:
+    * test08DF interface:
     *
-    * in = Flipped(Decoupled(new Call(List(...))))
-    * out = Decoupled(new Call(List(32)))
+    * data_0 = Flipped(Decoupled(new DataBundle))
+    * val pred = Decoupled(new Bool())
+    * val start = Input(new Bool())
+    * val result = Decoupled(new DataBundle)
     */
 
 
   // Initializing the signals
-
   poke(c.io.in.valid, false.B)
-
+  poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
@@ -90,8 +93,8 @@ class test17Test01[T <: test17MainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field2").data, 0.U)
   poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, false.B)
-  step(1)
 
+  step(1)
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.bits.data("field0").data, 8.U)
@@ -102,40 +105,38 @@ class test17Test01[T <: test17MainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
-
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").data, 8.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").data, 3.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.out.ready, true.B)
+  poke(c.io.in.bits.data("field2").data, 6.U)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
   step(1)
-
-  var time = 1
+  var time = 1 //Cycle counter
   var result = false
-
-  while (time < 100) {
+  while (time < 1000 && !result) {
     time += 1
     step(1)
-    //println(s"Cycle: $time")
-    if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1) {
-      result = true
-      val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 126) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 11")
-        fail
-      } else {
-        println(Console.BLUE + s"*** Correct result received @ cycle: $time.")
+    if (peek(c.io.out.valid) == 1) {
+      if (peek(c.io.out.data.bits) == 126) {
+        result = true
+        println(Console.BLUE + "*** Return received.")
       }
+      else {
+        println(Console.RED + s"*** Incorrect data received vlaue=${c.io.out.bits.data}. Hoping for 126" + Console.RESET)
+        fail
+      }
+
     }
+
   }
+
   if (!result) {
     println("*** Timeout.")
     fail
   }
-
 
 }
 
