@@ -28,7 +28,6 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
   val wordIdx = req.addr(blen - 1, byteOffsetBits)
 
   val readData  = data(setIdx)
-<<<<<<< HEAD
   val writeMask = Vec(bBytes, Bool( ))
   val writeData = Vec(bBytes, UInt(8.W))
 
@@ -36,18 +35,8 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
     val result = Wire(UInt( ))
     for (i <- 0 until len) {
       result((i + 1) * 8 - 1, i * 8) := src(i.U + offset)
-=======
-  val writeMask = VecInit(Seq.fill(bBytes)(false.B))
-  //  (bBytes, false.B)
-  val writeData = VecInit(Seq.fill(bBytes)(0.U(8.W)))
-
-  def extractUInt(src: Vec[UInt], len: Int, offset: UInt): UInt = {
-    val result = VecInit(Seq.fill(len)(0.U(8.W)))
-    for (i <- 0 until len) {
-      result(i) := src(i.U + offset)
->>>>>>> origin
     }
-    result.asUInt
+    result
   }
 
   def insertBytes(src: UInt, dst: Vec[UInt], len: Int, offset: UInt): Vec[UInt] = {
@@ -82,19 +71,15 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
   // Dump state
   io.stat := state.asUInt( )
 
+  writeData.foreach(_ := 0.U(8.W)) // Default
   switch(state) {
     is(sIdle) {
       when(io.cpu.req.valid) {
         when(valid(setIdx) && (tags(setIdx) === tag)) {
           when(req.mask.orR) {
             dirty(setIdx) := true.B
-<<<<<<< HEAD
             writeData := insertBytes(io.nasti.r.bits.data, writeData, wBytes, (wCnt << byteOffsetBits).asUInt( ))
             data.write(setIdx, writeData, writeMask)
-=======
-
-            data.write(setIdx, insertBytes(io.nasti.r.bits.data, writeData, wBytes, (wCnt << byteOffsetBits).asUInt( )), writeMask)
->>>>>>> origin
             printf("[cache] data[%x] <= %x, off: %x, req: %x, mask: %b\n",
               setIdx, extractUInt(writeData, bBytes, 0.U), byteIdx, io.cpu.req.bits.data, io.cpu.req.bits.mask)
           }.otherwise {
@@ -108,7 +93,7 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
             io.nasti.aw.valid := true.B
             state := sWrite
           }.otherwise {
-            data(setIdx) := VecInit(Seq.fill(bBytes)(0.U))
+            data(setIdx) := 0.U
             io.nasti.ar.valid := true.B
             state := sRead
           }
@@ -122,19 +107,15 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
     }
     is(sWrAck) {
       when(io.nasti.b.valid) {
-        data(setIdx) := VecInit(Seq.fill(bBytes)(0.U))
+        data(setIdx) := 0.U
         io.nasti.ar.valid := true.B
         state := sRead
       }
     }
     is(sRead) {
       when(io.nasti.r.valid) {
-<<<<<<< HEAD
         writeData := insertBytes(io.nasti.r.bits.data, readData, wBytes, (rCnt << byteOffsetBits).asUInt( ))
         data(setIdx) := writeData
-=======
-        data(setIdx) := insertBytes(io.nasti.r.bits.data, readData, wBytes, (rCnt << byteOffsetBits).asUInt( ))
->>>>>>> origin
       }
       when(rDone) {
         assert(io.nasti.r.bits.last)
