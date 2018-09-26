@@ -87,7 +87,14 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
   val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(cacheserving.default(NumTileBits, NumSlotBits))))
 
 
-  var bankidxseq = Seq[UInt]( )
+  var bankidxseq = for (i <- 0 until NumBanks) yield {
+    if (NumBanks == 1) {
+      0.U
+    } else {
+      fq_io_deq_bits(i).addr(caches(0).bankbitindex + NumBankBits - 1, caches(0).bankbitindex)
+    }
+  }
+
 
   //  Input to queue
   for (i <- 0 until NumTiles) {
@@ -95,13 +102,6 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     fetch_queues(i).io.enq.valid := io.cpu.MemReq(i).valid
     io.cpu.MemReq(i).ready := fetch_queues(i).io.enq.ready
     fetch_queues(i).io.recycle := false.B
-
-    val bank_idx = if (NumBanks == 1) {
-      0.U
-    } else {
-      fetch_queues(i).io.deq.bits.addr(caches(0).bankbitindex + NumBankBits - 1, caches(0).bankbitindex)
-    }
-    bankidxseq = bankidxseq :+ bank_idx
   }
 
   val picker_matrix = for (i <- 0 until NumBanks) yield {

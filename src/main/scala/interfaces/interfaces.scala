@@ -203,18 +203,6 @@ class MemReq(implicit p: Parameters) extends CoreBundle( )(p) {
   val taskID  = UInt(tlen.W)
   val iswrite = Bool( )
   val tile    = UInt(xlen.W)
-
-  def clone_and_set_tile_id(tile: UInt): MemReq = {
-    val wire = Wire(new MemReq( ))
-    wire.addr := this.addr
-    wire.data := this.data
-    wire.mask := this.mask
-    wire.tag := this.tag
-    wire.taskID := this.taskID
-    wire.iswrite := this.iswrite
-    wire.tile := tile
-    wire
-  }
 }
 
 object MemReq {
