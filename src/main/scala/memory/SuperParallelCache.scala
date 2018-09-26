@@ -84,6 +84,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
   //  val slots         = RegInit(VecInit(Seq.fill(NumTiles)(VecInit(Seq.fill(NumBanks)(CacheSlotsBundle.default(NumTiles))))))
   val cache_ready   = VecInit(caches.map(_.io.cpu.req.ready))
   val cache_req_io  = VecInit(caches.map(_.io.cpu.req))
+  val cache_resp_io = VecInit(caches.map(_.io.cpu.resp))
   val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(cacheserving.default(NumTileBits, NumSlotBits))))
 
 
@@ -103,6 +104,13 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     io.cpu.MemReq(i).ready := fetch_queues(i).io.enq.ready
     fetch_queues(i).io.recycle := false.B
   }
+
+  /* [HACK] Leave this in here, otherwise FIRRTL is going to complain about type inferences.
+   * There is some trouble with type inference if you reach into cache io through caches before mapping it using a map */
+  cache_req_io map {
+    _.valid := false.B
+  }
+
 
   val picker_matrix = for (i <- 0 until NumBanks) yield {
     bankidxseq map {
@@ -159,12 +167,12 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
 
     for (j <- 0 until NumBanks) {
       cache_req_io(j).bits <> prioritymuxes(j)
-      cache_req_io(j).valid := false.B
-      when(caches(j).io.cpu.resp.valid) {
+      when(cache_resp_io(j).valid) {
         slots(cache_serving(j).tile_idx)(cache_serving(j).slot_idx).ready := true.B
-        slots(cache_serving(j).tile_idx)(cache_serving(j).slot_idx).bits := caches(i).io.cpu.resp.bits
+        slots(cache_serving(j).tile_idx)(cache_serving(j).slot_idx).bits := cache_resp_io(j).bits
       }
     }
+
 
     val resp_arbiter = Module(new RRArbiter(
       new MemResp, NumSlots))
@@ -179,6 +187,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
       }
     }
 
+
     val resp_tile = resp_arbiter.io.out.bits.tile
     val resp_slot = resp_arbiter.io.chosen
     io.cpu.MemResp foreach {
@@ -189,7 +198,6 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     when(resp_arbiter.io.out.fire( )) {
       io.cpu.MemResp(resp_tile).valid := true.B
     }
-
   }
 
   //  cache_req_io foreach { rq =>
