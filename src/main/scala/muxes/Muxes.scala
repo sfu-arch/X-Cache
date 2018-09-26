@@ -10,9 +10,9 @@ import interfaces._
 
 class Demux[T <: ValidT](gen: T, Nops: Int) extends Module {
   val io = IO(new Bundle {
-    val en = Input(Bool())
-    val input = Input(gen)
-    val sel = Input(UInt(max(1, log2Ceil(Nops)).W))
+    val en      = Input(Bool( ))
+    val input   = Input(gen)
+    val sel     = Input(UInt(max(1, log2Ceil(Nops)).W))
     val outputs = Output(Vec(Nops, gen))
     // val outputvalid = Output(Bool())
   })
@@ -35,28 +35,62 @@ class Demux[T <: ValidT](gen: T, Nops: Int) extends Module {
   // io.outputvalid := io.valids.asUInt.andR
 }
 
+
+class DemuxGen[T <: Data](gen: T, Nops: Int) extends Module {
+  val io = IO(new Bundle {
+    val en      = Input(Bool( ))
+    val input   = Input(gen)
+    val sel     = Input(UInt(max(1, log2Ceil(Nops)).W))
+    val outputs = Output(Vec(Nops, gen))
+    val valids  = Output(Vec(Nops, Bool( )))
+    // val outputvalid = Output(Bool())
+  })
+
+  val x = io.sel
+
+  for (i <- 0 until Nops) {
+    io.outputs(i) := io.input
+  }
+  when(io.en) {
+    for (i <- 0 until Nops) {
+      io.valids(i) := false.B
+    }
+    io.valids(x) := true.B
+  }.otherwise {
+    for (i <- 0 until Nops) {
+      io.valids(i) := false.B
+    }
+  }
+}
+
 abstract class AbstractDeMuxTree[T <: RouteID](Nops: Int, gen: T)(implicit p: Parameters)
   extends Module with CoreParams {
   val io = IO(new Bundle {
     val outputs = Vec(Nops, Output(gen))
-    val input = Input(gen)
-    val enable = Input(Bool())
-    val sel = Input(UInt(glen.W))
+    val input   = Input(gen)
+    val enable  = Input(Bool( ))
+    val sel     = Input(UInt(glen.W))
   })
 }
 
 class DeMuxTree[T <: RouteID with ValidT](BaseSize: Int, NumOps: Int, gen: T)(implicit val p: Parameters) extends AbstractDeMuxTree(NumOps, gen)(p) {
   require(NumOps > 0)
   require(isPow2(BaseSize))
-  var prev = Seq.fill(0) { Module(new Demux(gen, 4)).io }
-  var toplevel = Seq.fill(0) { Module(new Demux(gen, 4)).io }
-  val SelBits = max(1, log2Ceil(BaseSize))
-  var Level = (max(1, log2Ceil(NumOps)) + SelBits - 1) / SelBits
-  var TopBits = Level * SelBits - 1
-  var SelHIndex = 0
+  var prev            = Seq.fill(0) {
+    Module(new Demux(gen, 4)).io
+  }
+  var toplevel        = Seq.fill(0) {
+    Module(new Demux(gen, 4)).io
+  }
+  val SelBits         = max(1, log2Ceil(BaseSize))
+  var Level           = (max(1, log2Ceil(NumOps)) + SelBits - 1) / SelBits
+  var TopBits         = Level * SelBits - 1
+  var SelHIndex       = 0
   var Muxes_Per_Level = (NumOps + BaseSize - 1) / BaseSize
   while (Muxes_Per_Level > 0) {
-    val Demuxes = Seq.fill(Muxes_Per_Level) { Module(new Demux(gen, BaseSize)).io }
+    val Demuxes = Seq.fill(Muxes_Per_Level) {
+      Module(new Demux(gen, BaseSize)).io
+    }
 
     if (prev.length != 0) {
       // val pipereg = Reg(Vec(prev.length,gen))
@@ -94,8 +128,8 @@ class DeMuxTree[T <: RouteID with ValidT](BaseSize: Int, NumOps: Int, gen: T)(im
       Muxes_Per_Level = (Muxes_Per_Level + BaseSize - 1) / BaseSize
     }
   }
-   //printf(p"Top Demuxes: ${toplevel(1).outputs}\n")
-   //printf(p"Bottom Demuxes: ${prev(0).outputs}\n")
+  //printf(p"Top Demuxes: ${toplevel(1).outputs}\n")
+  //printf(p"Bottom Demuxes: ${prev(0).outputs}\n")
 
   // println("z:"+z+","+(z+log2Ceil(BaseSize)-1))
   prev(0).input <> io.input
@@ -107,15 +141,15 @@ class DeMuxTree[T <: RouteID with ValidT](BaseSize: Int, NumOps: Int, gen: T)(im
       i - ((i / BaseSize) * BaseSize)
     }
   }
+
 }
 
 
-
-class Mux[ T <: ValidT](gen: T, Nops: Int) extends Module {
+class Mux[T <: ValidT](gen: T, Nops: Int) extends Module {
   val io = IO(new Bundle {
-    val en = Input(Bool())
+    val en     = Input(Bool( ))
     val output = Output(gen)
-    val sel = Input(UInt(max(1, log2Ceil(Nops)).W))
+    val sel    = Input(UInt(max(1, log2Ceil(Nops)).W))
     val inputs = Input(Vec(Nops, gen))
   })
 
@@ -123,6 +157,6 @@ class Mux[ T <: ValidT](gen: T, Nops: Int) extends Module {
 
   io.output := io.inputs(x)
   when(!io.en) {
-      io.output.valid := false.B
+    io.output.valid := false.B
   }
 }
