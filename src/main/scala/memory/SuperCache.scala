@@ -165,7 +165,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
       //  Fetch queue fires only if slot is free.
       //  Slot is free and cache is ready
 
-      slots(slot_idx).tile := 0.U
+      slots(slot_idx).tile := fetch_queue.io.deq.bits.tile
       slots(slot_idx).alloc := true.B
       // Setting cache metadata before sending request request.
       cache_req_io(bank_idx).valid := true.B
