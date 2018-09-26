@@ -120,15 +120,18 @@ class test17Test01[T <: test17MainIO](c: T) extends PeekPokeTester(c) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1) {
-      result = true
-      println(Console.BLUE + "*** Return received.")
+      if (peek(c.io.out.data.bits) == 126) {
+        result = true
+        println(Console.BLUE + "*** Return received.")
+      }
+      else {
+        println(Console.RED + s"*** Incorrect data received vlaue=${c.io.out.bits.data}. Hoping for 126" + Console.RESET)
+        fail
+      }
+
     }
 
   }
-  //  else {
-  //    println(Console.RED + s"*** Incorrect data received vlaue=${c.io.out.bits.data}. Hoping for 1" + Console.RESET)
-  //    fail
-  //  }
 
   if (!result) {
     println("*** Timeout.")
