@@ -226,7 +226,7 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
   val mask_value =
     (io.Mask.bits.data & Fill(NumInputs, io.Mask.valid)) | (mask_R & Fill(NumInputs, mask_valid_R))
 
-  val sel = OHToUInt(mask_value)
+  val sel = OHToUInt(Reverse(mask_value))
 
 
   val select_input = (io.InData(sel).bits.data & Fill(xlen, io.InData(sel).valid)) | (in_data_R(sel).data & Fill(xlen, in_data_valid_R(sel)))

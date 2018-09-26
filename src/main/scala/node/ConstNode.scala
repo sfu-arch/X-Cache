@@ -75,9 +75,11 @@ class ConstNode(value: Int, NumOuts: Int = 1, ID: Int)
         state := s_IDLE
         out_data_R.predicate := false.B
         Reset()
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
-          node_name + ": Output fired @ %d, Value: %d\n",
-          task_ID_W, cycleCount, value.asSInt(xlen.W))
+        if (p(TRACE)) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
+            node_name + ": Output fired @ %d, Value: %d\n",
+            task_ID_W, cycleCount, value.asSInt(xlen.W))
+        }
       }
     }
   }
@@ -195,9 +197,11 @@ class ConstFastNode(value: Int, ID: Int)
           state := s_fire
         }
 
-        printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-          + node_name + ": Output fired @ %d, Value: %d\n",
-          task_input, cycleCount, output_value.asSInt())
+        if (p(TRACE)) {
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+            + node_name + ": Output fired @ %d, Value: %d\n",
+            task_input, cycleCount, output_value.asSInt())
+        }
       }
     }
 

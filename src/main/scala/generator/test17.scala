@@ -1,5 +1,6 @@
 package dataflow
 
+import FPU._
 import accel._
 import arbiters._
 import chisel3._
@@ -53,30 +54,33 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
   InputSplitter.io.In <> io.in
 
 
+
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
+
 
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 5, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0))
 
-  val bb_if_then1 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 8, BID = 1))
+  val bb_if_then1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 1))
 
-  val bb_if_then42 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 2, BID = 2))
+  val bb_if_then42 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
 
-  val bb_if_else3 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 3, BID = 3))
+  val bb_if_else3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3))
 
-  val bb_if_else104 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 5, BID = 4))
+  val bb_if_else104 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
 
-  val bb_if_then145 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 4, BID = 5))
+  val bb_if_then145 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 5))
 
-  val bb_if_else186 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 5, BID = 6))
+  val bb_if_else186 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 6))
 
   val bb_if_end237 = Module(new BasicBlockNode(NumInputs = 4, NumOuts = 2, NumPhi = 1, BID = 7))
+
 
 
   /* ================================================================== *
@@ -84,88 +88,89 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
    * ================================================================== */
 
   //  %div.mask = and i32 %a, -2
-  val binaryOp_div_mask0 = Module(new ComputeFastNode(NumOuts = 1, ID = 0, opCode = "and")(sign = false))
+  val binaryOp_div_mask0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "and")(sign = false))
 
   //  %cmp = icmp eq i32 %div.mask, 8
-  val icmp_cmp1 = Module(new IcmpFastNode(NumOuts = 1, ID = 1, opCode = "eq")(sign = false))
+  val icmp_cmp1 = Module(new IcmpNode(NumOuts = 1, ID = 1, opCode = "eq")(sign = false))
 
   //  br i1 %cmp, label %if.then, label %if.else10
-  val br_2 = Module(new CBranchFastNodeVariable(ID = 2))
+  val br_2 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 1, ID = 2))
 
   //  %add = add i32 %b, %a
-  val binaryOp_add3 = Module(new ComputeFastNode(NumOuts = 2, ID = 3, opCode = "add")(sign = false))
+  val binaryOp_add3 = Module(new ComputeNode(NumOuts = 2, ID = 3, opCode = "add")(sign = false))
 
   //  %add1 = add i32 %add, %c
-  val binaryOp_add14 = Module(new ComputeFastNode(NumOuts = 1, ID = 4, opCode = "add")(sign = false))
+  val binaryOp_add14 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign = false))
 
   //  %a.off = add i32 %a, -3
-  val binaryOp_a_off5 = Module(new ComputeFastNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
+  val binaryOp_a_off5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
 
   //  %0 = icmp ult i32 %a.off, 3
-  val icmp_6 = Module(new IcmpFastNode(NumOuts = 1, ID = 6, opCode = "ult")(sign = false))
+  val icmp_6 = Module(new IcmpNode(NumOuts = 1, ID = 6, opCode = "ult")(sign = false))
 
   //  %mul = mul i32 %add1, %c
-  val binaryOp_mul7 = Module(new ComputeFastNode(NumOuts = 2, ID = 7, opCode = "mul")(sign = false))
+  val binaryOp_mul7 = Module(new ComputeNode(NumOuts = 2, ID = 7, opCode = "mul")(sign = false))
 
   //  br i1 %0, label %if.then4, label %if.else
-  val br_8 = Module(new CBranchFastNodeVariable(ID = 8))
+  val br_8 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 1, ID = 8))
 
   //  %add6 = add i32 %mul, %add
-  val binaryOp_add69 = Module(new ComputeFastNode(NumOuts = 1, ID = 9, opCode = "add")(sign = false))
+  val binaryOp_add69 = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "add")(sign = false))
 
   //  br label %if.end23
-  val br_10 = Module(new UBranchFastNode(ID = 10))
+  val br_10 = Module(new UBranchNode(ID = 10))
 
   //  %mul7 = mul i32 %b, %a
-  val binaryOp_mul711 = Module(new ComputeFastNode(NumOuts = 1, ID = 11, opCode = "mul")(sign = false))
+  val binaryOp_mul711 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "mul")(sign = false))
 
   //  %add9 = add i32 %mul, %mul7
-  val binaryOp_add912 = Module(new ComputeFastNode(NumOuts = 1, ID = 12, opCode = "add")(sign = false))
+  val binaryOp_add912 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign = false))
 
   //  br label %if.end23
-  val br_13 = Module(new UBranchFastNode(ID = 13))
+  val br_13 = Module(new UBranchNode(ID = 13))
 
   //  %sub = sub i32 %a, %b
-  val binaryOp_sub14 = Module(new ComputeFastNode(NumOuts = 1, ID = 14, opCode = "sub")(sign = false))
+  val binaryOp_sub14 = Module(new ComputeNode(NumOuts = 1, ID = 14, opCode = "sub")(sign = false))
 
   //  %add11 = add i32 %sub, %c
-  val binaryOp_add1115 = Module(new ComputeFastNode(NumOuts = 2, ID = 15, opCode = "add")(sign = false))
+  val binaryOp_add1115 = Module(new ComputeNode(NumOuts = 2, ID = 15, opCode = "add")(sign = false))
 
   //  %1 = icmp ult i32 %a, 5
-  val icmp_16 = Module(new IcmpFastNode(NumOuts = 1, ID = 16, opCode = "ult")(sign = false))
+  val icmp_16 = Module(new IcmpNode(NumOuts = 1, ID = 16, opCode = "ult")(sign = false))
 
   //  br i1 %1, label %if.then14, label %if.else18
-  val br_17 = Module(new CBranchFastNodeVariable(ID = 17))
+  val br_17 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 1, ID = 17))
 
   //  %mul15 = mul i32 %add11, %b
-  val binaryOp_mul1518 = Module(new ComputeFastNode(NumOuts = 1, ID = 18, opCode = "mul")(sign = false))
+  val binaryOp_mul1518 = Module(new ComputeNode(NumOuts = 1, ID = 18, opCode = "mul")(sign = false))
 
   //  %sub16 = add i32 %c, %a
-  val binaryOp_sub1619 = Module(new ComputeFastNode(NumOuts = 1, ID = 19, opCode = "add")(sign = false))
+  val binaryOp_sub1619 = Module(new ComputeNode(NumOuts = 1, ID = 19, opCode = "add")(sign = false))
 
   //  %add17 = sub i32 %sub16, %mul15
-  val binaryOp_add1720 = Module(new ComputeFastNode(NumOuts = 1, ID = 20, opCode = "sub")(sign = false))
+  val binaryOp_add1720 = Module(new ComputeNode(NumOuts = 1, ID = 20, opCode = "sub")(sign = false))
 
   //  br label %if.end23
-  val br_21 = Module(new UBranchFastNode(ID = 21))
+  val br_21 = Module(new UBranchNode(ID = 21))
 
   //  %mul19 = mul i32 %a, 12
-  val binaryOp_mul1922 = Module(new ComputeFastNode(NumOuts = 1, ID = 22, opCode = "mul")(sign = false))
+  val binaryOp_mul1922 = Module(new ComputeNode(NumOuts = 1, ID = 22, opCode = "mul")(sign = false))
 
   //  %mul20 = mul i32 %mul19, %add11
-  val binaryOp_mul2023 = Module(new ComputeFastNode(NumOuts = 1, ID = 23, opCode = "mul")(sign = false))
+  val binaryOp_mul2023 = Module(new ComputeNode(NumOuts = 1, ID = 23, opCode = "mul")(sign = false))
 
   //  %add21 = add i32 %mul20, %c
-  val binaryOp_add2124 = Module(new ComputeFastNode(NumOuts = 1, ID = 24, opCode = "add")(sign = false))
+  val binaryOp_add2124 = Module(new ComputeNode(NumOuts = 1, ID = 24, opCode = "add")(sign = false))
 
   //  br label %if.end23
-  val br_25 = Module(new UBranchFastNode(ID = 25))
+  val br_25 = Module(new UBranchNode(ID = 25))
 
   //  %sum.0 = phi i32 [ %add6, %if.then4 ], [ %add9, %if.else ], [ %add17, %if.then14 ], [ %add21, %if.else18 ]
   val phi_sum_026 = Module(new PhiFastNode(NumInputs = 4, NumOutputs = 1, ID = 26))
 
   //  ret i32 %sum.0
   val ret_27 = Module(new RetNode2(retTypes = List(32), ID = 27))
+
 
 
   /* ================================================================== *
@@ -191,13 +196,13 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
   val const5 = Module(new ConstFastNode(value = 12, ID = 5))
 
 
+
   /* ================================================================== *
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
   bb_entry0.io.predicateIn <> InputSplitter.io.Out.enable
 
-  //  bb_if_then1.io.predicateIn <> br_2.io.Out(0
   bb_if_then1.io.predicateIn <> br_2.io.TrueOutput(0)
 
   bb_if_then42.io.predicateIn <> br_8.io.TrueOutput(0)
@@ -217,6 +222,7 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
   bb_if_end237.io.predicateIn(2) <> br_21.io.Out(0)
 
   bb_if_end237.io.predicateIn(3) <> br_25.io.Out(0)
+
 
 
   /* ================================================================== *
@@ -389,7 +395,7 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
 
   binaryOp_add912.io.RightIO <> binaryOp_mul711.io.Out(0)
 
-  phi_sum_026.io.InData(2) <> binaryOp_add912.io.Out(0)
+  phi_sum_026.io.InData(1) <> binaryOp_add912.io.Out(0)
 
   binaryOp_add1115.io.LeftIO <> binaryOp_sub14.io.Out(0)
 
@@ -403,7 +409,7 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
 
   binaryOp_add1720.io.LeftIO <> binaryOp_sub1619.io.Out(0)
 
-  phi_sum_026.io.InData(1) <> binaryOp_add1720.io.Out(0)
+  phi_sum_026.io.InData(2) <> binaryOp_add1720.io.Out(0)
 
   binaryOp_mul2023.io.LeftIO <> binaryOp_mul1922.io.Out(0)
 
@@ -457,7 +463,6 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
 }
 
 import java.io.{File, FileWriter}
-
 object test17Main extends App {
   val dir = new File("RTL/test17");
   dir.mkdirs

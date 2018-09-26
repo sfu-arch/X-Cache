@@ -203,7 +203,7 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
 
   //Latching input comparision result
-  val cmp_R = RegInit(DataBundle.default)
+  val cmp_R = RegInit(false.B)
   val cmp_valid = RegInit(false.B)
 
   //Latching control signal
@@ -219,13 +219,14 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
   val fire_false_R = Seq.fill(NumFalse)(RegInit(false.B))
 
   val predicate = (io.enable.bits.control & io.enable.valid) | (enable_R.control & enable_valid_R)
+  val predicate_cmp = (io.CmpIO.bits.data.orR() & io.CmpIO.valid) | (cmp_R & cmp_valid)
   val task_id = (io.enable.bits.taskID & io.enable.valid) | (enable_R.taskID & enable_valid_R)
 
 
   // Latching CMP input
   io.CmpIO.ready := ~cmp_valid
   when(io.CmpIO.fire && io.CmpIO.bits.predicate) {
-    cmp_R <> io.CmpIO.bits
+    cmp_R := io.CmpIO.bits.data.orR()
     cmp_valid := true.B
   }
 
@@ -237,8 +238,8 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
   }
 
   // Output for true and false sides
-  val true_output = predicate & io.CmpIO.bits.data(0)
-  val false_output = predicate & (~io.CmpIO.bits.data(0)).toBool
+  val true_output = predicate & predicate_cmp
+  val false_output = predicate & (~predicate_cmp).toBool
 
   // Defalut values for Trueoutput
   //
@@ -299,7 +300,7 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
         when(io.TrueOutput.map(_.fire).reduce(_ & _)
           && io.FalseOutput.map(_.fire).reduce(_ & _)) {
           //Latching input comparision result
-          cmp_R := DataBundle.default
+          cmp_R := false.B
           cmp_valid := false.B
 
           //Latching control signal
@@ -336,7 +337,7 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
       //Now we can restart the states
       when(fire_true_mask.reduce(_ & _) && fire_false_mask.reduce(_ & _)) {
         //Latching input comparision result
-        cmp_R := DataBundle.default
+        cmp_R := false.B
         cmp_valid := false.B
 
         //Latching control signal
