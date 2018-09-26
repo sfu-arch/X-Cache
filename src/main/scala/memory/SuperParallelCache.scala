@@ -292,3 +292,19 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
   }
 
 }
+
+import java.io.{File, FileWriter}
+
+object NParallelCacheMain extends App {
+  val dir = new File("RTL/NParallelCache");
+  dir.mkdirs
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new NCache(1, 1)))
+
+  val verilogFile   = new File(dir, s"${chirrtl.main}.v")
+  val verilogWriter = new FileWriter(verilogFile)
+  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+  val compiledStuff = compileResult.getEmittedCircuit
+  verilogWriter.write(compiledStuff.value)
+  verilogWriter.close( )
+}
