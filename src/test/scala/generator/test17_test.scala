@@ -61,10 +61,10 @@ class test17Main(implicit p: Parameters) extends test17MainIO {
   io.out <> test17.io.out
 
   if (p(TRACE) == false) {
-    println(Console.RED + "****** Trace option is off. *********" + Console.RESET)
+    println(Console.RED + "****** Log trace is off. *********" + Console.RESET)
   }
   else
-    println(Console.BLUE + "****** Trace option is on. *********" + Console.RESET)
+    println(Console.BLUE + "****** Log trace is on. *********" + Console.RESET)
 
 
 }
