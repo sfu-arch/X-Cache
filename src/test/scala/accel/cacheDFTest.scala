@@ -73,7 +73,7 @@ class cacheDFMain(implicit p: Parameters) extends cacheDFMainIO {
 }
 
 
-class cacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
+class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
 
 
   /**
@@ -121,6 +121,7 @@ class cacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     //Writing mem states back to the file
     val pw = new PrintWriter(new File(path))
     for (i <- 0 until outDataVec.length) {
+      //      for (i <- 0 until outDataVec.length) {
       val data = MemRead(outAddrVec(i))
       pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
     }
@@ -129,7 +130,7 @@ class cacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
   }
 
   val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
-  val inDataVec = List(1, 2, 3, 4, 5)
+  val inDataVec = List(1, 20, 30, 40, 5)
   val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
   val outDataVec = List(1, 2, 3, 4, 5)
 
@@ -148,6 +149,11 @@ class cacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
 
   // Initializing the signals
 
+  //Field descriptions:
+  // 1) field0 : BaseAddress
+  // 2) field1 : index and a[i] = i
+  // 3) field2 : true -> load, false -> store
+
   poke(c.io.in.valid, false.B)
 
   poke(c.io.in.bits.data("field0").data, 0.U)
@@ -161,9 +167,9 @@ class cacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
 
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.bits.data("field0").data, 8.U)
+  poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 3.U)
+  poke(c.io.in.bits.data("field1").data, 2.U)
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.in.bits.data("field2").data, false.B)
   poke(c.io.in.bits.data("field2").predicate, true.B)
@@ -176,6 +182,8 @@ class cacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field2").data, false.B)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, true.B)
   step(1)
 
@@ -203,10 +211,13 @@ class cacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     fail
   }
 
+  step(1000)
+  dumpMemory("final.mem")
+
 
 }
 
-class cacheTester extends FlatSpec with Matchers {
+class baseCacheTester extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that cacheTest works correctly." in {
     // iotester flags:
@@ -221,7 +232,7 @@ class cacheTester extends FlatSpec with Matchers {
         "-td", "test_run_dir/cacheTest",
         "-tts", "0001"),
       () => new cacheDFMain()) {
-      c => new cacheTest01(c)
+      c => new basecacheTest01(c)
     } should be(true)
   }
 }
