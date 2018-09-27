@@ -1,5 +1,8 @@
 package accel
 
+
+import java.io.PrintWriter
+import java.io.File
 import chisel3._
 import chisel3.util._
 import chisel3.Module
@@ -24,10 +27,8 @@ import junctions._
 class cacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO( new CoreBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
-    val addr = Input(UInt(nastiXAddrBits.W))
-    val din  = Input(UInt(nastiXDataBits.W))
-    val write = Input(Bool())
-    val dout = Output(UInt(nastiXDataBits.W))
+    val req = Flipped(Decoupled(new MemReq))
+    val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -36,30 +37,36 @@ class cacheDFMain(implicit p: Parameters) extends cacheDFMainIO {
 
   val cache = Module(new Cache)            // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
 
-  // Store a copy of all data written to the cache.  This is done since the cache isn't
-  // 'write through' to the memory model and we have no easy way of reading the
-  // cache contents from the testbench.
-  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
-  }
-  io.dout := memCopy.read((io.addr>>2).asUInt())
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
   memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := io.addr
-  memModel.io.init.bits.data := io.din
-  memModel.io.init.valid := io.write
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
 
+
   // Wire up the cache and modules under test.
-  //  val test17 = Module(new test17DF())
   val cache_dataflow = Module(new cacheDF())
 
-  cache.io.cpu.req <> cache_dataflow.io.MemReq
-  cache_dataflow.io.MemResp <> cache.io.cpu.resp
+  val CacheArbiter = Module(new MemArbiter(2))
+
+  //Connection DF to cache arbiter
+  CacheArbiter.io.cpu.MemReq(0) <> cache_dataflow.io.MemReq
+  cache_dataflow.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+
+  //Connecting memory io to arbiter
+  CacheArbiter.io.cpu.MemReq(1) <> io.req
+  io.resp <> CacheArbiter.io.cpu.MemResp(1)
+
+  //Connection arbiter to cache
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+
+  //Connecting module inputs to io
   cache_dataflow.io.in <> io.in
   io.out <> cache_dataflow.io.out
 
@@ -75,6 +82,68 @@ class cacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     * in = Flipped(Decoupled(new Call(List(...))))
     * out = Decoupled(new Call(List(32)))
     */
+
+  def MemRead(addr: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.iswrite, 0)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    while (peek(c.io.resp.valid) == 0) {
+      step(1)
+    }
+    val result = peek(c.io.resp.bits.data)
+    result
+  }
+
+  def MemWrite(addr: Int, data: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.data, data)
+    poke(c.io.req.bits.iswrite, 1)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    poke(c.io.req.valid, 0)
+    1
+  }
+
+  def dumpMemory(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until outDataVec.length) {
+      val data = MemRead(outAddrVec(i))
+      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+    }
+    pw.close
+
+  }
+
+  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
+  val inDataVec = List(1, 2, 3, 4, 5)
+  val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
+  val outDataVec = List(1, 2, 3, 4, 5)
+
+
+  var i = 0
+
+  // Write initial contents to the memory model.
+  for (i <- 0 until inDataVec.length) {
+    MemWrite(inAddrVec(i), inDataVec(i))
+  }
+  step(1)
+
+  dumpMemory("init.mem")
+
 
 
   // Initializing the signals
