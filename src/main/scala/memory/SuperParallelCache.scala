@@ -30,8 +30,8 @@ object cacheserving {
     implicit p: Parameters
   ): cacheserving = {
     val wire = Wire(new cacheserving(32, 32))
-    wire.slot_idx := 0.U
-    wire.tile_idx := 0.U
+    wire.slot_idx := 1.U
+    wire.tile_idx := 1.U
     wire
   }
 
@@ -41,8 +41,8 @@ object cacheserving {
                implicit p: Parameters
              ): cacheserving = {
     val wire = Wire(new cacheserving(32, 32))
-    wire.slot_idx := 0.U
-    wire.tile_idx := 0.U
+    wire.slot_idx := 1.U
+    wire.tile_idx := 1.U
     wire
   }
 
@@ -65,7 +65,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
   //
   val NumBankBits = max(1, log2Ceil(NumBanks))
   val NumTileBits = max(1, log2Ceil(NumBanks))
-  val NumSlots    = NumTiles * NumBanks * 20
+  val NumSlots    = NumTiles * NumBanks
   val NumSlotBits = max(1, log2Ceil(NumSlots))
 
   //  Per-Tile stateink
@@ -107,7 +107,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
 
   /* [HACK] Leave this in here, otherwise FIRRTL is going to complain about type inferences.
    * There is some trouble with type inference if you reach into cache io through caches before mapping it using a map */
-  cache_req_io map {
+  cache_req_io foreach {
     _.valid := false.B
   }
 
@@ -200,6 +200,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     }
   }
 
+  printf(p"Cache State : ${io.stat} \n")
   //  cache_req_io foreach { rq =>
   //    rq.bits <> fetch_queue.io.deq.bits
   //  }

@@ -27,7 +27,7 @@ class SuperParallelCacheUnitTests(c: NParallelCache) extends PeekPokeTester(c) {
     (tag << 12) + (setidx << 4) + block
   }
 
-  val tags    = Array(0x1ead0)
+  val tags    = Array(0x1ead1)
   val setidxs = Array(0x01)
   val blocks  = Array(0x9)
 

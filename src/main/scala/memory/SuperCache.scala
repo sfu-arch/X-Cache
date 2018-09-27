@@ -209,7 +209,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   }
 
   //  Debug statements
-  printf(p"\nRecycle: ${fetch_queue.io.recycle} \n Arbiter : ${fetch_arbiter.io.out} \n Queue: ${fetch_queue.io.enq}")
+  //  printf(p"\nRecycle: ${fetch_queue.io.recycle} \n Arbiter : ${fetch_arbiter.io.out} \n Queue: ${fetch_queue.io.enq}")
 
   /*============================*
    *    Wiring  Cache to NASTI  *
