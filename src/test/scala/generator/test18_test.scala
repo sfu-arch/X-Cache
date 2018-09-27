@@ -34,7 +34,7 @@ class test18MainIO(implicit val p: Parameters)  extends Module with CoreParams w
 class test18Main(implicit p: Parameters) extends test18MainIO {
 
   val cache = Module(new Cache)            // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiCMemSlave) // Model of DRAM to connect to Cache
   val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
 
   // Connect the wrapper I/O to the memory model initialization interface so the
