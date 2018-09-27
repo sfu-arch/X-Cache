@@ -121,7 +121,8 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
     val pw = new PrintWriter(new File(path))
     for (i <- 0 until outDataVec.length) {
       val data = MemRead(outAddrVec(i))
-      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+      //pw.write("0X" + outAddrVec(i).toHexString + " -> " + data.toInt.toHexString + "\n")
+      pw.write(data.toInt.toHexString + "\n")
     }
     pw.close
 
