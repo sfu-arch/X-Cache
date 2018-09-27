@@ -67,6 +67,15 @@ class test18Main(implicit p: Parameters) extends test18MainIO {
   test18.io.in <> io.in
   io.out <> test18.io.out
 
+  // Check if trace option is on or off
+  if (p(TRACE) == false) {
+    println(Console.RED + "****** Trace option is off. *********" + Console.RESET)
+  }
+  else
+    println(Console.BLUE + "****** Trace option is on. *********" + Console.RESET)
+
+
+
 
 }
 
@@ -119,6 +128,7 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
+
   val inAddrVec = List.range(0, 4*8, 4)
   val inDataVec = List(0,1,2,3,4,5,6,7)
   val outAddrVec = List.range(0, 4*8, 4)
@@ -129,6 +139,8 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
   step(1)
+
+  dumpMemory("init.mem")
 
 
   // Initializing the signals

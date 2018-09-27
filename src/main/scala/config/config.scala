@@ -52,7 +52,8 @@ class MiniConfig extends Config((site, here, up) => {
     case MSHRLEN  => 8
     case TYPSZ      => 64
     case VERBOSITY  => "low"
-    case COMPONENTS => "TYPLOAD;TYPOP;TYPSTORE"
+    //    case COMPONENTS => "TYPLOAD;TYPOP;TYPSTORE"
+    case COMPONENTS => ""
     // Max size of type memory system may see
     case TRACE => true
     case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))
