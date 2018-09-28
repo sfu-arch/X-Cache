@@ -22,9 +22,9 @@ import accel._
 import node._
 
 
-class test18MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+class test18MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+  val io = IO(new CoreBundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
@@ -33,9 +33,9 @@ class test18MainIO(implicit val p: Parameters)  extends Module with CoreParams w
 
 class test18Main(implicit p: Parameters) extends test18MainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiCMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -73,8 +73,6 @@ class test18Main(implicit p: Parameters) extends test18MainIO {
   }
   else
     println(Console.BLUE + "****** Trace option is on. *********" + Console.RESET)
-
-
 
 
 }
@@ -121,26 +119,23 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
     val pw = new PrintWriter(new File(path))
     for (i <- 0 until outDataVec.length) {
       val data = MemRead(outAddrVec(i))
-      //pw.write("0X" + outAddrVec(i).toHexString + " -> " + data.toInt.toHexString + "\n")
-      pw.write(data.toInt.toHexString + "\n")
+      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data.toInt.toHexString + "\n")
+      //pw.write(data.toInt.toHexString + "\n")
     }
     pw.close
 
   }
 
 
-
-  val inAddrVec = List.range(0, 4*8, 4)
-  val inDataVec = List(0,1,2,3,4,5,6,7)
-  val outAddrVec = List.range(0, 4*8, 4)
-  val outDataVec = List(0,2,4,6,8,10,12,15)
+  val inAddrVec = List.range(0, 4 * 8, 4)
+  val inDataVec = List(0, 1, 2, 3, 4, 5, 6, 7)
+  val outAddrVec = List.range(0, 4 * 8, 4)
+  val outDataVec = List(0, 2, 4, 6, 8, 10, 12, 15)
 
   // Write initial contents to the memory model.
   for (i <- 0 until inDataVec.length) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
-  step(1)
-
   dumpMemory("init.mem")
 
 
@@ -157,9 +152,9 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0)    // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 8)   // n
+  poke(c.io.in.bits.data("field1").data, 8) // n
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -196,9 +191,10 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
 
   step(1000)
 
-  //  Peek into the CopyMem to see if the expected data is written back to the Cache
+  //  Peek into the CopyMem to see
+  //  if the expected data is written back to the Cache
   var valid_data = true
-  for(i <- 0 until outAddrVec.length) {
+  for (i <- 0 until outAddrVec.length) {
     val data = MemRead(outAddrVec(i))
     if (data != outDataVec(i).toInt) {
       println(Console.RED + s"*** Incorrect data received addr=${outAddrVec(i)}. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
@@ -215,7 +211,7 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
-  if(!result) {
+  if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
     dumpMemory("memory.txt")
     fail
@@ -233,6 +229,7 @@ class test18Tester1 extends FlatSpec with Matchers {
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",
+        "-tn", "test18Main",
         "-tbn", "verilator",
         "-td", "test_run_dir/test18/",
         "-tts", "0001"),

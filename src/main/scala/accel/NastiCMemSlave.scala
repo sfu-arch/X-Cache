@@ -54,7 +54,7 @@ class NastiCMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p
 
   when(io.init.valid) {
     //mem.write((io.init.bits.addr >>2).asUInt(), io.init.bits.data)
-    mem.io.wr := true.B
+    mem.io.wr := false.B
     mem.io.addr := (io.init.bits.addr >> 2).asUInt()
     mem.io.din := io.init.bits.data
   }

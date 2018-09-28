@@ -18,9 +18,15 @@ module SinglePortDRAM
     // Shared memory
     reg [DATA - 1:0] mem [(2 ** ADDR) - 1:0];
 
+    initial $display("\nLoading DRAM ...");
+    initial $readmemh("/Users/amirali/git/dataflow-lib/src/main/resources/verilog/memory_trace.mem", mem);
+
+    integer          i;
     initial begin
-        $display("Loading DRAM ...");
-        $readmemh("/Users/amirali/git/dataflow-lib/test_run_dir/test18/dataflow.test18Tester11327156872/memory_trace.mem", mem);
+        $display("rdata:");
+        for (i = 0; i < 5; i = i + 1) begin
+            $display("%d:%h", i, mem[i]);
+        end
     end
 
     // Port A
