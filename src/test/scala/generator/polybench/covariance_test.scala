@@ -168,7 +168,7 @@ class covarianceTester extends FlatSpec with Matchers {
      Array(
 //       "-ll", "Info",
        "-tbn", "verilator",
-       "-td", "test_run_dir",
+       "-td", "test_run_dir/covariance",
        "-tts", "0001"),
       () => new covarianceMain()) {
      c => new CovarianceTest01(c)

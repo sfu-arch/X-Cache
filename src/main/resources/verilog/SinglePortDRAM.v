@@ -21,13 +21,13 @@ module SinglePortDRAM
     initial $display("\nLoading DRAM ...");
     initial $readmemh("/Users/amirali/git/dataflow-lib/src/main/resources/verilog/memory_trace.mem", mem);
 
-    integer          i;
-    initial begin
-        $display("rdata:");
-        for (i = 0; i < 5; i = i + 1) begin
-            $display("%d:%h", i, mem[i]);
-        end
-    end
+    //    integer          i;
+    //    initial begin
+    //        $display("rdata:");
+    //        for (i = 0; i < 5; i = i + 1) begin
+    //            $display("%d:%h", i, mem[i]);
+    //        end
+    //    end
 
     // Port A
     always @(posedge clk) begin

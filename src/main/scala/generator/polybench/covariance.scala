@@ -127,10 +127,10 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val Gep_arrayidx2 = Module(new GepNode(NumIns = 1, NumOuts=3, ID=2)(ElementSize = 8, ArraySize = List()))
 
   //  store double 0.000000e+00, double* %arrayidx, align 4, !tbaa !2
-  val st_3 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=3, RouteID=0))
+  val st_3 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 3, RouteID = 0))
 
   //  br label %for.body3
-  val br_4 = Module(new UBranchNode(NumPredOps=1, ID = 4))
+  val br_4 = Module(new UBranchNode(ID = 4))
 
   //  %0 = phi double [ 0.000000e+00, %for.body ], [ %add, %for.body3 ]
   val phi_5 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 5))
@@ -550,7 +550,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   br_46.io.PredOp(0) <> st_45.io.SuccOp(0)
 
-  br_4.io.PredOp(0) <> st_3.io.SuccOp(0)
+  //  br_4.io.PredOp(0) <> st_3.io.SuccOp(0)
 
 
 
@@ -564,7 +564,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_0.io.In(2) <> phi_j_2442.io.Out(1)
 
-  Loop_0.io.In(3) <> Gep_tmp544.io.Out.data(1)
+  Loop_0.io.In(3) <> Gep_tmp544.io.Out(1)
 
   Loop_1.io.In(0) <> phi_i_2540.io.Out(0)
 
@@ -594,7 +594,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_5.io.In(1) <> phi_j_0101.io.Out(1)
 
-  Loop_5.io.In(2) <> Gep_arrayidx2.io.Out.data(1)
+  Loop_5.io.In(2) <> Gep_arrayidx2.io.Out(1)
 
   Loop_6.io.In(0) <> InputSplitter.io.Out.data("field3")(0)
 
@@ -1060,9 +1060,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   binaryOp_inc918.io.LeftIO <> phi_j_0101.io.Out(2)
 
-  st_3.io.GepAddr <> Gep_arrayidx2.io.Out.data(0)
+  st_3.io.GepAddr <> Gep_arrayidx2.io.Out(0)
 
-  st_17.io.GepAddr <> Gep_arrayidx2.io.Out.data(2)
+  st_17.io.GepAddr <> Gep_arrayidx2.io.Out(2)
 
   FP_add10.io.LeftIO <> phi_5.io.Out(0)
 
@@ -1070,11 +1070,11 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   binaryOp_inc12.io.LeftIO <> phi_i_096.io.Out(1)
 
-  Gep_tmp18.io.baseAddress <> Gep_tmp7.io.Out.data(0)
+  Gep_tmp18.io.baseAddress <> Gep_tmp7.io.Out(0)
 
-  ld_9.io.GepAddr <> Gep_tmp18.io.Out.data(0)
+  ld_9.io.GepAddr <> Gep_tmp18.io.Out(0)
 
-  FP_add10.io.RightIO <> ld_9.io.Out.data(0)
+  FP_add10.io.RightIO <> ld_9.io.Out(0)
 
   phi_5.io.InData(1) <> FP_add10.io.Out(0)
 
@@ -1104,17 +1104,17 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   binaryOp_inc2134.io.LeftIO <> phi_j_1726.io.Out(2)
 
-  ld_28.io.GepAddr <> Gep_arrayidx1727.io.Out.data(0)
+  ld_28.io.GepAddr <> Gep_arrayidx1727.io.Out(0)
 
-  binaryOp_sub32.io.RightIO <> ld_28.io.Out.data(0)
+  binaryOp_sub32.io.RightIO <> ld_28.io.Out(0)
 
-  Gep_tmp330.io.baseAddress <> Gep_tmp229.io.Out.data(0)
+  Gep_tmp330.io.baseAddress <> Gep_tmp229.io.Out(0)
 
-  ld_31.io.GepAddr <> Gep_tmp330.io.Out.data(0)
+  ld_31.io.GepAddr <> Gep_tmp330.io.Out(0)
 
-  st_33.io.GepAddr <> Gep_tmp330.io.Out.data(1)
+  st_33.io.GepAddr <> Gep_tmp330.io.Out(1)
 
-  binaryOp_sub32.io.LeftIO <> ld_31.io.Out.data(0)
+  binaryOp_sub32.io.LeftIO <> ld_31.io.Out(0)
 
   st_33.io.inData <> binaryOp_sub32.io.Out(0)
 
@@ -1138,11 +1138,11 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   binaryOp_inc5667.io.LeftIO <> phi_j_2442.io.Out(3)
 
-  Gep_tmp544.io.baseAddress <> Gep_tmp443.io.Out.data(0)
+  Gep_tmp544.io.baseAddress <> Gep_tmp443.io.Out(0)
 
-  st_45.io.GepAddr <> Gep_tmp544.io.Out.data(0)
+  st_45.io.GepAddr <> Gep_tmp544.io.Out(0)
 
-  st_63.io.GepAddr <> Gep_tmp544.io.Out.data(2)
+  st_63.io.GepAddr <> Gep_tmp544.io.Out(2)
 
   FP_add4356.io.LeftIO <> phi_47.io.Out(0)
 
@@ -1152,17 +1152,17 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   binaryOp_inc4558.io.LeftIO <> phi_k_0248.io.Out(2)
 
-  Gep_tmp750.io.baseAddress <> Gep_tmp649.io.Out.data(0)
+  Gep_tmp750.io.baseAddress <> Gep_tmp649.io.Out(0)
 
-  ld_51.io.GepAddr <> Gep_tmp750.io.Out.data(0)
+  ld_51.io.GepAddr <> Gep_tmp750.io.Out(0)
 
-  binaryOp_mul55.io.LeftIO <> ld_51.io.Out.data(0)
+  binaryOp_mul55.io.LeftIO <> ld_51.io.Out(0)
 
-  Gep_tmp953.io.baseAddress <> Gep_tmp852.io.Out.data(0)
+  Gep_tmp953.io.baseAddress <> Gep_tmp852.io.Out(0)
 
-  ld_54.io.GepAddr <> Gep_tmp953.io.Out.data(0)
+  ld_54.io.GepAddr <> Gep_tmp953.io.Out(0)
 
-  binaryOp_mul55.io.RightIO <> ld_54.io.Out.data(0)
+  binaryOp_mul55.io.RightIO <> ld_54.io.Out(0)
 
   FP_add4356.io.RightIO <> binaryOp_mul55.io.Out(0)
 
@@ -1182,9 +1182,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   st_66.io.inData <> FP_div5062.io.Out(1)
 
-  Gep_tmp1165.io.baseAddress <> Gep_tmp1064.io.Out.data(0)
+  Gep_tmp1165.io.baseAddress <> Gep_tmp1064.io.Out(0)
 
-  st_66.io.GepAddr <> Gep_tmp1165.io.Out.data(0)
+  st_66.io.GepAddr <> Gep_tmp1165.io.Out(0)
 
   phi_j_2442.io.InData(0) <> binaryOp_inc5667.io.Out(0)
 
