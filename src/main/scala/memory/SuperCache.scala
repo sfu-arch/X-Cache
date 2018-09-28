@@ -112,13 +112,14 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   //  Per-Tile stateink
   val fetch_queue = Module(new PeekQueue(new MemReq( ), 4))
 
-  val NumSlots = NumTiles * NumBanks * 20
+  val NumSlots = NumTiles * NumBanks
   val slots    = RegInit(VecInit(Seq.fill(NumSlots)(CacheSlotsBundle.default(NumTiles))))
 
   // Per-Cache bank state
   //  val slots         = RegInit(VecInit(Seq.fill(NumTiles)(VecInit(Seq.fill(NumBanks)(CacheSlotsBundle.default(NumTiles))))))
   val cache_ready   = VecInit(caches.map(_.io.cpu.req.ready))
   val cache_req_io  = VecInit(caches.map(_.io.cpu.req))
+  val cache_resp_io = VecInit(caches.map(_.io.cpu.resp))
   val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(0.U(max(1, log2Ceil(NumSlots)).W))))
 
 
@@ -153,10 +154,18 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   slot_arbiter.io.out.ready := fetch_queue.io.deq.valid
 
   //  Wiring up queue with appropriate cache
-  cache_req_io foreach { rq =>
-    rq.valid := false.B
-    rq.bits <> fetch_queue.io.deq.bits
+  cache_req_io foreach {
+    _.valid := false.B
   }
+
+  //  [HACK]. When we map and connect fetch_queue to caches it does not work.
+  //  Only if iterated over the cache directly and dereferenced caches(i).io.req it works.
+  for (i <- 0 until NumBanks) {
+    caches(i).io.cpu.req.bits <> fetch_queue.io.deq.bits
+    caches(i).io.cpu.abort := false.B
+  }
+
+  //  printf(p"\n CPU Resp: ${io.cpu.MemResp(1)}")
 
 
   //  Queueing Logic.
@@ -173,6 +182,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
     }.otherwise {
       //    Cache is not ready
       //      Recycling logic
+      cache_req_io(bank_idx).valid := false.B
       fetch_queue.io.recycle := true.B
     }
   }
@@ -184,13 +194,16 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
     }
   }
 
+
   val resp_arbiter = Module(new RRArbiter(
     new MemResp, NumSlots))
+
+  resp_arbiter.io.out.ready := true.B
 
   for (i <- 0 until NumSlots) {
     resp_arbiter.io.in(i).bits := slots(i).bits
     resp_arbiter.io.in(i).bits.tile := slots(i).tile
-    resp_arbiter.io.in(i).valid := slots(i).fire
+    resp_arbiter.io.in(i).valid := slots(i).ready
     when(resp_arbiter.io.in(i).fire) {
       slots(i).alloc := false.B
       slots(i).ready := false.B
@@ -198,18 +211,19 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   }
 
   val resp_tile = resp_arbiter.io.out.bits.tile
-  val resp_slot = resp_arbiter.io.chosen
   io.cpu.MemResp foreach {
     _.valid := false.B
   }
 
-  io.cpu.MemResp(resp_tile).bits := slots(resp_slot).bits
+  io.cpu.MemResp foreach {
+    _.bits := resp_arbiter.io.out.bits
+  }
+
   when(resp_arbiter.io.out.fire( )) {
     io.cpu.MemResp(resp_tile).valid := true.B
   }
 
   //  Debug statements
-  //  printf(p"\nRecycle: ${fetch_queue.io.recycle} \n Arbiter : ${fetch_arbiter.io.out} \n Queue: ${fetch_queue.io.enq}")
 
   /*============================*
    *    Wiring  Cache to NASTI  *
