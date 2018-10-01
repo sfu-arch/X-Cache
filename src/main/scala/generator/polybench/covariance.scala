@@ -178,7 +178,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val icmp_exitcond1719 = Module(new IcmpNode(NumOuts = 1, ID = 19, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond17, label %for.cond14.preheader.preheader, label %for.body
-  val br_20 = Module(new CBranchFastNodeVariable(NumTrue = 2, NumFalse = 3, ID = 20))
+  val br_20 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 20))
 
   //  br label %for.cond14.preheader
   val br_21 = Module(new UBranchNode(ID = 21))
@@ -235,7 +235,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val icmp_exitcond1538 = Module(new IcmpNode(NumOuts = 1, ID = 38, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond15, label %for.cond26.preheader, label %for.cond14.preheader
-  val br_39 = Module(new CBranchFastNodeVariable(NumTrue = 2, NumFalse = 3, ID = 39))
+  val br_39 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 39))
 
   //  %i.25 = phi i32 [ 0, %for.cond26.preheader ], [ %inc59, %for.inc58 ]
   val phi_i_2540 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 40))
@@ -253,10 +253,10 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val Gep_tmp544 = Module(new GepNode(NumIns = 2, NumOuts = 3, ID = 44)(ElementSize = 8, ArraySize = List()))
 
   //  store double 0.000000e+00, double* %tmp5, align 4, !tbaa !2
-  val st_45 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 45, RouteID = 4))
+  val st_45 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 45, RouteID = 4))
 
   //  br label %for.body36
-  val br_46 = Module(new UBranchNode(NumPredOps = 1, ID = 46))
+  val br_46 = Module(new UBranchNode(ID = 46))
 
   //  %4 = phi double [ 0.000000e+00, %for.body31 ], [ %add43, %for.body36 ]
   val phi_47 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 47))
@@ -325,7 +325,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val icmp_exitcond1168 = Module(new IcmpNode(NumOuts = 1, ID = 68, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond11, label %for.inc58, label %for.body31
-  val br_69 = Module(new CBranchFastNodeVariable(NumTrue = 2, NumFalse = 3, ID = 69))
+  val br_69 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 69))
 
   //  %inc59 = add nuw nsw i32 %i.25, 1
   val binaryOp_inc5970 = Module(new ComputeNode(NumOuts = 2, ID = 70, opCode = "add")(sign = false))
@@ -508,7 +508,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_1.io.enable <> br_41.io.Out(0)
 
-  Loop_1.io.latchEnable <> br_69.io.TrueOutput(0)
+  Loop_1.io.latchEnable <> br_69.io.FalseOutput(1)
 
   Loop_1.io.loopExit(0) <> br_69.io.TrueOutput(0)
 
@@ -526,7 +526,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_4.io.enable <> br_21.io.Out(0)
 
-  Loop_4.io.latchEnable <> br_39.io.TrueOutput(0)
+  Loop_4.io.latchEnable <> br_39.io.FalseOutput(1)
 
   Loop_4.io.loopExit(0) <> br_39.io.TrueOutput(0)
 
@@ -538,7 +538,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_6.io.enable <> br_0.io.Out(0)
 
-  Loop_6.io.latchEnable <> br_20.io.TrueOutput(0)
+  Loop_6.io.latchEnable <> br_20.io.FalseOutput(1)
 
   Loop_6.io.loopExit(0) <> br_20.io.TrueOutput(0)
 
@@ -548,7 +548,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
    *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
 
-  br_46.io.PredOp(0) <> st_45.io.SuccOp(0)
+  //  br_46.io.PredOp(0) <> st_45.io.SuccOp(0)
 
   //  br_4.io.PredOp(0) <> st_3.io.SuccOp(0)
 
