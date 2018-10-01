@@ -13,12 +13,17 @@ import org.scalatest.{Matchers, FlatSpec}
 
 
 class SuperParallelCacheUnitTests(c: NParallelCache) extends PeekPokeTester(c) {
-  poke(c.io.cpu.MemReq(0).valid, false.B)
-  poke(c.io.nasti.ar.ready, false.B)
-  poke(c.io.nasti.aw.ready, false.B)
-  poke(c.io.nasti.w.ready, false.B)
-  poke(c.io.nasti.r.ready, false.B)
-  poke(c.io.nasti.b.ready, false.B)
+  for (j <- 0 until 2) {
+    poke(c.io.cpu.MemReq(j).valid, false.B)
+  }
+  for (j <- 0 until 2) {
+    poke(c.io.nasti(j).ar.ready, false.B)
+    poke(c.io.nasti(j).aw.ready, false.B)
+    poke(c.io.nasti(j).w.ready, false.B)
+    poke(c.io.nasti(j).r.ready, false.B)
+    poke(c.io.nasti(j).b.ready, false.B)
+  }
+
   poke(c.io.cpu.MemReq(0).bits.tag, 10.U)
   poke(c.io.cpu.MemReq(0).bits.taskID, 10.U)
   step(1)
@@ -38,13 +43,15 @@ class SuperParallelCacheUnitTests(c: NParallelCache) extends PeekPokeTester(c) {
   poke(c.io.cpu.MemReq(0).bits.tile, 0.U)
   poke(c.io.cpu.MemReq(0).bits.iswrite, false.B)
   poke(c.io.cpu.MemReq(0).valid, true.B)
+  step(1)
+  poke(c.io.cpu.MemReq(0).valid, false.B)
   step(10)
 }
 
 class SuperParallelCacheUnitTester extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "SuperCache tester" in {
-    chisel3.iotesters.Driver(() => new NParallelCache(1, 2)) { c =>
+    chisel3.iotesters.Driver(() => new NParallelCache(2, 2)) { c =>
       new SuperParallelCacheUnitTests(c)
     } should be(true)
   }
