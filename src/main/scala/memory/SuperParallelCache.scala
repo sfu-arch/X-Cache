@@ -49,7 +49,21 @@ object cacheserving {
 }
 
 
-class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) extends NCacheIO(NumTiles, NumBanks)(p) {
+class NParallelCacheIO(val NumTiles: Int = 1, val NumBanks: Int = 1)(implicit val p: Parameters)
+  extends Module with CoreParams with UniformPrintfs {
+  val io = IO(new Bundle {
+    val cpu   = new Bundle {
+      val MemReq  = Vec(NumTiles, Flipped(Decoupled(new MemReq)))
+      val MemResp = Vec(NumTiles, Output(Valid(new MemResp)))
+
+    }
+    val nasti = Vec(NumBanks, new NastiIO)
+    val stat  = Output(Vec(NumBanks, UInt(xlen.W)))
+  })
+}
+
+
+class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) extends NParallelCacheIO(NumTiles, NumBanks)(p) {
 
   //  Declare a vector of cache objects
   val caches = for (i <- 0 until NumBanks) yield {
@@ -57,7 +71,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     io.stat(i) := cache1.io.stat
     cache1
   }
-
+  print("Xlen:" + xlen)
   /*============================*
    *    Wiring  Cache to CPU  *
    *============================*/
@@ -65,8 +79,6 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
   //
   val NumBankBits = max(1, log2Ceil(NumBanks))
   val NumTileBits = max(1, log2Ceil(NumBanks))
-  val NumSlots    = NumTiles * NumBanks
-  val NumSlotBits = max(1, log2Ceil(NumSlots))
 
   //  Per-Tile stateink
 
@@ -85,10 +97,10 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
   val cache_ready   = VecInit(caches.map(_.io.cpu.req.ready))
   val cache_req_io  = VecInit(caches.map(_.io.cpu.req))
   val cache_resp_io = VecInit(caches.map(_.io.cpu.resp))
-  val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(cacheserving.default(NumTileBits, NumSlotBits))))
+  val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(cacheserving.default(NumTileBits, NumBankBits))))
 
 
-  var bankidxseq = for (i <- 0 until NumBanks) yield {
+  var bankidxseq = for (i <- 0 until NumTiles) yield {
     if (NumBanks == 1) {
       0.U
     } else {
@@ -103,6 +115,8 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     fetch_queues(i).io.enq.valid := io.cpu.MemReq(i).valid
     io.cpu.MemReq(i).ready := fetch_queues(i).io.enq.ready
     fetch_queues(i).io.recycle := false.B
+    printf(p"\n FQ: ${fetch_queues(i).io.enq.bits} CPU Q: ${io.cpu.MemReq(i).bits} ")
+
   }
 
   /* [HACK] Leave this in here, otherwise FIRRTL is going to complain about type inferences.
@@ -111,10 +125,14 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     _.valid := false.B
   }
 
+  caches foreach { c =>
+    c.io.cpu.abort := false.B
+  }
 
   val picker_matrix = for (i <- 0 until NumBanks) yield {
-    bankidxseq map {
-      _ === i.U
+    bankidxseq.zipWithIndex.map {
+      case (bank, index) =>
+        (bank === i.U) & (fetch_queues(index).io.deq.fire)
     }
   }
 
@@ -134,7 +152,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
 
 
   for (i <- 0 until NumTiles) {
-    val slot_arbiter = Module(new RRArbiter(new Bool, NumSlots))
+    val slot_arbiter = Module(new RRArbiter(new Bool, NumBanks))
     val slot_idx = slot_arbiter.io.chosen
 
     for (j <- 0 until NumBanks) {
@@ -166,8 +184,9 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     }
 
     for (j <- 0 until NumBanks) {
-      cache_req_io(j).bits <> prioritymuxes(j)
+      caches(j).io.cpu.req.bits <> prioritymuxes(j)
       when(cache_resp_io(j).valid) {
+        printf(p"\nResp: ${cache_resp_io(j)}")
         slots(cache_serving(j).tile_idx)(cache_serving(j).slot_idx).ready := true.B
         slots(cache_serving(j).tile_idx)(cache_serving(j).slot_idx).bits := cache_resp_io(j).bits
       }
@@ -175,7 +194,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
 
 
     val resp_arbiter = Module(new RRArbiter(
-      new MemResp, NumSlots))
+      new MemResp, NumBanks))
 
     for (j <- 0 until NumBanks) {
       resp_arbiter.io.in(j).bits := slots(i)(j).bits
@@ -187,28 +206,16 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
       }
     }
 
-
-    val resp_tile = resp_arbiter.io.out.bits.tile
-    val resp_slot = resp_arbiter.io.chosen
-    io.cpu.MemResp foreach {
-      _.valid := false.B
-    }
-
-    io.cpu.MemResp(resp_tile).bits := slots(i)(resp_slot).bits
+    resp_arbiter.io.out.ready := true.B
+    io.cpu.MemResp(i).valid := false.B
+    io.cpu.MemResp(i).bits := resp_arbiter.io.out.bits
     when(resp_arbiter.io.out.fire( )) {
-      io.cpu.MemResp(resp_tile).valid := true.B
+      io.cpu.MemResp(i).valid := true.B
     }
   }
 
-  printf(p"Cache State : ${io.stat} \n")
-  //  cache_req_io foreach { rq =>
-  //    rq.bits <> fetch_queue.io.deq.bits
-  //  }
-
-
-  //  Wiring up queue with appropriate cache
-
-
+  //  printf(p"\n : deq fire: ${fetch_queues(0).io.deq.fire},${fetch_queues(1).io.deq.fire} Bankidxs: ${VecInit(bankidxseq)} Picker matrix : ${VecInit(picker_matrix(0))}  \n")
+  printf(p"\n slots ${slots(1)(0)} \n ${slots(1)(1)}")
   //  Debug statements
   //  printf(p"\nRecycle: ${fetch_queue.io.recycle} \n Arbiter : ${fetch_arbiter.io.out} \n Queue: ${fetch_queue.io.enq}")
 
@@ -216,89 +223,12 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
    *    Wiring  Cache to NASTI  *
    *============================*/
 
-  val nasti_ar_arbiter = Module(new Arbiter(new NastiReadAddressChannel( ), NumBanks))
-  //  This is a twin channel arbiter (arbitrates for both the W and AW channels at once)
-  //  AW and W go together
-  val nasti_aw_arbiter = Module(new Arbiter(new NastiWriteAddressChannel( ), NumBanks))
-  val nasti_r_demux    = Module(new DemuxGen(new NastiReadDataChannel( ), NumBanks))
-  val nasti_b_demux    = Module(new DemuxGen(new NastiWriteResponseChannel( ), NumBanks))
-
-  //  Multiplex cache objects to NASTI interface.
-  nasti_ar_arbiter.io.in zip caches.map {
-    _.io.nasti.ar
-  } foreach {
-    case (a, b) => a <> b
+  io.nasti zip caches foreach {
+    case (ionasti, cach) => {
+      ionasti <> cach.io.nasti
+    }
   }
-
-  //  Multiplex cache objects to NASTI interface.
-  nasti_aw_arbiter.io.in zip caches.map {
-    _.io.nasti.aw
-  } foreach {
-    case (a, b) => a <> b
-  }
-
-
-  //  Cache->NASTI AR
-  io.nasti.ar <> nasti_ar_arbiter.io.out
-
-  //  Cache->NASTI AW
-  io.nasti.aw.bits <> nasti_aw_arbiter.io.out.bits
-  io.nasti.aw.valid <> nasti_aw_arbiter.io.out.valid
-
-  //  Vector of bools.
-  val cache_wback = caches map {
-    _.IsWBACK( )
-  }
-  nasti_aw_arbiter.io.out.ready := io.nasti.aw.ready & (~(cache_wback.reduceLeft(_ | _)))
-
-  //  Cache->NASTI W . Sequence of cache io.nasti.w.bits
-  val cache_nasti_w_bits = caches.map {
-    _.io.nasti.w.bits
-  }
-  //  Feed into MUX and select one of these for the NASTI io w
-  val w_mux              = Mux1H(cache_wback, cache_nasti_w_bits)
-  //  Mux -> NASTI
-  io.nasti.w.bits <> w_mux
-  //  NASTI w valid  = true if one of the caches are writing back.
-  io.nasti.w.valid := cache_wback.reduceLeft(_ | _)
-  // Fanout io nasti w ready to all the caches. NASTI slave to all cache ready
-  caches foreach {
-    _.io.nasti.w.ready := io.nasti.w.ready
-  }
-
-  // NASTI->Cache b and r; ready.
-  val b_ready = caches map {
-    _.io.nasti.b.ready
-  }
-
-  val r_ready = caches map {
-    _.io.nasti.r.ready
-  }
-
-  io.nasti.b.ready := b_ready.reduceLeft(_ | _)
-  io.nasti.r.ready := r_ready.reduceLeft(_ | _)
-
-  //  NASTI->Cache r
-  nasti_r_demux.io.en := io.nasti.r.fire
-  nasti_r_demux.io.input := io.nasti.r.bits
-  nasti_r_demux.io.sel := io.nasti.r.bits.id
-
-
-  for (i <- 0 until NumBanks) {
-    caches(i).io.nasti.r.valid := nasti_r_demux.io.valids(i)
-    caches(i).io.nasti.r.bits := nasti_r_demux.io.outputs(i)
-  }
-
-
-  //  NASTI->Cache b
-  nasti_b_demux.io.en := io.nasti.b.fire
-  nasti_b_demux.io.input := io.nasti.b.bits
-  nasti_b_demux.io.sel := io.nasti.b.bits.id
-
-  for (i <- 0 until NumBanks) {
-    caches(i).io.nasti.b.valid := nasti_b_demux.io.valids(i)
-    caches(i).io.nasti.b.bits := nasti_b_demux.io.outputs(i)
-  }
+  //  printf(p"\n Stat: ${io.stat}, ${io.nasti(0).r}")
 
 }
 

@@ -24,28 +24,22 @@ import node._
 import junctions._
 
 
-class SuperCacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
-    val in   = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val req  = Flipped(Decoupled(new MemReq))
-    val resp = Output(Valid(new MemResp))
-    val out  = Decoupled(new Call(List(32)))
-  })
-}
+class SuperParallelCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
 
-class SuperCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
-
-  val cache = Module(new NCache(2, 2)) // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-
+  val cache = Module(new NParallelCache(2, 2)) // Simple Nasti Cache
+  val memModels = for (i <- 0 until 2) yield {
+      val memModel = Module(new NastiMemSlave(latency = 5)) // Model of DRAM to connect to Cache
+      memModel
+    }
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := 0.U
-  memModel.io.init.bits.data := 0.U
-  memModel.io.init.valid := false.B
-
+  for (i <- 0 until 2) {
+    memModels(i).io.nasti <> cache.io.nasti(i)
+    memModels(i).io.init.bits.addr := 0.U
+    memModels(i).io.init.bits.data := 0.U
+    memModels(i).io.init.valid := false.B
+  }
 
   // Wire up the cache and modules under test.
   val cache_dataflow = Module(new cacheDF( ))
@@ -65,7 +59,7 @@ class SuperCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
 }
 
 
-class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) {
+class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) {
 
 
   /**
@@ -102,7 +96,7 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
     poke(c.io.req.bits.data, data)
     poke(c.io.req.bits.iswrite, 1)
     poke(c.io.req.bits.tag, 20)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
     step(1)
     poke(c.io.req.valid, 0)
     1
@@ -120,11 +114,10 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
 
   }
 
-  val inAddrVec  = List(0x0, 0xB000)
-  val inDataVec  = List(10, 20)
-  val outAddrVec = List(0x0, 0xB000)
-  val outDataVec = List(10, 20)
-
+  val inAddrVec  = List(0x0, 0x4)
+  val inDataVec  = List(10, 40)
+  val outAddrVec = List(0x0, 0x4)
+  val outDataVec = List(10, 40)
 
   var i = 0
 
@@ -206,7 +199,7 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
 
 }
 
-class SuperCacheDFTester extends FlatSpec with Matchers {
+class SuperParallelCacheDFTester extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that cacheTest works correctly." in {
     // iotester flags:
@@ -220,9 +213,8 @@ class SuperCacheDFTester extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/cacheTest",
         "-tts", "0001"),
-      () => new SuperCacheDFMain( )) {
-      c => new SuperCacheTest01(c)
+      () => new SuperParallelCacheDFMain( )) {
+      c => new SuperParallelCacheTest01(c)
     } should be(true)
   }
 }
-
