@@ -147,52 +147,52 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
   poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
-  //
-  //  poke(c.io.in.valid, true.B)
-  //  poke(c.io.in.bits.enable.control, true.B)
-  //  poke(c.io.in.bits.data("field0").data, 0.U)
-  //  poke(c.io.in.bits.data("field0").predicate, true.B)
-  //  poke(c.io.in.bits.data("field1").data, 2.U)
-  //  poke(c.io.in.bits.data("field1").predicate, true.B)
-  //  poke(c.io.in.bits.data("field2").data, false.B)
-  //  poke(c.io.in.bits.data("field2").predicate, true.B)
-  //  poke(c.io.out.ready, true.B)
-  //  step(1)
-  //
-  //  poke(c.io.in.valid, false.B)
-  //  poke(c.io.in.bits.enable.control, false.B)
-  //  poke(c.io.in.bits.data("field0").data, 0.U)
-  //  poke(c.io.in.bits.data("field0").predicate, false.B)
-  //  poke(c.io.in.bits.data("field1").data, 0.U)
-  //  poke(c.io.in.bits.data("field1").predicate, false.B)
-  //  poke(c.io.in.bits.data("field2").data, false.B)
-  //  poke(c.io.in.bits.data("field2").predicate, false.B)
-  //  poke(c.io.out.ready, true.B)
-  //  step(1)
-  //
-  //  var time   = 1
-  //  var result = false
-  //
-  //  while (time < 100) {
-  //    time += 1
-  //    step(1)
-  //    //println(s"Cycle: $time")
-  //    if (peek(c.io.out.valid) == 1 &&
-  //      peek(c.io.out.bits.data("field0").predicate) == 1) {
-  //      result = true
-  //      val data = peek(c.io.out.bits.data("field0").data)
-  //      if (data != 0) {
-  //        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 0")
-  //        fail
-  //      } else {
-  //        println(Console.BLUE + s"*** Correct result received @ cycle: $time.")
-  //      }
-  //    }
-  //  }
-  //  if (!result) {
-  //    println("*** Timeout.")
-  //    fail
-  //  }
+
+  poke(c.io.in.valid, true.B)
+  poke(c.io.in.bits.enable.control, true.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, true.B)
+  poke(c.io.in.bits.data("field1").data, 1.U)
+  poke(c.io.in.bits.data("field1").predicate, true.B)
+  poke(c.io.in.bits.data("field2").data, false.B)
+  poke(c.io.in.bits.data("field2").predicate, true.B)
+  poke(c.io.out.ready, true.B)
+  step(1)
+
+  poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.enable.control, false.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, false.B)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field2").data, false.B)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
+  poke(c.io.out.ready, true.B)
+  step(1)
+
+  var time   = 1
+  var result = false
+
+  while (time < 100) {
+    time += 1
+    step(1)
+    //println(s"Cycle: $time")
+    if (peek(c.io.out.valid) == 1 &&
+      peek(c.io.out.bits.data("field0").predicate) == 1) {
+      result = true
+      val data = peek(c.io.out.bits.data("field0").data)
+      if (data != 0) {
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 0")
+        fail
+      } else {
+        println(Console.BLUE + s"*** Correct result received @ cycle: $time.")
+      }
+    }
+  }
+  if (!result) {
+    println("*** Timeout.")
+    fail
+  }
 
   step(20)
   dumpMemory("final.mem")

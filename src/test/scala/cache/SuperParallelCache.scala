@@ -43,8 +43,13 @@ class SuperParallelCacheUnitTests(c: NParallelCache) extends PeekPokeTester(c) {
   poke(c.io.cpu.MemReq(0).bits.tile, 0.U)
   poke(c.io.cpu.MemReq(0).bits.iswrite, false.B)
   poke(c.io.cpu.MemReq(0).valid, true.B)
+  poke(c.io.cpu.MemReq(1).bits.addr, get_addr(tags(0), setidxs(0), blocks(0)).U)
+  poke(c.io.cpu.MemReq(1).bits.tile, 0.U)
+  poke(c.io.cpu.MemReq(1).bits.iswrite, false.B)
+  poke(c.io.cpu.MemReq(1).valid, true.B)
   step(1)
   poke(c.io.cpu.MemReq(0).valid, false.B)
+  poke(c.io.cpu.MemReq(1).valid, false.B)
   step(10)
 }
 

@@ -115,7 +115,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     fetch_queues(i).io.enq.valid := io.cpu.MemReq(i).valid
     io.cpu.MemReq(i).ready := fetch_queues(i).io.enq.ready
     fetch_queues(i).io.recycle := false.B
-    printf(p"\n FQ: ${fetch_queues(i).io.enq.bits} CPU Q: ${io.cpu.MemReq(i).bits} ")
+    //    printf(p"\n FQ: ${fetch_queues(i).io.enq.bits} CPU Q: ${io.cpu.MemReq(i).bits} ")
 
   }
 
@@ -179,6 +179,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
       }.otherwise {
         //    Cache is not ready
         //      Recycling logic
+        printf(p"Recycle")
         fetch_queues(i).io.recycle := true.B
       }
     }
@@ -186,7 +187,6 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     for (j <- 0 until NumBanks) {
       caches(j).io.cpu.req.bits <> prioritymuxes(j)
       when(cache_resp_io(j).valid) {
-        printf(p"\nResp: ${cache_resp_io(j)}")
         slots(cache_serving(j).tile_idx)(cache_serving(j).slot_idx).ready := true.B
         slots(cache_serving(j).tile_idx)(cache_serving(j).slot_idx).bits := cache_resp_io(j).bits
       }
@@ -215,7 +215,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
   }
 
   //  printf(p"\n : deq fire: ${fetch_queues(0).io.deq.fire},${fetch_queues(1).io.deq.fire} Bankidxs: ${VecInit(bankidxseq)} Picker matrix : ${VecInit(picker_matrix(0))}  \n")
-  printf(p"\n slots ${slots(1)(0)} \n ${slots(1)(1)}")
+  //  printf(p"\n slots ${slots(1)(0)} \n ${slots(1)(1)}")
   //  Debug statements
   //  printf(p"\nRecycle: ${fetch_queue.io.recycle} \n Arbiter : ${fetch_arbiter.io.out} \n Queue: ${fetch_queue.io.enq}")
 
