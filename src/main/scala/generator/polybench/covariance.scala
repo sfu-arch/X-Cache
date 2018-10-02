@@ -160,7 +160,8 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val icmp_exitcond1613 = Module(new IcmpNode(NumOuts = 1, ID = 13, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond16, label %for.end, label %for.body3
-  val br_14 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 14))
+  val br_14 = Module(new CBranchNode(ID = 14))
+  val br_14_tmp = Module(new UBranchNode(NumOuts = 2, ID = 5555))
 
   //  %add.lcssa = phi double [ %add, %for.body3 ]
   val phi_add_lcssa15 = Module(new PhiFastNode(NumInputs = 1, NumOutputs = 1, ID = 15))
@@ -334,7 +335,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val icmp_exitcond1371 = Module(new IcmpNode(NumOuts = 1, ID = 71, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond13, label %for.end60, label %for.body31.preheader
-  val br_72 = Module(new CBranchFastNodeVariable(NumTrue = 2, NumFalse = 3, ID = 72))
+  val br_72 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 72))
 
   //  ret void
   val ret_73 = Module(new RetNode2(retTypes = List(), ID = 73))
@@ -452,7 +453,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   bb_for_body32.io.activate <> Loop_5.io.activate
 
-  bb_for_body32.io.loopBack <> br_14.io.FalseOutput(0)
+  //  bb_for_body32.io.loopBack <> br_14.io.FalseOutput(0)
+  br_14_tmp.io.enable <> br_14.io.Out(1)
+  bb_for_body32.io.loopBack <> br_14_tmp.io.Out(0)
 
   bb_for_end3.io.predicateIn(0) <> Loop_5.io.endEnable
 
@@ -514,7 +517,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_2.io.enable <> br_25.io.Out(0)
 
-  Loop_2.io.latchEnable <> br_72.io.TrueOutput(0)
+  Loop_2.io.latchEnable <> br_72.io.FalseOutput(1)
 
   Loop_2.io.loopExit(0) <> br_72.io.TrueOutput(0)
 
@@ -532,9 +535,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_5.io.enable <> br_4.io.Out(0)
 
-  Loop_5.io.latchEnable <> br_14.io.FalseOutput(1)
+  Loop_5.io.latchEnable <> br_14_tmp.io.Out(1)
 
-  Loop_5.io.loopExit(0) <> br_14.io.TrueOutput(0)
+  Loop_5.io.loopExit(0) <> br_14.io.Out(0)
 
   Loop_6.io.enable <> br_0.io.Out(0)
 

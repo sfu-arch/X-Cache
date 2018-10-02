@@ -64,13 +64,13 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 3, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 3, BID = 0))
 
-  val bb_for_body_preheader1 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 1))
+  val bb_for_body_preheader1 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 1, BID = 1))
 
-  val bb_for_body2 = Module(new LoopHead(NumOuts = 9, NumPhi = 2, BID = 2))
+  val bb_for_body2 = Module(new LoopFastHead(NumOuts = 9, NumPhi = 2, BID = 2))
 
-  val bb_for_end_loopexit3 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 3))
+  val bb_for_end_loopexit3 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 1, BID = 3))
 
   val bb_for_end4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 4))
 
@@ -119,7 +119,7 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
   val br_10 = Module(new UBranchFastNode(ID = 10))
 
   //  %sum.0.lcssa = phi i32 [ %a, %entry ], [ %mul, %for.end.loopexit ]
-  val phi_sum_0_lcssa11 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 11))
+  val phi_sum_0_lcssa11 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 11))
 
   //  ret i32 %sum.0.lcssa
   val ret_12 = Module(new RetNode2(retTypes = List(32), ID = 12))

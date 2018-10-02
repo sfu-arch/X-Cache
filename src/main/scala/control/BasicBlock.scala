@@ -722,12 +722,6 @@ class BasicBlockNoMaskFastNode3(BID: Int, val NumOuts: Int)
 }
 
 
-/**
-  * @note
-  * For Conditional Branch output is always equal to two!
-  * Since your branch output wire to two different basic block only
-  */
-
 class LoopHeadNodeIO(val NumOuts: Int, val NumPhi: Int)(implicit p: Parameters) extends CoreBundle {
 
   // Predicate enable
@@ -873,8 +867,139 @@ class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
 }
 
 
+class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
+                  (implicit val p: Parameters,
+                   name: sourcecode.Name,
+                   file: sourcecode.File) extends Module with CoreParams with UniformPrintfs {
+  // Defining IOs
+  val io = IO(new LoopHeadNodeIO(NumOuts, NumPhi))
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+  // Enable Input
+  val active_R = RegInit(ControlBundle.default)
+  val active_valid_R = RegInit(false.B)
+
+  val loop_back_R = RegInit(ControlBundle.default)
+  val loop_back_valid_R = RegInit(false.B)
+
+  val end_loop_R = RegInit(ControlBundle.default)
+  val end_loop_valid_R = RegInit(false.B)
+
+  // Output Handshaking
+  val out_R = RegInit(ControlBundle.default)
+  val out_val_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_fired_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+
+  val mask_fired_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
+  val mask_valid_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
+  val mask_value_R = RegInit(0.U(2.W))
+
+  val s_START :: s_FEED :: s_END :: Nil = Enum(3)
+  val state = RegInit(s_START)
+
+  io.activate.ready := ~active_valid_R
+  when(io.activate.fire()) {
+    active_R <> io.activate.bits
+    active_valid_R := true.B
+  }
+
+  //  io.loopBack.ready := true.B //~loop_back_valid_R
+  io.loopBack.ready := ~loop_back_valid_R
+  when(io.loopBack.fire()) {
+    loop_back_R <> io.loopBack.bits
+    loop_back_valid_R := true.B
+  }
+
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits := out_R
+  }
+
+  // Wire up OUT READYs and VALIDs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).valid := out_valid_R(i)
+    when(io.Out(i).fire()) {
+      // Detecting when to reset
+      out_fired_R(i) := true.B;
+      // Propagating output
+      out_valid_R(i) := false.B
+    }
+  }
 
 
+  // Wire up MASK Readys and Valids
+  for (i <- 0 until NumPhi) {
+    io.MaskBB(i).bits := mask_value_R
+    io.MaskBB(i).valid := mask_valid_R(i)
+    when(io.MaskBB(i).fire()) {
+      // Detecting when to reset
+      mask_fired_R(i) := true.B
+      // Propagating mask
+      mask_valid_R(i) := false.B
+    }
+
+  }
+
+
+  /*=================
+   * States
+   ==================*/
+
+  switch(state) {
+    is(s_START) { // First loop
+      mask_value_R := 1.U
+      when(active_valid_R) {
+        when(active_R.control) {
+          //Valid the output
+          out_R := active_R
+          out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
+          mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
+          state := s_END
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Active fired @ %d, Mask: %d\n",
+              active_R.taskID, cycleCount, 1.U)
+          }
+        }.otherwise {
+          active_R := ControlBundle.default
+          active_valid_R := false.B
+          state := s_START
+        }
+      }
+    }
+    is(s_FEED) { // Wait for loop feedback signal.
+      mask_value_R := 2.U
+      when(loop_back_valid_R) {
+        loop_back_valid_R := false.B
+        when(loop_back_R.control) {
+          out_R := loop_back_R
+          out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
+          mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
+          state := s_END
+        }.otherwise {
+          active_valid_R := false.B
+          state := s_START
+        }
+      }
+    }
+    is(s_END) { // Wait until all outputs have fired
+      when(out_fired_R.reduceLeft(_ && _) && mask_fired_R.reduceLeft(_ && _)) {
+        mask_value_R := 2.U
+        out_fired_R := VecInit(Seq.fill(NumOuts)(false.B))
+        mask_fired_R := VecInit(Seq.fill(NumPhi)(false.B))
+        state := s_FEED
+      }
+    }
+  }
+
+
+}
 
 
 
