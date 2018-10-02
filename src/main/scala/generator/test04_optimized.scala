@@ -64,15 +64,15 @@ class test04_optimizedDF(implicit p: Parameters) extends test04_optimizedDFIO()(
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 2, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 2, BID = 0))
 
-  val bb_while_body_preheader1 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 1))
+  val bb_while_body_preheader1 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 1, BID = 1))
 
-  val bb_while_body2 = Module(new LoopHead(NumOuts = 11, NumPhi = 2, BID = 2))
+  val bb_while_body2 = Module(new LoopFastHead(NumOuts = 11, NumPhi = 2, BID = 2))
 
-  val bb_while_end_loopexit3 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 3))
+  val bb_while_end_loopexit3 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 1, BID = 3))
 
-  val bb_while_end4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 0, BID = 4))
+  val bb_while_end4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi = 0, BID = 4))
 
 
   /* ================================================================== *
@@ -119,7 +119,7 @@ class test04_optimizedDF(implicit p: Parameters) extends test04_optimizedDFIO()(
   val br_12 = Module(new UBranchFastNode(ID = 12))
 
   //  ret void
-  val ret_13 = Module(new RetNode(retTypes = List(32), ID = 13))
+  val ret_13 = Module(new RetNode2(retTypes = List(), ID = 13))
   //  val ret_15 = Module(new RetNode(retTypes=List(32), ID = 15))
 
 
@@ -237,12 +237,7 @@ class test04_optimizedDF(implicit p: Parameters) extends test04_optimizedDFIO()(
   br_12.io.enable <> bb_while_end_loopexit3.io.Out(0)
 
 
-  ret_13.io.enable <> bb_while_end4.io.Out(0)
-
-  const2.io.enable <> bb_while_end4.io.Out(1)
-
-  ret_13.io.In("field0") <> const2.io.Out
-
+  ret_13.io.In.enable <> bb_while_end4.io.Out(0)
 
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *

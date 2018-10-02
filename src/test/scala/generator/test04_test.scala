@@ -28,7 +28,7 @@ class test04MainIO(implicit val p: Parameters) extends Module with CoreParams wi
     val din = Input(UInt(nastiXDataBits.W))
     val write = Input(Bool())
     val dout = Output(UInt(nastiXDataBits.W))
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
