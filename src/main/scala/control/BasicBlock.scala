@@ -1,13 +1,14 @@
 package control
 
+import java.util.ResourceBundle.Control
+
 import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import chisel3.Module
 import chisel3.testers._
 import chisel3.util._
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 import utility.UniformPrintfs
-
 import node._
 import config._
 import interfaces._
@@ -884,50 +885,36 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
    *===========================================*/
   // Enable Input
   val active_R = RegInit(ControlBundle.default)
-  val active_valid_R = RegInit(false.B)
-
   val loop_back_R = RegInit(ControlBundle.default)
-  val loop_back_valid_R = RegInit(false.B)
 
-  val end_loop_R = RegInit(ControlBundle.default)
-  val end_loop_valid_R = RegInit(false.B)
+  val out_value = RegInit(ControlBundle.default)
+  val mask_value = RegInit(0.U(2.W))
 
   // Output Handshaking
-  val out_R = RegInit(ControlBundle.default)
-  val out_val_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
-  val out_fired_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
-  val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
+  val out_valid_R = Seq.fill(NumOuts)(RegInit(false.B))
+  val out_fired_R = Seq.fill(NumOuts)(RegInit(false.B))
 
-  val mask_fired_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
-  val mask_valid_R = RegInit(VecInit(Seq.fill(NumPhi)(false.B)))
-  val mask_value_R = RegInit(0.U(2.W))
+  val mask_valid_R = Seq.fill(NumPhi)(RegInit(false.B))
 
-  val s_START :: s_FEED :: s_END :: Nil = Enum(3)
-  val state = RegInit(s_START)
+  val s_idle :: s_loop :: s_fire :: s_nofire :: Nil = Enum(4)
 
-  io.activate.ready := ~active_valid_R
-  when(io.activate.fire()) {
-    active_R <> io.activate.bits
-    active_valid_R := true.B
-  }
+  val state = RegInit(s_idle)
 
-  //  io.loopBack.ready := true.B //~loop_back_valid_R
-  io.loopBack.ready := ~loop_back_valid_R
-  when(io.loopBack.fire()) {
-    loop_back_R <> io.loopBack.bits
-    loop_back_valid_R := true.B
-  }
 
-  for (i <- 0 until NumOuts) {
-    io.Out(i).bits := out_R
-  }
+  io.activate.ready := false.B
+  io.loopBack.ready := false.B
+
+  io.Out.foreach(_.bits := ControlBundle.default)
+  io.Out.foreach(_.valid := false.B)
+
+  io.MaskBB.foreach(_.bits := 0.U)
+  io.MaskBB.foreach(_.valid := false.B)
 
   // Wire up OUT READYs and VALIDs
   for (i <- 0 until NumOuts) {
-    io.Out(i).valid := out_valid_R(i)
     when(io.Out(i).fire()) {
       // Detecting when to reset
-      out_fired_R(i) := true.B;
+      out_fired_R(i) := true.B
       // Propagating output
       out_valid_R(i) := false.B
     }
@@ -936,64 +923,109 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
 
   // Wire up MASK Readys and Valids
   for (i <- 0 until NumPhi) {
-    io.MaskBB(i).bits := mask_value_R
-    io.MaskBB(i).valid := mask_valid_R(i)
     when(io.MaskBB(i).fire()) {
-      // Detecting when to reset
-      mask_fired_R(i) := true.B
-      // Propagating mask
+      // Propagating output
       mask_valid_R(i) := false.B
     }
-
   }
-
 
   /*=================
    * States
    ==================*/
 
   switch(state) {
-    is(s_START) { // First loop
-      mask_value_R := 1.U
-      when(active_valid_R) {
-        when(active_R.control) {
-          //Valid the output
-          out_R := active_R
-          out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
-          mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
-          state := s_END
-          if (log) {
-            printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Active fired @ %d, Mask: %d\n",
-              active_R.taskID, cycleCount, 1.U)
-          }
+    is(s_idle) {
+      // First loop
+      // We should wait for first active signal
+      io.activate.ready := true.B
+      io.loopBack.ready := false.B
+
+      when(io.activate.fire()) {
+
+        active_R <> io.activate.bits
+
+        out_valid_R.foreach(_ := true.B)
+
+        io.MaskBB.foreach(_.bits := 1.U)
+        io.MaskBB.foreach(_.valid := true.B)
+        mask_valid_R.foreach(_ := true.B)
+
+        out_value <> io.activate.bits
+        mask_value := 1.U
+
+        //when loop is predicated
+        //we need switch to loop back mode
+        when(io.activate.bits.control) {
+          state := s_fire
         }.otherwise {
-          active_R := ControlBundle.default
-          active_valid_R := false.B
-          state := s_START
+          state := s_nofire
+        }
+
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Active fired @ %d, Mask: %d\n",
+            active_R.taskID, cycleCount, 1.U)
         }
       }
     }
-    is(s_FEED) { // Wait for loop feedback signal.
-      mask_value_R := 2.U
-      when(loop_back_valid_R) {
-        loop_back_valid_R := false.B
-        when(loop_back_R.control) {
-          out_R := loop_back_R
-          out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
-          mask_valid_R := VecInit(Seq.fill(NumPhi)(true.B))
-          state := s_END
-        }.otherwise {
-          active_valid_R := false.B
-          state := s_START
-        }
+
+    is(s_nofire) {
+
+      io.Out.foreach(_.bits <> out_value)
+      (io.Out.map(_.valid) zip out_valid_R) foreach { case (a, b) => a := b }
+
+      io.MaskBB.foreach(_.bits := mask_value)
+
+      val out_fire_mask = ((out_fired_R zip io.Out.map(_.fire)) map { case (a, b) => a | b }) reduce (_ & _)
+
+      when(out_fire_mask) {
+        state := s_idle
       }
+
     }
-    is(s_END) { // Wait until all outputs have fired
-      when(out_fired_R.reduceLeft(_ && _) && mask_fired_R.reduceLeft(_ && _)) {
-        mask_value_R := 2.U
-        out_fired_R := VecInit(Seq.fill(NumOuts)(false.B))
-        mask_fired_R := VecInit(Seq.fill(NumPhi)(false.B))
-        state := s_FEED
+
+    is(s_fire) {
+      io.Out.foreach(_.bits <> out_value)
+      (io.Out.map(_.valid) zip out_valid_R) foreach { case (a, b) => a := b }
+
+      io.MaskBB.foreach(_.bits := mask_value)
+
+      val out_fire_mask = ((out_fired_R zip io.Out.map(_.fire)) map { case (a, b) => a | b }) reduce (_ & _)
+
+      when(out_fire_mask) {
+        state := s_loop
+      }
+
+    }
+
+    is(s_loop) {
+      io.loopBack.ready := true.B
+
+      when(io.loopBack.fire()) {
+
+        loop_back_R <> io.loopBack.bits
+
+        out_valid_R.foreach(_ := true.B)
+
+
+        io.MaskBB.foreach(_.bits := 2.U)
+        io.MaskBB.foreach(_.valid := true.B)
+        mask_valid_R.foreach(_ := true.B)
+
+        out_value <> io.loopBack.bits
+        mask_value := 2.U
+
+        //when loop is predicated
+        //we need switch to loop back mode
+        when(io.loopBack.bits.control) {
+          state := s_fire
+        }.otherwise {
+          state := s_nofire
+        }
+
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": LoopBack fired @ %d, Mask: %d\n",
+            active_R.taskID, cycleCount, 1.U)
+        }
       }
     }
   }

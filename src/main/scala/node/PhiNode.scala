@@ -153,10 +153,9 @@ class PhiNode(NumInputs: Int,
   * @param name
   * @param file
   */
-class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
-                 (implicit val p: Parameters,
-                  name: sourcecode.Name,
-                  file: sourcecode.File)
+
+abstract class PhiFastNodeIO(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
+                            (implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
 
   val io = IO(new Bundle {
@@ -172,6 +171,13 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
     //Output
     val Out = Vec(NumOutputs, Decoupled(new DataBundle))
   })
+}
+
+class PhiFastNode(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
+  extends PhiFastNodeIO(NumInputs, NumOutputs, ID)(p) {
 
   // Printf debugging
   override val printfSigil = "Node (PHIFast) ID: " + ID + " "
@@ -208,7 +214,7 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
 
   // Latching enable value
   io.enable.ready := ~enable_valid_R
-  when(io.Mask.fire()) {
+  when(io.enable.fire()) {
     enable_R <> io.enable.bits
     enable_valid_R := true.B
   }
@@ -311,38 +317,6 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
           }
         }
       }
-
-
-//      when((enable_valid_R || io.enable.fire)
-//        && (in_data_valid_R(sel) || io.InData(sel).fire)) {
-//
-//        io.Out.foreach(_.valid := true.B)
-//
-//        when(io.Out.map(_.fire).reduce(_ & _)) {
-//          in_data_R.foreach(_ := DataBundle.default)
-//          in_data_valid_R.foreach(_ := false.B)
-//
-//          //mask_R := 0.U
-//          mask_valid_R := false.B
-//
-//          enable_R := ControlBundle.default
-//          enable_valid_R := false.B
-//
-//          out_valid_R.foreach(_ := false.B)
-//
-//          fire_R.foreach(_ := false.B)
-//
-//          state := s_idle
-//
-//        }.otherwise {
-//          state := s_fire
-//        }
-//
-//        //Print output
-//        printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-//          + node_name + ": Output fired @ %d, Value: %d\n",
-//          io.InData(sel).bits.taskID, cycleCount, io.InData(sel).bits.data)
-//      }
     }
 
     is(s_fire) {
@@ -389,4 +363,63 @@ class PhiFastNode(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
   }
 
 }
+
+
+/**
+  * A fast version of phi node.
+  * The ouput is fired as soon as all the inputs
+  * are available.
+  *
+  * @note: These are design assumptions:
+  *        1) At each instance, there is only one input signal which is predicated
+  *        there is only one exception.
+  *        2) The only exception is the case which one of the input is constant
+  *        and because of our design constant is always fired as a first node
+  *        and it has only one output. Therefore, whenever we want to restart
+  *        the states, we reste all the registers, and by this way we make sure
+  *        that nothing is latched.
+  *        3) If Phi node itself is not predicated, we restart all the registers and
+  *        fire the output with zero predication.
+  * @param NumInputs
+  * @param NumOuts
+  * @param ID
+  * @param p
+  * @param name
+  * @param file
+  */
+//class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
+//                 (implicit p: Parameters,
+//                  name: sourcecode.Name,
+//                  file: sourcecode.File)
+//  extends PhiFastNodeIO (NumInputs, NumOutputs, ID)(p){
+//
+//  // Printf debugging
+//  override val printfSigil = "Node (PHIFast) ID: " + ID + " "
+//  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+//
+//  // Printf debugging
+//  val node_name = name.value
+//  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+//
+//  // Data Inputs
+//  val in_data_R = VecInit(Seq.fill(NumInputs)(RegInit(DataBundle.default)))
+//  val in_data_valid_R = VecInit(Seq.fill(NumInputs)(RegInit(false.B)))
+//
+//  // Enable Inputs
+//  val enable_R = RegInit(ControlBundle.default)
+//  val enable_valid_R = RegInit(false.B)
+//
+//  // Mask Input
+//  val mask_R = RegInit(0.U(NumInputs.W))
+//  val mask_valid_R = RegInit(false.B)
+//
+//  // Latching output data
+//  val out_data_R = RegInit(DataBundle.default)
+//  val out_valid_R = Seq.fill(NumOutputs)(RegInit(false.B))
+//
+//  val fire_R = Seq.fill(NumOutputs)(RegInit(false.B))
+//
+//
+//}
+//
 

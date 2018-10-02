@@ -154,23 +154,13 @@ class ConstFastNode(value: Int, ID: Int)
    *===============================================*/
 
 
-  val enable_input = (io.enable.bits.control & io.enable.valid) | (enable_R.control & enable_valid_R)
-
   //  io.Out.bits.data := value.asSInt(xlen.W).asUInt()
   val output_value = value.asSInt(xlen.W).asUInt()
 
-  io.enable.ready := ~enable_valid_R
-  when(io.enable.fire()) {
-    enable_R <> io.enable.bits
-    enable_valid_R := true.B
-  }
-
-  // Defalut values for output
-
-  val predicate = enable_input
+  io.enable.ready := false.B
 
   io.Out.bits.data := output_value
-  io.Out.bits.predicate := predicate
+  io.Out.bits.predicate := enable_R.control
   io.Out.bits.taskID := task_input
   io.Out.valid := false.B
 
@@ -182,20 +172,13 @@ class ConstFastNode(value: Int, ID: Int)
 
   switch(state) {
     is(s_idle) {
-
+      io.enable.ready := true.B
       io.Out.valid := false.B
 
-      when(enable_valid_R || io.enable.fire) {
-        io.Out.valid := true.B
+      when(io.enable.fire()) {
 
-        when(io.Out.fire) {
-          enable_R := ControlBundle.default
-          enable_valid_R := false.B
-          state := s_idle
-        }.otherwise {
-
-          state := s_fire
-        }
+        enable_R <> io.enable.bits
+        state := s_fire
 
         if (p(TRACE)) {
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
