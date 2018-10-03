@@ -54,7 +54,8 @@ class test15Main(implicit p: Parameters) extends test15MainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val test15 = Module(new test15DF())
+//  val test15 = Module(new test15DF())
+  val test15 = Module(new test15_optimizedDF())
 
   cache.io.cpu.req <> test15.io.MemReq
   test15.io.MemResp <> cache.io.cpu.resp
@@ -136,6 +137,8 @@ class test15Test01[T <: test15MainIO](c: T) extends PeekPokeTester(c) {
     }
   }
 
+  step(200)
+
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
   for(i <- 0 until outAddrVec.length) {
@@ -171,7 +174,7 @@ class test15Tester1 extends FlatSpec with Matchers {
       Array(
         // "-ll", "Info",
         "-tbn", "verilator",
-        "-td", "test_run_dir",
+        "-td", "test_run_dir/test15",
         "-tts", "0001"),
       () => new test15Main()) {
       c => new test15Test01(c)

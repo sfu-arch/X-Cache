@@ -323,7 +323,7 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
 
         if (log) {
           printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
-            node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+            node_name + ": Output fired(%d) @ %d\n", enable_R.taskID, Cat(true_output, false_output).asUInt(), cycleCount)
         }
       }
     }
@@ -522,8 +522,6 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val ID: I
 }
 
 
-
-
 class UBranchNode(NumPredOps: Int = 0,
                   NumOuts: Int = 1,
                   ID: Int)
@@ -571,6 +569,11 @@ class UBranchNode(NumPredOps: Int = 0,
       when(IsEnableValid() && IsPredValid()) {
         state := s_OUTPUT
         ValidOut()
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            + node_name + ": Output fired(vale: %d) @ %d,\n",
+            enable_R.taskID, io.enable.bits.control, cycleCount)
+        }
       }
     }
     is(s_OUTPUT) {
@@ -578,10 +581,7 @@ class UBranchNode(NumPredOps: Int = 0,
         state := s_idle
         Reset()
         enable_R := ControlBundle.default
-        if (log) {
-          printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-            + node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
-        }
+
       }
     }
   }
