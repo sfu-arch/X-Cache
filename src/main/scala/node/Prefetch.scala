@@ -89,6 +89,9 @@ class PrefetchLoad(NumOuts: Int,
   io.memReq.bits.iswrite := false.B
   io.memReq.bits.taskID := addr_R.taskID
   io.memReq.bits.tag := ID.U
+  io.memReq.bits.mask := 0.U
+  io.memReq.bits.tile := 0.U
+  io.memReq.bits.data := 0.U
 
 
   /*=============================================

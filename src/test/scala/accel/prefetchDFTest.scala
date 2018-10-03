@@ -51,7 +51,10 @@ class prefetchDFMain(implicit p: Parameters) extends prefetchDFMainIO {
   // Wire up the cache and modules under test.
   val prefetch_dataflow = Module(new prefetchDF())
 
-  val CacheArbiter = Module(new MemArbiter(2))
+  //  prefetch_dataflow.io.PreReq.ready := true.B
+
+
+  val CacheArbiter = Module(new MemArbiter(3))
 
   //Connection DF to cache arbiter
   CacheArbiter.io.cpu.MemReq(0) <> prefetch_dataflow.io.MemReq
@@ -60,6 +63,8 @@ class prefetchDFMain(implicit p: Parameters) extends prefetchDFMainIO {
   //Connecting memory io to arbiter
   CacheArbiter.io.cpu.MemReq(1) <> io.req
   io.resp <> CacheArbiter.io.cpu.MemResp(1)
+
+  CacheArbiter.io.cpu.MemReq(2) <> prefetch_dataflow.io.PreReq
 
   //Connection arbiter to cache
   cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
@@ -141,7 +146,7 @@ class basePrefetchTest01[T <: prefetchDFMainIO](c: T) extends PeekPokeTester(c) 
   for (i <- 0 until inDataVec.length) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
-  step(1)
+  step(10)
 
 
   // Initializing the signals
