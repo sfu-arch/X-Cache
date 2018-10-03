@@ -61,7 +61,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
 
   val Loop_0 = Module(new LoopBlockO1(NumIns = List(1, 1, 1), NumOuts = 0, NumExits = 1, ID = 0))
 
-  val Loop_1 = Module(new LoopBlock(NumIns=List(3,1), NumOuts = 0, NumExits=1, ID = 1))
+  val Loop_1 = Module(new LoopBlockO1(NumIns=List(3,1), NumOuts = 0, NumExits=1, ID = 1))
 
 
 
@@ -69,7 +69,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
   val bb_for_body4_lr_ph_preheader1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
@@ -90,7 +90,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
    * ================================================================== */
 
   //  %cmp24 = icmp eq i32 %n, 0
-  val icmp_cmp240 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
+  val icmp_cmp240 = Module(new IcmpFastNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
 
   //  br i1 %cmp24, label %for.cond.cleanup, label %for.body4.lr.ph.preheader
   val br_1 = Module(new CBranchFastNodeVariable2(NumTrue = 1, NumFalse = 1, ID = 1))
@@ -182,7 +182,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
   bb_for_body4_lr_ph_preheader1.io.predicateIn <> br_1.io.FalseOutput(0)
 

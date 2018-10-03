@@ -10,3 +10,4 @@ build-stuff/*
 *.back
 .history
 .ensime_cache/*
+.ensime

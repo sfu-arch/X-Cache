@@ -459,7 +459,6 @@ class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
   //val sel = OHToUInt(Reverse(mask_value))
   val sel = OHToUInt(mask_R)
 
-
   val select_input = in_data_R(sel).data
   val select_predicate = in_data_R(sel).predicate
 

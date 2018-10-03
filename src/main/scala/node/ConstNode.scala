@@ -177,6 +177,10 @@ class ConstFastNode(value: Int, ID: Int)
 
       when(io.enable.fire()) {
 
+        io.Out.valid := true.B
+        io.Out.bits.predicate := io.enable.bits.control
+        io.Out.bits.taskID := io.enable.bits.taskID
+
         enable_R <> io.enable.bits
         state := s_fire
 

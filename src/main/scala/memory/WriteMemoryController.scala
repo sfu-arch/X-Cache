@@ -108,6 +108,7 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO()(p)
   val isWrite = RegNext(true.B, init=false.B)
   io.MemReq.bits.iswrite := isWrite
   io.MemReq.bits.taskID := request_R.taskID
+  io.MemReq.bits.tile := 0.U
 
 
 /*=======================================================

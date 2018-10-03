@@ -102,6 +102,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   io.MemReq.bits.data := 0.U
   io.MemReq.bits.mask := 0.U
   io.MemReq.bits.taskID := request_R.taskID
+  io.MemReq.bits.tile := 0.U
 
 
   /*=======================================================

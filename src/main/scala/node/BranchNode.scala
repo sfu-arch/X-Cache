@@ -996,13 +996,8 @@ class UBranchFastNodeVariable(val NumOutputs: Int = 1, val ID: Int)
   * @param ID         Node id
   */
 
-class CBranchFastNodeVariable2(val NumTrue: Int = 1, val NumFalse: Int = 1, val ID: Int)
-                              (implicit val p: Parameters,
-                               name: sourcecode.Name,
-                               file: sourcecode.File)
-  extends Module with CoreParams with UniformPrintfs {
-
-  val io = IO(new Bundle {
+class CBranchIO(val NumTrue: Int, val NumFalse: Int)(implicit p: Parameters)
+  extends CoreBundle()(p) {
     //Control signal
     val enable = Flipped(Decoupled(new ControlBundle))
 
@@ -1012,7 +1007,16 @@ class CBranchFastNodeVariable2(val NumTrue: Int = 1, val NumFalse: Int = 1, val 
     //Output
     val TrueOutput = Vec(NumTrue, Decoupled(new ControlBundle))
     val FalseOutput = Vec(NumFalse, Decoupled(new ControlBundle))
-  })
+}
+
+
+class CBranchFastNodeVariable2(val NumTrue: Int = 1, val NumFalse: Int = 1, val ID: Int)
+                              (implicit val p: Parameters,
+                               name: sourcecode.Name,
+                               file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new CBranchIO(NumTrue, NumFalse)(p))
 
   // Printf debugging
   override val printfSigil = "Node (CBR) ID: " + ID + " "
@@ -1096,6 +1100,9 @@ class CBranchFastNodeVariable2(val NumTrue: Int = 1, val NumFalse: Int = 1, val 
   val fire_true_mask = (fire_true_R zip io.TrueOutput.map(_.fire)).map { case (a, b) => a | b }
   val fire_false_mask = (fire_false_R zip io.FalseOutput.map(_.fire)).map { case (a, b) => a | b }
 
+  val enable_value = (enable_R.control & enable_valid_R) | (io.enable.bits.control & io.enable.fire)
+  val input_available = (enable_valid_R | io.enable.fire) & (cmp_valid | io.CmpIO.fire)
+
 
   //Output register
   val s_idle :: s_fire :: Nil = Enum(2)
@@ -1104,7 +1111,7 @@ class CBranchFastNodeVariable2(val NumTrue: Int = 1, val NumFalse: Int = 1, val 
   switch(state) {
     is(s_idle) {
       when(enable_valid_R && cmp_valid) {
-        when(enable_R.control) {
+        when(enable_value) {
           output_true_valid_R foreach {
             _ := true.B
           }

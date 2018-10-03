@@ -485,14 +485,6 @@ class BasicBlockNoMaskNode(NumInputs: Int = 1,
 }
 
 
-class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
-  extends CoreBundle()(p) {
-  // Output IO
-  val predicateIn = Flipped(Decoupled(new ControlBundle()))
-  val Out = Vec(NumOuts, Decoupled(new ControlBundle))
-}
-
-
 /**
   * BasicBlockNoMaskFastNode
   *
@@ -502,16 +494,28 @@ class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
   * @param name
   * @param file
   */
+
+class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
+  extends CoreBundle()(p) {
+  // Output IO
+  val predicateIn = Flipped(Decoupled(new ControlBundle()))
+  val Out = Vec(NumOuts, Decoupled(new ControlBundle))
+}
+
+class BasicBlockNoMaskFastVecIO(val NumInputs: Int, val NumOuts: Int)(implicit p: Parameters)
+  extends CoreBundle()(p) {
+  // Output IO
+  val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
+  val Out = Vec(NumOuts, Decoupled(new ControlBundle))
+}
+
+
 class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: Int)(implicit val p: Parameters,
-                                                                               name: sourcecode.Name,
-                                                                               file: sourcecode.File)
+                                                                                   name: sourcecode.Name,
+                                                                                   file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
-  //@todo define a class of IO
-  val io = IO(new Bundle{
-    val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
-    val Out = Vec(NumOuts, Decoupled(new ControlBundle()))
-  })
+  val io = IO(new BasicBlockNoMaskFastVecIO(NumInputs, NumOuts)(p))
 
   // Printf debugging
   val node_name = name.value
@@ -519,29 +523,49 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
   override val printfSigil = "[" + module_name + "] " + node_name + ": " + BID + " "
 
-  // Defining IOs
+  // Defining IO latches
+
+  // Data Inputs
+  val in_data_R = RegInit(VecInit(Seq.fill(NumInputs)(DataBundle.default)))
+  val in_data_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+
   val output_R = RegInit(ControlBundle.default)
   val output_valid_R = Seq.fill(NumOuts)(RegInit(false.B))
   val output_fire_R = Seq.fill(NumOuts)(RegInit(false.B))
 
   //Make sure whenever output is fired we latch it
-  (io.Out.map(_.fire) zip output_fire_R) foreach { case(a,b) => b := a}
-  io.Out.map(_.bits) foreach (_ := output_R)
-  (io.Out.map(_.valid) zip output_valid_R) foreach {case(a,b) => a := b}
+  for (i <- 0 until NumInputs) {
+    io.predicateIn(i).ready := ~in_data_valid_R(i)
+    when(io.predicateIn(i).fire) {
+      //Make sure that we only pick predicated values!
+      in_data_R(i) <> io.predicateIn(i).bits
+      in_data_valid_R(i) := true.B
+    }
+  }
+
   for (i <- 0 until NumOuts) {
     when(io.Out(i).fire) {
+      output_fire_R(i) := true.B
       output_valid_R(i) := false.B
     }
   }
 
 
+  (io.Out.map(_.valid) zip output_valid_R) foreach {
+    case (a, b) => a := b
+  }
+
+  io.Out.map(_.bits) foreach (_ := output_R)
+
   //Check whether any input is fired
   val fire_input_mask = VecInit(Seq.fill(NumInputs)(false.B))
-  (fire_input_mask zip io.predicateIn.map(_.fire)) foreach {case (a,b) => a := b}
+  (fire_input_mask zip io.predicateIn.map(_.fire)) foreach {
+    case (a, b) => a := b
+  }
 
   io.predicateIn.foreach(_.ready := false.B)
 
-  val ziped_predicate = for(i <- 0 until NumInputs) yield{
+  val ziped_predicate = for (i <- 0 until NumInputs) yield {
     i.U -> io.predicateIn(i).bits
   }
 
@@ -549,16 +573,18 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
     OHToUInt(fire_input_mask.asUInt()), io.predicateIn(0).bits, ziped_predicate)
 
 
-  val out_fire_mask = ((output_fire_R zip io.Out.map(_.fire)) map { case (a, b) => a | b }) reduce (_ & _)
+  val out_fire_mask = ((output_fire_R zip io.Out.map(_.fire)) map {
+    case (a, b) => a | b
+  }) reduce (_ & _)
 
   val s_idle :: s_fire :: Nil = Enum(2)
   val state = RegInit(s_idle)
 
 
-  switch(state){
-    is(s_idle){
+  switch(state) {
+    is(s_idle) {
       io.predicateIn.foreach(_.ready := true.B)
-      when(fire_input_mask.reduce(_ | _)){
+      when(fire_input_mask.reduce(_ | _)) {
         output_valid_R.foreach(_ := true.B)
         output_R <> output_value
         state := s_fire
@@ -569,8 +595,8 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
 
       }
     }
-    is(s_fire){
-      when(out_fire_mask){
+    is(s_fire) {
+      when(out_fire_mask) {
         output_fire_R foreach (_ := false.B)
         state := s_idle
       }
@@ -579,7 +605,6 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
 
 
 }
-
 
 
 @deprecated("BasicBlockNoMaskFastNode2 is deprecated. It doesn't handle some corner cases. Please use BasicBlockNoMaskFastNode3", "dataflow-lib 1.0")
@@ -689,6 +714,8 @@ class BasicBlockNoMaskFastNode2(BID: Int, val NumOuts: Int)
   * @param name
   * @param file
   */
+
+@deprecated("BasicBlockNoMaskFastNode3 is deprecated. It doesn't handle some corner cases. Please use BasicBlockNoMaskFastNode", "dataflow-lib 1.0")
 class BasicBlockNoMaskFastNode3(BID: Int, val NumOuts: Int)
                                (implicit val p: Parameters,
                                 name: sourcecode.Name, file: sourcecode.File)
