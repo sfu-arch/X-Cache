@@ -180,7 +180,7 @@ class ConstFastNode(value: Int, ID: Int)
         enable_R <> io.enable.bits
         state := s_fire
 
-        if (p(TRACE)) {
+        if (log) {
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
             + node_name + ": Output fired @ %d, Value: %d\n",
             task_input, cycleCount, output_value.asSInt())

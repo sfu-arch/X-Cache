@@ -60,7 +60,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   val state = RegInit(s_IDLE)
 
 
-  val predicate = left_R.predicate & right_R.predicate & IsEnable()
+  val predicate = enable_R.control
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -104,12 +104,16 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
       when(enable_valid_R) {
         when(left_valid_R && right_valid_R) {
           ValidOut()
-          //          when(enable_R.control) {
+          state := s_COMPUTE
+          when(enable_R.control) {
             out_data_R.data := FU.io.out
             out_data_R.predicate := predicate
             out_data_R.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
-          //          }
-          state := s_COMPUTE
+          }.otherwise {
+            out_data_R.data := 0.U
+            out_data_R.predicate := predicate
+            out_data_R.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
+          }
         }
       }
     }

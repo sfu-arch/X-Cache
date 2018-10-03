@@ -59,7 +59,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(1,1,1), NumOuts = 0, NumExits=1, ID = 0))
+  val Loop_0 = Module(new LoopBlockO1(NumIns = List(1, 1, 1), NumOuts = 0, NumExits = 1, ID = 0))
 
   val Loop_1 = Module(new LoopBlock(NumIns=List(3,1), NumOuts = 0, NumExits=1, ID = 1))
 
@@ -73,7 +73,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
 
   val bb_for_body4_lr_ph_preheader1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
-  val bb_for_body4_lr_ph2 = Module(new LoopFastHead(NumOuts = 4, NumPhi = 1, BID = 2))
+  val bb_for_body4_lr_ph2 = Module(new LoopFastHead(NumOuts = 5, NumPhi = 1, BID = 2))
 
   val bb_for_cond_cleanup_loopexit3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 3))
 
@@ -123,7 +123,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   val br_10 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 10))
 
   //  %k.023 = phi i32 [ 0, %for.body4.lr.ph ], [ %inc, %for.body4 ]
-  val phi_k_02311 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 11))
+  val phi_k_02311 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 11))
 
   //  %add = add i32 %k.023, %mul
   val binaryOp_add12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign = false))
@@ -294,6 +294,8 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
 
   br_5.io.enable <> bb_for_body4_lr_ph2.io.Out(3)
 
+  const4.io.enable <> bb_for_body4_lr_ph2.io.Out(4)
+
 
   br_6.io.enable <> bb_for_cond_cleanup_loopexit3.io.Out(0)
 
@@ -312,7 +314,8 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   br_10.io.enable <> bb_for_cond_cleanup35.io.Out(3)
 
 
-  const4.io.enable <> bb_for_body46.io.Out(0)
+  //  const4.io.enable <> bb_for_body46.io.Out(0)
+  bb_for_body46.io.Out(0).ready := true.B
 
   const5.io.enable <> bb_for_body46.io.Out(1)
 
