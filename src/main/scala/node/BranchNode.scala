@@ -987,4 +987,193 @@ class UBranchFastNodeVariable(val NumOutputs: Int = 1, val ID: Int)
   }
 }
 
+/**
+  * This class is the fast version of CBranch which the IO supports
+  * a vector of output for each side True/False
+  *
+  * @param NumPredOps Number of parents
+  * @param NumOuts    Number of outputs
+  * @param ID         Node id
+  */
+
+class CBranchFastNodeVariable2(val NumTrue: Int = 1, val NumFalse: Int = 1, val ID: Int)
+                              (implicit val p: Parameters,
+                               name: sourcecode.Name,
+                               file: sourcecode.File)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new Bundle {
+    //Control signal
+    val enable = Flipped(Decoupled(new ControlBundle))
+
+    //Comparision result
+    val CmpIO = Flipped(Decoupled(new DataBundle))
+
+    //Output
+    val TrueOutput = Vec(NumTrue, Decoupled(new ControlBundle))
+    val FalseOutput = Vec(NumFalse, Decoupled(new ControlBundle))
+  })
+
+  // Printf debugging
+  override val printfSigil = "Node (CBR) ID: " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+
+  //Latching input comparision result
+  val cmp_R = RegInit(false.B)
+  val cmp_valid = RegInit(false.B)
+
+  //Latching control signal
+  val enable_R = RegInit(ControlBundle.default)
+  val enable_valid_R = RegInit(false.B)
+
+  val output_true_R = RegInit(ControlBundle.default)
+  val output_true_valid_R = Seq.fill(NumTrue)(RegInit(false.B))
+  val fire_true_R = Seq.fill(NumTrue)(RegInit(false.B))
+
+  val output_false_R = RegInit(ControlBundle.default)
+  val output_false_valid_R = Seq.fill(NumFalse)(RegInit(false.B))
+  val fire_false_R = Seq.fill(NumFalse)(RegInit(false.B))
+
+  val predicate = enable_R.control & enable_valid_R
+  val task_id = enable_R.taskID & enable_valid_R
+
+
+  // Latching CMP input
+  io.CmpIO.ready := ~cmp_valid
+  when(io.CmpIO.fire) {
+    cmp_R := io.CmpIO.bits.data.orR()
+    cmp_valid := true.B
+  }
+
+  // Latching enable signal
+  io.enable.ready := ~enable_valid_R
+  when(io.enable.fire) {
+    enable_R <> io.enable.bits
+    enable_valid_R := true.B
+  }
+
+  // Output for true and false sides
+  val true_output = cmp_R
+  val false_output = ~cmp_R
+
+  // Defalut values for Trueoutput
+  output_true_R.control := true_output
+  output_true_R.taskID := task_id
+
+  for (i <- 0 until NumTrue) {
+    io.TrueOutput(i).bits <> ControlBundle.default
+    io.TrueOutput(i).valid := false.B
+  }
+
+  for (i <- 0 until NumTrue) {
+    when(io.TrueOutput(i).fire) {
+      fire_true_R(i) := true.B
+      output_true_valid_R(i) := false.B
+    }
+  }
+
+
+  // Defalut values for False output
+  output_false_R.control := false_output
+  output_false_R.taskID := task_id
+
+  for (i <- 0 until NumFalse) {
+    io.FalseOutput(i).bits <> ControlBundle.default
+    io.FalseOutput(i).valid := false.B
+  }
+
+  for (i <- 0 until NumFalse) {
+    when(io.FalseOutput(i).fire) {
+      fire_false_R(i) := true.B
+      output_false_valid_R(i) := false.B
+    }
+  }
+
+  val fire_true_mask = (fire_true_R zip io.TrueOutput.map(_.fire)).map { case (a, b) => a | b }
+  val fire_false_mask = (fire_false_R zip io.FalseOutput.map(_.fire)).map { case (a, b) => a | b }
+
+
+  //Output register
+  val s_idle :: s_fire :: Nil = Enum(2)
+  val state = RegInit(s_idle)
+
+  switch(state) {
+    is(s_idle) {
+      when(enable_valid_R && cmp_valid) {
+        when(enable_R.control) {
+          output_true_valid_R foreach {
+            _ := true.B
+          }
+          output_false_valid_R foreach {
+            _ := true.B
+          }
+          state := s_fire
+
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+              node_name + ": Output fired(%d) @ %d\n", enable_R.taskID, Cat(true_output, false_output).asUInt(), cycleCount)
+          }
+        }.otherwise {
+          cmp_R := false.B
+          cmp_valid := false.B
+
+          enable_R := ControlBundle.default
+          enable_valid_R := false.B
+
+          output_true_R := ControlBundle.default
+          output_true_valid_R.foreach(_ := false.B)
+          fire_true_R.foreach(_ := false.B)
+
+          output_false_R := ControlBundle.default
+          output_false_valid_R.foreach(_ := false.B)
+          fire_false_R.foreach(_ := false.B)
+
+          state := s_idle
+
+
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+              node_name + ": Output flushed(%d) @ %d\n", enable_R.taskID, Cat(true_output, false_output).asUInt(), cycleCount)
+          }
+        }
+
+
+      }
+    }
+    is(s_fire) {
+      io.TrueOutput.foreach(_.bits := output_true_R)
+      (io.TrueOutput.map(_.valid) zip output_true_valid_R).map { case (a, b) => a := b }
+
+      io.FalseOutput.foreach(_.bits := output_false_R)
+      (io.FalseOutput.map(_.valid) zip output_false_valid_R).map { case (a, b) => a := b }
+
+      //Now we can restart the states
+      when(fire_true_mask.reduce(_ & _) && fire_false_mask.reduce(_ & _)) {
+        //Latching input comparision result
+        cmp_R := false.B
+        cmp_valid := false.B
+
+        //Latching control signal
+        enable_R := ControlBundle.default
+        enable_valid_R := false.B
+
+        output_true_R := ControlBundle.default
+        output_true_valid_R.foreach(_ := false.B)
+        fire_true_R.foreach(_ := false.B)
+
+        output_false_R := ControlBundle.default
+        output_false_valid_R.foreach(_ := false.B)
+        fire_false_R.foreach(_ := false.B)
+
+        state := s_idle
+      }
+    }
+  }
+
+}
+
 

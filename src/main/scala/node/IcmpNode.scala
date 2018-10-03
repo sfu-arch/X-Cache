@@ -60,7 +60,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val predicate = left_R.predicate & right_R.predicate //& IsEnable()
+  val predicate = left_R.predicate & right_R.predicate & IsEnable()
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -97,11 +97,11 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
       when(enable_valid_R) {
         when(left_valid_R && right_valid_R) {
           ValidOut()
-          when(enable_R.control) {
+          //          when(enable_R.control) {
             out_data_R.data := FU.io.out
             out_data_R.predicate := predicate
             out_data_R.taskID := left_R.taskID | right_R.taskID
-          }
+          //          }
           state := s_COMPUTE
         }
       }
@@ -414,7 +414,7 @@ class IcmpFastNode(NumOuts: Int, ID: Int, opCode: String)
 
         if (log) {
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
-            + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
+            + node_name + ": Output fired @ %d, Value: %d (%d ? %d)\n",
             task_input, cycleCount, FU.io.out, FU.io.in1, FU.io.in2)
         }
       }

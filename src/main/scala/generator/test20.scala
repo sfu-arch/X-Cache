@@ -73,7 +73,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
 
   val bb_for_body4_lr_ph_preheader1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
-  val bb_for_body4_lr_ph2 = Module(new LoopHead(NumOuts = 4, NumPhi=1, BID = 2))
+  val bb_for_body4_lr_ph2 = Module(new LoopFastHead(NumOuts = 4, NumPhi = 1, BID = 2))
 
   val bb_for_cond_cleanup_loopexit3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 3))
 
@@ -81,7 +81,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
 
   val bb_for_cond_cleanup35 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 5))
 
-  val bb_for_body46 = Module(new LoopHead(NumOuts = 12, NumPhi=1, BID = 6))
+  val bb_for_body46 = Module(new LoopFastHead(NumOuts = 12, NumPhi = 1, BID = 6))
 
 
 
@@ -90,10 +90,10 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
    * ================================================================== */
 
   //  %cmp24 = icmp eq i32 %n, 0
-  val icmp_cmp240 = Module(new IcmpFastNode(NumOuts = 1, ID = 0, opCode = "eq")(sign=false))
+  val icmp_cmp240 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
 
   //  br i1 %cmp24, label %for.cond.cleanup, label %for.body4.lr.ph.preheader
-  val br_1 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 1, ID = 1))
+  val br_1 = Module(new CBranchFastNodeVariable2(NumTrue = 1, NumFalse = 1, ID = 1))
 
   //  br label %for.body4.lr.ph
   val br_2 = Module(new UBranchFastNode(ID = 2))
@@ -102,7 +102,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   val phi_j_0253 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 3))
 
   //  %mul = mul i32 %j.025, %n
-  val binaryOp_mul4 = Module(new ComputeFastNode(NumOuts = 1, ID = 4, opCode = "mul")(sign=false))
+  val binaryOp_mul4 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "mul")(sign = false))
 
   //  br label %for.body4
   val br_5 = Module(new UBranchFastNode(ID = 5))
@@ -114,10 +114,10 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   val ret_7 = Module(new RetNode2(retTypes=List(32), ID = 7))
 
   //  %inc8 = add nuw i32 %j.025, 1
-  val binaryOp_inc88 = Module(new ComputeFastNode(NumOuts = 2, ID = 8, opCode = "add")(sign=false))
+  val binaryOp_inc88 = Module(new ComputeNode(NumOuts = 2, ID = 8, opCode = "add")(sign = false))
 
   //  %exitcond26 = icmp eq i32 %inc8, %n
-  val icmp_exitcond269 = Module(new IcmpFastNode(NumOuts = 1, ID = 9, opCode = "eq")(sign=false))
+  val icmp_exitcond269 = Module(new IcmpNode(NumOuts = 1, ID = 9, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond26, label %for.cond.cleanup.loopexit, label %for.body4.lr.ph
   val br_10 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 10))
@@ -126,7 +126,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   val phi_k_02311 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 11))
 
   //  %add = add i32 %k.023, %mul
-  val binaryOp_add12 = Module(new ComputeFastNode(NumOuts = 1, ID = 12, opCode = "add")(sign=false))
+  val binaryOp_add12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign = false))
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %add
   val Gep_arrayidx13 = Module(new GepNode(NumIns = 1, NumOuts=2, ID=13)(ElementSize = 4, ArraySize = List()))
@@ -135,19 +135,19 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   val ld_14 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=14, RouteID=0))
 
   //  %mul5 = shl i32 %0, 1
-  val binaryOp_mul515 = Module(new ComputeFastNode(NumOuts = 1, ID = 15, opCode = "shl")(sign=false))
+  val binaryOp_mul515 = Module(new ComputeNode(NumOuts = 1, ID = 15, opCode = "shl")(sign = false))
 
   //  store i32 %mul5, i32* %arrayidx, align 4, !tbaa !2
   val st_16 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=16, RouteID=0))
 
   //  %inc = add nuw i32 %k.023, 1
-  val binaryOp_inc17 = Module(new ComputeFastNode(NumOuts = 2, ID = 17, opCode = "add")(sign=false))
+  val binaryOp_inc17 = Module(new ComputeNode(NumOuts = 2, ID = 17, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, %n
-  val icmp_exitcond18 = Module(new IcmpFastNode(NumOuts = 1, ID = 18, opCode = "eq")(sign=false))
+  val icmp_exitcond18 = Module(new IcmpNode(NumOuts = 1, ID = 18, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.cond.cleanup3, label %for.body4
-  val br_19 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 19))
+  val br_19 = Module(new CBranchFastNodeVariable2(NumTrue = 1, NumFalse = 2, ID = 19))
 
 
 

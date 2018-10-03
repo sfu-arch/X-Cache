@@ -961,6 +961,7 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
   val out_fired_R = Seq.fill(NumOuts)(RegInit(false.B))
 
   val mask_valid_R = Seq.fill(NumPhi)(RegInit(false.B))
+  val mask_fired_R = Seq.fill(NumPhi)(RegInit(false.B))
 
   val s_idle :: s_loop :: s_fire :: s_nofire :: Nil = Enum(4)
 
@@ -990,6 +991,7 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
   // Wire up MASK Readys and Valids
   for (i <- 0 until NumPhi) {
     when(io.MaskBB(i).fire()) {
+      mask_fired_R(i) := true.B
       // Propagating output
       mask_valid_R(i) := false.B
     }
@@ -1001,6 +1003,7 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
 
   switch(state) {
     is(s_idle) {
+
       // First loop
       // We should wait for first active signal
       io.activate.ready := true.B
@@ -1008,16 +1011,12 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
 
       when(io.activate.fire()) {
 
-        active_R <> io.activate.bits
-
-        out_valid_R.foreach(_ := true.B)
-
-        io.MaskBB.foreach(_.bits := 1.U)
-        io.MaskBB.foreach(_.valid := true.B)
-        mask_valid_R.foreach(_ := true.B)
-
         out_value <> io.activate.bits
         mask_value := 1.U
+
+        out_valid_R.foreach(_ := true.B)
+        mask_valid_R.foreach(_ := true.B)
+
 
         //when loop is predicated
         //we need switch to loop back mode
@@ -1040,11 +1039,14 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
       (io.Out.map(_.valid) zip out_valid_R) foreach { case (a, b) => a := b }
 
       io.MaskBB.foreach(_.bits := mask_value)
+      (io.MaskBB.map(_.valid) zip mask_valid_R) foreach { case (a, b) => a := b }
 
       val out_fire_mask = ((out_fired_R zip io.Out.map(_.fire)) map { case (a, b) => a | b }) reduce (_ & _)
+      val mask_fire_mask = ((mask_fired_R zip io.MaskBB.map(_.fire)) map { case (a, b) => a | b }) reduce (_ & _)
 
-      when(out_fire_mask) {
+      when(out_fire_mask & mask_fire_mask) {
         out_fired_R.foreach(_ := false.B)
+        mask_fired_R.foreach(_ := false.B)
         state := s_idle
       }
 
@@ -1055,14 +1057,16 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
       (io.Out.map(_.valid) zip out_valid_R) foreach { case (a, b) => a := b }
 
       io.MaskBB.foreach(_.bits := mask_value)
+      (io.MaskBB.map(_.valid) zip mask_valid_R) foreach { case (a, b) => a := b }
 
       val out_fire_mask = ((out_fired_R zip io.Out.map(_.fire)) map { case (a, b) => a | b }) reduce (_ & _)
+      val mask_fire_mask = ((mask_fired_R zip io.MaskBB.map(_.fire)) map { case (a, b) => a | b }) reduce (_ & _)
 
-      when(out_fire_mask) {
+      when(out_fire_mask && mask_fire_mask) {
         out_fired_R.foreach(_ := false.B)
+        mask_fired_R.foreach(_ := false.B)
         state := s_loop
       }
-
     }
 
     is(s_loop) {
@@ -1070,17 +1074,11 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
 
       when(io.loopBack.fire()) {
 
-        loop_back_R <> io.loopBack.bits
-
-        out_valid_R.foreach(_ := true.B)
-
-
-        io.MaskBB.foreach(_.bits := 2.U)
-        io.MaskBB.foreach(_.valid := true.B)
-        mask_valid_R.foreach(_ := true.B)
-
         out_value <> io.loopBack.bits
         mask_value := 2.U
+
+        out_valid_R.foreach(_ := true.B)
+        mask_valid_R.foreach(_ := true.B)
 
         //when loop is predicated
         //we need switch to loop back mode
@@ -1091,7 +1089,8 @@ class LoopFastHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
         }
 
         if (log) {
-          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": LoopBack fired @ %d, Mask: %d\n",
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            + node_name + ": LoopBack fired @ %d, Mask: %d\n",
             active_R.taskID, cycleCount, 1.U)
         }
       }
