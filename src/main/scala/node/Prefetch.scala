@@ -85,7 +85,7 @@ class PrefetchLoad(NumOuts: Int,
   }
 
   io.memReq.valid := false.B
-  io.memReq.bits.addr := addr_R.data
+  io.memReq.bits.addr := (addr_R.data >> log2Ceil(xlen / 8)) << log2Ceil(xlen / 8)
   io.memReq.bits.iswrite := false.B
   io.memReq.bits.taskID := addr_R.taskID
   io.memReq.bits.tag := ID.U
