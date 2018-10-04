@@ -1,11 +1,11 @@
 package node
 
 import chisel3._
-import chisel3.iotesters.{ ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester }
+import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import chisel3.Module
 import chisel3.testers._
 import chisel3.util._
-import org.scalatest.{ Matchers, FlatSpec }
+import org.scalatest.{Matchers, FlatSpec}
 
 import config._
 import interfaces._
@@ -14,7 +14,7 @@ import util._
 import scala.reflect.runtime.universe._
 
 
-class Numbers(implicit p: Parameters) extends CoreBundle()(p) {
+class Numbers(implicit p: Parameters) extends CoreBundle( )(p) {
 }
 
 class vec2(implicit p: Parameters) extends Numbers {
@@ -33,11 +33,14 @@ object operation {
 
   trait OperatorLike[T] {
     def addition(l: T, r: T)(implicit p: Parameters): T
+
     def subtraction(l: T, r: T)(implicit p: Parameters): T
+
     def multiplication(l: T, r: T)(implicit p: Parameters): T
   }
 
   object OperatorLike {
+
     implicit object mat2x2likeNumber extends OperatorLike[mat2x2] {
       def addition(l: mat2x2, r: mat2x2)(implicit p: Parameters): mat2x2 = {
         val x = Wire(new mat2x2)
@@ -48,6 +51,7 @@ object operation {
         }
         x
       }
+
       def subtraction(l: mat2x2, r: mat2x2)(implicit p: Parameters): mat2x2 = {
         val x = Wire(new mat2x2)
         for (i <- 0 until 2) {
@@ -57,6 +61,7 @@ object operation {
         }
         x
       }
+
       def multiplication(l: mat2x2, r: mat2x2)(implicit p: Parameters): mat2x2 = {
         val x = Wire(new mat2x2)
         for (i <- 0 until 2) {
@@ -117,16 +122,20 @@ object operation {
         x
       }
     }
+
   }
-    def addition[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.addition(l, r)
-    def subtraction[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.subtraction(l, r)
-    def multiplication[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.multiplication(l, r)
+
+  def addition[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.addition(l, r)
+
+  def subtraction[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.subtraction(l, r)
+
+  def multiplication[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.multiplication(l, r)
 
 }
 
 import operation._
 
-class OperatorModule[T <: Numbers: OperatorLike](gen: => T, val opCode: String)(implicit val p: Parameters) extends Module {
+class OperatorModule[T <: Numbers : OperatorLike](gen: => T, val opCode: String)(implicit val p: Parameters) extends Module {
   val io = IO(new Bundle {
     val a = Flipped(Valid(gen))
     val b = Flipped(Valid(gen))
@@ -134,11 +143,11 @@ class OperatorModule[T <: Numbers: OperatorLike](gen: => T, val opCode: String)(
   })
 
   io.o.valid := io.a.valid && io.b.valid
-  if (opCode.toLowerCase() == "add") {
+  if (opCode.toLowerCase( ) == "add") {
     io.o.bits := addition(io.a.bits, io.b.bits)
-  } else if (opCode.toLowerCase() == "sub") {
+  } else if (opCode.toLowerCase( ) == "sub") {
     io.o.bits := subtraction(io.a.bits, io.b.bits)
-  } else if (opCode.toLowerCase() == "mul") {
+  } else if (opCode.toLowerCase( ) == "mul") {
     io.o.bits := multiplication(io.a.bits, io.b.bits)
   } else {
     assert(false, "Unknown TypCompute OpCode!")
@@ -154,7 +163,7 @@ class TypComputeIO(NumOuts: Int)(implicit p: Parameters)
   val RightIO = Flipped(Decoupled(new TypBundle))
 }
 
-class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: String)(sign: Boolean)(gen: => T)(implicit p: Parameters)
+class TypCompute[T <: Numbers : OperatorLike](NumOuts: Int, ID: Int, opCode: String)(sign: Boolean)(gen: => T)(implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(new TypBundle)(p) {
   override lazy val io = IO(new TypComputeIO(NumOuts))
 
@@ -171,14 +180,14 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
   val data_R = RegInit(TypBundle.default)
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-  val state = RegInit(s_idle)
+  val state                                 = RegInit(s_idle)
 
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val predicate = left_R.predicate & right_R.predicate & IsEnable()
-  val start = left_R.valid & right_R.valid & IsEnableValid()
+  val predicate = left_R.predicate & right_R.predicate & IsEnable( )
+  val start     = left_R.valid & right_R.valid & IsEnableValid( )
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -190,7 +199,7 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
   //printfInfo("start: %x\n", start)
 
   io.LeftIO.ready := ~left_R.valid
-  when(io.LeftIO.fire()) {
+  when(io.LeftIO.fire( )) {
     //printfInfo("Latch left data\n")
     state := s_LATCH
     left_R.data := io.LeftIO.bits.data
@@ -199,7 +208,7 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
   }
 
   io.RightIO.ready := ~right_R.valid
-  when(io.RightIO.fire()) {
+  when(io.RightIO.fire( )) {
     //printfInfo("Latch right data\n")
     state := s_LATCH
     right_R.data := io.RightIO.bits.data
@@ -212,6 +221,7 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
     io.Out(i).bits.data := data_R.data
     io.Out(i).bits.valid := true.B
     io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
   }
 
   /*============================================*
@@ -232,36 +242,36 @@ class TypCompute[T <: Numbers: OperatorLike](NumOuts: Int, ID: Int, opCode: Stri
   when(start & predicate & state =/= s_COMPUTE) {
     state := s_COMPUTE
     // Next cycle it will become valid.
-    ValidOut()
+    ValidOut( )
   }.elsewhen(start && !predicate && state =/= s_COMPUTE) {
     state := s_COMPUTE
-    ValidOut()
+    ValidOut( )
   }
 
-  when(IsOutReady() && state === s_COMPUTE) {
+  when(IsOutReady( ) && state === s_COMPUTE) {
     left_R := TypBundle.default
     right_R := TypBundle.default
     data_R := TypBundle.default
-    Reset()
+    Reset( )
     state := s_idle
   }
   var classname: String = (gen.getClass).toString
-  var signed = if (sign == true) "S" else "U"
-  override val printfSigil = opCode + "[" + classname.replaceAll("class node.","") + "]_" + ID + ":"
+  var signed            = if (sign == true) "S" else "U"
+  override val printfSigil = opCode + "[" + classname.replaceAll("class node.", "") + "]_" + ID + ":"
 
   if (log == true && (comp contains "TYPOP")) {
     val x = RegInit(0.U(xlen.W))
-    x     := x + 1.U
-  
+    x := x + 1.U
+
     verb match {
-      case "high"  => { }
-      case "med"   => { }
-      case "low"   => {
-        printfInfo("Cycle %d : { \"Inputs\": {\"Left\": %x, \"Right\": %x},",x,(left_R.valid),(right_R.valid))
-        printf("\"State\": {\"State\": \"%x\", \"(L,R)\": \"%x,%x\",  \"O(V,D,P)\": \"%x,%x,%x\" },",state,left_R.data,right_R.data,io.Out(0).valid,data_R.data,io.Out(0).bits.predicate)
-        printf("\"Outputs\": {\"Out\": %x}",io.Out(0).fire())
+      case "high" => {}
+      case "med" => {}
+      case "low" => {
+        printfInfo("Cycle %d : { \"Inputs\": {\"Left\": %x, \"Right\": %x},", x, (left_R.valid), (right_R.valid))
+        printf("\"State\": {\"State\": \"%x\", \"(L,R)\": \"%x,%x\",  \"O(V,D,P)\": \"%x,%x,%x\" },", state, left_R.data, right_R.data, io.Out(0).valid, data_R.data, io.Out(0).bits.predicate)
+        printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire( ))
         printf("}")
-       }
+      }
       case everythingElse => {}
     }
   }
