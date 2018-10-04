@@ -68,8 +68,6 @@ class prefetchDF(implicit p: Parameters) extends prefetchDFIO()(p) {
 
   queues(0).io.enq <> InputSplitter.io.Out.data("field0")(0)
 
-
-
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
