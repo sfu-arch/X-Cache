@@ -17,17 +17,19 @@ import scala.reflect.runtime.universe._
 class Numbers(implicit p: Parameters) extends CoreBundle( )(p) {
 }
 
-class vec2(implicit p: Parameters) extends Numbers {
-  val data = Vec(2, UInt(xlen.W))
+class vecN(val N: Int)(implicit p: Parameters) extends Numbers {
+  val data = Vec(N, UInt(xlen.W))
+
+  override def cloneType = new vecN(N).asInstanceOf[this.type]
+
 }
 
-class vec3(implicit p: Parameters) extends Numbers {
-  val data = Vec(3, UInt(xlen.W))
+class matNxN(val N: Int)(implicit p: Parameters) extends Numbers {
+  val data = Vec(N, Vec(N, UInt(xlen.W)))
+
+  override def cloneType = new matNxN(N).asInstanceOf[this.type]
 }
 
-class mat2x2(implicit p: Parameters) extends Numbers {
-  val data = Vec(2, Vec(2, UInt(xlen.W)))
-}
 
 object operation {
 
@@ -41,84 +43,70 @@ object operation {
 
   object OperatorLike {
 
-    implicit object mat2x2likeNumber extends OperatorLike[mat2x2] {
-      def addition(l: mat2x2, r: mat2x2)(implicit p: Parameters): mat2x2 = {
-        val x = Wire(new mat2x2)
-        for (i <- 0 until 2) {
-          for (j <- 0 until 2) {
+    implicit object matNxNlikeNumber extends OperatorLike[matNxN] {
+      def addition(l: matNxN, r: matNxN)(implicit p: Parameters): matNxN = {
+        val x = Wire(new matNxN(l.N))
+        for (i <- 0 until l.N) {
+          for (j <- 0 until l.N) {
             x.data(i)(j) := l.data(i)(j) + r.data(i)(j)
           }
         }
         x
       }
 
-      def subtraction(l: mat2x2, r: mat2x2)(implicit p: Parameters): mat2x2 = {
-        val x = Wire(new mat2x2)
-        for (i <- 0 until 2) {
-          for (j <- 0 until 2) {
+      def subtraction(l: matNxN, r: matNxN)(implicit p: Parameters): matNxN = {
+        val x = Wire(new matNxN(l.N))
+        for (i <- 0 until l.N) {
+          for (j <- 0 until l.N) {
             x.data(i)(j) := l.data(i)(j) - r.data(i)(j)
           }
         }
         x
       }
 
-      def multiplication(l: mat2x2, r: mat2x2)(implicit p: Parameters): mat2x2 = {
-        val x = Wire(new mat2x2)
-        for (i <- 0 until 2) {
-          for (j <- 0 until 2) {
-            x.data(i)(j) := l.data(i)(j) * r.data(i)(j)
+      def multiplication(l: matNxN, r: matNxN)(implicit p: Parameters): matNxN = {
+        val x = Wire(new matNxN(l.N))
+        printf(p"Left: ${l.data}")
+        val products = for (i <- 0 until l.N) yield {
+          for (j <- 0 until l.N) yield {
+            for (k <- 0 until l.N) yield
+              l.data(i)(k) * r.data(k)(j)
+          }
+        }
+        for (i <- 0 until l.N) {
+          for (j <- 0 until l.N) {
+            x.data(i)(j) := products(i)(j).reduceLeft(_ + _)
           }
         }
         x
       }
     }
 
-    implicit object vec2likeNumber extends OperatorLike[vec2] {
-      def addition(l: vec2, r: vec2)(implicit p: Parameters): vec2 = {
-        val x = Wire(new vec2)
-        x.data(0) := l.data(0) + r.data(0)
-        x.data(1) := l.data(1) + r.data(1)
+    implicit object vecNlikeNumber extends OperatorLike[vecN] {
+      def addition(l: vecN, r: vecN)(implicit p: Parameters): vecN = {
+        assert(l.N == r.N)
+        val x = Wire(new vecN(l.N))
+        for (i <- 0 until l.N) {
+          x.data(i) := l.data(i) + r.data(i)
+        }
         x
       }
 
-      def subtraction(l: vec2, r: vec2)(implicit p: Parameters): vec2 = {
-        val x = Wire(new vec2)
-        x.data(0) := l.data(0) - r.data(0)
-        x.data(1) := l.data(1) - r.data(1)
+      def subtraction(l: vecN, r: vecN)(implicit p: Parameters): vecN = {
+        assert(l.N == r.N)
+        val x = Wire(new vecN(l.N))
+        for (i <- 0 until l.N) {
+          x.data(i) := l.data(i) - r.data(i)
+        }
         x
       }
 
-      def multiplication(l: vec2, r: vec2)(implicit p: Parameters): vec2 = {
-        val x = Wire(new vec2)
-        x.data(0) := l.data(0) * r.data(0)
-        x.data(1) := l.data(1) * r.data(1)
-        x
-      }
-
-    }
-
-    implicit object vec3likeNumber extends OperatorLike[vec3] {
-      def addition(l: vec3, r: vec3)(implicit p: Parameters): vec3 = {
-        val x = Wire(new vec3)
-        x.data(0) := l.data(0) + r.data(0)
-        x.data(1) := l.data(1) + r.data(1)
-        x.data(2) := l.data(2) + r.data(2)
-        x
-      }
-
-      def subtraction(l: vec3, r: vec3)(implicit p: Parameters): vec3 = {
-        val x = Wire(new vec3)
-        x.data(0) := l.data(0) - r.data(0)
-        x.data(1) := l.data(1) - r.data(1)
-        x.data(2) := l.data(2) - r.data(2)
-        x
-      }
-
-      def multiplication(l: vec3, r: vec3)(implicit p: Parameters): vec3 = {
-        val x = Wire(new vec3)
-        x.data(0) := l.data(0) * r.data(0)
-        x.data(1) := l.data(1) * r.data(1)
-        x.data(2) := l.data(2) * r.data(2)
+      def multiplication(l: vecN, r: vecN)(implicit p: Parameters): vecN = {
+        assert(l.N == r.N)
+        val x = Wire(new vecN(l.N))
+        for (i <- 0 until l.N) {
+          x.data(i) := l.data(i) * r.data(i)
+        }
         x
       }
     }

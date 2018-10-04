@@ -16,45 +16,40 @@ import util._
 import interfaces._
 
 
-
-
-
 // Tester.
-class TypCompTests(df: TypCompute[mat2x2])
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class TypCompTests(df: TypCompute[matNxN])
+                  (implicit p: config.Parameters) extends PeekPokeTester(df) {
 
-  
-    poke(df.io.enable.valid,true)
-    poke(df.io.enable.bits.control,true)
 
-    poke(df.io.LeftIO.bits.data,0x1111222233334444L)
-    poke(df.io.LeftIO.valid,true)
-    poke(df.io.LeftIO.bits.predicate,true)
+  poke(df.io.enable.valid, true)
+  poke(df.io.enable.bits.control, true)
 
-    poke(df.io.RightIO.bits.data,0x1111222233334444L)
-    poke(df.io.RightIO.valid,true)
-    poke(df.io.RightIO.bits.predicate,true)
+  poke(df.io.LeftIO.bits.data, 0x0004000300020001L)
+  poke(df.io.LeftIO.valid, true)
+  poke(df.io.LeftIO.bits.predicate, true)
 
-    poke(df.io.Out(0).ready,true)
-    for (i <- 0 until 10) {
+  poke(df.io.RightIO.bits.data, 0x0004000300020001L)
+  poke(df.io.RightIO.valid, true)
+  poke(df.io.RightIO.bits.predicate, true)
+
+  poke(df.io.Out(0).ready, true)
+  for (i <- 0 until 10) {
     step(1)
     step(1)
     step(1)
   }
- }
+}
 
 
-
-
-class TypCompTester extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+class TypCompTester extends FlatSpec with Matchers {
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Typ Compute Tester" in {
-     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),
-       () => new TypCompute(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)(new mat2x2)) {
-       c => new TypCompTests(c)
-     } should be(true)
-   }
- }
+    chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),
+      () => new TypCompute(NumOuts = 1, ID = 0, opCode = "Mul")(sign = false)(new matNxN(2))) {
+      c => new TypCompTests(c)
+    } should be(true)
+  }
+}
 
 
 
