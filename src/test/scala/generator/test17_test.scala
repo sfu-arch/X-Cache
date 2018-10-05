@@ -26,11 +26,7 @@ class test17MainIO(implicit val p: Parameters) extends Module with CoreParams wi
     val din = Input(UInt(nastiXDataBits.W))
     val write = Input(Bool())
     val dout = Output(UInt(nastiXDataBits.W))
-<<<<<<< HEAD
     val out = Decoupled(new Call(List(32)))
-=======
-    val out = Decoupled(new Call(List()))
->>>>>>> c881396bd68316d1949544b6ec61dcc6a3762e0c
   })
 }
 
@@ -57,27 +53,18 @@ class test17Main(implicit p: Parameters) extends test17MainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val test17 = Module(new test17DF())
+//  val test17 = Module(new test17DF())
 
-  cache.io.cpu.req <> test17.io.MemReq
-  test17.io.MemResp <> cache.io.cpu.resp
-  test17.io.in <> io.in
-  io.out <> test17.io.out
+//  cache.io.cpu.req <> test17.io.MemReq
+//  test17.io.MemResp <> cache.io.cpu.resp
+//  test17.io.in <> io.in
+//  io.out <> test17.io.out
 
   if (p(TRACE) == false) {
-<<<<<<< HEAD
     println(Console.RED + "****** Trace option is off. *********" + Console.RESET)
   }
   else
     println(Console.BLUE + "****** Trace option is on. *********" + Console.RESET)
-=======
-    println(Console.RED + "****** Log trace is off. *********" + Console.RESET)
-  }
-  else
-    println(Console.BLUE + "****** Log trace is on. *********" + Console.RESET)
->>>>>>> c881396bd68316d1949544b6ec61dcc6a3762e0c
-
-
 }
 
 
@@ -131,11 +118,7 @@ class test17Test01[T <: test17MainIO](c: T) extends PeekPokeTester(c) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1) {
-<<<<<<< HEAD
       if (peek(c.io.out.bits.data("field0").data) == 126) {
-=======
-      if (peek(c.io.out.data.bits) == 126) {
->>>>>>> c881396bd68316d1949544b6ec61dcc6a3762e0c
         result = true
         println(Console.BLUE + "*** Return received.")
       }

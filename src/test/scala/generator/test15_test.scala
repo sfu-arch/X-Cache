@@ -54,8 +54,8 @@ class test15Main(implicit p: Parameters) extends test15MainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-//  val test15 = Module(new test15DF())
-  val test15 = Module(new test15_optimizedDF())
+  val test15 = Module(new test15DF())
+//  val test15 = Module(new test15_optimizedDF())
 
   cache.io.cpu.req <> test15.io.MemReq
   test15.io.MemResp <> cache.io.cpu.resp

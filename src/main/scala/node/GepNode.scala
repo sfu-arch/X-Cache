@@ -849,6 +849,145 @@ class GepIO(NumIns: Int, NumOuts: Int)
 }
 
 
+
+class GepNode(NumIns: Int, NumOuts: Int, ID: Int)
+             (ElementSize: Int, ArraySize: List[Int])
+             (implicit p: Parameters,
+              name: sourcecode.Name,
+              file: sourcecode.File)
+  extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
+  override lazy val io = IO(new GepNodeIO(NumIns, NumOuts))
+  // Printf debugging
+  val node_name = name.value
+  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+
+  /*===========================================*
+   *            Registers                      *
+   *===========================================*/
+  // Addr Inputs
+  val base_addr_R = RegInit(DataBundle.default)
+  val base_addr_valid_R = RegInit(false.B)
+
+  // Index 1 input
+  val idx_R = Seq.fill(NumIns)(RegInit(DataBundle.default))
+  val idx_valid_R = Seq.fill(NumIns)(RegInit(false.B))
+
+
+  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
+  val state = RegInit(s_IDLE)
+
+  //We support only geps with 1 or 2 inputs
+  assert(NumIns <= 2)
+
+  /*==========================================*
+   *           Predicate Evaluation           *
+   *==========================================*/
+
+  val predicate = IsEnable()
+
+  /*===============================================*
+   *            Latch inputs. Wire up output       *
+   *===============================================*/
+
+  io.baseAddress.ready := ~base_addr_valid_R
+  when(io.baseAddress.fire()) {
+    base_addr_R <> io.baseAddress.bits
+    base_addr_valid_R := true.B
+  }
+
+  for (i <- 0 until NumIns) {
+    io.idx(i).ready := ~idx_valid_R(i)
+    when(io.idx(i).fire()) {
+      idx_R(i) <> io.idx(i).bits
+      idx_valid_R(i) := true.B
+    }
+  }
+
+  // Calculating the address
+  val seek_value =
+    if (ArraySize.isEmpty) {
+      0.U
+    }
+    else if (ArraySize.length == 1) {
+      idx_R(1).data * ArraySize(0).U
+    }
+    else {
+      val table = VecInit(ArraySize.map(_.U))
+      table(idx_R(1).data)
+    }
+
+  val data_out = base_addr_R.data +
+    (idx_R(0).data * ElementSize.U) + seek_value
+
+  //  val data_out = base_addr_R.data +
+  //    (idx_R.map {
+  //      _.data
+  //    } zip ArraySize).map {
+  //      case (a, b) =>
+  //        if (b.length == 1) {
+  //          a * b(0).U
+  //        }
+  //        else {
+  //          val table = VecInit(b.map(_.U))
+  //          table(a)
+  //        }
+  //    }.reduce(_ + _)
+
+
+  // Wire up Outputs
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits.data := data_out
+    io.Out(i).bits.predicate := predicate
+    io.Out(i).bits.taskID := base_addr_R.taskID
+  }
+
+
+  /*============================================*
+   *            STATES                          *
+   *============================================*/
+
+  switch(state) {
+    is(s_IDLE) {
+      when(enable_valid_R) {
+        when(enable_R.control) {
+          when(idx_valid_R.reduce(_ & _) && base_addr_valid_R) {
+            ValidOut()
+            state := s_COMPUTE
+          }
+        }.otherwise {
+          ValidOut()
+          state := s_COMPUTE
+        }
+      }
+
+    }
+    is(s_COMPUTE) {
+      when(IsOutReady()) {
+        // Reset output
+        idx_R.foreach(_ := DataBundle.default)
+        base_addr_R := DataBundle.default
+
+        idx_valid_R.foreach(_ := false.B)
+        base_addr_valid_R := false.B
+
+        // Reset state
+        state := s_IDLE
+
+        // Reset output
+        Reset()
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
+            node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_out)
+        }
+      }
+    }
+  }
+}
+
+
+
 /**
   * GetElementPtrNode
   * GEP node calculates memory addresses for Load and Store instructions
@@ -1014,145 +1153,6 @@ class GepFastNode(NumIns: Int, NumOuts: Int, ArraySize: List[List[Int]], ID: Int
     }
   }
 }
-
-
-class GepNode(NumIns: Int, NumOuts: Int, ID: Int)
-             (ElementSize: Int, ArraySize: List[Int])
-             (implicit p: Parameters,
-              name: sourcecode.Name,
-              file: sourcecode.File)
-  extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
-  override lazy val io = IO(new GepNodeIO(NumIns, NumOuts))
-  // Printf debugging
-  val node_name = name.value
-  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-  val (cycleCount, _) = Counter(true.B, 32 * 1024)
-  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
-
-  /*===========================================*
-   *            Registers                      *
-   *===========================================*/
-  // Addr Inputs
-  val base_addr_R = RegInit(DataBundle.default)
-  val base_addr_valid_R = RegInit(false.B)
-
-  // Index 1 input
-  val idx_R = Seq.fill(NumIns)(RegInit(DataBundle.default))
-  val idx_valid_R = Seq.fill(NumIns)(RegInit(false.B))
-
-
-  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
-  val state = RegInit(s_IDLE)
-
-  //We support only geps with 1 or 2 inputs
-  assert(NumIns <= 2)
-
-  /*==========================================*
-   *           Predicate Evaluation           *
-   *==========================================*/
-
-  val predicate = IsEnable()
-
-  /*===============================================*
-   *            Latch inputs. Wire up output       *
-   *===============================================*/
-
-  io.baseAddress.ready := ~base_addr_valid_R
-  when(io.baseAddress.fire()) {
-    base_addr_R <> io.baseAddress.bits
-    base_addr_valid_R := true.B
-  }
-
-  for (i <- 0 until NumIns) {
-    io.idx(i).ready := ~idx_valid_R(i)
-    when(io.idx(i).fire()) {
-      idx_R(i) <> io.idx(i).bits
-      idx_valid_R(i) := true.B
-    }
-  }
-
-  // Calculating the address
-  val seek_value =
-    if (ArraySize.isEmpty) {
-      0.U
-    }
-    else if (ArraySize.length == 1) {
-      idx_R(1).data * ArraySize(0).U
-    }
-    else {
-      val table = VecInit(ArraySize.map(_.U))
-      table(idx_R(1).data)
-    }
-
-  val data_out = base_addr_R.data +
-    (idx_R(0).data * ElementSize.U) + seek_value
-
-  //  val data_out = base_addr_R.data +
-  //    (idx_R.map {
-  //      _.data
-  //    } zip ArraySize).map {
-  //      case (a, b) =>
-  //        if (b.length == 1) {
-  //          a * b(0).U
-  //        }
-  //        else {
-  //          val table = VecInit(b.map(_.U))
-  //          table(a)
-  //        }
-  //    }.reduce(_ + _)
-
-
-  // Wire up Outputs
-  for (i <- 0 until NumOuts) {
-    io.Out(i).bits.data := data_out
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.taskID := base_addr_R.taskID
-  }
-
-
-  /*============================================*
-   *            STATES                          *
-   *============================================*/
-
-  switch(state) {
-    is(s_IDLE) {
-      when(enable_valid_R) {
-        when(enable_R.control) {
-          when(idx_valid_R.reduce(_ & _) && base_addr_valid_R) {
-            ValidOut()
-            state := s_COMPUTE
-          }
-        }.otherwise {
-          ValidOut()
-          state := s_COMPUTE
-        }
-      }
-
-    }
-    is(s_COMPUTE) {
-      when(IsOutReady()) {
-        // Reset output
-        idx_R.foreach(_ := DataBundle.default)
-        base_addr_R := DataBundle.default
-
-        idx_valid_R.foreach(_ := false.B)
-        base_addr_valid_R := false.B
-
-        // Reset state
-        state := s_IDLE
-
-        // Reset output
-        Reset()
-        if (log) {
-          printf("[LOG] " + "[" + module_name + "] [TID->%d] " +
-            node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_out)
-        }
-      }
-    }
-  }
-}
-
-
 
 
 

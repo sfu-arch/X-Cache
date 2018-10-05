@@ -412,7 +412,6 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val ID: I
   val output_false_valid_R = Seq.fill(NumFalse)(RegInit(false.B))
   val fire_false_R = Seq.fill(NumFalse)(RegInit(false.B))
 
-  val predicate = enable_R.control & enable_valid_R
   val task_id = enable_R.taskID & enable_valid_R
 
 
@@ -431,6 +430,7 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val ID: I
   }
 
   // Output for true and false sides
+  val predicate = enable_R.control & enable_valid_R
   val true_output = predicate & cmp_R
   val false_output = predicate & (~cmp_R).toBool
 
@@ -1061,8 +1061,11 @@ class CBranchFastNodeVariable2(val NumTrue: Int = 1, val NumFalse: Int = 1, val 
   }
 
   // Output for true and false sides
-  val true_output = cmp_R
-  val false_output = ~cmp_R
+
+  val true_output = predicate & cmp_R
+  val false_output = predicate & (~cmp_R).toBool
+//  val true_output = cmp_R
+//  val false_output = ~cmp_R
 
   // Defalut values for Trueoutput
   output_true_R.control := true_output

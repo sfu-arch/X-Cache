@@ -215,15 +215,6 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
 
   bb_if_else186.io.predicateIn <> br_17.io.FalseOutput(0)
 
-<<<<<<< HEAD
-  bb_if_end237.io.predicateIn(3) <> br_10.io.Out(0)
-
-  bb_if_end237.io.predicateIn(2) <> br_13.io.Out(0)
-
-  bb_if_end237.io.predicateIn(1) <> br_21.io.Out(0)
-
-  bb_if_end237.io.predicateIn(0) <> br_25.io.Out(0)
-=======
   bb_if_end237.io.predicateIn(0) <> br_10.io.Out(0)
 
   bb_if_end237.io.predicateIn(1) <> br_13.io.Out(0)
@@ -231,7 +222,6 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
   bb_if_end237.io.predicateIn(2) <> br_21.io.Out(0)
 
   bb_if_end237.io.predicateIn(3) <> br_25.io.Out(0)
->>>>>>> c881396bd68316d1949544b6ec61dcc6a3762e0c
 
 
 
