@@ -43,7 +43,7 @@ abstract class PhiFastNodeIO(val NumInputs: Int = 2, val NumOutputs: Int = 1, va
 }
 
 
-@deprecated("Use PhiFastNode2 instead","1.0")
+@deprecated("Use PhiFastNode2 instead", "1.0")
 class PhiNode(NumInputs: Int,
               NumOuts: Int,
               ID: Int)
@@ -528,8 +528,21 @@ class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
       (io.Out.map(_.valid) zip out_valid_R).map { case (a, b) => a := b }
 
       when(fire_mask.reduce(_ & _)) {
-        in_data_R(sel) := DataBundle.default
-        in_data_valid_R(sel) := false.B
+
+        /** @note: In this case whenever all the GEP is fired we
+          *       restart all the latched values. But it may be cases
+          *       that because of pipelining we have latched an interation ahead
+          *       and if we may reset the latches values we lost the value.
+          *       I'm not sure when this case can happen!
+         */
+        // in_data_R(sel) := DataBundle.default
+        // in_data_valid_R(sel) := false.B
+        in_data_R foreach {
+          _ := DataBundle.default
+        }
+        in_data_valid_R foreach {
+          _ := false.B
+        }
 
         mask_R := 0.U
         mask_valid_R := false.B
@@ -559,10 +572,14 @@ class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
 
       when(io.Out.map(_.fire).reduce(_ & _)) {
 
-        in_data_R(sel) := DataBundle.default
-        in_data_valid_R(sel) := false.B
-//        in_data_R foreach { _ := DataBundle.default}
-//        in_data_valid_R foreach {_ := false.B}
+        //        in_data_R(sel) := DataBundle.default
+        //        in_data_valid_R(sel) := false.B
+        in_data_R foreach {
+          _ := DataBundle.default
+        }
+        in_data_valid_R foreach {
+          _ := false.B
+        }
 
         enable_R := ControlBundle.default
         enable_valid_R := false.B

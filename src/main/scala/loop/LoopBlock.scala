@@ -369,6 +369,7 @@ class LoopBlockO1(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
           when(io.latchEnable.fire()) {
             //            when(io.latchEnable.fire() && io.latchEnable.bits.control) {
             // Re-enable the liveIn latches to valid for next iteration
+            liveIn_R(i).predicate := io.latchEnable.bits.control
             liveIn_R_valid(i).foreach(_ := true.B)
           }.elsewhen(io.liveIn.data(s"field$i")(j).fire()) {
             // clear liveIn valid when loop has grabbed the data
