@@ -607,7 +607,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
 }
 
 
-@deprecated("BasicBlockNoMaskFastNode2 is deprecated. It doesn't handle some corner cases. Please use BasicBlockNoMaskFastNode3", "dataflow-lib 1.0")
+@deprecated("BasicBlockNoMaskFastNode2 is deprecated. It doesn't handle some corner cases. Please use BasicBlockNoMaskFastNode", "dataflow-lib 1.0")
 class BasicBlockNoMaskFastNode2(BID: Int, val NumOuts: Int)
                                (implicit val p: Parameters,
                                 name: sourcecode.Name, file: sourcecode.File)
@@ -827,6 +827,7 @@ class LoopHeadNodeIO(val NumOuts: Int, val NumPhi: Int)(implicit p: Parameters) 
   val MaskBB = Vec(NumPhi, Decoupled(UInt(2.W)))
 }
 
+@deprecated("Use LoopFastHead instead. For O1 the behaviour is not deterministic")
 class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
               (implicit val p: Parameters,
                name: sourcecode.Name,

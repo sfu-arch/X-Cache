@@ -32,8 +32,8 @@ class covarianceMainIO(implicit val p: Parameters) extends Module with CoreParam
 class covarianceMain(implicit p: Parameters) extends covarianceMainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
-  val memModel = Module(new NastiCMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
+  //  val memModel = Module(new NastiCMemSlave) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -106,11 +106,14 @@ class CovarianceTest01[T <: covarianceMainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field0").predicate, true.B)
 
   //Memory
-  poke(c.io.in.bits.data("field1").data, 196890624.U)
+//  poke(c.io.in.bits.data("field1").data, 196890624.U)
+  poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 210337792.U)
+//  poke(c.io.in.bits.data("field2").data, 210337792.U)
+  poke(c.io.in.bits.data("field2").data, 10.U)
   poke(c.io.in.bits.data("field2").predicate, true.B)
-  poke(c.io.in.bits.data("field3").data, 397620428.U)
+//  poke(c.io.in.bits.data("field3").data, 397620428.U)
+  poke(c.io.in.bits.data("field3").data, 20.U)
   poke(c.io.in.bits.data("field3").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -132,7 +135,7 @@ class CovarianceTest01[T <: covarianceMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 1  //Cycle counter
   var result = false
-  while (time < 50000) {
+  while (time < 70000) {
     time += 1
     step(1)
     //println(s"Cycle: $time")

@@ -23,6 +23,27 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
   val Mask = Flipped(Decoupled(UInt(NumInputs.W)))
 }
 
+abstract class PhiFastNodeIO(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
+                            (implicit val p: Parameters)
+  extends Module with CoreParams with UniformPrintfs {
+
+  val io = IO(new Bundle {
+    //Control signal
+    val enable = Flipped(Decoupled(new ControlBundle))
+
+    // Vector input
+    val InData = Vec(NumInputs, Flipped(Decoupled(new DataBundle)))
+
+    // Predicate mask comming from the basic block
+    val Mask = Flipped(Decoupled(UInt(NumInputs.W)))
+
+    //Output
+    val Out = Vec(NumOutputs, Decoupled(new DataBundle))
+  })
+}
+
+
+@deprecated("Use PhiFastNode2 instead","1.0")
 class PhiNode(NumInputs: Int,
               NumOuts: Int,
               ID: Int)
@@ -154,25 +175,8 @@ class PhiNode(NumInputs: Int,
   * @param file
   */
 
-abstract class PhiFastNodeIO(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
-                            (implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
 
-  val io = IO(new Bundle {
-    //Control signal
-    val enable = Flipped(Decoupled(new ControlBundle))
-
-    // Vector input
-    val InData = Vec(NumInputs, Flipped(Decoupled(new DataBundle)))
-
-    // Predicate mask comming from the basic block
-    val Mask = Flipped(Decoupled(UInt(NumInputs.W)))
-
-    //Output
-    val Out = Vec(NumOutputs, Decoupled(new DataBundle))
-  })
-}
-
+@deprecated("Use PhiFastNode2 instead", "1.0")
 class PhiFastNode(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
@@ -557,6 +561,8 @@ class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
 
         in_data_R(sel) := DataBundle.default
         in_data_valid_R(sel) := false.B
+//        in_data_R foreach { _ := DataBundle.default}
+//        in_data_valid_R foreach {_ := false.B}
 
         enable_R := ControlBundle.default
         enable_valid_R := false.B

@@ -207,7 +207,7 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
     } else {
       val fire_mask = (out_ready_R zip io.Out.map(_.fire)).map { case (a, b) => a | b }
       fire_mask reduce { _ & _}
-//      out_ready_R.reduceLeft(_ && _) | out_ready_W.reduceLeft(_ && _)
+      //out_ready_R.reduceLeft(_ && _) | out_ready_W.reduceLeft(_ && _)
     }
   }
 

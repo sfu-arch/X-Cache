@@ -45,6 +45,7 @@ class LoopBlockIO(NumIns: Seq[Int], NumOuts : Int, NumExits : Int)(implicit p: P
   val endEnable   = Decoupled(new ControlBundle())
 }
 
+@deprecated("Please use LoopBlockO1 if you have compiled your program with O1 optmization", "1.0")
 class LoopBlock(ID: Int, NumIns : Seq[Int], NumOuts : Int, NumExits : Int)
                     (implicit p: Parameters,
                      name: sourcecode.Name,
@@ -237,7 +238,6 @@ class LoopBlock(ID: Int, NumIns : Seq[Int], NumOuts : Int, NumExits : Int)
 
 }
 
-
 class LoopBlockO1(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
@@ -381,7 +381,7 @@ class LoopBlockO1(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
       //  b) our live outs are ready, and
       //  c) we've seen a valid exit pulse,
       // then we can end.
-      when(exitFire_R.asUInt().orR && IsAllValid() && IsLiveOutReady()) {
+      when((exitFire_R.asUInt().orR) && IsAllValid() && IsLiveOutReady()) {
         exitFire_R.foreach(_ := false.B)
         liveOutFire_R.foreach(_ := false.B)
         // Only exit on final (control=true) exit pulse
