@@ -1,16 +1,17 @@
 package node
 
+import FPU.{FPUALU, FType}
 import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import chisel3.Module
 import chisel3.testers._
 import chisel3.util._
-import org.scalatest.{Matchers, FlatSpec}
-
+import org.scalatest.{FlatSpec, Matchers}
 import config._
 import interfaces._
 import muxes._
 import util._
+
 import scala.reflect.runtime.universe._
 
 
@@ -30,6 +31,12 @@ class matNxN(val N: Int)(implicit p: Parameters) extends Numbers {
   override def cloneType = new matNxN(N).asInstanceOf[this.type]
 }
 
+class FPmatNxN(val N: Int, val t: FType)(implicit p: Parameters) extends Numbers {
+  val data = Vec(N, Vec(N, UInt(xlen.W)))
+
+  override def cloneType = new FPmatNxN(N, t).asInstanceOf[this.type]
+}
+
 
 object operation {
 
@@ -39,9 +46,78 @@ object operation {
     def subtraction(l: T, r: T)(implicit p: Parameters): T
 
     def multiplication(l: T, r: T)(implicit p: Parameters): T
+
+    def OpMagic(l: T, r: T, opcode: String)(implicit p: Parameters): T
   }
 
   object OperatorLike {
+
+    implicit object FPmatNxNlikeNumber extends OperatorLike[FPmatNxN] {
+      def addition(l: FPmatNxN, r: FPmatNxN)(implicit p: Parameters): FPmatNxN = {
+        val x = Wire(new FPmatNxN(l.N, l.t))
+        for (i <- 0 until l.N) {
+          for (j <- 0 until l.N) {
+            val FPadd = Module(new FPUALU(p(XLEN), "Add", l.t))
+            FPadd.io.in1 := l.data(i)(j)
+            FPadd.io.in2 := r.data(i)(j)
+            x.data(i)(j) := FPadd.io.out
+          }
+        }
+        x
+      }
+
+      def subtraction(l: FPmatNxN, r: FPmatNxN)(implicit p: Parameters): FPmatNxN = {
+        val x = Wire(new FPmatNxN(l.N, l.t))
+        for (i <- 0 until l.N) {
+          for (j <- 0 until l.N) {
+            val FPadd = Module(new FPUALU(p(XLEN), "Sub", l.t))
+            FPadd.io.in1 := l.data(i)(j)
+            FPadd.io.in2 := r.data(i)(j)
+            x.data(i)(j) := FPadd.io.out
+          }
+        }
+        x
+      }
+
+
+      def multiplication(l: FPmatNxN, r: FPmatNxN)(implicit p: Parameters): FPmatNxN = {
+        val x = Wire(new FPmatNxN(l.N, l.t))
+        printf(p"Left: ${l.data}")
+        val products = for (i <- 0 until l.N) yield {
+          for (j <- 0 until l.N) yield {
+            for (k <- 0 until l.N) yield {
+              val FPadd = Module(new FPUALU(p(XLEN), "Mul", l.t))
+              FPadd.io.in1 := l.data(i)(k)
+              FPadd.io.in2 := r.data(k)(j)
+              FPadd.io.out
+            }
+          }
+        }
+        for (i <- 0 until l.N) {
+          for (j <- 0 until l.N) {
+            val FP_add_reduce = for (k <- 0 until l.N - 1) yield {
+              val FPadd = Module(new FPUALU(p(XLEN), "Add", l.t))
+              FPadd
+            }
+
+            for (k <- 0 until l.N - 2) {
+              FP_add_reduce(k + 1).io.in1 := FP_add_reduce(k).io.out
+              FP_add_reduce(k + 1).io.in2 := products(i)(j)(k + 2)
+            }
+            FP_add_reduce(0).io.in1 := products(i)(j)(0)
+            FP_add_reduce(0).io.in2 := products(i)(j)(1)
+
+            x.data(i)(j) := FP_add_reduce(l.N - 2).io.out
+          }
+        }
+        x
+      }
+
+      def OpMagic(l: FPmatNxN, r: FPmatNxN, opcode: String)(implicit p: Parameters): FPmatNxN = {
+        assert(false, "OpMagic does not exist for FP matrix")
+        l
+      }
+    }
 
     implicit object matNxNlikeNumber extends OperatorLike[matNxN] {
       def addition(l: matNxN, r: matNxN)(implicit p: Parameters): matNxN = {
@@ -66,7 +142,6 @@ object operation {
 
       def multiplication(l: matNxN, r: matNxN)(implicit p: Parameters): matNxN = {
         val x = Wire(new matNxN(l.N))
-        printf(p"Left: ${l.data}")
         val products = for (i <- 0 until l.N) yield {
           for (j <- 0 until l.N) yield {
             for (k <- 0 until l.N) yield
@@ -79,6 +154,11 @@ object operation {
           }
         }
         x
+      }
+
+      def OpMagic(l: matNxN, r: matNxN, opcode: String)(implicit p: Parameters): matNxN = {
+        assert(false, "OpMagic does not exist for matrix")
+        l
       }
     }
 
@@ -109,6 +189,17 @@ object operation {
         }
         x
       }
+
+      def OpMagic(l: vecN, r: vecN, opcode: String)(implicit p: Parameters): vecN = {
+        val x = Wire(new vecN(l.N))
+        val Op_FUs = Seq.fill(l.N)(Module(new UALU(p(XLEN), opcode)))
+        for (i <- 0 until l.N) {
+          Op_FUs(i).io.in1 := l.data(i)
+          Op_FUs(i).io.in2 := r.data(i)
+          x.data(i) := Op_FUs(i).io.out
+        }
+        x
+      }
     }
 
   }
@@ -118,6 +209,12 @@ object operation {
   def subtraction[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.subtraction(l, r)
 
   def multiplication[T](l: T, r: T)(implicit op: OperatorLike[T], p: Parameters): T = op.multiplication(l, r)
+
+  def OpMagic[T](l: T, r: T, opcode: String
+                )(
+                  implicit op: OperatorLike[T]
+                  , p: Parameters
+                ): T = op.OpMagic(l, r, opcode)
 
 }
 

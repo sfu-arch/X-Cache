@@ -8,6 +8,7 @@ import config._
 import interfaces._
 import arbiters._
 import memory._
+import FPU.FType._
 
 class TypeMemDataFlow(implicit val p: Parameters) extends Module with CoreParams {
 
@@ -37,7 +38,7 @@ class TypeMemDataFlow(implicit val p: Parameters) extends Module with CoreParams
   Store.io.GepAddr.bits.predicate := true.B
   Store.io.GepAddr.valid := true.B
 
-  Store.io.inData.bits.data := 0x1111222211112222L.U
+  Store.io.inData.bits.data := 0x4400440044004400L.U
   Store.io.inData.bits.predicate := true.B
   Store.io.inData.valid := true.B
 
@@ -70,7 +71,7 @@ class TypeMemDataFlow(implicit val p: Parameters) extends Module with CoreParams
   Store1.io.GepAddr.bits.predicate := true.B
   Store1.io.GepAddr.valid := true.B
 
-  Store1.io.inData.bits.data := 0x3333444433334444L.U
+  Store1.io.inData.bits.data := 0x4c0044004c004400L.U
   Store1.io.inData.bits.predicate := true.B
   Store1.io.inData.valid := true.B
 
@@ -88,7 +89,7 @@ class TypeMemDataFlow(implicit val p: Parameters) extends Module with CoreParams
 
   Load1.io.PredOp(0) <> Store1.io.SuccOp(0)
 
-  val typadd = Module(new TypCompute(NumOuts = 1, ID = 0, "Add")(true)(new vecN(2)))
+  val typadd = Module(new TypCompute(NumOuts = 1, ID = 0, "Mul")(true)(new FPmatNxN(N = 2, t = H)))
   typadd.io.enable.bits.control := true.B
   typadd.io.enable.valid := true.B
   typadd.io.Out(0).ready := true.B
