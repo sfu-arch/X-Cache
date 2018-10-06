@@ -141,7 +141,7 @@ class CovarianceTest01[T <: covarianceMainIO](c: T) extends PeekPokeTester(c) {
     //println(s"Cycle: $time")
     if (peek(c.io.out.valid) == 1 ){
       step(100)
-      println(Console.BLUE + s"[LOG] *** Covariance ran to completion" + Console.RESET)
+      println(Console.BLUE + s"[LOG] *** Covariance ran to completion at cycle: $time" + Console.RESET)
       result = true
     }
   }
