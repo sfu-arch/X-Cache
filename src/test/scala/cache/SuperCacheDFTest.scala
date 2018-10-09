@@ -120,10 +120,10 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
 
   }
 
-  val inAddrVec  = List(0x0, 0xB000)
-  val inDataVec  = List(10, 20)
-  val outAddrVec = List(0x0, 0xB000)
-  val outDataVec = List(10, 20)
+  val inAddrVec  = List(0x0, 0xB000, 0xA000, 0xD000)
+  val inDataVec  = List(10, 20, 30, 40)
+  val outAddrVec = List(0x0, 0xB000, 0xA000, 0xD000)
+  val outDataVec = List(10, 20, 30, 40)
 
 
   var i = 0
