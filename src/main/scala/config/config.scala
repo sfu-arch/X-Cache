@@ -60,7 +60,7 @@ class MiniConfig extends Config((site, here, up) => {
   // # Max bits of cache request tag.
   case MSHRLEN => 8
   case TYPSZ => 64
-  case VERBOSITY => "low"
+  case VERBOSITY => "high"
   case COMPONENTS => "LOAD;TYPOP;TYPSTORE"
   // Max size of type memory system may see
   case TRACE => true

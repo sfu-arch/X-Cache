@@ -135,6 +135,11 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   fetch_queue.io.enq.valid := fetch_arbiter.io.out.valid
   fetch_arbiter.io.out.ready := fetch_queue.io.enq.ready
   fetch_queue.io.recycle := false.B
+
+  when(fetch_arbiter.io.out.bits.addr === 1608.U && fetch_arbiter.io.out.fire){
+    printf(p"\n================= [DEBUG] [SUPER CACHE] =========== \n Cpu request: ${fetch_arbiter.io.out.bits}\n")
+  }
+
   //  If NumBanks are 0 then use the default bank indexing
   var bank_idx = if (NumBanks == 1) {
     0.U
@@ -170,7 +175,11 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
 
   //  Queueing Logic.
   when(fetch_queue.io.deq.fire) {
+
+
+
     when(cache_ready(bank_idx)) {
+
       //  Fetch queue fires only if slot is free.
       //  Slot is free and cache is ready
 
@@ -179,7 +188,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
       // Setting cache metadata before sending request request.
       cache_req_io(bank_idx).valid := true.B
       cache_serving(bank_idx) := slot_idx
-      printf(p"[LOG ]Bank Idx : ${bank_idx} Address: ${fetch_queue.io.deq.bits.addr}")
+//      printf(p"[LOG ]Bank Idx : ${bank_idx} Address: ${fetch_queue.io.deq.bits.addr}")
     }.otherwise {
       //    Cache is not ready
       //      Recycling logic
@@ -314,7 +323,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
     caches(i).io.nasti.b.bits := nasti_b_demux.io.outputs(i)
   }
 
-  printf(p"\n Cache state: ${io.stat}")
+//  printf(p"\n Cache state: ${io.stat}")
 }
 
 import java.io.{File, FileWriter}

@@ -1,5 +1,7 @@
 package verilogmain
 
+//            liveIn_R(i).predicate := io.latchEnable.bits.control
+//liveIn_R(i).predicate := io.latchEnable.bits.control
 import java.io.{File, FileWriter}
 
 import node._

@@ -21,6 +21,7 @@ class TypeMemDataFlow(implicit val p: Parameters) extends Module with CoreParams
   val StackFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 2, NWrites = 2)
   (WControl = new WriteTypMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
   (RControl = new ReadTypMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2)))
+
   val Store     = Module(new TypStore(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 0, RouteID = 0))
   val Load      = Module(new TypLoad(NumPredOps = 1, NumSuccOps = 0, NumOuts = 2, ID = 0, RouteID = 0))
   val Store1    = Module(new TypStore(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 1, RouteID = 1))

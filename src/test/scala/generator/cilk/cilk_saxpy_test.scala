@@ -35,8 +35,9 @@ class cilk_saxpyMainIO(implicit val p: Parameters) extends Module with CoreParam
 
 class cilk_saxpyMainTM(children: Int)(implicit p: Parameters) extends cilk_saxpyMainIO {
 
-  val cache = Module(new Cache) // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave(latency = 40)) // Model of DRAM to connect to Cache
+  //  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new NCache(children + 1, 2)) // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave(latency = 5)) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -44,7 +45,7 @@ class cilk_saxpyMainTM(children: Int)(implicit p: Parameters) extends cilk_saxpy
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+  //  cache.io.cpu.abort := false.B
 
   // Wire up the cache, TM, and modules under test.
 
@@ -58,16 +59,16 @@ class cilk_saxpyMainTM(children: Int)(implicit p: Parameters) extends cilk_saxpy
 
   // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
   // requests ports of any type.  Read or write is irrelevant.
-  val CacheArbiter = Module(new MemArbiter(children + 1))
+  //  val CacheArbiter = Module(new MemArbiter(children + 1))
   for (i <- 0 until children) {
-    CacheArbiter.io.cpu.MemReq(i) <> saxpy_detach(i).io.MemReq
-    saxpy_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
+    cache.io.cpu.MemReq(i) <> saxpy_detach(i).io.MemReq
+    saxpy_detach(i).io.MemResp <> cache.io.cpu.MemResp(i)
   }
-  CacheArbiter.io.cpu.MemReq(children) <> io.req
-  io.resp <> CacheArbiter.io.cpu.MemResp(children)
+  cache.io.cpu.MemReq(children) <> io.req
+  io.resp <> cache.io.cpu.MemResp(children)
 
-  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+  //  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  //  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
 
   // tester to saxpy
@@ -92,6 +93,57 @@ class cilk_saxpyMainTM(children: Int)(implicit p: Parameters) extends cilk_saxpy
 
 class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends PeekPokeTester(c) {
 
+  //  def MemRead(addr: Int): BigInt = {
+  //    while (peek(c.io.req.ready) == 0) {
+  //      step(1)
+  //    }
+  //    poke(c.io.req.valid, 1)
+  //    poke(c.io.req.bits.addr, addr)
+  //    poke(c.io.req.bits.iswrite, 0)
+  //    poke(c.io.req.bits.tag, 0)
+  //    poke(c.io.req.bits.mask, 0)
+  //    poke(c.io.req.bits.mask, -1)
+  //    step(1)
+  //    while (peek(c.io.resp.valid) == 0) {
+  //      step(1)
+  //    }
+  //    val result = peek(c.io.resp.bits.data)
+  //    result
+  //  }
+  //
+  //  def MemWrite(addr: Int, data: Int): BigInt = {
+  //    while (peek(c.io.req.ready) == 0) {
+  //      step(1)
+  //    }
+  //    poke(c.io.req.valid, 1)
+  //    poke(c.io.req.bits.addr, addr)
+  //    poke(c.io.req.bits.data, data)
+  //    poke(c.io.req.bits.iswrite, 1)
+  //    poke(c.io.req.bits.tag, 0)
+  //    poke(c.io.req.bits.mask, 0)
+  //    poke(c.io.req.bits.mask, -1)
+  //    step(1)
+  //    poke(c.io.req.valid, 0)
+  //    1
+  //  }
+  //
+  //  def dumpMemory(path: String) = {
+  //    //Writing mem states back to the file
+  //    val pw = new PrintWriter(new File(path))
+  //    for (i <- 0 until outDataVec.length) {
+  //      val data = MemRead(outAddrVec(i))
+  //      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+  //    }
+  //    pw.close
+  //
+  //  }
+  /**
+    * cacheDF interface:
+    *
+    * in = Flipped(Decoupled(new Call(List(...))))
+    * out = Decoupled(new Call(List(32)))
+    */
+
   def MemRead(addr: Int): BigInt = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
@@ -99,10 +151,10 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends Pee
     poke(c.io.req.valid, 1)
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.tag, 10)
+    poke(c.io.req.bits.mask, 15)
     step(1)
+    poke(c.io.req.valid, 0)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
     }
@@ -114,15 +166,14 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends Pee
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
-    poke(c.io.req.valid, 1)
+    poke(c.io.req.valid, true.B)
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.data, data)
     poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.tag, 20)
+    poke(c.io.req.bits.mask, 15)
     step(1)
-    poke(c.io.req.valid, 0)
+    poke(c.io.req.valid, false.B)
     1
   }
 
@@ -130,8 +181,21 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends Pee
     //Writing mem states back to the file
     val pw = new PrintWriter(new File(path))
     for (i <- 0 until outDataVec.length) {
+      //      for (i <- 0 until outDataVec.length) {
       val data = MemRead(outAddrVec(i))
       pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+    }
+    pw.close
+
+  }
+
+  def dumpMemory_init(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until inAddrVec.length) {
+      //      for (i <- 0 until outDataVec.length) {
+      val data = MemRead(inAddrVec(i))
+      pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
     }
     pw.close
 
@@ -153,7 +217,8 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends Pee
   for (i <- 0 until inDataVec.length) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
-  step(1)
+  step(4000)
+  dumpMemory_init("init.mem")
   /*
     // Flush cache
     for(i <- 0 until inDataVec.length) {
@@ -226,7 +291,7 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends Pee
   }
 
   // Wait a bit to make sure all data is written back
-  step(1000)
+  step(2000)
 
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
@@ -266,7 +331,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
   //  val tile_list = List(1,2,4,8)
-  val tile_list = List(1)
+  val tile_list = List(4)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
