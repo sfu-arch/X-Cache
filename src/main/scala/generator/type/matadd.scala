@@ -21,72 +21,12 @@ import regfile._
 import stack._
 import util._
 
-/**
-  * Mattrix addition dataflow
-  * @param p
-  * @param in1: *A
-  * @param in2: *B
-  */
-class tileAddIO(implicit p: Parameters) extends CoreBundle {
-  val in = Flipped(Decoupled(new Call(List(32, 32))))
-
-  // Memory request
-  val memReq  = Vec(2, Decoupled(new ReadReq( )))
-  // Memory response.
-  val memResp = Vec(2, Input(Flipped(new ReadResp( ))))
-
-  val out = Decoupled(new Call(List(128)))
-}
-
-class tileAddDF(implicit val p: Parameters) extends Module with CoreParams{
-  val io = IO(new tileAddIO())
-
-  val InputSplitter = Module(new SplitCallNew(List(1, 1)))
-  InputSplitter.io.In <> io.in
-
-  val entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 0))
-
-  val LoadA = Module(new TypLoad(NumPredOps = 1, NumSuccOps = 0, NumOuts = 1, ID = 0, RouteID = 0))
-  val LoadB = Module(new TypLoad(NumPredOps = 1, NumSuccOps = 0, NumOuts = 1, ID = 0, RouteID = 1))
-  val typadd = Module(new TypCompute(NumOuts = 1, ID = 0, "Add")(true)(new matNxN(N = 2)))
-  val ret = Module(new RetNode2(retTypes = List(64), ID = 22))
-
-  entry.io.predicateIn <> InputSplitter.io.Out.enable
-
-  LoadA.io.GepAddr <> InputSplitter.io.Out.data("field0")(0)
-  LoadB.io.GepAddr <> InputSplitter.io.Out.data("field1")(0)
-
-  LoadA.io.enable <> entry.io.Out(0)
-  LoadB.io.enable <> entry.io.Out(1)
-  typadd.io.enable <> entry.io.Out(2)
-  ret.io.In.enable <> entry.io.Out(3)
-
-  io.memReq(0) <> LoadA.io.memReq
-  LoadA.io.memResp <> io.memResp(0)
-
-  io.memReq(1) <> LoadB.io.memReq
-  LoadB.io.memResp <> io.memResp(1)
-
-  typadd.io.LeftIO <> LoadA.io.Out(0)
-  typadd.io.RightIO <> LoadB.io.Out(0)
-
-  ret.io.In.data("field0") <> typadd.io.Out(0)
-
-  io.out <> ret.io.Out
-
-
-}
-
 /* ================================================================== *
  *                   PRINTING PORTS DEFINITION                        *
  * ================================================================== */
 
 class mataddDFIO(implicit p: Parameters) extends CoreBundle {
   val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-  //  val call_12_out = Decoupled(new Call(List(32, 32)))
-  //  val call_12_in = Flipped(Decoupled(new Call(List(128))))
-  //  val call_15_out = Decoupled(new Call(List(128, 32))
-  //  val call_15_in = Flipped(Decoupled(new Call(List())))
   val MemResp = Flipped(Valid(new MemResp))
   val MemReq = Decoupled(new MemReq)
   val out = Decoupled(new Call(List()))
@@ -119,7 +59,7 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
     * Build kernel modules
     */
 
-//    val matadd = Module(new mataddDF()(p))
+  //    val matadd = Module(new mataddDF()(p))
 
   val mat_bb = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 0))
 
@@ -133,7 +73,7 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
   LoadA.io.enable <> mat_bb.io.Out(0)
   LoadB.io.enable <> mat_bb.io.Out(1)
   StoreType.io.enable <> mat_bb.io.Out(2)
-  typadd.io.enable<> mat_bb.io.Out(3)
+  typadd.io.enable <> mat_bb.io.Out(3)
 
   StackFile.io.ReadIn(0) <> LoadA.io.memReq
   LoadA.io.memResp <> StackFile.io.ReadOut(0)
@@ -146,7 +86,6 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
 
   typadd.io.LeftIO <> LoadA.io.Out(0)
   typadd.io.RightIO <> LoadB.io.Out(0)
-
 
 
   /* ================================================================== *
@@ -222,9 +161,8 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
   val Gep_11 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 11)(ElementSize = 16, ArraySize = List()))
 
   //  %14 = call %struct.block* @_Z7addTileP5blockS0_(%struct.block* %11, %struct.block* %13)
-//  val call_12_out = Module(new CallOutNode(ID = 12, NumSuccOps = 0, argTypes = List(32, 32)))
-
-//  val call_12_in = Module(new CallInNode(ID = 12, argTypes = List()))
+  //  val call_12_out = Module(new CallOutNode(ID = 12, NumSuccOps = 0, argTypes = List(32, 32)))
+  //  val call_12_in = Module(new CallInNode(ID = 12, argTypes = List()))
 
   //  %15 = getelementptr inbounds [8 x %struct.block], [8 x %struct.block]* %2, i32 %.01
   val Gep_13 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 13)(ElementSize = 16, ArraySize = List()))
@@ -233,11 +171,8 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
   val Gep_14 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 14)(ElementSize = 16, ArraySize = List()))
 
   //  call void @_Z9storeTileP5blockS0_(%struct.block* %14, %struct.block* %16)
-//  val call_15_out = Module(new CallOutNode(ID = 15, NumSuccOps = 0, argTypes = List(32, 32)))
-
-//  val call_15_in = Module(new CallInNode(ID = 15, argTypes = List()))
-
-
+  //  val call_15_out = Module(new CallOutNode(ID = 15, NumSuccOps = 0, argTypes = List(32, 32)))
+  //  val call_15_in = Module(new CallInNode(ID = 15, argTypes = List()))
 
   //  br label %17
   val br_16 = Module(new UBranchNode(ID = 16))
