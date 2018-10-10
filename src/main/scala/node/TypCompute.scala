@@ -221,12 +221,12 @@ object operation {
 import operation._
 
 class OperatorModule[T <: Numbers : OperatorLike](gen: => T, val opCode: String)(implicit val p: Parameters) extends Module {
-  val io = IO(new Bundle {
+  val io       = IO(new Bundle {
     val a = Flipped(Valid(gen))
     val b = Flipped(Valid(gen))
     val o = Output(Valid(gen))
   })
-
+  val MatOrVec = (gen.className).toString
   io.o.valid := io.a.valid && io.b.valid
   if (opCode.toLowerCase( ) == "add") {
     io.o.bits := addition(io.a.bits, io.b.bits)
@@ -234,8 +234,10 @@ class OperatorModule[T <: Numbers : OperatorLike](gen: => T, val opCode: String)
     io.o.bits := subtraction(io.a.bits, io.b.bits)
   } else if (opCode.toLowerCase( ) == "mul") {
     io.o.bits := multiplication(io.a.bits, io.b.bits)
+  } else if (MatOrVec.contains("Vec")) {
+    io.o.bits := OpMagic(io.a.bits, io.b.bits, opCode)
   } else {
-    assert(false, "Unknown TypCompute OpCode!")
+    assert(false, "Unknown TypCompute OpCode. Check Operator and/or Type!")
   }
 }
 
@@ -361,3 +363,5 @@ class TypCompute[T <: Numbers : OperatorLike](NumOuts: Int, ID: Int, opCode: Str
     }
   }
 }
+
+
