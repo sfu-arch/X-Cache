@@ -22,7 +22,7 @@ class ZextNodeIO(val src: Int, val des: Int, val nout: Int)
 
 }
 
-class ZextNode(val SrcW: Int, val DesW: Int, val NumOuts: Int)(implicit val p: Parameters)
+class ZextNode(val SrcW: Int = 0, val DesW: Int = 0, val NumOuts: Int=1)(implicit val p: Parameters)
   extends Module with CoreParams{
 
   lazy val io = IO(new ZextNodeIO(SrcW, DesW, NumOuts))

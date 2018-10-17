@@ -192,10 +192,10 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
   val br_27 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, ID = 27))
 
   //  %30 = phi i32 [ %22, %21 ], [ %10, %4 ]
-  val phi28 = Module(new PhiNode(NumInputs = 2, NumOutputs = 1, ID = 28))
+  val phi28 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 28))
 
   //  %31 = phi i1 [ %27, %21 ], [ %17, %4 ]
-  val phi29 = Module(new PhiNode(NumInputs = 2, NumOutputs = 1, ID = 29))
+  val phi29 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 29))
 
   //  %32 = zext i1 %31 to i32
   val sext30 = Module(new ZextNode())
@@ -264,10 +264,10 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
   val br_51 = Module(new UBranchNode(ID = 51))
 
   //  %53 = phi i32 [ %44, %43 ], [ %33, %29 ]
-  val phi52 = Module(new PhiNode(NumInputs = 2, NumOutputs = 1, ID = 52))
+  val phi52 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 52))
 
   //  %54 = phi i1 [ %49, %43 ], [ %40, %29 ]
-  val phi53 = Module(new PhiNode(NumInputs = 2, NumOutputs = 1, ID = 53))
+  val phi53 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 53))
 
   //  %55 = zext i1 %54 to i32
   val sext54 = Module(new ZextNode())
@@ -282,10 +282,10 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
   val br_57 = Module(new UBranchNode(ID = 57))
 
   //  %58 = phi i64 [ 0, %52 ], [ %95, %93 ]
-  val phi58 = Module(new PhiNode(NumInputs = 2, NumOutputs = 2, ID = 58))
+  val phi58 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 58))
 
   //  %59 = phi i32 [ 0, %52 ], [ %94, %93 ]
-  val phi59 = Module(new PhiNode(NumInputs = 2, NumOutputs = 3, ID = 59))
+  val phi59 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 59))
 
   //  %60 = icmp slt i32 %59, 1
   val icmp_60 = Module(new IcmpNode(NumOuts = 1, ID = 60, opCode = "ult")(sign=false))
@@ -318,7 +318,7 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
   val br_69 = Module(new UBranchNode(ID = 69))
 
   //  %70 = phi i64 [ %74, %69 ], [ %61, %68 ]
-  val phi70 = Module(new PhiNode(NumInputs = 2, NumOutputs = 1, ID = 70))
+  val phi70 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 70))
 
   //  %71 = getelementptr inbounds i32, i32* %2, i64 %70
   val Gep_71 = Module(new GepNode(NumIns = 1, NumOuts=1, ID=71)(ElementSize = 4, ArraySize = List()))
@@ -351,10 +351,10 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
   val br_80 = Module(new UBranchNode(ID = 80))
 
   //  %81 = phi i32 [ %59, %57 ], [ %72, %79 ]
-  val phi81 = Module(new PhiNode(NumInputs = 2, NumOutputs = 1, ID = 81))
+  val phi81 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 81))
 
   //  %82 = phi i1 [ %66, %57 ], [ %77, %79 ]
-  val phi82 = Module(new PhiNode(NumInputs = 2, NumOutputs = 1, ID = 82))
+  val phi82 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 82))
 
   //  %83 = zext i1 %82 to i32
   val sext83 = Module(new ZextNode())
@@ -393,7 +393,7 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
   val br_94 = Module(new UBranchNode(NumPredOps=1, ID = 94))
 
   //  %94 = phi i32 [ %92, %86 ], [ %84, %80 ]
-  val phi95 = Module(new PhiNode(NumInputs = 2, NumOutputs = 1, ID = 95))
+  val phi95 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 95))
 
   //  %95 = add nuw nsw i64 %58, 1
   val binaryOp_96 = Module(new ComputeNode(NumOuts = 2, ID = 96, opCode = "add")(sign=false))
