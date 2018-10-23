@@ -59,11 +59,11 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(1,1,1,1), NumOuts = 2, NumExits=1, ID = 0))
+  val Loop_0 = Module(new LoopBlockO1(NumIns=List(1,1,1,1), NumOuts = 2, NumExits=1, ID = 0))
 
-  val Loop_1 = Module(new LoopBlock(NumIns=List(2,1,2,2), NumOuts = 0, NumExits=1, ID = 1))
+  val Loop_1 = Module(new LoopBlockO1(NumIns=List(2,1,2,2), NumOuts = 0, NumExits=1, ID = 1))
 
-  val Loop_2 = Module(new LoopBlock(NumIns=List(), NumOuts = 0, NumExits=0, ID = 2))
+//  val Loop_2 = Module(new LoopBlockO1(NumIns=List(), NumOuts = 0, NumExits=0, ID = 2))
 
 
 
@@ -73,7 +73,7 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
 
   val bb_0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 26, BID = 0))
 
-  val bb_1 = Module(new LoopHead(NumOuts = 1, NumPhi=0, BID = 1))
+  val bb_1 = Module(new LoopFastHead(NumOuts = 1, NumPhi=0, BID = 1))
 
   val bb_2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 9, BID = 2))
 
@@ -489,7 +489,9 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
 
   bb_1.io.activate <> br_19.io.Out(0)
 
-  bb_1.io.loopBack <> Loop_2.io.activate
+//  bb_1.io.loopBack <> Loop_2.io.activate
+  bb_1.io.loopBack.bits := ControlBundle.default
+  bb_1.io.loopBack.valid := true.B
 
   bb_2.io.predicateIn <> br_18.io.FalseOutput(0)
 
@@ -555,9 +557,11 @@ class kmpDF(implicit p: Parameters) extends kmpDFIO()(p) {
 
   Loop_1.io.loopExit(0) <> br_98.io.TrueOutput(0)
 
-  Loop_2.io.enable <> br_51.io.Out(0)
+//  Loop_2.io.enable <> br_51.io.Out(0)
+  br_51.io.Out(0).ready := true.B
 
-  Loop_2.io.latchEnable <> br_19.io.Out(1)
+//  Loop_2.io.latchEnable <> br_19.io.Out(1)
+  br_19.io.Out(1).ready := true.B
 
 
 
