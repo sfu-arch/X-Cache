@@ -188,7 +188,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
       // Setting cache metadata before sending request request.
       cache_req_io(bank_idx).valid := true.B
       cache_serving(bank_idx) := slot_idx
-//      printf(p"[LOG ]Bank Idx : ${bank_idx} Address: ${fetch_queue.io.deq.bits.addr}")
+      //      printf(p"[LOG ]Bank Idx : ${bank_idx} Address: ${fetch_queue.io.deq.bits.addr}")
     }.otherwise {
       //    Cache is not ready
       //      Recycling logic
