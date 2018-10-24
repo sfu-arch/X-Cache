@@ -45,7 +45,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 5, NWrites = 8)
   (WControl = new WriteMemoryController(NumOps = 8, BaseSize = 2, NumEntries = 2))
   (RControl = new ReadMemoryController(NumOps = 5, BaseSize = 2, NumEntries = 2))
-		 (RWArbiter=new ReadWriteArbiter()))
+  (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
@@ -69,11 +69,11 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   val Loop_3 = Module(new LoopBlockO1(NumIns = List(1, 1, 1), NumOuts = 0, NumExits = 1, ID = 3))
 
-  val Loop_4 = Module(new LoopBlockO1(NumIns=List(1,1), NumOuts = 0, NumExits=1, ID = 4))
+  val Loop_4 = Module(new LoopBlockO1(NumIns = List(1, 1), NumOuts = 0, NumExits = 1, ID = 4))
 
   val Loop_5 = Module(new LoopBlockO1(NumIns = List(1, 1, 1), NumOuts = 1, NumExits = 1, ID = 5))
 
-  val Loop_6 = Module(new LoopBlockO1(NumIns=List(1,1,1), NumOuts = 0, NumExits=1, ID = 6))
+  val Loop_6 = Module(new LoopBlockO1(NumIns = List(1, 1, 1), NumOuts = 0, NumExits = 1, ID = 6))
 
 
 
@@ -83,23 +83,23 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 0))
 
-  val bb_for_body1 = Module(new LoopFastHead(NumOuts = 8, NumPhi=1, BID = 1))
+  val bb_for_body1 = Module(new LoopFastHead(NumOuts = 7, NumPhi = 1, BID = 1))
 
-  val bb_for_body32 = Module(new LoopFastHead(NumOuts = 15, NumPhi = 2, BID = 2))
+  val bb_for_body32 = Module(new LoopFastHead(NumOuts = 13, NumPhi = 2, BID = 2))
 
   val bb_for_end3 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 8, NumPhi = 1, BID = 3))
 
   val bb_for_cond14_preheader_preheader4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 4))
 
-  val bb_for_cond14_preheader5 = Module(new LoopFastHead(NumOuts = 4, NumPhi = 1, BID = 5))
+  val bb_for_cond14_preheader5 = Module(new LoopFastHead(NumOuts = 3, NumPhi = 1, BID = 5))
 
-  val bb_for_cond26_preheader6 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 6))
+  val bb_for_cond26_preheader6 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 6))
 
-  val bb_for_body167 = Module(new LoopFastHead(NumOuts = 15, NumPhi = 1, BID = 7))
+  val bb_for_body167 = Module(new LoopFastHead(NumOuts = 14, NumPhi = 1, BID = 7))
 
   val bb_for_inc238 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 8))
 
-  val bb_for_body31_preheader9 = Module(new LoopFastHead(NumOuts = 3, NumPhi = 1, BID = 9))
+  val bb_for_body31_preheader9 = Module(new LoopFastHead(NumOuts = 2, NumPhi = 1, BID = 9))
 
   val bb_for_body3110 = Module(new LoopFastHead(NumOuts = 9, NumPhi = 1, BID = 10))
 
@@ -107,9 +107,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   val bb_for_end4612 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 12, NumPhi = 1, BID = 12))
 
-  val bb_for_inc5813 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 13))
+  val bb_for_inc5813 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 13))
 
-  val bb_for_end6014 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 14))
+  val bb_for_end6014 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 14))
 
 
 
@@ -118,19 +118,19 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
    * ================================================================== */
 
   //  br label %for.body
-  val br_0 = Module(new UBranchFastNode(ID = 0))
+  val br_0 = Module(new UBranchNode(ID = 0))
 
   //  %j.010 = phi i32 [ 0, %entry ], [ %inc9, %for.end ]
   val phi_j_0101 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 1))
 
   //  %arrayidx = getelementptr inbounds double, double* %mean, i32 %j.010
-  val Gep_arrayidx2 = Module(new GepNode(NumIns = 1, NumOuts=3, ID=2)(ElementSize = 8, ArraySize = List()))
+  val Gep_arrayidx2 = Module(new GepNode(NumIns = 1, NumOuts = 3, ID = 2)(ElementSize = 8, ArraySize = List()))
 
   //  store double 0.000000e+00, double* %arrayidx, align 4, !tbaa !2
   val st_3 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 3, RouteID = 0))
 
   //  br label %for.body3
-  val br_4 = Module(new UBranchFastNode(ID = 4))
+  val br_4 = Module(new UBranchNode(ID = 4))
 
   //  %0 = phi double [ 0.000000e+00, %for.body ], [ %add, %for.body3 ]
   val phi_5 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 5))
@@ -139,10 +139,10 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val phi_i_096 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 6))
 
   //  %tmp = getelementptr [1200 x double], [1200 x double]* %data, i32 %i.09
-  val Gep_tmp7 = Module(new GepNode(NumIns = 1, NumOuts=1, ID=7)(ElementSize = 8, ArraySize = List()))
+  val Gep_tmp7 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 7)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp1 = getelementptr [1200 x double], [1200 x double]* %tmp, i64 0, i32 %j.010
-  val Gep_tmp18 = Module(new GepNode(NumIns = 2, NumOuts=1, ID=8)(ElementSize = 8, ArraySize = List()))
+  val Gep_tmp18 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 8)(ElementSize = 8, ArraySize = List()))
 
   //  %1 = load double, double* %tmp1, align 4, !tbaa !2
   val ld_9 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=9, RouteID=0))
@@ -182,19 +182,19 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_20 = Module(new CBranchFastNodeVariable2(NumTrue = 1, NumFalse = 2, ID = 20))
 
   //  br label %for.cond14.preheader
-  val br_21 = Module(new UBranchFastNode(ID = 21))
+  val br_21 = Module(new UBranchNode(ID = 21))
 
   //  %i.18 = phi i32 [ %inc24, %for.inc23 ], [ 0, %for.cond14.preheader.preheader ]
   val phi_i_1822 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 22))
 
   //  br label %for.body16
-  val br_23 = Module(new UBranchFastNode(ID = 23))
+  val br_23 = Module(new UBranchNode(ID = 23))
 
   //  %sub47 = fadd double %float_n, -1.000000e+00
   val FP_sub4724 = Module(new FPComputeNode(NumOuts = 1, ID = 24, opCode = "Add")(t = p(FTYP)))
 
   //  br label %for.body31.preheader
-  val br_25 = Module(new UBranchFastNode(ID = 25))
+  val br_25 = Module(new UBranchNode(ID = 25))
 
   //  %j.17 = phi i32 [ 0, %for.cond14.preheader ], [ %inc21, %for.body16 ]
   val phi_j_1726 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 26))
@@ -242,7 +242,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val phi_i_2540 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 40))
 
   //  br label %for.body31
-  val br_41 = Module(new UBranchFastNode(ID = 41))
+  val br_41 = Module(new UBranchNode(ID = 41))
 
   //  %j.24 = phi i32 [ %inc56, %for.end46 ], [ %i.25, %for.body31.preheader ]
   val phi_j_2442 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 4, ID = 42))
@@ -257,7 +257,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val st_45 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 45, RouteID = 4))
 
   //  br label %for.body36
-  val br_46 = Module(new UBranchFastNode(ID = 46))
+  val br_46 = Module(new UBranchNode(ID = 46))
 
   //  %4 = phi double [ 0.000000e+00, %for.body31 ], [ %add43, %for.body36 ]
   val phi_47 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 47))
@@ -492,9 +492,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   bb_for_end4612.io.predicateIn(0) <> Loop_0.io.endEnable
 
-  bb_for_inc5813.io.predicateIn <> Loop_1.io.endEnable
+  bb_for_inc5813.io.predicateIn(0) <> Loop_1.io.endEnable
 
-  bb_for_end6014.io.predicateIn <> Loop_2.io.endEnable
+  bb_for_end6014.io.predicateIn(0) <> Loop_2.io.endEnable
 
 
 
@@ -675,53 +675,45 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   const0.io.enable <> bb_entry0.io.Out(1)
 
 
-  constf0.io.enable <> bb_for_body1.io.Out(1)
+  constf0.io.enable <> bb_for_body1.io.Out(0)
 
-  //  const0.io.enable <> bb_for_body1.io.Out(0)
-  bb_for_body1.io.Out(0).ready := true.B
+  phi_j_0101.io.enable <> bb_for_body1.io.Out(1)
 
-  phi_j_0101.io.enable <> bb_for_body1.io.Out(2)
+  Gep_arrayidx2.io.enable <> bb_for_body1.io.Out(2)
 
-  Gep_arrayidx2.io.enable <> bb_for_body1.io.Out(3)
+  st_3.io.enable <> bb_for_body1.io.Out(3)
 
-  st_3.io.enable <> bb_for_body1.io.Out(4)
+  br_4.io.enable <> bb_for_body1.io.Out(4)
 
-  br_4.io.enable <> bb_for_body1.io.Out(5)
+  constf1.io.enable <> bb_for_body1.io.Out(5)
 
-
-  //  constf1.io.enable <> bb_for_body32.io.Out(0)
-  constf1.io.enable <> bb_for_body1.io.Out(7)
-  bb_for_body32.io.Out(0).ready := true.B
-
-  //  const1.io.enable <> bb_for_body32.io.Out(1)
   const1.io.enable <> bb_for_body1.io.Out(6)
-  bb_for_body32.io.Out(1).ready := true.B
 
-  const2.io.enable <> bb_for_body32.io.Out(2)
+  const2.io.enable <> bb_for_body32.io.Out(0)
 
-  const3.io.enable <> bb_for_body32.io.Out(3)
+  const3.io.enable <> bb_for_body32.io.Out(1)
 
-  const4.io.enable <> bb_for_body32.io.Out(4)
+  const4.io.enable <> bb_for_body32.io.Out(2)
 
-  phi_5.io.enable <> bb_for_body32.io.Out(5)
+  phi_5.io.enable <> bb_for_body32.io.Out(3)
 
-  phi_i_096.io.enable <> bb_for_body32.io.Out(6)
+  phi_i_096.io.enable <> bb_for_body32.io.Out(4)
 
-  Gep_tmp7.io.enable <> bb_for_body32.io.Out(7)
+  Gep_tmp7.io.enable <> bb_for_body32.io.Out(5)
 
-  Gep_tmp18.io.enable <> bb_for_body32.io.Out(8)
+  Gep_tmp18.io.enable <> bb_for_body32.io.Out(6)
 
-  ld_9.io.enable <> bb_for_body32.io.Out(9)
+  ld_9.io.enable <> bb_for_body32.io.Out(7)
 
-  FP_add10.io.enable <> bb_for_body32.io.Out(10)
+  FP_add10.io.enable <> bb_for_body32.io.Out(8)
 
-  st_11.io.enable <> bb_for_body32.io.Out(11)
+  st_11.io.enable <> bb_for_body32.io.Out(9)
 
-  binaryOp_inc12.io.enable <> bb_for_body32.io.Out(12)
+  binaryOp_inc12.io.enable <> bb_for_body32.io.Out(10)
 
-  icmp_exitcond1613.io.enable <> bb_for_body32.io.Out(13)
+  icmp_exitcond1613.io.enable <> bb_for_body32.io.Out(11)
 
-  br_14.io.enable <> bb_for_body32.io.Out(14)
+  br_14.io.enable <> bb_for_body32.io.Out(12)
 
 
   const5.io.enable <> bb_for_end3.io.Out(0)
@@ -746,53 +738,48 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   const7.io.enable <> bb_for_cond14_preheader_preheader4.io.Out(1)
 
+  phi_i_1822.io.enable <> bb_for_cond14_preheader5.io.Out(0)
 
-//  const7.io.enable <> bb_for_cond14_preheader5.io.Out(0)
-  bb_for_cond14_preheader5.io.Out(0).ready := true.B
-
-  phi_i_1822.io.enable <> bb_for_cond14_preheader5.io.Out(1)
-
-  br_23.io.enable <> bb_for_cond14_preheader5.io.Out(2)
+  br_23.io.enable <> bb_for_cond14_preheader5.io.Out(1)
 
 
   constf2.io.enable <> bb_for_cond26_preheader6.io.Out(0)
 
-  FP_sub4724.io.enable <> bb_for_cond26_preheader6.io.Out(1)
+  const14.io.enable <> bb_for_cond26_preheader6.io.Out(1)
 
-  br_25.io.enable <> bb_for_cond26_preheader6.io.Out(2)
+  FP_sub4724.io.enable <> bb_for_cond26_preheader6.io.Out(2)
 
+  br_25.io.enable <> bb_for_cond26_preheader6.io.Out(3)
 
-//  const8.io.enable <> bb_for_body167.io.Out(0)
-  bb_for_body167.io.Out(0).ready := true.B
-  const8.io.enable <> bb_for_cond14_preheader5.io.Out(3)
+  const8.io.enable <> bb_for_cond14_preheader5.io.Out(2)
 
-  const9.io.enable <> bb_for_body167.io.Out(1)
+  const9.io.enable <> bb_for_body167.io.Out(0)
 
-  const10.io.enable <> bb_for_body167.io.Out(2)
+  const10.io.enable <> bb_for_body167.io.Out(1)
 
-  const11.io.enable <> bb_for_body167.io.Out(3)
+  const11.io.enable <> bb_for_body167.io.Out(2)
 
-  phi_j_1726.io.enable <> bb_for_body167.io.Out(4)
+  phi_j_1726.io.enable <> bb_for_body167.io.Out(3)
 
-  Gep_arrayidx1727.io.enable <> bb_for_body167.io.Out(5)
+  Gep_arrayidx1727.io.enable <> bb_for_body167.io.Out(4)
 
-  ld_28.io.enable <> bb_for_body167.io.Out(6)
+  ld_28.io.enable <> bb_for_body167.io.Out(5)
 
-  Gep_tmp229.io.enable <> bb_for_body167.io.Out(7)
+  Gep_tmp229.io.enable <> bb_for_body167.io.Out(6)
 
-  Gep_tmp330.io.enable <> bb_for_body167.io.Out(8)
+  Gep_tmp330.io.enable <> bb_for_body167.io.Out(7)
 
-  ld_31.io.enable <> bb_for_body167.io.Out(9)
+  ld_31.io.enable <> bb_for_body167.io.Out(8)
 
-  binaryOp_sub32.io.enable <> bb_for_body167.io.Out(10)
+  binaryOp_sub32.io.enable <> bb_for_body167.io.Out(9)
 
-  st_33.io.enable <> bb_for_body167.io.Out(11)
+  st_33.io.enable <> bb_for_body167.io.Out(10)
 
-  binaryOp_inc2134.io.enable <> bb_for_body167.io.Out(12)
+  binaryOp_inc2134.io.enable <> bb_for_body167.io.Out(11)
 
-  icmp_exitcond1435.io.enable <> bb_for_body167.io.Out(13)
+  icmp_exitcond1435.io.enable <> bb_for_body167.io.Out(12)
 
-  br_36.io.enable <> bb_for_body167.io.Out(14)
+  br_36.io.enable <> bb_for_body167.io.Out(13)
 
 
   const12.io.enable <> bb_for_inc238.io.Out(0)
@@ -806,11 +793,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   br_39.io.enable <> bb_for_inc238.io.Out(4)
 
 
-  const14.io.enable <> bb_for_body31_preheader9.io.Out(0)
+  phi_i_2540.io.enable <> bb_for_body31_preheader9.io.Out(0)
 
-  phi_i_2540.io.enable <> bb_for_body31_preheader9.io.Out(1)
-
-  br_41.io.enable <> bb_for_body31_preheader9.io.Out(2)
+  br_41.io.enable <> bb_for_body31_preheader9.io.Out(1)
 
 
   constf3.io.enable <> bb_for_body3110.io.Out(1)

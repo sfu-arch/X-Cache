@@ -77,15 +77,17 @@ object FPAluOpCode {
 
   val opMap = Map(
     "Add" -> Add,
+    "fadd" -> Add,
     "add" -> Add,
     "Sub" -> Sub,
     "sub" -> Sub,
     "Mul" -> Mul,
     "mul" -> Mul,
+    "fmul" -> Mul,
     "Mac" -> Mac,
     "mac" -> Mac
   )
-  val length = 8
+  val length = 9
 }
 
 

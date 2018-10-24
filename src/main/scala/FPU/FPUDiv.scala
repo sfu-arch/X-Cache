@@ -126,9 +126,10 @@ class FPDivSqrtNode(NumOuts: Int,
   io.FUReq.bits.data("field1").taskID  :=  a_R.taskID | b_R.taskID | enable_R.taskID
 
 
-  require((opCode == "DIV" || opCode == "SQRT"), "DIV or SQRT required")
+  require((opCode == "DIV" || opCode == "fdiv" || opCode == "SQRT"), "DIV or SQRT required")
   val DivOrSqrt = opCode match {
-  case "DIV" => false.B
+  case "DIV"  => false.B
+  case "fdiv" => false.B
   case "SQRT" => true.B
   }
   io.FUReq.bits.data("field2").data  := DivOrSqrt
