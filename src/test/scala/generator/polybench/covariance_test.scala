@@ -135,7 +135,7 @@ class CovarianceTest01[T <: covarianceMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 1  //Cycle counter
   var result = false
-  while (time < 70000) {
+  while (time < 570000) {
     time += 1
     step(1)
     //println(s"Cycle: $time")

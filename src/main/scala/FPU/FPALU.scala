@@ -81,6 +81,7 @@ object FPAluOpCode {
     "add" -> Add,
     "Sub" -> Sub,
     "sub" -> Sub,
+    "fsub" -> Sub,
     "Mul" -> Mul,
     "mul" -> Mul,
     "fmul" -> Mul,
