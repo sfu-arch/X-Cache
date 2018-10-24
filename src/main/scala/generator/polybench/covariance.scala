@@ -163,7 +163,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_14 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 14))
 
   //  %add.lcssa = phi double [ %add, %for.body3 ]
-  //  val phi_add_lcssa15 = Module(new PhiFastNode2(NumInputs = 1, NumOutputs = 1, ID = 15))
+  val phi_add_lcssa15 = Module(new PhiFastNode2(NumInputs = 1, NumOutputs = 1, ID = 15))
 
   //  %div = fdiv double %add.lcssa, %float_n
   val FP_div16 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 16, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
@@ -650,7 +650,6 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   Gep_arrayidx2.io.baseAddress <> Loop_6.io.liveIn.data("field0")(0)
 
   FP_div16.io.b <> Loop_6.io.liveIn.data("field2")(0)
-//  FP_div16.io.RightIO <> Loop_6.io.liveIn.data("field2")(0)
 
 
 
@@ -717,8 +716,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   const6.io.enable <> bb_for_end3.io.Out(1)
 
-//  phi_add_lcssa15.io.enable <> bb_for_end3.io.Out(2)
-  bb_for_end3.io.Out(2).ready := true.B
+  phi_add_lcssa15.io.enable <> bb_for_end3.io.Out(2)
 
   FP_div16.io.enable <> bb_for_end3.io.Out(3)
 
@@ -902,8 +900,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   phii_096.io.Mask <> bb_for_body32.io.MaskBB(1)
 
-//  phi_add_lcssa15.io.Mask <> bb_for_end3.io.MaskBB(0)
-  bb_for_end3.io.MaskBB(0).ready := true.B
+  phi_add_lcssa15.io.Mask <> bb_for_end3.io.MaskBB(0)
 
   phii_1822.io.Mask <> bb_for_cond14_preheader5.io.MaskBB(0)
 
@@ -1091,8 +1088,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   br_14.io.CmpIO <> icmp_exitcond1613.io.Out(0)
 
-//  FP_div16.io.a <> phi_add_lcssa15.io.Out(0)
-  FP_div16.io.a <> Loop_5.io.Out(0)
+  FP_div16.io.a <> phi_add_lcssa15.io.Out(0)
+
+//  FP_div16.io.a <> Loop_5.io.Out(0)
 //  FP_div16.io.LeftIO <> phi_add_lcssa15.io.Out(0)
 //  phi_add_lcssa15.io.InData(0) <> Loop_5.io.Out(0)
 //  FP_div16.io.LeftIO <> Loop_5.io.Out(0)
@@ -1211,7 +1209,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   //phi_add43_lcssa61.io.InData(0) <> Loop_0.io.Out(0)
 
-//  phi_add_lcssa15.io.InData(0) <> Loop_5.io.Out(0)
+  phi_add_lcssa15.io.InData(0) <> Loop_5.io.Out(0)
 
   FP_sub4724.io.LeftIO <> InputSplitter.io.Out.data("field0")(1)
 

@@ -449,14 +449,20 @@ class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
   for (i <- 0 until NumInputs) {
     io.InData(i).ready := ~in_data_valid_R(i)
     when(io.InData(i).fire) {
-      when(io.InData(i).bits.predicate) {
-        //Make sure that we only pick predicated values!
+      if (NumInputs > 1) {
+        when(io.InData(i).bits.predicate) {
+          //Make sure that we only pick predicated values!
+          in_data_R(i) <> io.InData(i).bits
+          in_data_valid_R(i) := true.B
+        }.otherwise {
+          in_data_R(i) := DataBundle.default
+          in_data_valid_R(i) := false.B
+        }
+      }else{
         in_data_R(i) <> io.InData(i).bits
         in_data_valid_R(i) := true.B
-      }.otherwise {
-        in_data_R(i) := DataBundle.default
-        in_data_valid_R(i) := false.B
       }
+
     }
   }
 
@@ -530,11 +536,11 @@ class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
       when(fire_mask.reduce(_ & _)) {
 
         /** @note: In this case whenever all the GEP is fired we
-          *       restart all the latched values. But it may be cases
-          *       that because of pipelining we have latched an interation ahead
-          *       and if we may reset the latches values we lost the value.
-          *       I'm not sure when this case can happen!
-         */
+          *        restart all the latched values. But it may be cases
+          *        that because of pipelining we have latched an interation ahead
+          *        and if we may reset the latches values we lost the value.
+          *        I'm not sure when this case can happen!
+          */
         // in_data_R(sel) := DataBundle.default
         // in_data_valid_R(sel) := false.B
         in_data_R foreach {
