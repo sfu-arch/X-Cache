@@ -184,7 +184,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_21 = Module(new UBranchNode(ID = 21))
 
   //  %i.18 = phi i32 [ %inc24, %for.inc23 ], [ 0, %for.cond14.preheader.preheader ]
-  val phii_1822 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 22))
+  val phii_1822 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 22, Res = true))
 
   //  br label %for.body16
   val br_23 = Module(new UBranchNode(ID = 23))
@@ -244,7 +244,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_41 = Module(new UBranchNode(ID = 41))
 
   //  %j.24 = phi i32 [ %inc56, %for.end46 ], [ %i.25, %for.body31.preheader ]
-  val phij_2442 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 4, ID = 42))
+  val phij_2442 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 4, ID = 42, Res = true))
 
   //  %tmp4 = getelementptr [1200 x double], [1200 x double]* %cov, i32 %i.25
   val Gep_tmp443 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 43)(ElementSize = 8, ArraySize = List()))
@@ -358,13 +358,13 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val const3 = Module(new ConstFastNode(value = 1, ID = 3))
 
   //i32 1400
-  val const4 = Module(new ConstFastNode(value = 14, ID = 4))
+  val const4 = Module(new ConstFastNode(value = 1400, ID = 4))
 
   //i32 1
   val const5 = Module(new ConstFastNode(value = 1, ID = 5))
 
   //i32 1200
-  val const6 = Module(new ConstFastNode(value = 12, ID = 6))
+  val const6 = Module(new ConstFastNode(value = 1200, ID = 6))
 
   //i32 0
   val const7 = Module(new ConstFastNode(value = 0, ID = 7))
@@ -379,13 +379,13 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val const10 = Module(new ConstFastNode(value = 1, ID = 10))
 
   //i32 1200
-  val const11 = Module(new ConstFastNode(value = 12, ID = 11))
+  val const11 = Module(new ConstFastNode(value = 1200, ID = 11))
 
   //i32 1
   val const12 = Module(new ConstFastNode(value = 1, ID = 12))
 
   //i32 1400
-  val const13 = Module(new ConstFastNode(value = 14, ID = 13))
+  val const13 = Module(new ConstFastNode(value = 1400, ID = 13))
 
   //i32 0
   val const14 = Module(new ConstFastNode(value = 0, ID = 14))
@@ -406,7 +406,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val const19 = Module(new ConstFastNode(value = 1, ID = 19))
 
   //i32 1400
-  val const20 = Module(new ConstFastNode(value = 14, ID = 20))
+  val const20 = Module(new ConstFastNode(value = 1400, ID = 20))
 
   //i64 0
   val const21 = Module(new ConstFastNode(value = 0, ID = 21))
@@ -415,13 +415,13 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val const22 = Module(new ConstFastNode(value = 1, ID = 22))
 
   //i32 1200
-  val const23 = Module(new ConstFastNode(value = 12, ID = 23))
+  val const23 = Module(new ConstFastNode(value = 1200, ID = 23))
 
   //i32 1
   val const24 = Module(new ConstFastNode(value = 1, ID = 24))
 
   //i32 1200
-  val const25 = Module(new ConstFastNode(value = 12, ID = 25))
+  val const25 = Module(new ConstFastNode(value = 1200, ID = 25))
 
   //double 0.000000e+00
   val constf0 = Module(new ConstNode(value = 0x0, ID = 0))
@@ -618,7 +618,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   st_57.io.GepAddr <> Loop_0.io.liveIn.data("field3")(0)
 
-  phij_2442.io.InData(0) <> Loop_1.io.liveIn.data("field0")(0)
+  phij_2442.io.InData(1) <> Loop_1.io.liveIn.data("field0")(0)
 
   Gep_tmp443.io.idx(0) <> Loop_1.io.liveIn.data("field0")(1)
 
@@ -1009,7 +1009,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   icmp_exitcond1719.io.RightIO <> const6.io.Out
 
-  phii_1822.io.InData(0) <> const7.io.Out
+  phii_1822.io.InData(1) <> const7.io.Out
 
   phij_1726.io.InData(0) <> const8.io.Out
 
@@ -1125,7 +1125,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   br_36.io.CmpIO <> icmp_exitcond1435.io.Out(0)
 
-  phii_1822.io.InData(1) <> binaryOp_inc2437.io.Out(0)
+  phii_1822.io.InData(0) <> binaryOp_inc2437.io.Out(0)
 
   icmp_exitcond1538.io.LeftIO <> binaryOp_inc2437.io.Out(1)
 
@@ -1187,7 +1187,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   st_66.io.GepAddr <> Gep_tmp1165.io.Out(0)
 
-  phij_2442.io.InData(1) <> binaryOp_inc5667.io.Out(0)
+  phij_2442.io.InData(0) <> binaryOp_inc5667.io.Out(0)
 
   icmp_exitcond1168.io.LeftIO <> binaryOp_inc5667.io.Out(1)
 

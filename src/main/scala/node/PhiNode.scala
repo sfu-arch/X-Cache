@@ -393,6 +393,9 @@ class PhiFastNode(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
   *        that nothing is latched.
   *        3) If Phi node itself is not predicated, we restart all the registers and
   *        fire the output with zero predication.
+  *        4) There is bug in LLVM generate and we need sometime support
+  *        revers masking for phi ndoes the issue will be solved in the next version
+  *        but for now using Res argument we control direction of mask bits
   * @param NumInputs
   * @param NumOuts
   * @param ID
@@ -400,7 +403,7 @@ class PhiFastNode(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
   * @param name
   * @param file
   */
-class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
+class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int, Res: Boolean = false)
                   (implicit p: Parameters,
                    name: sourcecode.Name,
                    file: sourcecode.File)
@@ -467,7 +470,13 @@ class PhiFastNode2(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int)
   }
 
   //val sel = OHToUInt(Reverse(mask_value))
-  val sel = OHToUInt(mask_R)
+  val sel =
+    if(Res == false){
+      OHToUInt(mask_R)
+    }
+    else{
+      OHToUInt(Reverse(mask_R))
+    }
 
   val select_input = in_data_R(sel).data
   val select_predicate = in_data_R(sel).predicate
