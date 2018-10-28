@@ -117,226 +117,226 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  br label %for.body
+  //  br label %for.body, !UID !3, !BB_UID !4
   val br_0 = Module(new UBranchNode(ID = 0))
 
-  //  %j.010 = phi i32 [ 0, %entry ], [ %inc9, %for.end ]
+  //  %j.010 = phi i32 [ 0, %entry ], [ %inc9, %for.end ], !UID !5
   val phij_0101 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 1))
 
-  //  %arrayidx = getelementptr inbounds double, double* %mean, i32 %j.010
+  //  %arrayidx = getelementptr inbounds double, double* %mean, i32 %j.010, !UID !6
   val Gep_arrayidx2 = Module(new GepNode(NumIns = 1, NumOuts = 3, ID = 2)(ElementSize = 8, ArraySize = List()))
 
-  //  store double 0.000000e+00, double* %arrayidx, align 4, !tbaa !2
-  val st_3 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 3, RouteID = 0))
+  //  store double 0.000000e+00, double* %arrayidx, align 4, !tbaa !7, !UID !11
+  val st_3 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 3, ID = 3, RouteID = 0))
 
-  //  br label %for.body3
+  //  br label %for.body3, !UID !12, !BB_UID !13
   val br_4 = Module(new UBranchNode(NumPredOps = 1, ID = 4))
 
-  //  %0 = phi double [ 0.000000e+00, %for.body ], [ %add, %for.body3 ]
+  //  %0 = phi double [ 0.000000e+00, %for.body ], [ %add, %for.body3 ], !UID !14
   val phi5 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 5))
 
-  //  %i.09 = phi i32 [ 0, %for.body ], [ %inc, %for.body3 ]
+  //  %i.09 = phi i32 [ 0, %for.body ], [ %inc, %for.body3 ], !UID !15
   val phii_096 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 6))
 
-  //  %tmp = getelementptr [1200 x double], [1200 x double]* %data, i32 %i.09
+  //  %tmp = getelementptr [1200 x double], [1200 x double]* %data, i32 %i.09, !UID !16
   val Gep_tmp7 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 7)(ElementSize = 8, ArraySize = List()))
 
-  //  %tmp1 = getelementptr [1200 x double], [1200 x double]* %tmp, i64 0, i32 %j.010
+  //  %tmp1 = getelementptr [1200 x double], [1200 x double]* %tmp, i64 0, i32 %j.010, !UID !17
   val Gep_tmp18 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 8)(ElementSize = 8, ArraySize = List()))
 
-  //  %1 = load double, double* %tmp1, align 4, !tbaa !2
+  //  %1 = load double, double* %tmp1, align 4, !tbaa !7, !UID !18
   val ld_9 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 9, RouteID = 0))
 
-  //  %add = fadd double %0, %1
+  //  %add = fadd double %0, %1, !UID !19
   val FP_add10 = Module(new FPComputeNode(NumOuts = 3, ID = 10, opCode = "fadd")(t = p(FTYP)))
 
-  //  store double %add, double* %arrayidx, align 4, !tbaa !2
-  val st_11 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 11, RouteID = 1))
+  //  store double %add, double* %arrayidx, align 4, !tbaa !7, !UID !20
+  val st_11 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 0, ID = 11, RouteID = 1))
 
-  //  %inc = add nuw nsw i32 %i.09, 1
+  //  %inc = add nuw nsw i32 %i.09, 1, !UID !21
   val binaryOp_inc12 = Module(new ComputeNode(NumOuts = 2, ID = 12, opCode = "add")(sign = false))
 
-  //  %exitcond16 = icmp eq i32 %inc, 1400
+  //  %exitcond16 = icmp eq i32 %inc, 1400, !UID !22
   val icmp_exitcond1613 = Module(new IcmpNode(NumOuts = 1, ID = 13, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond16, label %for.end, label %for.body3
+  //  br i1 %exitcond16, label %for.end, label %for.body3, !UID !23, !BB_UID !24
   val br_14 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 14))
 
-  //  %add.lcssa = phi double [ %add, %for.body3 ]
+  //  %add.lcssa = phi double [ %add, %for.body3 ], !UID !25
   val phiadd_lcssa15 = Module(new PhiFastNode2(NumInputs = 1, NumOutputs = 1, ID = 15))
 
-  //  %div = fdiv double %add.lcssa, %float_n
+  //  %div = fdiv double %add.lcssa, %float_n, !UID !26
   val FP_div16 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 16, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
 
-  //  store double %div, double* %arrayidx, align 4, !tbaa !2
-  val st_17 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 17, RouteID = 2))
+  //  store double %div, double* %arrayidx, align 4, !tbaa !7, !UID !27
+  val st_17 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 0, ID = 17, RouteID = 2))
 
-  //  %inc9 = add nuw nsw i32 %j.010, 1
+  //  %inc9 = add nuw nsw i32 %j.010, 1, !UID !28
   val binaryOp_inc918 = Module(new ComputeNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))
 
-  //  %exitcond17 = icmp eq i32 %inc9, 1200
+  //  %exitcond17 = icmp eq i32 %inc9, 1200, !UID !29
   val icmp_exitcond1719 = Module(new IcmpNode(NumOuts = 1, ID = 19, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond17, label %for.cond14.preheader.preheader, label %for.body
+  //  br i1 %exitcond17, label %for.cond14.preheader.preheader, label %for.body, !UID !30, !BB_UID !31
   val br_20 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 20))
 
-  //  br label %for.cond14.preheader
+  //  br label %for.cond14.preheader, !UID !32, !BB_UID !33
   val br_21 = Module(new UBranchNode(ID = 21))
 
-  //  %i.18 = phi i32 [ %inc24, %for.inc23 ], [ 0, %for.cond14.preheader.preheader ]
+  //  %i.18 = phi i32 [ %inc24, %for.inc23 ], [ 0, %for.cond14.preheader.preheader ], !UID !34
   val phii_1822 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 22, Res = true))
 
-  //  br label %for.body16
+  //  br label %for.body16, !UID !35, !BB_UID !36
   val br_23 = Module(new UBranchNode(ID = 23))
 
-  //  %sub47 = fadd double %float_n, -1.000000e+00
+  //  %sub47 = fadd double %float_n, -1.000000e+00, !UID !37
   val FP_sub4724 = Module(new FPComputeNode(NumOuts = 1, ID = 24, opCode = "fadd")(t = p(FTYP)))
 
-  //  br label %for.body31.preheader
+  //  br label %for.body31.preheader, !UID !38, !BB_UID !39
   val br_25 = Module(new UBranchNode(ID = 25))
 
-  //  %j.17 = phi i32 [ 0, %for.cond14.preheader ], [ %inc21, %for.body16 ]
+  //  %j.17 = phi i32 [ 0, %for.cond14.preheader ], [ %inc21, %for.body16 ], !UID !40
   val phij_1726 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 26))
 
-  //  %arrayidx17 = getelementptr inbounds double, double* %mean, i32 %j.17
+  //  %arrayidx17 = getelementptr inbounds double, double* %mean, i32 %j.17, !UID !41
   val Gep_arrayidx1727 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 27)(ElementSize = 8, ArraySize = List()))
 
-  //  %2 = load double, double* %arrayidx17, align 4, !tbaa !2
+  //  %2 = load double, double* %arrayidx17, align 4, !tbaa !7, !UID !42
   val ld_28 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 28, RouteID = 1))
 
-  //  %tmp2 = getelementptr [1200 x double], [1200 x double]* %data, i32 %i.18
+  //  %tmp2 = getelementptr [1200 x double], [1200 x double]* %data, i32 %i.18, !UID !43
   val Gep_tmp229 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 29)(ElementSize = 8, ArraySize = List()))
 
-  //  %tmp3 = getelementptr [1200 x double], [1200 x double]* %tmp2, i64 0, i32 %j.17
+  //  %tmp3 = getelementptr [1200 x double], [1200 x double]* %tmp2, i64 0, i32 %j.17, !UID !44
   val Gep_tmp330 = Module(new GepNode(NumIns = 2, NumOuts = 2, ID = 30)(ElementSize = 8, ArraySize = List()))
 
-  //  %3 = load double, double* %tmp3, align 4, !tbaa !2
-  val ld_31 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 31, RouteID = 2))
+  //  %3 = load double, double* %tmp3, align 4, !tbaa !7, !UID !45
+  val ld_31 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 31, RouteID = 2))
 
-  //  %sub = fsub double %3, %2
+  //  %sub = fsub double %3, %2, !UID !46
   val FP_sub32 = Module(new FPComputeNode(NumOuts = 1, ID = 32, opCode = "fsub")(t = p(FTYP)))
 
-  //  store double %sub, double* %tmp3, align 4, !tbaa !2
-  val st_33 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 33, RouteID = 3))
+  //  store double %sub, double* %tmp3, align 4, !tbaa !7, !UID !47
+  val st_33 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 0, ID = 33, RouteID = 3))
 
-  //  %inc21 = add nuw nsw i32 %j.17, 1
+  //  %inc21 = add nuw nsw i32 %j.17, 1, !UID !48
   val binaryOp_inc2134 = Module(new ComputeNode(NumOuts = 2, ID = 34, opCode = "add")(sign = false))
 
-  //  %exitcond14 = icmp eq i32 %inc21, 1200
+  //  %exitcond14 = icmp eq i32 %inc21, 1200, !UID !49
   val icmp_exitcond1435 = Module(new IcmpNode(NumOuts = 1, ID = 35, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond14, label %for.inc23, label %for.body16
+  //  br i1 %exitcond14, label %for.inc23, label %for.body16, !UID !50, !BB_UID !51
   val br_36 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 36))
 
-  //  %inc24 = add nuw nsw i32 %i.18, 1
+  //  %inc24 = add nuw nsw i32 %i.18, 1, !UID !52
   val binaryOp_inc2437 = Module(new ComputeNode(NumOuts = 2, ID = 37, opCode = "add")(sign = false))
 
-  //  %exitcond15 = icmp eq i32 %inc24, 1400
+  //  %exitcond15 = icmp eq i32 %inc24, 1400, !UID !53
   val icmp_exitcond1538 = Module(new IcmpNode(NumOuts = 1, ID = 38, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond15, label %for.cond26.preheader, label %for.cond14.preheader
+  //  br i1 %exitcond15, label %for.cond26.preheader, label %for.cond14.preheader, !UID !54, !BB_UID !55
   val br_39 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 39))
 
-  //  %i.25 = phi i32 [ 0, %for.cond26.preheader ], [ %inc59, %for.inc58 ]
+  //  %i.25 = phi i32 [ 0, %for.cond26.preheader ], [ %inc59, %for.inc58 ], !UID !56
   val phii_2540 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 40))
 
-  //  br label %for.body31
+  //  br label %for.body31, !UID !57, !BB_UID !58
   val br_41 = Module(new UBranchNode(ID = 41))
 
-  //  %j.24 = phi i32 [ %inc56, %for.end46 ], [ %i.25, %for.body31.preheader ]
+  //  %j.24 = phi i32 [ %inc56, %for.end46 ], [ %i.25, %for.body31.preheader ], !UID !59
   val phij_2442 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 4, ID = 42, Res = true))
 
-  //  %tmp4 = getelementptr [1200 x double], [1200 x double]* %cov, i32 %i.25
+  //  %tmp4 = getelementptr [1200 x double], [1200 x double]* %cov, i32 %i.25, !UID !60
   val Gep_tmp443 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 43)(ElementSize = 8, ArraySize = List()))
 
-  //  %tmp5 = getelementptr [1200 x double], [1200 x double]* %tmp4, i64 0, i32 %j.24
+  //  %tmp5 = getelementptr [1200 x double], [1200 x double]* %tmp4, i64 0, i32 %j.24, !UID !61
   val Gep_tmp544 = Module(new GepNode(NumIns = 2, NumOuts = 3, ID = 44)(ElementSize = 8, ArraySize = List()))
 
-  //  store double 0.000000e+00, double* %tmp5, align 4, !tbaa !2
-  val st_45 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 45, RouteID = 4))
+  //  store double 0.000000e+00, double* %tmp5, align 4, !tbaa !7, !UID !62
+  val st_45 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 3, ID = 45, RouteID = 4))
 
-  //  br label %for.body36
+  //  br label %for.body36, !UID !63, !BB_UID !64
   val br_46 = Module(new UBranchNode(NumPredOps = 1, ID = 46))
 
-  //  %4 = phi double [ 0.000000e+00, %for.body31 ], [ %add43, %for.body36 ]
+  //  %4 = phi double [ 0.000000e+00, %for.body31 ], [ %add43, %for.body36 ], !UID !65
   val phi47 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 47))
 
-  //  %k.02 = phi i32 [ 0, %for.body31 ], [ %inc45, %for.body36 ]
+  //  %k.02 = phi i32 [ 0, %for.body31 ], [ %inc45, %for.body36 ], !UID !66
   val phik_0248 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 48))
 
-  //  %tmp6 = getelementptr [1200 x double], [1200 x double]* %data, i32 %k.02
+  //  %tmp6 = getelementptr [1200 x double], [1200 x double]* %data, i32 %k.02, !UID !67
   val Gep_tmp649 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 49)(ElementSize = 8, ArraySize = List()))
 
-  //  %tmp7 = getelementptr [1200 x double], [1200 x double]* %tmp6, i64 0, i32 %i.25
+  //  %tmp7 = getelementptr [1200 x double], [1200 x double]* %tmp6, i64 0, i32 %i.25, !UID !68
   val Gep_tmp750 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 50)(ElementSize = 8, ArraySize = List()))
 
-  //  %5 = load double, double* %tmp7, align 4, !tbaa !2
+  //  %5 = load double, double* %tmp7, align 4, !tbaa !7, !UID !69
   val ld_51 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 51, RouteID = 3))
 
-  //  %tmp8 = getelementptr [1200 x double], [1200 x double]* %data, i32 %k.02
+  //  %tmp8 = getelementptr [1200 x double], [1200 x double]* %data, i32 %k.02, !UID !70
   val Gep_tmp852 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 52)(ElementSize = 8, ArraySize = List()))
 
-  //  %tmp9 = getelementptr [1200 x double], [1200 x double]* %tmp8, i64 0, i32 %j.24
+  //  %tmp9 = getelementptr [1200 x double], [1200 x double]* %tmp8, i64 0, i32 %j.24, !UID !71
   val Gep_tmp953 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 53)(ElementSize = 8, ArraySize = List()))
 
-  //  %6 = load double, double* %tmp9, align 4, !tbaa !2
+  //  %6 = load double, double* %tmp9, align 4, !tbaa !7, !UID !72
   val ld_54 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 54, RouteID = 4))
 
-  //  %mul = fmul double %5, %6
+  //  %mul = fmul double %5, %6, !UID !73
   val FP_mul55 = Module(new FPComputeNode(NumOuts = 1, ID = 55, opCode = "fmul")(t = p(FTYP)))
 
-  //  %add43 = fadd double %4, %mul
+  //  %add43 = fadd double %4, %mul, !UID !74
   val FP_add4356 = Module(new FPComputeNode(NumOuts = 3, ID = 56, opCode = "fadd")(t = p(FTYP)))
 
-  //  store double %add43, double* %tmp5, align 4, !tbaa !2
-  val st_57 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 57, RouteID = 5))
+  //  store double %add43, double* %tmp5, align 4, !tbaa !7, !UID !75
+  val st_57 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 1, ID = 57, RouteID = 5))
 
-  //  %inc45 = add nuw nsw i32 %k.02, 1
+  //  %inc45 = add nuw nsw i32 %k.02, 1, !UID !76
   val binaryOp_inc4558 = Module(new ComputeNode(NumOuts = 2, ID = 58, opCode = "add")(sign = false))
 
-  //  %exitcond = icmp eq i32 %inc45, 1400
+  //  %exitcond = icmp eq i32 %inc45, 1400, !UID !77
   val icmp_exitcond59 = Module(new IcmpNode(NumOuts = 1, ID = 59, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond, label %for.end46, label %for.body36
+  //  br i1 %exitcond, label %for.end46, label %for.body36, !UID !78, !BB_UID !79
   val br_60 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 60))
 
-  //  %add43.lcssa = phi double [ %add43, %for.body36 ]
+  //  %add43.lcssa = phi double [ %add43, %for.body36 ], !UID !80
   val phiadd43_lcssa61 = Module(new PhiFastNode2(NumInputs = 1, NumOutputs = 1, ID = 61))
 
-  //  %div50 = fdiv double %add43.lcssa, %sub47
+  //  %div50 = fdiv double %add43.lcssa, %sub47, !UID !81
   val FP_div5062 = Module(new FPDivSqrtNode(NumOuts = 2, ID = 62, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
 
-  //  store double %div50, double* %tmp5, align 4, !tbaa !2
-  val st_63 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 63, RouteID = 6))
+  //  store double %div50, double* %tmp5, align 4, !tbaa !7, !UID !82
+  val st_63 = Module(new UnTypStore(NumPredOps = 2, NumSuccOps = 0, ID = 63, RouteID = 6))
 
-  //  %tmp10 = getelementptr [1200 x double], [1200 x double]* %cov, i32 %j.24
+  //  %tmp10 = getelementptr [1200 x double], [1200 x double]* %cov, i32 %j.24, !UID !83
   val Gep_tmp1064 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 64)(ElementSize = 8, ArraySize = List()))
 
-  //  %tmp11 = getelementptr [1200 x double], [1200 x double]* %tmp10, i64 0, i32 %i.25
+  //  %tmp11 = getelementptr [1200 x double], [1200 x double]* %tmp10, i64 0, i32 %i.25, !UID !84
   val Gep_tmp1165 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 65)(ElementSize = 8, ArraySize = List()))
 
-  //  store double %div50, double* %tmp11, align 4, !tbaa !2
+  //  store double %div50, double* %tmp11, align 4, !tbaa !7, !UID !85
   val st_66 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 66, RouteID = 7))
 
-  //  %inc56 = add nuw nsw i32 %j.24, 1
+  //  %inc56 = add nuw nsw i32 %j.24, 1, !UID !86
   val binaryOp_inc5667 = Module(new ComputeNode(NumOuts = 2, ID = 67, opCode = "add")(sign = false))
 
-  //  %exitcond11 = icmp eq i32 %inc56, 1200
+  //  %exitcond11 = icmp eq i32 %inc56, 1200, !UID !87
   val icmp_exitcond1168 = Module(new IcmpNode(NumOuts = 1, ID = 68, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond11, label %for.inc58, label %for.body31
+  //  br i1 %exitcond11, label %for.inc58, label %for.body31, !UID !88, !BB_UID !89
   val br_69 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 69))
 
-  //  %inc59 = add nuw nsw i32 %i.25, 1
+  //  %inc59 = add nuw nsw i32 %i.25, 1, !UID !90
   val binaryOp_inc5970 = Module(new ComputeNode(NumOuts = 2, ID = 70, opCode = "add")(sign = false))
 
-  //  %exitcond13 = icmp eq i32 %inc59, 1200
+  //  %exitcond13 = icmp eq i32 %inc59, 1200, !UID !91
   val icmp_exitcond1371 = Module(new IcmpNode(NumOuts = 1, ID = 71, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond13, label %for.end60, label %for.body31.preheader
+  //  br i1 %exitcond13, label %for.end60, label %for.body31.preheader, !UID !92, !BB_UID !93
   val br_72 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 72))
 
-  //  ret void
+  //  ret void, !UID !94, !BB_UID !95
   val ret_73 = Module(new RetNode2(retTypes = List(), ID = 73))
 
 
@@ -545,12 +545,26 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
 
   /* ================================================================== *
-   *                   ENDING INSTRUCTIONS                              *
+   *                   PREDECESSOR SUCCESSOR RELATIONS                   *
    * ================================================================== */
+
+  br_4.io.PredOp(0) <> st_3.io.SuccOp(0)
+
+  st_11.io.PredOp(0) <> st_3.io.SuccOp(1)
+
+  st_17.io.PredOp(0) <> st_3.io.SuccOp(2)
+
+//  st_17.io.PredOp(0) <> st_11.io.SuccOp(0)
 
   br_46.io.PredOp(0) <> st_45.io.SuccOp(0)
 
-  br_4.io.PredOp(0) <> st_3.io.SuccOp(0)
+  st_57.io.PredOp(0) <> st_45.io.SuccOp(1)
+
+  st_63.io.PredOp(0) <> st_45.io.SuccOp(2)
+
+  st_63.io.PredOp(1) <> st_57.io.SuccOp(0)
+
+  st_33.io.PredOp(0) <> ld_31.io.SuccOp(0)
 
 
 
