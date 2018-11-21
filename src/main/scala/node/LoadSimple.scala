@@ -156,7 +156,8 @@ class UnTypLoad(NumPredOps: Int,
         Reset()
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Address:%d\n",enable_R.taskID, cycleCount, addr_R.data)
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Address:%d, Value: %d\n",
+          enable_R.taskID, cycleCount, addr_R.data, data_R.data)
         //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
       }
     }

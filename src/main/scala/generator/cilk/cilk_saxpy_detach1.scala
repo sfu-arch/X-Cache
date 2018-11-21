@@ -80,7 +80,7 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
   val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 1, RouteID = 0))
 
   //  %2 = mul nsw i32 %a.in, %1, !UID !3
-  val binaryOp_2 = Module(new ComputeFastNode(NumOuts = 1, ID = 2, opCode = "mul")(sign = false))
+  val binaryOp_2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "mul")(sign = false))
 
   //  %3 = getelementptr inbounds i32, i32* %y.in, i32 %i.0.in, !UID !4
   val Gep_3 = Module(new GepArrayOneNode(NumOuts = 1, ID = 3)(numByte = 4)(size = 1))
@@ -89,7 +89,7 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
   val ld_4 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 4, RouteID = 1))
 
   //  %5 = add nsw i32 %2, %4, !UID !6
-  val binaryOp_5 = Module(new ComputeFastNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
+  val binaryOp_5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
 
   //  %6 = getelementptr inbounds i32, i32* %y.in, i32 %i.0.in, !UID !7
   val Gep_6 = Module(new GepArrayOneNode(NumOuts = 1, ID = 6)(numByte = 4)(size = 1))

@@ -115,8 +115,8 @@ class TypLoad(NumPredOps: Int,
 
   switch(state) {
     is(s_idle) {
-      when(enable_valid_R && mem_req_fire) {
-        when(enable_R.control && predicate) {
+      when(IsEnableValid() && mem_req_fire) {
+        when(predicate) {
           io.memReq.valid := true.B
           when(io.memReq.ready) {
             state := s_RECEIVING
