@@ -317,7 +317,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   call_9_out.io.In("field1") <> phi_i_01.io.Out(2)
 
-  br_3.io.CmpIO <> icmp_cmp2.io.Out
+  br_3.io.CmpIO <> icmp_cmp2.io.Out(0)
 
   phi_i_01.io.InData(1) <> binaryOp_inc135.io.Out(0)
 
