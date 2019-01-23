@@ -129,7 +129,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
   val const0 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 0))
 
   //i32 5
-  val const1 = Module(new ConstNode(value = 5, NumOuts = 1, ID = 1))
+  val const1 = Module(new ConstNode(value = 20, NumOuts = 1, ID = 1))
 
   //i32 1
   val const2 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 2))

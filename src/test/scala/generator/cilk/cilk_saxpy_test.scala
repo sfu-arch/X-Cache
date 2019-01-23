@@ -33,6 +33,65 @@ class cilk_saxpyMainIO(implicit val p: Parameters) extends Module with CoreParam
   })
 }
 
+class cilk_saxpyMainTMCache(children: Int)(implicit p: Parameters) extends cilk_saxpyMainIO {
+
+  //  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new NCache(children + 1, 2)) // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave(latency = 5)) // Model of DRAM to connect to Cache
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
+  memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
+  //  cache.io.cpu.abort := false.B
+
+  // Wire up the cache, TM, and modules under test.
+
+  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))
+  val saxpy = Module(new cilk_saxpyDF())
+
+  val saxpy_detach = for (i <- 0 until children) yield {
+    val detach1 = Module(new cilk_saxpy_detach1DF())
+    detach1
+  }
+
+  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
+  // requests ports of any type.  Read or write is irrelevant.
+  //  val CacheArbiter = Module(new MemArbiter(children + 1))
+  for (i <- 0 until children) {
+    cache.io.cpu.MemReq(i) <> saxpy_detach(i).io.MemReq
+    saxpy_detach(i).io.MemResp <> cache.io.cpu.MemResp(i)
+  }
+  cache.io.cpu.MemReq(children) <> io.req
+  io.resp <> cache.io.cpu.MemResp(children)
+
+  //  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  //  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+
+  // tester to saxpy
+  saxpy.io.in <> io.in
+
+  // saxpy to task controller
+  TaskControllerModule.io.parentIn(0) <> saxpy.io.call_9_out
+
+  // task controller to sub-task saxpy_detach
+  for (i <- 0 until children) {
+    saxpy_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> saxpy_detach(i).io.out
+  }
+
+  // Task controller to saxpy
+  saxpy.io.call_9_in <> TaskControllerModule.io.parentOut(0)
+
+  // saxpy to tester
+  io.out <> saxpy.io.out
+
+}
+
+
 class cilk_saxpyMainTM(children: Int)(implicit p: Parameters) extends cilk_saxpyMainIO {
 
   //  val cache = Module(new Cache) // Simple Nasti Cache
@@ -340,7 +399,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
           "-tbn", "verilator",
           "-td", s"test_run_dir/cilk_saxpy_${tile}",
           "-tts", "0001"),
-        () => new cilk_saxpyMainTM(tile)(testParams)) {
+        () => new cilk_saxpyMainTMCache(tile)(testParams)) {
         c => new cilk_saxpyTest01(c, 400, tile) // 500 for intel FPGA test
       } should be(true)
     }

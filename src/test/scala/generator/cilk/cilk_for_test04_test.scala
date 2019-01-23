@@ -1,5 +1,7 @@
 package dataflow
 
+import java.io.PrintWriter
+import java.io.File
 import chisel3._
 import chisel3.util._
 import chisel3.Module
@@ -82,6 +84,63 @@ class cilk_for_test04Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
 
 }
 
+class cilk_for_test04Main2(children: Int)(implicit p: Parameters) extends cilk_for_test04MainIO {
+
+  //  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new NCache(children + 1, 2)) // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
+  memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
+  //  cache.io.cpu.abort := false.B
+
+  // Wire up the cache, TM, and modules under test.
+
+  //  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))
+  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(32), 1, numChild = children))
+  val cilk_for_testDF = Module(new cilk_for_test04DF())
+
+  val cilk_for_detach = for (i <- 0 until children) yield {
+    val detach1 = Module(new cilk_for_test04_detach1DF())
+    detach1
+  }
+
+  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
+  // requests ports of any type.  Read or write is irrelevant.
+  //  val CacheArbiter = Module(new MemArbiter(children + 1))
+  for (i <- 0 until children) {
+    cache.io.cpu.MemReq(i) <> cilk_for_detach(i).io.MemReq
+    cilk_for_detach(i).io.MemResp <> cache.io.cpu.MemResp(i)
+  }
+  cache.io.cpu.MemReq(children) <> io.req
+  io.resp <> cache.io.cpu.MemResp(children)
+
+  //  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  //  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+
+  cilk_for_testDF.io.in <> io.in
+
+  // saxpy to task controller
+  TaskControllerModule.io.parentIn(0) <> cilk_for_testDF.io.call_9_out
+
+  // task controller to sub-task saxpy_detach
+  for (i <- 0 until children) {
+    cilk_for_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> cilk_for_detach(i).io.out
+  }
+
+  cilk_for_testDF.io.call_9_in <> TaskControllerModule.io.parentOut(0)
+
+  // saxpy to tester
+  io.out <> cilk_for_testDF.io.out
+
+}
+
 
 class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int) extends PeekPokeTester(c) {
 
@@ -92,10 +151,10 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
     poke(c.io.req.valid, 1)
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.tag, 10)
     poke(c.io.req.bits.mask, -1)
     step(1)
+    poke(c.io.req.valid, 0)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
     }
@@ -111,8 +170,7 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.data, data)
     poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.tag, 20)
     poke(c.io.req.bits.mask, -1)
     step(1)
     poke(c.io.req.valid, 0)
@@ -120,23 +178,52 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
   }
 
 
-  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10, 0x20, 0x24, 0x28, 0x2c, 0x30)
-  val inDataVec = List(1, 2, 3, 4, 5, 1, 2, 3, 4, 5)
-  val outAddrVec = List(0x40, 0x44, 0x48, 0x4c, 0x50)
-  val outDataVec = List(2, 4, 6, 8, 10)
+  def dumpMemoryIn(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until inAddrVec.length) {
+      val data = MemRead(inAddrVec(i))
+      pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
+    }
+    pw.close
+
+  }
+
+
+  def dumpMemoryOut(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until outDataVec.length) {
+      val data = MemRead(outAddrVec(i))
+      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data.toInt.toHexString + "\n")
+      //pw.write(data.toInt.toHexString + "\n")
+    }
+    pw.close
+
+  }
+
+
+  //  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10, 0x20, 0x24, 0x28, 0x2c, 0x30)
+  val inAddrVec = List.range(0, 4 * 40, 4)
+  //  val inDataVec = List(1, 2, 3, 4, 5, 1, 2, 3, 4, 5)
+  val inDataVec = List.range(1, 21) ::: List.range(1, 21)
+  //  val outAddrVec = List(0x40, 0x44, 0x48, 0x4c, 0x50)
+  val outAddrVec = List.range(160, 160 + (4 * 20), 4)
+  //  val outDataVec = List(2, 4, 6, 8, 10)
+  val outDataVec = List.range(1, 21).map(_ * 2)
 
   // Write initial contents to the memory model.
-  for (i <- 0 until 10) {
+  for (i <- 0 until inAddrVec.length) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
-  for (i <- 0 until 5) {
+
+  for (i <- 0 until outAddrVec.length) {
     MemWrite(outAddrVec(i), 0)
   }
 
-  //  step(1)
+  step(200)
 
-
-  step(1)
+  //  dumpMemoryIn("init.mem")
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
@@ -154,11 +241,11 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, "h0".U) // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, "h20".U) // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, 80) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, "h40".U) // Array c[] base address
+  poke(c.io.in.bits.data("field2").data, 160) // Array c[] base address
   poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -195,8 +282,6 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
     }
   }
 
-  //  Peek into the CopyMem to see if the expected data is written back to the Cache
-
   var valid_data = true
   for (i <- 0 until outDataVec.length) {
     val data = MemRead(outAddrVec(i))
@@ -210,6 +295,7 @@ class cilk_for_test04Test01[T <: cilk_for_test04MainIO](c: T, n: Int, tiles: Int
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
   }
 
+  dumpMemoryOut("finish.mem")
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
@@ -229,9 +315,9 @@ class cilk_for_test04Tester1 extends FlatSpec with Matchers {
       Array(
         // "-ll", "Info",
         "-tbn", "verilator",
-        "-td", "test_run_dir",
+        "-td", "test_run_dir/cilk_for_test04",
         "-tts", "0001"),
-      () => new cilk_for_test04Main1(tiles = 1)(p.alterPartial({case TLEN => 6}))) {
+      () => new cilk_for_test04Main2(children = 1)(p.alterPartial({ case TLEN => 6 }))) {
       c => new cilk_for_test04Test01(c, 5, 1)
     } should be(true)
   }
