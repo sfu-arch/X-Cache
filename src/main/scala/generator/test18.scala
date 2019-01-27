@@ -371,31 +371,31 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
 
   br_3.io.CmpIO <> icmp_cmp2.io.Out(0)
 
-  ld_5.io.GepAddr <> Gep_arrayidx4.io.Out.data(0)
+  ld_5.io.GepAddr <> Gep_arrayidx4.io.Out(0)
 
-  binaryOp_mul6.io.RightIO <> ld_5.io.Out.data(0)
+  binaryOp_mul6.io.RightIO <> ld_5.io.Out(0)
 
   st_8.io.inData <> binaryOp_mul6.io.Out(0)
 
-  st_8.io.GepAddr <> Gep_arrayidx17.io.Out.data(0)
+  st_8.io.GepAddr <> Gep_arrayidx17.io.Out(0)
 
   phi_k_01.io.InData(1) <> binaryOp_inc9.io.Out(0)
 
   Gep_arrayidx212.io.idx(0) <> binaryOp_sub11.io.Out(0)
 
-  ld_13.io.GepAddr <> Gep_arrayidx212.io.Out.data(0)
+  ld_13.io.GepAddr <> Gep_arrayidx212.io.Out(0)
 
-  st_15.io.GepAddr <> Gep_arrayidx212.io.Out.data(1)
+  st_15.io.GepAddr <> Gep_arrayidx212.io.Out(1)
 
-  binaryOp_inc314.io.LeftIO <> ld_13.io.Out.data(0)
+  binaryOp_inc314.io.LeftIO <> ld_13.io.Out(0)
 
   st_15.io.inData <> binaryOp_inc314.io.Out(0)
 
   Gep_arrayidx517.io.idx(0) <> binaryOp_sub416.io.Out(0)
 
-  ld_18.io.GepAddr <> Gep_arrayidx517.io.Out.data(0)
+  ld_18.io.GepAddr <> Gep_arrayidx517.io.Out(0)
 
-  ret_19.io.In.data("field0") <> ld_18.io.Out.data(0)
+  ret_19.io.In.data("field0") <> ld_18.io.Out(0)
 
   Gep_arrayidx212.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
 
