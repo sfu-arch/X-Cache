@@ -622,8 +622,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
   call7.io.retIn <> io.call7_in
   call7.io.Out.enable.ready := true.B
   // Wiring Call instruction to the loop header
-  call7.io.In.elements("field0") <> loop_L_0_liveIN_1.io.Out(param.call7_in("field1")) // Manually fixed
-
+  call7.io.In.data.elements("field0") <> loop_L_0_liveIN_1.io.Out(param.call7_in("field1")) // Manually fixed
 
   // Wiring Load instruction to the loop latch
   load8.io.GepAddr <> loop_L_0_liveIN_2.io.Out(param.load8_in("alloca0")) // Manually fixed
@@ -635,7 +634,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
   add9.io.LeftIO <> load8.io.Out(param.add9_in("load8"))
 
   // Wiring instructions
-  add9.io.RightIO <> call7.io.Out.elements("field0") // Manually fixed
+  add9.io.RightIO <> call7.io.Out.data("field0") // Manually fixed
 
   store10.io.inData <> add9.io.Out(param.store10_in("add9"))
 
@@ -660,7 +659,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
 
   // Reattach (Manual add)
-  reattach12.io.predicateIn(0) <> call7.io.Out.elements("field0")
+  reattach12.io.predicateIn(0) <> call7.io.Out.data.elements("field0")
 
   // Sync (Manual add)
   sync15.io.incIn(0) <> detach6.io.Out(2)

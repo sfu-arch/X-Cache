@@ -377,9 +377,9 @@ class test02_nonOptDF(implicit p: Parameters) extends test02_nonOptDFIO()(p) {
 
   ret_16.io.In.data("field0") <> ld_15.io.Out(0)
 
-  st_3.io.inData <> InputSplitter.io.Out.data("field0")(0)
+  st_3.io.inData <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  st_4.io.inData <> InputSplitter.io.Out.data("field1")(0)
+  st_4.io.inData <> InputSplitter.io.Out.data.elements("field1")(0)
 
   st_3.io.Out(0).ready := true.B
 

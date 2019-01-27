@@ -531,7 +531,7 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 
 
   // Wiring Binary instruction to the function argument
-  add3.io.LeftIO <> InputSplitter.io.Out.data("field0")
+  add3.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")
 
   // Wiring constant
   add3.io.RightIO.bits.data := 5.U
@@ -552,7 +552,7 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
   reattach5.io.predicateIn(0) <> store4.io.Out(0)
 
   // Wiring Binary instruction to the function argument
-  add7.io.LeftIO <> InputSplitter.io.Out.data("field1")
+  add7.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")
 
   // Wiring constant
   add7.io.RightIO.bits.data := 5.U

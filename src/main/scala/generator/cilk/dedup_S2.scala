@@ -310,7 +310,7 @@ class dedup_S2DF(implicit p: Parameters) extends dedup_S2DFIO()(p) {
 
   Gep_arrayidx23.io.baseAddress <> Gep_arrayidx0.io.Out(1)
 
-  call_8_out.io.In("field0") <> Gep_arrayidx0.io.Out.data(2)
+  call_8_out.io.In("field0") <> Gep_arrayidx0.io.Out(2)
 
   ld_2.io.GepAddr <> Gep_arrayidx11.io.Out(0)
 
@@ -326,23 +326,23 @@ class dedup_S2DF(implicit p: Parameters) extends dedup_S2DFIO()(p) {
 
   st_12.io.GepAddr <> Gep_arrayidx311.io.Out(0)
 
-  ret_15.io.In.data("field0") <> st_12.io.Out(0)
+  ret_15.io.In.elements("field0") <> st_12.io.Out(0)
 
-  Gep_arrayidx0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  Gep_arrayidx0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Gep_arrayidx0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
+  Gep_arrayidx0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  call_8_out.io.In("field1") <> InputSplitter.io.Out.data("field1")(1)
+  call_8_out.io.In("field1") <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  st_12.io.inData <> InputSplitter.io.Out.data("field1")(2)
+  st_12.io.inData <> InputSplitter.io.Out.data.elements("field1")(2)
 
-  call_8_out.io.In("field2") <> InputSplitter.io.Out.data("field2")(0)
+  call_8_out.io.In("field2") <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Gep_arrayidx311.io.idx1 <> InputSplitter.io.Out.data("field2")(1)
+  Gep_arrayidx311.io.idx1 <> InputSplitter.io.Out.data.elements("field2")(1)
 
-  call_8_out.io.In("field3") <> InputSplitter.io.Out.data("field3")(0)
+  call_8_out.io.In("field3") <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  Gep_arrayidx311.io.baseAddress <> InputSplitter.io.Out.data("field3")(1)
+  Gep_arrayidx311.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(1)
 
 
 

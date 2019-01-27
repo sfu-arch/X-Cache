@@ -31,6 +31,8 @@ class BasicBlockIO(NumInputs: Int,
   extends HandShakingCtrlMaskIO(NumInputs, NumOuts, NumPhi) {
 
   val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
+
+  override def cloneType = new BasicBlockIO(NumInputs, NumOuts, NumPhi).asInstanceOf[this.type]
 }
 
 
@@ -403,6 +405,8 @@ class BasicBlockNoMaskIO(NumOuts: Int)
   // LeftIO: Left input data for computation
   //  val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
   val predicateIn = Flipped(Decoupled(new ControlBundle()))
+
+  override def cloneType = new BasicBlockNoMaskIO(NumOuts).asInstanceOf[this.type]
 }
 
 
@@ -825,6 +829,8 @@ class LoopHeadNodeIO(val NumOuts: Int, val NumPhi: Int)(implicit p: Parameters) 
   // Output IO
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
   val MaskBB = Vec(NumPhi, Decoupled(UInt(2.W)))
+
+  override def cloneType = new LoopHeadNodeIO(NumOuts, NumPhi).asInstanceOf[this.type]
 }
 
 @deprecated("Use LoopFastHead instead. For O1 the behaviour is not deterministic")

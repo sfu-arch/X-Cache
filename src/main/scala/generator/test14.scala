@@ -497,7 +497,7 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
   call5.io.retIn <> io.call5_in
   call5.io.Out.enable.ready := true.B
   // Wiring Call instruction to the loop header
-  call5.io.In.elements("field0") <>loop_L_0_liveIN_1.io.Out(param.call5_in("field1")) // manually fixed
+  call5.io.In.data.elements("field0") <>loop_L_0_liveIN_1.io.Out(param.call5_in("field1")) // manually fixed
 
 
   // Wiring instructions

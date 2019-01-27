@@ -195,13 +195,13 @@ class vector_scaleDF(implicit p: Parameters) extends vector_scaleDFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field3")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(2) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(3) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_0.io.In(3) <> InputSplitter.io.Out.data.elements("field2")(0)
 
 
 
@@ -300,13 +300,13 @@ class vector_scaleDF(implicit p: Parameters) extends vector_scaleDFIO()(p) {
 
   binaryOp_inc5.io.RightIO <> const1.io.Out(0)
 
-  ret_8.io.In.data("field0") <> const2.io.Out(0)
+  ret_8.io.In.data.elements("field0") <> const2.io.Out(0)
 
   icmp_cmp2.io.LeftIO <> phi_i_01.io.Out(0)
 
   binaryOp_inc5.io.LeftIO <> phi_i_01.io.Out(1)
 
-  call_9_out.io.In("field1") <> phi_i_01.io.Out(2)
+  call_9_out.io.In.elements("field1") <> phi_i_01.io.Out(2)
 
   br_3.io.CmpIO <> icmp_cmp2.io.Out(0)
 

@@ -24,6 +24,9 @@ class FPComputeNodeIO(NumOuts: Int)
 
   // RightIO: Right input data for computation
   val RightIO = Flipped(Decoupled(new DataBundle()))
+
+  override def cloneType = new FPComputeNodeIO(NumOuts).asInstanceOf[this.type]
+
 }
 
 /**
@@ -35,7 +38,7 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
                   name: sourcecode.Name,
                   file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
-  override lazy val io = IO(new ComputeNodeIO(NumOuts))
+  override lazy val io = IO(new FPComputeNodeIO(NumOuts))
 
   // Printf debugging
   val node_name = name.value

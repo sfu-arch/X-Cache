@@ -300,12 +300,12 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
     */
 
   // Wiring GEP instruction to the function argument
-  getelementptr0.io.baseAddress <> InputSplitter.io.Out.data("field0")
+  getelementptr0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")
 
   val field2_expand = Module(new ExpandNode(NumOuts=2, ID=99)(new DataBundle)) // Manual
   field2_expand.io.enable.valid := true.B
   field2_expand.io.enable.bits.control := true.B
-  field2_expand.io.InData <> InputSplitter.io.Out.data("field2")
+  field2_expand.io.InData <> InputSplitter.io.Out.data.elements("field2")
 
   // Wiring GEP instruction to the function argument
   getelementptr0.io.idx1 <> field2_expand.io.Out(0) // Manual
@@ -328,7 +328,7 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
   mul2.io.RightIO.valid := true.B
 
   // Wiring GEP instruction to the function argument
-  getelementptr3.io.baseAddress <> InputSplitter.io.Out.data("field1")
+  getelementptr3.io.baseAddress <> InputSplitter.io.Out.data.elements("field1")
 
 
   // Wiring GEP instruction to the function argument

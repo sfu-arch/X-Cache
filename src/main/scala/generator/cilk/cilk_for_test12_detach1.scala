@@ -603,11 +603,11 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 */
   // Connecting function argument to the loop header
   //i32 %n.in
-  lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)// field0_expand.io.Out(0)
+  lb_L_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)// field0_expand.io.Out(0)
 
   // Connecting function argument to the loop header
   //i32* %a.in
-  lb_L_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)//field1_expand.io.Out(0)
+  lb_L_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)//field1_expand.io.Out(0)
 
 
   /* ================================================================== *
@@ -662,7 +662,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   add5.io.RightIO.valid := true.B
 
   // Wiring Binary instruction to the function argument
-  sub8.io.LeftIO <> InputSplitter.io.Out.data("field0")(1)//field0_expand.io.Out(1)
+  sub8.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(1)//field0_expand.io.Out(1)
 
   // Wiring constant
   sub8.io.RightIO.bits.data := 1.U
@@ -670,7 +670,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
   sub8.io.RightIO.valid := true.B
 
   // Wiring GEP instruction to the function argument
-  getelementptr9.io.baseAddress <> InputSplitter.io.Out.data("field1")(1)//field1_expand.io.Out(1)
+  getelementptr9.io.baseAddress <> InputSplitter.io.Out.data.elements("field1")(1)//field1_expand.io.Out(1)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr9.io.idx1 <> sub8.io.Out(param.getelementptr9_in("sub8"))
@@ -705,7 +705,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   // Wiring Load instruction to the function argument
-  load13.io.GepAddr <>  InputSplitter.io.Out.data("field2")(0)//field2_expand.io.Out(0)
+  load13.io.GepAddr <>  InputSplitter.io.Out.data.elements("field2")(0)//field2_expand.io.Out(0)
   load13.io.memResp <> CacheMem.io.ReadOut(1) // manual
   CacheMem.io.ReadIn(1) <> load13.io.memReq  // manual
 
@@ -722,7 +722,7 @@ class cilk_for_test12_detach1DF(implicit p: Parameters) extends cilk_for_test12_
 
 
   // Wiring Store instruction to the function argument
-  store15.io.GepAddr <>  InputSplitter.io.Out.data("field2")(1)//field2_expand.io.Out(1)
+  store15.io.GepAddr <>  InputSplitter.io.Out.data.elements("field2")(1)//field2_expand.io.Out(1)
   store15.io.memResp  <> CacheMem.io.WriteOut(1)
   CacheMem.io.WriteIn(1) <> store15.io.memReq
 //  store15.io.Out(0).ready := true.B

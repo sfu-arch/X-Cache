@@ -909,15 +909,15 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32 %add.in
-  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data("field3")
+  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field3")
 
   // Connecting function argument to the loop header
   //i32* %m2.in
-  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data("field4")
+  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field4")
 
   // Connecting function argument to the loop header
   //i32* %prod.in
-  loop_L_0_liveIN_2.io.InData <> InputSplitter.io.Out.data("field5")
+  loop_L_0_liveIN_2.io.InData <> InputSplitter.io.Out.data.elements("field5")
 
   // Connecting instruction to the loop header
   //  %8 = load i32, i32* %7, align 4, !UID !32, !ScalaLabel !33
@@ -933,15 +933,15 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32 %i.0.in
-  loop_L_1_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_1_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
   // Connecting function argument to the loop header
   //i32 %add10.in
-  loop_L_1_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+  loop_L_1_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
   // Connecting function argument to the loop header
   //i32* %m1.in
-  loop_L_1_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
+  loop_L_1_liveIN_2.io.InData <> InputSplitter.io.Out.data.elements("field2")
 
 
 

@@ -239,7 +239,7 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
 
   Loop_0.io.In(0) <> phi_foo_02.io.Out(0)
 
-  Loop_1.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_1.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 
@@ -400,7 +400,7 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
 
   phi_foo_02.io.InData(1) <> Loop_0.io.Out(0)
 
-  ret_17.io.In.data("field0") <> Loop_1.io.Out(0)
+  ret_17.io.In.elements("field0") <> Loop_1.io.Out(0)
 
 
 

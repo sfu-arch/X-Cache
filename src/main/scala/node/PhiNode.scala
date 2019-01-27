@@ -21,6 +21,8 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
 
   // Predicate mask comming from the basic block
   val Mask = Flipped(Decoupled(UInt(NumInputs.W)))
+
+  override def cloneType = new PhiNodeIO(NumInputs,NumOuts).asInstanceOf[this.type]
 }
 
 abstract class PhiFastNodeIO(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)

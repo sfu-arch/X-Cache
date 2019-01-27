@@ -180,9 +180,9 @@ class test04_optimizedDF(implicit p: Parameters) extends test04_optimizedDFIO()(
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field1")(1)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field0")(1)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field0")(1)
 
 
   /* ================================================================== *
@@ -303,9 +303,9 @@ class test04_optimizedDF(implicit p: Parameters) extends test04_optimizedDFIO()(
 
   br_11.io.CmpIO <> icmp_cmp10.io.Out(0)
 
-  icmp_cmp90.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
+  icmp_cmp90.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  icmp_cmp90.io.RightIO <> InputSplitter.io.Out.data("field1")(0)
+  icmp_cmp90.io.RightIO <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
   /* ================================================================== *

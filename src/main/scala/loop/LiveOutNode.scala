@@ -14,6 +14,7 @@ class LiveOutNodeIO(NumOuts: Int)
   // Inputdata for Live out element
   val InData = Flipped(Decoupled(new DataBundle()))
 
+  override def cloneType = new LiveOutNodeIO(NumOuts).asInstanceOf[this.type]
 }
 
 class LiveOutNode(NumOuts: Int, ID: Int)

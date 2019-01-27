@@ -410,7 +410,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
 
   // Connecting function argument to the loop header
   //i32 %n
-  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
 
 
@@ -486,7 +486,7 @@ class cilk_for_test09_innerDF(implicit p: Parameters) extends cilk_for_test09_in
   
 
   loop_L_0_LiveOut_0.io.InData <>   phi1.io.Out(param.ret9_in("phi1"))
-  ret9.io.In.data("field0") <> loop_L_0_LiveOut_0.io.Out(0)
+  ret9.io.In.elements("field0") <> loop_L_0_LiveOut_0.io.Out(0)
   io.out <> ret9.io.Out
 
 

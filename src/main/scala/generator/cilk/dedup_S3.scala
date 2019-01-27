@@ -211,15 +211,15 @@ class dedup_S3DF(implicit p: Parameters) extends dedup_S3DFIO()(p) {
 
   st_3.io.GepAddr <> Gep_arrayidx12.io.Out(0)
 
-  ret_4.io.In.data("field0") <> st_3.io.Out(0)
+  ret_4.io.In("field0") <> st_3.io.Out(0)
 
-  Gep_arrayidx0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  Gep_arrayidx0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  st_3.io.inData <> InputSplitter.io.Out.data("field1")(0)
+  st_3.io.inData <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_arrayidx12.io.idx1 <> InputSplitter.io.Out.data("field2")(0)
+  Gep_arrayidx12.io.idx1 <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Gep_arrayidx12.io.baseAddress <> InputSplitter.io.Out.data("field3")(0)
+  Gep_arrayidx12.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(0)
 
   st_1.io.Out(0).ready := true.B
 

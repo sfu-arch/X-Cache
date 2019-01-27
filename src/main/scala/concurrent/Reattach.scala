@@ -11,6 +11,7 @@ import utility.UniformPrintfs
 class ReattachIO(val NumPredOps: Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p) {
   val predicateIn = Vec(NumPredOps, Flipped(Decoupled(new DataBundle()(p))))
+  override def cloneType = new ReattachIO(NumPredOps).asInstanceOf[this.type]
 }
 
 class Reattach(val NumPredOps: Int, ID: Int)

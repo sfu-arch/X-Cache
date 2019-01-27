@@ -323,10 +323,10 @@ class cilk_for_test12_detach3DF(implicit p: Parameters) extends cilk_for_test12_
     */
 
   // Wiring GEP instruction to the function argument
-  getelementptr0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  getelementptr0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
   // Wiring GEP instruction to the function argument
-  getelementptr0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
+  getelementptr0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
 
   // Wiring Load instruction to the parent instruction
   load1.io.GepAddr <> getelementptr0.io.Out(param.load1_in("getelementptr0"))
@@ -345,10 +345,10 @@ class cilk_for_test12_detach3DF(implicit p: Parameters) extends cilk_for_test12_
   mul2.io.RightIO <> load1.io.Out(param.mul2_in("load1"))
 
   // Wiring GEP instruction to the function argument
-  getelementptr3.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
+  getelementptr3.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
   // Wiring GEP instruction to the function argument
-  getelementptr3.io.idx1 <> InputSplitter.io.Out.data("field1")(1)
+  getelementptr3.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(1)
 
   store4.io.inData <> mul2.io.Out(param.store4_in("mul2"))
 
@@ -373,7 +373,7 @@ class cilk_for_test12_detach3DF(implicit p: Parameters) extends cilk_for_test12_
   
   ret6.io.In.data("field0").valid := true.B
   */
-  ret6.io.In.data("field0") <> store4.io.Out(0)
+  ret6.io.In.elements("field0") <> store4.io.Out(0)
 
   io.out <> ret6.io.Out
 

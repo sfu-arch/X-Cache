@@ -16,6 +16,7 @@ import utility.UniformPrintfs
 class DetachIO()(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts = 3)(new ControlBundle)(p) {
   //  val incr = Decoupled(new AckBundle)
+  override def cloneType = new DetachIO().asInstanceOf[this.type]
 }
 
 class Detach(ID: Int)

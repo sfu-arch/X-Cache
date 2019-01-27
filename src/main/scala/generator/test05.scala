@@ -219,9 +219,9 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 
@@ -386,15 +386,15 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
   ld_19.io.GepAddr <> arrayidx5.io.Out(0)
 
-  ret_20.io.In.data("field0") <> ld_19.io.Out(0)
+  ret_20.io.In.elements("field0") <> ld_19.io.Out(0)
 
-  arrayidx2.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
+  arrayidx2.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  arrayidx5.io.baseAddress <> InputSplitter.io.Out.data("field0")(2)
+  arrayidx5.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(2)
 
-  sub.io.LeftIO <> InputSplitter.io.Out.data("field1")(1)
+  sub.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  sub4.io.LeftIO <> InputSplitter.io.Out.data("field1")(2)
+  sub4.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(2)
 
   st_8.io.Out(0).ready := true.B
 

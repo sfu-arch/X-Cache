@@ -687,7 +687,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   */
 
   // Wiring Store instruction to the function argument
-  store3.io.inData <> InputSplitter.io.Out.data("field1")(0)
+  store3.io.inData <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
   // Wiring Store instruction to the parent instruction
@@ -699,7 +699,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   // Wiring Binary instruction to the function argument
-  icmp4.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
+  icmp4.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
   // Wiring constant
   icmp4.io.RightIO.bits.data := 2.U
@@ -710,18 +710,18 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   br5.io.CmpIO <> icmp4.io.Out(param.br5_in("icmp4"))
 
   // Wiring Store instruction to the function argument
-  store6.io.inData <> InputSplitter.io.Out.data("field0")(1)
+  store6.io.inData <> InputSplitter.io.Out.data.elements("field0")(1)
 
 
   // Wiring Store instruction to the function argument
-  store6.io.GepAddr <> InputSplitter.io.Out.data("field1")(1)
+  store6.io.GepAddr <> InputSplitter.io.Out.data.elements("field1")(1)
   store6.io.memResp <> MemCtrl.io.WriteOut(1)
   MemCtrl.io.WriteIn(1) <> store6.io.memReq
   //  store6.io.Out(0).ready := true.B  // Manual
 
 
   // Wiring Binary instruction to the function argument
-  sub8.io.LeftIO <> InputSplitter.io.Out.data("field0")(2)
+  sub8.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(2)
 
   // Wiring constant
   sub8.io.RightIO.bits.data := 1.U
@@ -736,15 +736,15 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   // Wiring instructions
-  call10_out.io.In.data("field0") <> sub8.io.Out(param.call10_in("sub8"))
+  call10_out.io.In.elements("field0") <> sub8.io.Out(param.call10_in("sub8"))
 
   // Wiring instructions
   gep10.io.baseAddress.enq(DataBundle.active(0.U))
-  call10_out.io.In.data("field1") <> gep10.io.Out(0) // <> alloca0.io.Out(param.call10_in("alloca0"))
+  call10_out.io.In.elements("field1") <> gep10.io.Out(0) // <> alloca0.io.Out(param.call10_in("alloca0"))
 
 
   // Wiring Binary instruction to the function argument
-  sub12.io.LeftIO <> InputSplitter.io.Out.data("field0")(3)
+  sub12.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(3)
 
   // Wiring constant
   sub12.io.RightIO.bits.data := 2.U
@@ -758,11 +758,11 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   reattach15.io.predicateIn(0) <> call14_in.io.Out.data("field0") // manual
 
   // Wiring instructions
-  call14_out.io.In.data("field0") <> sub12.io.Out(param.call14_in("sub12"))
+  call14_out.io.In.elements("field0") <> sub12.io.Out(param.call14_in("sub12"))
 
   // Wiring instructions
   gep14.io.baseAddress.enq(DataBundle.active(4.U))
-  call14_out.io.In.data("field1") <> gep14.io.Out(0) // <> alloca1.io.Out(param.call14_in("alloca1"))
+  call14_out.io.In.elements("field1") <> gep14.io.Out(0) // <> alloca1.io.Out(param.call14_in("alloca1"))
 
 
   // Wiring Call to I/O
@@ -771,15 +771,15 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   // Wiring instructions
   gep17a.io.baseAddress.enq(DataBundle.active(0.U))
-  call17_out.io.In.data("field0") <> gep17a.io.Out(0) // <> alloca0.io.Out(param.call17_in("alloca0"))
+  call17_out.io.In.elements("field0") <> gep17a.io.Out(0) // <> alloca0.io.Out(param.call17_in("alloca0"))
 
   // Wiring instructions
   gep17b.io.baseAddress.enq(DataBundle.active(4.U))
-  call17_out.io.In.data("field1") <> gep17b.io.Out(0) // <> alloca1.io.Out(param.call17_in("alloca1"))
+  call17_out.io.In.elements("field1") <> gep17b.io.Out(0) // <> alloca1.io.Out(param.call17_in("alloca1"))
 
   // Wiring instructions
   gep17c.io.baseAddress.enq(DataBundle.active(8.U))
-  call17_out.io.In.data("field2") <> gep17c.io.Out(0) // <> alloca2.io.Out(param.call17_in("alloca2"))
+  call17_out.io.In.elements("field2") <> gep17c.io.Out(0) // <> alloca2.io.Out(param.call17_in("alloca2"))
 
 
   /**
@@ -787,9 +787,9 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
     */
 
 
-  ret19.io.In.data("field0") <> store6.io.Out(0) // manual
+  ret19.io.In.elements("field0") <> store6.io.Out(0) // manual
 
-  ret20.io.In.data("field0") <> call17_in.io.Out.data("field0") // Manual fix
+  ret20.io.In.elements("field0") <> call17_in.io.Out.data("field0") // Manual fix
 
   val retArb = Module(new Arbiter(new Call(List(32)), 2))
   // Drop returns from the non-predicated branch

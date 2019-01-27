@@ -48,6 +48,8 @@ class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)(implicit p: Paramete
   val enable = Flipped(Decoupled(new ControlBundle))
   // Output IO
   val Out = Vec(NumOuts, Decoupled(gen))
+
+  override def cloneType = new HandShakingIONPS(NumOuts)(gen).asInstanceOf[this.type]
 }
 
 /**
@@ -75,6 +77,8 @@ class HandShakingIOPS[T <: Data](val NumPredOps: Int,
   val SuccOp = Vec(NumSuccOps, Decoupled(new ControlBundle()))
   // Output IO
   val Out = Vec(NumOuts, Decoupled(gen))
+
+  override def cloneType = new HandShakingIOPS(NumPredOps,NumSuccOps,NumOuts)(gen).asInstanceOf[this.type]
 }
 
 /**
@@ -93,6 +97,9 @@ class HandShakingFusedIO[T <: Data](val NumIns: Int, val NumOuts: Int)(gen: T)(i
   val In = Flipped(Vec(NumIns, Decoupled(gen)))
   // Output IO
   val Out = Vec(NumOuts, Decoupled(gen))
+
+  override def cloneType = new HandShakingFusedIO(NumIns,NumOuts)(gen).asInstanceOf[this.type]
+
 }
 
 /**

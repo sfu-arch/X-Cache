@@ -238,13 +238,13 @@ class testFP01DF(implicit p: Parameters) extends testFP01DFIO()(p) {
 
   phi_sum_05.io.InData(0) <> FP_add3.io.Out(0)
 
-  ret_6.io.In.data("field0") <> phi_sum_05.io.Out(0)
+  ret_6.io.In.elements("field0") <> phi_sum_05.io.Out(0)
 
-  FP_div0.io.a <> InputSplitter.io.Out.data("field0")(0)
+  FP_div0.io.a <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  FP_add3.io.LeftIO <> InputSplitter.io.Out.data("field0")(1)
+  FP_add3.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  FP_add3.io.RightIO <> InputSplitter.io.Out.data("field1")(0)
+  FP_add3.io.RightIO <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
 

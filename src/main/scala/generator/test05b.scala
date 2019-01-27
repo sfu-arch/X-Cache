@@ -518,11 +518,11 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32* %a
-  lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0) // manual
+  lb_L_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0) // manual
 
   // Connecting function argument to the loop header
   //i32 %n
-  lb_L_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0) // manual
+  lb_L_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0) // manual
 
 
 
@@ -570,8 +570,8 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
 
   // Wiring Call to I/O
-  callout4.io.In("field0") <> lb_L_0.io.liveIn.elements("field0")(0) // manual
-  callout4.io.In("field1") <> lb_L_0.io.liveIn.elements("field1")(1) // manual
+  callout4.io.In.elements("field0") <> lb_L_0.io.liveIn.elements("field0")(0) // manual
+  callout4.io.In.elements("field1") <> lb_L_0.io.liveIn.elements("field1")(1) // manual
   io.call4_out <> callout4.io.Out(0)
 
   callin4.io.In <> io.call4_in
@@ -588,7 +588,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   add6.io.RightIO.valid := true.B
 
   // Wiring Binary instruction to the function argument
-  sub8.io.LeftIO <> InputSplitter.io.Out.data("field1")(1)
+  sub8.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
 
   // Wiring constant
   sub8.io.RightIO.bits.data := 1.U
@@ -596,7 +596,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   sub8.io.RightIO.valid := true.B
 
   // Wiring GEP instruction to the function argument
-  getelementptr9.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
+  getelementptr9.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr9.io.idx1 <> sub8.io.Out(param.getelementptr9_in("sub8"))
@@ -631,7 +631,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
 
 
   // Wiring Binary instruction to the function argument
-  sub13.io.LeftIO <> InputSplitter.io.Out.data("field1")(2)
+  sub13.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(2)
 
   // Wiring constant
   sub13.io.RightIO.bits.data := 1.U
@@ -639,7 +639,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   sub13.io.RightIO.valid := true.B
 
   // Wiring GEP instruction to the function argument
-  getelementptr14.io.baseAddress <> InputSplitter.io.Out.data("field0")(2)
+  getelementptr14.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(2)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr14.io.idx1 <> sub13.io.Out(param.getelementptr14_in("sub13"))
@@ -658,7 +658,7 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   
   
   
-  ret16.io.In.data("field0") <> load15.io.Out(param.ret16_in("load15"))
+  ret16.io.In.elements("field0") <> load15.io.Out(param.ret16_in("load15"))
   io.out <> ret16.io.Out
 
 

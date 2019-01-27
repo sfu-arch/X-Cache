@@ -21,6 +21,9 @@ class ComputeNodeIO(NumOuts: Int)
 
   // RightIO: Right input data for computation
   val RightIO = Flipped(Decoupled(new DataBundle()))
+
+  override def cloneType = new ComputeNodeIO(NumOuts).asInstanceOf[this.type]
+
 }
 
 class ComputeNode(NumOuts: Int, ID: Int, opCode: String)

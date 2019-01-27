@@ -244,9 +244,9 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
 
   Loop_0.io.In(2) <> Loop_1.io.liveIn.elements("field0")(1)
 
-  Loop_1.io.In(0) <> InputSplitter.io.Out.data("field1")(1)
+  Loop_1.io.In(0) <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Loop_1.io.In(1) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_1.io.In(1) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 
@@ -428,7 +428,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
 
   br_19.io.CmpIO <> icmp_exitcond18.io.Out(0)
 
-  icmp_cmp240.io.LeftIO <> InputSplitter.io.Out.data("field1")(0)
+  icmp_cmp240.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
 
   st_16.io.Out(0).ready := true.B
 

@@ -21,7 +21,7 @@ import node._
 
 
 class cilk_for_test09MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
+  val io = IO( new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))  // Initialization address
     val din  = Input(UInt(nastiXDataBits.W))  // Initialization data
@@ -29,6 +29,9 @@ class cilk_for_test09MainIO(implicit val p: Parameters)  extends Module with Cor
     val dout = Output(UInt(nastiXDataBits.W))
     val out = Decoupled(new Call(List(32)))
   })
+
+   def cloneType = new cilk_for_test09MainIO().asInstanceOf[this.type]
+
 }
 
 class cilk_for_test09MainDirect(implicit p: Parameters) extends cilk_for_test09MainIO {

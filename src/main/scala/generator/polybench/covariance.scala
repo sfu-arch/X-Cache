@@ -588,9 +588,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_1.io.In(3) <> Loop_2.io.liveIn.elements("field2")(0)
 
-  Loop_2.io.In(0) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_2.io.In(0) <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Loop_2.io.In(1) <> InputSplitter.io.Out.data("field1")(2)
+  Loop_2.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(2)
 
   Loop_2.io.In(2) <> FP_sub4724.io.Out(0)
 
@@ -600,9 +600,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_3.io.In(2) <> phii_1822.io.Out(0)
 
-  Loop_4.io.In(0) <> InputSplitter.io.Out.data("field3")(1)
+  Loop_4.io.In(0) <> InputSplitter.io.Out.data.elements("field3")(1)
 
-  Loop_4.io.In(1) <> InputSplitter.io.Out.data("field1")(1)
+  Loop_4.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(1)
 
   Loop_5.io.In(0) <> Loop_6.io.liveIn.elements("field1")(0)
 
@@ -610,11 +610,11 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_5.io.In(2) <> Gep_arrayidx2.io.Out(1)
 
-  Loop_6.io.In(0) <> InputSplitter.io.Out.data("field3")(0)
+  Loop_6.io.In(0) <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  Loop_6.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_6.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_6.io.In(2) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_6.io.In(2) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 
@@ -1217,7 +1217,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   phiadd_lcssa15.io.InData(0) <> Loop_5.io.Out(0)
 
-  FP_sub4724.io.LeftIO <> InputSplitter.io.Out.data("field0")(1)
+  FP_sub4724.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(1)
 
   st_3.io.Out(0).ready := true.B
 

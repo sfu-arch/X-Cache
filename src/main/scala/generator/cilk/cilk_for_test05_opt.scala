@@ -189,11 +189,11 @@ class cilk_for_test05_optDF(implicit p: Parameters) extends cilk_for_test05_optD
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_0.io.In(2) <> InputSplitter.io.Out.data.elements("field2")(0)
 
 
   /* ================================================================== *

@@ -26,6 +26,8 @@ class LoopExampleIO[T <: Data](val ID: Int)(gen: T)(implicit p: Parameters) exte
   val Finish = Input(Bool())
 
   val Result = Decoupled(gen)
+
+  override def cloneType = new LoopExampleIO(ID)(gen).asInstanceOf[this.type]
 }
 
 

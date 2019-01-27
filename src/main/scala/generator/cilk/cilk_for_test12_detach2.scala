@@ -550,11 +550,11 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
   // Connecting function argument to the loop header
   //i32 %n.in
-  lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  lb_L_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
   // Connecting function argument to the loop header
   //i32* %a.in
-  lb_L_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  lb_L_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
   /* ================================================================== *
@@ -609,7 +609,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   add5.io.RightIO.valid := true.B
 
   // Wiring Binary instruction to the function argument
-  sub8.io.LeftIO <> InputSplitter.io.Out.data("field0")(1)
+  sub8.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(1)
 
   // Wiring constant
   sub8.io.RightIO.bits.data := 1.U
@@ -617,7 +617,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   sub8.io.RightIO.valid := true.B
 
   // Wiring GEP instruction to the function argument
-  getelementptr9.io.baseAddress <> InputSplitter.io.Out.data("field1")(1)
+  getelementptr9.io.baseAddress <> InputSplitter.io.Out.data.elements("field1")(1)
 
   // Wiring GEP instruction to the parent instruction
   getelementptr9.io.idx1 <> sub8.io.Out(param.getelementptr9_in("sub8"))
@@ -662,7 +662,7 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
   
   ret14.io.In.data("field0").valid := true.B
   */
-  ret14.io.In.data("field0") <> store12.io.Out(0)
+  ret14.io.In.elements("field0") <> store12.io.Out(0)
   io.out <> ret14.io.Out
 
 

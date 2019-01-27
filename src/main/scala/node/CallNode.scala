@@ -16,6 +16,7 @@ class CallNodeIO(val argTypes: Seq[Int], val retTypes: Seq[Int])(implicit p: Par
   val callOut = Decoupled(new Call(argTypes))          // To task
   val retIn   = Flipped(Decoupled(new Call(retTypes))) // From task
   val Out     = new CallDecoupled(retTypes)            // Returns to calling block(s)
+  override def cloneType = new CallNodeIO(argTypes,retTypes).asInstanceOf[this.type]
 }
 
 class CallNode(ID: Int, argTypes: Seq[Int], retTypes: Seq[Int])

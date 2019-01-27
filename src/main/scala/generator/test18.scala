@@ -213,9 +213,9 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 
@@ -397,13 +397,13 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
 
   ret_19.io.In.data("field0") <> ld_18.io.Out(0)
 
-  Gep_arrayidx212.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
+  Gep_arrayidx212.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  Gep_arrayidx517.io.baseAddress <> InputSplitter.io.Out.data("field0")(2)
+  Gep_arrayidx517.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(2)
 
-  binaryOp_sub11.io.LeftIO <> InputSplitter.io.Out.data("field1")(1)
+  binaryOp_sub11.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  binaryOp_sub416.io.LeftIO <> InputSplitter.io.Out.data("field1")(2)
+  binaryOp_sub416.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(2)
 
   st_8.io.Out(0).ready := true.B
 

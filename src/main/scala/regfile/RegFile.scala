@@ -27,6 +27,9 @@ class RegFileBundle(size: Int)(implicit p: Parameters) extends CoreBundle()(p) {
   val waddr  = Input(UInt(max(1,log2Ceil(size)).W))
   val wdata  = Input(UInt(xlen.W))
   val wmask  = Input(UInt((xlen/8).W))
+
+  override def cloneType = new RegFileBundle(size).asInstanceOf[this.type]
+
 }
 
 

@@ -12,6 +12,8 @@ class SyncIO(NumOuts: Int, NumInc: Int, NumDec: Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new ControlBundle)(p) {
   val incIn = Flipped(Vec(NumInc, Decoupled(new ControlBundle())))
   val decIn = Flipped(Vec(NumDec, Decoupled(new ControlBundle())))
+
+  override def cloneType = new SyncIO(NumOuts,NumInc,NumDec).asInstanceOf[this.type]
 }
 
 class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)

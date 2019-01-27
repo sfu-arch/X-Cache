@@ -198,9 +198,9 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 

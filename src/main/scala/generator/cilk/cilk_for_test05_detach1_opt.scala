@@ -326,7 +326,7 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
 
   br_5.io.CmpIO <> icmp_4.io.Out(0)
 
-  ld_7.io.GepAddr <> Gep_6.io.Out(0).data
+  ld_7.io.GepAddr <> Gep_6.io.Out(0)
 
   binaryOp_10.io.LeftIO <> ld_7.io.Out(0)
 

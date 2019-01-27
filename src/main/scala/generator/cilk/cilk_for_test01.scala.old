@@ -532,11 +532,11 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
 
   // Connecting function argument to the loop header
   //i32* %a
-  loop_L_5_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_5_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
   // Connecting function argument to the loop header
   //i32* %b
-  loop_L_5_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+  loop_L_5_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
 
 

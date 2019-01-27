@@ -26,7 +26,7 @@ resolvers ++= Seq(
 val defaultVersions = Map(
 //  "chisel3" -> "3.0-SNAPSHOT",
   "chisel3" -> "3.1.+",
-  "chisel-iotesters" -> "1.1.+"
+  "chisel-iotesters" -> "1.2.+"
   )
 
 libraryDependencies ++= (Seq("chisel3","chisel-iotesters").map {

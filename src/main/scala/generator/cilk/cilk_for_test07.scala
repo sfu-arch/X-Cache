@@ -427,15 +427,15 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
 
   // Connecting function argument to the loop header
   //[2 x i32]* %p1
-  loop_L_6_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_6_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
   // Connecting function argument to the loop header
   //[2 x i32]* %p2
-  loop_L_6_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+  loop_L_6_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
   // Connecting function argument to the loop header
   //i32* %d
-  loop_L_6_liveIN_2.io.InData <> InputSplitter.io.Out.data("field2")
+  loop_L_6_liveIN_2.io.InData <> InputSplitter.io.Out.data.elements("field2")
 
 
 
@@ -477,9 +477,9 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
   
   
   
-  ret2.io.In.data("field0").bits.data := 1.U
-  ret2.io.In.data("field0").bits.predicate := true.B
-  ret2.io.In.data("field0").valid := true.B
+  ret2.io.In.elements("field0").bits.data := 1.U
+  ret2.io.In.elements("field0").bits.predicate := true.B
+  ret2.io.In.elements("field0").valid := true.B
   io.out <> ret2.io.Out
 
 
@@ -507,20 +507,20 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
   call8.io.retIn <> io.call8_in
   call8.io.Out.enable.ready := true.B // Manual fix
   // Wiring Call instruction to the loop header
-  call8.io.In.data("field0") <> loop_L_6_liveIN_0.io.Out(param.call8_in("field0"))
+  call8.io.In.data.elements("field0") <> loop_L_6_liveIN_0.io.Out(param.call8_in("field0"))
 
   // Wiring Call instruction to the loop header
-  call8.io.In.data("field1") <> phi3.io.Out(param.call8_in("phi3"))  // Manually added
+  call8.io.In.data.elements("field1") <> phi3.io.Out(param.call8_in("phi3"))  // Manually added
 
   // Wiring Call instruction to the loop header
-  call8.io.In.data("field2") <> loop_L_6_liveIN_1.io.Out(param.call8_in("field1"))
+  call8.io.In.data.elements("field2") <> loop_L_6_liveIN_1.io.Out(param.call8_in("field1"))
 
   // Wiring Call instruction to the loop header
-  call8.io.In.data("field3") <> loop_L_6_liveIN_2.io.Out(param.call8_in("field2"))
+  call8.io.In.data.elements("field3") <> loop_L_6_liveIN_2.io.Out(param.call8_in("field2"))
   call8.io.Out.enable.ready := true.B // Manual fix
 
   // Reattach (Manual add)
-  reattach9.io.predicateIn(0) <> call8.io.Out.data("field0")
+  reattach9.io.predicateIn(0) <> call8.io.Out.data.elements("field0")
 
   // Sync (Manual add)
   sync1.io.incIn(0) <> detach4.io.Out(2)

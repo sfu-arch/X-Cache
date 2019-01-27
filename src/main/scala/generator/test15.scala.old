@@ -364,9 +364,9 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
   Loop_1.io.In(1) <> Loop_2.io.liveIn.elements("field1")(1)
 
-  Loop_2.io.In(0) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_2.io.In(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_2.io.In(1) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_2.io.In(1) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 

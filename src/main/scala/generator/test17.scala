@@ -419,39 +419,39 @@ class test17DF(implicit p: Parameters) extends test17DFIO()(p) {
 
   ret_27.io.In.data("field0") <> phi_sum_026.io.Out(0)
 
-  binaryOp_div_mask0.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
+  binaryOp_div_mask0.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  binaryOp_add3.io.RightIO <> InputSplitter.io.Out.data("field0")(1)
+  binaryOp_add3.io.RightIO <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  binaryOp_a_off5.io.LeftIO <> InputSplitter.io.Out.data("field0")(2)
+  binaryOp_a_off5.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(2)
 
-  binaryOp_mul711.io.RightIO <> InputSplitter.io.Out.data("field0")(3)
+  binaryOp_mul711.io.RightIO <> InputSplitter.io.Out.data.elements("field0")(3)
 
-  binaryOp_sub14.io.LeftIO <> InputSplitter.io.Out.data("field0")(4)
+  binaryOp_sub14.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(4)
 
-  icmp_16.io.LeftIO <> InputSplitter.io.Out.data("field0")(5)
+  icmp_16.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(5)
 
-  binaryOp_sub1619.io.RightIO <> InputSplitter.io.Out.data("field0")(6)
+  binaryOp_sub1619.io.RightIO <> InputSplitter.io.Out.data.elements("field0")(6)
 
-  binaryOp_mul1922.io.LeftIO <> InputSplitter.io.Out.data("field0")(7)
+  binaryOp_mul1922.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(7)
 
-  binaryOp_add3.io.LeftIO <> InputSplitter.io.Out.data("field1")(0)
+  binaryOp_add3.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  binaryOp_mul711.io.LeftIO <> InputSplitter.io.Out.data("field1")(1)
+  binaryOp_mul711.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  binaryOp_sub14.io.RightIO <> InputSplitter.io.Out.data("field1")(2)
+  binaryOp_sub14.io.RightIO <> InputSplitter.io.Out.data.elements("field1")(2)
 
-  binaryOp_mul1518.io.RightIO <> InputSplitter.io.Out.data("field1")(3)
+  binaryOp_mul1518.io.RightIO <> InputSplitter.io.Out.data.elements("field1")(3)
 
-  binaryOp_add14.io.RightIO <> InputSplitter.io.Out.data("field2")(0)
+  binaryOp_add14.io.RightIO <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  binaryOp_mul7.io.RightIO <> InputSplitter.io.Out.data("field2")(1)
+  binaryOp_mul7.io.RightIO <> InputSplitter.io.Out.data.elements("field2")(1)
 
-  binaryOp_add1115.io.RightIO <> InputSplitter.io.Out.data("field2")(2)
+  binaryOp_add1115.io.RightIO <> InputSplitter.io.Out.data.elements("field2")(2)
 
-  binaryOp_sub1619.io.LeftIO <> InputSplitter.io.Out.data("field2")(3)
+  binaryOp_sub1619.io.LeftIO <> InputSplitter.io.Out.data.elements("field2")(3)
 
-  binaryOp_add2124.io.RightIO <> InputSplitter.io.Out.data("field2")(4)
+  binaryOp_add2124.io.RightIO <> InputSplitter.io.Out.data.elements("field2")(4)
 
 
   /* ================================================================== *

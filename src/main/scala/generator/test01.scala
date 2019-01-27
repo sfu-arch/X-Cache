@@ -153,9 +153,9 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
 
   ret_1.io.In.data("field0") <> mul.io.Out
 
-  mul.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
+  mul.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  mul.io.RightIO <> InputSplitter.io.Out.data("field1")(0)
+  mul.io.RightIO <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
 

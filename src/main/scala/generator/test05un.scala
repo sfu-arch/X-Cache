@@ -463,25 +463,25 @@ class test05unDF(implicit p: Parameters) extends test05unDFIO()(p) {
 
   st_23.io.GepAddr <> Gep_arrayidx1_422.io.Out(0)
 
-  ld_0.io.GepAddr <> InputSplitter.io.Out.data("field0")(0)
+  ld_0.io.GepAddr <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Gep_arrayidx12.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
+  Gep_arrayidx12.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  Gep_arrayidx_14.io.baseAddress <> InputSplitter.io.Out.data("field0")(2)
+  Gep_arrayidx_14.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(2)
 
-  Gep_arrayidx1_17.io.baseAddress <> InputSplitter.io.Out.data("field0")(3)
+  Gep_arrayidx1_17.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(3)
 
-  Gep_arrayidx_29.io.baseAddress <> InputSplitter.io.Out.data("field0")(4)
+  Gep_arrayidx_29.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(4)
 
-  Gep_arrayidx1_212.io.baseAddress <> InputSplitter.io.Out.data("field0")(5)
+  Gep_arrayidx1_212.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(5)
 
-  Gep_arrayidx_314.io.baseAddress <> InputSplitter.io.Out.data("field0")(6)
+  Gep_arrayidx_314.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(6)
 
-  Gep_arrayidx1_317.io.baseAddress <> InputSplitter.io.Out.data("field0")(7)
+  Gep_arrayidx1_317.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(7)
 
-  Gep_arrayidx_419.io.baseAddress <> InputSplitter.io.Out.data("field0")(8)
+  Gep_arrayidx_419.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(8)
 
-  Gep_arrayidx1_422.io.baseAddress <> InputSplitter.io.Out.data("field0")(9)
+  Gep_arrayidx1_422.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(9)
 
   st_3.io.Out(0).ready := true.B
 

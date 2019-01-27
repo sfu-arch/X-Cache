@@ -165,11 +165,11 @@ class test11_addDF(implicit p: Parameters) extends test11_addDFIO()(p) {
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  ret_1.io.In.data("field0") <> add.io.Out(0)
+  ret_1.io.In.elements("field0") <> add.io.Out(0)
 
-  add.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
+  add.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  add.io.RightIO <> InputSplitter.io.Out.data("field1")(0)
+  add.io.RightIO <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
 

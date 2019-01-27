@@ -199,11 +199,11 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_0.io.In(2) <> InputSplitter.io.Out.data.elements("field2")(0)
 
 
 
@@ -318,7 +318,7 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   inc.io.RightIO <> const2.io.Out(0)
 
-  ret_14.io.In.data("field0") <> const3.io.Out(0)
+  ret_14.io.In.elements("field0") <> const3.io.Out(0)
 
   cmp.io.LeftIO <> i_0.io.Out(0)
 

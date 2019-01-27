@@ -439,11 +439,11 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
 
   Loop_3.io.In(3) <> Loop_4.io.liveIn.elements("field2")(0)
 
-  Loop_4.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_4.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_4.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_4.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_4.io.In(2) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_4.io.In(2) <> InputSplitter.io.Out.data.elements("field2")(0)
 
 
 

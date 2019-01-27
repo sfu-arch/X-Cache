@@ -398,31 +398,31 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
   st_20.io.GepAddr <> Gep_19.io.Out(0)
 
-  Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Gep_9.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
+  Gep_9.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  Gep_0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
+  Gep_0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_4.io.idx1 <> InputSplitter.io.Out.data("field1")(1)
+  Gep_4.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Gep_9.io.idx1 <> InputSplitter.io.Out.data("field1")(2)
+  Gep_9.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(2)
 
-  Gep_13.io.idx1 <> InputSplitter.io.Out.data("field1")(3)
+  Gep_13.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(3)
 
-  Gep_15.io.idx1 <> InputSplitter.io.Out.data("field1")(4)
+  Gep_15.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(4)
 
-  Gep_19.io.idx1 <> InputSplitter.io.Out.data("field1")(5)
+  Gep_19.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(5)
 
-  Gep_4.io.baseAddress <> InputSplitter.io.Out.data("field2")(0)
+  Gep_4.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Gep_13.io.baseAddress <> InputSplitter.io.Out.data("field2")(1)
+  Gep_13.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(1)
 
-  Gep_15.io.baseAddress <> InputSplitter.io.Out.data("field2")(2)
+  Gep_15.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(2)
 
-  Gep_19.io.baseAddress <> InputSplitter.io.Out.data("field2")(3)
+  Gep_19.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(3)
 
-  binaryOp_11.io.RightIO <> InputSplitter.io.Out.data("field3")(0)
+  binaryOp_11.io.RightIO <> InputSplitter.io.Out.data.elements("field3")(0)
 
   st_5.io.Out(0).ready := true.B
 

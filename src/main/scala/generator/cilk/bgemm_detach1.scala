@@ -544,15 +544,15 @@ class bgemm_detach1DF(implicit p: Parameters) extends bgemm_detach1DFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32* %m1.in
-  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data("field1")
+  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
   // Connecting function argument to the loop header
   //i32* %m2.in
-  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data("field2")
+  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field2")
 
   // Connecting function argument to the loop header
   //i32* %prod.in
-  loop_L_0_liveIN_2.io.InData <> InputSplitter.io.Out.data("field3")
+  loop_L_0_liveIN_2.io.InData <> InputSplitter.io.Out.data.elements("field3")
 
   // Connecting instruction to the loop header
   //  %1 = add nsw i32 0, %0, !UID !9, !ScalaLabel !10
@@ -595,7 +595,7 @@ class bgemm_detach1DF(implicit p: Parameters) extends bgemm_detach1DFIO()(p) {
     */
 
   // Wiring Binary instruction to the function argument
-  mul0.io.LeftIO <> InputSplitter.io.Out.data("field0")
+  mul0.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")
 
   // Wiring constant
   mul0.io.RightIO.bits.data := 2.U
@@ -646,19 +646,19 @@ class bgemm_detach1DF(implicit p: Parameters) extends bgemm_detach1DFIO()(p) {
   call13.io.retIn <> io.call13_in
   call13.io.Out.enable.ready := true.B // Manual fix
   // Wiring instructions
-  call13.io.In.data("field0") <> phi4.io.Out(param.call13_in("phi4"))
+  call13.io.In.data.elements("field0") <> phi4.io.Out(param.call13_in("phi4"))
 
   // Wiring Call to the function argument
-  call13.io.In.data("field1") <> InputSplitter.io.Out.data("field1")
+  call13.io.In.data.elements("field1") <> InputSplitter.io.Out.data.elements("field1")
 
   // Wiring instructions
-  call13.io.In.data("field2") <> add1.io.Out(param.call13_in("add1"))
+  call13.io.In.data.elements("field2") <> add1.io.Out(param.call13_in("add1"))
 
   // Wiring Call to the function argument
-  call13.io.In.data("field3") <> InputSplitter.io.Out.data("field2")
+  call13.io.In.data.elements("field3") <> InputSplitter.io.Out.data.elements("field2")
 
   // Wiring Call to the function argument
-  call13.io.In.data("field4") <> InputSplitter.io.Out.data("field3")
+  call13.io.In.data.elements("field4") <> InputSplitter.io.Out.data.elements("field3")
 
 
 

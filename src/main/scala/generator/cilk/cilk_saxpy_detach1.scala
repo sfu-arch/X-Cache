@@ -224,21 +224,21 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
 
   st_7.io.GepAddr <> Gep_6.io.Out(0)
 
-  //  Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
-  Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  //  Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
+  Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  //  Gep_0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
-  Gep_0.io.idx(0) <> InputSplitter.io.Out.data("field1")(0)
+  //  Gep_0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
+  Gep_0.io.idx(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_3.io.idx1 <> InputSplitter.io.Out.data("field1")(1)
+  Gep_3.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Gep_6.io.idx1 <> InputSplitter.io.Out.data("field1")(2)
+  Gep_6.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(2)
 
-  binaryOp_2.io.LeftIO <> InputSplitter.io.Out.data("field2")(0)
+  binaryOp_2.io.LeftIO <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Gep_3.io.baseAddress <> InputSplitter.io.Out.data("field3")(0)
+  Gep_3.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  Gep_6.io.baseAddress <> InputSplitter.io.Out.data("field3")(1)
+  Gep_6.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(1)
 
   st_7.io.Out(0).ready := true.B
 

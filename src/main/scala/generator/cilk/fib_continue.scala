@@ -294,14 +294,14 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
     */
 
   // Wiring Load instruction to the function argument
-  load0.io.GepAddr <>  InputSplitter.io.Out.data("field0")(0)
+  load0.io.GepAddr <>  InputSplitter.io.Out.data.elements("field0")(0)
   load0.io.memResp <> MemCtrl.io.ReadOut(0)
   MemCtrl.io.ReadIn(0) <> load0.io.memReq
 
 
 
   // Wiring Load instruction to the function argument
-  load1.io.GepAddr <>  InputSplitter.io.Out.data("field1")(0)
+  load1.io.GepAddr <>  InputSplitter.io.Out.data.elements("field1")(0)
   load1.io.memResp <> MemCtrl.io.ReadOut(1)
   MemCtrl.io.ReadIn(1) <> load1.io.memReq
 
@@ -314,7 +314,7 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
   add2.io.RightIO <> load1.io.Out(param.add2_in("load1"))
 
   // Wiring Load instruction to the function argument
-  load3.io.GepAddr <>  InputSplitter.io.Out.data("field2")(0)
+  load3.io.GepAddr <>  InputSplitter.io.Out.data.elements("field2")(0)
   load3.io.memResp <> MemCtrl.io.ReadOut(2)
   MemCtrl.io.ReadIn(2) <> load3.io.memReq
 
@@ -335,7 +335,7 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
   /**
     * Connecting Dataflow signals
     */
-  ret5.io.In.data("field0") <> store4.io.Out(0)
+  ret5.io.In.elements("field0") <> store4.io.Out(0)
   io.out <> ret5.io.Out
 
 

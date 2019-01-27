@@ -449,13 +449,13 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
 
   icmp_cmp16.io.LeftIO <> ld_3.io.Out(1)
 
-  Gep_arrayidx28.io.idx1 <> ld_3.io.Out.data(2)
+  Gep_arrayidx28.io.idx1 <> ld_3.io.Out(2)
 
-  Gep_arrayidx310.io.idx1 <> ld_3.io.Out.data(3)
+  Gep_arrayidx310.io.idx1 <> ld_3.io.Out(3)
 
-  binaryOp_add12.io.LeftIO <> ld_3.io.Out.data(4)
+  binaryOp_add12.io.LeftIO <> ld_3.io.Out(4)
 
-  binaryOp_add515.io.LeftIO <> ld_3.io.Out.data(5)
+  binaryOp_add515.io.LeftIO <> ld_3.io.Out(5)
 
   br_5.io.CmpIO <> icmp_cmp4.io.Out(0)
 
@@ -479,7 +479,7 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
 
   st_19.io.GepAddr <> Gep_arrayidx718.io.Out(0)
 
-  ret_25.io.In.data("field0") <> Loop_0.io.Out(0)// st_19.io.Out(0) Manual
+  ret_25.io.In.elements("field0") <> Loop_0.io.Out(0)// st_19.io.Out(0) Manual
 
   binaryOp_and21.io.LeftIO <> binaryOp_add820.io.Out(0)
 

@@ -401,11 +401,11 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
   ld_14.io.GepAddr <> arrayidx5.io.Out(0)
 
-  ret_15.io.In.data("field0") <> ld_14.io.Out(0)
+  ret_15.io.In.elements("field0") <> ld_14.io.Out(0)
 
-  st_3.io.inData <> InputSplitter.io.Out.data("field0")(0)
+  st_3.io.inData <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  st_5.io.inData <> InputSplitter.io.Out.data("field1")(0)
+  st_5.io.inData <> InputSplitter.io.Out.data.elements("field1")(0)
 
   st_3.io.Out(0).ready := true.B
 

@@ -326,17 +326,17 @@ class cilk_for_test08_detachDF(implicit p: Parameters) extends cilk_for_test08_d
   val field0_expand = Module(new ExpandNode(NumOuts=3,ID=101)(new DataBundle))
   field0_expand.io.enable.valid := true.B
   field0_expand.io.enable.bits.control := true.B
-  field0_expand.io.InData <> InputSplitter.io.Out.data("field0")
+  field0_expand.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
   val field1_expand = Module(new ExpandNode(NumOuts=6,ID=102)(new DataBundle))
   field1_expand.io.enable.valid := true.B
   field1_expand.io.enable.bits.control := true.B
-  field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
+  field1_expand.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
   val field2_expand = Module(new ExpandNode(NumOuts=3,ID=103)(new DataBundle))
   field2_expand.io.enable.valid := true.B
   field2_expand.io.enable.bits.control := true.B
-  field2_expand.io.InData <> InputSplitter.io.Out.data("field2")
+  field2_expand.io.InData <> InputSplitter.io.Out.data.elements("field2")
 
 
   /* ================================================================== *
@@ -900,7 +900,7 @@ class cilk_for_test08_detachDF(implicit p: Parameters) extends cilk_for_test08_d
   
   
   
-  ret30.io.In.data("field0") <> store29.io.Out(0)  // Manually connected
+  ret30.io.In.elements("field0") <> store29.io.Out(0)  // Manually connected
 //  ret30.io.In.data("field0").bits.data := 1.U
 //  ret30.io.In.data("field0").bits.predicate := true.B
 //  ret30.io.In.data("field0").valid := true.B

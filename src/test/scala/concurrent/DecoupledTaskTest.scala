@@ -29,12 +29,12 @@ class DecoupledChildDF(val ID:Int)(implicit p: Parameters) extends Module {
   bb.io.predicateIn <> splitIn.io.Out.enable
 
   addModule1.io.enable <> bb.io.Out(0)
-  addModule1.io.LeftIO <> splitIn.io.Out.data("field0")
-  addModule1.io.RightIO <> splitIn.io.Out.data("field1")
+  addModule1.io.LeftIO <> splitIn.io.Out.data.elements("field0")
+  addModule1.io.RightIO <> splitIn.io.Out.data.elements("field1")
 
   addModule2.io.enable <> bb.io.Out(1)
-  addModule2.io.LeftIO <> splitIn.io.Out.data("field2")
-  addModule2.io.RightIO <> splitIn.io.Out.data("field3")
+  addModule2.io.LeftIO <> splitIn.io.Out.data.elements("field2")
+  addModule2.io.RightIO <> splitIn.io.Out.data.elements("field3")
 
   addModule3.io.enable.bits.control := true.B
   addModule3.io.enable.valid := true.B
@@ -43,7 +43,7 @@ class DecoupledChildDF(val ID:Int)(implicit p: Parameters) extends Module {
 
   ret4.io.enable.bits.control := true.B
   ret4.io.enable.valid := true.B
-  ret4.io.In.data("field0") <> addModule3.io.Out(0)
+  ret4.io.In.elements("field0") <> addModule3.io.Out(0)
   io.Out <> ret4.io.Out
 
 }

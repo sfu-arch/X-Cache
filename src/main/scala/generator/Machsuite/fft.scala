@@ -377,13 +377,13 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
 
   Loop_0.io.In(5) <> Loop_1.io.liveIn.elements("field3")(0)
 
-  Loop_1.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_1.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_1.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_1.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_1.io.In(2) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_1.io.In(2) <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Loop_1.io.In(3) <> InputSplitter.io.Out.data("field3")(0)
+  Loop_1.io.In(3) <> InputSplitter.io.Out.data.elements("field3")(0)
 
 
 

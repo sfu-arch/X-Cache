@@ -454,11 +454,11 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32* %a
-  lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0) // manual
+  lb_L_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0) // manual
 
   // Connecting function argument to the loop header
   //i32 %n
-  lb_L_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0) // manual
+  lb_L_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0) // manual
 
   lb_L_0.io.liveOut(0) <> phi1.io.Out(param.sdiv10_in("phi1"))
 
@@ -550,7 +550,7 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
   
   
   
-  ret11.io.In.data("field0") <> sdiv10.io.Out(param.ret11_in("sdiv10"))
+  ret11.io.In.elements("field0") <> sdiv10.io.Out(param.ret11_in("sdiv10"))
   io.out <> ret11.io.Out
 
 

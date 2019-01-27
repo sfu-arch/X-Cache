@@ -29,6 +29,8 @@ class StoreIO(NumPredOps: Int,
   val memReq = Decoupled(new WriteReq())
   // Memory response.
   val memResp = Input(Flipped(new WriteResp()))
+
+  override def cloneType = new StoreIO(NumPredOps,NumSuccOps,NumOuts).asInstanceOf[this.type]
 }
 
 /**

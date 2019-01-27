@@ -54,6 +54,9 @@ class LoopHeaderIO[T <: Data](val NumInputs: Int, val NumOuts: Int)
     */
   val Start = Output(Bool())
 
+  override def cloneType = new LoopHeaderIO(NumInputs, NumOuts)(gen).asInstanceOf[this.type]
+
+
 }
 
 

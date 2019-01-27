@@ -1172,7 +1172,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
     */
 
   // Wiring GEP instruction to the function argument
-  getelementptr0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  getelementptr0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
   // Wiring GEP instruction to the Constant
   getelementptr0.io.idx1.valid :=  true.B
@@ -1195,7 +1195,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr2.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
+  getelementptr2.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
   // Wiring GEP instruction to the Constant
   getelementptr2.io.idx1.valid :=  true.B
@@ -1218,7 +1218,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr4.io.baseAddress <> InputSplitter.io.Out.data("field0")(2)
+  getelementptr4.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(2)
 
   // Wiring GEP instruction to the Constant
   getelementptr4.io.idx1.valid :=  true.B
@@ -1241,7 +1241,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr6.io.baseAddress <> InputSplitter.io.Out.data("field0")(3)
+  getelementptr6.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(3)
 
   // Wiring GEP instruction to the Constant
   getelementptr6.io.idx1.valid :=  true.B
@@ -1264,7 +1264,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr8.io.baseAddress <> InputSplitter.io.Out.data("field0")(4)
+  getelementptr8.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(4)
 
   // Wiring GEP instruction to the Constant
   getelementptr8.io.idx1.valid :=  true.B
@@ -1287,7 +1287,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr10.io.baseAddress <> InputSplitter.io.Out.data("field0")(5)
+  getelementptr10.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(5)
 
   // Wiring GEP instruction to the Constant
   getelementptr10.io.idx1.valid :=  true.B
@@ -1309,7 +1309,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   // Wiring GEP instruction to the function argument
-  getelementptr12.io.baseAddress <> InputSplitter.io.Out.data("field0")(6)
+  getelementptr12.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(6)
 
   // Wiring GEP instruction to the Constant
   getelementptr12.io.idx1.valid :=  true.B
@@ -1491,9 +1491,9 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   /**
     * Connecting Dataflow signals
     */
-  ret47.io.In.data("field0").bits.data := 1.U
-  ret47.io.In.data("field0").bits.predicate := true.B
-  ret47.io.In.data("field0").valid := true.B
+  ret47.io.In.elements("field0").bits.data := 1.U
+  ret47.io.In.elements("field0").bits.predicate := true.B
+  ret47.io.In.elements("field0").valid := true.B
   io.out <> ret47.io.Out
 
 /*

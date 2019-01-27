@@ -428,11 +428,11 @@ class cilk_for_test08DF(implicit p: Parameters) extends cilk_for_test08DFIO()(p)
 
   // Connecting function argument to the loop header
   //[3 x i32]* %rgb
-  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
   // Connecting function argument to the loop header
   //[3 x i32]* %xyz
-  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
 
 
@@ -474,9 +474,9 @@ class cilk_for_test08DF(implicit p: Parameters) extends cilk_for_test08DFIO()(p)
   
   
   
-  ret2.io.In.data("field0").bits.data := 1.U
-  ret2.io.In.data("field0").bits.predicate := true.B
-  ret2.io.In.data("field0").valid := true.B
+  ret2.io.In.elements("field0").bits.data := 1.U
+  ret2.io.In.elements("field0").bits.predicate := true.B
+  ret2.io.In.elements("field0").valid := true.B
   io.out <> ret2.io.Out
 
 
@@ -504,13 +504,13 @@ class cilk_for_test08DF(implicit p: Parameters) extends cilk_for_test08DFIO()(p)
   call8.io.retIn <> io.call8_in
   call8.io.Out.enable.ready := true.B
   // Wiring Call instruction to the loop header
-  call8.io.In.data("field0") <>loop_L_0_liveIN_0.io.Out(param.call8_in("field0"))
+  call8.io.In.data.elements("field0") <>loop_L_0_liveIN_0.io.Out(param.call8_in("field0"))
 
   // Wiring Call instruction to the loop header
-  call8.io.In.data("field1") <>phi3.io.Out(param.call8_in("phi3"))  // Manually added
+  call8.io.In.data.elements("field1") <>phi3.io.Out(param.call8_in("phi3"))  // Manually added
 
   // Wiring Call instruction to the loop header
-  call8.io.In.data("field2") <>loop_L_0_liveIN_1.io.Out(param.call8_in("field1"))
+  call8.io.In.data.elements("field2") <>loop_L_0_liveIN_1.io.Out(param.call8_in("field1"))
 
   // Reattach (Manual add)
   reattach9.io.predicateIn(0) <> call8.io.Out.data("field0")

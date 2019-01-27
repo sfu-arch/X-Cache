@@ -188,18 +188,18 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
   /* ================================================================== *
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_9_out.io.In("field0") <> Loop_0.io.liveIn.elements("field0")(0)
+  call_9_out.io.In.elements("field0") <> Loop_0.io.liveIn.elements("field0")(0)
 
-  call_9_out.io.In("field2") <> Loop_0.io.liveIn.elements("field1")(0)
+  call_9_out.io.In.elements("field2") <> Loop_0.io.liveIn.elements("field1")(0)
 
 
   /* ================================================================== *
@@ -289,7 +289,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
 
   binaryOp_inc5.io.LeftIO <> phi_i_01.io.Out(1)
 
-  call_9_out.io.In("field1") <> phi_i_01.io.Out(2)
+  call_9_out.io.In.elements("field1") <> phi_i_01.io.Out(2)
 
   br_3.io.CmpIO <> icmp_cmp2.io.Out(0)
 

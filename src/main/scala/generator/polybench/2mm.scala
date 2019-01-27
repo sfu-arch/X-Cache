@@ -550,19 +550,19 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
 
   Loop_1.io.In(6) <> Loop_2.io.liveIn.elements("field6")(0)
 
-  Loop_2.io.In(0) <> InputSplitter.io.Out.data("field0")(1)
+  Loop_2.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  Loop_2.io.In(1) <> InputSplitter.io.Out.data("field3")(0)
+  Loop_2.io.In(1) <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  Loop_2.io.In(2) <> InputSplitter.io.Out.data("field10")(0)
+  Loop_2.io.In(2) <> InputSplitter.io.Out.data.elements("field10")(0)
 
-  Loop_2.io.In(3) <> InputSplitter.io.Out.data("field5")(0)
+  Loop_2.io.In(3) <> InputSplitter.io.Out.data.elements("field5")(0)
 
-  Loop_2.io.In(4) <> InputSplitter.io.Out.data("field1")(1)
+  Loop_2.io.In(4) <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Loop_2.io.In(5) <> InputSplitter.io.Out.data("field6")(1)
+  Loop_2.io.In(5) <> InputSplitter.io.Out.data.elements("field6")(1)
 
-  Loop_2.io.In(6) <> InputSplitter.io.Out.data("field9")(0)
+  Loop_2.io.In(6) <> InputSplitter.io.Out.data.elements("field9")(0)
 
   Loop_3.io.In(0) <> Loop_4.io.liveIn.elements("field3")(0)
 
@@ -592,19 +592,19 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
 
   Loop_4.io.In(6) <> Loop_5.io.liveIn.elements("field6")(0)
 
-  Loop_5.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_5.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_5.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_5.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_5.io.In(2) <> InputSplitter.io.Out.data("field6")(0)
+  Loop_5.io.In(2) <> InputSplitter.io.Out.data.elements("field6")(0)
 
-  Loop_5.io.In(3) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_5.io.In(3) <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Loop_5.io.In(4) <> InputSplitter.io.Out.data("field7")(0)
+  Loop_5.io.In(4) <> InputSplitter.io.Out.data.elements("field7")(0)
 
-  Loop_5.io.In(5) <> InputSplitter.io.Out.data("field4")(0)
+  Loop_5.io.In(5) <> InputSplitter.io.Out.data.elements("field4")(0)
 
-  Loop_5.io.In(6) <> InputSplitter.io.Out.data("field8")(0)
+  Loop_5.io.In(6) <> InputSplitter.io.Out.data.elements("field8")(0)
 
 
 

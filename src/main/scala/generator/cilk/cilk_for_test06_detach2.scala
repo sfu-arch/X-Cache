@@ -275,23 +275,23 @@ class cilk_for_test06_detach2DF(implicit p: Parameters) extends cilk_for_test06_
 
   st_9.io.GepAddr <> Gep_8.io.Out(0)
 
-  Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Gep_0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
+  Gep_0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_3.io.idx1 <> InputSplitter.io.Out.data("field1")(1)
+  Gep_3.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Gep_7.io.idx1 <> InputSplitter.io.Out.data("field1")(2)
+  Gep_7.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(2)
 
-  Gep_1.io.idx2 <> InputSplitter.io.Out.data("field2")(0)
+  Gep_1.io.idx2 <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Gep_4.io.idx2 <> InputSplitter.io.Out.data("field2")(1)
+  Gep_4.io.idx2 <> InputSplitter.io.Out.data.elements("field2")(1)
 
-  Gep_8.io.idx2 <> InputSplitter.io.Out.data("field2")(2)
+  Gep_8.io.idx2 <> InputSplitter.io.Out.data.elements("field2")(2)
 
-  Gep_3.io.baseAddress <> InputSplitter.io.Out.data("field3")(0)
+  Gep_3.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  Gep_7.io.baseAddress <> InputSplitter.io.Out.data("field4")(0)
+  Gep_7.io.baseAddress <> InputSplitter.io.Out.data.elements("field4")(0)
 
   st_9.io.Out(0).ready := true.B
 
