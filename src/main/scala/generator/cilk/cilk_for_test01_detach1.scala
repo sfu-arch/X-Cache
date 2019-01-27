@@ -41,9 +41,9 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 2)
-  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 1, NWrites = 1)
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
   (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
@@ -196,13 +196,13 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
 
   binaryOp_2.io.RightIO <> const0.io.Out(0)
 
-  ld_1.io.GepAddr <> Gep_0.io.Out.data(0)
+  ld_1.io.GepAddr <> Gep_0.io.Out(0)
 
-  binaryOp_2.io.LeftIO <> ld_1.io.Out.data(0)
+  binaryOp_2.io.LeftIO <> ld_1.io.Out(0)
 
   st_4.io.inData <> binaryOp_2.io.Out(0)
 
-  st_4.io.GepAddr <> Gep_3.io.Out.data(0)
+  st_4.io.GepAddr <> Gep_3.io.Out(0)
 
   Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
 
