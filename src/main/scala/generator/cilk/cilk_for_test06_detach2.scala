@@ -257,23 +257,23 @@ class cilk_for_test06_detach2DF(implicit p: Parameters) extends cilk_for_test06_
 
   Gep_8.io.idx1 <> const2.io.Out(0)
 
-  Gep_1.io.baseAddress <> Gep_0.io.Out.data(0)
+  Gep_1.io.baseAddress <> Gep_0.io.Out(0)
 
-  ld_2.io.GepAddr <> Gep_1.io.Out.data(0)
+  ld_2.io.GepAddr <> Gep_1.io.Out(0)
 
-  binaryOp_6.io.LeftIO <> ld_2.io.Out.data(0)
+  binaryOp_6.io.LeftIO <> ld_2.io.Out(0)
 
-  Gep_4.io.baseAddress <> Gep_3.io.Out.data(0)
+  Gep_4.io.baseAddress <> Gep_3.io.Out(0)
 
-  ld_5.io.GepAddr <> Gep_4.io.Out.data(0)
+  ld_5.io.GepAddr <> Gep_4.io.Out(0)
 
-  binaryOp_6.io.RightIO <> ld_5.io.Out.data(0)
+  binaryOp_6.io.RightIO <> ld_5.io.Out(0)
 
   st_9.io.inData <> binaryOp_6.io.Out(0)
 
-  Gep_8.io.baseAddress <> Gep_7.io.Out.data(0)
+  Gep_8.io.baseAddress <> Gep_7.io.Out(0)
 
-  st_9.io.GepAddr <> Gep_8.io.Out.data(0)
+  st_9.io.GepAddr <> Gep_8.io.Out(0)
 
   Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
 

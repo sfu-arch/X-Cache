@@ -295,9 +295,9 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(1)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field2")(1)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field2")(1)
 
 
 
@@ -305,13 +305,13 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  Gep_arrayidx6.io.baseAddress <> Loop_0.io.liveIn.data("field0")(0)
+  Gep_arrayidx6.io.baseAddress <> Loop_0.io.liveIn.elements("field0")(0)
 
-  call_15_out.io.In("field0") <> Loop_0.io.liveIn.data("field0")(1)
+  call_15_out.io.In("field0") <> Loop_0.io.liveIn.elements("field0")(1)
 
-  Gep_arrayidx110.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  Gep_arrayidx110.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  call_15_out.io.In("field3") <> Loop_0.io.liveIn.data("field1")(1)
+  call_15_out.io.In("field3") <> Loop_0.io.liveIn.elements("field1")(1)
 
 
 
@@ -490,8 +490,8 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   st_28.io.inData <> const8.io.Out(0)
 
-  call_1_in.io.Out.data("field0").ready := true.B
-//  reattach_2.io.predicateIn(0) <> DataBundle.active()//call_1_in.io.Out.data("field0")
+  call_1_in.io.Out.data.elements("field0").ready := true.B
+//  reattach_2.io.predicateIn(0) <> DataBundle.active()//call_1_in.io.Out.data.elements("field0")
 
   Gep_arrayidx6.io.idx1 <> phi_pos_04.io.Out(0)
 
@@ -509,20 +509,20 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   phi_wptr_122.io.InData(1) <> phi_wptr_05.io.Out(3)
 
-  ld_7.io.GepAddr <> Gep_arrayidx6.io.Out.data(0)
+  ld_7.io.GepAddr <> Gep_arrayidx6.io.Out(0)
 
-  icmp_cmp8.io.LeftIO <> ld_7.io.Out.data(0)
+  icmp_cmp8.io.LeftIO <> ld_7.io.Out(0)
 
   br_9.io.CmpIO <> icmp_cmp8.io.Out(0)
 
-  ld_11.io.GepAddr <> Gep_arrayidx110.io.Out.data(0)
+  ld_11.io.GepAddr <> Gep_arrayidx110.io.Out(0)
 
-  icmp_cmp212.io.LeftIO <> ld_11.io.Out.data(0)
+  icmp_cmp212.io.LeftIO <> ld_11.io.Out(0)
 
   br_13.io.CmpIO <> icmp_cmp212.io.Out(0)
 
-  call_15_in.io.Out.data("field0").ready := true.B
-//  reattach_16.io.predicateIn(0) <> DataBundle.active()//call_15_in.io.Out.data("field0")
+  call_15_in.io.Out.data.elements("field0").ready := true.B
+//  reattach_16.io.predicateIn(0) <> DataBundle.active()//call_15_in.io.Out.data.elements("field0")
 
   phi_pos_121.io.InData(0) <> binaryOp_add17.io.Out(0)
 
@@ -534,25 +534,25 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   phi_wptr_05.io.InData(1) <> phi_wptr_122.io.Out(0)
 
-  st_25.io.GepAddr <> Gep_arrayidx624.io.Out.data(0)
+  st_25.io.GepAddr <> Gep_arrayidx624.io.Out(0)
 
-  st_28.io.GepAddr <> Gep_arrayidx727.io.Out.data(0)
+  st_28.io.GepAddr <> Gep_arrayidx727.io.Out(0)
 
-  ret_29.io.In.data("field0") <> st_28.io.Out(0)
+  ret_29.io.In.elements("field0") <> st_28.io.Out(0)
 
   Gep_arrayidx727.io.idx1 <> Loop_0.io.Out(0)
 
   Gep_arrayidx624.io.idx1 <> Loop_0.io.Out(1)
 
-  call_1_out.io.In("field0") <> InputSplitter.io.Out.data("field0")(0)
+  call_1_out.io.In("field0") <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  call_1_out.io.In("field1") <> InputSplitter.io.Out.data("field1")(0)
+  call_1_out.io.In("field1") <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  call_1_out.io.In("field2") <> InputSplitter.io.Out.data("field2")(0)
+  call_1_out.io.In("field2") <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Gep_arrayidx624.io.baseAddress <> InputSplitter.io.Out.data("field2")(2)
+  Gep_arrayidx624.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(2)
 
-  Gep_arrayidx727.io.baseAddress <> InputSplitter.io.Out.data("field2")(3)
+  Gep_arrayidx727.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(3)
 
   st_25.io.Out(0).ready := true.B
 

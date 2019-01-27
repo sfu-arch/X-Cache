@@ -556,9 +556,9 @@ class bgemmDF(implicit p: Parameters) extends bgemmDFIO()(p) {
   
   
   
-  ret9.io.In.data("field0").bits.data := 1.U
-  ret9.io.In.data("field0").bits.predicate := true.B
-  ret9.io.In.data("field0").valid := true.B
+  ret9.io.In.elements("field0").bits.data := 1.U
+  ret9.io.In.elements("field0").bits.predicate := true.B
+  ret9.io.In.elements("field0").valid := true.B
   io.out <> ret9.io.Out
 
 

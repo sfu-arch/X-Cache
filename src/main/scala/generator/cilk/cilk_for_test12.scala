@@ -548,11 +548,11 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 */
   // Connecting function argument to the loop header
   //i32* %a
-  lb_L_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  lb_L_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
   // Connecting function argument to the loop header
   //i32 %n
-  lb_L_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  lb_L_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
   // Connecting instruction to the loop header
   //  %result = alloca i32, align 4, !UID !7, !ScalaLabel !8
@@ -677,20 +677,20 @@ class cilk_for_test12DF(implicit p: Parameters) extends cilk_for_test12DFIO()(p)
 
 
   // Wiring return instruction
-  ret14.io.In.data("field0") <> load13.io.Out(param.ret14_in("load13"))
+  ret14.io.In.elements("field0") <> load13.io.Out(param.ret14_in("load13"))
   io.out <> ret14.io.Out
 
 
-  callout15.io.In("field0") <> lb_L_0.io.liveIn.data("field1")(0) // manual %n
-  callout15.io.In("field1") <> lb_L_0.io.liveIn.data("field0")(0) // manual %a
-  callout15.io.In("field2") <> lb_L_0.io.liveIn.data("field2")(0) // manual %alloc
+  callout15.io.In("field0") <> lb_L_0.io.liveIn.elements("field1")(0) // manual %n
+  callout15.io.In("field1") <> lb_L_0.io.liveIn.elements("field0")(0) // manual %a
+  callout15.io.In("field2") <> lb_L_0.io.liveIn.elements("field2")(0) // manual %alloc
   io.call15_out <> callout15.io.Out(0)
   callin15.io.Out.enable.ready := true.B
 
   callin15.io.In <> io.call15_in
 
   // Reattach (Manual add)
-  reattach16.io.predicateIn(0) <> callin15.io.Out.data("field0")
+  reattach16.io.predicateIn(0) <> callin15.io.Out.elements("field0")
 
   // Sync (Manual add)
   sync9.io.incIn(0) <> detach6.io.Out(2)

@@ -189,9 +189,9 @@ class test04_optimizedDF(implicit p: Parameters) extends test04_optimizedDFIO()(
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  phi_b_addr_0113.io.InData(0) <> Loop_0.io.liveIn.data("field0")(0)
+  phi_b_addr_0113.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
 
-  phi_a_addr_0104.io.InData(0) <> Loop_0.io.liveIn.data("field1")(0)
+  phi_a_addr_0104.io.InData(0) <> Loop_0.io.liveIn.elements("field1")(0)
 
 
   /* ================================================================== *

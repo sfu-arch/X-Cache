@@ -220,13 +220,13 @@ class cilk_for_test06_detach1DF(implicit p: Parameters) extends cilk_for_test06_
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_10_out.io.In("field0") <> Loop_0.io.liveIn.data("field0")(0)
+  call_10_out.io.In("field0") <> Loop_0.io.liveIn.elements("field0")(0)
 
-  call_10_out.io.In("field1") <> Loop_0.io.liveIn.data("field1")(0)
+  call_10_out.io.In("field1") <> Loop_0.io.liveIn.elements("field1")(0)
 
-  call_10_out.io.In("field3") <> Loop_0.io.liveIn.data("field2")(0)
+  call_10_out.io.In("field3") <> Loop_0.io.liveIn.elements("field2")(0)
 
-  call_10_out.io.In("field4") <> Loop_0.io.liveIn.data("field3")(0)
+  call_10_out.io.In("field4") <> Loop_0.io.liveIn.elements("field3")(0)
 
 
 

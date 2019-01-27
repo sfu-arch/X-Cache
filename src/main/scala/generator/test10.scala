@@ -195,11 +195,11 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_0.io.In(2) <> InputSplitter.io.Out.data.elements("field2")(0)
 
 
 
@@ -207,11 +207,11 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  arrayidx.io.baseAddress <> Loop_0.io.liveIn.data("field0")(0)
+  arrayidx.io.baseAddress <> Loop_0.io.liveIn.elements("field0")(0)
 
-  arrayidx1.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  arrayidx1.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  arrayidx2.io.baseAddress <> Loop_0.io.liveIn.data("field2")(0)
+  arrayidx2.io.baseAddress <> Loop_0.io.liveIn.elements("field2")(0)
 
 
 
@@ -306,7 +306,7 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
 
   inc.io.RightIO <> const2.io.Out(0)
 
-  ret_14.io.In.data("field0") <> const3.io.Out(0)
+  ret_14.io.In.elements("field0") <> const3.io.Out(0)
 
   cmp.io.LeftIO <> i_0.io.Out(0)
 
@@ -320,17 +320,17 @@ class test10DF(implicit p: Parameters) extends test10DFIO()(p) {
 
   br_3.io.CmpIO <> cmp.io.Out(0)
 
-  ld_5.io.GepAddr <> arrayidx.io.Out.data(0)
+  ld_5.io.GepAddr <> arrayidx.io.Out(0)
 
-  add.io.LeftIO <> ld_5.io.Out.data(0)
+  add.io.LeftIO <> ld_5.io.Out(0)
 
-  ld_7.io.GepAddr <> arrayidx1.io.Out.data(0)
+  ld_7.io.GepAddr <> arrayidx1.io.Out(0)
 
-  add.io.RightIO <> ld_7.io.Out.data(0)
+  add.io.RightIO <> ld_7.io.Out(0)
 
   st_10.io.inData <> add.io.Out(0)
 
-  st_10.io.GepAddr <> arrayidx2.io.Out.data(0)
+  st_10.io.GepAddr <> arrayidx2.io.Out(0)
 
   i_0.io.InData(1) <> inc.io.Out(0)
 

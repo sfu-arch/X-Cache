@@ -203,11 +203,11 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_0.io.In(2) <> InputSplitter.io.Out.data.elements("field2")(0)
 
 
 
@@ -215,11 +215,11 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_9_out.io.In("field0") <> Loop_0.io.liveIn.data("field0")(0)
+  call_9_out.io.In("field0") <> Loop_0.io.liveIn.elements("field0")(0)
 
-  call_9_out.io.In("field2") <> Loop_0.io.liveIn.data("field1")(0)
+  call_9_out.io.In("field2") <> Loop_0.io.liveIn.elements("field1")(0)
 
-  call_9_out.io.In("field3") <> Loop_0.io.liveIn.data("field2")(0)
+  call_9_out.io.In("field3") <> Loop_0.io.liveIn.elements("field2")(0)
 
 
 
@@ -309,7 +309,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   binaryOp_inc135.io.RightIO <> const2.io.Out
 
-  ret_8.io.In.data("field0") <> const3.io.Out
+  ret_8.io.In.elements("field0") <> const3.io.Out
 
   icmp_cmp2.io.LeftIO <> phi_i_01.io.Out(0)
 
@@ -321,7 +321,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   phi_i_01.io.InData(1) <> binaryOp_inc135.io.Out(0)
 
-  //reattach_10.io.predicateIn(0) <> call_9_in.io.Out.data("field0")
+  //reattach_10.io.predicateIn(0) <> call_9_in.io.Out.elements("field0")
   reattach_10.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 

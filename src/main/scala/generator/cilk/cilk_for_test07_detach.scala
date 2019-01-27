@@ -213,17 +213,17 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
   val field0_expand = Module(new ExpandNode(NumOuts=2,ID=101)(new DataBundle))
   field0_expand.io.enable.valid := true.B
   field0_expand.io.enable.bits.control := true.B
-  field0_expand.io.InData <> InputSplitter.io.Out.data("field0")
+  field0_expand.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
   val field1_expand = Module(new ExpandNode(NumOuts=5,ID=102)(new DataBundle))
   field1_expand.io.enable.valid := true.B
   field1_expand.io.enable.bits.control := true.B
-  field1_expand.io.InData <> InputSplitter.io.Out.data("field1")
+  field1_expand.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
   val field2_expand = Module(new ExpandNode(NumOuts=2,ID=103)(new DataBundle))
   field2_expand.io.enable.valid := true.B
   field2_expand.io.enable.bits.control := true.B
-  field2_expand.io.InData <> InputSplitter.io.Out.data("field2")
+  field2_expand.io.InData <> InputSplitter.io.Out.data.elements("field2")
 
 
   /* ================================================================== *
@@ -551,7 +551,7 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
   add12.io.RightIO <> mul9.io.Out(param.add12_in("mul9"))
 
   // Wiring GEP instruction to the function argument
-  getelementptr13.io.baseAddress <> InputSplitter.io.Out.data("field3")
+  getelementptr13.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")
 
 
   // Wiring GEP instruction to the function argument
@@ -576,10 +576,10 @@ class cilk_for_test07_detachDF(implicit p: Parameters) extends cilk_for_test07_d
   
   
   
-  ret15.io.In.data("field0") <> store14.io.Out(0)  // Manually connected
-  //ret15.io.In.data("field0").bits.data := 1.U
-  //ret15.io.In.data("field0").bits.predicate := true.B
-  //ret15.io.In.data("field0").valid := true.B
+  ret15.io.In.elements("field0") <> store14.io.Out(0)  // Manually connected
+  //ret15.io.In.elements("field0").bits.data := 1.U
+  //ret15.io.In.elements("field0").bits.predicate := true.B
+  //ret15.io.In.elements("field0").valid := true.B
   io.out <> ret15.io.Out
 
 

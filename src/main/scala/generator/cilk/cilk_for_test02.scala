@@ -483,11 +483,11 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
 
   // Connecting function argument to the loop header
   //i32* %a
-  loop_L_10_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_10_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
   // Connecting function argument to the loop header
   //i32* %b
-  loop_L_10_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+  loop_L_10_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
 
 
@@ -541,16 +541,16 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   call5.io.retIn <> io.call5_in
   call5.io.Out.enable.ready := true.B // Manual fix
   // Wiring Call instruction to the loop header
-  call5.io.In.data("field0") <>loop_L_10_liveIN_0.io.Out(param.call5_in("field0")) // Manually corrected
+  call5.io.In.elements("field0") <>loop_L_10_liveIN_0.io.Out(param.call5_in("field0")) // Manually corrected
 
   // Wiring Call instruction to the loop header
-  call5.io.In.data("field1") <>loop_L_10_liveIN_1.io.Out(param.call5_in("field1"))
+  call5.io.In.elements("field1") <>loop_L_10_liveIN_1.io.Out(param.call5_in("field1"))
 
   // Wiring Call instruction to the loop header
-  call5.io.In.data("field2") <>phi1.io.Out(param.call5_in("phi1")) // Manually corrected
+  call5.io.In.elements("field2") <>phi1.io.Out(param.call5_in("phi1")) // Manually corrected
 
   // Reattach (Manual add)
-  reattach7.io.predicateIn(0) <> call5.io.Out.data("field0")
+  reattach7.io.predicateIn(0) <> call5.io.Out.elements("field0")
 
   // Sync (Manual add)
   sync10.io.incIn(0) <> detach4.io.Out(2)
@@ -571,9 +571,9 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   
   
   
-  ret11.io.In.data("field0").bits.data := 1.U
-  ret11.io.In.data("field0").bits.predicate := true.B
-  ret11.io.In.data("field0").valid := true.B
+  ret11.io.In.elements("field0").bits.data := 1.U
+  ret11.io.In.elements("field0").bits.predicate := true.B
+  ret11.io.In.elements("field0").valid := true.B
   io.out <> ret11.io.Out
 
 

@@ -316,71 +316,71 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  ld_1.io.GepAddr <> Gep_0.io.Out.data(0)
+  ld_1.io.GepAddr <> Gep_0.io.Out(0)
 
-  icmp_4.io.LeftIO <> ld_1.io.Out.data(0)
+  icmp_4.io.LeftIO <> ld_1.io.Out(0)
 
-  ld_3.io.GepAddr <> Gep_2.io.Out.data(0)
+  ld_3.io.GepAddr <> Gep_2.io.Out(0)
 
-  icmp_4.io.RightIO <> ld_3.io.Out.data(0)
+  icmp_4.io.RightIO <> ld_3.io.Out(0)
 
   br_5.io.CmpIO <> icmp_4.io.Out(0)
 
-  ld_7.io.GepAddr <> Gep_6.io.Out.data(0)
+  ld_7.io.GepAddr <> Gep_6.io.Out(0).data
 
-  binaryOp_10.io.LeftIO <> ld_7.io.Out.data(0)
+  binaryOp_10.io.LeftIO <> ld_7.io.Out(0)
 
-  ld_9.io.GepAddr <> Gep_8.io.Out.data(0)
+  ld_9.io.GepAddr <> Gep_8.io.Out(0)
 
-  binaryOp_10.io.RightIO <> ld_9.io.Out.data(0)
+  binaryOp_10.io.RightIO <> ld_9.io.Out(0)
 
   st_12.io.inData <> binaryOp_10.io.Out(0)
 
-  st_12.io.GepAddr <> Gep_11.io.Out.data(0)
+  st_12.io.GepAddr <> Gep_11.io.Out(0)
 
-  ld_17.io.GepAddr <> Gep_16.io.Out.data(0)
+  ld_17.io.GepAddr <> Gep_16.io.Out(0)
 
-  binaryOp_20.io.LeftIO <> ld_17.io.Out.data(0)
+  binaryOp_20.io.LeftIO <> ld_17.io.Out(0)
 
-  ld_19.io.GepAddr <> Gep_18.io.Out.data(0)
+  ld_19.io.GepAddr <> Gep_18.io.Out(0)
 
-  binaryOp_20.io.RightIO <> ld_19.io.Out.data(0)
+  binaryOp_20.io.RightIO <> ld_19.io.Out(0)
 
   st_22.io.inData <> binaryOp_20.io.Out(0)
 
-  st_22.io.GepAddr <> Gep_21.io.Out.data(0)
+  st_22.io.GepAddr <> Gep_21.io.Out(0)
 
-  Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Gep_6.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
+  Gep_6.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  Gep_18.io.baseAddress <> InputSplitter.io.Out.data("field0")(2)
+  Gep_18.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(2)
 
-  Gep_0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
+  Gep_0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_2.io.idx1 <> InputSplitter.io.Out.data("field1")(1)
+  Gep_2.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Gep_6.io.idx1 <> InputSplitter.io.Out.data("field1")(2)
+  Gep_6.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(2)
 
-  Gep_8.io.idx1 <> InputSplitter.io.Out.data("field1")(3)
+  Gep_8.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(3)
 
-  Gep_11.io.idx1 <> InputSplitter.io.Out.data("field1")(4)
+  Gep_11.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(4)
 
-  Gep_16.io.idx1 <> InputSplitter.io.Out.data("field1")(5)
+  Gep_16.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(5)
 
-  Gep_18.io.idx1 <> InputSplitter.io.Out.data("field1")(6)
+  Gep_18.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(6)
 
-  Gep_21.io.idx1 <> InputSplitter.io.Out.data("field1")(7)
+  Gep_21.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(7)
 
-  Gep_2.io.baseAddress <> InputSplitter.io.Out.data("field2")(0)
+  Gep_2.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Gep_8.io.baseAddress <> InputSplitter.io.Out.data("field2")(1)
+  Gep_8.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(1)
 
-  Gep_16.io.baseAddress <> InputSplitter.io.Out.data("field2")(2)
+  Gep_16.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(2)
 
-  Gep_11.io.baseAddress <> InputSplitter.io.Out.data("field3")(0)
+  Gep_11.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  Gep_21.io.baseAddress <> InputSplitter.io.Out.data("field3")(1)
+  Gep_21.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(1)
 
   st_12.io.Out(0).ready := true.B
 

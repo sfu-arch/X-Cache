@@ -247,9 +247,9 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  phi_foo_16.io.InData(0) <> Loop_0.io.liveIn.data("field0")(0)
+  phi_foo_16.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
 
-  phi_foo_02.io.InData(0) <> Loop_1.io.liveIn.data("field0")(0)
+  phi_foo_02.io.InData(0) <> Loop_1.io.liveIn.elements("field0")(0)
 
 
 

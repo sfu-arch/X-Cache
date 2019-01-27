@@ -339,13 +339,13 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> Loop_1.io.liveIn.data("field0")(1)
+  Loop_0.io.In(0) <> Loop_1.io.liveIn.elements("field0")(1)
 
-  Loop_0.io.In(1) <> Loop_1.io.liveIn.data("field1")(1)
+  Loop_0.io.In(1) <> Loop_1.io.liveIn.elements("field1")(1)
 
-  Loop_1.io.In(0) <> Loop_2.io.liveIn.data("field0")(0)
+  Loop_1.io.In(0) <> Loop_2.io.liveIn.elements("field0")(0)
 
-  Loop_1.io.In(1) <> Loop_2.io.liveIn.data("field1")(1)
+  Loop_1.io.In(1) <> Loop_2.io.liveIn.elements("field1")(1)
 
   Loop_2.io.In(0) <> InputSplitter.io.Out.data("field1")(0)
 
@@ -357,21 +357,21 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  icmp_cmp511.io.RightIO <> Loop_0.io.liveIn.data("field0")(0)
+  icmp_cmp511.io.RightIO <> Loop_0.io.liveIn.elements("field0")(0)
 
-  Gep_arrayidx13.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  Gep_arrayidx13.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  Gep_arrayidx716.io.baseAddress <> Loop_0.io.liveIn.data("field1")(1)
+  Gep_arrayidx716.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(1)
 
-  icmp_cmp27.io.RightIO <> Loop_1.io.liveIn.data("field0")(0)
+  icmp_cmp27.io.RightIO <> Loop_1.io.liveIn.elements("field0")(0)
 
-  binaryOp_sub20.io.LeftIO <> Loop_1.io.liveIn.data("field0")(2)
+  binaryOp_sub20.io.LeftIO <> Loop_1.io.liveIn.elements("field0")(2)
 
-  Gep_arrayidx821.io.baseAddress <> Loop_1.io.liveIn.data("field1")(0)
+  Gep_arrayidx821.io.baseAddress <> Loop_1.io.liveIn.elements("field1")(0)
 
-  binaryOp_sub1327.io.LeftIO <> Loop_2.io.liveIn.data("field0")(1)
+  binaryOp_sub1327.io.LeftIO <> Loop_2.io.liveIn.elements("field0")(1)
 
-  Gep_arrayidx1428.io.baseAddress <> Loop_2.io.liveIn.data("field1")(0)
+  Gep_arrayidx1428.io.baseAddress <> Loop_2.io.liveIn.elements("field1")(0)
 
 
 
@@ -617,23 +617,23 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
   br_12.io.CmpIO <> icmp_cmp511.io.Out(0)
 
-  ld_14.io.GepAddr <> Gep_arrayidx13.io.Out.data(0)
+  ld_14.io.GepAddr <> Gep_arrayidx13.io.Out(0)
 
-  binaryOp_mul15.io.RightIO <> ld_14.io.Out.data(0)
+  binaryOp_mul15.io.RightIO <> ld_14.io.Out(0)
 
   st_17.io.inData <> binaryOp_mul15.io.Out(0)
 
-  st_17.io.GepAddr <> Gep_arrayidx716.io.Out.data(0)
+  st_17.io.GepAddr <> Gep_arrayidx716.io.Out(0)
 
   phi_k_010.io.InData(1) <> binaryOp_inc18.io.Out(0)
 
   Gep_arrayidx821.io.idx(0) <> binaryOp_sub20.io.Out(0)
 
-  ld_22.io.GepAddr <> Gep_arrayidx821.io.Out.data(0)
+  ld_22.io.GepAddr <> Gep_arrayidx821.io.Out(0)
 
-  st_24.io.GepAddr <> Gep_arrayidx821.io.Out.data(1)
+  st_24.io.GepAddr <> Gep_arrayidx821.io.Out(1)
 
-  binaryOp_inc923.io.LeftIO <> ld_22.io.Out.data(0)
+  binaryOp_inc923.io.LeftIO <> ld_22.io.Out(0)
 
   st_24.io.inData <> binaryOp_inc923.io.Out(0)
 
@@ -641,13 +641,13 @@ class test15DF(implicit p: Parameters) extends test15DFIO()(p) {
 
   Gep_arrayidx1428.io.idx(0) <> binaryOp_sub1327.io.Out(0)
 
-  ld_29.io.GepAddr <> Gep_arrayidx1428.io.Out.data(0)
+  ld_29.io.GepAddr <> Gep_arrayidx1428.io.Out(0)
 
-  st_31.io.GepAddr <> Gep_arrayidx1428.io.Out.data(1)
+  st_31.io.GepAddr <> Gep_arrayidx1428.io.Out(1)
 
-  binaryOp_inc1530.io.LeftIO <> ld_29.io.Out.data(0)
+  binaryOp_inc1530.io.LeftIO <> ld_29.io.Out(0)
 
-  binaryOp_add32.io.RightIO <> ld_29.io.Out.data(1)
+  binaryOp_add32.io.RightIO <> ld_29.io.Out(1)
 
   st_31.io.inData <> binaryOp_inc1530.io.Out(0)
 

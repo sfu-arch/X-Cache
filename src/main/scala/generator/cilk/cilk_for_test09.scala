@@ -539,11 +539,11 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
   // Connecting function argument to the loop header
   //i32 %m
-  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
   // Connecting function argument to the loop header
   //i32 %n
-  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
   // Connecting instruction to the loop header
   //  %a = alloca i32, align 4, !UID !7, !ScalaLabel !8
@@ -622,7 +622,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
   call7.io.retIn <> io.call7_in
   call7.io.Out.enable.ready := true.B
   // Wiring Call instruction to the loop header
-  call7.io.In.data("field0") <> loop_L_0_liveIN_1.io.Out(param.call7_in("field1")) // Manually fixed
+  call7.io.In.elements("field0") <> loop_L_0_liveIN_1.io.Out(param.call7_in("field1")) // Manually fixed
 
 
   // Wiring Load instruction to the loop latch
@@ -635,7 +635,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
   add9.io.LeftIO <> load8.io.Out(param.add9_in("load8"))
 
   // Wiring instructions
-  add9.io.RightIO <> call7.io.Out.data("field0") // Manually fixed
+  add9.io.RightIO <> call7.io.Out.elements("field0") // Manually fixed
 
   store10.io.inData <> add9.io.Out(param.store10_in("add9"))
 
@@ -660,7 +660,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
 
 
   // Reattach (Manual add)
-  reattach12.io.predicateIn(0) <> call7.io.Out.data("field0")
+  reattach12.io.predicateIn(0) <> call7.io.Out.elements("field0")
 
   // Sync (Manual add)
   sync15.io.incIn(0) <> detach6.io.Out(2)
@@ -671,7 +671,7 @@ class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p)
   
   
   
-  ret17.io.In.data("field0") <> load16.io.Out(param.ret17_in("load16"))
+  ret17.io.In.elements("field0") <> load16.io.Out(param.ret17_in("load16"))
   io.out <> ret17.io.Out
 
 

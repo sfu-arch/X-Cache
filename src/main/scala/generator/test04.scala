@@ -208,9 +208,9 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  b_addr_0.io.InData(0) <> Loop_0.io.liveIn.data("field0")(0)
+  b_addr_0.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
 
-  a_addr_0.io.InData(0) <> Loop_0.io.liveIn.data("field1")(0)
+  a_addr_0.io.InData(0) <> Loop_0.io.liveIn.elements("field1")(0)
 
 
 

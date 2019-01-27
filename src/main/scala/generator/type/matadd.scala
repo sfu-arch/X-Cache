@@ -286,13 +286,13 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> Loop_1.io.liveIn.data("field0")(0)
+  Loop_0.io.In(0) <> Loop_1.io.liveIn.elements("field0")(0)
 
   Loop_0.io.In(1) <> phi_011.io.Out(1)
 
-  Loop_0.io.In(2) <> Loop_1.io.liveIn.data("field1")(0)
+  Loop_0.io.In(2) <> Loop_1.io.liveIn.elements("field1")(0)
 
-  Loop_0.io.In(3) <> Loop_1.io.liveIn.data("field2")(0)
+  Loop_0.io.In(3) <> Loop_1.io.liveIn.elements("field2")(0)
 
   Loop_1.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
 
@@ -305,17 +305,17 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  Gep_8.io.baseAddress <> Loop_0.io.liveIn.data("field0")(0)
+  Gep_8.io.baseAddress <> Loop_0.io.liveIn.elements("field0")(0)
 
-  Gep_8.io.idx(0) <> Loop_0.io.liveIn.data("field1")(0)
+  Gep_8.io.idx(0) <> Loop_0.io.liveIn.elements("field1")(0)
 
-  Gep_10.io.idx(0) <> Loop_0.io.liveIn.data("field1")(1)
+  Gep_10.io.idx(0) <> Loop_0.io.liveIn.elements("field1")(1)
 
-  Gep_13.io.idx(0) <> Loop_0.io.liveIn.data("field1")(2)
+  Gep_13.io.idx(0) <> Loop_0.io.liveIn.elements("field1")(2)
 
-  Gep_10.io.baseAddress <> Loop_0.io.liveIn.data("field2")(0)
+  Gep_10.io.baseAddress <> Loop_0.io.liveIn.elements("field2")(0)
 
-  Gep_13.io.baseAddress <> Loop_0.io.liveIn.data("field3")(0)
+  Gep_13.io.baseAddress <> Loop_0.io.liveIn.elements("field3")(0)
 
 
   /* ================================================================== *

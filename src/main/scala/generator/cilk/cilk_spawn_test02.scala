@@ -603,7 +603,7 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
   
   
   
-  ret14.io.In.data("field0") <> add13.io.Out(param.ret14_in("add13"))
+  ret14.io.In.elements("field0") <> add13.io.Out(param.ret14_in("add13"))
   io.out <> ret14.io.Out
 
 

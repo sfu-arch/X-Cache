@@ -231,9 +231,9 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field2")(0)
 
   Loop_0.io.In(2) <> binaryOp_0.io.Out(0)
 
@@ -245,13 +245,13 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_6_out.io.In("field0") <> Loop_0.io.liveIn.data("field0")(0)
+  call_6_out.io.In("field0") <> Loop_0.io.liveIn.elements("field0")(0)
 
-  call_6_out.io.In("field1") <> Loop_0.io.liveIn.data("field1")(0)
+  call_6_out.io.In("field1") <> Loop_0.io.liveIn.elements("field1")(0)
 
-  call_6_out.io.In("field2") <> Loop_0.io.liveIn.data("field2")(0)
+  call_6_out.io.In("field2") <> Loop_0.io.liveIn.elements("field2")(0)
 
-  call_6_out.io.In("field3") <> Loop_0.io.liveIn.data("field3")(0)
+  call_6_out.io.In("field3") <> Loop_0.io.liveIn.elements("field3")(0)
 
 
 
@@ -403,7 +403,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   br_5.io.CmpIO <> icmp_4.io.Out(0)
 
-//  br_7.io.CmpIO <> call_6_in.io.Out.data("field0")
+//  br_7.io.CmpIO <> call_6_in.io.Out.elements("field0")
 
   phi_3.io.InData(1) <> binaryOp_8.io.Out(0)
 
@@ -411,9 +411,9 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   Gep_12.io.idx1 <> binaryOp_11.io.Out(0)
 
-  ld_13.io.GepAddr <> Gep_12.io.Out.data(0)
+  ld_13.io.GepAddr <> Gep_12.io.Out(0)
 
-  binaryOp_14.io.LeftIO <> ld_13.io.Out.data(0)
+  binaryOp_14.io.LeftIO <> ld_13.io.Out(0)
 
   st_18.io.inData <> binaryOp_14.io.Out(0)
 
@@ -421,15 +421,15 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   Gep_17.io.idx1 <> binaryOp_16.io.Out(0)
 
-  st_18.io.GepAddr <> Gep_17.io.Out.data(0)
+  st_18.io.GepAddr <> Gep_17.io.Out(0)
 
-  binaryOp_0.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
+  binaryOp_0.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  binaryOp_1.io.LeftIO <> InputSplitter.io.Out.data("field0")(1)
+  binaryOp_1.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  Gep_12.io.baseAddress <> InputSplitter.io.Out.data("field2")(1)
+  Gep_12.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(1)
 
-  Gep_17.io.baseAddress <> InputSplitter.io.Out.data("field2")(2)
+  Gep_17.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(2)
 
   st_18.io.Out(0).ready := true.B
 

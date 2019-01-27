@@ -383,25 +383,25 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
 
   arrayidx5.io.baseAddress <> alloc1.io.Out(1)
 
-  st_3.io.GepAddr <> arrayidx.io.Out.data(0)
+  st_3.io.GepAddr <> arrayidx.io.Out(0)
 
-  st_5.io.GepAddr <> arrayidx1.io.Out.data(0)
+  st_5.io.GepAddr <> arrayidx1.io.Out(0)
 
-  ld_7.io.GepAddr <> arrayidx2.io.Out.data(0)
+  ld_7.io.GepAddr <> arrayidx2.io.Out(0)
 
-  add.io.LeftIO <> ld_7.io.Out.data(0)
+  add.io.LeftIO <> ld_7.io.Out(0)
 
-  ld_9.io.GepAddr <> arrayidx3.io.Out.data(0)
+  ld_9.io.GepAddr <> arrayidx3.io.Out(0)
 
-  add.io.RightIO <> ld_9.io.Out.data(0)
+  add.io.RightIO <> ld_9.io.Out(0)
 
   st_12.io.inData <> add.io.Out(0)
 
-  st_12.io.GepAddr <> arrayidx4.io.Out.data(0)
+  st_12.io.GepAddr <> arrayidx4.io.Out(0)
 
-  ld_14.io.GepAddr <> arrayidx5.io.Out.data(0)
+  ld_14.io.GepAddr <> arrayidx5.io.Out(0)
 
-  ret_15.io.In.data("field0") <> ld_14.io.Out.data(0)
+  ret_15.io.In.data("field0") <> ld_14.io.Out(0)
 
   st_3.io.inData <> InputSplitter.io.Out.data("field0")(0)
 

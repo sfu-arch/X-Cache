@@ -180,7 +180,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 
@@ -188,7 +188,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  foo_0.io.InData(0) <> Loop_0.io.liveIn.data("field0")(0)
+  foo_0.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
 
 
 
@@ -285,7 +285,7 @@ class test09DF(implicit p: Parameters) extends test09DFIO()(p) {
 
   i_0.io.InData(1) <> inc.io.Out(0)
 
-  ret_9.io.In.data("field0") <> Loop_0.io.Out(0)
+  ret_9.io.In.elements("field0") <> Loop_0.io.Out(0)
 
 
 

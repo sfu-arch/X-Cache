@@ -285,19 +285,19 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  binaryOp_add4.io.LeftIO <> Loop_0.io.liveIn.data("field0")(0)
+  binaryOp_add4.io.LeftIO <> Loop_0.io.liveIn.elements("field0")(0)
 
-  binaryOp_mul716.io.LeftIO <> Loop_0.io.liveIn.data("field0")(1)
+  binaryOp_mul716.io.LeftIO <> Loop_0.io.liveIn.elements("field0")(1)
 
-  binaryOp_add4.io.RightIO <> Loop_0.io.liveIn.data("field1")(0)
+  binaryOp_add4.io.RightIO <> Loop_0.io.liveIn.elements("field1")(0)
 
-  binaryOp_add16.io.LeftIO <> Loop_0.io.liveIn.data("field2")(0)
+  binaryOp_add16.io.LeftIO <> Loop_0.io.liveIn.elements("field2")(0)
 
-  binaryOp_add817.io.RightIO <> Loop_0.io.liveIn.data("field2")(1)
+  binaryOp_add817.io.RightIO <> Loop_0.io.liveIn.elements("field2")(1)
 
-  Gep_arrayidx14.io.baseAddress <> Loop_0.io.liveIn.data("field3")(0)
+  Gep_arrayidx14.io.baseAddress <> Loop_0.io.liveIn.elements("field3")(0)
 
-  Gep_arrayidx918.io.baseAddress <> Loop_0.io.liveIn.data("field4")(0)
+  Gep_arrayidx918.io.baseAddress <> Loop_0.io.liveIn.elements("field4")(0)
 
 
 
@@ -484,19 +484,19 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
 
   Gep_arrayidx14.io.idx1 <> binaryOp_add613.io.Out(0)
 
-  ld_15.io.GepAddr <> Gep_arrayidx14.io.Out.data(0)
+  ld_15.io.GepAddr <> Gep_arrayidx14.io.Out(0)
 
-  binaryOp_add1020.io.RightIO <> ld_15.io.Out.data(0)
+  binaryOp_add1020.io.RightIO <> ld_15.io.Out(0)
 
   binaryOp_add817.io.LeftIO <> binaryOp_mul716.io.Out(0)
 
   Gep_arrayidx918.io.idx1 <> binaryOp_add817.io.Out(0)
 
-  ld_19.io.GepAddr <> Gep_arrayidx918.io.Out.data(0)
+  ld_19.io.GepAddr <> Gep_arrayidx918.io.Out(0)
 
-  st_21.io.GepAddr <> Gep_arrayidx918.io.Out.data(1)
+  st_21.io.GepAddr <> Gep_arrayidx918.io.Out(1)
 
-  binaryOp_add1020.io.LeftIO <> ld_19.io.Out.data(0)
+  binaryOp_add1020.io.LeftIO <> ld_19.io.Out(0)
 
   st_21.io.inData <> binaryOp_add1020.io.Out(0)
 

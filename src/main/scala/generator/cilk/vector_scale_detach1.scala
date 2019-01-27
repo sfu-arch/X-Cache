@@ -372,31 +372,31 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
   st_20.io.inData <> const4.io.Out(0)
 
-  ld_1.io.GepAddr <> Gep_0.io.Out.data(0)
+  ld_1.io.GepAddr <> Gep_0.io.Out(0)
 
-  icmp_2.io.LeftIO <> ld_1.io.Out.data(0)
+  icmp_2.io.LeftIO <> ld_1.io.Out(0)
 
   br_3.io.CmpIO <> icmp_2.io.Out(0)
 
-  st_5.io.GepAddr <> Gep_4.io.Out.data(0)
+  st_5.io.GepAddr <> Gep_4.io.Out(0)
 
-  ld_10.io.GepAddr <> Gep_9.io.Out.data(0)
+  ld_10.io.GepAddr <> Gep_9.io.Out(0)
 
-  binaryOp_11.io.LeftIO <> ld_10.io.Out.data(0)
+  binaryOp_11.io.LeftIO <> ld_10.io.Out(0)
 
   binaryOp_12.io.LeftIO <> binaryOp_11.io.Out(0)
 
   st_14.io.inData <> binaryOp_12.io.Out(0)
 
-  st_14.io.GepAddr <> Gep_13.io.Out.data(0)
+  st_14.io.GepAddr <> Gep_13.io.Out(0)
 
-  ld_16.io.GepAddr <> Gep_15.io.Out.data(0)
+  ld_16.io.GepAddr <> Gep_15.io.Out(0)
 
-  icmp_17.io.LeftIO <> ld_16.io.Out.data(0)
+  icmp_17.io.LeftIO <> ld_16.io.Out(0)
 
   br_18.io.CmpIO <> icmp_17.io.Out(0)
 
-  st_20.io.GepAddr <> Gep_19.io.Out.data(0)
+  st_20.io.GepAddr <> Gep_19.io.Out(0)
 
   Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
 

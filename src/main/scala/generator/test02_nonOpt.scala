@@ -363,19 +363,19 @@ class test02_nonOptDF(implicit p: Parameters) extends test02_nonOptDFIO()(p) {
 
   ld_15.io.GepAddr <> alloca_sum2.io.Out(2)
 
-  binaryOp_div7.io.LeftIO <> ld_6.io.Out.data(0)
+  binaryOp_div7.io.LeftIO <> ld_6.io.Out(0)
 
   icmp_cmp8.io.LeftIO <> binaryOp_div7.io.Out(0)
 
   br_9.io.CmpIO <> icmp_cmp8.io.Out(0)
 
-  binaryOp_add12.io.LeftIO <> ld_10.io.Out.data(0)
+  binaryOp_add12.io.LeftIO <> ld_10.io.Out(0)
 
-  binaryOp_add12.io.RightIO <> ld_11.io.Out.data(0)
+  binaryOp_add12.io.RightIO <> ld_11.io.Out(0)
 
   st_13.io.inData <> binaryOp_add12.io.Out(0)
 
-  ret_16.io.In.data("field0") <> ld_15.io.Out.data(0)
+  ret_16.io.In.data("field0") <> ld_15.io.Out(0)
 
   st_3.io.inData <> InputSplitter.io.Out.data("field0")(0)
 

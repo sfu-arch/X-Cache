@@ -209,11 +209,11 @@ class cilk_for_test05DF(implicit p: Parameters) extends cilk_for_test05DFIO()(p)
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_9_out.io.In("field0") <> Loop_0.io.liveIn.data("field0")(0)
+  call_9_out.io.In("field0") <> Loop_0.io.liveIn.elements("field0")(0)
 
-  call_9_out.io.In("field2") <> Loop_0.io.liveIn.data("field1")(0)
+  call_9_out.io.In("field2") <> Loop_0.io.liveIn.elements("field1")(0)
 
-  call_9_out.io.In("field3") <> Loop_0.io.liveIn.data("field2")(0)
+  call_9_out.io.In("field3") <> Loop_0.io.liveIn.elements("field2")(0)
 
 
 
@@ -296,7 +296,7 @@ class cilk_for_test05DF(implicit p: Parameters) extends cilk_for_test05DFIO()(p)
 
   binaryOp_inc5.io.RightIO <> const2.io.Out(0)
 
-  ret_8.io.In.data("field0") <> const3.io.Out(0)
+  ret_8.io.In.elements("field0") <> const3.io.Out(0)
 
   icmp_cmp2.io.LeftIO <> phi_i_01.io.Out(0)
 

@@ -195,9 +195,9 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
 
@@ -205,9 +205,9 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_9_out.io.In("field1") <> Loop_0.io.liveIn.data("field0")(0)
+  call_9_out.io.In("field1") <> Loop_0.io.liveIn.elements("field0")(0)
 
-  call_9_out.io.In("field2") <> Loop_0.io.liveIn.data("field1")(0)
+  call_9_out.io.In("field2") <> Loop_0.io.liveIn.elements("field1")(0)
 
 
 
@@ -304,7 +304,7 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
 
   phi_pos_01.io.InData(1) <> binaryOp_inc75.io.Out(0)
 
-//  reattach_10.io.predicateIn(0) <> call_9_in.io.Out.data("field0")
+//  reattach_10.io.predicateIn(0) <> call_9_in.io.Out.elements("field0")
   reattach_10.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 

@@ -207,9 +207,9 @@ class dedup_S3DF(implicit p: Parameters) extends dedup_S3DFIO()(p) {
 
   st_1.io.inData <> const1.io.Out(0)
 
-  st_1.io.GepAddr <> Gep_arrayidx0.io.Out.data(0)
+  st_1.io.GepAddr <> Gep_arrayidx0.io.Out(0)
 
-  st_3.io.GepAddr <> Gep_arrayidx12.io.Out.data(0)
+  st_3.io.GepAddr <> Gep_arrayidx12.io.Out(0)
 
   ret_4.io.In.data("field0") <> st_3.io.Out(0)
 

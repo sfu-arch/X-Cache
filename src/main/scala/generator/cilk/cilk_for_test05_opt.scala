@@ -200,11 +200,11 @@ class cilk_for_test05_optDF(implicit p: Parameters) extends cilk_for_test05_optD
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_9_out.io.In("field0") <> Loop_0.io.liveIn.data("field0")(0)
+  call_9_out.io.In("field0") <> Loop_0.io.liveIn.elements("field0")(0)
 
-  call_9_out.io.In("field2") <> Loop_0.io.liveIn.data("field1")(0)
+  call_9_out.io.In("field2") <> Loop_0.io.liveIn.elements("field1")(0)
 
-  call_9_out.io.In("field3") <> Loop_0.io.liveIn.data("field2")(0)
+  call_9_out.io.In("field3") <> Loop_0.io.liveIn.elements("field2")(0)
 
 
   /* ================================================================== *

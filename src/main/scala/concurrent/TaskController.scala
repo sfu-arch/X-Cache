@@ -66,11 +66,11 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   }
 
   when(initQueue) {
-    freeList.io.enq.bits.data := initCount.asUInt()
+    freeList.io.enq.bits := initCount.asUInt()
     freeList.io.enq.valid := true.B
     retExpand.io.Out(0).ready := false.B
   }.otherwise {
-    freeList.io.enq.bits.data := retExpand.io.Out(0).bits.enable.taskID
+    freeList.io.enq.bits := retExpand.io.Out(0).bits.enable.taskID
     freeList.io.enq.valid := retExpand.io.Out(0).valid
     retExpand.io.Out(0).ready := freeList.io.enq.ready
   }
@@ -84,9 +84,9 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
   exeList.io.enq.bits := taskArb.io.out.bits
   exeList.io.enq.bits := taskArb.io.out.bits
   for (i <- argTypes.indices) {
-    exeList.io.enq.bits.data(s"field$i").taskID := freeList.io.deq.bits.data
+    exeList.io.enq.bits.data(s"field$i").taskID := freeList.io.deq.bits
   }
-  exeList.io.enq.bits.enable.taskID := freeList.io.deq.bits.data
+  exeList.io.enq.bits.enable.taskID := freeList.io.deq.bits
 
   when (exeList.io.enq.fire) {
     parentTable.write(freeList.io.deq.bits, parentID)

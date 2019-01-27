@@ -188,22 +188,22 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_0.io.In(2) <> InputSplitter.io.Out.data.elements("field2")(0)
 
 
   /* ================================================================== *
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_9_out.io.In("field0") <> Loop_0.io.liveIn.data("field0")(0)
+  call_9_out.io.In("field0") <> Loop_0.io.liveIn.elements("field0")(0)
 
-  call_9_out.io.In("field2") <> Loop_0.io.liveIn.data("field1")(0)
+  call_9_out.io.In("field2") <> Loop_0.io.liveIn.elements("field1")(0)
 
-  call_9_out.io.In("field3") <> Loop_0.io.liveIn.data("field2")(0)
+  call_9_out.io.In("field3") <> Loop_0.io.liveIn.elements("field2")(0)
 
 
   /* ================================================================== *
@@ -251,7 +251,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
   call_9_out.io.enable <> bb_offload_pfor_body6.io.Out(0)
 
-  reattach_10.io.predicateIn(0) <> call_9_in.io.Out.data("field0") // manual
+  reattach_10.io.predicateIn(0) <> call_9_in.io.Out.elements("field0") // manual
   reattach_10.io.enable <> call_9_in.io.Out.enable
   //  reattach_10.io.enable.enq(ControlBundle.active())
   //  reattach11.io.enable <> call10_in.io.Out.enable//.enq(ControlBundle.active())
@@ -284,7 +284,7 @@ class cilk_for_test04DF(implicit p: Parameters) extends cilk_for_test04DFIO()(p)
 
   binaryOp_inc5.io.RightIO <> const2.io.Out(0)
 
-  ret_8.io.In.data("field0") <> const3.io.Out(0)
+  ret_8.io.In.elements("field0") <> const3.io.Out(0)
 
   icmp_cmp2.io.LeftIO <> phi_i_01.io.Out(0)
 

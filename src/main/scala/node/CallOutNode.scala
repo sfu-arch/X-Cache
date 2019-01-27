@@ -44,7 +44,7 @@ class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0, NoReturn: 
       data_R(s"field$i") := io.In(s"field$i").bits
       data_valid_R(i) := true.B
     }
-    io.In.data(s"field$i").ready := !data_valid_R(i)
+    io.In.elements(s"field$i").ready := !data_valid_R(i)
   }
 
   when(io.enable.fire()) {
@@ -112,7 +112,7 @@ class CallOutNode2(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int=0, NoReturn:
       data_R(s"field$i") := io.In(s"field$i").bits
       data_valid_R(i) := true.B
     }
-    io.In.data(s"field$i").ready := !data_valid_R(i)
+    io.In.elements(s"field$i").ready := !data_valid_R(i)
   }
 
   when(io.enable.fire()) {

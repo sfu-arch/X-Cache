@@ -182,7 +182,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 
@@ -190,7 +190,7 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  phi_foo_01.io.InData(0) <> Loop_0.io.liveIn.data("field0")(0)
+  phi_foo_01.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
 
 
 
@@ -285,15 +285,15 @@ class test12DF(implicit p: Parameters) extends test12DFIO()(p) {
 
   br_4.io.CmpIO <> icmp_cmp3.io.Out(0)
 
-  binaryOp_add6.io.RightIO <> call_5_in.io.Out.data("field0")
+  binaryOp_add6.io.RightIO <> call_5_in.io.Out.elements("field0")
 
-  br_7.io.CmpIO <> call_5_in.io.Out.data("field1")
+  br_7.io.CmpIO <> call_5_in.io.Out.elements("field1")
 
   phi_foo_01.io.InData(1) <> binaryOp_add6.io.Out(0)
 
   phi_i_02.io.InData(1) <> binaryOp_inc8.io.Out(0)
 
-  ret_10.io.In.data("field0") <> Loop_0.io.Out(0)
+  ret_10.io.In.elements("field0") <> Loop_0.io.Out(0)
 
 
 

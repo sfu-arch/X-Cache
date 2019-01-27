@@ -564,14 +564,14 @@ class test05bDF(implicit p: Parameters) extends test05bDFIO()(p) {
   icmp2.io.LeftIO <> phi1.io.Out(param.icmp2_in("phi1"))
 
   // Wiring Binary instruction to the loop header
-  icmp2.io.RightIO <> lb_L_0.io.liveIn.data("field1")(0) // manual
+  icmp2.io.RightIO <> lb_L_0.io.liveIn.elements("field1")(0) // manual
 
   // Wiring Branch instruction
   br3.io.CmpIO <> icmp2.io.Out(param.br3_in("icmp2"))
 
   // Wiring Call to I/O
-  callout4.io.In("field0") <> lb_L_0.io.liveIn.data("field0")(0) // manual
-  callout4.io.In("field1") <> lb_L_0.io.liveIn.data("field1")(1) // manual
+  callout4.io.In("field0") <> lb_L_0.io.liveIn.elements("field0")(0) // manual
+  callout4.io.In("field1") <> lb_L_0.io.liveIn.elements("field1")(1) // manual
   io.call4_out <> callout4.io.Out(0)
 
   callin4.io.In <> io.call4_in

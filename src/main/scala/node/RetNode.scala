@@ -162,9 +162,9 @@ class RetNode(retTypes: Seq[Int], ID: Int)
 
   // Latching input data
   for (i <- retTypes.indices) {
-    io.In.data(s"field$i").ready := ~in_data_valid_R(i)
-    when(io.In.data(s"field$i").fire()) {
-      output_R.data(s"field$i") := io.In.data(s"field$i").bits
+    io.In.elements(s"field$i").ready := ~in_data_valid_R(i)
+    when(io.In.elements(s"field$i").fire()) {
+      output_R.data(s"field$i") := io.In.elements(s"field$i").bits
       in_data_valid_R(i) := true.B
     }
   }

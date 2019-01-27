@@ -635,9 +635,9 @@ class bgemm_detach1DF(implicit p: Parameters) extends bgemm_detach1DFIO()(p) {
   
   
   
-  ret12.io.In.data("field0").bits.data := 1.U
-  ret12.io.In.data("field0").bits.predicate := true.B
-  ret12.io.In.data("field0").valid := true.B
+  ret12.io.In.elements("field0").bits.data := 1.U
+  ret12.io.In.elements("field0").bits.predicate := true.B
+  ret12.io.In.elements("field0").valid := true.B
   io.out <> ret12.io.Out
 
 

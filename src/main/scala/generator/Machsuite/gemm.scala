@@ -399,45 +399,45 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
 
   Loop_0.io.In(0) <> binaryOp_add1716.io.Out(0)
 
-  Loop_0.io.In(1) <> Loop_1.io.liveIn.data("field4")(0)
+  Loop_0.io.In(1) <> Loop_1.io.liveIn.elements("field4")(0)
 
-  Loop_0.io.In(2) <> ld_15.io.Out.data(0)
+  Loop_0.io.In(2) <> ld_15.io.Out(0)
 
-  Loop_0.io.In(3) <> Loop_1.io.liveIn.data("field5")(0)
+  Loop_0.io.In(3) <> Loop_1.io.liveIn.elements("field5")(0)
 
-  Loop_0.io.In(4) <> Loop_1.io.liveIn.data("field6")(0)
+  Loop_0.io.In(4) <> Loop_1.io.liveIn.elements("field6")(0)
 
-  Loop_1.io.In(0) <> Loop_2.io.liveIn.data("field0")(1)
+  Loop_1.io.In(0) <> Loop_2.io.liveIn.elements("field0")(1)
 
   Loop_1.io.In(1) <> binaryOp_add127.io.Out(0)
 
-  Loop_1.io.In(2) <> Loop_2.io.liveIn.data("field2")(0)
+  Loop_1.io.In(2) <> Loop_2.io.liveIn.elements("field2")(0)
 
-  Loop_1.io.In(3) <> Loop_2.io.liveIn.data("field1")(1)
+  Loop_1.io.In(3) <> Loop_2.io.liveIn.elements("field1")(1)
 
-  Loop_1.io.In(4) <> Loop_2.io.liveIn.data("field3")(0)
+  Loop_1.io.In(4) <> Loop_2.io.liveIn.elements("field3")(0)
 
   Loop_1.io.In(5) <> binaryOp_add218.io.Out(0)
 
-  Loop_1.io.In(6) <> Loop_2.io.liveIn.data("field4")(0)
+  Loop_1.io.In(6) <> Loop_2.io.liveIn.elements("field4")(0)
 
   Loop_2.io.In(0) <> phi_kk_0633.io.Out(0)
 
-  Loop_2.io.In(1) <> Loop_3.io.liveIn.data("field0")(0)
+  Loop_2.io.In(1) <> Loop_3.io.liveIn.elements("field0")(0)
 
-  Loop_2.io.In(2) <> Loop_3.io.liveIn.data("field1")(0)
+  Loop_2.io.In(2) <> Loop_3.io.liveIn.elements("field1")(0)
 
-  Loop_2.io.In(3) <> Loop_3.io.liveIn.data("field2")(0)
+  Loop_2.io.In(3) <> Loop_3.io.liveIn.elements("field2")(0)
 
-  Loop_2.io.In(4) <> Loop_3.io.liveIn.data("field3")(0)
+  Loop_2.io.In(4) <> Loop_3.io.liveIn.elements("field3")(0)
 
   Loop_3.io.In(0) <> phi_jj_0641.io.Out(0)
 
-  Loop_3.io.In(1) <> Loop_4.io.liveIn.data("field0")(0)
+  Loop_3.io.In(1) <> Loop_4.io.liveIn.elements("field0")(0)
 
-  Loop_3.io.In(2) <> Loop_4.io.liveIn.data("field1")(0)
+  Loop_3.io.In(2) <> Loop_4.io.liveIn.elements("field1")(0)
 
-  Loop_3.io.In(3) <> Loop_4.io.liveIn.data("field2")(0)
+  Loop_3.io.In(3) <> Loop_4.io.liveIn.elements("field2")(0)
 
   Loop_4.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
 
@@ -451,27 +451,27 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  binaryOp_add1819.io.LeftIO <> Loop_0.io.liveIn.data("field0")(0)
+  binaryOp_add1819.io.LeftIO <> Loop_0.io.liveIn.elements("field0")(0)
 
-  Gep_arrayidx1920.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  Gep_arrayidx1920.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  binaryOp_mul2022.io.LeftIO <> Loop_0.io.liveIn.data("field2")(0)
+  binaryOp_mul2022.io.LeftIO <> Loop_0.io.liveIn.elements("field2")(0)
 
-  binaryOp_add2223.io.LeftIO <> Loop_0.io.liveIn.data("field3")(0)
+  binaryOp_add2223.io.LeftIO <> Loop_0.io.liveIn.elements("field3")(0)
 
-  Gep_arrayidx2324.io.baseAddress <> Loop_0.io.liveIn.data("field4")(0)
+  Gep_arrayidx2324.io.baseAddress <> Loop_0.io.liveIn.elements("field4")(0)
 
-  binaryOp_add11.io.RightIO <> Loop_1.io.liveIn.data("field0")(0)
+  binaryOp_add11.io.RightIO <> Loop_1.io.liveIn.elements("field0")(0)
 
-  binaryOp_add1313.io.LeftIO <> Loop_1.io.liveIn.data("field1")(0)
+  binaryOp_add1313.io.LeftIO <> Loop_1.io.liveIn.elements("field1")(0)
 
-  Gep_arrayidx14.io.baseAddress <> Loop_1.io.liveIn.data("field2")(0)
+  Gep_arrayidx14.io.baseAddress <> Loop_1.io.liveIn.elements("field2")(0)
 
-  binaryOp_add1716.io.RightIO <> Loop_1.io.liveIn.data("field3")(0)
+  binaryOp_add1716.io.RightIO <> Loop_1.io.liveIn.elements("field3")(0)
 
-  binaryOp_add127.io.RightIO <> Loop_2.io.liveIn.data("field0")(0)
+  binaryOp_add127.io.RightIO <> Loop_2.io.liveIn.elements("field0")(0)
 
-  binaryOp_add218.io.RightIO <> Loop_2.io.liveIn.data("field1")(0)
+  binaryOp_add218.io.RightIO <> Loop_2.io.liveIn.elements("field1")(0)
 
 
 

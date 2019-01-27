@@ -1158,9 +1158,9 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
   
   
   
-  ret35.io.In.data("field0").bits.data := 1.U
-  ret35.io.In.data("field0").bits.predicate := true.B
-  ret35.io.In.data("field0").valid := true.B
+  ret35.io.In.elements("field0").bits.data := 1.U
+  ret35.io.In.elements("field0").bits.predicate := true.B
+  ret35.io.In.elements("field0").valid := true.B
   io.out <> ret35.io.Out
 
 

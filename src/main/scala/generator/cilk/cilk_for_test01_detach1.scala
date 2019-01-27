@@ -196,21 +196,21 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
 
   binaryOp_2.io.RightIO <> const0.io.Out(0)
 
-  ld_1.io.GepAddr <> Gep_0.io.Out.data(0)
+  ld_1.io.GepAddr <> Gep_0.io.Out(0)
 
-  binaryOp_2.io.LeftIO <> ld_1.io.Out.data(0)
+  binaryOp_2.io.LeftIO <> ld_1.io.Out(0)
 
   st_4.io.inData <> binaryOp_2.io.Out(0)
 
-  st_4.io.GepAddr <> Gep_3.io.Out.data(0)
+  st_4.io.GepAddr <> Gep_3.io.Out(0)
 
-  Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
+  Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Gep_0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
+  Gep_0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_3.io.idx1 <> InputSplitter.io.Out.data("field1")(1)
+  Gep_3.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Gep_3.io.baseAddress <> InputSplitter.io.Out.data("field2")(0)
+  Gep_3.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(0)
 
   //  st_4.io.Out(0).ready := true.B
 
@@ -221,7 +221,7 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  ret_6.io.In.data("field0") <> st_4.io.Out(0) // manual
+  ret_6.io.In.elements("field0") <> st_4.io.Out(0) // manual
   io.out <> ret_6.io.Out
 
 }

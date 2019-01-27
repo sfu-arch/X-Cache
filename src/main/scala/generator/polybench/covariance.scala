@@ -572,9 +572,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> Loop_1.io.liveIn.data("field2")(0)
+  Loop_0.io.In(0) <> Loop_1.io.liveIn.elements("field2")(0)
 
-  Loop_0.io.In(1) <> Loop_1.io.liveIn.data("field0")(2)
+  Loop_0.io.In(1) <> Loop_1.io.liveIn.elements("field0")(2)
 
   Loop_0.io.In(2) <> phij_2442.io.Out(1)
 
@@ -582,11 +582,11 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_1.io.In(0) <> phii_2540.io.Out(0)
 
-  Loop_1.io.In(1) <> Loop_2.io.liveIn.data("field0")(0)
+  Loop_1.io.In(1) <> Loop_2.io.liveIn.elements("field0")(0)
 
-  Loop_1.io.In(2) <> Loop_2.io.liveIn.data("field1")(0)
+  Loop_1.io.In(2) <> Loop_2.io.liveIn.elements("field1")(0)
 
-  Loop_1.io.In(3) <> Loop_2.io.liveIn.data("field2")(0)
+  Loop_1.io.In(3) <> Loop_2.io.liveIn.elements("field2")(0)
 
   Loop_2.io.In(0) <> InputSplitter.io.Out.data("field2")(0)
 
@@ -594,9 +594,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_2.io.In(2) <> FP_sub4724.io.Out(0)
 
-  Loop_3.io.In(0) <> Loop_4.io.liveIn.data("field0")(0)
+  Loop_3.io.In(0) <> Loop_4.io.liveIn.elements("field0")(0)
 
-  Loop_3.io.In(1) <> Loop_4.io.liveIn.data("field1")(0)
+  Loop_3.io.In(1) <> Loop_4.io.liveIn.elements("field1")(0)
 
   Loop_3.io.In(2) <> phii_1822.io.Out(0)
 
@@ -604,7 +604,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Loop_4.io.In(1) <> InputSplitter.io.Out.data("field1")(1)
 
-  Loop_5.io.In(0) <> Loop_6.io.liveIn.data("field1")(0)
+  Loop_5.io.In(0) <> Loop_6.io.liveIn.elements("field1")(0)
 
   Loop_5.io.In(1) <> phij_0101.io.Out(1)
 
@@ -622,43 +622,43 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  Gep_tmp649.io.baseAddress <> Loop_0.io.liveIn.data("field0")(0)
+  Gep_tmp649.io.baseAddress <> Loop_0.io.liveIn.elements("field0")(0)
 
-  Gep_tmp852.io.baseAddress <> Loop_0.io.liveIn.data("field0")(1)
+  Gep_tmp852.io.baseAddress <> Loop_0.io.liveIn.elements("field0")(1)
 
-  Gep_tmp750.io.idx(1) <> Loop_0.io.liveIn.data("field1")(0)
+  Gep_tmp750.io.idx(1) <> Loop_0.io.liveIn.elements("field1")(0)
 
-  Gep_tmp953.io.idx(1) <> Loop_0.io.liveIn.data("field2")(0)
+  Gep_tmp953.io.idx(1) <> Loop_0.io.liveIn.elements("field2")(0)
 
-  st_57.io.GepAddr <> Loop_0.io.liveIn.data("field3")(0)
+  st_57.io.GepAddr <> Loop_0.io.liveIn.elements("field3")(0)
 
-  phij_2442.io.InData(1) <> Loop_1.io.liveIn.data("field0")(0)
+  phij_2442.io.InData(1) <> Loop_1.io.liveIn.elements("field0")(0)
 
-  Gep_tmp443.io.idx(0) <> Loop_1.io.liveIn.data("field0")(1)
+  Gep_tmp443.io.idx(0) <> Loop_1.io.liveIn.elements("field0")(1)
 
-  Gep_tmp1165.io.idx(1) <> Loop_1.io.liveIn.data("field0")(3)
+  Gep_tmp1165.io.idx(1) <> Loop_1.io.liveIn.elements("field0")(3)
 
-  Gep_tmp443.io.baseAddress <> Loop_1.io.liveIn.data("field1")(0)
+  Gep_tmp443.io.baseAddress <> Loop_1.io.liveIn.elements("field1")(0)
 
-  Gep_tmp1064.io.baseAddress <> Loop_1.io.liveIn.data("field1")(1)
+  Gep_tmp1064.io.baseAddress <> Loop_1.io.liveIn.elements("field1")(1)
 
-  FP_div5062.io.b <> Loop_1.io.liveIn.data("field3")(0)
+  FP_div5062.io.b <> Loop_1.io.liveIn.elements("field3")(0)
 
-  Gep_arrayidx1727.io.baseAddress <> Loop_3.io.liveIn.data("field0")(0)
+  Gep_arrayidx1727.io.baseAddress <> Loop_3.io.liveIn.elements("field0")(0)
 
-  Gep_tmp229.io.baseAddress <> Loop_3.io.liveIn.data("field1")(0)
+  Gep_tmp229.io.baseAddress <> Loop_3.io.liveIn.elements("field1")(0)
 
-  Gep_tmp229.io.idx(0) <> Loop_3.io.liveIn.data("field2")(0)
+  Gep_tmp229.io.idx(0) <> Loop_3.io.liveIn.elements("field2")(0)
 
-  Gep_tmp7.io.baseAddress <> Loop_5.io.liveIn.data("field0")(0)
+  Gep_tmp7.io.baseAddress <> Loop_5.io.liveIn.elements("field0")(0)
 
-  Gep_tmp18.io.idx(1) <> Loop_5.io.liveIn.data("field1")(0)
+  Gep_tmp18.io.idx(1) <> Loop_5.io.liveIn.elements("field1")(0)
 
-  st_11.io.GepAddr <> Loop_5.io.liveIn.data("field2")(0)
+  st_11.io.GepAddr <> Loop_5.io.liveIn.elements("field2")(0)
 
-  Gep_arrayidx2.io.baseAddress <> Loop_6.io.liveIn.data("field0")(0)
+  Gep_arrayidx2.io.baseAddress <> Loop_6.io.liveIn.elements("field0")(0)
 
-  FP_div16.io.b <> Loop_6.io.liveIn.data("field2")(0)
+  FP_div16.io.b <> Loop_6.io.liveIn.elements("field2")(0)
 
 
 

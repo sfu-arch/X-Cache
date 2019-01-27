@@ -187,13 +187,13 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  sum_0.io.InData(0) <> Loop_0.io.liveIn.data("field0")(0)
+  sum_0.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
 
-  add.io.RightIO <> Loop_0.io.liveIn.data("field0")(1)
+  add.io.RightIO <> Loop_0.io.liveIn.elements("field0")(1)
 
-  cmp.io.RightIO <> Loop_0.io.liveIn.data("field1")(0)
+  cmp.io.RightIO <> Loop_0.io.liveIn.elements("field1")(0)
 
-  mul.io.RightIO <> Loop_0.io.liveIn.data("field2")(0)
+  mul.io.RightIO <> Loop_0.io.liveIn.elements("field2")(0)
 
 
 

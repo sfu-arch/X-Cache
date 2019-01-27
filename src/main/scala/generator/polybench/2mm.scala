@@ -524,31 +524,31 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> Loop_1.io.liveIn.data("field4")(0)
+  Loop_0.io.In(0) <> Loop_1.io.liveIn.elements("field4")(0)
 
-  Loop_0.io.In(1) <> Loop_1.io.liveIn.data("field5")(0)
+  Loop_0.io.In(1) <> Loop_1.io.liveIn.elements("field5")(0)
 
-  Loop_0.io.In(2) <> Loop_1.io.liveIn.data("field2")(1)
+  Loop_0.io.In(2) <> Loop_1.io.liveIn.elements("field2")(1)
 
-  Loop_0.io.In(3) <> Loop_1.io.liveIn.data("field6")(0)
+  Loop_0.io.In(3) <> Loop_1.io.liveIn.elements("field6")(0)
 
   Loop_0.io.In(4) <> phi_j_139.io.Out(2)
 
-  Loop_0.io.In(5) <> Loop_1.io.liveIn.data("field1")(1)
+  Loop_0.io.In(5) <> Loop_1.io.liveIn.elements("field1")(1)
 
-  Loop_1.io.In(0) <> Loop_2.io.liveIn.data("field1")(0)
+  Loop_1.io.In(0) <> Loop_2.io.liveIn.elements("field1")(0)
 
-  Loop_1.io.In(1) <> Loop_2.io.liveIn.data("field2")(0)
+  Loop_1.io.In(1) <> Loop_2.io.liveIn.elements("field2")(0)
 
   Loop_1.io.In(2) <> phi_i_135.io.Out(1)
 
-  Loop_1.io.In(3) <> Loop_2.io.liveIn.data("field3")(0)
+  Loop_1.io.In(3) <> Loop_2.io.liveIn.elements("field3")(0)
 
-  Loop_1.io.In(4) <> Loop_2.io.liveIn.data("field4")(0)
+  Loop_1.io.In(4) <> Loop_2.io.liveIn.elements("field4")(0)
 
-  Loop_1.io.In(5) <> Loop_2.io.liveIn.data("field5")(0)
+  Loop_1.io.In(5) <> Loop_2.io.liveIn.elements("field5")(0)
 
-  Loop_1.io.In(6) <> Loop_2.io.liveIn.data("field6")(0)
+  Loop_1.io.In(6) <> Loop_2.io.liveIn.elements("field6")(0)
 
   Loop_2.io.In(0) <> InputSplitter.io.Out.data("field0")(1)
 
@@ -564,33 +564,33 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
 
   Loop_2.io.In(6) <> InputSplitter.io.Out.data("field9")(0)
 
-  Loop_3.io.In(0) <> Loop_4.io.liveIn.data("field3")(0)
+  Loop_3.io.In(0) <> Loop_4.io.liveIn.elements("field3")(0)
 
-  Loop_3.io.In(1) <> Loop_4.io.liveIn.data("field4")(0)
+  Loop_3.io.In(1) <> Loop_4.io.liveIn.elements("field4")(0)
 
-  Loop_3.io.In(2) <> Loop_4.io.liveIn.data("field2")(1)
+  Loop_3.io.In(2) <> Loop_4.io.liveIn.elements("field2")(1)
 
-  Loop_3.io.In(3) <> Loop_4.io.liveIn.data("field5")(0)
+  Loop_3.io.In(3) <> Loop_4.io.liveIn.elements("field5")(0)
 
-  Loop_3.io.In(4) <> Loop_4.io.liveIn.data("field6")(0)
+  Loop_3.io.In(4) <> Loop_4.io.liveIn.elements("field6")(0)
 
   Loop_3.io.In(5) <> phi_j_05.io.Out(2)
 
-  Loop_3.io.In(6) <> Loop_4.io.liveIn.data("field1")(1)
+  Loop_3.io.In(6) <> Loop_4.io.liveIn.elements("field1")(1)
 
-  Loop_4.io.In(0) <> Loop_5.io.liveIn.data("field1")(0)
+  Loop_4.io.In(0) <> Loop_5.io.liveIn.elements("field1")(0)
 
-  Loop_4.io.In(1) <> Loop_5.io.liveIn.data("field2")(0)
+  Loop_4.io.In(1) <> Loop_5.io.liveIn.elements("field2")(0)
 
   Loop_4.io.In(2) <> phi_i_01.io.Out(1)
 
-  Loop_4.io.In(3) <> Loop_5.io.liveIn.data("field3")(0)
+  Loop_4.io.In(3) <> Loop_5.io.liveIn.elements("field3")(0)
 
-  Loop_4.io.In(4) <> Loop_5.io.liveIn.data("field4")(0)
+  Loop_4.io.In(4) <> Loop_5.io.liveIn.elements("field4")(0)
 
-  Loop_4.io.In(5) <> Loop_5.io.liveIn.data("field5")(0)
+  Loop_4.io.In(5) <> Loop_5.io.liveIn.elements("field5")(0)
 
-  Loop_4.io.In(6) <> Loop_5.io.liveIn.data("field6")(0)
+  Loop_4.io.In(6) <> Loop_5.io.liveIn.elements("field6")(0)
 
   Loop_5.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
 
@@ -612,57 +612,57 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  icmp_cmp3449.io.RightIO <> Loop_0.io.liveIn.data("field0")(0)
+  icmp_cmp3449.io.RightIO <> Loop_0.io.liveIn.elements("field0")(0)
 
-  Gep_arrayidx3651.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  Gep_arrayidx3651.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  Gep_arrayidx3651.io.idx(0) <> Loop_0.io.liveIn.data("field2")(0)
+  Gep_arrayidx3651.io.idx(0) <> Loop_0.io.liveIn.elements("field2")(0)
 
-  Gep_arrayidx4158.io.idx(0) <> Loop_0.io.liveIn.data("field2")(1)
+  Gep_arrayidx4158.io.idx(0) <> Loop_0.io.liveIn.elements("field2")(1)
 
-  Gep_arrayidx3854.io.baseAddress <> Loop_0.io.liveIn.data("field3")(0)
+  Gep_arrayidx3854.io.baseAddress <> Loop_0.io.liveIn.elements("field3")(0)
 
-  Gep_arrayidx3955.io.idx(1) <> Loop_0.io.liveIn.data("field4")(0)
+  Gep_arrayidx3955.io.idx(1) <> Loop_0.io.liveIn.elements("field4")(0)
 
-  Gep_arrayidx4259.io.idx(1) <> Loop_0.io.liveIn.data("field4")(1)
+  Gep_arrayidx4259.io.idx(1) <> Loop_0.io.liveIn.elements("field4")(1)
 
-  Gep_arrayidx4158.io.baseAddress <> Loop_0.io.liveIn.data("field5")(0)
+  Gep_arrayidx4158.io.baseAddress <> Loop_0.io.liveIn.elements("field5")(0)
 
-  icmp_cmp2840.io.RightIO <> Loop_1.io.liveIn.data("field0")(0)
+  icmp_cmp2840.io.RightIO <> Loop_1.io.liveIn.elements("field0")(0)
 
-  Gep_arrayidx3042.io.baseAddress <> Loop_1.io.liveIn.data("field1")(0)
+  Gep_arrayidx3042.io.baseAddress <> Loop_1.io.liveIn.elements("field1")(0)
 
-  Gep_arrayidx3042.io.idx(0) <> Loop_1.io.liveIn.data("field2")(0)
+  Gep_arrayidx3042.io.idx(0) <> Loop_1.io.liveIn.elements("field2")(0)
 
-  binaryOp_mul3245.io.RightIO <> Loop_1.io.liveIn.data("field3")(0)
+  binaryOp_mul3245.io.RightIO <> Loop_1.io.liveIn.elements("field3")(0)
 
-  icmp_cmp2536.io.RightIO <> Loop_2.io.liveIn.data("field0")(0)
+  icmp_cmp2536.io.RightIO <> Loop_2.io.liveIn.elements("field0")(0)
 
-  icmp_cmp913.io.RightIO <> Loop_3.io.liveIn.data("field0")(0)
+  icmp_cmp913.io.RightIO <> Loop_3.io.liveIn.elements("field0")(0)
 
-  Gep_arrayidx1115.io.baseAddress <> Loop_3.io.liveIn.data("field1")(0)
+  Gep_arrayidx1115.io.baseAddress <> Loop_3.io.liveIn.elements("field1")(0)
 
-  Gep_arrayidx1115.io.idx(0) <> Loop_3.io.liveIn.data("field2")(0)
+  Gep_arrayidx1115.io.idx(0) <> Loop_3.io.liveIn.elements("field2")(0)
 
-  Gep_arrayidx1623.io.idx(0) <> Loop_3.io.liveIn.data("field2")(1)
+  Gep_arrayidx1623.io.idx(0) <> Loop_3.io.liveIn.elements("field2")(1)
 
-  binaryOp_mul18.io.LeftIO <> Loop_3.io.liveIn.data("field3")(0)
+  binaryOp_mul18.io.LeftIO <> Loop_3.io.liveIn.elements("field3")(0)
 
-  Gep_arrayidx1319.io.baseAddress <> Loop_3.io.liveIn.data("field4")(0)
+  Gep_arrayidx1319.io.baseAddress <> Loop_3.io.liveIn.elements("field4")(0)
 
-  Gep_arrayidx1420.io.idx(1) <> Loop_3.io.liveIn.data("field5")(0)
+  Gep_arrayidx1420.io.idx(1) <> Loop_3.io.liveIn.elements("field5")(0)
 
-  Gep_arrayidx1724.io.idx(1) <> Loop_3.io.liveIn.data("field5")(1)
+  Gep_arrayidx1724.io.idx(1) <> Loop_3.io.liveIn.elements("field5")(1)
 
-  Gep_arrayidx1623.io.baseAddress <> Loop_3.io.liveIn.data("field6")(0)
+  Gep_arrayidx1623.io.baseAddress <> Loop_3.io.liveIn.elements("field6")(0)
 
-  icmp_cmp56.io.RightIO <> Loop_4.io.liveIn.data("field0")(0)
+  icmp_cmp56.io.RightIO <> Loop_4.io.liveIn.elements("field0")(0)
 
-  Gep_arrayidx8.io.baseAddress <> Loop_4.io.liveIn.data("field1")(0)
+  Gep_arrayidx8.io.baseAddress <> Loop_4.io.liveIn.elements("field1")(0)
 
-  Gep_arrayidx8.io.idx(0) <> Loop_4.io.liveIn.data("field2")(0)
+  Gep_arrayidx8.io.idx(0) <> Loop_4.io.liveIn.elements("field2")(0)
 
-  icmp_cmp2.io.RightIO <> Loop_5.io.liveIn.data("field0")(0)
+  icmp_cmp2.io.RightIO <> Loop_5.io.liveIn.elements("field0")(0)
 
 
 
@@ -1019,9 +1019,9 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
 
   br_7.io.CmpIO <> icmp_cmp56.io.Out(0)
 
-  Gep_arrayidx79.io.baseAddress <> Gep_arrayidx8.io.Out.data(0)
+  Gep_arrayidx79.io.baseAddress <> Gep_arrayidx8.io.Out(0)
 
-  st_10.io.GepAddr <> Gep_arrayidx79.io.Out.data(0)
+  st_10.io.GepAddr <> Gep_arrayidx79.io.Out(0)
 
   icmp_cmp913.io.LeftIO <> phi_k_012.io.Out(0)
 
@@ -1033,29 +1033,29 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
 
   br_14.io.CmpIO <> icmp_cmp913.io.Out(0)
 
-  Gep_arrayidx1216.io.baseAddress <> Gep_arrayidx1115.io.Out.data(0)
+  Gep_arrayidx1216.io.baseAddress <> Gep_arrayidx1115.io.Out(0)
 
-  ld_17.io.GepAddr <> Gep_arrayidx1216.io.Out.data(0)
+  ld_17.io.GepAddr <> Gep_arrayidx1216.io.Out(0)
 
-  binaryOp_mul18.io.RightIO <> ld_17.io.Out.data(0)
+  binaryOp_mul18.io.RightIO <> ld_17.io.Out(0)
 
   binaryOp_mul1522.io.LeftIO <> binaryOp_mul18.io.Out(0)
 
-  Gep_arrayidx1420.io.baseAddress <> Gep_arrayidx1319.io.Out.data(0)
+  Gep_arrayidx1420.io.baseAddress <> Gep_arrayidx1319.io.Out(0)
 
-  ld_21.io.GepAddr <> Gep_arrayidx1420.io.Out.data(0)
+  ld_21.io.GepAddr <> Gep_arrayidx1420.io.Out(0)
 
-  binaryOp_mul1522.io.RightIO <> ld_21.io.Out.data(0)
+  binaryOp_mul1522.io.RightIO <> ld_21.io.Out(0)
 
   FP_add26.io.RightIO <> binaryOp_mul1522.io.Out(0)
 
-  Gep_arrayidx1724.io.baseAddress <> Gep_arrayidx1623.io.Out.data(0)
+  Gep_arrayidx1724.io.baseAddress <> Gep_arrayidx1623.io.Out(0)
 
-  ld_25.io.GepAddr <> Gep_arrayidx1724.io.Out.data(0)
+  ld_25.io.GepAddr <> Gep_arrayidx1724.io.Out(0)
 
-  st_27.io.GepAddr <> Gep_arrayidx1724.io.Out.data(1)
+  st_27.io.GepAddr <> Gep_arrayidx1724.io.Out(1)
 
-  FP_add26.io.LeftIO <> ld_25.io.Out.data(0)
+  FP_add26.io.LeftIO <> ld_25.io.Out(0)
 
   st_27.io.inData <> FP_add26.io.Out(0)
 
@@ -1079,13 +1079,13 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
 
   br_41.io.CmpIO <> icmp_cmp2840.io.Out(0)
 
-  Gep_arrayidx3143.io.baseAddress <> Gep_arrayidx3042.io.Out.data(0)
+  Gep_arrayidx3143.io.baseAddress <> Gep_arrayidx3042.io.Out(0)
 
-  ld_44.io.GepAddr <> Gep_arrayidx3143.io.Out.data(0)
+  ld_44.io.GepAddr <> Gep_arrayidx3143.io.Out(0)
 
-  st_46.io.GepAddr <> Gep_arrayidx3143.io.Out.data(1)
+  st_46.io.GepAddr <> Gep_arrayidx3143.io.Out(1)
 
-  binaryOp_mul3245.io.LeftIO <> ld_44.io.Out.data(0)
+  binaryOp_mul3245.io.LeftIO <> ld_44.io.Out(0)
 
   st_46.io.inData <> binaryOp_mul3245.io.Out(0)
 
@@ -1099,27 +1099,27 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
 
   br_50.io.CmpIO <> icmp_cmp3449.io.Out(0)
 
-  Gep_arrayidx3752.io.baseAddress <> Gep_arrayidx3651.io.Out.data(0)
+  Gep_arrayidx3752.io.baseAddress <> Gep_arrayidx3651.io.Out(0)
 
-  ld_53.io.GepAddr <> Gep_arrayidx3752.io.Out.data(0)
+  ld_53.io.GepAddr <> Gep_arrayidx3752.io.Out(0)
 
-  binaryOp_mul4057.io.LeftIO <> ld_53.io.Out.data(0)
+  binaryOp_mul4057.io.LeftIO <> ld_53.io.Out(0)
 
-  Gep_arrayidx3955.io.baseAddress <> Gep_arrayidx3854.io.Out.data(0)
+  Gep_arrayidx3955.io.baseAddress <> Gep_arrayidx3854.io.Out(0)
 
-  ld_56.io.GepAddr <> Gep_arrayidx3955.io.Out.data(0)
+  ld_56.io.GepAddr <> Gep_arrayidx3955.io.Out(0)
 
-  binaryOp_mul4057.io.RightIO <> ld_56.io.Out.data(0)
+  binaryOp_mul4057.io.RightIO <> ld_56.io.Out(0)
 
   FP_add4361.io.RightIO <> binaryOp_mul4057.io.Out(0)
 
-  Gep_arrayidx4259.io.baseAddress <> Gep_arrayidx4158.io.Out.data(0)
+  Gep_arrayidx4259.io.baseAddress <> Gep_arrayidx4158.io.Out(0)
 
-  ld_60.io.GepAddr <> Gep_arrayidx4259.io.Out.data(0)
+  ld_60.io.GepAddr <> Gep_arrayidx4259.io.Out(0)
 
-  st_62.io.GepAddr <> Gep_arrayidx4259.io.Out.data(1)
+  st_62.io.GepAddr <> Gep_arrayidx4259.io.Out(1)
 
-  FP_add4361.io.LeftIO <> ld_60.io.Out.data(0)
+  FP_add4361.io.LeftIO <> ld_60.io.Out(0)
 
   st_62.io.inData <> FP_add4361.io.Out(0)
 

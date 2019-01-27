@@ -211,11 +211,11 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  arrayidx.io.baseAddress <> Loop_0.io.liveIn.data("field0")(0)
+  arrayidx.io.baseAddress <> Loop_0.io.liveIn.elements("field0")(0)
 
-  arrayidx1.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  arrayidx1.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  arrayidx2.io.baseAddress <> Loop_0.io.liveIn.data("field2")(0)
+  arrayidx2.io.baseAddress <> Loop_0.io.liveIn.elements("field2")(0)
 
 
 
@@ -332,17 +332,17 @@ class test11DF(implicit p: Parameters) extends test11DFIO()(p) {
 
   br_3.io.CmpIO <> cmp.io.Out(0)
 
-  ld_5.io.GepAddr <> arrayidx.io.Out.data(0)
+  ld_5.io.GepAddr <> arrayidx.io.Out(0)
 
-  call_8_out.io.In("field0") <> ld_5.io.Out.data(0)
+  call_8_out.io.In("field0") <> ld_5.io.Out(0)
 
-  ld_7.io.GepAddr <> arrayidx1.io.Out.data(0)
+  ld_7.io.GepAddr <> arrayidx1.io.Out(0)
 
-  call_8_out.io.In("field1") <> ld_7.io.Out.data(0)
+  call_8_out.io.In("field1") <> ld_7.io.Out(0)
 
   st_10.io.inData <> call_8_in.io.Out.data("field0")
 
-  st_10.io.GepAddr <> arrayidx2.io.Out.data(0)
+  st_10.io.GepAddr <> arrayidx2.io.Out(0)
 
   i_0.io.InData(1) <> inc.io.Out(0)
 

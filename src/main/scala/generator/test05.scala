@@ -229,11 +229,11 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
    *                   LOOP DATA OUTPUT DEPENDENCIES                    *
    * ================================================================== */
 
-  cmp.io.RightIO <> Loop_0.io.liveIn.data("field0")(0)
+  cmp.io.RightIO <> Loop_0.io.liveIn.elements("field0")(0)
 
-  arrayidx.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  arrayidx.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  arrayidx1.io.baseAddress <> Loop_0.io.liveIn.data("field1")(1)
+  arrayidx1.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(1)
 
 
 
@@ -362,31 +362,31 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
 
   br_3.io.CmpIO <> cmp.io.Out(0)
 
-  ld_5.io.GepAddr <> arrayidx.io.Out.data(0)
+  ld_5.io.GepAddr <> arrayidx.io.Out(0)
 
-  mul.io.RightIO <> ld_5.io.Out.data(0)
+  mul.io.RightIO <> ld_5.io.Out(0)
 
   st_8.io.inData <> mul.io.Out(0)
 
-  st_8.io.GepAddr <> arrayidx1.io.Out.data(0)
+  st_8.io.GepAddr <> arrayidx1.io.Out(0)
 
   i_0.io.InData(1) <> inc.io.Out(0)
 
   arrayidx2.io.idx1 <> sub.io.Out(0)
 
-  ld_14.io.GepAddr <> arrayidx2.io.Out.data(0)
+  ld_14.io.GepAddr <> arrayidx2.io.Out(0)
 
-  st_16.io.GepAddr <> arrayidx2.io.Out.data(1)
+  st_16.io.GepAddr <> arrayidx2.io.Out(1)
 
-  inc3.io.LeftIO <> ld_14.io.Out.data(0)
+  inc3.io.LeftIO <> ld_14.io.Out(0)
 
   st_16.io.inData <> inc3.io.Out(0)
 
   arrayidx5.io.idx1 <> sub4.io.Out(0)
 
-  ld_19.io.GepAddr <> arrayidx5.io.Out.data(0)
+  ld_19.io.GepAddr <> arrayidx5.io.Out(0)
 
-  ret_20.io.In.data("field0") <> ld_19.io.Out.data(0)
+  ret_20.io.In.data("field0") <> ld_19.io.Out(0)
 
   arrayidx2.io.baseAddress <> InputSplitter.io.Out.data("field0")(1)
 

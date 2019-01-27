@@ -518,8 +518,8 @@ class test05cDF(implicit p: Parameters) extends test05cDFIO()(p) {
 
   // Wiring Call to I/O
 
-  callout5.io.In("field0") <> lb_L_0.io.liveIn.data("field0")(0) // manual
-  callout5.io.In("field1") <> lb_L_0.io.liveIn.data("field1")(0) // manual
+  callout5.io.In("field0") <> lb_L_0.io.liveIn.elements("field0")(0) // manual
+  callout5.io.In("field1") <> lb_L_0.io.liveIn.elements("field1")(0) // manual
   io.call5_out <> callout5.io.Out(0)
 
   callin5.io.In <> io.call5_in

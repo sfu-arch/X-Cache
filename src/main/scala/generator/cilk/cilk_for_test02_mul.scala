@@ -353,7 +353,7 @@ class cilk_for_test02_mulDF(implicit p: Parameters) extends cilk_for_test02_mulD
   
   
   
-  ret5.io.In.data("field0")<> store4.io.Out(0)
+  ret5.io.In.elements("field0") <> store4.io.Out(0)
   io.out <> ret5.io.Out
 
 

@@ -188,7 +188,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  foo_0.io.InData(0) <> Loop_0.io.liveIn.data("field0")(0)
+  foo_0.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
 
 
 

@@ -197,13 +197,13 @@ class test03_optimizedDF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  phi_sum_064.io.InData(0) <> Loop_0.io.liveIn.data("field0")(0)
+  phi_sum_064.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
 
-  binaryOp_add5.io.RightIO <> Loop_0.io.liveIn.data("field0")(1)
+  binaryOp_add5.io.RightIO <> Loop_0.io.liveIn.elements("field0")(1)
 
-  binaryOp_mul6.io.RightIO <> Loop_0.io.liveIn.data("field1")(0)
+  binaryOp_mul6.io.RightIO <> Loop_0.io.liveIn.elements("field1")(0)
 
-  icmp_exitcond8.io.RightIO <> Loop_0.io.liveIn.data("field2")(0)
+  icmp_exitcond8.io.RightIO <> Loop_0.io.liveIn.elements("field2")(0)
 
 
   /* ================================================================== *

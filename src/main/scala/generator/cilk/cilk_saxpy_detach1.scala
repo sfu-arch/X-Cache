@@ -210,19 +210,19 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  ld_1.io.GepAddr <> Gep_0.io.Out.data(0)
+  ld_1.io.GepAddr <> Gep_0.io.Out(0)
 
-  binaryOp_2.io.RightIO <> ld_1.io.Out.data(0)
+  binaryOp_2.io.RightIO <> ld_1.io.Out(0)
 
   binaryOp_5.io.LeftIO <> binaryOp_2.io.Out(0)
 
-  ld_4.io.GepAddr <> Gep_3.io.Out.data(0)
+  ld_4.io.GepAddr <> Gep_3.io.Out(0)
 
-  binaryOp_5.io.RightIO <> ld_4.io.Out.data(0)
+  binaryOp_5.io.RightIO <> ld_4.io.Out(0)
 
   st_7.io.inData <> binaryOp_5.io.Out(0)
 
-  st_7.io.GepAddr <> Gep_6.io.Out.data(0)
+  st_7.io.GepAddr <> Gep_6.io.Out(0)
 
   //  Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
   Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)

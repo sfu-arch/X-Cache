@@ -433,11 +433,11 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
 
   // Connecting function argument to the loop header
   //i32 %m
-  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data("field0")
+  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field0")
 
   // Connecting function argument to the loop header
   //i32 %n
-  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data("field1")
+  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field1")
 
 
 
@@ -497,14 +497,14 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
   call5.io.retIn <> io.call5_in
   call5.io.Out.enable.ready := true.B
   // Wiring Call instruction to the loop header
-  call5.io.In.data("field0") <>loop_L_0_liveIN_1.io.Out(param.call5_in("field1")) // manually fixed
+  call5.io.In.elements("field0") <>loop_L_0_liveIN_1.io.Out(param.call5_in("field1")) // manually fixed
 
 
   // Wiring instructions
   add6.io.LeftIO <> phi1.io.Out(param.add6_in("phi1"))
 
   // Wiring instructions
-  add6.io.RightIO <> call5.io.Out.data("field0")
+  add6.io.RightIO <> call5.io.Out.elements("field0")
 
   // Wiring instructions
   add8.io.LeftIO <> phi2.io.Out(param.add8_in("phi2"))
@@ -519,7 +519,7 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
   
 
   loop_L_0_LiveOut_0.io.InData <>   phi1.io.Out(param.ret10_in("phi1"))
-  ret10.io.In.data("field0") <> loop_L_0_LiveOut_0.io.Out(0)
+  ret10.io.In.elements("field0") <> loop_L_0_LiveOut_0.io.Out(0)
   io.out <> ret10.io.Out
 
   /* ================================================================== *

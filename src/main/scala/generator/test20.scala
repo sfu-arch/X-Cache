@@ -240,9 +240,9 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
 
   Loop_0.io.In(0) <> binaryOp_mul4.io.Out(0)
 
-  Loop_0.io.In(1) <> Loop_1.io.liveIn.data("field1")(0)
+  Loop_0.io.In(1) <> Loop_1.io.liveIn.elements("field1")(0)
 
-  Loop_0.io.In(2) <> Loop_1.io.liveIn.data("field0")(1)
+  Loop_0.io.In(2) <> Loop_1.io.liveIn.elements("field0")(1)
 
   Loop_1.io.In(0) <> InputSplitter.io.Out.data("field1")(1)
 
@@ -254,15 +254,15 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  binaryOp_add12.io.RightIO <> Loop_0.io.liveIn.data("field0")(0)
+  binaryOp_add12.io.RightIO <> Loop_0.io.liveIn.elements("field0")(0)
 
-  Gep_arrayidx13.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  Gep_arrayidx13.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  icmp_exitcond18.io.RightIO <> Loop_0.io.liveIn.data("field2")(0)
+  icmp_exitcond18.io.RightIO <> Loop_0.io.liveIn.elements("field2")(0)
 
-  binaryOp_mul4.io.RightIO <> Loop_1.io.liveIn.data("field0")(0)
+  binaryOp_mul4.io.RightIO <> Loop_1.io.liveIn.elements("field0")(0)
 
-  icmp_exitcond269.io.RightIO <> Loop_1.io.liveIn.data("field0")(2)
+  icmp_exitcond269.io.RightIO <> Loop_1.io.liveIn.elements("field0")(2)
 
 
 
@@ -414,11 +414,11 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
 
   Gep_arrayidx13.io.idx(0) <> binaryOp_add12.io.Out(0)
 
-  ld_14.io.GepAddr <> Gep_arrayidx13.io.Out.data(0)
+  ld_14.io.GepAddr <> Gep_arrayidx13.io.Out(0)
 
-  st_16.io.GepAddr <> Gep_arrayidx13.io.Out.data(1)
+  st_16.io.GepAddr <> Gep_arrayidx13.io.Out(1)
 
-  binaryOp_mul515.io.LeftIO <> ld_14.io.Out.data(0)
+  binaryOp_mul515.io.LeftIO <> ld_14.io.Out(0)
 
   st_16.io.inData <> binaryOp_mul515.io.Out(0)
 

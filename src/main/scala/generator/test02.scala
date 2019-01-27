@@ -211,13 +211,13 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 
   select_add_3.io.InData1 <> binaryOp_add2.io.Out(0)
 
-  ret_4.io.In.data("field0") <> select_add_3.io.Out
+  ret_4.io.In.elements("field0") <> select_add_3.io.Out
 
-  binaryOp_div_mask0.io.LeftIO <> InputSplitter.io.Out.data("field0")(0)
+  binaryOp_div_mask0.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  binaryOp_add2.io.RightIO <> InputSplitter.io.Out.data("field0")(1)
+  binaryOp_add2.io.RightIO <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  binaryOp_add2.io.LeftIO <> InputSplitter.io.Out.data("field1")(0)
+  binaryOp_add2.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
 

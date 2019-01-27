@@ -367,15 +367,15 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
 
   Loop_0.io.In(0) <> phispan_01142.io.Out(1)
 
-  Loop_0.io.In(1) <> Loop_1.io.liveIn.data("field0")(0)
+  Loop_0.io.In(1) <> Loop_1.io.liveIn.elements("field0")(0)
 
-  Loop_0.io.In(2) <> Loop_1.io.liveIn.data("field1")(0)
+  Loop_0.io.In(2) <> Loop_1.io.liveIn.elements("field1")(0)
 
   Loop_0.io.In(3) <> philog_01161.io.Out(0)
 
-  Loop_0.io.In(4) <> Loop_1.io.liveIn.data("field2")(0)
+  Loop_0.io.In(4) <> Loop_1.io.liveIn.elements("field2")(0)
 
-  Loop_0.io.In(5) <> Loop_1.io.liveIn.data("field3")(0)
+  Loop_0.io.In(5) <> Loop_1.io.liveIn.elements("field3")(0)
 
   Loop_1.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
 
@@ -391,25 +391,25 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  phiodd_01136.io.InData(1) <> Loop_0.io.liveIn.data("field0")(0)
+  phiodd_01136.io.InData(1) <> Loop_0.io.liveIn.elements("field0")(0)
 
-  binaryOp_or7.io.RightIO <> Loop_0.io.liveIn.data("field0")(1)
+  binaryOp_or7.io.RightIO <> Loop_0.io.liveIn.elements("field0")(1)
 
-  binaryOp_xor8.io.RightIO <> Loop_0.io.liveIn.data("field0")(2)
+  binaryOp_xor8.io.RightIO <> Loop_0.io.liveIn.elements("field0")(2)
 
-  Gep_arrayidx10.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  Gep_arrayidx10.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  Gep_arrayidx413.io.baseAddress <> Loop_0.io.liveIn.data("field1")(1)
+  Gep_arrayidx413.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(1)
 
-  Gep_arrayidx1419.io.baseAddress <> Loop_0.io.liveIn.data("field2")(0)
+  Gep_arrayidx1419.io.baseAddress <> Loop_0.io.liveIn.elements("field2")(0)
 
-  Gep_arrayidx1621.io.baseAddress <> Loop_0.io.liveIn.data("field2")(1)
+  Gep_arrayidx1621.io.baseAddress <> Loop_0.io.liveIn.elements("field2")(1)
 
-  binaryOp_shl27.io.RightIO <> Loop_0.io.liveIn.data("field3")(0)
+  binaryOp_shl27.io.RightIO <> Loop_0.io.liveIn.elements("field3")(0)
 
-  Gep_arrayidx2932.io.baseAddress <> Loop_0.io.liveIn.data("field4")(0)
+  Gep_arrayidx2932.io.baseAddress <> Loop_0.io.liveIn.elements("field4")(0)
 
-  Gep_arrayidx3336.io.baseAddress <> Loop_0.io.liveIn.data("field5")(0)
+  Gep_arrayidx3336.io.baseAddress <> Loop_0.io.liveIn.elements("field5")(0)
 
 
 

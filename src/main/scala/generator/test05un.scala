@@ -423,45 +423,45 @@ class test05unDF(implicit p: Parameters) extends test05unDFIO()(p) {
 
   Gep_arrayidx1_422.io.idx(0) <> const13.io.Out
 
-  binaryOp_mul1.io.LeftIO <> ld_0.io.Out.data(0)
+  binaryOp_mul1.io.LeftIO <> ld_0.io.Out(0)
 
   st_3.io.inData <> binaryOp_mul1.io.Out(0)
 
-  st_3.io.GepAddr <> Gep_arrayidx12.io.Out.data(0)
+  st_3.io.GepAddr <> Gep_arrayidx12.io.Out(0)
 
-  ld_5.io.GepAddr <> Gep_arrayidx_14.io.Out.data(0)
+  ld_5.io.GepAddr <> Gep_arrayidx_14.io.Out(0)
 
-  binaryOp_mul_16.io.LeftIO <> ld_5.io.Out.data(0)
+  binaryOp_mul_16.io.LeftIO <> ld_5.io.Out(0)
 
   st_8.io.inData <> binaryOp_mul_16.io.Out(0)
 
-  st_8.io.GepAddr <> Gep_arrayidx1_17.io.Out.data(0)
+  st_8.io.GepAddr <> Gep_arrayidx1_17.io.Out(0)
 
-  ld_10.io.GepAddr <> Gep_arrayidx_29.io.Out.data(0)
+  ld_10.io.GepAddr <> Gep_arrayidx_29.io.Out(0)
 
-  binaryOp_mul_211.io.LeftIO <> ld_10.io.Out.data(0)
+  binaryOp_mul_211.io.LeftIO <> ld_10.io.Out(0)
 
   st_13.io.inData <> binaryOp_mul_211.io.Out(0)
 
-  st_13.io.GepAddr <> Gep_arrayidx1_212.io.Out.data(0)
+  st_13.io.GepAddr <> Gep_arrayidx1_212.io.Out(0)
 
-  ld_15.io.GepAddr <> Gep_arrayidx_314.io.Out.data(0)
+  ld_15.io.GepAddr <> Gep_arrayidx_314.io.Out(0)
 
-  binaryOp_mul_316.io.LeftIO <> ld_15.io.Out.data(0)
+  binaryOp_mul_316.io.LeftIO <> ld_15.io.Out(0)
 
   st_18.io.inData <> binaryOp_mul_316.io.Out(0)
 
-  st_18.io.GepAddr <> Gep_arrayidx1_317.io.Out.data(0)
+  st_18.io.GepAddr <> Gep_arrayidx1_317.io.Out(0)
 
-  ld_20.io.GepAddr <> Gep_arrayidx_419.io.Out.data(0)
+  ld_20.io.GepAddr <> Gep_arrayidx_419.io.Out(0)
 
-  binaryOp_mul_421.io.LeftIO <> ld_20.io.Out.data(0)
+  binaryOp_mul_421.io.LeftIO <> ld_20.io.Out(0)
 
   st_23.io.inData <> binaryOp_mul_421.io.Out(0)
 
   ret_24.io.In.data("field0") <> binaryOp_mul_421.io.Out(1)
 
-  st_23.io.GepAddr <> Gep_arrayidx1_422.io.Out.data(0)
+  st_23.io.GepAddr <> Gep_arrayidx1_422.io.Out(0)
 
   ld_0.io.GepAddr <> InputSplitter.io.Out.data("field0")(0)
 

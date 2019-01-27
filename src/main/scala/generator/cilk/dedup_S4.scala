@@ -251,11 +251,11 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field2")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.In(2) <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
 
@@ -263,17 +263,17 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  Gep_arrayidx2.io.baseAddress <> Loop_0.io.liveIn.data("field0")(0)
+  Gep_arrayidx2.io.baseAddress <> Loop_0.io.liveIn.elements("field0")(0)
 
-  Gep_arrayidx718.io.baseAddress <> Loop_0.io.liveIn.data("field0")(1)
+  Gep_arrayidx718.io.baseAddress <> Loop_0.io.liveIn.elements("field0")(1)
 
-  Gep_arrayidx28.io.baseAddress <> Loop_0.io.liveIn.data("field1")(0)
+  Gep_arrayidx28.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(0)
 
-  Gep_arrayidx413.io.baseAddress <> Loop_0.io.liveIn.data("field1")(1)
+  Gep_arrayidx413.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(1)
 
-  Gep_arrayidx310.io.baseAddress <> Loop_0.io.liveIn.data("field2")(0)
+  Gep_arrayidx310.io.baseAddress <> Loop_0.io.liveIn.elements("field2")(0)
 
-  Gep_arrayidx616.io.baseAddress <> Loop_0.io.liveIn.data("field2")(1)
+  Gep_arrayidx616.io.baseAddress <> Loop_0.io.liveIn.elements("field2")(1)
 
 
 
@@ -443,11 +443,11 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
 
   phi_rptr_123.io.InData(1) <> phi_rptr_01.io.Out(3)
 
-  ld_3.io.GepAddr <> Gep_arrayidx2.io.Out.data(0)
+  ld_3.io.GepAddr <> Gep_arrayidx2.io.Out(0)
 
-  icmp_cmp4.io.LeftIO <> ld_3.io.Out.data(0)
+  icmp_cmp4.io.LeftIO <> ld_3.io.Out(0)
 
-  icmp_cmp16.io.LeftIO <> ld_3.io.Out.data(1)
+  icmp_cmp16.io.LeftIO <> ld_3.io.Out(1)
 
   Gep_arrayidx28.io.idx1 <> ld_3.io.Out.data(2)
 
@@ -461,23 +461,23 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
 
   br_7.io.CmpIO <> icmp_cmp16.io.Out(0)
 
-  ld_9.io.GepAddr <> Gep_arrayidx28.io.Out.data(0)
+  ld_9.io.GepAddr <> Gep_arrayidx28.io.Out(0)
 
-  st_11.io.inData <> ld_9.io.Out.data(0)
+  st_11.io.inData <> ld_9.io.Out(0)
 
-  st_11.io.GepAddr <> Gep_arrayidx310.io.Out.data(0)
+  st_11.io.GepAddr <> Gep_arrayidx310.io.Out(0)
 
   Gep_arrayidx413.io.idx1 <> binaryOp_add12.io.Out(0)
 
-  ld_14.io.GepAddr <> Gep_arrayidx413.io.Out.data(0)
+  ld_14.io.GepAddr <> Gep_arrayidx413.io.Out(0)
 
-  st_17.io.inData <> ld_14.io.Out.data(0)
+  st_17.io.inData <> ld_14.io.Out(0)
 
   Gep_arrayidx616.io.idx1 <> binaryOp_add515.io.Out(0)
 
-  st_17.io.GepAddr <> Gep_arrayidx616.io.Out.data(0)
+  st_17.io.GepAddr <> Gep_arrayidx616.io.Out(0)
 
-  st_19.io.GepAddr <> Gep_arrayidx718.io.Out.data(0)
+  st_19.io.GepAddr <> Gep_arrayidx718.io.Out(0)
 
   ret_25.io.In.data("field0") <> Loop_0.io.Out(0)// st_19.io.Out(0) Manual
 

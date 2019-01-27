@@ -215,25 +215,25 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  ld_1.io.GepAddr <> Gep_0.io.Out.data(0)
+  ld_1.io.GepAddr <> Gep_0.io.Out(0)
 
-  binaryOp_4.io.LeftIO <> ld_1.io.Out.data(0)
+  binaryOp_4.io.LeftIO <> ld_1.io.Out(0)
 
-  ld_3.io.GepAddr <> Gep_2.io.Out.data(0)
+  ld_3.io.GepAddr <> Gep_2.io.Out(0)
 
-  binaryOp_4.io.RightIO <> ld_3.io.Out.data(0)
+  binaryOp_4.io.RightIO <> ld_3.io.Out(0)
 
   st_6.io.inData <> binaryOp_4.io.Out(0)
 
-  st_6.io.GepAddr <> Gep_5.io.Out.data(0)
+  st_6.io.GepAddr <> Gep_5.io.Out(0)
 
   Gep_0.io.baseAddress <> InputSplitter.io.Out.data("field0")(0)
 
-  Gep_0.io.idx1 <> InputSplitter.io.Out.data("field1")(0)
+  Gep_0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_2.io.idx1 <> InputSplitter.io.Out.data("field1")(1)
+  Gep_2.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Gep_5.io.idx1 <> InputSplitter.io.Out.data("field1")(2)
+  Gep_5.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(2)
 
   Gep_2.io.baseAddress <> InputSplitter.io.Out.data("field2")(0)
 
