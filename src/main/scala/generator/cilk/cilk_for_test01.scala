@@ -30,8 +30,6 @@ abstract class cilk_for_test01DFIO(implicit val p: Parameters) extends Module wi
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val call_9_out = Decoupled(new Call(List(32, 32, 32)))
     val call_9_in = Flipped(Decoupled(new Call(List(32))))
-    val MemResp = Flipped(Valid(new MemResp))
-    val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
@@ -42,14 +40,6 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   /* ================================================================== *
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
-
-  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 2)
-  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RWArbiter = new ReadWriteArbiter()))
-
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
 
   val InputSplitter = Module(new SplitCallNew(List(1, 1)))
   InputSplitter.io.In <> io.in
