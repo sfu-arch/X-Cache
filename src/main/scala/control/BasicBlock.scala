@@ -408,6 +408,8 @@ class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
   // Output IO
   val predicateIn = Flipped(Decoupled(new ControlBundle()))
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
+//  3.1 spec
+  override def cloneType = new BasicBlockNoMaskFastIO(NumOuts).asInstanceOf[this.type]
 }
 
 class BasicBlockNoMaskFastVecIO(val NumInputs: Int, val NumOuts: Int)(implicit p: Parameters)

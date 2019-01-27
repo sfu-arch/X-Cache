@@ -24,12 +24,15 @@ import node._
 
 
 class cilk_for_test01MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
+  val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
   })
+
+  /* Chisel 3.1 */
+   def cloneType = new cilk_for_test01MainIO().asInstanceOf[this.type]
 }
 
 

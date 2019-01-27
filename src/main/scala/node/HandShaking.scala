@@ -43,11 +43,11 @@ import utility.UniformPrintfs
   *
   */
 class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)(implicit p: Parameters)
-  extends CoreBundle()(p) {
+  extends CoreBundle( )(p) {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Output IO
-  val Out = Vec(NumOuts, Decoupled(gen))
+  val Out    = Vec(NumOuts, Decoupled(gen))
 
   override def cloneType = new HandShakingIONPS(NumOuts)(gen).asInstanceOf[this.type]
 }
@@ -68,17 +68,17 @@ class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)(implicit p: Paramete
 class HandShakingIOPS[T <: Data](val NumPredOps: Int,
                                  val NumSuccOps: Int,
                                  val NumOuts: Int)(gen: T)(implicit p: Parameters)
-  extends CoreBundle()(p) {
+  extends CoreBundle( )(p) {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Predecessor Ordering
   val PredOp = Vec(NumPredOps, Flipped(Decoupled(new ControlBundle)))
   // Successor Ordering
-  val SuccOp = Vec(NumSuccOps, Decoupled(new ControlBundle()))
+  val SuccOp = Vec(NumSuccOps, Decoupled(new ControlBundle( )))
   // Output IO
-  val Out = Vec(NumOuts, Decoupled(gen))
+  val Out    = Vec(NumOuts, Decoupled(gen))
 
-  override def cloneType = new HandShakingIOPS(NumPredOps,NumSuccOps,NumOuts)(gen).asInstanceOf[this.type]
+  override def cloneType = new HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(gen).asInstanceOf[this.type]
 }
 
 /**
@@ -90,15 +90,15 @@ class HandShakingIOPS[T <: Data](val NumPredOps: Int,
   *
   */
 class HandShakingFusedIO[T <: Data](val NumIns: Int, val NumOuts: Int)(gen: T)(implicit p: Parameters)
-  extends CoreBundle()(p) {
+  extends CoreBundle( )(p) {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Input IO
-  val In = Flipped(Vec(NumIns, Decoupled(gen)))
+  val In     = Flipped(Vec(NumIns, Decoupled(gen)))
   // Output IO
-  val Out = Vec(NumOuts, Decoupled(gen))
+  val Out    = Vec(NumOuts, Decoupled(gen))
 
-  override def cloneType = new HandShakingFusedIO(NumIns,NumOuts)(gen).asInstanceOf[this.type]
+  override def cloneType = new HandShakingFusedIO(NumIns, NumOuts)(gen).asInstanceOf[this.type]
 
 }
 
@@ -113,22 +113,22 @@ class HandShakingFusedIO[T <: Data](val NumIns: Int, val NumOuts: Int)(gen: T)(i
 class HandShakingCtrlMaskIO(val NumInputs: Int,
                             val NumOuts: Int,
                             val NumPhi: Int)(implicit p: Parameters)
-  extends CoreBundle()(p) {
+  extends CoreBundle( )(p) {
 
   // Output IO
   val MaskBB = Vec(NumPhi, Decoupled(UInt(NumInputs.W)))
-  val Out = Vec(NumOuts, Decoupled(new ControlBundle))
+  val Out    = Vec(NumOuts, Decoupled(new ControlBundle))
 }
 
 /**
   * @note Type5
   *       Handshaking IO with no ordering for control nodes
   * @note IO Bundle for Handshaking
-  * @param NumOuts   Number of outputs (Num Inst.)
+  * @param NumOuts Number of outputs (Num Inst.)
   *
   */
 class HandShakingCtrlNoMaskIO(val NumOuts: Int)(implicit p: Parameters)
-  extends CoreBundle()(p) {
+  extends CoreBundle( )(p) {
   // Output IO
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
 }
@@ -155,11 +155,11 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   =            Registers            =
   =================================*/
   // Extra information
-  val token = RegInit(0.U)
+  val token    = RegInit(0.U)
   val nodeID_R = RegInit(ID.U)
 
   // Enable
-  val enable_R = RegInit(ControlBundle.default)
+  val enable_R       = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
   // Output Handshaking
@@ -177,7 +177,7 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
   for (i <- 0 until NumOuts) {
     io.Out(i).valid := out_valid_R(i)
     out_ready_W(i) := io.Out(i).ready
-    when(io.Out(i).fire()) {
+    when(io.Out(i).fire( )) {
       // Detecting when to reset
       out_ready_R(i) := io.Out(i).ready
       // Propagating output
@@ -185,9 +185,10 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
     }
   }
 
+
   // Wire up enable READY and VALIDs
   io.enable.ready := ~enable_valid_R
-  when(io.enable.fire()) {
+  when(io.enable.fire( )) {
     enable_valid_R := io.enable.valid
     enable_R <> io.enable.bits
   }
@@ -213,13 +214,15 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
       return true.B
     } else {
       val fire_mask = (out_ready_R zip io.Out.map(_.fire)).map { case (a, b) => a | b }
-      fire_mask reduce { _ & _}
+      fire_mask reduce {
+        _ & _
+      }
       //out_ready_R.reduceLeft(_ && _) | out_ready_W.reduceLeft(_ && _)
     }
   }
 
   def IsOutValid(): Bool = {
-//    out_valid_R.asUInt.andR
+    //    out_valid_R.asUInt.andR
     if (NumOuts == 0) {
       return true.B
     } else {
@@ -251,18 +254,18 @@ class HandShakingFused[T <: PredicateT](val NumIns: Int, val NumOuts: Int,
   =            Registers            =
   =================================*/
   // Extra information
-  val token = RegInit(0.U)
+  val token    = RegInit(0.U)
   val nodeID_R = RegInit(ID.U)
 
   // Enable
-  val enable_R = RegInit(ControlBundle.default)
+  val enable_R       = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
   // Input Handshaking
   val in_predicate_W = WireInit(VecInit(Seq.fill(NumIns) {
     false.B
   }))
-  val in_valid_R = RegInit(VecInit(Seq.fill(NumIns) {
+  val in_valid_R     = RegInit(VecInit(Seq.fill(NumIns) {
     false.B
   }))
 
@@ -299,7 +302,7 @@ class HandShakingFused[T <: PredicateT](val NumIns: Int, val NumOuts: Int,
   for (i <- 0 until NumIns) {
     io.In(i).ready := ~in_valid_R(i)
     in_predicate_W(i) := InRegs(i).predicate
-    when(io.In(i).fire()) {
+    when(io.In(i).fire( )) {
       in_valid_R(i) := io.In(i).valid
       InRegs(i) := io.In(i).bits
       //InRegs(i).valid := io.In(i).valid
@@ -309,7 +312,7 @@ class HandShakingFused[T <: PredicateT](val NumIns: Int, val NumOuts: Int,
 
   // Wire up enable READY and VALIDs
   io.enable.ready := ~enable_valid_R
-  when(io.enable.fire()) {
+  when(io.enable.fire( )) {
     enable_valid_R := io.enable.valid
     enable_R <> io.enable.bits
   }
@@ -408,11 +411,11 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   =            Registers            =
   =================================*/
   // Extra information
-  val token = RegInit(0.U)
+  val token    = RegInit(0.U)
   val nodeID_R = RegInit(ID.U)
 
   // Enable
-  val enable_R = RegInit(ControlBundle.default)
+  val enable_R       = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
   // Output Handshaking
@@ -429,7 +432,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   // Wire up OUT READYs and VALIDs
   for (i <- 0 until NumOuts) {
     io.Out(i).valid := out_valid_R(i)
-    when(io.Out(i).fire()) {
+    when(io.Out(i).fire( )) {
       // Detecting when to reset
       out_ready_R(i) := io.Out(i).ready
       // Propagating output
@@ -439,7 +442,7 @@ class HandShakingCtrlNPS(val NumOuts: Int,
 
   // Wire up enable READY and VALIDs
   io.enable.ready := ~enable_valid_R
-  when(io.enable.fire()) {
+  when(io.enable.fire( )) {
     enable_valid_R := io.enable.valid
     enable_R := io.enable.bits
   }
@@ -504,20 +507,20 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   =            Registers            =
   =================================*/
   // Extra information
-  val token = RegInit(0.U)
+  val token    = RegInit(0.U)
   val nodeID_R = RegInit(ID.U)
 
   // Enable
-  val enable_R = RegInit(ControlBundle.default)
+  val enable_R       = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
   // Predecessor Handshaking
-  val pred_valid_R = Seq.fill(NumPredOps)(RegInit(false.B))
+  val pred_valid_R  = Seq.fill(NumPredOps)(RegInit(false.B))
   val pred_bundle_R = Seq.fill(NumPredOps)(RegInit(ControlBundle.default))
 
   // Successor Handshaking. Registers needed
-  val succ_ready_R = Seq.fill(NumSuccOps)(RegInit(false.B))
-  val succ_valid_R = Seq.fill(NumSuccOps)(RegInit(false.B))
+  val succ_ready_R  = Seq.fill(NumSuccOps)(RegInit(false.B))
+  val succ_valid_R  = Seq.fill(NumSuccOps)(RegInit(false.B))
   val succ_bundle_R = Seq.fill(NumSuccOps)(RegInit(ControlBundle.default))
 
   // Output Handshaking
@@ -525,7 +528,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   val out_valid_R = RegInit(VecInit(Seq.fill(NumOuts)(false.B)))
 
   // Wire
-  val out_ready_W = WireInit(VecInit(Seq.fill(NumOuts) {
+  val out_ready_W  = WireInit(VecInit(Seq.fill(NumOuts) {
     false.B
   }))
   val succ_ready_W = Seq.fill(NumSuccOps)(WireInit(false.B))
@@ -538,7 +541,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
     io.SuccOp(i).valid := succ_valid_R(i)
     io.SuccOp(i).bits := succ_bundle_R(i)
     succ_ready_W(i) := io.SuccOp(i).ready
-    when(io.SuccOp(i).fire()) {
+    when(io.SuccOp(i).fire( )) {
       succ_ready_R(i) := io.SuccOp(i).ready
       succ_valid_R(i) := false.B
     }
@@ -548,7 +551,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   for (i <- 0 until NumOuts) {
     io.Out(i).valid := out_valid_R(i)
     out_ready_W(i) := io.Out(i).ready
-    when(io.Out(i).fire()) {
+    when(io.Out(i).fire( )) {
       // Detecting when to reset
       out_ready_R(i) := io.Out(i).ready
       // Propagating output
@@ -558,7 +561,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   // Wire up Predecessor READY and VALIDs
   for (i <- 0 until NumPredOps) {
     io.PredOp(i).ready := ~pred_valid_R(i)
-    when(io.PredOp(i).fire()) {
+    when(io.PredOp(i).fire( )) {
       pred_valid_R(i) := io.PredOp(i).valid
       pred_bundle_R(i) := io.PredOp(i).bits
     }
@@ -567,7 +570,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   //Enable is an input
   // Wire up enable READY and VALIDs
   io.enable.ready := ~enable_valid_R
-  when(io.enable.fire()) {
+  when(io.enable.fire( )) {
     enable_valid_R := io.enable.valid
     enable_R := io.enable.bits
   }
@@ -688,7 +691,7 @@ class HandShakingCtrlMask(val NumInputs: Int,
   =            Registers            =
   =================================*/
   // Extra information
-  val token = RegInit(0.U)
+  val token    = RegInit(0.U)
   val nodeID_R = RegInit(BID.U)
 
   // Output Handshaking
@@ -706,7 +709,7 @@ class HandShakingCtrlMask(val NumInputs: Int,
   // Wire up OUT READYs and VALIDs
   for (i <- 0 until NumOuts) {
     io.Out(i).valid := out_valid_R(i)
-    when(io.Out(i).fire()) {
+    when(io.Out(i).fire( )) {
       // Detecting when to reset
       out_ready_R(i) := io.Out(i).ready
       // Propagating output
@@ -717,7 +720,7 @@ class HandShakingCtrlMask(val NumInputs: Int,
   // Wire up MASK Readys and Valids
   for (i <- 0 until NumPhi) {
     io.MaskBB(i).valid := mask_valid_R(i)
-    when(io.MaskBB(i).fire()) {
+    when(io.MaskBB(i).fire( )) {
       // Detecting when to reset
       mask_ready_R(i) := io.MaskBB(i).ready
       // Propagating mask
@@ -756,17 +759,23 @@ class HandShakingCtrlMask(val NumInputs: Int,
 
   def ValidOut(): Unit = {
     out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
-    mask_valid_R.foreach {_ := true.B}
+    mask_valid_R.foreach {
+      _ := true.B
+    }
   }
 
   def InvalidOut(): Unit = {
     out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
-    mask_valid_R.foreach {_ := false.B}
+    mask_valid_R.foreach {
+      _ := false.B
+    }
   }
 
   def Reset(): Unit = {
     out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
-    mask_ready_R.foreach {_ := false.B}
+    mask_ready_R.foreach {
+      _ := false.B
+    }
   }
 }
 
@@ -790,7 +799,7 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
   =            Registers            =
   =================================*/
   // Extra information
-  val token = RegInit(0.U)
+  val token    = RegInit(0.U)
   val nodeID_R = RegInit(BID.U)
 
   // Output Handshaking
@@ -804,7 +813,7 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
   // Wire up OUT READYs and VALIDs
   for (i <- 0 until NumOuts) {
     io.Out(i).valid := out_valid_R(i)
-    when(io.Out(i).fire()) {
+    when(io.Out(i).fire( )) {
       // Detecting when to reset
       out_ready_R(i) := io.Out(i).ready
       // Propagating output
@@ -825,7 +834,9 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := VecInit(Seq.fill(NumOuts) {true.B})
+    out_valid_R := VecInit(Seq.fill(NumOuts) {
+      true.B
+    })
   }
 
   def InvalidOut(): Unit = {
@@ -835,7 +846,7 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
 
   def Reset(): Unit = {
     out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
-    InvalidOut()
+    InvalidOut( )
   }
 
 }

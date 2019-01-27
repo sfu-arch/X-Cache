@@ -27,14 +27,14 @@ import util._
 
 abstract class cilk_for_test01_detach1DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val in      = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
-    val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val MemReq  = Decoupled(new MemReq)
+    val out     = Decoupled(new Call(List(32)))
   })
 }
 
-class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_detach1DFIO()(p) {
+class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_detach1DFIO( )(p) {
 
 
   /* ================================================================== *
@@ -44,7 +44,7 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
   val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 1, NWrites = 1)
   (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
   (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
-  (RWArbiter = new ReadWriteArbiter()))
+  (RWArbiter = new ReadWriteArbiter( )))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
@@ -221,7 +221,7 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  ret_6.io.In.elements("field0") <> st_4.io.Out(0) // manual
+  ret_6.io.In.data.elements("field0") <> st_4.io.Out(0) // manual
   io.out <> ret_6.io.Out
 
 }
@@ -232,12 +232,12 @@ object cilk_for_test01_detach1Main extends App {
   val dir = new File("RTL/cilk_for_test01_detach1");
   dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test01_detach1DF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test01_detach1DF( )))
 
-  val verilogFile = new File(dir, s"${chirrtl.main}.v")
+  val verilogFile   = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
   val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
   val compiledStuff = compileResult.getEmittedCircuit
   verilogWriter.write(compiledStuff.value)
-  verilogWriter.close()
+  verilogWriter.close( )
 }

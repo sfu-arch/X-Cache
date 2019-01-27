@@ -13,13 +13,15 @@ import muxes._
 import util._
 
 class ExpandNodeIO[T <: Data](NumOuts: Int)(gen: T)
-                   (implicit p: Parameters)
+                             (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(gen) {
   val InData = Flipped(Decoupled(gen))
+
+  override def cloneType = new ExpandNodeIO(NumOuts)(gen).asInstanceOf[this.type]
 }
 
 class ExpandNode[T <: Data](NumOuts: Int, ID: Int)(gen: T)
-                 (implicit p: Parameters)
+                           (implicit p: Parameters)
   extends HandShakingNPS(NumOuts, ID)(gen)(p) {
   override lazy val io = IO(new ExpandNodeIO(NumOuts)(gen))
   // Printf debugging
@@ -28,18 +30,18 @@ class ExpandNode[T <: Data](NumOuts: Int, ID: Int)(gen: T)
    *            Registers                      *
    *===========================================*/
   // Left Input
-  val indata_R = RegInit(0.U.asTypeOf(gen))
+  val indata_R       = RegInit(0.U.asTypeOf(gen))
   val indata_valid_R = RegInit(false.B)
 
   val s_idle :: s_LATCH :: s_COMPUTE :: Nil = Enum(3)
-  val state = RegInit(s_idle)
+  val state                                 = RegInit(s_idle)
 
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
 
-  val predicate = IsEnable()
-  val start = indata_valid_R & IsEnableValid()
+  val predicate = IsEnable( )
+  val start     = indata_valid_R & IsEnableValid( )
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -47,7 +49,7 @@ class ExpandNode[T <: Data](NumOuts: Int, ID: Int)(gen: T)
 
 
   io.InData.ready := ~indata_valid_R
-  when(io.InData.fire()) {
+  when(io.InData.fire( )) {
     state := s_LATCH
     indata_R <> io.InData.bits
     indata_valid_R := true.B
@@ -64,24 +66,24 @@ class ExpandNode[T <: Data](NumOuts: Int, ID: Int)(gen: T)
 
   when(start & state =/= s_COMPUTE) {
     state := s_COMPUTE
-    ValidOut()
+    ValidOut( )
   }
 
   /*==========================================*
    *            Output Handshaking and Reset  *
    *==========================================*/
 
-  when(IsOutReady() & (state === s_COMPUTE)) {
+  when(IsOutReady( ) & (state === s_COMPUTE)) {
 
     // Reset data
-//    indata_R := gen.default
+    //    indata_R := gen.default
 
     indata_valid_R := false.B
 
     //Reset state
     state := s_idle
     //Reset output
-    Reset()
+    Reset( )
   }
 
 }
