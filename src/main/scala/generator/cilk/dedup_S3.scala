@@ -42,9 +42,9 @@ class dedup_S3DF(implicit p: Parameters) extends dedup_S3DFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
+  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=1, NWrites=2)
 		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
+		 (RControl=new ReadMemoryController(NumOps=1, BaseSize=2, NumEntries=2))
 		 (RWArbiter=new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
@@ -207,9 +207,9 @@ class dedup_S3DF(implicit p: Parameters) extends dedup_S3DFIO()(p) {
 
   st_1.io.inData <> const1.io.Out(0)
 
-  st_1.io.GepAddr <> Gep_arrayidx0.io.Out.data(0)
+  st_1.io.GepAddr <> Gep_arrayidx0.io.Out(0)
 
-  st_3.io.GepAddr <> Gep_arrayidx12.io.Out.data(0)
+  st_3.io.GepAddr <> Gep_arrayidx12.io.Out(0)
 
   ret_4.io.In.data("field0") <> st_3.io.Out(0)
 

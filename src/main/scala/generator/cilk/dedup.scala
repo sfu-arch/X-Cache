@@ -509,15 +509,15 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   phi_wptr_122.io.InData(1) <> phi_wptr_05.io.Out(3)
 
-  ld_7.io.GepAddr <> Gep_arrayidx6.io.Out.data(0)
+  ld_7.io.GepAddr <> Gep_arrayidx6.io.Out(0)
 
-  icmp_cmp8.io.LeftIO <> ld_7.io.Out.data(0)
+  icmp_cmp8.io.LeftIO <> ld_7.io.Out(0)
 
   br_9.io.CmpIO <> icmp_cmp8.io.Out(0)
 
-  ld_11.io.GepAddr <> Gep_arrayidx110.io.Out.data(0)
+  ld_11.io.GepAddr <> Gep_arrayidx110.io.Out(0)
 
-  icmp_cmp212.io.LeftIO <> ld_11.io.Out.data(0)
+  icmp_cmp212.io.LeftIO <> ld_11.io.Out(0)
 
   br_13.io.CmpIO <> icmp_cmp212.io.Out(0)
 
@@ -534,9 +534,9 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
   phi_wptr_05.io.InData(1) <> phi_wptr_122.io.Out(0)
 
-  st_25.io.GepAddr <> Gep_arrayidx624.io.Out.data(0)
+  st_25.io.GepAddr <> Gep_arrayidx624.io.Out(0)
 
-  st_28.io.GepAddr <> Gep_arrayidx727.io.Out.data(0)
+  st_28.io.GepAddr <> Gep_arrayidx727.io.Out(0)
 
   ret_29.io.In.data("field0") <> st_28.io.Out(0)
 

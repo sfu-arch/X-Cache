@@ -306,25 +306,25 @@ class dedup_S2DF(implicit p: Parameters) extends dedup_S2DFIO()(p) {
 
   Gep_arrayidx23.io.idx1 <> const1.io.Out(0)
 
-  Gep_arrayidx11.io.baseAddress <> Gep_arrayidx0.io.Out.data(0)
+  Gep_arrayidx11.io.baseAddress <> Gep_arrayidx0.io.Out(0)
 
-  Gep_arrayidx23.io.baseAddress <> Gep_arrayidx0.io.Out.data(1)
+  Gep_arrayidx23.io.baseAddress <> Gep_arrayidx0.io.Out(1)
 
-  call_8_out.io.In("field0") <> Gep_arrayidx0.io.Out.data(2)
+  call_8_out.io.In("field0") <> Gep_arrayidx0.io.Out(2)
 
-  ld_2.io.GepAddr <> Gep_arrayidx11.io.Out.data(0)
+  ld_2.io.GepAddr <> Gep_arrayidx11.io.Out(0)
 
-  icmp_cmp5.io.LeftIO <> ld_2.io.Out.data(0)
+  icmp_cmp5.io.LeftIO <> ld_2.io.Out(0)
 
-  ld_4.io.GepAddr <> Gep_arrayidx23.io.Out.data(0)
+  ld_4.io.GepAddr <> Gep_arrayidx23.io.Out(0)
 
-  icmp_cmp5.io.RightIO <> ld_4.io.Out.data(0)
+  icmp_cmp5.io.RightIO <> ld_4.io.Out(0)
 
   br_6.io.CmpIO <> icmp_cmp5.io.Out(0)
 
   reattach_9.io.predicateIn(0) <> call_8_in.io.Out.data("field0")
 
-  st_12.io.GepAddr <> Gep_arrayidx311.io.Out.data(0)
+  st_12.io.GepAddr <> Gep_arrayidx311.io.Out(0)
 
   ret_15.io.In.data("field0") <> st_12.io.Out(0)
 
