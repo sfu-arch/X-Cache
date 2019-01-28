@@ -50,6 +50,7 @@ class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)(implicit p: Paramete
   val Out    = Vec(NumOuts, Decoupled(gen))
 
   override def cloneType = new HandShakingIONPS(NumOuts)(gen).asInstanceOf[this.type]
+
 }
 
 /**
@@ -79,6 +80,7 @@ class HandShakingIOPS[T <: Data](val NumPredOps: Int,
   val Out    = Vec(NumOuts, Decoupled(gen))
 
   override def cloneType = new HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(gen).asInstanceOf[this.type]
+
 }
 
 /**
@@ -118,6 +120,8 @@ class HandShakingCtrlMaskIO(val NumInputs: Int,
   // Output IO
   val MaskBB = Vec(NumPhi, Decoupled(UInt(NumInputs.W)))
   val Out    = Vec(NumOuts, Decoupled(new ControlBundle))
+
+  override def cloneType = new HandShakingCtrlMaskIO(NumInputs, NumOuts, NumPhi).asInstanceOf[this.type]
 }
 
 /**
@@ -131,6 +135,8 @@ class HandShakingCtrlNoMaskIO(val NumOuts: Int)(implicit p: Parameters)
   extends CoreBundle( )(p) {
   // Output IO
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
+
+  override def cloneType = new HandShakingCtrlNoMaskIO(NumOuts).asInstanceOf[this.type]
 }
 
 /*==============================================================

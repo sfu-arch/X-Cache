@@ -23,12 +23,14 @@ import node._
 
 
 class test18MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val req = Flipped(Decoupled(new MemReq))
+  val io = IO(new Bundle {
+    val in   = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val req  = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
-    val out = Decoupled(new Call(List(32)))
+    val out  = Decoupled(new Call(List(32)))
   })
+
+  def cloneType = new test18MainIO( ).asInstanceOf[this.type]
 }
 
 class test18Main(implicit p: Parameters) extends test18MainIO {
@@ -48,7 +50,7 @@ class test18Main(implicit p: Parameters) extends test18MainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val test18 = Module(new test18DF())
+  val test18 = Module(new test18DF( ))
 
   //Put an arbiter infront of cache
   val CacheArbiter = Module(new MemArbiter(2))
@@ -129,8 +131,8 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
-  val inAddrVec = List.range(0, 4 * 8, 4)
-  val inDataVec = List(0, 1, 2, 3, 4, 5, 6, 7)
+  val inAddrVec  = List.range(0, 4 * 8, 4)
+  val inDataVec  = List(0, 1, 2, 3, 4, 5, 6, 7)
   val outAddrVec = List.range(0, 4 * 8, 4)
   val outDataVec = List(0, 2, 4, 6, 8, 10, 12, 15)
 
@@ -172,7 +174,7 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
   // NOTE: Don't use assert().  It seems to terminate the writing of VCD files
   // early (before the error) which makes debugging very difficult. Check results
   // using if() and fail command.
-  var time = 0
+  var time   = 0
   var result = false
   while (time < 9000) {
     time += 1
@@ -235,7 +237,7 @@ class test18Tester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/test18/",
         "-tts", "0001"),
-      () => new test18Main()) {
+      () => new test18Main( )) {
       c => new test18Test01(c)
     } should be(true)
   }

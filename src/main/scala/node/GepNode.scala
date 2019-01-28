@@ -61,6 +61,7 @@ class GepNodeIO(NumIns: Int, NumOuts: Int)
   val baseAddress = Flipped(Decoupled(new DataBundle( )))
   val idx         = Vec(NumIns, Flipped(Decoupled(new DataBundle( ))))
 
+  override def cloneType = new GepNodeIO(NumIns, NumOuts).asInstanceOf[this.type]
 }
 
 
@@ -849,6 +850,9 @@ class GepIO(NumIns: Int, NumOuts: Int)
   val enable = Flipped(Decoupled(new ControlBundle))
 
   val Out = Vec(NumOuts, Decoupled(new DataBundle))
+
+  //  3.1
+  override def cloneType = new GepIO(NumIns, NumOuts).asInstanceOf[this.type]
 }
 
 
