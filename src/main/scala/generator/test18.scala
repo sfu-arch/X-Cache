@@ -124,7 +124,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
   val binaryOp_inc314 = Module(new ComputeNode(NumOuts = 1, ID = 14, opCode = "add")(sign = false))
 
   //  store i32 %inc3, i32* %arrayidx2, align 4
-  val st_15 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 15, RouteID = 1))
+  val st_15 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 15, RouteID = 1))
 
   //  %sub4 = sub i32 %n, 1
   val binaryOp_sub416 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "sub")(sign = false))
@@ -133,7 +133,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
   val Gep_arrayidx517 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 17)(ElementSize = 4, ArraySize = List( )))
 
   //  %2 = load i32, i32* %arrayidx5, align 4
-  val ld_18 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 18, RouteID = 2))
+  val ld_18 = Module(new UnTypLoad(NumPredOps = 1, NumSuccOps = 0, NumOuts = 1, ID = 18, RouteID = 2))
 
   //  ret i32 %2
   val ret_19 = Module(new RetNode2(retTypes = List(32), ID = 19))
@@ -377,7 +377,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
 
   ld_18.io.GepAddr <> Gep_arrayidx517.io.Out(0)
 
-  ret_19.io.In.data("field0") <> st_15.io.Out(0)
+  ret_19.io.In.data("field0") <> ld_18.io.Out(0)
 
   Gep_arrayidx212.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
@@ -389,7 +389,9 @@ class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
 
   st_8.io.Out(0).ready := true.B
 
-  ld_18.io.Out(0).ready := true.B
+  st_15.io.Out(0).ready := true.B
+
+  ld_18.io.PredOp(0) <> st_15.io.SuccOp(0)
 
 
   /* ================================================================== *

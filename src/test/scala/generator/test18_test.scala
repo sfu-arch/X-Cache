@@ -184,7 +184,7 @@ class test18Test01[T <: test18MainIO](c: T) extends PeekPokeTester(c) {
     ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 14) {
+      if (data != 15) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 15" + Console.RESET)
         fail
       } else {
