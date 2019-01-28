@@ -25,57 +25,57 @@ abstract class ReadEntryIO()(implicit val p: Parameters)
   val io = IO(new Bundle {
     // Read Request Type
     val NodeReq = Flipped(Decoupled(Input(new ReadReq)))
-//    val NodeResp = Decoupled(new ReadResp)
+    //    val NodeResp = Decoupled(new ReadResp)
 
     //Memory interface
-    val MemReq = Decoupled(new MemReq)
+    val MemReq  = Decoupled(new MemReq)
     val MemResp = Input(new MemResp)
 
     // val Output
     val output = Decoupled(new ReadResp)
 
-    val free = Output(Bool())
-    val done = Output(Bool())
+    val free = Output(Bool( ))
+    val done = Output(Bool( ))
   })
 }
+
 /**
   * @brief Read Table Entry
   * @details [long description]
-  *
   * @param ID [Read taSwitchInControl() p * @return [description]
   */
-class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) with UniformPrintfs {
+class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO( )(p) with UniformPrintfs {
 
   val ID = RegInit(~id.U)
   ID := id.U
-  val request_R = RegInit(ReadReq.default)
+  val request_R       = RegInit(ReadReq.default)
   val request_valid_R = RegInit(false.B)
   // Data buffers for misaligned accesses
 
   // Mask for final ANDing and output of data
-  val bitmask = RegInit(0.U(((2) * xlen).W))
+  val bitmask      = RegInit(0.U(((2) * xlen).W))
   // Send word mask for tracking how many words need to be read
-  val sendbytemask = RegInit(0.U(((2) * xlen/8).W))
+  val sendbytemask = RegInit(0.U(((2) * xlen / 8).W))
 
   // Is the request valid and request to memory
-  val ReqValid = RegInit(false.B)
+  val ReqValid   = RegInit(false.B)
   val ReqAddress = RegInit(0.U(xlen.W))
 
   // Incoming data valid and data operand.
-  val DataValid = RegInit(false.B)
-  val ptr = RegInit(0.U(log2Ceil(2).W))
+  val DataValid  = RegInit(false.B)
+  val ptr        = RegInit(0.U(log2Ceil(2).W))
   val linebuffer = RegInit(VecInit(Seq.fill(2)(0.U(xlen.W))))
   val xlen_bytes = xlen / 8
-  val output = WireInit(0.U(xlen.W))
+  val output     = WireInit(0.U(xlen.W))
 
   // State machine
   val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
-  val state = RegInit(s_idle)
+  val state                                               = RegInit(s_idle)
 
- // Check if entry free.
-/*================================================
-=            Indicate Table State                =
-=================================================*/
+  // Check if entry free.
+  /*================================================
+  =            Indicate Table State                =
+  =================================================*/
 
   // Table entry indicates free to outside world
   io.free := (state === s_idle)
@@ -93,11 +93,11 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   io.output.bits.data := 0.U
 
   io.MemReq.valid := 0.U
-  io.MemReq.bits.addr := ReqAddress + Cat(ptr,0.U(log2Ceil(xlen_bytes).W))
+  io.MemReq.bits.addr := ReqAddress + Cat(ptr, 0.U(log2Ceil(xlen_bytes).W))
   // *** Note: Chisel seems to be screwing up constants in the arbiter.
   // Use reg's for now to force it to keep them.
-  io.MemReq.bits.tag  := ID
-  val isWrite = RegNext(false.B, init=true.B)
+  io.MemReq.bits.tag := ID
+  val isWrite = RegNext(false.B, init = true.B)
   io.MemReq.bits.iswrite := isWrite
   io.MemReq.bits.data := 0.U
   io.MemReq.bits.mask := 0.U
@@ -108,15 +108,15 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   /*=======================================================
   =            Latch Inputs. Calculate masks              =
   ========================================================*/
-  when(io.NodeReq.fire()) {
+  when(io.NodeReq.fire( )) {
     request_R := io.NodeReq.bits
     // Calculate things to start the sending process
     // Base word address
     ReqAddress := (io.NodeReq.bits.address >> log2Ceil(xlen_bytes)) << log2Ceil(xlen_bytes)
     // Bitmask of data  for final ANDing
-    bitmask := ReadBitMask(io.NodeReq.bits.Typ, io.NodeReq.bits.address,xlen)
+    bitmask := ReadBitMask(io.NodeReq.bits.Typ, io.NodeReq.bits.address, xlen)
     // Bytemask of bytes within words that need to be fetched.
-    sendbytemask := ReadByteMask(io.NodeReq.bits.Typ, io.NodeReq.bits.address,xlen)
+    sendbytemask := ReadByteMask(io.NodeReq.bits.Typ, io.NodeReq.bits.address, xlen)
     // Next State
     //state := s_SENDING
   }
@@ -130,13 +130,13 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   ===========================================================*/
 
 
-  switch (state) {
-    is (s_idle) {
-      when(io.NodeReq.fire()) {
+  switch(state) {
+    is(s_idle) {
+      when(io.NodeReq.fire( )) {
         state := s_SENDING
       }
     }
-    is (s_SENDING) {
+    is(s_SENDING) {
       io.MemReq.valid := 1.U
       // io.MemReq.ready means arbitration succeeded and memory op has been passed on
       when(io.MemReq.ready) {
@@ -146,21 +146,21 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
         state := s_RECEIVING
       }
     }
-    is (s_RECEIVING) {
-      when (io.MemResp.valid) {
+    is(s_RECEIVING) {
+      when(io.MemResp.valid) {
         // Received data; concatenate into linebuffer
         linebuffer(ptr) := io.MemResp.data
         // Increment ptr to next entry in linebuffer (for next read)
         ptr := ptr + 1.U
         // Check if more data needs to be sent
-         when (sendbytemask === 0.asUInt((xlen/4).W)) {
-           state := s_Done
-         }.otherwise {
-           state := s_SENDING
-         }
+        when(sendbytemask === 0.asUInt((xlen / 4).W)) {
+          state := s_Done
+        }.otherwise {
+          state := s_SENDING
+        }
       }
     }
-    is (s_Done) {
+    is(s_Done) {
       io.output.valid := 1.U
       output := (linebuffer.asUInt & bitmask) >> Cat(request_R.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))
       // @error: To handle doubles this has to change.
@@ -181,56 +181,55 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) w
   }
 
 
-
   /*============================================================
   =            Cleanup and send output                         =
   =============================================================*/
 
-   override val printfSigil = "UnTyp RD MSHR(" + ID + ")"
+  override val printfSigil = "UnTyp RD MSHR(" + ID + ")"
   if ((log == true) && (comp contains "RDMSHR")) {
     val x = RegInit(0.U(xlen.W))
-    x     := x + 1.U
+    x := x + 1.U
 
-//    verb match {
-//      case "high"  => { printf(p"\nUNTYP RD MSHR Time $x: Nodereq: $request_R "); printf(p"linebuffer: ${linebuffer}") }
-//      case "med"   => { printf(p"\nUNTYP RD MSHR Time $x: $io.MemReq"); printf(p"linebuffer: ${linebuffer}") }
-//      case "low"   => { printf(p"\nUNTYP RD MSHR Time $x: ") ; printf(p"Output bits : ${io.output.bits} Output Valid : ${io.output.valid}") }
-//    }
+    //    verb match {
+    //      case "high"  => { printf(p"\nUNTYP RD MSHR Time $x: Nodereq: $request_R "); printf(p"linebuffer: ${linebuffer}") }
+    //      case "med"   => { printf(p"\nUNTYP RD MSHR Time $x: $io.MemReq"); printf(p"linebuffer: ${linebuffer}") }
+    //      case "low"   => { printf(p"\nUNTYP RD MSHR Time $x: ") ; printf(p"Output bits : ${io.output.bits} Output Valid : ${io.output.valid}") }
+    //    }
   }
 }
 
 abstract class RController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit val p: Parameters)
-extends Module with CoreParams {
+  extends Module with CoreParams {
   val io = IO(new Bundle {
-    val ReadIn = Vec(NumOps, Flipped(Decoupled(new ReadReq())))
-    val ReadOut = Vec(NumOps, Output(new ReadResp()))
-    val MemReq = Decoupled(new MemReq)
+    val ReadIn  = Vec(NumOps, Flipped(Decoupled(new ReadReq( ))))
+    val ReadOut = Vec(NumOps, Output(new ReadResp( )))
+    val MemReq  = Decoupled(new MemReq)
     val MemResp = Flipped(Valid(new MemResp))
   })
 }
 
 
 class ReadMemoryController
-  (NumOps: Int,
-  BaseSize: Int, NumEntries: Int)
-  (implicit p: Parameters)
-  extends RController(NumOps,BaseSize,NumEntries)(p) {
+(NumOps: Int,
+ BaseSize: Int, NumEntries: Int)
+(implicit p: Parameters)
+  extends RController(NumOps, BaseSize, NumEntries)(p) {
   require(NumEntries >= 0)
   // Number of MLP entries
-  val MLPSize = NumEntries
+  val MLPSize   = NumEntries
   // Input arbiter
-  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq(), Locks = 1))
+  val in_arb    = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq( ), Locks = 1))
   // MSHR allocator
-  val alloc_arb = Module(new Arbiter(Bool(), MLPSize))
+  val alloc_arb = Module(new Arbiter(Bool( ), MLPSize))
 
   // Memory request
-  val cachereq_arb = Module(new Arbiter(new MemReq, MLPSize))
+  val cachereq_arb    = Module(new Arbiter(new MemReq, MLPSize))
   // Memory response Demux
   val cacheresp_demux = Module(new Demux(new MemResp, MLPSize))
 
   // Output arbiter and demuxes
-  val out_arb = Module(new RRArbiter(new ReadResp, MLPSize))
-  val out_demux = Module(new DeMuxTree(BaseSize = BaseSize, NumOps = NumOps, new ReadResp()))
+  val out_arb   = Module(new RRArbiter(new ReadResp, MLPSize))
+  val out_demux = Module(new DeMuxTree(BaseSize = BaseSize, NumOps = NumOps, new ReadResp( )))
 
   /*=====================================================================
   =            Wire up incoming reads from nodes to ReadMSHR            =
@@ -239,7 +238,7 @@ class ReadMemoryController
   // Wire up input with in_arb
   for (i <- 0 until NumOps) {
     in_arb.io.in(i) <> io.ReadIn(i)
-    io.ReadOut(i)   <> out_demux.io.outputs(i)
+    io.ReadOut(i) <> out_demux.io.outputs(i)
   }
 
   /*=============================================
@@ -253,7 +252,8 @@ class ReadMemoryController
     // val MSHR = Module(new ReadTableEntry(i))
     // Allocator wireup with table entries
     alloc_arb.io.in(i).valid := read_entry.io.free
-    read_entry.io.NodeReq.valid := alloc_arb.io.in(i).fire()
+    alloc_arb.io.in(i).bits <> DontCare
+    read_entry.io.NodeReq.valid := alloc_arb.io.in(i).fire( )
     read_entry.io.NodeReq.bits := in_arb.io.out.bits
 
     // Table entries -> MemReq arbiter.
@@ -294,7 +294,7 @@ class ReadMemoryController
 
   // Output arbiter -> Demux
   out_arb.io.out.ready := true.B
-  out_demux.io.enable := out_arb.io.out.fire()
+  out_demux.io.enable := out_arb.io.out.fire( )
   out_demux.io.input := out_arb.io.out.bits
 
   // printf(p"\n Read Demux Out: ${out_demux.io.outputs}")

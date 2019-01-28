@@ -69,7 +69,6 @@ abstract class AbstractDeMuxTree[T <: RouteID](Nops: Int, gen: T)(implicit p: Pa
     val outputs = Vec(Nops, Output(gen))
     val input   = Input(gen)
     val enable  = Input(Bool( ))
-    val sel     = Input(UInt(glen.W))
   })
 }
 

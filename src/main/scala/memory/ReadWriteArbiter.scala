@@ -1,8 +1,5 @@
 package memory
 
-/**
-  * Created by vnaveen0 on 9/7/17.
-  */
 // Generic Packages
 import chisel3._
 import chisel3.Module
@@ -23,32 +20,32 @@ import accel._
 
 
 abstract class RWController(implicit val p: Parameters)
-  extends Module with CoreParams  with UniformPrintfs {
+  extends Module with CoreParams with UniformPrintfs {
   val io = IO(new Bundle {
-    val ReadMemReq = Flipped(Decoupled(new MemReq))
+    val ReadMemReq  = Flipped(Decoupled(new MemReq))
     val WriteMemReq = Flipped(Decoupled(new MemReq))
-    val MemResp = Flipped(Valid(new MemResp))
+    val MemResp     = Flipped(Valid(new MemResp))
 
-    val ReadMemResp = Valid(new MemResp)
+    val ReadMemResp  = Valid(new MemResp)
     val WriteMemResp = Valid(new MemResp)
-    val MemReq = Decoupled(new MemReq)
+    val MemReq       = Decoupled(new MemReq)
 
   })
 }
 
 
 class ReadWriteArbiter()
-  (implicit p: Parameters)
-  extends RWController()(p) {
+                      (implicit p: Parameters)
+  extends RWController( )(p) {
 
   //ToDo : Need to remove this 
   val MLPSize = 2
-  val RdIdx = 0
-  val WrIdx = 1
+  val RdIdx   = 0
+  val WrIdx   = 1
 
 
-    // Memory request
-  val cachereq_arb = Module(new RRArbiter(new MemReq, MLPSize))
+  // Memory request
+  val cachereq_arb    = Module(new RRArbiter(new MemReq, MLPSize))
   // Memory response Demux
   val cacheresp_demux = Module(new Demux(new MemResp, MLPSize))
 
@@ -67,9 +64,8 @@ class ReadWriteArbiter()
   cachereq_arb.io.in(WrIdx) <> io.WriteMemReq
   // Cache request arbiter
   cachereq_arb.io.out.ready := io.MemReq.ready
-  io.MemReq.bits :=  cachereq_arb.io.out.bits
+  io.MemReq.bits := cachereq_arb.io.out.bits
   io.MemReq.valid := io.ReadMemReq.valid | io.WriteMemReq.valid
-
 
 
   //-----------------------------------
@@ -90,26 +86,26 @@ class ReadWriteArbiter()
   cacheresp_demux.io.sel := io.MemResp.bits.iswrite
   //-----------------------------------
 
-//  assert(!io.MemResp.valid, " CACHE RESPONSE IS VALID ")
+  //  assert(!io.MemResp.valid, " CACHE RESPONSE IS VALID ")
 
 
-//  verb match {
-//      case "high"  => {
-//
-//        printfInfo(s" INPUT.READREQ: valid: %d ready: %d addr: %d data: %d, iswrite: %d \n", io.ReadMemReq.valid,
-//          io.ReadMemReq.ready, io.ReadMemReq.bits.addr, io.ReadMemReq.bits.data, io.ReadMemReq.bits.iswrite)
-//        printfInfo(s"INPUT.WRITEREQ: valid: %d ready:%d addr: %d data:%d iswrite:%d \n", io.WriteMemReq.valid,
-//          io.WriteMemReq.ready, io.WriteMemReq.bits.addr, io.WriteMemReq.bits.data, io.WriteMemReq.bits.iswrite)
-//
-//        printfInfo(s" OUTPUT Req valid: %d addr: %d data:%d  tag: %d  ready:%d iswrite:%d \n", io.MemReq.valid ,
-//          io.MemReq.bits.addr,io.MemReq.bits.data ,io.MemReq.bits.tag, io.MemReq.ready, io.MemReq.bits.iswrite )
-//
-//
-//        printfInfo(s" OUTPUT Resp valid: %d isSt: %d  tag: %d \n", io.MemResp.valid ,io.MemResp.bits.isSt, io.MemResp.bits.tag )
-//
-//
-//
-//      }
-//    }
+  //  verb match {
+  //      case "high"  => {
+  //
+  //        printfInfo(s" INPUT.READREQ: valid: %d ready: %d addr: %d data: %d, iswrite: %d \n", io.ReadMemReq.valid,
+  //          io.ReadMemReq.ready, io.ReadMemReq.bits.addr, io.ReadMemReq.bits.data, io.ReadMemReq.bits.iswrite)
+  //        printfInfo(s"INPUT.WRITEREQ: valid: %d ready:%d addr: %d data:%d iswrite:%d \n", io.WriteMemReq.valid,
+  //          io.WriteMemReq.ready, io.WriteMemReq.bits.addr, io.WriteMemReq.bits.data, io.WriteMemReq.bits.iswrite)
+  //
+  //        printfInfo(s" OUTPUT Req valid: %d addr: %d data:%d  tag: %d  ready:%d iswrite:%d \n", io.MemReq.valid ,
+  //          io.MemReq.bits.addr,io.MemReq.bits.data ,io.MemReq.bits.tag, io.MemReq.ready, io.MemReq.bits.iswrite )
+  //
+  //
+  //        printfInfo(s" OUTPUT Resp valid: %d isSt: %d  tag: %d \n", io.MemResp.valid ,io.MemResp.bits.isSt, io.MemResp.bits.tag )
+  //
+  //
+  //
+  //      }
+  //    }
 
 }
