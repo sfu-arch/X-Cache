@@ -51,10 +51,10 @@ class ReadWriteArbiter()
 
   override val printfSigil = "ReadWriteArbiter: "
 
-  //-----------------------------------
-  // Driver Circuit
-  io.ReadMemReq.ready := io.MemReq.ready
-  io.WriteMemReq.ready := io.MemReq.ready
+  //  //-----------------------------------
+  //  // Driver Circuit
+  //  io.ReadMemReq.ready := io.MemReq.ready
+  //  io.WriteMemReq.ready := io.MemReq.ready
 
 
   //-----------------------------------

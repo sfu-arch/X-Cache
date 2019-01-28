@@ -22,45 +22,43 @@ import stack._
 import util._
 
 
-  /* ================================================================== *
-   *                   PRINTING PORTS DEFINITION                        *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING PORTS DEFINITION                        *
+ * ================================================================== */
 
 abstract class test18DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32))))
+    val in      = Flipped(Decoupled(new Call(List(32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
-    val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val MemReq  = Decoupled(new MemReq)
+    val out     = Decoupled(new Call(List(32)))
   })
 }
 
-class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
+class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
 
 
   /* ================================================================== *
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=3, NWrites=2)
-		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=3, BaseSize=2, NumEntries=2))
-		 (RWArbiter=new ReadWriteArbiter()))
+  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 3, NWrites = 2)
+  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 3, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter( )))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(3,3)))
+  val InputSplitter = Module(new SplitCallNew(List(3, 3)))
   InputSplitter.io.In <> io.in
-
 
 
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(1,2), NumOuts = 0, NumExits=1, ID = 0))
-
+  val Loop_0 = Module(new LoopBlock(NumIns = List(1, 2), NumOuts = 0, NumExits = 1, ID = 0))
 
 
   /* ================================================================== *
@@ -69,12 +67,11 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
 
   val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_for_cond1 = Module(new LoopHead(NumOuts = 4, NumPhi=1, BID = 1))
+  val bb_for_cond1 = Module(new LoopHead(NumOuts = 4, NumPhi = 1, BID = 1))
 
   val bb_for_inc2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 9, BID = 2))
 
   val bb_for_end3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 12, BID = 3))
-
 
 
   /* ================================================================== *
@@ -88,59 +85,58 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
   val phi_k_01 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 4, ID = 1))
 
   //  %cmp = icmp ult i32 %k.0, %n
-  val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
+  val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
 
   //  br i1 %cmp, label %for.inc, label %for.end
   val br_3 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 1, ID = 3))
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %k.0
-  val Gep_arrayidx4 = Module(new GepNode(NumIns = 1, NumOuts=1, ID=4)(ElementSize = 4, ArraySize = List()))
+  val Gep_arrayidx4 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 4)(ElementSize = 4, ArraySize = List( )))
 
   //  %0 = load i32, i32* %arrayidx, align 4
-  val ld_5 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=5, RouteID=0))
+  val ld_5 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 5, RouteID = 0))
 
   //  %mul = mul i32 2, %0
-  val binaryOp_mul6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign=false))
+  val binaryOp_mul6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign = false))
 
   //  %arrayidx1 = getelementptr inbounds i32, i32* %a, i32 %k.0
-  val Gep_arrayidx17 = Module(new GepNode(NumIns = 1, NumOuts=1, ID=7)(ElementSize = 4, ArraySize = List()))
+  val Gep_arrayidx17 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 7)(ElementSize = 4, ArraySize = List( )))
 
   //  store i32 %mul, i32* %arrayidx1, align 4
-  val st_8 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=8, RouteID=0))
+  val st_8 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 8, RouteID = 0))
 
   //  %inc = add i32 %k.0, 1
-  val binaryOp_inc9 = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "add")(sign=false))
+  val binaryOp_inc9 = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "add")(sign = false))
 
   //  br label %for.cond
-  val br_10 = Module(new UBranchNode(NumPredOps=1, NumOuts=2, ID = 10))
+  val br_10 = Module(new UBranchNode(NumPredOps = 1, NumOuts = 2, ID = 10))
 
   //  %sub = sub i32 %n, 1
-  val binaryOp_sub11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "sub")(sign=false))
+  val binaryOp_sub11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "sub")(sign = false))
 
   //  %arrayidx2 = getelementptr inbounds i32, i32* %a, i32 %sub
-  val Gep_arrayidx212 = Module(new GepNode(NumIns = 1, NumOuts=2, ID=12)(ElementSize = 4, ArraySize = List()))
+  val Gep_arrayidx212 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 12)(ElementSize = 4, ArraySize = List( )))
 
   //  %1 = load i32, i32* %arrayidx2, align 4
-  val ld_13 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=13, RouteID=1))
+  val ld_13 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 13, RouteID = 1))
 
   //  %inc3 = add i32 %1, 1
-  val binaryOp_inc314 = Module(new ComputeNode(NumOuts = 1, ID = 14, opCode = "add")(sign=false))
+  val binaryOp_inc314 = Module(new ComputeNode(NumOuts = 1, ID = 14, opCode = "add")(sign = false))
 
   //  store i32 %inc3, i32* %arrayidx2, align 4
-  val st_15 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=15, RouteID=1))
+  val st_15 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 15, RouteID = 1))
 
   //  %sub4 = sub i32 %n, 1
-  val binaryOp_sub416 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "sub")(sign=false))
+  val binaryOp_sub416 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "sub")(sign = false))
 
   //  %arrayidx5 = getelementptr inbounds i32, i32* %a, i32 %sub4
-  val Gep_arrayidx517 = Module(new GepNode(NumIns = 1, NumOuts=1, ID=17)(ElementSize = 4, ArraySize = List()))
+  val Gep_arrayidx517 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 17)(ElementSize = 4, ArraySize = List( )))
 
   //  %2 = load i32, i32* %arrayidx5, align 4
-  val ld_18 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=18, RouteID=2))
+  val ld_18 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 18, RouteID = 2))
 
   //  ret i32 %2
-  val ret_19 = Module(new RetNode2(retTypes=List(32), ID = 19))
-
+  val ret_19 = Module(new RetNode2(retTypes = List(32), ID = 19))
 
 
   /* ================================================================== *
@@ -166,7 +162,6 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
   val const5 = Module(new ConstFastNode(value = 1, ID = 5))
 
 
-
   /* ================================================================== *
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
@@ -182,11 +177,9 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
   bb_for_end3.io.predicateIn <> Loop_0.io.endEnable
 
 
-
   /* ================================================================== *
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -200,13 +193,11 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
   Loop_0.io.loopExit(0) <> br_3.io.FalseOutput(0)
 
 
-
   /* ================================================================== *
    *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
 
   br_10.io.PredOp(0) <> st_8.io.SuccOp(0)
-
 
 
   /* ================================================================== *
@@ -216,7 +207,6 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
   Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
   Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field0")(0)
-
 
 
   /* ================================================================== *
@@ -230,11 +220,9 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
   Gep_arrayidx17.io.baseAddress <> Loop_0.io.liveIn.elements("field1")(1)
 
 
-
   /* ================================================================== *
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -297,8 +285,6 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
   ret_19.io.In.enable <> bb_for_end3.io.Out(11)
 
 
-
-
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
@@ -306,11 +292,9 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
   phi_k_01.io.Mask <> bb_for_cond1.io.MaskBB(0)
 
 
-
   /* ================================================================== *
    *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -338,11 +322,9 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
   ld_18.io.memResp <> MemCtrl.io.ReadOut(2)
 
 
-
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -395,7 +377,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
 
   ld_18.io.GepAddr <> Gep_arrayidx517.io.Out(0)
 
-  ret_19.io.In.data("field0") <> ld_18.io.Out(0)
+  ret_19.io.In.data("field0") <> st_15.io.Out(0)
 
   Gep_arrayidx212.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
@@ -407,8 +389,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
 
   st_8.io.Out(0).ready := true.B
 
-  st_15.io.Out(0).ready := true.B
-
+  ld_18.io.Out(0).ready := true.B
 
 
   /* ================================================================== *
@@ -420,15 +401,17 @@ class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
 }
 
 import java.io.{File, FileWriter}
-object test18Main extends App {
-  val dir = new File("RTL/test18") ; dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test18DF()))
 
-  val verilogFile = new File(dir, s"${chirrtl.main}.v")
+object test18Main extends App {
+  val dir = new File("RTL/test18");
+  dir.mkdirs
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test18DF( )))
+
+  val verilogFile   = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
   val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
   val compiledStuff = compileResult.getEmittedCircuit
   verilogWriter.write(compiledStuff.value)
-  verilogWriter.close()
+  verilogWriter.close( )
 }

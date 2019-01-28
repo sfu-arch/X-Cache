@@ -1,9 +1,5 @@
 package memory
 
-/**
-  * Created by vnaveen0 on 10/7/17.
-  */
-
 import scala.math._
 import chisel3._
 import chisel3.util._
@@ -61,7 +57,7 @@ class UnifiedController(ID: Int,
   /*====================================
    =            Declarations            =
    ====================================*/
-  val memReq_R  = RegInit(MemReq.default)
+  //  val memReq_R  = RegInit(MemReq.default)
   val memResp_R = RegInit(MemResp.default)
 
   // Initialize a vector of register files (as wide as type).
@@ -96,39 +92,40 @@ class UnifiedController(ID: Int,
   val (sIdle :: sReq :: sResp :: sDone :: Nil) = Enum(4)
   val state                                    = RegInit(init = sIdle)
 
-  ReadWriteArbiter.io.MemReq.ready := state =/= sReq & io.MemReq.ready
-  switch(state) {
-    is(sIdle) {
-      when(ReadWriteArbiter.io.MemReq.fire( )) {
-        memReq_R := ReadWriteArbiter.io.MemReq.bits
-        state := sReq
-      }
-    }
+  ReadWriteArbiter.io.MemReq.ready := true.B
+  //  switch(state) {
+  //    is(sIdle) {
+  //      when(ReadWriteArbiter.io.MemReq.fire( )) {
+  //        //   memReq_R := ReadWriteArbiter.io.MemReq.bits
+  //        state := sReq
+  //      }
+  //    }
+  //
+  //    is(sReq) {
+  //
+  //      ReadWriteArbiter.io.MemReq.ready := false.B
+  //      when(io.MemReq.fire( )) {
+  //        state := sResp
+  //      }
+  //    }
+  //
+  //    is(sResp) {
+  //      when(io.MemResp.valid) {
+  //        memResp_R := io.MemResp.bits
+  //        state := sDone
+  //      }
+  //    }
+  //
+  //    is(sDone) {
+  //      when(ReadWriteArbiter.io.MemResp.fire( )) {
+  //        state := sIdle
+  //      }
+  //    }
+  //  }
 
-    is(sReq) {
 
-      ReadWriteArbiter.io.MemReq.ready := false.B
-      when(io.MemReq.fire( )) {
-        state := sResp
-      }
-    }
-
-    is(sResp) {
-      when(io.MemResp.valid) {
-        memResp_R := io.MemResp.bits
-        state := sDone
-      }
-    }
-
-    is(sDone) {
-      when(ReadWriteArbiter.io.MemResp.fire( )) {
-        state := sIdle
-      }
-    }
-  }
-
-
-  io.MemReq <> ReadWriteArbiter.io.MemReq
+  io.MemReq.bits := ReadWriteArbiter.io.MemReq.bits
+  io.MemReq.valid := ReadWriteArbiter.io.MemReq.valid
   ReadWriteArbiter.io.MemResp <> io.MemResp
 
   //--------------------------
