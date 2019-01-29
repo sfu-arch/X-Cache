@@ -88,40 +88,6 @@ class UnifiedController(ID: Int,
   ReadWriteArbiter.io.WriteMemReq <> WriteController.io.MemReq
   WriteController.io.MemResp <> ReadWriteArbiter.io.WriteMemResp
 
-  // Connecting MemReq/Resp
-  val (sIdle :: sReq :: sResp :: sDone :: Nil) = Enum(4)
-  val state                                    = RegInit(init = sIdle)
-
-
-  //  switch(state) {
-  //    is(sIdle) {
-  //      when(ReadWriteArbiter.io.MemReq.fire( )) {
-  //        //   memReq_R := ReadWriteArbiter.io.MemReq.bits
-  //        state := sReq
-  //      }
-  //    }
-  //
-  //    is(sReq) {
-  //
-  //      ReadWriteArbiter.io.MemReq.ready := false.B
-  //      when(io.MemReq.fire( )) {
-  //        state := sResp
-  //      }
-  //    }
-  //
-  //    is(sResp) {
-  //      when(io.MemResp.valid) {
-  //        memResp_R := io.MemResp.bits
-  //        state := sDone
-  //      }
-  //    }
-  //
-  //    is(sDone) {
-  //      when(ReadWriteArbiter.io.MemResp.fire( )) {
-  //        state := sIdle
-  //      }
-  //    }
-  //  }
 
   ReadWriteArbiter.io.MemReq.ready := io.MemReq.ready
   io.MemReq.bits := ReadWriteArbiter.io.MemReq.bits
