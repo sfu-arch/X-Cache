@@ -82,7 +82,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   val phi_i_01 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 1))
 
   //  %cmp = icmp slt i32 %i.0, 5, !UID !5
-  val icmp_cmp2 = Module(new IcmpFastNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
+  val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
 
   //  br i1 %cmp, label %pfor.detach, label %pfor.end, !UID !6, !BB_UID !7
   val br_3 = Module(new CBranchNode(ID = 3))
@@ -91,7 +91,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   val detach_4 = Module(new Detach(ID = 4))
 
   //  %inc = add nsw i32 %i.0, 1, !UID !10
-  val binaryOp_inc5 = Module(new ComputeFastNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
+  val binaryOp_inc5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
 
   //  br label %pfor.cond, !llvm.loop !11, !UID !13, !BB_UID !14
   val br_6 = Module(new UBranchNode(NumOuts = 2, ID = 6))

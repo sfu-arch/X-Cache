@@ -205,6 +205,8 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
     }
   }
 
+  step(100)
+
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
 
   var valid_data = true

@@ -84,10 +84,11 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
   val Gep_3 = Module(new GepArrayOneNode(NumOuts = 1, ID = 3)(numByte = 4)(size = 1))
 
   //  store i32 %2, i32* %3, align 4, !UID !5
-  val st_4 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 0, ID = 4, RouteID = 0))
+  val st_4 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 1, ID = 4, RouteID = 0))
 
   //  br label %my_pfor.preattach, !UID !6, !BB_UID !7
-  val br_5 = Module(new UBranchFastNode(ID = 5))
+  //  val br_5 = Module(new UBranchFastNode(ID = 5))
+  val br_5 = Module(new UBranchNode(ID = 5, NumPredOps = 1))
 
   //  ret void
   val ret_6 = Module(new RetNode2(retTypes = List(32), ID = 6))
@@ -157,6 +158,8 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
   st_4.io.enable <> bb_my_pfor_body0.io.Out(5)
 
   br_5.io.enable <> bb_my_pfor_body0.io.Out(6)
+
+  br_5.io.PredOp(0) <> st_4.io.SuccOp(0)
 
 
   ret_6.io.In.enable <> bb_my_pfor_preattach1.io.Out(0)
