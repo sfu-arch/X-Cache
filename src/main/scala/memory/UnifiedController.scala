@@ -58,7 +58,7 @@ class UnifiedController(ID: Int,
    =            Declarations            =
    ====================================*/
   //  val memReq_R  = RegInit(MemReq.default)
-  val memResp_R = RegInit(MemResp.default)
+  //val memResp_R = RegInit(MemResp.default)
 
   // Initialize a vector of register files (as wide as type).
   val WriteController  = Module(WControl)
@@ -92,7 +92,7 @@ class UnifiedController(ID: Int,
   val (sIdle :: sReq :: sResp :: sDone :: Nil) = Enum(4)
   val state                                    = RegInit(init = sIdle)
 
-  ReadWriteArbiter.io.MemReq.ready := true.B
+
   //  switch(state) {
   //    is(sIdle) {
   //      when(ReadWriteArbiter.io.MemReq.fire( )) {
@@ -123,7 +123,7 @@ class UnifiedController(ID: Int,
   //    }
   //  }
 
-
+  ReadWriteArbiter.io.MemReq.ready := io.MemReq.ready
   io.MemReq.bits := ReadWriteArbiter.io.MemReq.bits
   io.MemReq.valid := ReadWriteArbiter.io.MemReq.valid
   ReadWriteArbiter.io.MemResp <> io.MemResp
@@ -135,7 +135,7 @@ class UnifiedController(ID: Int,
   override val printfSigil = "Unified: " + ID + " Type " + (Typ_SZ)
 
   //  verb match {
-  //    case "high"  => {printf(p" MemReq_R.addr: $cacheReq_R.addr")}
+  //    case "high"  => {printf(p" .addr: $cacheReq_R.addr")}
   //    case "med"   => {printf(p" state: $state")}
   //    case "low"   => {printf(p" state: $state")}
   //  }
