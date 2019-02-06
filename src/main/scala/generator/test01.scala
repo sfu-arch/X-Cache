@@ -21,13 +21,13 @@ import stack._
 import util._
 
 
-  /* ================================================================== *
-   *                   PRINTING PORTS DEFINITION                        *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING PORTS DEFINITION                        *
+ * ================================================================== */
 
 abstract class test01DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
@@ -41,23 +41,16 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
-		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RWArbiter=new ReadWriteArbiter()))
+  io.MemReq <> DontCare
+  io.MemResp <> DontCare
 
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
-
-  val InputSplitter = Module(new SplitCallNew(List(1,1)))
+  val InputSplitter = Module(new SplitCallNew(List(1, 1)))
   InputSplitter.io.In <> io.in
-
 
 
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -67,23 +60,20 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
   val entry = Module(new BasicBlockNoMaskFastNode3(NumOuts = 2, BID = 0))
 
 
-
   /* ================================================================== *
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
   //  %mul = mul i32 %a, %b
-  val mul = Module(new ComputeFastNode(NumOuts = 1, ID = 0, opCode = "mul")(sign=false))
+  val mul = Module(new ComputeFastNode(NumOuts = 1, ID = 0, opCode = "mul")(sign = false))
 
   //  ret i32 %mul
-  val ret_1 = Module(new RetNode2(retTypes=List(32), ID = 1))
-
+  val ret_1 = Module(new RetNode2(retTypes = List(32), ID = 1))
 
 
   /* ================================================================== *
    *                   PRINTING CONSTANTS NODES                         *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -93,11 +83,9 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
   entry.io.predicateIn <> InputSplitter.io.Out.enable
 
 
-
   /* ================================================================== *
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -105,11 +93,9 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -117,11 +103,9 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   LOOP DATA OUTPUT DEPENDENCIES                    *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -133,12 +117,9 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
   ret_1.io.In.enable <> entry.io.Out(1)
 
 
-
-
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -146,17 +127,15 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  ret_1.io.In.data("field0") <> mul.io.Out
+  ret_1.io.In.data("field0") <> mul.io.Out(0)
 
   mul.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
   mul.io.RightIO <> InputSplitter.io.Out.data.elements("field1")(0)
-
 
 
   /* ================================================================== *
@@ -168,8 +147,10 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
 }
 
 import java.io.{File, FileWriter}
+
 object test01Main extends App {
-  val dir = new File("RTL/test01") ; dir.mkdirs
+  val dir = new File("RTL/test01");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test01DF()))
 

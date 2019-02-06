@@ -22,7 +22,7 @@ import junctions._
 
 
 class test01MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
+  val io = IO( new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))
     val din  = Input(UInt(nastiXDataBits.W))
@@ -30,6 +30,7 @@ class test01MainIO(implicit val p: Parameters)  extends Module with CoreParams w
     val dout = Output(UInt(nastiXDataBits.W))
     val out = Decoupled(new Call(List(32)))
   })
+  def cloneType = new test01MainIO( ).asInstanceOf[this.type]
 }
 
 class test01Main(implicit p: Parameters) extends test01MainIO {

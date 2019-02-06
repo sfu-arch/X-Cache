@@ -28,14 +28,14 @@ import util._
 
 abstract class test18DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in      = Flipped(Decoupled(new Call(List(32, 32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
-    val MemReq  = Decoupled(new MemReq)
-    val out     = Decoupled(new Call(List(32)))
+    val MemReq = Decoupled(new MemReq)
+    val out = Decoupled(new Call(List(32)))
   })
 }
 
-class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
+class test18DF(implicit p: Parameters) extends test18DFIO()(p) {
 
 
   /* ================================================================== *
@@ -45,7 +45,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
   val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 3, NWrites = 2)
   (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
   (RControl = new ReadMemoryController(NumOps = 3, BaseSize = 2, NumEntries = 2))
-  (RWArbiter = new ReadWriteArbiter( )))
+  (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
@@ -91,7 +91,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
   val br_3 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 1, ID = 3))
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %k.0
-  val Gep_arrayidx4 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 4)(ElementSize = 4, ArraySize = List( )))
+  val Gep_arrayidx4 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 4)(ElementSize = 4, ArraySize = List()))
 
   //  %0 = load i32, i32* %arrayidx, align 4
   val ld_5 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 5, RouteID = 0))
@@ -100,7 +100,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
   val binaryOp_mul6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign = false))
 
   //  %arrayidx1 = getelementptr inbounds i32, i32* %a, i32 %k.0
-  val Gep_arrayidx17 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 7)(ElementSize = 4, ArraySize = List( )))
+  val Gep_arrayidx17 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 7)(ElementSize = 4, ArraySize = List()))
 
   //  store i32 %mul, i32* %arrayidx1, align 4
   val st_8 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 8, RouteID = 0))
@@ -115,7 +115,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
   val binaryOp_sub11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "sub")(sign = false))
 
   //  %arrayidx2 = getelementptr inbounds i32, i32* %a, i32 %sub
-  val Gep_arrayidx212 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 12)(ElementSize = 4, ArraySize = List( )))
+  val Gep_arrayidx212 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 12)(ElementSize = 4, ArraySize = List()))
 
   //  %1 = load i32, i32* %arrayidx2, align 4
   val ld_13 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 13, RouteID = 1))
@@ -130,7 +130,7 @@ class test18DF(implicit p: Parameters) extends test18DFIO( )(p) {
   val binaryOp_sub416 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "sub")(sign = false))
 
   //  %arrayidx5 = getelementptr inbounds i32, i32* %a, i32 %sub4
-  val Gep_arrayidx517 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 17)(ElementSize = 4, ArraySize = List( )))
+  val Gep_arrayidx517 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 17)(ElementSize = 4, ArraySize = List()))
 
   //  %2 = load i32, i32* %arrayidx5, align 4
   val ld_18 = Module(new UnTypLoad(NumPredOps = 1, NumSuccOps = 0, NumOuts = 1, ID = 18, RouteID = 2))
@@ -408,12 +408,12 @@ object test18Main extends App {
   val dir = new File("RTL/test18");
   dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test18DF( )))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test18DF()))
 
-  val verilogFile   = new File(dir, s"${chirrtl.main}.v")
+  val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
   val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
   val compiledStuff = compileResult.getEmittedCircuit
   verilogWriter.write(compiledStuff.value)
-  verilogWriter.close( )
+  verilogWriter.close()
 }
