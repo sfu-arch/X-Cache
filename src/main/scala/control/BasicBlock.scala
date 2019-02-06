@@ -108,7 +108,7 @@ class BasicBlockNode(NumInputs: Int,
 
   // Wire up mask output
   for (i <- 0 until NumPhi) {
-    io.MaskBB(i).bits := Reverse(predicate_control_R.asUInt())
+    io.MaskBB(i).bits := predicate_control_R.asUInt()
   }
 
 
@@ -953,6 +953,23 @@ class BasicBlockNoMaskFastVecIO(val NumInputs: Int, val NumOuts: Int)(implicit p
   override def cloneType = new BasicBlockNoMaskFastVecIO(NumInputs, NumOuts).asInstanceOf[this.type]
 }
 
+/**
+  * BasicBLockNoMaskFastNode details:
+  * 1) Node can one one or multiple predicates as input and their type is controlBundle
+  * 2) State machine inside the node waits for all the inputs to arrive and then fire.
+  * 3) The ouput value is OR of all the input values
+  * 4) Node can fire outputs at the same cycle if all the inputs. Since, basic block node
+  *    is only for circuit simplification therefore, in case that we know output is valid
+  *    we don't want to waste one cycle for latching purpose. Therefore, output can be zero
+  *    cycle.
+  *
+  * @param BID
+  * @param NumInputs
+  * @param NumOuts
+  * @param p
+  * @param name
+  * @param file
+  */
 
 class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: Int)
                               (implicit val p: Parameters,
@@ -1015,11 +1032,17 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
     case(a,b) => a | b
   } reduce ( _ & _)
 
-  io.Out.map(_.bits) foreach (_ := ControlBundle.default(select_input, in_task_ID))
 
   val out_fire_mask = ((output_fire_R zip io.Out.map(_.fire)) map {
     case (a, b) => a | b
   }) reduce (_ & _)
+
+
+  //Masking output value
+  val output_value = (io.predicateIn.map(_.bits.control) zip (in_data_R.map(_.control))) map {
+    case (a,b) => a | b
+  } reduce (_ | _)
+  io.Out.map(_.bits) foreach (_ := ControlBundle.default(output_value, in_task_ID))
 
   val s_idle :: s_fire :: Nil = Enum(2)
   val state = RegInit(s_idle)
@@ -1028,9 +1051,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
   switch(state) {
     is(s_idle) {
       when(select_input) {
-        io.Out.map(_.valid) foreach {
-          _ := true.B
-        }
+        io.Out.map(_.valid) foreach (_ := true.B)
         output_valid_R.foreach(_ := true.B)
         output_R := ControlBundle.default(true.B, in_task_ID)
         state := s_fire
@@ -1042,7 +1063,10 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
       }
     }
     is(s_fire) {
+      //Keep the current output until everybody have taken it
       io.Out.map(_.bits) foreach (_ := output_R)
+
+      //Restart the states
       when(out_fire_mask) {
         output_fire_R foreach (_ := false.B)
         state := s_idle
