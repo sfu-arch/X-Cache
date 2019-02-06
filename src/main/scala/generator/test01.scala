@@ -41,6 +41,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
+  //Remember if there is no mem operation io memreq/memresp should be grounded
   io.MemReq <> DontCare
   io.MemResp <> DontCare
 
@@ -57,7 +58,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val entry = Module(new BasicBlockNoMaskFastNode3(NumOuts = 2, BID = 0))
+  val entry = Module(new BasicBlockNoMaskFastNode(NumOuts = 2, BID = 0))
 
 
   /* ================================================================== *
@@ -80,7 +81,7 @@ class test01DF(implicit p: Parameters) extends test01DFIO()(p) {
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  entry.io.predicateIn <> InputSplitter.io.Out.enable
+  entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
 
   /* ================================================================== *
