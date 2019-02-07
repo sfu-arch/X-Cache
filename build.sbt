@@ -2,7 +2,7 @@ name := "dandelion-lib"
 
 organization := "edu.sfu.arch"
 
-version := "0.1-SNAPSHOT"
+version := "0.1"
 
 scalaVersion := "2.11.12"
 //scalaVersion := "2.12.4"
