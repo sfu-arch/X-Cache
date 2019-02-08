@@ -21,9 +21,9 @@ import stack._
 import util._
 
 
-  /* ================================================================== *
-   *                   PRINTING PORTS DEFINITION                        *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING PORTS DEFINITION                        *
+ * ================================================================== */
 
 abstract class test02DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
@@ -41,17 +41,12 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
-		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RWArbiter=new ReadWriteArbiter()))
+  //Remember if there is no mem operation io memreq/memresp should be grounded
+  io.MemReq  <> DontCare
+  io.MemResp <> DontCare
 
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
-
-  val InputSplitter = Module(new SplitCallNew(List(2,1)))
+  val InputSplitter = Module(new SplitCallNew(List(2, 1)))
   InputSplitter.io.In <> io.in
-
 
 
   /* ================================================================== *
@@ -59,13 +54,11 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 8, BID = 0))
-
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumOuts = 8, BID = 0))
 
 
   /* ================================================================== *
@@ -73,20 +66,19 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    * ================================================================== */
 
   //  %div.mask = and i32 %a, -2
-  val binaryOp_div_mask0 = Module(new ComputeFastNode(NumOuts = 1, ID = 0, opCode = "and")(sign=false))
+  val binaryOp_div_mask0 = Module(new ComputeFastNode(NumOuts = 1, ID = 0, opCode = "and")(sign = false))
 
   //  %cmp = icmp eq i32 %div.mask, 8
-  val icmp_cmp1 = Module(new IcmpFastNode(NumOuts = 1, ID = 1, opCode = "eq")(sign=false))
+  val icmp_cmp1 = Module(new IcmpFastNode(NumOuts = 1, ID = 1, opCode = "eq")(sign = false))
 
   //  %add = add i32 %b, %a
-  val binaryOp_add2 = Module(new ComputeFastNode(NumOuts = 1, ID = 2, opCode = "add")(sign=false))
+  val binaryOp_add2 = Module(new ComputeFastNode(NumOuts = 1, ID = 2, opCode = "add")(sign = false))
 
   //  %add. = select i1 %cmp, i32 %add, i32 0
   val select_add_3 = Module(new SelectFastNode(NumOuts = 1, ID = 3))
 
   //  ret i32 %add.
-  val ret_4 = Module(new RetNode(retTypes=List(32), ID = 4))
-
+  val ret_4 = Module(new RetNode(retTypes = List(32), ID = 4))
 
 
   /* ================================================================== *
@@ -103,13 +95,11 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
   val const2 = Module(new ConstFastNode(value = 0, ID = 2))
 
 
-
   /* ================================================================== *
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn <> InputSplitter.io.Out.enable
-
+  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
 
   /* ================================================================== *
@@ -117,11 +107,9 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   LOOP -> PREDICATE INSTRUCTION                    *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -129,11 +117,9 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -141,11 +127,9 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -169,12 +153,9 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
   ret_4.io.enable <> bb_entry0.io.Out(7)
 
 
-
-
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -182,17 +163,14 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -220,7 +198,6 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
   binaryOp_add2.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
-
   /* ================================================================== *
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
@@ -230,8 +207,10 @@ class test02DF(implicit p: Parameters) extends test02DFIO()(p) {
 }
 
 import java.io.{File, FileWriter}
+
 object test02Main extends App {
-  val dir = new File("RTL/test02") ; dir.mkdirs
+  val dir = new File("RTL/test02");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test02DF()))
 
