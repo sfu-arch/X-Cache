@@ -30,13 +30,19 @@ class FPDivDataFlow(implicit val p: Parameters) extends Module with CoreParams {
   FPDiv.io.a.bits.data := 0x40800000.U
   FPDiv.io.a.bits.predicate := true.B
   FPDiv.io.a.valid := true.B
+  FPDiv.io.a.bits.taskID := 0.U
 
   FPDiv.io.b.bits.data := 0x40800000.U
   FPDiv.io.b.bits.predicate := true.B
   FPDiv.io.b.valid := true.B
+  FPDiv.io.b.bits.taskID := 0.U
 
   FPDiv.io.enable.bits.control := true.B
   FPDiv.io.enable.valid := true.B
+  FPDiv.io.enable.bits.taskID := 0.U
   FPDiv.io.Out(0).ready := true.B
+
+  //printf("\n \"Outputs\": {\"Out\": %x, %x}", FPDiv.io.Out(0).bits.data, FPDiv.io.Out(0).fire( ))
+
 
 }
