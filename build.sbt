@@ -2,18 +2,32 @@ name := "dandelion-lib"
 
 organization := "edu.sfu.arch"
 
-version := "0.1"
+version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.11.12"
-//scalaVersion := "2.12.4"
 
-scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls")
+def scalacOptionsVersion(scalaVersion: String): Seq[String] = {
+  Seq() ++ {
+    // If we're building with Scala > 2.11, enable the compile option
+    //  switch to support our anonymous Bundle definitions:
+    //  https://github.com/scala/bug/issues/10047
+    CrossVersion.partialVersion(scalaVersion) match {
+      case Some((2, scalaMajor: Long)) if scalaMajor < 12 => Seq()
+      case _ => Seq("-Xsource:2.11")
+    }
+  }
+}
+
+autoAPIMappings := true
+scalaVersion := "2.12.6"
+crossScalaVersions := Seq("2.12.6", "2.11.12")
+scalacOptions :=
+  Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls") ++ scalacOptionsVersion(scalaVersion.value)
 
 /**
-  D - show durations
-  S - show short stack traces
-  F - show full stack traces
-  W - Without color 
+  * D - show durations
+  * S - show short stack traces
+  * F - show full stack traces
+  * W - Without color
   **/
 testOptions in Test += Tests.Argument("-oDS")
 
@@ -24,13 +38,14 @@ resolvers ++= Seq(
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 val defaultVersions = Map(
-//  "chisel3" -> "3.0-SNAPSHOT",
+  //  "chisel3" -> "3.0-SNAPSHOT",
   "chisel3" -> "3.1.+",
   "chisel-iotesters" -> "1.2.+"
-  )
+)
 
-libraryDependencies ++= (Seq("chisel3","chisel-iotesters").map {
-  dep: String => "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep)) })
+libraryDependencies ++= (Seq("chisel3", "chisel-iotesters").map {
+  dep: String => "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
+})
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1",
