@@ -32,6 +32,8 @@ class FPDivSqrtIO(NumOuts: Int,
   val FUReq = Decoupled(new FUReq(argTypes))
   // FU response.
   val FUResp = Input(Flipped(new FUResp()))
+
+  override def cloneType = new FPDivSqrtIO(NumOuts, argTypes).asInstanceOf[this.type]
 }
 
 /**

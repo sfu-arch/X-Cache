@@ -278,7 +278,7 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
         if (log) {
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
             + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
-            task_input, cycleCount, FU.io.out.asUInt(), left_input.asUInt(), right_input.asUInt())
+            task_input, cycleCount, FU.io.out.asSInt(), left_input.asSInt(), right_input.asSInt())
         }
       }
     }

@@ -20,6 +20,8 @@ class SharedFPUIO(NumOps: Int, argTypes: Seq[Int])
   val InData = Vec(NumOps, Flipped(Decoupled(new FUReq(argTypes))))
 
   val OutData = Vec(NumOps, Output(new FUResp))
+
+  override def cloneType = new SharedFPUIO(NumOps, argTypes).asInstanceOf[this.type]
 }
 
 class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
@@ -49,6 +51,9 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
     */
   val in_arbiter = Module(new ArbiterTree(BaseSize = 2, NumOps = NumOps, new FUReq(argTypes), Locks = 1))
   val out_demux = Module(new DeMuxTree(BaseSize = 2, NumOps = NumOps, new FUResp))
+
+  //@todo fix the base size
+  out_demux.io.input <> DontCare
 
   for (i <- 0 until NumOps) {
     in_arbiter.io.in(i) <> io.InData(i)

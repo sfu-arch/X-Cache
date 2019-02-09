@@ -34,6 +34,7 @@ abstract class testFP01DFIO(implicit val p: Parameters) extends Module with Core
     val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
+
 }
 
 class testFP01DF(implicit p: Parameters) extends testFP01DFIO()(p) {
@@ -43,13 +44,9 @@ class testFP01DF(implicit p: Parameters) extends testFP01DFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
-		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RWArbiter=new ReadWriteArbiter()))
-
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
+  //Remember if there is no mem operation io memreq/memresp should be grounded
+  io.MemReq  <> DontCare
+  io.MemResp <> DontCare
 
   val InputSplitter = Module(new SplitCallNew(List(2,1)))
   InputSplitter.io.In <> io.in
@@ -94,7 +91,7 @@ class testFP01DF(implicit p: Parameters) extends testFP01DFIO()(p) {
   val br_4 = Module(new UBranchNode(ID = 4))
 
   //  %sum.0 = phi float [ %add, %if.then ], [ 0.000000e+00, %entry ]
-  val phi_sum_05 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 5))
+  val phi_sum_05 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 5, Res = true))
 
   //  ret float %sum.0
   val ret_6 = Module(new RetNode(retTypes=List(32), ID = 6))

@@ -21,51 +21,63 @@ import node._
 import junctions._
 
 
-class testFP01MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32))))
-    val addr = Input(UInt(nastiXAddrBits.W))
-    val din  = Input(UInt(nastiXDataBits.W))
-    val write = Input(Bool())
-    val dout = Output(UInt(nastiXDataBits.W))
+class testFP01MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val req = Flipped(Decoupled(new MemReq))
+    val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
   })
+
+  def cloneType = new testFP01MainIO()(p).asInstanceOf[this.type]
 }
 
 class testFP01Main(implicit p: Parameters) extends testFP01MainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+  val cache = Module(new Cache) // Simple Nasti Cache
 
-  // Store a copy of all data written to the cache.  This is done since the cache isn't
-  // 'write through' to the memory model and we have no easy way of reading the
-  // cache contents from the testbench.
-  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
-  }
-  io.dout := memCopy.read((io.addr>>2).asUInt())
+
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
   memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := io.addr
-  memModel.io.init.bits.data := io.din
-  memModel.io.init.valid := io.write
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
   val test01_fp = Module(new testFP01DF())
 
-  cache.io.cpu.req <> test01_fp.io.MemReq
-  test01_fp.io.MemResp <> cache.io.cpu.resp
+  //Put an arbiter infront of cache
+  val CacheArbiter = Module(new MemArbiter(2))
+
+  // Connect input signals to cache
+  CacheArbiter.io.cpu.MemReq(0) <> test01_fp.io.MemReq
+  test01_fp.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+
+  //Connect main module to cache arbiter
+  CacheArbiter.io.cpu.MemReq(1) <> io.req
+  io.resp <> CacheArbiter.io.cpu.MemResp(1)
+
+  //Connect cache to the arbiter
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+  //Connect in/out ports
   test01_fp.io.in <> io.in
   io.out <> test01_fp.io.out
 
+  // Check if trace option is on or off
+  if (p(TRACE) == false) {
+    println(Console.RED + "****** Trace option is off. *********" + Console.RESET)
+  }
+  else
+    println(Console.BLUE + "****** Trace option is on. *********" + Console.RESET)
+
 }
-
-
-
 
 
 class testFP01Test01[T <: testFP01MainIO](c: T) extends PeekPokeTester(c) {
@@ -92,7 +104,7 @@ class testFP01Test01[T <: testFP01MainIO](c: T) extends PeekPokeTester(c) {
 
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.bits.data("field0").data, 0x40a00000.U)
+  poke(c.io.in.bits.data("field0").data, 0x41100000.U)
   poke(c.io.in.bits.data("field0").predicate, true.B)
   poke(c.io.in.bits.data("field1").data, 0x4059999a.U)
   poke(c.io.in.bits.data("field1").predicate, true.B)
@@ -119,7 +131,7 @@ class testFP01Test01[T <: testFP01MainIO](c: T) extends PeekPokeTester(c) {
       peek(c.io.out.bits.data("field0").predicate) == 1) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 0x41066667) {
+      if (data != 0x41466667) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 11")
         fail
       } else {

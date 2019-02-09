@@ -77,6 +77,9 @@ class FPCompareNode(NumOuts: Int, ID: Int, opCode: String)
   FU.io.a   := t.recode(left_R.data)
   FU.io.b   := t.recode(right_R.data)
 
+  //@todo make sure you fixed DontCare signal
+  FU.io.signaling <> DontCare
+
   io.LeftIO.ready := ~left_valid_R
   when(io.LeftIO.fire()) {
     left_R <> io.LeftIO.bits
