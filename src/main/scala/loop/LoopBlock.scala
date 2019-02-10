@@ -656,7 +656,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   /**
     * Connecting control output signals
     */
-  io.activate.bits <> enable_R
+  io.activate.bits <> active_R
   io.activate.valid := active_valid_R
 
   for (i <- 0 until NumExits) {
@@ -830,6 +830,8 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           // Set the loop liveIN data as valid
           out_live_in_valid_R.foreach(_.foreach(_ := true.B))
           out_carry_out_valid_R.foreach(_.foreach(_ := true.B))
+
+          active_R := ControlBundle.active()
           active_valid_R := true.B
 
           //Change state
@@ -854,7 +856,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
         && IsCarryDepenValid()) {
 
         //When loop needs to repeat itself
-        when(loop_back_R.control){
+        when(loop_back_R.control) {
           //Drive loop internal output signals
           active_R := ControlBundle.active()
           active_valid_R := true.B
@@ -863,8 +865,15 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           out_carry_out_valid_R.foreach(_.foreach(_ := true.B))
 
           state := s_active
-        }.otherwise{
+        }.otherwise {
+          // Fire live-outs and loop exit control signal
+          out_live_out_valid_R.foreach(_.foreach(_ := true.B))
+          loop_exit_valid_R.foreach(_ := true.B)
 
+          active_R := ControlBundle.default
+
+          //Change state
+          state := s_end
         }
 
       }
@@ -882,8 +891,6 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
       }
     }
   }
-
-
 }
 
 // active.  This indicates a new iteration.
