@@ -99,7 +99,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   val br_2 = Module(new UBranchFastNode(ID = 2))
 
   //  %j.025 = phi i32 [ %inc8, %for.cond.cleanup3 ], [ 0, %for.body4.lr.ph.preheader ]
-  val phi_j_0253 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 3))
+  val phi_j_0253 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 3))
 
   //  %mul = mul i32 %j.025, %n
   val binaryOp_mul4 = Module(new ComputeFastNode(NumOuts = 1, ID = 4, opCode = "mul")(sign = false))
@@ -123,7 +123,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   val br_10 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 10))
 
   //  %k.023 = phi i32 [ 0, %for.body4.lr.ph ], [ %inc, %for.body4 ]
-  val phi_k_02311 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 11))
+  val phi_k_02311 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 11))
 
   //  %add = add i32 %k.023, %mul
   val binaryOp_add12 = Module(new ComputeFastNode(NumOuts = 1, ID = 12, opCode = "add")(sign = false))

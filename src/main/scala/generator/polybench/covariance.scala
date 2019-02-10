@@ -121,7 +121,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_0 = Module(new UBranchNode(ID = 0))
 
   //  %j.010 = phi i32 [ 0, %entry ], [ %inc9, %for.end ], !UID !5
-  val phij_0101 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 1))
+  val phij_0101 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 1))
 
   //  %arrayidx = getelementptr inbounds double, double* %mean, i32 %j.010, !UID !6
   val Gep_arrayidx2 = Module(new GepNode(NumIns = 1, NumOuts = 3, ID = 2)(ElementSize = 8, ArraySize = List()))
@@ -133,10 +133,10 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_4 = Module(new UBranchNode(NumPredOps = 1, ID = 4))
 
   //  %0 = phi double [ 0.000000e+00, %for.body ], [ %add, %for.body3 ], !UID !14
-  val phi5 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 5))
+  val phi5 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 5))
 
   //  %i.09 = phi i32 [ 0, %for.body ], [ %inc, %for.body3 ], !UID !15
-  val phii_096 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 6))
+  val phii_096 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 6))
 
   //  %tmp = getelementptr [1200 x double], [1200 x double]* %data, i32 %i.09, !UID !16
   val Gep_tmp7 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 7)(ElementSize = 8, ArraySize = List()))
@@ -163,7 +163,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_14 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 14))
 
   //  %add.lcssa = phi double [ %add, %for.body3 ], !UID !25
-  val phiadd_lcssa15 = Module(new PhiFastNode2(NumInputs = 1, NumOutputs = 1, ID = 15))
+  val phiadd_lcssa15 = Module(new PhiFastNode(NumInputs = 1, NumOutputs = 1, ID = 15))
 
   //  %div = fdiv double %add.lcssa, %float_n, !UID !26
   val FP_div16 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 16, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
@@ -184,7 +184,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_21 = Module(new UBranchNode(ID = 21))
 
   //  %i.18 = phi i32 [ %inc24, %for.inc23 ], [ 0, %for.cond14.preheader.preheader ], !UID !34
-  val phii_1822 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 22, Res = true))
+  val phii_1822 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 22, Res = true))
 
   //  br label %for.body16, !UID !35, !BB_UID !36
   val br_23 = Module(new UBranchNode(ID = 23))
@@ -196,7 +196,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_25 = Module(new UBranchNode(ID = 25))
 
   //  %j.17 = phi i32 [ 0, %for.cond14.preheader ], [ %inc21, %for.body16 ], !UID !40
-  val phij_1726 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 26))
+  val phij_1726 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 26))
 
   //  %arrayidx17 = getelementptr inbounds double, double* %mean, i32 %j.17, !UID !41
   val Gep_arrayidx1727 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 27)(ElementSize = 8, ArraySize = List()))
@@ -238,13 +238,13 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_39 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 39))
 
   //  %i.25 = phi i32 [ 0, %for.cond26.preheader ], [ %inc59, %for.inc58 ], !UID !56
-  val phii_2540 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 40))
+  val phii_2540 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 40))
 
   //  br label %for.body31, !UID !57, !BB_UID !58
   val br_41 = Module(new UBranchNode(ID = 41))
 
   //  %j.24 = phi i32 [ %inc56, %for.end46 ], [ %i.25, %for.body31.preheader ], !UID !59
-  val phij_2442 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 4, ID = 42, Res = true))
+  val phij_2442 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 4, ID = 42, Res = true))
 
   //  %tmp4 = getelementptr [1200 x double], [1200 x double]* %cov, i32 %i.25, !UID !60
   val Gep_tmp443 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 43)(ElementSize = 8, ArraySize = List()))
@@ -259,10 +259,10 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_46 = Module(new UBranchNode(NumPredOps = 1, ID = 46))
 
   //  %4 = phi double [ 0.000000e+00, %for.body31 ], [ %add43, %for.body36 ], !UID !65
-  val phi47 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 47))
+  val phi47 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 47))
 
   //  %k.02 = phi i32 [ 0, %for.body31 ], [ %inc45, %for.body36 ], !UID !66
-  val phik_0248 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 48))
+  val phik_0248 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 48))
 
   //  %tmp6 = getelementptr [1200 x double], [1200 x double]* %data, i32 %k.02, !UID !67
   val Gep_tmp649 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 49)(ElementSize = 8, ArraySize = List()))
@@ -301,7 +301,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_60 = Module(new CBranchFastNodeVariable2(NumFalse = 2, NumTrue = 1, ID = 60))
 
   //  %add43.lcssa = phi double [ %add43, %for.body36 ], !UID !80
-  val phiadd43_lcssa61 = Module(new PhiFastNode2(NumInputs = 1, NumOutputs = 1, ID = 61))
+  val phiadd43_lcssa61 = Module(new PhiFastNode(NumInputs = 1, NumOutputs = 1, ID = 61))
 
   //  %div50 = fdiv double %add43.lcssa, %sub47, !UID !81
   val FP_div5062 = Module(new FPDivSqrtNode(NumOuts = 2, ID = 62, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))

@@ -97,10 +97,10 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val br_0 = Module(new UBranchNode(ID = 0))
 
   //  %log.0116 = phi i32 [ 0, %entry ], [ %inc54, %for.inc53 ]
-  val philog_01161 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 2, ID = 1))
+  val philog_01161 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 1))
 
   //  %span.0114 = phi i32 [ 512, %entry ], [ %shr, %for.inc53 ]
-  val phispan_01142 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 2))
+  val phispan_01142 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 2))
 
   //  %cmp112 = icmp slt i32 %span.0114, 1024
   val icmp_cmp1123 = Module(new IcmpNode(NumOuts = 1, ID = 3, opCode = "ult")(sign = false))
@@ -112,7 +112,7 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val br_5 = Module(new UBranchNode(ID = 5))
 
   //  %odd.0113 = phi i32 [ %inc, %for.inc ], [ %span.0114, %for.body2.preheader ]
-  val phiodd_01136 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 1, ID = 6))
+  val phiodd_01136 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 6))
 
   //  %or = or i32 %odd.0113, %span.0114
   val binaryOp_or7 = Module(new ComputeNode(NumOuts = 3, ID = 7, opCode = "or")(sign = false))

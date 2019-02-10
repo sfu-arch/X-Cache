@@ -1,5 +1,6 @@
 package dataflow
 
+import FPU._
 import accel._
 import arbiters._
 import chisel3._
@@ -27,7 +28,7 @@ import util._
 
 abstract class test03DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
@@ -41,15 +42,11 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
-		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RWArbiter=new ReadWriteArbiter()))
+  //Remember if there is no mem operation io memreq/memresp should be grounded
+  io.MemReq  <> DontCare
+  io.MemResp <> DontCare
 
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
-
-  val InputSplitter = Module(new SplitCallNew(List(1,1,1)))
+  val InputSplitter = Module(new SplitCallNew(List(2, 1, 2)))
   InputSplitter.io.In <> io.in
 
 
@@ -58,7 +55,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(2,1,1), NumOuts = 1, NumExits=1, ID = 0))
+  val Loop_0 = Module(new LoopBlock(NumIns = List(2, 1, 1), NumOuts = 1, NumExits = 1, ID = 0))
 
 
 
@@ -66,15 +63,11 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 0))
 
-  val for_cond = Module(new LoopHead(NumOuts = 5, NumPhi=2, BID = 1))
+  val bb_1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 8, NumPhi = 2, BID = 1))
 
-  val for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
-
-  val for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3))
-
-  val for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4))
+  val bb_2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2))
 
 
 
@@ -82,38 +75,38 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  br label %for.cond
-  val br_0 = Module(new UBranchNode(ID = 0))
+  //  %4 = icmp sgt i32 %2, 0, !UID !3
+  val icmp_0 = Module(new IcmpFastNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
 
-  //  %sum.0 = phi i32 [ %a, %entry ], [ %mul, %for.inc ]
-  val sum_0 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1))
+  //  br i1 %4, label %5, label %12, !UID !4, !BB_UID !5
+  val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.inc ]
-  val i_0 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
+  //  %6 = phi i32 [ %10, %5 ], [ 0, %3 ], !UID !6
+  val phi2 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 2, Res = true))
 
-  //  %cmp = icmp slt i32 %i.0, %n
-  val cmp = Module(new IcmpNode(NumOuts = 1, ID = 3, opCode = "ult")(sign=false))
+  //  %7 = phi i32 [ %9, %5 ], [ %0, %3 ], !UID !7
+  val phi3 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 3, Res = true))
 
-  //  br i1 %cmp, label %for.body, label %for.end
-  val br_4 = Module(new CBranchNode(ID = 4))
+  //  %8 = add i32 %7, %0, !UID !8
+  val binaryOp_4 = Module(new ComputeFastNode(NumOuts = 1, ID = 4, opCode = "add")(sign = false))
 
-  //  %add = add i32 %sum.0, %a
-  val add = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign=false))
+  //  %9 = mul i32 %8, %1, !UID !9
+  val binaryOp_5 = Module(new ComputeFastNode(NumOuts = 2, ID = 5, opCode = "mul")(sign = false))
 
-  //  %mul = mul i32 %add, %b
-  val mul = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign=false))
+  //  %10 = add nuw nsw i32 %6, 1, !UID !10
+  val binaryOp_6 = Module(new ComputeFastNode(NumOuts = 2, ID = 6, opCode = "add")(sign = false))
 
-  //  br label %for.inc
-  val br_7 = Module(new UBranchNode(ID = 7))
+  //  %11 = icmp eq i32 %10, %2, !UID !11
+  val icmp_7 = Module(new IcmpFastNode(NumOuts = 1, ID = 7, opCode = "eq")(sign = false))
 
-  //  %inc = add nsw i32 %i.0, 1
-  val inc = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
+  //  br i1 %11, label %12, label %5, !UID !12, !BB_UID !13
+  val br_8 = Module(new CBranchNodeVariableLoop(NumTrue = 1, NumFalse = 2, NumPredecessor = 0, ID = 8))
 
-  //  br label %for.cond, !llvm.loop !7
-  val br_9 = Module(new UBranchNode(NumOuts=2, ID = 9))
+  //  %13 = phi i32 [ %0, %3 ], [ %9, %5 ], !UID !14
+  val phi9 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 9))
 
-  //  ret i32 %sum.0
-  val ret_10 = Module(new RetNode(retTypes=List(32), ID = 10))
+  //  ret i32 %13, !UID !15, !BB_UID !16
+  val ret_10 = Module(new RetNode2(retTypes = List(32), ID = 10))
 
 
 
@@ -122,10 +115,13 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    * ================================================================== */
 
   //i32 0
-  val const0 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 0))
+  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
+
+  //i32 0
+  val const1 = Module(new ConstFastNode(value = 0, ID = 1))
 
   //i32 1
-  val const1 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 1))
+  val const2 = Module(new ConstFastNode(value = 1, ID = 2))
 
 
 
@@ -133,17 +129,15 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  entry.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-  for_cond.io.activate <> Loop_0.io.activate
+//  bb_1.io.activate <> Loop_0.io.activate
 
-  for_cond.io.loopBack <> br_9.io.Out(0)
+//  bb_1.io.loopBack <> br_8.io.FalseOutput(0)
 
-  for_body.io.predicateIn <> br_4.io.Out(0)
+  bb_2.io.predicateIn(0) <> br_1.io.FalseOutput(0)
 
-  for_inc.io.predicateIn <> br_7.io.Out(0)
-
-  for_end.io.predicateIn <> Loop_0.io.endEnable
+  bb_2.io.predicateIn(1) <> Loop_0.io.endEnable
 
 
 
@@ -157,11 +151,11 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   LOOP -> PREDICATE INSTRUCTION                    *
    * ================================================================== */
 
-  Loop_0.io.enable <> br_0.io.Out(0)
+  Loop_0.io.enable <> br_1.io.TrueOutput(0)
 
-  Loop_0.io.latchEnable <> br_9.io.Out(1)
+  Loop_0.io.latchEnable <> br_8.io.FalseOutput(1)
 
-  Loop_0.io.loopExit(0) <> br_4.io.Out(1)
+  Loop_0.io.loopExit(0) <> br_8.io.TrueOutput(0)
 
 
 
@@ -175,11 +169,11 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
+  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field2")(0)
+  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
 
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data.elements("field1")(0)
+  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field2")(1)
 
 
 
@@ -187,13 +181,13 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  sum_0.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
+  phi3.io.InData(1) <> Loop_0.io.liveIn.elements("field0")(0)
 
-  add.io.RightIO <> Loop_0.io.liveIn.elements("field0")(1)
+  binaryOp_4.io.RightIO <> Loop_0.io.liveIn.elements("field0")(1)
 
-  cmp.io.RightIO <> Loop_0.io.liveIn.elements("field1")(0)
+  binaryOp_5.io.RightIO <> Loop_0.io.liveIn.elements("field1")(0)
 
-  mul.io.RightIO <> Loop_0.io.liveIn.elements("field2")(0)
+  icmp_7.io.RightIO <> Loop_0.io.liveIn.elements("field2")(0)
 
 
 
@@ -201,7 +195,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
 
-  Loop_0.io.liveOut(0) <> sum_0.io.Out(1)
+  Loop_0.io.liveOut(0) <> binaryOp_5.io.Out(1)
 
 
 
@@ -209,35 +203,35 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   BASICBLOCK -> ENABLE INSTRUCTION                 *
    * ================================================================== */
 
-  br_0.io.enable <> entry.io.Out(0)
+  const0.io.enable <> bb_0.io.Out(0)
+
+  const1.io.enable <> bb_0.io.Out(1)
+
+  icmp_0.io.enable <> bb_0.io.Out(2)
+
+  br_1.io.enable <> bb_0.io.Out(3)
 
 
-  const0.io.enable <> for_cond.io.Out(0)
+  const2.io.enable <> bb_1.io.Out(0)
 
-  sum_0.io.enable <> for_cond.io.Out(1)
+  phi2.io.enable <> bb_1.io.Out(1)
 
-  i_0.io.enable <> for_cond.io.Out(2)
+  phi3.io.enable <> bb_1.io.Out(2)
 
-  cmp.io.enable <> for_cond.io.Out(3)
+  binaryOp_4.io.enable <> bb_1.io.Out(3)
 
-  br_4.io.enable <> for_cond.io.Out(4)
+  binaryOp_5.io.enable <> bb_1.io.Out(4)
 
+  binaryOp_6.io.enable <> bb_1.io.Out(5)
 
-  add.io.enable <> for_body.io.Out(0)
+  icmp_7.io.enable <> bb_1.io.Out(6)
 
-  mul.io.enable <> for_body.io.Out(1)
-
-  br_7.io.enable <> for_body.io.Out(2)
-
-
-  const1.io.enable <> for_inc.io.Out(0)
-
-  inc.io.enable <> for_inc.io.Out(1)
-
-  br_9.io.enable <> for_inc.io.Out(2)
+  br_8.io.enable <> bb_1.io.Out(7)
 
 
-  ret_10.io.enable <> for_end.io.Out(0)
+  phi9.io.enable <> bb_2.io.Out(0)
+
+  ret_10.io.In.enable <> bb_2.io.Out(1)
 
 
 
@@ -246,9 +240,17 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
 
-  sum_0.io.Mask <> for_cond.io.MaskBB(0)
+  phi2.io.Mask <> bb_1.io.MaskBB(0)
 
-  i_0.io.Mask <> for_cond.io.MaskBB(1)
+  phi3.io.Mask <> bb_1.io.MaskBB(1)
+
+  phi9.io.Mask <> bb_2.io.MaskBB(0)
+
+
+
+  /* ================================================================== *
+   *                   PRINT ALLOCA OFFSET                              *
+   * ================================================================== */
 
 
 
@@ -259,28 +261,44 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
 
   /* ================================================================== *
+   *                   PRINT SHARED CONNECTIONS                         *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  i_0.io.InData(0) <> const0.io.Out(0)
+  icmp_0.io.RightIO <> const0.io.Out
 
-  inc.io.RightIO <> const1.io.Out(0)
+  phi2.io.InData(1) <> const1.io.Out
 
-  add.io.LeftIO <> sum_0.io.Out(0)
+  binaryOp_6.io.RightIO <> const2.io.Out
 
-  cmp.io.LeftIO <> i_0.io.Out(0)
+  br_1.io.CmpIO <> icmp_0.io.Out(0)
 
-  inc.io.LeftIO <> i_0.io.Out(1)
+  binaryOp_6.io.LeftIO <> phi2.io.Out(0)
 
-  br_4.io.CmpIO <> cmp.io.Out(0)
+  binaryOp_4.io.LeftIO <> phi3.io.Out(0)
 
-  mul.io.LeftIO <> add.io.Out(0)
+  binaryOp_5.io.LeftIO <> binaryOp_4.io.Out(0)
 
-  sum_0.io.InData(1) <> mul.io.Out(0)
+  phi3.io.InData(0) <> binaryOp_5.io.Out(0)
 
-  i_0.io.InData(1) <> inc.io.Out(0)
+  phi2.io.InData(0) <> binaryOp_6.io.Out(0)
 
-  ret_10.io.In.elements("field0") <> Loop_0.io.Out(0)
+  icmp_7.io.LeftIO <> binaryOp_6.io.Out(1)
+
+  br_8.io.CmpIO <> icmp_7.io.Out(0)
+
+  ret_10.io.In.data("field0") <> phi9.io.Out(0)
+
+  phi9.io.InData(1) <> Loop_0.io.Out(0)
+
+  phi9.io.InData(0) <> InputSplitter.io.Out.data("field0")(1)
+
+  icmp_0.io.LeftIO <> InputSplitter.io.Out.data("field2")(0)
 
 
 
@@ -293,8 +311,10 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 }
 
 import java.io.{File, FileWriter}
+
 object test03Main extends App {
-  val dir = new File("RTL/test03") ; dir.mkdirs
+  val dir = new File("RTL/test03");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test03DF()))
 

@@ -125,7 +125,7 @@ class kernel_2mmDF(implicit p: Parameters) extends kernel_2mmDFIO()(p) {
   val br_0 = Module(new UBranchFastNode(ID = 0))
 
   //  %i.0 = phi i32 [ 0, %entry ], [ %inc22, %for.inc21 ]
-  val phi_i_01 = Module(new PhiFastNode2(NumInputs = 2, NumOutputs = 3, ID = 1))
+  val phi_i_01 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 1))
 
   //  %cmp = icmp slt i32 %i.0, %ni
   val icmp_cmp2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
