@@ -276,7 +276,7 @@ class HandShakingFused[T <: PredicateT](val NumIns: Int, val NumOuts: Int,
   }))
 
   // Seq of registers. This has to be an array and not a vector
-  // When vector it will try to instantiate registers; not possible since only 
+  // When vector it will try to instantiate registers; not possible since only
   // type description available here.
   // Do not try to dynamically dereference ops.
   val InRegs = for (i <- 0 until NumIns) yield {
@@ -474,19 +474,24 @@ class HandShakingCtrlNPS(val NumOuts: Int,
   }
 
   def IsOutValid(): Bool = {
-    out_valid_R.asUInt.andR
+    //    out_valid_R.asUInt.andR
+    if (NumOuts == 0) {
+      return true.B
+    } else {
+      out_valid_R.reduceLeft(_ && _)
+    }
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
+    out_valid_R.foreach(_ := true.B)
   }
 
   def InvalidOut(): Unit = {
-    out_valid_R := VecInit(Seq.fill(NumOuts)(false.B))
+    out_valid_R.foreach(_ := false.B)
   }
 
   def Reset(): Unit = {
-    out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
+    out_ready_R.foreach(_ := false.B)
     enable_valid_R := false.B
   }
 }
@@ -630,7 +635,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
     if (NumSuccOps == 0) {
       return true.B
     } else {
-      Vec(succ_ready_R).asUInt.andR | Vec(succ_ready_W).asUInt.andR
+      VecInit(succ_ready_R).asUInt.andR | VecInit(succ_ready_W).asUInt.andR
     }
   }
 
@@ -857,3 +862,253 @@ class HandShakingCtrlNoMask(val NumInputs: Int,
 
 }
 
+
+class HandShakingAliasIO[T <: Data](NumPredOps: Int,
+                                    NumSuccOps: Int,
+                                    val NumAliasPredOps: Int = 0,
+                                    val NumAliasSuccOps: Int = 0,
+                                    NumOuts: Int
+                                   )(gen: T)(implicit p: Parameters)
+  extends HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(gen) {
+  val InA  = (new Bundle {
+    val In     = Vec(NumAliasPredOps, Flipped(Decoupled(new DataBundle)))
+    // Predessor
+    val PredOp = Vec(NumAliasPredOps, Flipped(Decoupled(new ControlBundle)))
+  })
+  val OutA = (new Bundle {
+    /* Need to explicitly specify output when mixing directions */
+    // Successor Ordering
+    val SuccOp = Output(Vec(NumAliasSuccOps, Decoupled(new ControlBundle)))
+    // Output IO
+    val Out    = Output(Vec(NumAliasSuccOps, Decoupled(new DataBundle)))
+  })
+
+  override def cloneType = new HandShakingAliasIO(NumPredOps, NumSuccOps, NumAliasPredOps, NumAliasSuccOps, NumOuts)(gen).asInstanceOf[this.type]
+}
+
+class HandShakingAlias[T <: Data](NumPredOps: Int,
+                                  NumSuccOps: Int,
+                                  val NumAliasPredOps: Int = 0,
+                                  val NumAliasSuccOps: Int = 0,
+                                  NumOuts: Int,
+                                  ID: Int)(gen: T)(implicit p: Parameters)
+  extends HandShaking(NumPredOps, NumSuccOps, NumOuts, ID)(gen)(p) {
+
+  override lazy val io = IO(new HandShakingAliasIO(NumPredOps, NumSuccOps, NumAliasPredOps, NumAliasSuccOps, NumOuts)(gen))
+
+  // Alias Predecessor Handshaking
+  val alias_pred_valid_R  = Seq.fill(NumAliasPredOps)(RegInit(false.B))
+  val alias_pred_bundle_R = Seq.fill(NumAliasPredOps)(RegInit(ControlBundle.default))
+
+  // Alias input
+  val alias_in_valid_R  = Seq.fill(NumAliasPredOps)(RegInit(false.B))
+  val alias_in_bundle_R = Seq.fill(NumAliasPredOps)(RegInit(DataBundle.default))
+
+  // Alias Successor HandShaking
+  val alias_succ_ready_R  = Seq.fill(NumAliasSuccOps)(RegInit(false.B))
+  val alias_succ_valid_R  = Seq.fill(NumAliasSuccOps)(RegInit(false.B))
+  val alias_succ_bundle_R = Seq.fill(NumAliasSuccOps)(RegInit(ControlBundle.default))
+
+  // Alias output
+  val alias_out_ready_R = Seq.fill(NumAliasSuccOps)(RegInit(false.B))
+  val alias_out_valid_R = Seq.fill(NumAliasSuccOps)(RegInit(false.B))
+
+  // Wire
+  val alias_out_ready_W = for (i <- 0 until NumAliasSuccOps) yield {
+    io.OutA.Out(i).ready
+  }
+
+  val alias_succ_ready_W = Seq.fill(NumAliasSuccOps)(WireInit(false.B))
+
+
+  //  printf(p"\n Succ: ${io.Alias.SuccOp(0)} Out ${io.Alias.Out(0)} \n")
+  // Why not a CAM?
+  // Initially, a CAM was planned. However there are a number of challenges
+  // 1) The CAM has a single write port which means all incoming aliases have to be multiplexed
+  //    But this cannot be achieved in a single step as we also need to coordinate the ready-valid signals for for
+  //    each incoming alias source separately.
+  // 2) We would need arbitration logic in front of the CAM to access the single write port
+  // 3) Alternatively, we use registers and hope the compiler and user will prudently use it.
+
+  // Wire up Predecessor READY and VALIDs
+  for (i <- 0 until NumAliasPredOps) {
+    io.InA.PredOp(i).ready := ~alias_pred_valid_R(i)
+    when(io.InA.PredOp(i).fire( )) {
+      alias_pred_valid_R(i) := io.InA.PredOp(i).valid
+      alias_pred_bundle_R(i) := io.InA.PredOp(i).bits
+    }
+  }
+
+  for (i <- 0 until NumAliasPredOps) {
+    io.InA.In(i).ready := ~alias_in_valid_R(i)
+    when(io.InA.In(i).fire( )) {
+      alias_in_valid_R(i) := io.InA.In(i).valid
+      alias_in_bundle_R(i) := io.InA.In(i).bits
+    }
+  }
+
+  def AliasInfoAvail(): Bool = {
+    if (NumAliasPredOps == 0) {
+      true.B
+    } else {
+      alias_in_valid_R.reduceLeft(_ && _)
+    }
+  }
+
+  def AliasReady(address: UInt): Bool = {
+
+    val alias_equals = (0 until NumAliasPredOps).map(i => IsAlias(alias_in_bundle_R(i).data, address, xlen, MT_W))
+
+    if (NumAliasPredOps != 0) {
+      val hits = VecInit(alias_equals).asUInt // % Turn into a bit vector
+      val pred_valid = VecInit(alias_pred_valid_R).asUInt
+      val waitlist = (pred_valid | ~hits)
+      val result = waitlist.andR && AliasInfoAvail( )
+      printf(p"\n Alias_R (): ${Vec(alias_in_valid_R)} Alias addr: ${alias_in_bundle_R(0).data} hits: ${hits} pred_valid ${pred_valid} waitlist ${waitlist} result ${result}")
+      result
+    } else {
+      true.B
+    }
+  }
+
+  // Hit  Arrived
+  // 1     1        1
+  // 1     0        0
+  // 0     1        1
+  // 0     0        1
+
+  def ConnectAliasInfo(address: UInt, taskID: UInt): Unit = {
+    // Wire up OUT READYs and VALIDs
+    for (i <- 0 until NumAliasSuccOps) {
+      io.OutA.Out(i).valid := alias_out_valid_R(i)
+      io.OutA.Out(i).bits.data := address
+      io.OutA.Out(i).bits.taskID := taskID
+      io.OutA.Out(i).bits.predicate := 0.U
+      when(io.OutA.Out(i).fire( )) {
+        // Detecting when to reset
+        alias_out_ready_R(i) := io.OutA.Out(i).ready
+        // Propagating output
+        alias_out_valid_R(i) := false.B
+      }
+    }
+  }
+
+  //
+  //   // Wire up Successors READYs and VALIDs
+  for (i <- 0 until NumAliasSuccOps) {
+    io.OutA.SuccOp(i).valid := alias_succ_valid_R(i)
+    io.OutA.SuccOp(i).bits := alias_succ_bundle_R(i)
+    alias_succ_ready_W(i) := io.OutA.SuccOp(i).ready
+    when(io.OutA.SuccOp(i).fire( )) {
+      alias_succ_ready_R(i) := io.OutA.SuccOp(i).ready
+      alias_succ_valid_R(i) := false.B
+    }
+  }
+
+  /*=================================
+  =            Helpers            =
+  =================================*/
+
+  // Check if Predecssors have fired
+  def IsAliasPredValid(): Bool = {
+    if (NumAliasPredOps == 0) {
+      return true.B
+    } else {
+      VecInit(alias_pred_valid_R).asUInt.andR
+    }
+  }
+
+  // Fire Predecessors
+  def ValidAliasPred(): Unit = {
+    alias_pred_valid_R.map {
+      _ := true.B
+    }
+  }
+
+  // Clear predessors
+  def InvalidAliasPred(): Unit = {
+    alias_pred_valid_R.foreach {
+      _ := false.B
+    }
+  }
+
+  // Successors
+  def IsAliasSuccReady(): Bool = {
+    if (NumAliasSuccOps == 0) {
+      return true.B
+    } else {
+      VecInit(alias_succ_ready_R).asUInt.andR | VecInit(alias_succ_ready_W).asUInt.andR
+    }
+  }
+
+  def ValidAliasSucc(): Unit = {
+    alias_succ_valid_R.foreach {
+      _ := true.B
+    }
+  }
+
+  def InvalidAliasSucc(): Unit = {
+    alias_succ_valid_R.foreach {
+      _ := false.B
+    }
+  }
+
+  // OUTs
+  def IsAliasOutReady(): Bool = {
+    if (NumAliasSuccOps == 0) {
+      return true.B
+    } else {
+      VecInit(alias_out_ready_R).asUInt.andR | VecInit(alias_out_ready_W).asUInt.andR
+    }
+  }
+
+  def ValidAliasOut(): Unit = {
+    alias_out_valid_R.foreach {
+      _ := true.B
+    }
+  }
+
+  def InvalidAliasOut(): Unit = {
+    alias_out_valid_R.foreach {
+      _ := false.B
+    }
+  }
+
+  override def Reset(): Unit = {
+    pred_valid_R.foreach {
+      _ := false.B
+    }
+
+    succ_ready_R.foreach {
+      _ := false.B
+    }
+
+    out_ready_R.foreach {
+      _ := false.B
+    }
+
+    enable_valid_R := false.B
+
+    alias_in_valid_R.foreach {
+      _ := false.B
+    }
+    alias_pred_valid_R.foreach {
+      _ := false.B
+    }
+
+    alias_succ_ready_R.foreach {
+      _ := false.B
+    }
+
+    alias_out_ready_R.foreach {
+      _ := false.B
+    }
+  }
+
+}
+
+// Helper function for providing CAM valids and hits
+// Check if all alias have completed so that we can release the resource.
+
+// missed already | hit and arrived   .andR
+// (~hits | ioAliasPred).andR. This means I can start memory op

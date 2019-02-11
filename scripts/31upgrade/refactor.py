@@ -3,8 +3,12 @@ import re
 import pprint
 
 #string = "class HandShakingIONPS[T <: Data](val NumOuts: Int, val NumIns: Int)(gen: T)(implicit p: Parameters)"
-string = """ class SharedFPUIO(NumOps: Int, argTypes: Seq[Int])
-                 (implicit p: Parameters) extends CoreBundle( )(p) """
+string = """ 
+class LoadAliasIO(NumPredOps: Int,
+                  NumSuccOps: Int,
+                  NumAliasPredOps: Int,
+                  NumAliasSuccOps: Int,
+                  NumOuts: Int)(implicit p: Parameters) """
 string = string.replace('\n', '')
 
 print(string)
