@@ -205,15 +205,10 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
    *===============================================*/
 
 
-  val left_input = (io.LeftIO.bits.data & Fill(xlen, io.LeftIO.valid)) | (left_R.data & Fill(xlen, left_valid_R))
-  val left_predicate = (io.LeftIO.bits.predicate & Fill(xlen, io.LeftIO.valid)) | (left_R.predicate & Fill(xlen, left_valid_R))
-
+  val left_input =  (io.LeftIO.bits.data & Fill(xlen, io.LeftIO.valid)) | (left_R.data & Fill(xlen, left_valid_R))
   val right_input = (io.RightIO.bits.data & Fill(xlen, io.RightIO.valid)) | (right_R.data & Fill(xlen, right_valid_R))
-  val right_predicate = (io.RightIO.bits.predicate & Fill(xlen, io.RightIO.valid)) | (right_R.predicate & Fill(xlen, right_valid_R))
 
-  val enable_input = (io.enable.bits.control & Fill(xlen, io.enable.valid)) | (enable_R.control & Fill(xlen, enable_valid_R))
-
-  //  val output_valid_W = WireInit(false.B)
+  val enable_input = (io.enable.bits.control & io.enable.valid) | (enable_R.control & enable_valid_R)
 
   val FU = Module(new UALU(xlen, opCode))
   FU.io.in1 := left_input
@@ -258,6 +253,18 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
 
   val fire_mask = (fire_R zip io.Out.map(_.fire)).map { case (a, b) => a | b }
 
+  def IsEnableValid(): Bool ={
+    return enable_valid_R || io.enable.fire
+  }
+
+  def IsLeftValid(): Bool = {
+    return left_valid_R || io.LeftIO.fire
+  }
+
+  def IsRightValid(): Bool = {
+    return right_valid_R || io.RightIO.fire
+  }
+
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
@@ -268,9 +275,7 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
   switch(state) {
     is(s_idle) {
 
-      when((enable_valid_R || io.enable.fire)
-        && (left_valid_R || io.LeftIO.fire)
-        && (right_valid_R || io.RightIO.fire)) {
+      when(IsEnableValid() && IsLeftValid() && IsRightValid()){
 
         output_valid_R.foreach(_ := true.B)
 
@@ -285,7 +290,6 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
     }
 
     is(s_fire) {
-
       when(fire_mask.reduce(_ & _)) {
 
         left_R := DataBundle.default

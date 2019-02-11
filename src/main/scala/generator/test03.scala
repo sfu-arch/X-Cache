@@ -22,9 +22,9 @@ import stack._
 import util._
 
 
-/* ================================================================== *
- *                   PRINTING PORTS DEFINITION                        *
- * ================================================================== */
+  /* ================================================================== *
+   *                   PRINTING PORTS DEFINITION                        *
+   * ================================================================== */
 
 abstract class test03DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
@@ -50,23 +50,25 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   InputSplitter.io.In <> io.in
 
 
+
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 =
-    Module(new LoopBlockNode(NumIns = List(2, 1, 1), NumOuts = List(1), NumCarry = List(1, 1), NumExits = 1, ID = 0))
+  val Loop_0 = Module(new LoopBlockNode(NumIns = List(2, 1, 1), NumOuts = List(1), NumCarry = List(1, 1), NumExits = 1, ID = 0))
+
 
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 0))
+  val bb_0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
   val bb_1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 9, NumPhi = 2, BID = 1))
 
   val bb_2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2))
+
 
 
   /* ================================================================== *
@@ -107,6 +109,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val ret_10 = Module(new RetNode2(retTypes = List(32), ID = 10))
 
 
+
   /* ================================================================== *
    *                   PRINTING CONSTANTS NODES                         *
    * ================================================================== */
@@ -119,6 +122,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   //i32 1
   val const2 = Module(new ConstFastNode(value = 1, ID = 2))
+
 
 
   /* ================================================================== *
@@ -136,9 +140,11 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   bb_2.io.predicateIn(1) <> Loop_0.io.loopExit(0)
 
 
+
   /* ================================================================== *
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -152,20 +158,23 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   Loop_0.io.loopFinish <> br_8.io.TrueOutput(0)
 
 
+
   /* ================================================================== *
    *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
+
 
 
   /* ================================================================== *
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.InLiveIn(2) <> InputSplitter.io.Out.data("field2")(1)
+  Loop_0.io.InLiveIn(2) <> InputSplitter.io.Out.data.elements("field2")(1)
+
 
 
   /* ================================================================== *
@@ -179,6 +188,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   binaryOp_5.io.RightIO <> Loop_0.io.OutLiveIn.elements("field1")(0)
 
   icmp_7.io.RightIO <> Loop_0.io.OutLiveIn.elements("field2")(0)
+
 
 
   /* ================================================================== *
@@ -198,35 +208,35 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   const0.io.enable <> bb_0.io.Out(0)
 
-//  const1.io.enable <> bb_0.io.Out(1)
-  const1.io.enable <> bb_1.io.Out(8)
-  bb_0.io.Out(1).ready := true.B
+  icmp_0.io.enable <> bb_0.io.Out(1)
 
-  icmp_0.io.enable <> bb_0.io.Out(2)
-
-  br_1.io.enable <> bb_0.io.Out(3)
+  br_1.io.enable <> bb_0.io.Out(2)
 
 
-  const2.io.enable <> bb_1.io.Out(0)
+  const1.io.enable <> bb_1.io.Out(0)
 
-  phi2.io.enable <> bb_1.io.Out(1)
+  const2.io.enable <> bb_1.io.Out(1)
 
-  phi3.io.enable <> bb_1.io.Out(2)
+  phi2.io.enable <> bb_1.io.Out(2)
 
-  binaryOp_4.io.enable <> bb_1.io.Out(3)
+  phi3.io.enable <> bb_1.io.Out(3)
 
-  binaryOp_5.io.enable <> bb_1.io.Out(4)
+  binaryOp_4.io.enable <> bb_1.io.Out(4)
 
-  binaryOp_6.io.enable <> bb_1.io.Out(5)
+  binaryOp_5.io.enable <> bb_1.io.Out(5)
 
-  icmp_7.io.enable <> bb_1.io.Out(6)
+  binaryOp_6.io.enable <> bb_1.io.Out(6)
 
-  br_8.io.enable <> bb_1.io.Out(7)
+  icmp_7.io.enable <> bb_1.io.Out(7)
+
+  br_8.io.enable <> bb_1.io.Out(8)
 
 
   phi9.io.enable <> bb_2.io.Out(0)
 
   ret_10.io.In.enable <> bb_2.io.Out(1)
+
+
 
 
   /* ================================================================== *
@@ -240,9 +250,11 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   phi9.io.Mask <> bb_2.io.MaskBB(0)
 
 
+
   /* ================================================================== *
    *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -250,9 +262,11 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    * ================================================================== */
 
 
+
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -273,6 +287,10 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   binaryOp_5.io.LeftIO <> binaryOp_4.io.Out(0)
 
+  phi3.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
+
+  phi2.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field1")(0)
+
   icmp_7.io.LeftIO <> binaryOp_6.io.Out(1)
 
   br_8.io.CmpIO <> icmp_7.io.Out(0)
@@ -285,21 +303,13 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   icmp_0.io.LeftIO <> InputSplitter.io.Out.data("field2")(0)
 
-  /**
-    * Carry dependencies
-    */
 
-  phi3.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
-
-  phi2.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field1")(0)
 
 
 
   /* ================================================================== *
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
-
-
 
   io.out <> ret_10.io.Out
 

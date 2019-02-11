@@ -92,6 +92,6 @@ object IsAlias {
     val rhsword = rhs(xlen - 1, log2Ceil(xlen / 8))
     val lhsmask = ReadByteMask(typ, lhs, xlen)
     val rhsmask = ReadByteMask(typ, rhs, xlen)
-    (lhsword === rhsword) && ((lhsmask & rhsmask) =/= UInt(0))
+    (lhsword === rhsword) && ((lhsmask & rhsmask) =/= 0.U)
   }
 }
