@@ -479,7 +479,8 @@ class LoopBlockNodeIO(NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[Int], N
   // Ouput live-in values
   val OutLiveIn = new VariableDecoupledVec(NumIns)
   // Output control signal to fire loop
-  val activate = Decoupled(new ControlBundle())
+  val activate_loop_start = Decoupled(new ControlBundle())
+  val activate_loop_back = Decoupled(new ControlBundle())
 
   // Loop input control signals
   val loopBack = Flipped(Decoupled(new ControlBundle()))
@@ -569,8 +570,11 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     Reg
   }
 
-  val active_R = RegInit(ControlBundle.default)
-  val active_valid_R = RegInit(false.B)
+  val active_loop_start_R = RegInit(ControlBundle.default)
+  val active_loop_start_valid_R = RegInit(false.B)
+
+  val active_loop_back_R = RegInit(ControlBundle.default)
+  val active_loop_back_valid_R = RegInit(false.B)
 
   val loop_exit_R = Seq.fill(NumExits)(RegInit(ControlBundle.default))
   val loop_exit_valid_R = Seq.fill(NumExits)(RegInit(false.B))
@@ -601,7 +605,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
 
   // Latch the block inputs when they fire to drive the liveIn I/O.
   for (i <- 0 until NumIns.length) {
-    io.InLiveIn(i).ready := in_live_in_valid_R(i)
+    io.InLiveIn(i).ready := ~in_live_in_valid_R(i)
     when(io.InLiveIn(i).fire()) {
       in_live_in_R(i) <> io.InLiveIn(i).bits
       in_live_in_valid_R(i) := true.B
@@ -610,7 +614,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
 
   // Latch the liveOut inputs when they fire to drive the Out I/O
   for (i <- 0 until NumOuts.length) {
-    io.InLiveOut(i).ready := in_live_out_valid_R(i)
+    io.InLiveOut(i).ready := ~in_live_out_valid_R(i)
     when(io.InLiveOut(i).fire()) {
       in_live_out_R(i) <> io.InLiveOut(i).bits
       in_live_out_valid_R(i) := true.B
@@ -619,7 +623,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
 
   // Latch the exit signals
   for (i <- 0 until NumCarry.length) {
-    io.CarryDepenIn(i).ready := in_carry_in_valid_R(i)
+    io.CarryDepenIn(i).ready := ~in_carry_in_valid_R(i)
     when(io.CarryDepenIn(i).fire()) {
       in_carry_in_R(i) <> io.CarryDepenIn(i).bits
       in_carry_in_valid_R(i) := true.B
@@ -656,11 +660,14 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   /**
     * Connecting control output signals
     */
-  io.activate.bits <> active_R
-  io.activate.valid := active_valid_R
+  io.activate_loop_start.bits <> active_loop_start_R
+  io.activate_loop_start.valid := active_loop_start_valid_R
+
+  io.activate_loop_back.bits <> active_loop_back_R
+  io.activate_loop_back.valid := active_loop_back_valid_R
 
   for (i <- 0 until NumExits) {
-    io.loopExit(i).bits.control <> loop_exit_R(i)
+    io.loopExit(i).bits <> loop_exit_R(i)
     io.loopExit(i).valid <> loop_exit_valid_R(i)
   }
 
@@ -669,8 +676,12 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     * Connecting output handshake signals
     */
 
-  when(io.activate.fire()) {
-    active_valid_R := false.B
+  when(io.activate_loop_start.fire()) {
+    active_loop_start_valid_R := false.B
+  }
+
+  when(io.activate_loop_back.fire()) {
+    active_loop_back_valid_R := false.B
   }
 
   for (i <- 0 until NumExits) {
@@ -831,8 +842,11 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           out_live_in_valid_R.foreach(_.foreach(_ := true.B))
           out_carry_out_valid_R.foreach(_.foreach(_ := true.B))
 
-          active_R := ControlBundle.active()
-          active_valid_R := true.B
+          active_loop_start_R := ControlBundle.active()
+          active_loop_start_valid_R := true.B
+
+          active_loop_back_R := ControlBundle.deactivate()
+          active_loop_back_valid_R := true.B
 
           //Change state
           state := s_active
@@ -858,11 +872,23 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
         //When loop needs to repeat itself
         when(loop_back_R.control) {
           //Drive loop internal output signals
-          active_R := ControlBundle.active()
-          active_valid_R := true.B
+          active_loop_start_R := ControlBundle.deactivate()
+          active_loop_start_valid_R := true.B
+
+          active_loop_back_R := ControlBundle.active()
+          active_loop_back_valid_R := true.B
 
           out_live_in_valid_R.foreach(_.foreach(_ := true.B))
           out_carry_out_valid_R.foreach(_.foreach(_ := true.B))
+
+          loop_back_R <> ControlBundle.default
+          loop_back_valid_R := false.B
+
+          loop_finish_R <> ControlBundle.default
+          loop_finish_valid_R := false.B
+
+          in_live_out_valid_R.foreach(_ := false.B)
+          in_carry_in_valid_R.foreach(_ := false.B)
 
           state := s_active
         }.otherwise {
@@ -870,7 +896,12 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           out_live_out_valid_R.foreach(_.foreach(_ := true.B))
           loop_exit_valid_R.foreach(_ := true.B)
 
-          active_R := ControlBundle.default
+          active_loop_start_R := ControlBundle.default
+          active_loop_back_R := ControlBundle.default
+
+          // Fire Loop exists
+          loop_exit_R.foreach(_ := ControlBundle.active())
+          loop_exit_valid_R.foreach(_ := true.B)
 
           //Change state
           state := s_end
