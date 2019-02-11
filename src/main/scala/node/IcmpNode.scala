@@ -22,6 +22,7 @@ class IcmpNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle))
 }
 
+@deprecated("Get ride of normal nodes", "1.0")
 class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
               (sign: Boolean)
               (implicit p: Parameters,
@@ -391,6 +392,7 @@ class IcmpFastNode(NumOuts: Int, ID: Int, opCode: String)
 
   for (i <- 0 until NumOuts) {
     when(io.Out(i).fire) {
+      output_valid_R(i) := false.B
       fire_R(i) := true.B
     }
   }

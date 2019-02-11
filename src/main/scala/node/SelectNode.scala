@@ -158,7 +158,7 @@ class SelectFastNode(NumOuts: Int, ID: Int)
     val InData2 = Flipped(Decoupled(new DataBundle))
 
     // Select input data
-    val Select = Flipped(Decoupled(new DataBundle))
+    val Select = Flipped(Decoupled(new CustomDataBundle(Bool())))
 
     // Enable signal
     val enable = Flipped(Decoupled(new ControlBundle))
@@ -187,7 +187,7 @@ class SelectFastNode(NumOuts: Int, ID: Int)
   val indata2_valid_R = RegInit(false.B)
 
   // Select Input
-  val select_R = RegInit(DataBundle.default)
+  val select_R = RegInit(CustomDataBundle.default(Bool()))
   val select_valid_R = RegInit(false.B)
 
   val enable_R = RegInit(ControlBundle.default)
@@ -199,13 +199,13 @@ class SelectFastNode(NumOuts: Int, ID: Int)
    *===============================================*/
 
   io.InData1.ready := ~indata1_valid_R
-  when(io.InData1.fire() && io.InData1.bits.predicate) {
+  when(io.InData1.fire()) {
     indata1_R <> io.InData1.bits
     indata1_valid_R := true.B
   }
 
   io.InData2.ready := ~indata2_valid_R
-  when(io.InData2.fire() && io.InData2.bits.predicate) {
+  when(io.InData2.fire()) {
     indata2_R <> io.InData2.bits
     indata2_valid_R := true.B
   }
@@ -225,11 +225,11 @@ class SelectFastNode(NumOuts: Int, ID: Int)
   val in1_input = (io.InData1.bits.data & Fill(xlen, io.InData1.valid)) | (indata1_R.data & Fill(xlen, indata1_valid_R))
   val in2_input = (io.InData2.bits.data & Fill(xlen, io.InData2.valid)) | (indata2_R.data & Fill(xlen, indata2_valid_R))
 
-  val select_input = (io.Select.bits.data & Fill(xlen, io.Select.valid)) | (select_R.data & Fill(xlen, select_valid_R))
+  val select_input = (io.Select.bits.data.asTypeOf(Bool()) & io.Select.valid) | (select_R.data & select_valid_R)
 
   val enable_input = (io.enable.bits.control & Fill(xlen, io.enable.valid)) | (enable_R.control & Fill(xlen, enable_valid_R))
 
-  val output_data = Mux(select_input(0).toBool(), in1_input, in2_input)
+  val output_data = Mux(select_input, in1_input, in2_input)
   val predicate = enable_input
 
   val task_ID_R = RegNext(next = enable_R.taskID)

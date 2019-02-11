@@ -26,6 +26,7 @@ class ComputeNodeIO(NumOuts: Int)
 
 }
 
+@deprecated("Stop using normal nodes, use fast version instead", "1.0")
 class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
                  (sign: Boolean)
                  (implicit p: Parameters,
@@ -219,13 +220,13 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
   FU.io.in2 := right_input
 
   io.LeftIO.ready := ~left_valid_R
-  when(io.LeftIO.fire() && io.LeftIO.bits.predicate) {
+  when(io.LeftIO.fire()) {
     left_R <> io.LeftIO.bits
     left_valid_R := true.B
   }
 
   io.RightIO.ready := ~right_valid_R
-  when(io.RightIO.fire() && io.RightIO.bits.predicate) {
+  when(io.RightIO.fire()) {
     right_R <> io.RightIO.bits
     right_valid_R := true.B
   }
@@ -237,8 +238,7 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
   }
 
   // Defalut values for output
-
-  val predicate = enable_input & right_predicate & left_predicate
+  val predicate = enable_input
 
   output_R.data := FU.io.out
   output_R.predicate := predicate
@@ -251,6 +251,7 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
 
   for (i <- 0 until NumOuts) {
     when(io.Out(i).fire) {
+      output_valid_R(i) := false.B
       fire_R(i) := true.B
     }
   }
@@ -276,7 +277,7 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
         state := s_fire
 
         if (log) {
-          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+          printf(f"[LOG] " + "[" + module_name + "] " + "[TID->%d] "
             + node_name + ": Output fired @ %d, Value: %d (%d + %d)\n",
             task_input, cycleCount, FU.io.out.asSInt(), left_input.asSInt(), right_input.asSInt())
         }

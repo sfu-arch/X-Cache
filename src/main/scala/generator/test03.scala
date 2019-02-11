@@ -22,9 +22,9 @@ import stack._
 import util._
 
 
-  /* ================================================================== *
-   *                   PRINTING PORTS DEFINITION                        *
-   * ================================================================== */
+/* ================================================================== *
+ *                   PRINTING PORTS DEFINITION                        *
+ * ================================================================== */
 
 abstract class test03DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
@@ -43,20 +43,19 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    * ================================================================== */
 
   //Remember if there is no mem operation io memreq/memresp should be grounded
-  io.MemReq  <> DontCare
+  io.MemReq <> DontCare
   io.MemResp <> DontCare
 
   val InputSplitter = Module(new SplitCallNew(List(2, 1, 2)))
   InputSplitter.io.In <> io.in
 
 
-
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns = List(2, 1, 1), NumOuts = 1, NumExits = 1, ID = 0))
-
+  val Loop_0 =
+    Module(new LoopBlockNode(NumIns = List(2, 1, 1), NumOuts = List(1), NumCarry = List(1, 1), NumExits = 1, ID = 0))
 
 
   /* ================================================================== *
@@ -65,10 +64,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   val bb_0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 0))
 
-  val bb_1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 8, NumPhi = 2, BID = 1))
+  val bb_1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 9, NumPhi = 2, BID = 1))
 
   val bb_2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 2))
-
 
 
   /* ================================================================== *
@@ -100,14 +98,13 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val icmp_7 = Module(new IcmpFastNode(NumOuts = 1, ID = 7, opCode = "eq")(sign = false))
 
   //  br i1 %11, label %12, label %5, !UID !12, !BB_UID !13
-  val br_8 = Module(new CBranchNodeVariableLoop(NumTrue = 1, NumFalse = 2, NumPredecessor = 0, ID = 8))
+  val br_8 = Module(new CBranchNodeVariableLoop(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 8))
 
   //  %13 = phi i32 [ %0, %3 ], [ %9, %5 ], !UID !14
   val phi9 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 9))
 
   //  ret i32 %13, !UID !15, !BB_UID !16
   val ret_10 = Module(new RetNode2(retTypes = List(32), ID = 10))
-
 
 
   /* ================================================================== *
@@ -124,27 +121,24 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val const2 = Module(new ConstFastNode(value = 1, ID = 2))
 
 
-
   /* ================================================================== *
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
   bb_0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-//  bb_1.io.activate <> Loop_0.io.activate
+  bb_1.io.predicateIn(0) <> Loop_0.io.activate_loop_start
 
-//  bb_1.io.loopBack <> br_8.io.FalseOutput(0)
+  bb_1.io.predicateIn(1) <> Loop_0.io.activate_loop_back
 
   bb_2.io.predicateIn(0) <> br_1.io.FalseOutput(0)
 
-  bb_2.io.predicateIn(1) <> Loop_0.io.endEnable
-
+  bb_2.io.predicateIn(1) <> Loop_0.io.loopExit(0)
 
 
   /* ================================================================== *
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -153,10 +147,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   Loop_0.io.enable <> br_1.io.TrueOutput(0)
 
-  Loop_0.io.latchEnable <> br_8.io.FalseOutput(1)
+  Loop_0.io.loopBack <> br_8.io.FalseOutput(0)
 
-  Loop_0.io.loopExit(0) <> br_8.io.TrueOutput(0)
-
+  Loop_0.io.loopFinish <> br_8.io.TrueOutput(0)
 
 
   /* ================================================================== *
@@ -164,39 +157,39 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data("field0")(0)
+  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data("field0")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data("field1")(0)
+  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data("field1")(0)
 
-  Loop_0.io.In(2) <> InputSplitter.io.Out.data("field2")(1)
-
+  Loop_0.io.InLiveIn(2) <> InputSplitter.io.Out.data("field2")(1)
 
 
   /* ================================================================== *
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  phi3.io.InData(1) <> Loop_0.io.liveIn.elements("field0")(0)
+  phi3.io.InData(1) <> Loop_0.io.OutLiveIn.elements("field0")(0)
 
-  binaryOp_4.io.RightIO <> Loop_0.io.liveIn.elements("field0")(1)
+  binaryOp_4.io.RightIO <> Loop_0.io.OutLiveIn.elements("field0")(1)
 
-  binaryOp_5.io.RightIO <> Loop_0.io.liveIn.elements("field1")(0)
+  binaryOp_5.io.RightIO <> Loop_0.io.OutLiveIn.elements("field1")(0)
 
-  icmp_7.io.RightIO <> Loop_0.io.liveIn.elements("field2")(0)
-
+  icmp_7.io.RightIO <> Loop_0.io.OutLiveIn.elements("field2")(0)
 
 
   /* ================================================================== *
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
 
-  Loop_0.io.liveOut(0) <> binaryOp_5.io.Out(1)
+  Loop_0.io.CarryDepenIn(0) <> binaryOp_5.io.Out(0)
 
+  Loop_0.io.CarryDepenIn(1) <> binaryOp_6.io.Out(0)
+
+  Loop_0.io.InLiveOut(0) <> binaryOp_5.io.Out(1)
 
 
   /* ================================================================== *
@@ -205,7 +198,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   const0.io.enable <> bb_0.io.Out(0)
 
-  const1.io.enable <> bb_0.io.Out(1)
+//  const1.io.enable <> bb_0.io.Out(1)
+  const1.io.enable <> bb_1.io.Out(8)
+  bb_0.io.Out(1).ready := true.B
 
   icmp_0.io.enable <> bb_0.io.Out(2)
 
@@ -234,8 +229,6 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   ret_10.io.In.enable <> bb_2.io.Out(1)
 
 
-
-
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
@@ -247,11 +240,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   phi9.io.Mask <> bb_2.io.MaskBB(0)
 
 
-
   /* ================================================================== *
    *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -259,11 +250,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -284,27 +273,33 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   binaryOp_5.io.LeftIO <> binaryOp_4.io.Out(0)
 
-  phi3.io.InData(0) <> binaryOp_5.io.Out(0)
-
-  phi2.io.InData(0) <> binaryOp_6.io.Out(0)
-
   icmp_7.io.LeftIO <> binaryOp_6.io.Out(1)
 
   br_8.io.CmpIO <> icmp_7.io.Out(0)
 
   ret_10.io.In.data("field0") <> phi9.io.Out(0)
 
-  phi9.io.InData(1) <> Loop_0.io.Out(0)
+  phi9.io.InData(1) <> Loop_0.io.OutLiveOut.elements("field0")(0)
 
   phi9.io.InData(0) <> InputSplitter.io.Out.data("field0")(1)
 
   icmp_0.io.LeftIO <> InputSplitter.io.Out.data("field2")(0)
+
+  /**
+    * Carry dependencies
+    */
+
+  phi3.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
+
+  phi2.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field1")(0)
 
 
 
   /* ================================================================== *
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
+
+
 
   io.out <> ret_10.io.Out
 

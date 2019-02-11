@@ -1061,6 +1061,8 @@ class CBranchIO(val NumTrue: Int, val NumFalse: Int, val NumPredecessor: Int = 0
   //Output
   val TrueOutput = Vec(NumTrue, Decoupled(new ControlBundle))
   val FalseOutput = Vec(NumFalse, Decoupled(new ControlBundle))
+
+  override def cloneType = new CBranchIO(NumTrue, NumFalse, NumPredecessor).asInstanceOf[this.type]
 }
 
 
