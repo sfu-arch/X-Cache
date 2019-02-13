@@ -76,7 +76,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    * ================================================================== */
 
   //  %4 = icmp sgt i32 %2, 0, !UID !3
-  val icmp_0 = Module(new IcmpFastNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
+  val icmp_0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
 
   //  br i1 %4, label %5, label %12, !UID !4, !BB_UID !5
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
@@ -88,16 +88,16 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val phi3 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 3, Res = true))
 
   //  %8 = add i32 %7, %0, !UID !8
-  val binaryOp_4 = Module(new ComputeFastNode(NumOuts = 1, ID = 4, opCode = "add")(sign = false))
+  val binaryOp_4 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign = false))
 
   //  %9 = mul i32 %8, %1, !UID !9
-  val binaryOp_5 = Module(new ComputeFastNode(NumOuts = 2, ID = 5, opCode = "mul")(sign = false))
+  val binaryOp_5 = Module(new ComputeNode(NumOuts = 2, ID = 5, opCode = "mul")(sign = false))
 
   //  %10 = add nuw nsw i32 %6, 1, !UID !10
-  val binaryOp_6 = Module(new ComputeFastNode(NumOuts = 2, ID = 6, opCode = "add")(sign = false))
+  val binaryOp_6 = Module(new ComputeNode(NumOuts = 2, ID = 6, opCode = "add")(sign = false))
 
   //  %11 = icmp eq i32 %10, %2, !UID !11
-  val icmp_7 = Module(new IcmpFastNode(NumOuts = 1, ID = 7, opCode = "eq")(sign = false))
+  val icmp_7 = Module(new IcmpNode(NumOuts = 1, ID = 7, opCode = "eq")(sign = false))
 
   //  br i1 %11, label %12, label %5, !UID !12, !BB_UID !13
   val br_8 = Module(new CBranchNodeVariableLoop(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 8))
@@ -153,9 +153,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   Loop_0.io.enable <> br_1.io.TrueOutput(0)
 
-  Loop_0.io.loopBack <> br_8.io.FalseOutput(0)
+  Loop_0.io.loopBack(0) <> br_8.io.FalseOutput(0)
 
-  Loop_0.io.loopFinish <> br_8.io.TrueOutput(0)
+  Loop_0.io.loopFinish(0) <> br_8.io.TrueOutput(0)
 
 
 

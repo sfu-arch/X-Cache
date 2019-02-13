@@ -466,7 +466,8 @@ class LoopBlockO1(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
   *                 from the loop.
   */
 
-class LoopBlockNodeIO(NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[Int], NumExits: Int)
+class LoopBlockNodeIO(NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[Int],
+                      NumBackEdge: Int = 1, NumLoopFinish: Int = 1, NumExits: Int)
                      (implicit p: Parameters) extends CoreBundle {
 
   // INPUT from outside of the loop head
@@ -483,8 +484,8 @@ class LoopBlockNodeIO(NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[Int], N
   val activate_loop_back = Decoupled(new ControlBundle())
 
   // Loop input control signals
-  val loopBack = Flipped(Decoupled(new ControlBundle()))
-  val loopFinish = Flipped(Decoupled(new ControlBundle()))
+  val loopBack = Vec(NumBackEdge, Flipped(Decoupled(new ControlBundle())))
+  val loopFinish = Vec(NumLoopFinish, Flipped(Decoupled(new ControlBundle())))
 
   // Carry dependencies
   val CarryDepenIn = Vec(NumCarry.length, Flipped(Decoupled(new DataBundle())))
@@ -499,16 +500,18 @@ class LoopBlockNodeIO(NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[Int], N
   val loopExit = Vec(NumExits, Decoupled(new ControlBundle()))
 
 
-  override def cloneType = new LoopBlockNodeIO(NumIns, NumCarry, NumOuts, NumExits).asInstanceOf[this.type]
+  override def cloneType = new LoopBlockNodeIO(NumIns, NumCarry,
+    NumOuts, NumBackEdge, NumLoopFinish, NumExits).asInstanceOf[this.type]
 }
 
-class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[Int], NumExits: Int)
+class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[Int],
+                    NumBackEdge: Int = 1, NumLoopFinish: Int = 1, NumExits: Int)
                    (implicit val p: Parameters,
                     name: sourcecode.Name,
                     file: sourcecode.File) extends Module with CoreParams with UniformPrintfs {
 
   // Instantiate TaskController I/O signals
-  val io = IO(new LoopBlockNodeIO(NumIns, NumCarry, NumOuts, NumExits))
+  val io = IO(new LoopBlockNodeIO(NumIns, NumCarry, NumOuts, NumBackEdge, NumLoopFinish, NumExits))
 
   // Printf debugging
   val node_name = name.value
@@ -523,11 +526,11 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   val enable_R = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
-  val loop_back_R = RegInit(ControlBundle.default)
-  val loop_back_valid_R = RegInit(false.B)
+  val loop_back_R = Seq.fill(NumBackEdge)(RegInit(ControlBundle.default))
+  val loop_back_valid_R = Seq.fill(NumBackEdge)(RegInit(false.B))
 
-  val loop_finish_R = RegInit(ControlBundle.default)
-  val loop_finish_valid_R = RegInit(false.B)
+  val loop_finish_R = Seq.fill(NumLoopFinish)(RegInit(ControlBundle.default))
+  val loop_finish_valid_R = Seq.fill(NumLoopFinish)(RegInit(false.B))
 
   val in_live_in_R = Seq.fill(NumIns.length)(RegInit(DataBundle.default))
   val in_live_in_valid_R = Seq.fill(NumIns.length)(RegInit(false.B))
@@ -590,16 +593,22 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     enable_valid_R := true.B
   }
 
-  io.loopBack.ready := ~loop_back_valid_R
-  when(io.loopBack.fire()) {
-    loop_back_R <> io.loopBack.bits
-    loop_back_valid_R := true.B
+  for (i <- 0 until NumBackEdge) {
+    io.loopBack(i).ready := ~loop_back_valid_R(i)
+    when(io.loopBack(i).fire()) {
+      loop_back_R(i) <> io.loopBack(i).bits
+      loop_back_valid_R(i) := true.B
+    }
+
   }
 
-  io.loopFinish.ready := ~loop_finish_valid_R
-  when(io.loopFinish.fire()) {
-    loop_finish_R <> io.loopFinish.bits
-    loop_finish_valid_R := true.B
+  for (i <- 0 until NumLoopFinish) {
+    io.loopFinish(i).ready := ~loop_finish_valid_R(i)
+    when(io.loopFinish(i).fire()) {
+      loop_finish_R(i) <> io.loopFinish(i).bits
+      loop_finish_valid_R(i) := true.B
+    }
+
   }
 
 
@@ -760,11 +769,11 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   }
 
   def IsLoopBackValid(): Bool = {
-    return loop_back_valid_R
+    return loop_back_valid_R.reduce(_ & _)
   }
 
   def IsLoopFinishValid(): Bool = {
-    return loop_finish_valid_R
+    return loop_finish_valid_R.reduce(_ & _)
   }
 
   def ValidOut(): Unit = {
@@ -870,7 +879,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
         && IsCarryDepenValid()) {
 
         //When loop needs to repeat itself
-        when(loop_back_R.control) {
+        when(loop_back_R.map(_.control).reduce(_ | _)) {
           //Drive loop internal output signals
           active_loop_start_R := ControlBundle.deactivate()
           active_loop_start_valid_R := true.B
@@ -881,11 +890,11 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           out_live_in_valid_R.foreach(_.foreach(_ := true.B))
           out_carry_out_valid_R.foreach(_.foreach(_ := true.B))
 
-          loop_back_R <> ControlBundle.default
-          loop_back_valid_R := false.B
+          loop_back_R.foreach(_ := ControlBundle.default)
+          loop_back_valid_R.foreach(_ := false.B)
 
-          loop_finish_R <> ControlBundle.default
-          loop_finish_valid_R := false.B
+          loop_finish_R.foreach(_ := ControlBundle.default)
+          loop_finish_valid_R.foreach(_ := false.B)
 
           in_live_out_valid_R.foreach(_ := false.B)
           in_carry_in_valid_R.foreach(_ := false.B)
