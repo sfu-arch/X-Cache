@@ -25,6 +25,8 @@ class CBranchNodeIO(NumOuts: Int = 2)
 
   // RightIO: Right input data for computation
   val CmpIO = Flipped(Decoupled(new DataBundle))
+
+  override def cloneType = new CBranchNodeIO(NumOuts).asInstanceOf[this.type]
 }
 
 class CBranchNode(ID: Int)
