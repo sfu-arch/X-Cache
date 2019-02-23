@@ -3,18 +3,32 @@ if [ -z "${CONCURRENT}" ]; then
 fi
 
 # Set family to either "Cyclone V" or "Arria 10"
-FAMILY="Cyclone V"
-PART=5CSEMA5F31C6
+#FAMILY="Cyclone V"
+#PART=5CSEMA5F31C6
 
 #
-#FAMILY="Arria 10"
-#PART=10AS016E4F29E3LG
+FAMILY="Arria 10"
+PART=10AS016E4F29E3LG
 
 USE_VCD=ON
 
 APPS=( \
-    'stencilTop' \
-    'dedupTop' \
+    #'addTop'
+    #'andTop'
+    #'shiftTop'
+    #'xorTop'
+    #'stencilTop'\
+    #'bbgemmTop'\
+    #'fftTop'\
+    #'covarianceTop'\
+    #'test18Top'\
+    'testf02Top'\
+    #'kernel_2mmTop'\
+    #'kernel_3mmTop'\
+    #'saxpy'\
+    #'saxpyTop'\
+    #'mergesortTop'\
+    #'fibTop'
 )
 
 for app in ${APPS[@]}; do

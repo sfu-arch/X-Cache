@@ -64,7 +64,7 @@ done
 # *** Warning, removes any existing directory
 BUILD_DIR=${SRC%.v}-$PART
 rm -fr  $DIR/$BUILD_DIR
-cp -r ~/bin/quartus_template $DIR/$BUILD_DIR
+cp -r ~/git/dandelion-lib/scripts/quartus_template $DIR/$BUILD_DIR
 
 # Modify template design files for current build
 pushd $DIR/$BUILD_DIR &> /dev/null
@@ -74,13 +74,13 @@ else
     cp top.qsf.a10 top.qsf
 fi
 
-#echo SRC=$SRC
-#echo VCD=$VCD
-#echo INSTANCE=$INSTANCE
-#echo USE_VCD=$USE_VCD
-#echo RATE=$RATE
-#echo PART=$PART
-#echo FAMILY=$FAMILY
+echo SRC=$SRC
+echo VCD=$VCD
+echo INSTANCE=$INSTANCE
+echo USE_VCD=$USE_VCD
+echo RATE=$RATE
+echo PART=$PART
+echo FAMILY=$FAMILY
 
 sed -i -e "s/<SRC>/..\/$SRC/g" top.qsf
 sed -i -e "s/<VCD>/..\/$VCD/g" top.qsf
