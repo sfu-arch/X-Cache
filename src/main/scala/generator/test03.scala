@@ -113,7 +113,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val br_10 = Module(new UBranchNode(ID = 10))
 
   //  %13 = phi i32 [ %0, %3 ], [ %9, %.loopexit ], !UID !14
-  val phi11 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 11))
+  val phi11 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 11, Res = true))
 
   //  ret i32 %13, !UID !15, !BB_UID !16
   val ret_12 = Module(new RetNode2(retTypes = List(32), ID = 12))
@@ -143,9 +143,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   bb_preheader1.io.predicateIn(0) <> br_1.io.TrueOutput(0)
 
-  bb_4.io.predicateIn(0) <> br_1.io.FalseOutput(0)
+  bb_4.io.predicateIn(0) <> br_10.io.Out(0)
 
-  bb_4.io.predicateIn(1) <> br_10.io.Out(0)
+  bb_4.io.predicateIn(1) <> br_1.io.FalseOutput(0)
 
 
 

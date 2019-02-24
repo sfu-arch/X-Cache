@@ -70,9 +70,9 @@ class BasicBlockNode(NumInputs: Int,
    *            Registers                      *
    *===========================================*/
   // OP Inputs
-  val predicate_in_R = RegInit(VecInit(Seq.fill(NumInputs)(ControlBundle.default)))
+  val predicate_in_R = Seq.fill(NumInputs)(RegInit(ControlBundle.default))
   val predicate_control_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
-  val predicate_valid_R = RegInit(VecInit(Seq.fill(NumInputs)(false.B)))
+  val predicate_valid_R = Seq.fill(NumInputs)(RegInit(false.B))
 
   val s_IDLE :: s_LATCH :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
@@ -82,13 +82,11 @@ class BasicBlockNode(NumInputs: Int,
    *===========================================*/
 
   val predicate = predicate_in_R.map(_.control).reduceLeft(_ || _)
-  val start = predicate_valid_R.asUInt().andR()
+  val start = (io.predicateIn.map(_.fire()) zip predicate_valid_R) map { case (a, b) => a | b } reduce (_ & _)
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
    *===============================================*/
-
-  val pred_R = RegInit(ControlBundle.default)
 
 
   for (i <- 0 until NumInputs) {
@@ -102,8 +100,8 @@ class BasicBlockNode(NumInputs: Int,
 
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits.control := pred_R.control
-    io.Out(i).bits.taskID := predicate_in_R(0).taskID
+    io.Out(i).bits.control := predicate
+    io.Out(i).bits.taskID := predicate_in_R.map(_.taskID).reduce(_ | _)
   }
 
   // Wire up mask output
@@ -118,26 +116,23 @@ class BasicBlockNode(NumInputs: Int,
 
   switch(state) {
     is(s_IDLE) {
-      when(predicate_valid_R.asUInt.andR) {
-        pred_R.control := predicate
+      when(start) {
         ValidOut()
         state := s_LATCH
         assert(PopCount(predicate_control_R) < 2.U)
       }
-      PopCount
     }
     is(s_LATCH) {
       when(IsOutReady()) {
-        predicate_valid_R := VecInit(Seq.fill(NumInputs)(false.B))
-        //        predicate_in_R := VecInit(Seq.fill(NumInputs)(ControlBundle.default))
-        pred_R.control := false.B
+        predicate_valid_R.foreach(_ := false.B)
         Reset()
         state := s_IDLE
 
         when(predicate) {
           if (log) {
-            printf("[LOG] " + "[" + module_name + "] " +
-              node_name + ": Output fired @ %d, Mask: %d\n", cycleCount, predicate_in_R.asUInt())
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] [BB] " +
+              node_name + ": Output fired @ %d, Mask: %d\n", predicate_in_R.map(_.taskID).reduce(_ | _)
+              , cycleCount, predicate_control_R.asUInt())
           }
         }.otherwise {
           if (log) {
@@ -959,9 +954,9 @@ class BasicBlockNoMaskFastVecIO(val NumInputs: Int, val NumOuts: Int)(implicit p
   * 2) State machine inside the node waits for all the inputs to arrive and then fire.
   * 3) The ouput value is OR of all the input values
   * 4) Node can fire outputs at the same cycle if all the inputs. Since, basic block node
-  *    is only for circuit simplification therefore, in case that we know output is valid
-  *    we don't want to waste one cycle for latching purpose. Therefore, output can be zero
-  *    cycle.
+  * is only for circuit simplification therefore, in case that we know output is valid
+  * we don't want to waste one cycle for latching purpose. Therefore, output can be zero
+  * cycle.
   *
   * @param BID
   * @param NumInputs
@@ -1005,7 +1000,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
   }
 
   val in_task_ID = (io.predicateIn zip in_data_R) map {
-    case(a,b) => a.bits.taskID | b.taskID
+    case (a, b) => a.bits.taskID | b.taskID
   } reduce (_ | _)
 
   //Output connections
@@ -1029,8 +1024,8 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
   }
 
   val select_input = (fire_input_mask zip in_data_valid_R) map {
-    case(a,b) => a | b
-  } reduce ( _ & _)
+    case (a, b) => a | b
+  } reduce (_ & _)
 
 
   val out_fire_mask = ((output_fire_R zip io.Out.map(_.fire)) map {
@@ -1040,7 +1035,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
 
   //Masking output value
   val output_value = (io.predicateIn.map(_.bits.control) zip (in_data_R.map(_.control))) map {
-    case (a,b) => a | b
+    case (a, b) => a | b
   } reduce (_ | _)
   io.Out.map(_.bits) foreach (_ := ControlBundle.default(output_value, in_task_ID))
 
