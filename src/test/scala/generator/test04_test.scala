@@ -47,7 +47,7 @@ class test04Main(implicit p: Parameters) extends test04MainIO {
   // Wire up the cache and modules under test.
   //    val test03 = Module(new test03DF())
   val test04 = Module(new test04DF())
-    //Put an arbiter infront of cache
+  //Put an arbiter infront of cache
   val CacheArbiter = Module(new MemArbiter(2))
 
   // Connect input signals to cache
@@ -72,7 +72,6 @@ class test04Main(implicit p: Parameters) extends test04MainIO {
   }
   else
     println(Console.BLUE + "****** Trace option is on. *********" + Console.RESET)
-
 
 
 }

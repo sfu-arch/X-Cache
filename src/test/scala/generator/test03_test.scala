@@ -20,15 +20,12 @@ import accel._
 import node._
 import junctions._
 
-
 class test03MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val addr = Input(UInt(nastiXAddrBits.W))
-    val din = Input(UInt(nastiXDataBits.W))
-    val write = Input(Bool())
-    val dout = Output(UInt(nastiXDataBits.W))
-    val out = Decoupled(new Call(List()))
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32))))
+    val req = Flipped(Decoupled(new MemReq))
+    val resp = Output(Valid(new MemResp))
+    val out = Decoupled(new Call(List(32)))
   })
 
   def cloneType = new test03MainIO().asInstanceOf[this.type]
@@ -40,30 +37,45 @@ class test03Main(implicit p: Parameters) extends test03MainIO {
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
   val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
-  // Store a copy of all data written to the cache.  This is done since the cache isn't
-  // 'write through' to the memory model and we have no easy way of reading the
-  // cache contents from the testbench.
-  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr >> 2).asUInt(), cache.io.cpu.req.bits.data)
-  }
-  io.dout := memCopy.read((io.addr >> 2).asUInt())
-
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
   memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := io.addr
-  memModel.io.init.bits.data := io.din
-  memModel.io.init.valid := io.write
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
+
 
   // Wire up the cache and modules under test.
   //  val test04 = Module(new test04DF())
-  val test04 = Module(new test03DF())
+  val test03 = Module(new test03DF())
 
-  cache.io.cpu.req <> test04.io.MemReq
-  test04.io.MemResp <> cache.io.cpu.resp
-  test04.io.in <> io.in
-  io.out <> test04.io.out
+  //Put an arbiter infront of cache
+  val CacheArbiter = Module(new MemArbiter(2))
+
+  // Connect input signals to cache
+  CacheArbiter.io.cpu.MemReq(0) <> test03.io.MemReq
+  test03.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+
+  //Connect main module to cache arbiter
+  CacheArbiter.io.cpu.MemReq(1) <> io.req
+  io.resp <> CacheArbiter.io.cpu.MemResp(1)
+
+  //Connect cache to the arbiter
+  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+  //Connect in/out ports
+  test03.io.in <> io.in
+  io.out <> test03.io.out
+
+  // Check if trace option is on or off
+  if (p(TRACE) == false) {
+    println(Console.RED + "****** Trace option is off. *********" + Console.RESET)
+  }
+  else
+    println(Console.BLUE + "****** Trace option is on. *********" + Console.RESET)
+
 
 }
 
@@ -110,7 +122,7 @@ class test03Test01[T <: test03MainIO](c: T) extends PeekPokeTester(c) {
     ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      val expected = 1
+      val expected = 225
       if (data != expected) {
         println(s"*** Incorrect result received. Got $data. Hoping for $expected")
         fail

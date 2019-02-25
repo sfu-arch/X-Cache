@@ -25,6 +25,8 @@ class SelectNodeIO(NumOuts: Int)
 
   // Select input data
   val Select = Flipped(Decoupled(new DataBundle()))
+
+  override def cloneType = new SelectNodeIO(NumOuts).asInstanceOf[this.type]
 }
 
 class SelectNode(NumOuts: Int, ID: Int)
