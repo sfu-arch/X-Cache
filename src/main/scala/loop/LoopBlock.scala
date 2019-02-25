@@ -752,7 +752,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
 
   // Live outs are ready if all have fired
   def IsLiveOutValid(): Bool = {
-    if (NumOuts == 0) {
+    if (NumOuts.length == 0) {
       return true.B
     } else {
       in_live_out_valid_R.reduceLeft(_ && _)
@@ -788,7 +788,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   }
 
   def IsLiveOutFired(): Bool = {
-    if (NumOuts == 0) {
+    if (NumOuts.length == 0) {
       return true.B
     }
     else {
