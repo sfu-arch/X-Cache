@@ -22,21 +22,22 @@ import accel._
 import node._
 
 
-class test05MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
+class test05MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32))))
     val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
   })
+
   def cloneType = new test05MainIO().asInstanceOf[this.type]
 }
 
 class test05Main(implicit p: Parameters) extends test05MainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
+  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
@@ -121,43 +122,40 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
-  val inAddrVec = List.range(0, 4*10, 4)
-  val inDataVec = List(0,1,2,3,4,0,0,0,0,0)
-  val outAddrVec = List.range(0, 4*10, 4)
-  val outDataVec = inDataVec.zipWithIndex.map{case(a,b) => if(b < 5) a else (b - 5) * 2}
+  val inAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
+//  val inAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
+  val inDataVec = List(0, 1, 2, 3, 4, 0, 0, 0, 0, 0)
+  val outAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
+//  val outAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
+  val outDataVec = inDataVec.zipWithIndex.map { case (a, b) => if (b < 5) a else (b - 5) * 2 }
 
 
-  // Write initial contents to the memory model.
+  //   Write initial contents to the memory model.
   for (i <- 0 until inDataVec.length) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
+  step(1)
+  dumpMemory("memory.txt")
   step(1)
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").taskID, 5.U)
+  poke(c.io.in.bits.data("field0").taskID, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 5.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0)    // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0x37957020) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 10)   // n
-  poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.data("field0").data, 0)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
 
   step(1)
 
@@ -171,7 +169,7 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
     step(1)
     if (peek(c.io.out.valid) == 1 &&
       peek(c.io.out.bits.data("field0").predicate) == 1
-      ) {
+    ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       if (data != 8) {
@@ -187,7 +185,7 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
 
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
-  for(i <- 0 until outAddrVec.length) {
+  for (i <- 0 until outAddrVec.length) {
     val data = MemRead(outAddrVec(i))
     if (data != outDataVec(i).toInt) {
       println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
@@ -204,7 +202,7 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
-  if(!result) {
+  if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
     dumpMemory("memory.txt")
     fail
