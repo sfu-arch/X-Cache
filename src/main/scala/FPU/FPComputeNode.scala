@@ -148,7 +148,7 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
 class altfp_adder_13(DATA: Int = 32, ADDR: Int = 32) extends BlackBox with HasBlackBoxResource {
   val io = IO(new Bundle {
     val clk_en = Input(Bool())
-    val clk = Input(Clock())
+    val clock = Input(Clock())
     val dataa = Input(UInt(ADDR.W))
     val datab = Input(UInt(DATA.W))
     val result = Output(UInt(DATA.W))
@@ -167,7 +167,7 @@ class FPAdder(DATA: Int = 32, ADDR: Int = 32) extends Module {
 
   val fpadder = Module(new altfp_adder_13())
 
-  fpadder.io.clk := clock
+  fpadder.io.clock := clock
   fpadder.io.clk_en := true.B
   fpadder.io.dataa <> io.dataa
   fpadder.io.datab <> io.datab
