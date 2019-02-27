@@ -145,7 +145,7 @@ class test06Tester extends FlatSpec with Matchers {
      Array(
        // "-ll", "Info",
        "-tbn", "verilator",
-       "-td", "test_run_dir",
+       "-td", "test_run_dir/test06",
        "-tts", "0001"),
      () => new test06Main()) {
      c => new test06Test01(c)

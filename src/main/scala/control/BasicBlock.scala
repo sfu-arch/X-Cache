@@ -130,7 +130,7 @@ class BasicBlockNode(NumInputs: Int,
 
         when(predicate) {
           if (log) {
-            printf("[LOG] " + "[" + module_name + "] [TID->%d] [BB] " +
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] [BB]   " +
               node_name + ": Output fired @ %d, Mask: %d\n", predicate_in_R.map(_.taskID).reduce(_ | _)
               , cycleCount, predicate_control_R.asUInt())
           }
@@ -1012,10 +1012,10 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
   }
 
   //Connecting output signals
-  (io.Out.map(_.valid) zip output_valid_R) foreach {
-    case (a, b) => a := b
+  for (i <- 0 until NumOuts) {
+    io.Out(i).bits <> output_R
+    io.Out(i).valid <> output_valid_R(i)
   }
-  io.Out.map(_.bits) foreach (_ := output_R)
 
   //Check whether any input is fired
   val fire_input_mask = Seq.fill(NumInputs)(WireInit(false.B))
@@ -1037,7 +1037,8 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
   val output_value = (io.predicateIn.map(_.bits.control) zip (in_data_R.map(_.control))) map {
     case (a, b) => a | b
   } reduce (_ | _)
-  io.Out.map(_.bits) foreach (_ := ControlBundle.default(output_value, in_task_ID))
+
+  //  io.Out.map(_.bits) foreach (_ := ControlBundle.default(output_value, in_task_ID))
 
   val s_idle :: s_fire :: Nil = Enum(2)
   val state = RegInit(s_idle)
@@ -1046,24 +1047,27 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
   switch(state) {
     is(s_idle) {
       when(select_input) {
-        io.Out.map(_.valid) foreach (_ := true.B)
+        //io.Out.map(_.valid) foreach (_ := true.B)
         output_valid_R.foreach(_ := true.B)
         output_R := ControlBundle.default(true.B, in_task_ID)
         state := s_fire
+
         if (log) {
-          printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] [BB]   "
             + node_name + ": Output [T] fired @ %d\n", output_R.taskID, cycleCount)
         }
 
       }
     }
     is(s_fire) {
-      //Keep the current output until everybody have taken it
-      io.Out.map(_.bits) foreach (_ := output_R)
-
       //Restart the states
       when(out_fire_mask) {
+
+        in_data_R foreach (_ := ControlBundle.default)
+        in_data_valid_R foreach (_ := false.B)
+
         output_fire_R foreach (_ := false.B)
+
         state := s_idle
       }
     }

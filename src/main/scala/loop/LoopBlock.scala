@@ -761,7 +761,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
 
   // Live outs are ready if all have fired
   def IsCarryDepenValid(): Bool = {
-    if (NumOuts == 0) {
+    if (NumOuts.length == 0) {
       return true.B
     } else {
       in_carry_in_valid_R.reduceLeft(_ && _)
@@ -900,6 +900,12 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           in_carry_in_valid_R.foreach(_ := false.B)
 
           state := s_active
+
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOOP]   "
+              + node_name + ": Restarted fired @ %d\n", io.activate_loop_start.bits.taskID, cycleCount)
+          }
+
         }.otherwise {
           // Fire live-outs and loop exit control signal
           out_live_out_valid_R.foreach(_.foreach(_ := true.B))
@@ -921,11 +927,23 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     is(s_end) {
       when(IsExitsFired() && IsLiveOutFired()) {
 
+        //Restart to initial state
+
         enable_R <> ControlBundle.default
         enable_valid_R := false.B
 
+        loop_back_R foreach (_ := ControlBundle.default)
+        loop_back_valid_R foreach (_ := false.B)
+
+        loop_finish_R foreach (_ := ControlBundle.default)
+        loop_finish_valid_R foreach (_ := false.B)
+
         in_live_in_R.foreach(_ := DataBundle.default)
         in_live_in_valid_R.foreach(_ := false.B)
+
+        in_live_out_valid_R.foreach(_ := false.B)
+
+        in_carry_in_valid_R.foreach(_ := false.B)
 
         state := s_idle
       }
