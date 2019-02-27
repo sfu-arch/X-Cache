@@ -81,7 +81,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
 
   val bb_for_body1 = Module(new LoopFastHead(NumOuts = 7, NumPhi = 1, BID = 1))
 
@@ -89,15 +89,15 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   val bb_for_end3 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 8, NumPhi = 1, BID = 3))
 
-  val bb_for_cond14_preheader_preheader4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 4))
+  val bb_for_cond14_preheader_preheader4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 4))
 
   val bb_for_cond14_preheader5 = Module(new LoopFastHead(NumOuts = 3, NumPhi = 1, BID = 5))
 
-  val bb_for_cond26_preheader6 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 6))
+  val bb_for_cond26_preheader6 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 6))
 
   val bb_for_body167 = Module(new LoopFastHead(NumOuts = 14, NumPhi = 1, BID = 7))
 
-  val bb_for_inc238 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 8))
+  val bb_for_inc238 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 8))
 
   val bb_for_body31_preheader9 = Module(new LoopFastHead(NumOuts = 2, NumPhi = 1, BID = 9))
 
@@ -107,9 +107,9 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   val bb_for_end4612 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 12, NumPhi = 1, BID = 12))
 
-  val bb_for_inc5813 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 13))
+  val bb_for_inc5813 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 13))
 
-  val bb_for_end6014 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 14))
+  val bb_for_end6014 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 14))
 
 
 

@@ -56,19 +56,19 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumOuts = 1, BID = 0))
 
   val bb_pfor_cond1 = Module(new LoopHead(NumOuts = 5, NumPhi = 1, BID = 1))
 
-  val bb_pfor_detach2 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 2))
+  val bb_pfor_detach2 = Module(new BasicBlockNoMaskNode(NumOuts = 1, BID = 2))
 
-  val bb_pfor_inc3 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 3, BID = 3))
+  val bb_pfor_inc3 = Module(new BasicBlockNoMaskNode(NumOuts = 3, BID = 3))
 
-  val bb_pfor_end4 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 4))
+  val bb_pfor_end4 = Module(new BasicBlockNoMaskNode(NumOuts = 1, BID = 4))
 
-  val bb_pfor_end_continue5 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 2, BID = 5))
+  val bb_pfor_end_continue5 = Module(new BasicBlockNoMaskNode(NumOuts = 2, BID = 5))
 
-  val bb_offload_pfor_body6 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 6))
+  val bb_offload_pfor_body6 = Module(new BasicBlockNoMaskNode(NumOuts = 1, BID = 6))
 
 
   /* ================================================================== *

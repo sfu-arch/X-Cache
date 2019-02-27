@@ -62,9 +62,9 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 7, BID = 0))
+  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskNode(NumOuts = 7, BID = 0))
 
-  val bb_my_pfor_preattach1 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 1, BID = 1))
+  val bb_my_pfor_preattach1 = Module(new BasicBlockNoMaskNode(NumOuts = 1, BID = 1))
 
 
   /* ================================================================== *
