@@ -27,21 +27,17 @@ class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters)
     val recycle = Input(new Bool( ))
   })
 
-  val fetch_queue = Module(new Queue(gen, 2))
-  val pipe        = Module(new Pipe(genType, entries))
-
-  fetch_queue.io.enq.bits := io.enq.bits
+  val fetch_queue     = Module(new Queue(gen, 2))
+  val pipe            = Module(new Pipe(genType, entries))
+  //  Recycle request if pipe is valid
+  val fetch_queue_mux = Mux(pipe.io.deq.valid, pipe.io.deq.bits, fetch_queue.io.deq.bits)
+  fetch_queue.io.enq.bits := fetch_queue_mux
 
   pipe.io.enq.bits <> fetch_queue.io.deq.bits
   pipe.io.enq.valid := io.recycle
 
   fetch_queue.io.enq.valid := io.enq.valid | pipe.io.deq.valid
   io.enq.ready := fetch_queue.io.enq.ready & (~pipe.io.deq.valid).toBool
-
-  // Recycle the request.
-  when(pipe.io.deq.valid) {
-    fetch_queue.io.enq.bits <> pipe.io.deq.bits
-  }
 
   io.deq <> fetch_queue.io.deq
   io.count := fetch_queue.io.count
@@ -136,7 +132,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   fetch_arbiter.io.out.ready := fetch_queue.io.enq.ready
   fetch_queue.io.recycle := false.B
 
-  when(fetch_arbiter.io.out.bits.addr === 1608.U && fetch_arbiter.io.out.fire){
+  when(fetch_arbiter.io.out.bits.addr === 1608.U && fetch_arbiter.io.out.fire) {
     printf(p"\n================= [DEBUG] [SUPER CACHE] =========== \n Cpu request: ${fetch_arbiter.io.out.bits}\n")
   }
 
@@ -175,7 +171,6 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
 
   //  Queueing Logic.
   when(fetch_queue.io.deq.fire) {
-
 
 
     when(cache_ready(bank_idx)) {
@@ -323,7 +318,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
     caches(i).io.nasti.b.bits := nasti_b_demux.io.outputs(i)
   }
 
-//  printf(p"\n Cache state: ${io.stat}")
+  //  printf(p"\n Cache state: ${io.stat}")
 }
 
 import java.io.{File, FileWriter}

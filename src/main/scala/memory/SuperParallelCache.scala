@@ -150,13 +150,15 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     Mux1H(picked_matrix(i), fq_io_deq_bits)
   }
 
-
   for (i <- 0 until NumTiles) {
-    val slot_arbiter = Module(new RRArbiter(new Bool, NumBanks))
-    val slot_idx = slot_arbiter.io.chosen
+    var slot_arbiter = Module(new RRArbiter(new Bool, NumBanks))
+
+    var slot_idx = slot_arbiter.io.chosen
+
 
     for (j <- 0 until NumBanks) {
-      slot_arbiter.io.in(i).valid := ~(slots(i)(j).alloc)
+      slot_arbiter.io.in(j).valid := ~(slots(i)(j).alloc)
+      slot_arbiter.io.in(j).bits := DontCare
     }
 
     //  Handshaking fetch queue with slot arbiter
@@ -193,7 +195,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     }
 
 
-    val resp_arbiter = Module(new RRArbiter(
+    var resp_arbiter = Module(new RRArbiter(
       new MemResp, NumBanks))
 
     for (j <- 0 until NumBanks) {
@@ -228,7 +230,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
       ionasti <> cach.io.nasti
     }
   }
-  //  printf(p"\n Stat: ${io.stat}, ${io.nasti(0).r}")
+  printf(p"\n Stat: ${io.stat}, ${io.nasti(0).r}")
 
 }
 
