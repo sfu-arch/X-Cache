@@ -96,10 +96,10 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
 
   //  br label %for.body4.lr.ph, !UID !8, !BB_UID !9
-  val br_2 = Module(new UBranchFastNode(ID = 2))
+  val br_2 = Module(new UBranchNode(ID = 2))
 
   //  br label %for.cond.cleanup
-  val br_3 = Module(new UBranchFastNode(ID = 3))
+  val br_3 = Module(new UBranchNode(ID = 3))
 
   //  ret i32 0, !UID !10, !BB_UID !11
   val ret_4 = Module(new RetNode2(retTypes = List(32), ID = 4))
@@ -111,7 +111,7 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
   val binaryOp_mul6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign = false))
 
   //  br label %for.body4, !UID !14, !BB_UID !15
-  val br_7 = Module(new UBranchFastNode(ID = 7))
+  val br_7 = Module(new UBranchNode(ID = 7))
 
   //  %inc8 = add nuw i32 %j.025, 1, !UID !16
   val binaryOp_inc88 = Module(new ComputeNode(NumOuts = 2, ID = 8, opCode = "add")(sign = false))

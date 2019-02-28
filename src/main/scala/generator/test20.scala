@@ -120,7 +120,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   val icmp_exitcond269 = Module(new IcmpFastNode(NumOuts = 1, ID = 9, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond26, label %for.cond.cleanup.loopexit, label %for.body4.lr.ph
-  val br_10 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 10))
+  val br_10 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 2, ID = 10))
 
   //  %k.023 = phi i32 [ 0, %for.body4.lr.ph ], [ %inc, %for.body4 ]
   val phi_k_02311 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 11))

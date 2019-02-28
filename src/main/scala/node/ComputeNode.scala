@@ -26,7 +26,7 @@ class ComputeNodeIO(NumOuts: Int)
 
 }
 
-@deprecated("Stop using normal nodes, use fast version instead", "1.0")
+//@deprecated("Stop using normal nodes, use fast version instead", "1.0")
 class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
                  (sign: Boolean)
                  (implicit p: Parameters,

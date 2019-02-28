@@ -61,7 +61,7 @@ class RelayDecoupledNode(val NumConsum: Int = 2)(implicit p : Parameters) extend
   val tokenConsum_reg = RegInit(Vec(Seq.fill(NumConsum)(0.U(tlen.W))))
 
   //val tokenCMP_w  = Wire(Vec(NumConsum, Bool()))
-  val tokenCMP_w  = Vec(Seq.fill(NumConsum){false.B})
+  val tokenCMP_w  = VecInit(Seq.fill(NumConsum){false.B})
 
   val res = tokenCMP_w.asUInt.andR
 
