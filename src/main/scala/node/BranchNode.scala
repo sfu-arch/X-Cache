@@ -178,7 +178,7 @@ class CBranchFastNode(ID: Int)
   * @param ID         Node id
   */
 
-@deprecated("Use CBranchFastNodeVariable2 instead. The behaviour is not deterministic", "dataflow-lib")
+@deprecated("Use CBranchFastNodeVariable2 instead. The behaviour is not deterministic")
 class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val ID: Int)
                              (implicit val p: Parameters,
                               name: sourcecode.Name,
@@ -565,6 +565,7 @@ class CBranchNodeVariableLoop(val NumTrue: Int = 1, val NumFalse: Int = 1, val N
 }
 
 
+@deprecated("Use UBranchFastNode instead. It wastes one extra cycle")
 class UBranchNode(NumPredOps: Int = 0,
                   NumOuts: Int = 1,
                   ID: Int)
@@ -640,6 +641,7 @@ class UBranchNode(NumPredOps: Int = 0,
 
 }
 
+@deprecated("Use UBranchFastNode instead. It wastes one extra cycle")
 class UBranchEndNode(NumPredOps: Int = 0,
                   NumOuts: Int = 1,
                   ID: Int)

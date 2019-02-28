@@ -61,7 +61,7 @@ class testf02DF(implicit p: Parameters) extends testf02DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
+  val bb_0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 0))
 
 
 

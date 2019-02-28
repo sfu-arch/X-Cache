@@ -69,9 +69,9 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
-  val bb_for_body4_lr_ph_preheader1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  val bb_for_body4_lr_ph_preheader1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
   val bb_for_body4_lr_ph2 = Module(new LoopFastHead(NumOuts = 5, NumPhi = 1, BID = 2))
 
@@ -120,7 +120,7 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
   val icmp_exitcond269 = Module(new IcmpFastNode(NumOuts = 1, ID = 9, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond26, label %for.cond.cleanup.loopexit, label %for.body4.lr.ph
-  val br_10 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 2, ID = 10))
+  val br_10 = Module(new CBranchFastNodeVariable(NumTrue = 1, NumFalse = 2, ID = 10))
 
   //  %k.023 = phi i32 [ 0, %for.body4.lr.ph ], [ %inc, %for.body4 ]
   val phi_k_02311 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 11))

@@ -896,12 +896,8 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           loop_finish_R.foreach(_ := ControlBundle.default)
           loop_finish_valid_R.foreach(_ := false.B)
 
-          in_live_out_R.foreach(_ := DataBundle.default)
           in_live_out_valid_R.foreach(_ := false.B)
-
-          in_carry_in_R.foreach(_ := DataBundle.default)
           in_carry_in_valid_R.foreach(_ := false.B)
-
 
           state := s_active
 

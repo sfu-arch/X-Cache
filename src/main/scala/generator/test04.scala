@@ -63,13 +63,13 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
-  val bb_preheader1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  val bb_preheader1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
   val bb_2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 9, NumPhi = 2, BID = 2))
 
-  val bb_loopexit3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 3))
+  val bb_loopexit3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 3))
 
   val bb_4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi = 1, BID = 4))
 

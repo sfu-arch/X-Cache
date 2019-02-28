@@ -61,7 +61,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 9, BID = 0))
+  val bb_0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 9, BID = 0))
 
 
 

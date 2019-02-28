@@ -69,17 +69,17 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
-  val bb_for_body4_lr_ph_preheader1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  val bb_for_body4_lr_ph_preheader1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
-  val bb_for_cond_cleanup_loopexit2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_for_cond_cleanup_loopexit2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
-  val bb_for_cond_cleanup3 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3))
+  val bb_for_cond_cleanup3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 2, BID = 3))
 
   val bb_for_body4_lr_ph4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 4, NumPhi = 1, BID = 4))
 
-  val bb_for_cond_cleanup35 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 5))
+  val bb_for_cond_cleanup35 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 5))
 
   val bb_for_body46 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 12, NumPhi = 1, BID = 6))
 
@@ -156,25 +156,25 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    * ================================================================== */
 
   //i32 0
-  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
+  val const0 = Module(new ConstNode(value = 0, ID = 0))
 
   //i32 0
-  val const1 = Module(new ConstFastNode(value = 0, ID = 1))
+  val const1 = Module(new ConstNode(value = 0, ID = 1))
 
   //i32 0
-  val const2 = Module(new ConstFastNode(value = 0, ID = 2))
+  val const2 = Module(new ConstNode(value = 0, ID = 2))
 
   //i32 1
-  val const3 = Module(new ConstFastNode(value = 1, ID = 3))
+  val const3 = Module(new ConstNode(value = 1, ID = 3))
 
   //i32 0
-  val const4 = Module(new ConstFastNode(value = 0, ID = 4))
+  val const4 = Module(new ConstNode(value = 0, ID = 4))
 
   //i32 1
-  val const5 = Module(new ConstFastNode(value = 1, ID = 5))
+  val const5 = Module(new ConstNode(value = 1, ID = 5))
 
   //i32 1
-  val const6 = Module(new ConstFastNode(value = 1, ID = 6))
+  val const6 = Module(new ConstNode(value = 1, ID = 6))
 
 
 
@@ -413,19 +413,19 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  icmp_cmp240.io.RightIO <> const0.io.Out
+  icmp_cmp240.io.RightIO <> const0.io.Out(0)
 
-  ret_4.io.In.data("field0") <> const1.io.Out
+  ret_4.io.In.data("field0") <> const1.io.Out(0)
 
-  phij_0255.io.InData(1) <> const2.io.Out
+  phij_0255.io.InData(1) <> const2.io.Out(0)
 
-  binaryOp_inc88.io.RightIO <> const3.io.Out
+  binaryOp_inc88.io.RightIO <> const3.io.Out(0)
 
-  phik_02311.io.InData(0) <> const4.io.Out
+  phik_02311.io.InData(0) <> const4.io.Out(0)
 
-  binaryOp_mul515.io.RightIO <> const5.io.Out
+  binaryOp_mul515.io.RightIO <> const5.io.Out(0)
 
-  binaryOp_inc17.io.RightIO <> const6.io.Out
+  binaryOp_inc17.io.RightIO <> const6.io.Out(0)
 
   br_1.io.CmpIO <> icmp_cmp240.io.Out(0)
 

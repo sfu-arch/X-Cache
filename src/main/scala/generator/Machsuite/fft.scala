@@ -69,23 +69,23 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
   val bb_for_cond1_preheader1 = Module(new LoopFastHead(NumOuts = 5, NumPhi = 2, BID = 1))
 
-  val bb_for_body2_preheader2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_for_body2_preheader2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
   val bb_for_body23 = Module(new LoopFastHead(NumOuts = 27, NumPhi = 1, BID = 3))
 
-  val bb_if_then4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 16, BID = 4))
+  val bb_if_then4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 16, BID = 4))
 
-  val bb_for_inc5 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 5, BID = 5))
+  val bb_for_inc5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 5, BID = 5))
 
-  val bb_for_inc53_loopexit6 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
+  val bb_for_inc53_loopexit6 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_for_inc537 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 7, BID = 7))
+  val bb_for_inc537 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 7, BID = 7))
 
-  val bb_for_end558 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 8))
+  val bb_for_end558 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 8))
 
 
 

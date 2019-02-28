@@ -129,10 +129,10 @@ class test07Test01[T <: test07MainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
-  val inAddrVec = List.range(0, 4 * 16, 4)
-  val inDataVec = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
-  val outAddrVec = List.range(0, 4 * 16, 4)
-  val outDataVec = inDataVec.map(_ * 2)
+  val inAddrVec = List.range(0, 4 * 9, 4)
+  val inDataVec = List(0, 1, 2, 3, 4, 5, 6, 7, 8)
+  val outAddrVec = List.range(0, 4 * 9, 4)
+  val outDataVec = List(0, 2, 4, 6, 8, 10, 12, 14, 16)
 
   // Write initial contents to the memory model.
   for (i <- 0 until inDataVec.length) {
@@ -156,7 +156,7 @@ class test07Test01[T <: test07MainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 4) // n
+  poke(c.io.in.bits.data("field1").data, 3) // n
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)

@@ -73,11 +73,11 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   val bb_pfor_cond1 = Module(new LoopHead(NumOuts = 5, NumPhi=1, BID = 1))
 
-  val bb_pfor_detach2 = Module(new BasicBlockNoMaskNode(NumOuts = 6, BID = 2))
+  val bb_pfor_detach2 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 6, BID = 2))
 
   //val bb_pfor_inc123 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 3, NumPhi=0, BID = 3))
 
-  val bb_pfor_end144 = Module(new BasicBlockNoMaskNode(NumOuts = 1, BID = 4))
+  val bb_pfor_end144 = Module(new BasicBlockNoMaskFastNode2(NumOuts = 1, BID = 4))
 
   val bb_pfor_end_continue155 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
 

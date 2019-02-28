@@ -300,21 +300,21 @@ class cilk_for_test12_detach2DF(implicit p: Parameters) extends cilk_for_test12_
 
   //Initializing BasicBlocks: 
 
-  val bb_my_pfor_body5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_my_pfor_body5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
   val bb_my_pfor_cond7 = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
 
-  val bb_my_pfor_detach9 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_my_pfor_detach9 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
-  val bb_my_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 3))
+  val bb_my_pfor_inc = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 2, BID = 3))
 
-  val bb_my_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4)) // Manual
+  val bb_my_pfor_end = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 4)) // Manual
 
-  val bb_my_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 5))
+  val bb_my_pfor_end_continue = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 6, BID = 5))
 
-  val bb_my_pfor_preattach14 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
+  val bb_my_pfor_preattach14 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_my_offload_pfor_body10 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7))
+  val bb_my_offload_pfor_body10 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 7))
 
 
   /* ================================================================== *
