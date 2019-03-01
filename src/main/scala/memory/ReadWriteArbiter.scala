@@ -51,12 +51,6 @@ class ReadWriteArbiter()
 
   override val printfSigil = "ReadWriteArbiter: "
 
-  //  //-----------------------------------
-  //  // Driver Circuit
-  //  io.ReadMemReq.ready := io.MemReq.ready
-  //  io.WriteMemReq.ready := io.MemReq.ready
-
-
   //-----------------------------------
 
   // Table entries -> MemReq arbiter.
@@ -65,7 +59,7 @@ class ReadWriteArbiter()
   // Cache request arbiter
   cachereq_arb.io.out.ready := io.MemReq.ready
   io.MemReq.bits := cachereq_arb.io.out.bits
-  io.MemReq.valid := io.ReadMemReq.valid | io.WriteMemReq.valid
+  io.MemReq.valid := cachereq_arb.io.out.valid
 
 
   //-----------------------------------
