@@ -49,7 +49,7 @@ class SuperParallelCacheUnitTests(c: NParallelCache) extends PeekPokeTester(c) {
   poke(c.io.cpu.MemReq(1).valid, true.B)
   step(1)
   poke(c.io.cpu.MemReq(0).valid, false.B)
-  poke(c.io.cpu.MemReq(1).valid, false.B)
+  poke(c.io.cpu.MemReq(1).valid, true.B)
   step(10)
 }
 

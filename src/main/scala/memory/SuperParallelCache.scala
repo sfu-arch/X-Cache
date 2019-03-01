@@ -71,7 +71,6 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     io.stat(i) := cache1.io.stat
     cache1
   }
-  print("Xlen:" + xlen)
   /*============================*
    *    Wiring  Cache to CPU  *
    *============================*/
@@ -181,7 +180,6 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
       }.otherwise {
         //    Cache is not ready
         //      Recycling logic
-        printf(p"Recycle")
         fetch_queues(i).io.recycle := true.B
       }
     }

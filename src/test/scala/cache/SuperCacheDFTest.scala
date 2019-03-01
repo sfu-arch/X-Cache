@@ -25,7 +25,7 @@ import junctions._
 
 
 class SuperCacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
+  val io = IO(new Bundle {
     val in   = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req  = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
