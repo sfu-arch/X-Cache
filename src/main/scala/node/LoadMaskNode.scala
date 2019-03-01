@@ -58,8 +58,8 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
   val GepValid     = RegInit(false.B)
 
   // predessor memory ops. whether they are valid.
-  val predValid =  RegInit(Vec(Seq.fill(NumPredOps)(false.B)))
-  val succValid =  RegInit(Vec(Seq.fill(NumSuccOps)(false.B)))
+  val predValid =  Seq.fill(NumPredOps)(RegInit(false.B))
+  val succValid =  Seq.fill(NumSuccOps)(RegInit(false.B))
 
   // Mask for final ANDing and output of data
   val bitmask  = RegInit(0.U((2*xlen).W))
@@ -96,8 +96,8 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
 
   // Because of this statement. predValid vec has to be size of atleast 1 and a true has to be wired to it
   // even if no predecessors exist.
-  val predValidInt = predValid.asUInt
-  val inputValid   = GepValid & predValidInt.andR
+//  val predValidInt = predValid.asUInt
+  val inputValid   = GepValid & predValid.reduce(_&_)
   io.MemReq.valid := ReqValid
  
   val s_init :: s_SENDING :: s_RECEIVING  :: s_Done :: Nil = Enum(4)

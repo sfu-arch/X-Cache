@@ -564,8 +564,6 @@ class CBranchNodeVariableLoop(val NumTrue: Int = 1, val NumFalse: Int = 1, val N
   }
 }
 
-
-@deprecated("Use UBranchFastNode instead. It wastes one extra cycle")
 class UBranchNode(NumPredOps: Int = 0,
                   NumOuts: Int = 1,
                   ID: Int)

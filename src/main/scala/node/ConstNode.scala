@@ -7,7 +7,6 @@ import interfaces.{ControlBundle, DataBundle}
 import util._
 import utility.UniformPrintfs
 
-@deprecated("Remove ConstNode and use ConstFastNode", "1.0")
 class ConstNode(value: Int, NumOuts: Int = 1, ID: Int)
                (implicit p: Parameters,
                 name: sourcecode.Name,

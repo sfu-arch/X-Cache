@@ -22,7 +22,6 @@ class IcmpNodeIO(NumOuts: Int)
   val RightIO = Flipped(Decoupled(new DataBundle))
 }
 
-@deprecated("Get ride of normal nodes", "1.0")
 class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
               (sign: Boolean)
               (implicit p: Parameters,

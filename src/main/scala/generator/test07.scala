@@ -61,7 +61,7 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
 
   val Loop_0 = Module(new LoopBlockNode(NumIns = List(1, 1, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
 
-  val Loop_1 = Module(new LoopBlockNode(NumIns = List(1,3), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 1))
+  val Loop_1 = Module(new LoopBlockNode(NumIns = List(3, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 1))
 
 
 
@@ -89,64 +89,64 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  %cmp24 = icmp eq i32 %n, 0, !UID !5
+  //  %cmp24 = icmp eq i32 %n, 0, !UID !10
   val icmp_cmp240 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
 
-  //  br i1 %cmp24, label %for.cond.cleanup, label %for.body4.lr.ph.preheader, !UID !6, !BB_UID !7
+  //  br i1 %cmp24, label %for.cond.cleanup, label %for.body4.lr.ph.preheader, !UID !11, !BB_UID !12
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
 
-  //  br label %for.body4.lr.ph, !UID !8, !BB_UID !9
+  //  br label %for.body4.lr.ph, !UID !13, !BB_UID !14
   val br_2 = Module(new UBranchNode(ID = 2))
 
   //  br label %for.cond.cleanup
   val br_3 = Module(new UBranchNode(ID = 3))
 
-  //  ret i32 0, !UID !10, !BB_UID !11
+  //  ret i32 0, !UID !15, !BB_UID !16
   val ret_4 = Module(new RetNode2(retTypes = List(32), ID = 4))
 
-  //  %j.025 = phi i32 [ %inc8, %for.cond.cleanup3 ], [ 0, %for.body4.lr.ph.preheader ], !UID !12
+  //  %j.025 = phi i32 [ %inc8, %for.cond.cleanup3 ], [ 0, %for.body4.lr.ph.preheader ], !UID !17
   val phij_0255 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 5, Res = false))
 
-  //  %mul = mul i32 %j.025, %n, !UID !13
+  //  %mul = mul i32 %j.025, %n, !UID !18
   val binaryOp_mul6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign = false))
 
-  //  br label %for.body4, !UID !14, !BB_UID !15
+  //  br label %for.body4, !UID !19, !BB_UID !20
   val br_7 = Module(new UBranchNode(ID = 7))
 
-  //  %inc8 = add nuw i32 %j.025, 1, !UID !16
+  //  %inc8 = add nuw i32 %j.025, 1, !UID !21
   val binaryOp_inc88 = Module(new ComputeNode(NumOuts = 2, ID = 8, opCode = "add")(sign = false))
 
-  //  %exitcond26 = icmp eq i32 %inc8, %n, !UID !17
+  //  %exitcond26 = icmp eq i32 %inc8, %n, !UID !22
   val icmp_exitcond269 = Module(new IcmpNode(NumOuts = 1, ID = 9, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond26, label %for.cond.cleanup.loopexit, label %for.body4.lr.ph, !UID !18, !BB_UID !19
+  //  br i1 %exitcond26, label %for.cond.cleanup.loopexit, label %for.body4.lr.ph, !UID !23, !BB_UID !24
   val br_10 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 10))
 
-  //  %k.023 = phi i32 [ 0, %for.body4.lr.ph ], [ %inc, %for.body4 ], !UID !20
+  //  %k.023 = phi i32 [ 0, %for.body4.lr.ph ], [ %inc, %for.body4 ], !UID !25
   val phik_02311 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 11, Res = true))
 
-  //  %add = add i32 %k.023, %mul, !UID !21
+  //  %add = add i32 %k.023, %mul, !UID !26
   val binaryOp_add12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign = false))
 
-  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %add, !UID !22
+  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %add, !UID !27
   val Gep_arrayidx13 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 13)(ElementSize = 4, ArraySize = List()))
 
-  //  %0 = load i32, i32* %arrayidx, align 4, !tbaa !23, !UID !27
+  //  %0 = load i32, i32* %arrayidx, align 4, !tbaa !28, !UID !32
   val ld_14 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 14, RouteID = 0))
 
-  //  %mul5 = shl i32 %0, 1, !UID !28
+  //  %mul5 = shl i32 %0, 1, !UID !33
   val binaryOp_mul515 = Module(new ComputeNode(NumOuts = 1, ID = 15, opCode = "shl")(sign = false))
 
-  //  store i32 %mul5, i32* %arrayidx, align 4, !tbaa !23, !UID !29
+  //  store i32 %mul5, i32* %arrayidx, align 4, !tbaa !28, !UID !34
   val st_16 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 16, RouteID = 0))
 
-  //  %inc = add nuw i32 %k.023, 1, !UID !30
+  //  %inc = add nuw i32 %k.023, 1, !UID !35
   val binaryOp_inc17 = Module(new ComputeNode(NumOuts = 2, ID = 17, opCode = "add")(sign = false))
 
-  //  %exitcond = icmp eq i32 %inc, %n, !UID !31
+  //  %exitcond = icmp eq i32 %inc, %n, !UID !36
   val icmp_exitcond18 = Module(new IcmpNode(NumOuts = 1, ID = 18, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond, label %for.cond.cleanup3, label %for.body4, !UID !32, !BB_UID !33
+  //  br i1 %exitcond, label %for.cond.cleanup3, label %for.body4, !UID !37, !BB_UID !38
   val br_19 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 19))
 
 
@@ -156,25 +156,25 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    * ================================================================== */
 
   //i32 0
-  val const0 = Module(new ConstNode(value = 0, ID = 0))
+  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
 
   //i32 0
-  val const1 = Module(new ConstNode(value = 0, ID = 1))
+  val const1 = Module(new ConstFastNode(value = 0, ID = 1))
 
   //i32 0
-  val const2 = Module(new ConstNode(value = 0, ID = 2))
+  val const2 = Module(new ConstFastNode(value = 0, ID = 2))
 
   //i32 1
-  val const3 = Module(new ConstNode(value = 1, ID = 3))
+  val const3 = Module(new ConstFastNode(value = 1, ID = 3))
 
   //i32 0
-  val const4 = Module(new ConstNode(value = 0, ID = 4))
+  val const4 = Module(new ConstFastNode(value = 0, ID = 4))
 
   //i32 1
-  val const5 = Module(new ConstNode(value = 1, ID = 5))
+  val const5 = Module(new ConstFastNode(value = 1, ID = 5))
 
   //i32 1
-  val const6 = Module(new ConstNode(value = 1, ID = 6))
+  val const6 = Module(new ConstFastNode(value = 1, ID = 6))
 
 
 
@@ -244,17 +244,15 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_1.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field0")(0)
-
-  Loop_1.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field1")(0)
-
-
   Loop_0.io.InLiveIn(0) <> binaryOp_mul6.io.Out(0)
 
-  Loop_0.io.InLiveIn(1) <> Loop_1.io.OutLiveIn.elements("field0")(0)
+  Loop_0.io.InLiveIn(1) <> Loop_1.io.OutLiveIn.elements("field1")(0)
 
-  Loop_0.io.InLiveIn(2) <> Loop_1.io.OutLiveIn.elements("field1")(0)
+  Loop_0.io.InLiveIn(2) <> Loop_1.io.OutLiveIn.elements("field0")(2)
 
+  Loop_1.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field1")(1)
+
+  Loop_1.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 
@@ -264,13 +262,13 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
 
   binaryOp_add12.io.RightIO <> Loop_0.io.OutLiveIn.elements("field0")(0)
 
-  icmp_exitcond18.io.RightIO <> Loop_0.io.OutLiveIn.elements("field2")(0)
-
   Gep_arrayidx13.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field1")(0)
 
-  binaryOp_mul6.io.RightIO <> Loop_1.io.OutLiveIn.elements("field1")(1)
+  icmp_exitcond18.io.RightIO <> Loop_0.io.OutLiveIn.elements("field2")(0)
 
-  icmp_exitcond269.io.RightIO <> Loop_1.io.OutLiveIn.elements("field1")(2)
+  binaryOp_mul6.io.RightIO <> Loop_1.io.OutLiveIn.elements("field0")(0)
+
+  icmp_exitcond269.io.RightIO <> Loop_1.io.OutLiveIn.elements("field0")(1)
 
 
 
@@ -290,9 +288,9 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    *                   LOOP CARRY DEPENDENCIES                          *
    * ================================================================== */
 
-  Loop_1.io.CarryDepenIn(0) <> binaryOp_inc88.io.Out(0)
-
   Loop_0.io.CarryDepenIn(0) <> binaryOp_inc17.io.Out(0)
+
+  Loop_1.io.CarryDepenIn(0) <> binaryOp_inc88.io.Out(0)
 
 
 
@@ -300,9 +298,9 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    *                   LOOP DATA CARRY DEPENDENCIES                     *
    * ================================================================== */
 
-  phij_0255.io.InData(0) <> Loop_1.io.CarryDepenOut.elements("field0")(0)
-
   phik_02311.io.InData(1) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
+
+  phij_0255.io.InData(0) <> Loop_1.io.CarryDepenOut.elements("field0")(0)
 
 
 
@@ -413,19 +411,19 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  icmp_cmp240.io.RightIO <> const0.io.Out(0)
+  icmp_cmp240.io.RightIO <> const0.io.Out
 
-  ret_4.io.In.data("field0") <> const1.io.Out(0)
+  ret_4.io.In.data("field0") <> const1.io.Out
 
-  phij_0255.io.InData(1) <> const2.io.Out(0)
+  phij_0255.io.InData(1) <> const2.io.Out
 
-  binaryOp_inc88.io.RightIO <> const3.io.Out(0)
+  binaryOp_inc88.io.RightIO <> const3.io.Out
 
-  phik_02311.io.InData(0) <> const4.io.Out(0)
+  phik_02311.io.InData(0) <> const4.io.Out
 
-  binaryOp_mul515.io.RightIO <> const5.io.Out(0)
+  binaryOp_mul515.io.RightIO <> const5.io.Out
 
-  binaryOp_inc17.io.RightIO <> const6.io.Out(0)
+  binaryOp_inc17.io.RightIO <> const6.io.Out
 
   br_1.io.CmpIO <> icmp_cmp240.io.Out(0)
 
@@ -455,7 +453,7 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
 
   br_19.io.CmpIO <> icmp_exitcond18.io.Out(0)
 
-  icmp_cmp240.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
+  icmp_cmp240.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
 
   st_16.io.Out(0).ready := true.B
 
