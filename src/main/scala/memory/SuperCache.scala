@@ -28,7 +28,7 @@ class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters)
   })
 
   val fetch_queue     = Module(new Queue(gen, 2))
-  val pipe            = Module(new Pipe(genType, entries))
+  val pipe            = Module(new Pipe(genType, latency = entries))
   //  Recycle request if pipe is valid
   val fetch_queue_mux = Mux(pipe.io.deq.valid, pipe.io.deq.bits, fetch_queue.io.deq.bits)
   fetch_queue.io.enq.bits := fetch_queue_mux
@@ -40,8 +40,18 @@ class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters)
   io.enq.ready := fetch_queue.io.enq.ready & (~pipe.io.deq.valid).toBool
 
   io.deq <> fetch_queue.io.deq
-  io.count := fetch_queue.io.count
 
+  val count = RegInit(0.U(log2Ceil(entries).W))
+  io.count := count
+
+
+  val inc = fetch_queue.io.enq.fire( ) && !pipe.io.deq.valid && ((fetch_queue.io.deq.fire( ) && io.recycle) || !fetch_queue.io.deq.fire( ))
+  val dec = !inc && fetch_queue.io.deq.fire( ) && !io.recycle
+  when(inc) {
+    count := count + 1.U
+  }.elsewhen(dec) {
+    count := count - 1.U
+  }
 }
 
 class NCacheIO(val NumTiles: Int = 1, val NumBanks: Int = 1)(implicit val p: Parameters)
@@ -267,7 +277,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   val cache_wback = caches map {
     _.IsWBACK( )
   }
-  nasti_aw_arbiter.io.out.ready := io.nasti.aw.ready & (~(cache_wback.reduceLeft(_ | _)))
+  nasti_aw_arbiter.io.out.ready := io.nasti.aw.ready & (!(cache_wback.reduceLeft(_ | _)))
 
   //  Cache->NASTI W . Sequence of cache io.nasti.w.bits
   val cache_nasti_w_bits = caches.map {
