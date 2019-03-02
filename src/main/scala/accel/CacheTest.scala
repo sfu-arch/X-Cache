@@ -1,4 +1,4 @@
-package accel
+package cache
 
 import FPU._
 import accel._
@@ -42,9 +42,9 @@ class cacheDF(implicit p: Parameters) extends cacheDFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
-		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
+  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=1, NWrites=1)
+		 (WControl=new WriteMemoryController(NumOps=1, BaseSize=2, NumEntries=2))
+		 (RControl=new ReadMemoryController(NumOps=1, BaseSize=2, NumEntries=2))
 		 (RWArbiter=new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
@@ -65,11 +65,11 @@ class cacheDF(implicit p: Parameters) extends cacheDFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 0))
 
-  val bb_if_then1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1))
+  val bb_if_then1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 1))
 
-  val bb_if_else2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
+  val bb_if_else2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 2))
 
   val bb_if_end3 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi=1, BID = 3))
 
@@ -118,11 +118,11 @@ class cacheDF(implicit p: Parameters) extends cacheDFIO()(p) {
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-  bb_if_then1.io.predicateIn <> br_1.io.Out(0)
+  bb_if_then1.io.predicateIn(0) <> br_1.io.Out(0)
 
-  bb_if_else2.io.predicateIn <> br_1.io.Out(1)
+  bb_if_else2.io.predicateIn(0) <> br_1.io.Out(1)
 
   bb_if_end3.io.predicateIn(0) <> br_5.io.Out(0)
 

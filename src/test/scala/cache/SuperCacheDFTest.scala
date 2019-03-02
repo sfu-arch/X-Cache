@@ -25,16 +25,19 @@ import junctions._
 
 
 class SuperCacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
-    val in   = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val req  = Flipped(Decoupled(new MemReq))
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
-    val out  = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List(32)))
   })
+
+  def cloneType = new SuperCacheDFMainIO().asInstanceOf[this.type]
 }
 
 class SuperCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
 
+  //  val cache = Module(new Cache()) // Simple Nasti Cache
   val cache = Module(new NCache(2, 2)) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
@@ -48,7 +51,7 @@ class SuperCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
 
 
   // Wire up the cache and modules under test.
-  val cache_dataflow = Module(new cacheDF( ))
+  val cache_dataflow = Module(new cacheDF())
 
   //Connection DF to cache arbiter
   cache.io.cpu.MemReq(0) <> cache_dataflow.io.MemReq
@@ -120,8 +123,8 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
 
   }
 
-  val inAddrVec  = List(0x0, 0xB000, 0xA000, 0xD000)
-  val inDataVec  = List(10, 20, 30, 40)
+  val inAddrVec = List(0x0, 0xB000, 0xA000, 0xD000)
+  val inDataVec = List(10, 20, 30, 40)
   val outAddrVec = List(0x0, 0xB000, 0xA000, 0xD000)
   val outDataVec = List(10, 20, 30, 40)
 
@@ -154,52 +157,52 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
   poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
-  //
-  //  poke(c.io.in.valid, true.B)
-  //  poke(c.io.in.bits.enable.control, true.B)
-  //  poke(c.io.in.bits.data("field0").data, 0.U)
-  //  poke(c.io.in.bits.data("field0").predicate, true.B)
-  //  poke(c.io.in.bits.data("field1").data, 2.U)
-  //  poke(c.io.in.bits.data("field1").predicate, true.B)
-  //  poke(c.io.in.bits.data("field2").data, false.B)
-  //  poke(c.io.in.bits.data("field2").predicate, true.B)
-  //  poke(c.io.out.ready, true.B)
-  //  step(1)
-  //
-  //  poke(c.io.in.valid, false.B)
-  //  poke(c.io.in.bits.enable.control, false.B)
-  //  poke(c.io.in.bits.data("field0").data, 0.U)
-  //  poke(c.io.in.bits.data("field0").predicate, false.B)
-  //  poke(c.io.in.bits.data("field1").data, 0.U)
-  //  poke(c.io.in.bits.data("field1").predicate, false.B)
-  //  poke(c.io.in.bits.data("field2").data, false.B)
-  //  poke(c.io.in.bits.data("field2").predicate, false.B)
-  //  poke(c.io.out.ready, true.B)
-  //  step(1)
-  //
-  //  var time   = 1
-  //  var result = false
-  //
-  //  while (time < 100) {
-  //    time += 1
-  //    step(1)
-  //    //println(s"Cycle: $time")
-  //    if (peek(c.io.out.valid) == 1 &&
-  //      peek(c.io.out.bits.data("field0").predicate) == 1) {
-  //      result = true
-  //      val data = peek(c.io.out.bits.data("field0").data)
-  //      if (data != 0) {
-  //        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 0")
-  //        fail
-  //      } else {
-  //        println(Console.BLUE + s"*** Correct result received @ cycle: $time.")
-  //      }
-  //    }
-  //  }
-  //  if (!result) {
-  //    println("*** Timeout.")
-  //    fail
-  //  }
+
+  poke(c.io.in.valid, true.B)
+  poke(c.io.in.bits.enable.control, true.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, true.B)
+  poke(c.io.in.bits.data("field1").data, 2.U)
+  poke(c.io.in.bits.data("field1").predicate, true.B)
+  poke(c.io.in.bits.data("field2").data, false.B)
+  poke(c.io.in.bits.data("field2").predicate, true.B)
+  poke(c.io.out.ready, true.B)
+  step(1)
+
+  poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.enable.control, false.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, false.B)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field2").data, false.B)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
+  poke(c.io.out.ready, true.B)
+  step(1)
+
+  var time = 1
+  var result = false
+
+  while (time < 100) {
+    time += 1
+    step(1)
+    //println(s"Cycle: $time")
+    if (peek(c.io.out.valid) == 1 &&
+      peek(c.io.out.bits.data("field0").predicate) == 1) {
+      result = true
+      val data = peek(c.io.out.bits.data("field0").data)
+      if (data != 0) {
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 0")
+        fail
+      } else {
+        println(Console.BLUE + s"*** Correct result received @ cycle: $time.")
+      }
+    }
+  }
+  if (!result) {
+    println("*** Timeout.")
+    fail
+  }
 
   step(20)
   dumpMemory("final.mem")
@@ -220,7 +223,7 @@ class SuperCacheDFTester extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/cacheTest",
         "-tts", "0001"),
-      () => new SuperCacheDFMain( )) {
+      () => new SuperCacheDFMain()) {
       c => new SuperCacheTest01(c)
     } should be(true)
   }
