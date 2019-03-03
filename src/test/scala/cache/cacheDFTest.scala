@@ -25,12 +25,13 @@ import junctions._
 
 
 class cacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
+  val io = IO( new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
   })
+  def cloneType = new cacheDFMainIO().asInstanceOf[this.type]
 }
 
 class cacheDFMain(implicit p: Parameters) extends cacheDFMainIO {
@@ -130,7 +131,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
   }
 
   val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
-  val inDataVec = List(1, 20, 30, 40, 5)
+  val inDataVec = List(1, 20, 30, 40, 50)
   val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
   val outDataVec = List(1, 2, 3, 4, 5)
 
