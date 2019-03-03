@@ -37,7 +37,6 @@ class SuperCacheDFMainIO(implicit val p: Parameters) extends Module with CorePar
 
 class SuperCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
 
-  //  val cache = Module(new Cache()) // Simple Nasti Cache
   val cache = Module(new NCache(2, 2)) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
@@ -123,11 +122,10 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
 
   }
 
-  val inAddrVec = List(0x0, 0xB000, 0xA000, 0xD000)
-  val inDataVec = List(10, 20, 30, 40)
-  val outAddrVec = List(0x0, 0xB000, 0xA000, 0xD000)
-  val outDataVec = List(10, 20, 30, 40)
-
+  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
+  val inDataVec = List(10, 20, 30, 40, 50)
+  val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
+  val outDataVec = List(1, 2, 3, 4, 5)
 
   var i = 0
 

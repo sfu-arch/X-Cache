@@ -131,7 +131,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
   }
 
   val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
-  val inDataVec = List(1, 20, 30, 40, 50)
+  val inDataVec = List(10, 20, 30, 40, 50)
   val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
   val outDataVec = List(1, 2, 3, 4, 5)
 
@@ -168,11 +168,11 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
 
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").data, 0.U)   // Address of %a
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 2.U)
+  poke(c.io.in.bits.data("field1").data, 2.U)  // index of a, %i
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 1.U)
+  poke(c.io.in.bits.data("field2").data, 1.U) // Flag: Read(1), Write(0)
   poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -203,7 +203,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
         println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 0")
         fail
       } else {
-        println(Console.BLUE + s"*** Correct result received @ cycle: $time., MEM[2] = 30")
+        println(Console.BLUE + s"*** Correct result received @ cycle: $time, MEM[2] = 30.")
       }
     }
   }
