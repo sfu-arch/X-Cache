@@ -503,7 +503,7 @@ class LoopBlockNodeIO(NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[Int],
 
 
   override def cloneType = new LoopBlockNodeIO(NumIns, NumCarry,
-    NumOuts, NumBackEdge, NumLoopFinish, NumExits).asInstanceOf[this.type]
+    NumOuts, NumBackEdge, NumLoopFinish, NumExits, NumStore).asInstanceOf[this.type]
 }
 
 class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[Int],
@@ -513,7 +513,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
                     file: sourcecode.File) extends Module with CoreParams with UniformPrintfs {
 
   // Instantiate TaskController I/O signals
-  val io = IO(new LoopBlockNodeIO(NumIns, NumCarry, NumOuts, NumBackEdge, NumLoopFinish, NumExits))
+  val io = IO(new LoopBlockNodeIO(NumIns, NumCarry, NumOuts, NumBackEdge, NumLoopFinish, NumExits, NumStore))
 
   // Printf debugging
   val node_name = name.value
@@ -543,8 +543,8 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   val in_live_out_R = Seq.fill(NumOuts.length)(RegInit(DataBundle.default))
   val in_live_out_valid_R = Seq.fill(NumOuts.length)(RegInit(false.B))
 
-  val store_depn_R = Seq.fill(NumOuts.length)(RegInit(ControlBundle.default))
-  val store_depen_valid_R = Seq.fill(NumOuts.length)(RegInit(false.B))
+  val store_depn_R = Seq.fill(NumStore)(RegInit(ControlBundle.default))
+  val store_depen_valid_R = Seq.fill(NumStore)(RegInit(false.B))
 
   /**
     * Output signals and their valid and latch signals
@@ -644,13 +644,16 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     }
   }
 
-  for (i <- 0 until NumStore){
-    io.StoreDepen(i).ready := ~store_depen_valid_R(i)
-    when(io.StoreDepen(i).fire()){
-      store_depn_R(i) <> io.StoreDepen(i).bits
-      store_depen_valid_R(i) := true.B
+  if (NumStore > 0) {
+    for (i <- 0 until NumStore) {
+      io.StoreDepen(i).ready := ~store_depen_valid_R(i)
+      when(io.StoreDepen(i).fire()) {
+        store_depn_R(i) <> io.StoreDepen(i).bits
+        store_depen_valid_R(i) := true.B
+      }
     }
   }
+
 
   /**
     * Connecting outputs
@@ -846,10 +849,10 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   }
 
   def IsStoreDepnValid(): Bool = {
-    if(NumStore == 0){
+    if (NumStore == 0) {
       return true.B
     }
-    else{
+    else {
       return store_depen_valid_R.reduce(_ & _)
     }
   }
@@ -920,6 +923,9 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
 
           in_live_out_valid_R.foreach(_ := false.B)
           in_carry_in_valid_R.foreach(_ := false.B)
+
+          store_depen_valid_R.foreach(_ := false.B)
+          store_depn_R.foreach(_ := ControlBundle.default)
 
           state := s_active
 
