@@ -83,7 +83,7 @@ class cacheDF(implicit p: Parameters) extends cacheDFIO()(p) {
   val Gep_arrayidx0 = Module(new GepNode(NumIns = 1, NumOuts=2, ID=0)(ElementSize = 4, ArraySize = List()))
 
   //  br i1 %flag, label %if.then, label %if.else
-  val br_1 = Module(new CBranchNode(ID = 1))
+  val br_1 = Module(new CBranchNodeVariable(ID = 1))
 
   //  %0 = load i32, i32* %arrayidx, align 4, !tbaa !2
   val ld_2 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=2, RouteID=0))
@@ -98,7 +98,7 @@ class cacheDF(implicit p: Parameters) extends cacheDFIO()(p) {
   val br_5 = Module(new UBranchNode(ID = 5))
 
   //  %value.0 = phi i32 [ %0, %if.then ], [ 0, %if.else ]
-  val phi_value_06 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 6))
+  val phi_value_06 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 6, Res = true))
 
   //  ret i32 %value.0
   val ret_7 = Module(new RetNode2(retTypes=List(32), ID = 7))
@@ -120,9 +120,9 @@ class cacheDF(implicit p: Parameters) extends cacheDFIO()(p) {
 
   bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-  bb_if_then1.io.predicateIn(0) <> br_1.io.Out(0)
+  bb_if_then1.io.predicateIn(0) <> br_1.io.TrueOutput(0)
 
-  bb_if_else2.io.predicateIn(0) <> br_1.io.Out(1)
+  bb_if_else2.io.predicateIn(0) <> br_1.io.FalseOutput(0)
 
   bb_if_end3.io.predicateIn(0) <> br_5.io.Out(0)
 

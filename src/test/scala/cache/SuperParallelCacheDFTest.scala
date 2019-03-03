@@ -114,10 +114,11 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
 
   }
 
-  val inAddrVec  = List(0x0, 0x4)
-  val inDataVec  = List(10, 40)
-  val outAddrVec = List(0x0, 0x4)
-  val outDataVec = List(10, 40)
+  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
+  val inDataVec = List(1, 20, 30, 40, 50)
+  val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
+  val outDataVec = List(1, 2, 3, 4, 5)
+
 
   var i = 0
 
@@ -125,7 +126,7 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
   for (i <- 0 until inDataVec.length) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
-  step(200)
+  step(10)
 
   dumpMemory("init.mem")
 
@@ -152,7 +153,7 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 1.U)
+  poke(c.io.in.bits.data("field1").data, 2.U)
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.in.bits.data("field2").data, false.B)
   poke(c.io.in.bits.data("field2").predicate, true.B)

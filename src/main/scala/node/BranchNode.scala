@@ -1410,13 +1410,13 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val NumPr
         when(enable_R.control) {
           if (log) {
             printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-              + node_name + ": Output fired [T] @ %d,\n",
+              + node_name + ": Output fired [T F] @ %d,\n",
               enable_R.taskID, cycleCount)
           }
         }.otherwise {
           if (log) {
             printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-              + node_name + ": Output fired [F] @ %d,\n",
+              + node_name + ": Output fired [F T] @ %d,\n",
               enable_R.taskID, cycleCount)
           }
         }
