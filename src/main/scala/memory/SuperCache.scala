@@ -24,20 +24,20 @@ class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters)
   val genType = gen.cloneType
 
   val io = IO(new QueueIO(genType, entries) {
-    val recycle = Input(new Bool())
+    val recycle = Input(new Bool( ))
   })
 
-  val fetch_queue = Module(new Queue(gen, 2))
-  val pipe = Module(new Pipe(genType, latency = entries))
+  val fetch_queue     = Module(new Queue(gen, 2))
+  val pipe            = Module(new Pipe(genType, latency = entries))
   //  Recycle request if pipe is valid
-  val fetch_queue_mux = Mux(pipe.io.deq.valid, pipe.io.deq.bits, fetch_queue.io.deq.bits)
+  val fetch_queue_mux = Mux(pipe.io.deq.valid, pipe.io.deq.bits, io.enq.bits)
   fetch_queue.io.enq.bits := fetch_queue_mux
 
   pipe.io.enq.bits <> fetch_queue.io.deq.bits
   pipe.io.enq.valid := io.recycle
 
   fetch_queue.io.enq.valid := io.enq.valid | pipe.io.deq.valid
-  io.enq.ready := fetch_queue.io.enq.ready & (~pipe.io.deq.valid).toBool
+  io.enq.ready := fetch_queue.io.enq.ready & !pipe.io.deq.valid
 
   io.deq <> fetch_queue.io.deq
 
@@ -45,37 +45,39 @@ class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters)
   io.count := count
 
 
-  val inc = fetch_queue.io.enq.fire() && !pipe.io.deq.valid && ((fetch_queue.io.deq.fire() && io.recycle) || !fetch_queue.io.deq.fire())
-  val dec = !inc && fetch_queue.io.deq.fire() && !io.recycle
-  when(inc) {
+  val inc = io.enq.fire( )
+  val dec = fetch_queue.io.deq.fire( ) && !io.recycle
+  when(inc & !dec) {
     count := count + 1.U
-  }.elsewhen(dec) {
+  }.elsewhen(dec && !inc) {
     count := count - 1.U
   }
+
+  printf("Count = %d", count)
 }
 
 class NCacheIO(val NumTiles: Int = 1, val NumBanks: Int = 1)(implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {
   val io = IO(new Bundle {
-    val cpu = new Bundle {
-      val MemReq = Vec(NumTiles, Flipped(Decoupled(new MemReq)))
+    val cpu   = new Bundle {
+      val MemReq  = Vec(NumTiles, Flipped(Decoupled(new MemReq)))
       val MemResp = Vec(NumTiles, Output(Valid(new MemResp)))
 
     }
     val nasti = new NastiIO
-    val stat = Output(Vec(NumBanks, UInt(xlen.W)))
+    val stat  = Output(Vec(NumBanks, UInt(xlen.W)))
   })
 }
 
 
 class NastiWriteBundle(implicit val p: Parameters) extends Bundle {
-  val aw = new NastiWriteAddressChannel()
-  val w = new NastiWriteDataChannel()
+  val aw = new NastiWriteAddressChannel( )
+  val w  = new NastiWriteDataChannel( )
 }
 
 class CacheSlotsBundle(val NumTiles: Int)(implicit val p: Parameters) extends Bundle {
-  val bits = new MemResp
-  val tile = UInt(max(1, log2Ceil(NumTiles)).W)
+  val bits  = new MemResp
+  val tile  = UInt(max(1, log2Ceil(NumTiles)).W)
   val alloc = new Bool
   val ready = new Bool
 
@@ -116,15 +118,15 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   val NumTileBits = max(1, log2Ceil(NumBanks))
 
   //  Per-Tile stateink
-  val fetch_queue = Module(new PeekQueue(new MemReq(), 4))
+  val fetch_queue = Module(new PeekQueue(new MemReq( ), 4))
 
   val NumSlots = NumTiles * NumBanks
-  val slots = RegInit(VecInit(Seq.fill(NumSlots)(CacheSlotsBundle.default(NumTiles))))
+  val slots    = RegInit(VecInit(Seq.fill(NumSlots)(CacheSlotsBundle.default(NumTiles))))
 
   // Per-Cache bank state
   //  val slots         = RegInit(VecInit(Seq.fill(NumTiles)(VecInit(Seq.fill(NumBanks)(CacheSlotsBundle.default(NumTiles))))))
-  val cache_ready = VecInit(caches.map(_.io.cpu.req.ready))
-  val cache_req_io = VecInit(caches.map(_.io.cpu.req))
+  val cache_ready   = VecInit(caches.map(_.io.cpu.req.ready))
+  val cache_req_io  = VecInit(caches.map(_.io.cpu.req))
   val cache_resp_io = VecInit(caches.map(_.io.cpu.resp))
   val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(0.U(max(1, log2Ceil(NumSlots)).W))))
 
@@ -155,7 +157,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
 
   //  Slot allocation arbiter
   val slot_arbiter = Module(new RRArbiter(new Bool, NumSlots))
-  val slot_idx = slot_arbiter.io.chosen
+  val slot_idx     = slot_arbiter.io.chosen
   slot_arbiter.io.in zip slots foreach { case (a, b) =>
     a.valid := ~(b.alloc)
     a.bits := true.B
@@ -235,7 +237,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
     _.bits := resp_arbiter.io.out.bits
   }
 
-  when(resp_arbiter.io.out.fire()) {
+  when(resp_arbiter.io.out.fire( )) {
     io.cpu.MemResp(resp_tile).valid := true.B
   }
 
@@ -245,12 +247,12 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
    *    Wiring  Cache to NASTI  *
    *============================*/
 
-  val nasti_ar_arbiter = Module(new Arbiter(new NastiReadAddressChannel(), NumBanks))
+  val nasti_ar_arbiter = Module(new Arbiter(new NastiReadAddressChannel( ), NumBanks))
   //  This is a twin channel arbiter (arbitrates for both the W and AW channels at once)
   //  AW and W go together
-  val nasti_aw_arbiter = Module(new Arbiter(new NastiWriteAddressChannel(), NumBanks))
-  val nasti_r_demux = Module(new DemuxGen(new NastiReadDataChannel(), NumBanks))
-  val nasti_b_demux = Module(new DemuxGen(new NastiWriteResponseChannel(), NumBanks))
+  val nasti_aw_arbiter = Module(new Arbiter(new NastiWriteAddressChannel( ), NumBanks))
+  val nasti_r_demux    = Module(new DemuxGen(new NastiReadDataChannel( ), NumBanks))
+  val nasti_b_demux    = Module(new DemuxGen(new NastiWriteResponseChannel( ), NumBanks))
 
   //  Multiplex cache objects to NASTI interface.
   nasti_ar_arbiter.io.in zip caches.map {
@@ -276,7 +278,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
 
   //  Vector of bools.
   val cache_wback = caches map {
-    _.IsWBACK()
+    _.IsWBACK( )
   }
   nasti_aw_arbiter.io.out.ready := io.nasti.aw.ready & (!(cache_wback.reduceLeft(_ | _)))
 
@@ -285,7 +287,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
     _.io.nasti.w.bits
   }
   //  Feed into MUX and select one of these for the NASTI io w
-  val w_mux = Mux1H(cache_wback, cache_nasti_w_bits)
+  val w_mux              = Mux1H(cache_wback, cache_nasti_w_bits)
   //  Mux -> NASTI
   io.nasti.w.bits <> w_mux
   //  NASTI w valid  = true if one of the caches are writing back.
@@ -332,18 +334,18 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   //  printf(p"\n Cache state: ${io.stat}")
 }
 
-import java.io.{File, FileWriter}
-
-object NCacheMain extends App {
-  val dir = new File("RTL/NCache");
-  dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new NCache(1, 1)))
-
-  val verilogFile = new File(dir, s"${chirrtl.main}.v")
-  val verilogWriter = new FileWriter(verilogFile)
-  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
-  val compiledStuff = compileResult.getEmittedCircuit
-  verilogWriter.write(compiledStuff.value)
-  verilogWriter.close()
-}
+//import java.io.{File, FileWriter}
+//
+//object NCacheMain extends App {
+//  val dir = new File("RTL/NCache");
+//  dir.mkdirs
+//  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new NCache(1, 1)))
+//
+//  val verilogFile   = new File(dir, s"${chirrtl.main}.v")
+//  val verilogWriter = new FileWriter(verilogFile)
+//  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+//  val compiledStuff = compileResult.getEmittedCircuit
+//  verilogWriter.write(compiledStuff.value)
+//  verilogWriter.close( )
+//}

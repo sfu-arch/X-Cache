@@ -81,10 +81,16 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
 
   //  Per-Tile stateink
 
-  val fetch_queues = for (i <- 0 until NumBanks) yield {
-    val fq = Module(new PeekQueue(new MemReq( ), 4))
+  val fetch_queues = for (i <- 0 until NumTiles) yield {
+    val fq = Module(new PeekQueue(new MemReq( ), 6))
     fq
   }
+
+  val slot_arbiters = for (i <- 0 until NumTiles) yield {
+    val slot_arbiter = Module(new RRArbiter(new Bool, NumBanks))
+    slot_arbiter
+  }
+
 
   val fq_io_deq_bits = fetch_queues map {
     _.io.deq.bits
@@ -107,6 +113,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     }
   }
 
+  printf(p"\n FQ 1: ${fetch_queues(1).io.deq}")
 
   //  Input to queue
   for (i <- 0 until NumTiles) {
@@ -114,9 +121,8 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     fetch_queues(i).io.enq.valid := io.cpu.MemReq(i).valid
     io.cpu.MemReq(i).ready := fetch_queues(i).io.enq.ready
     fetch_queues(i).io.recycle := false.B
-    //    printf(p"\n FQ: ${fetch_queues(i).io.enq.bits} CPU Q: ${io.cpu.MemReq(i).bits} ")
-
   }
+
 
   /* [HACK] Leave this in here, otherwise FIRRTL is going to complain about type inferences.
    * There is some trouble with type inference if you reach into cache io through caches before mapping it using a map */
@@ -150,9 +156,9 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
   }
 
   for (i <- 0 until NumTiles) {
-    var slot_arbiter = Module(new RRArbiter(new Bool, NumBanks))
 
-    var slot_idx = slot_arbiter.io.chosen
+    var slot_arbiter = slot_arbiters(i)
+    val slot_idx = slot_arbiter.io.chosen
 
 
     for (j <- 0 until NumBanks) {
@@ -184,6 +190,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
       }
     }
 
+
     for (j <- 0 until NumBanks) {
       caches(j).io.cpu.req.bits <> prioritymuxes(j)
       when(cache_resp_io(j).valid) {
@@ -214,6 +221,9 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
     }
   }
 
+  printf(p"\n Cache Bundle: ${cache_req_io(0)} CB 1: ${cache_req_io(1)}")
+  printf(p"\n Slot arbiter 1: ${slot_arbiters(1).io.out}")
+
   //  printf(p"\n : deq fire: ${fetch_queues(0).io.deq.fire},${fetch_queues(1).io.deq.fire} Bankidxs: ${VecInit(bankidxseq)} Picker matrix : ${VecInit(picker_matrix(0))}  \n")
   //  printf(p"\n slots ${slots(1)(0)} \n ${slots(1)(1)}")
   //  Debug statements
@@ -228,7 +238,7 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
       ionasti <> cach.io.nasti
     }
   }
-  printf(p"\n Stat: ${io.stat}, ${io.nasti(0).r}")
+  printf(p"\n Stat: ${io.stat}")
 
 }
 
