@@ -28,7 +28,7 @@ class SuperParallelCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainI
 
   val cache = Module(new NParallelCache(2, 2)) // Simple Nasti Cache
   val memModels = for (i <- 0 until 2) yield {
-      val memModel = Module(new NastiMemSlave(latency = 5)) // Model of DRAM to connect to Cache
+      val memModel = Module(new NastiMemSlave(latency = 2)) // Model of DRAM to connect to Cache
       memModel
     }
 
@@ -61,6 +61,7 @@ class SuperParallelCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainI
 
 class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) {
 
+  var writesync = 0
 
   /**
     * cacheDF interface:
@@ -69,7 +70,7 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
     * out = Decoupled(new Call(List(32)))
     */
 
-  def MemRead(addr: Int): BigInt = {
+  def MemReadBlocking(addr: Int): BigInt = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
@@ -77,7 +78,7 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.iswrite, 0)
     poke(c.io.req.bits.tag, 10)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
     step(1)
     poke(c.io.req.valid, 0)
     while (peek(c.io.resp.valid) == 0) {
@@ -87,116 +88,140 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
     result
   }
 
-  def MemWrite(addr: Int, data: Int): BigInt = {
+  def MemWriteNonBlocking(addr: Int, data: Int) = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
+      MemWriteSyncCount( )
     }
     poke(c.io.req.valid, 1)
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.data, data)
     poke(c.io.req.bits.iswrite, 1)
     poke(c.io.req.bits.tag, 20)
+    //    [HACK]. Chisel and/or Verilator has a bug where it does not model 8 bit values correctly.
+    // If you set this to a value exceeding the bitwidth; it will overwrite the neighboring fields in the msg.
     poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
+    //poke(c.io.req.bits.mask, -1)
     step(1)
+    MemWriteSyncCount( )
     poke(c.io.req.valid, 0)
-    1
   }
+
+
+  def MemWriteSyncCount() = {
+    if (peek(c.io.resp.valid) == 1) {
+      writesync += 1
+    }
+  }
+
 
   def dumpMemory(path: String) = {
     //Writing mem states back to the file
     val pw = new PrintWriter(new File(path))
     for (i <- 0 until outDataVec.length) {
       //      for (i <- 0 until outDataVec.length) {
-      val data = MemRead(outAddrVec(i))
+      val data = MemReadBlocking(outAddrVec(i))
       pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
     }
     pw.close
 
   }
 
-  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
-  val inDataVec = List(10, 20, 30, 40, 50)
-  val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
-  val outDataVec = List(1, 2, 3, 4, 5)
+  val inAddrVec  = List(0x0, 0x4, 0x8, 0x10, 0xc, 0x1004)
+  val inDataVec  = List(10, 20, 30, 40, 50, 60)
+  val outAddrVec = List(0x0, 0x4, 0x8, 0x10, 0xc, 0x1004)
+  val outDataVec = List(1, 2, 3, 4, 5, 6)
 
 
   var i = 0
-
-  // Write initial contents to the memory model.
+  poke(c.io.req.valid, 0)
+  // Write initial contents to the memory model. All writes are non blocking
   for (i <- 0 until inDataVec.length) {
-    MemWrite(inAddrVec(i), inDataVec(i))
+    MemWriteNonBlocking(inAddrVec(i), inDataVec(i))
   }
-  step(10)
 
-  dumpMemory("init.mem")
+  //  //  Write fence. Ensures all initial writes are done.
+  //  while (writesync != inAddrVec.length) {
+  //    step(1)
+  //    MemWriteSyncCount( )
+  //  }
 
-
-  // Initializing the signals
-
-  //Field descriptions:
-  // 1) field0 : BaseAddress
-  // 2) field1 : index and a[i] = i
-  // 3) field2 : true -> load, false -> store
-
-  poke(c.io.in.valid, false.B)
-
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, false.B)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
-  poke(c.io.out.ready, false.B)
-  step(1)
-
-  poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 2.U)
-  poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 1.U)
-  poke(c.io.in.bits.data("field2").predicate, true.B)
-  poke(c.io.out.ready, true.B)
-  step(1)
-
-  poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, false.B)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
-  poke(c.io.out.ready, true.B)
-  step(1)
-
-  var time   = 1
-  var result = false
-
-  while (time < 100) {
-    time += 1
+  for (i <- 0 until 80) {
     step(1)
-    //println(s"Cycle: $time")
-    if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1) {
-      result = true
-      val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 30) {
-        println(Console.RED + s"*** Incorrect result received. Got $data, Hoping for MEM[2] = 30")
-        fail
-      } else {
-        println(Console.BLUE + s"*** Correct result received @ cycle: $time, MEM[2] = 30.")
-      }
-    }
+    MemWriteSyncCount( )
   }
-  if (!result) {
-    println("*** Timeout.")
-    fail
-  }
+  println("WriteSync" + writesync)
 
-  step(20)
-  dumpMemory("final.mem")
+
+  //  dumpMemory("init.mem")
+  //
+  //
+  // // Initializing the signals
+  //
+  // //Field descriptions:
+  // // 1) field0 : BaseAddress
+  // // 2) field1 : index and a[i] = i
+  // // 3) field2 : true -> load, false -> store
+  //
+  // poke(c.io.in.valid, false.B)
+  //
+  // poke(c.io.in.bits.data("field0").data, 0.U)
+  // poke(c.io.in.bits.data("field0").predicate, false.B)
+  // poke(c.io.in.bits.data("field1").data, 0.U)
+  // poke(c.io.in.bits.data("field1").predicate, false.B)
+  // poke(c.io.in.bits.data("field2").data, false.B)
+  // poke(c.io.in.bits.data("field2").predicate, false.B)
+  // poke(c.io.out.ready, false.B)
+  // step(1)
+  //
+  // poke(c.io.in.valid, true.B)
+  // poke(c.io.in.bits.enable.control, true.B)
+  // poke(c.io.in.bits.data("field0").data, 0.U)
+  // poke(c.io.in.bits.data("field0").predicate, true.B)
+  // poke(c.io.in.bits.data("field1").data, 2.U)
+  // poke(c.io.in.bits.data("field1").predicate, true.B)
+  // poke(c.io.in.bits.data("field2").data, 1.U)
+  // poke(c.io.in.bits.data("field2").predicate, true.B)
+  // poke(c.io.out.ready, true.B)
+  // step(1)
+  //
+  // poke(c.io.in.valid, false.B)
+  // poke(c.io.in.bits.enable.control, false.B)
+  // poke(c.io.in.bits.data("field0").data, 0.U)
+  // poke(c.io.in.bits.data("field0").predicate, false.B)
+  // poke(c.io.in.bits.data("field1").data, 0.U)
+  // poke(c.io.in.bits.data("field1").predicate, false.B)
+  // poke(c.io.in.bits.data("field2").data, false.B)
+  // poke(c.io.in.bits.data("field2").predicate, false.B)
+  // poke(c.io.out.ready, true.B)
+  // step(1)
+  //
+  // var time   = 1
+  // var result = false
+  //
+  // while (time < 100) {
+  //   time += 1
+  //   step(1)
+  //   //println(s"Cycle: $time")
+  //   if (peek(c.io.out.valid) == 1 &&
+  //     peek(c.io.out.bits.data("field0").predicate) == 1) {
+  //     result = true
+  //     val data = peek(c.io.out.bits.data("field0").data)
+  //     if (data != 30) {
+  //       println(Console.RED + s"*** Incorrect result received. Got $data, Hoping for MEM[2] = 30")
+  //       fail
+  //     } else {
+  //       println(Console.BLUE + s"*** Correct result received @ cycle: $time, MEM[2] = 30.")
+  //     }
+  //   }
+  // }
+  // if (!result) {
+  //   println("*** Timeout.")
+  //   fail
+  // }
+  //
+  // step(20)
+  // dumpMemory("final.mem")
 
 }
 

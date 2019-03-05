@@ -25,18 +25,18 @@ import junctions._
 
 
 class cacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO( new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
-    val req = Flipped(Decoupled(new MemReq))
+  val io = IO(new Bundle {
+    val in   = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val req  = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
-    val out = Decoupled(new Call(List(32)))
+    val out  = Decoupled(new Call(List(32)))
   })
   def cloneType = new cacheDFMainIO().asInstanceOf[this.type]
 }
 
 class cacheDFMain(implicit p: Parameters) extends cacheDFMainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
 
@@ -50,7 +50,7 @@ class cacheDFMain(implicit p: Parameters) extends cacheDFMainIO {
 
 
   // Wire up the cache and modules under test.
-  val cache_dataflow = Module(new cacheDF())
+  val cache_dataflow = Module(new cacheDF( ))
 
   val CacheArbiter = Module(new MemArbiter(2))
 
@@ -130,8 +130,8 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
 
   }
 
-  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
-  val inDataVec = List(10, 20, 30, 40, 50)
+  val inAddrVec  = List(0x0, 0x4, 0x8, 0xc, 0x10)
+  val inDataVec  = List(1, 20, 30, 40, 5)
   val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
   val outDataVec = List(1, 2, 3, 4, 5)
 
@@ -145,7 +145,6 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
   step(1)
 
   dumpMemory("init.mem")
-
 
 
   // Initializing the signals
@@ -188,7 +187,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.out.ready, true.B)
   step(1)
 
-  var time = 1
+  var time   = 1
   var result = false
 
   while (time < 100) {
@@ -232,9 +231,8 @@ class baseCacheTester extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/cacheTest",
         "-tts", "0001"),
-      () => new cacheDFMain()) {
+      () => new cacheDFMain( )) {
       c => new basecacheTest01(c)
     } should be(true)
   }
 }
-

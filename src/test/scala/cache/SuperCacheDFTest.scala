@@ -26,19 +26,19 @@ import junctions._
 
 class SuperCacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val req = Flipped(Decoupled(new MemReq))
+    val in   = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val req  = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
-    val out = Decoupled(new Call(List(32)))
+    val out  = Decoupled(new Call(List(32)))
   })
 
-  def cloneType = new SuperCacheDFMainIO().asInstanceOf[this.type]
+  def cloneType = new SuperCacheDFMainIO( ).asInstanceOf[this.type]
 }
 
 class SuperCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
 
   val cache = Module(new NCache(2, 2)) // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiMemSlave(latency = 5)) // Model of DRAM to connect to Cache
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
@@ -50,7 +50,7 @@ class SuperCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
 
 
   // Wire up the cache and modules under test.
-  val cache_dataflow = Module(new cacheDF())
+  val cache_dataflow = Module(new cacheDF( ))
 
   //Connection DF to cache arbiter
   cache.io.cpu.MemReq(0) <> cache_dataflow.io.MemReq
@@ -122,10 +122,11 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
 
   }
 
-  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
-  val inDataVec = List(10, 20, 30, 40, 50)
-  val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
-  val outDataVec = List(1, 2, 3, 4, 5)
+  val inAddrVec  = List(0x0, 0xB000, 0xA000, 0xD000)
+  val inDataVec  = List(10, 20, 30, 40)
+  val outAddrVec = List(0x0, 0xB000, 0xA000, 0xD000)
+  val outDataVec = List(10, 20, 30, 40)
+
 
   var i = 0
 
@@ -178,7 +179,7 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
   poke(c.io.out.ready, true.B)
   step(1)
 
-  var time = 1
+  var time   = 1
   var result = false
 
   while (time < 100) {
@@ -221,9 +222,8 @@ class SuperCacheDFTester extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/cacheTest",
         "-tts", "0001"),
-      () => new SuperCacheDFMain()) {
+      () => new SuperCacheDFMain( )) {
       c => new SuperCacheTest01(c)
     } should be(true)
   }
 }
-
