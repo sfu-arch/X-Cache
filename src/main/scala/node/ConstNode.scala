@@ -147,7 +147,7 @@ class ConstFastNode(value: Int, ID: Int)
         state := s_fire
 
         if (log) {
-          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] "
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [CONST] "
             + node_name + ": Output fired @ %d, Value: %d\n",
             task_input, cycleCount, output_value.asSInt())
         }

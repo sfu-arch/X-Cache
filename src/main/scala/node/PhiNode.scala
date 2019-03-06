@@ -280,7 +280,7 @@ class PhiFastNode(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int, Res: Boolean
           state := s_fire
           //Print output
           if (log) {
-            printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] [PHI] "
               + node_name + ": Output fired @ %d, Value: %d\n",
               io.InData(sel).bits.taskID, cycleCount, select_input)
           }
@@ -288,7 +288,7 @@ class PhiFastNode(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int, Res: Boolean
           state := s_not_predicated
           //Print output
           if (log) {
-            printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] [PHI] "
               + node_name + ": Output flushed @ %d, Value: %d\n",
               io.InData(sel).bits.taskID, cycleCount, select_input)
           }

@@ -613,13 +613,13 @@ class UBranchNode(NumPredOps: Int = 0,
         ValidOut()
         when(enable_R.control) {
           if (log) {
-            printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] [UBR] "
               + node_name + ": Output fired [T] @ %d,\n",
               enable_R.taskID, cycleCount)
           }
         }.otherwise {
           if (log) {
-            printf("[LOG] " + "[" + module_name + "] [TID->%d] "
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] [UBR] "
               + node_name + ": Output fired [F] @ %d,\n",
               enable_R.taskID, cycleCount)
           }
@@ -641,11 +641,11 @@ class UBranchNode(NumPredOps: Int = 0,
 
 @deprecated("Use UBranchFastNode instead. It wastes one extra cycle")
 class UBranchEndNode(NumPredOps: Int = 0,
-                  NumOuts: Int = 1,
-                  ID: Int)
-                 (implicit p: Parameters,
-                  name: sourcecode.Name,
-                  file: sourcecode.File)
+                     NumOuts: Int = 1,
+                     ID: Int)
+                    (implicit p: Parameters,
+                     name: sourcecode.Name,
+                     file: sourcecode.File)
   extends HandShaking(NumPredOps, 0, NumOuts, ID)(new ControlBundle)(p) {
   override lazy val io = IO(new HandShakingIOPS(NumPredOps, 0, NumOuts)(new ControlBundle)(p))
   // Printf debugging
@@ -717,8 +717,6 @@ class UBranchEndNode(NumPredOps: Int = 0,
   }
 
 }
-
-
 
 
 class UBranchFastIO()(implicit p: Parameters) extends CoreBundle {
@@ -1408,15 +1406,24 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val NumPr
         state := s_fire
 
         when(enable_R.control) {
-          if (log) {
-            printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-              + node_name + ": Output fired [T F] @ %d,\n",
-              enable_R.taskID, cycleCount)
+          when(IsPredecessorValid()) {
+            if (log) {
+              printf("[LOG] " + "[" + module_name + "] [TID->%d] [CBR] "
+                + node_name + ": Output fired [T F] @ %d,\n",
+                enable_R.taskID, cycleCount)
+            }
+          }.otherwise {
+            if (log) {
+              printf("[LOG] " + "[" + module_name + "] [TID->%d] [CBR] "
+                + node_name + ": Output fired [F T] @ %d,\n",
+                enable_R.taskID, cycleCount)
+            }
           }
+
         }.otherwise {
           if (log) {
-            printf("[LOG] " + "[" + module_name + "] [TID->%d] "
-              + node_name + ": Output fired [F T] @ %d,\n",
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] [CBR] "
+              + node_name + ": Output fired [F F] @ %d,\n",
               enable_R.taskID, cycleCount)
           }
         }

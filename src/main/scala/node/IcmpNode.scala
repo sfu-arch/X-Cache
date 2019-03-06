@@ -123,7 +123,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
         //Reset output
         Reset()
         if (log) {
-          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [ICMP] " +
             node_name + ": Output fired @ %d, Value: %d (%d ? %d)\n",
             task_ID_R, cycleCount, FU.io.out, FU.io.in1, FU.io.in2)
         }

@@ -53,6 +53,7 @@ object AluOpCode {
     "mul" -> Mul,
     "Udiv" -> Div,
     "udiv" -> Div,
+    "sdiv" -> Div,
     "Urem" -> Mod,
     "urem" -> Mod)
 

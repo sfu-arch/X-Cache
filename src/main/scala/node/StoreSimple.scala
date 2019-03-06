@@ -160,7 +160,7 @@ class UnTypStore(NumPredOps: Int,
         Reset()
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Fired @ %d Mem[%d] = %d\n",
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] [STORE]" + node_name + ": Fired @ %d Mem[%d] = %d\n",
           enable_R.taskID, cycleCount, addr_R.data, data_R.data)
         //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
       }

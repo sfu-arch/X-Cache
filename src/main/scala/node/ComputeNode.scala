@@ -132,7 +132,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         out_data_R.predicate := false.B
         Reset()
         if (log) {
-          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
+          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [COMPUTE] " +
             node_name + ": Output fired @ %d, Value: %d (%d + %d)\n", task_ID_R, cycleCount, FU.io.out, left_R.data, right_R.data)
         }
       }

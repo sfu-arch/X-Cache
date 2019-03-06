@@ -50,7 +50,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(4, 6)))
+  val InputSplitter = Module(new SplitCallNew(List(3, 5)))
   InputSplitter.io.In <> io.in
 
 
@@ -61,9 +61,9 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   val Loop_0 = Module(new LoopBlockNode(NumIns = List(1, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
 
-  val Loop_1 = Module(new LoopBlockNode(NumIns = List(1, 3, 2, 2), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 1))
+  val Loop_1 = Module(new LoopBlockNode(NumIns = List(2, 1, 1, 2), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 1))
 
-  val Loop_2 = Module(new LoopBlockNode(NumIns = List(1, 2, 2, 4, 2, 4), NumOuts = List(1), NumCarry = List(1, 1), NumExits = 1, ID = 2))
+  val Loop_2 = Module(new LoopBlockNode(NumIns = List(1, 1, 1, 1, 1, 2), NumOuts = List(1), NumCarry = List(1, 1), NumExits = 1, ID = 2))
 
 
 
@@ -103,13 +103,13 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val icmp_cmp2400 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
 
   //  %cmp638 = icmp eq i32 %n, 0, !UID !11
-  val icmp_cmp6381 = Module(new IcmpNode(NumOuts = 2, ID = 1, opCode = "eq")(sign = false))
+  val icmp_cmp6381 = Module(new IcmpNode(NumOuts = 1, ID = 1, opCode = "eq")(sign = false))
 
   //  %sub = add i32 %n, -1, !UID !12
   val binaryOp_sub2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "add")(sign = false))
 
   //  %arrayidx10 = getelementptr inbounds i32, i32* %a, i32 %sub, !UID !13
-  val Gep_arrayidx103 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 3)(ElementSize = 4, ArraySize = List()))
+  val Gep_arrayidx103 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 3)(ElementSize = 4, ArraySize = List()))
 
   //  %sub15 = add i32 %n, -1, !UID !14
   val binaryOp_sub154 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign = false))
@@ -359,57 +359,29 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> Loop_1.io.OutLiveIn.elements("field1")(0)
+  Loop_0.io.InLiveIn(0) <> Loop_1.io.OutLiveIn.elements("field0")(0)
 
   Loop_0.io.InLiveIn(1) <> Loop_1.io.OutLiveIn.elements("field1")(0)
 
-  Loop_0.io.InLiveIn(2) <> Loop_1.io.OutLiveIn.elements("field3")(0)
-
-  Loop_0.io.InLiveIn(3) <> Loop_1.io.OutLiveIn.elements("field3")(0)
-
-  Loop_1.io.InLiveIn(0) <> Loop_2.io.OutLiveIn.elements("field2")(0)
+  Loop_1.io.InLiveIn(0) <> Loop_2.io.OutLiveIn.elements("field3")(0)
 
   Loop_1.io.InLiveIn(1) <> Loop_2.io.OutLiveIn.elements("field2")(0)
 
-  Loop_1.io.InLiveIn(2) <> Loop_2.io.OutLiveIn.elements("field3")(0)
+  Loop_1.io.InLiveIn(2) <> Loop_2.io.OutLiveIn.elements("field1")(0)
 
-  Loop_1.io.InLiveIn(3) <> Loop_2.io.OutLiveIn.elements("field3")(0)
-
-  Loop_1.io.InLiveIn(4) <> Loop_2.io.OutLiveIn.elements("field3")(0)
-
-  Loop_1.io.InLiveIn(5) <> Loop_2.io.OutLiveIn.elements("field3")(0)
-
-  Loop_1.io.InLiveIn(6) <> Loop_2.io.OutLiveIn.elements("field5")(0)
-
-  Loop_1.io.InLiveIn(7) <> Loop_2.io.OutLiveIn.elements("field5")(0)
-
-  Loop_1.io.InLiveIn(8) <> Loop_2.io.OutLiveIn.elements("field5")(0)
-
-  Loop_1.io.InLiveIn(9) <> Loop_2.io.OutLiveIn.elements("field5")(0)
-
-  Loop_1.io.InLiveIn(10) <> Loop_2.io.OutLiveIn.elements("field4")(0)
-
-  Loop_1.io.InLiveIn(11) <> Loop_2.io.OutLiveIn.elements("field4")(0)
+  Loop_1.io.InLiveIn(3) <> Loop_2.io.OutLiveIn.elements("field4")(0)
 
   Loop_2.io.InLiveIn(0) <> icmp_cmp2400.io.Out(0)
 
-  Loop_2.io.InLiveIn(1) <> Gep_arrayidx165.io.Out(0)
+  Loop_2.io.InLiveIn(1) <> icmp_cmp6381.io.Out(0)
 
-  Loop_2.io.InLiveIn(2) <> icmp_cmp6381.io.Out(0)
+  Loop_2.io.InLiveIn(2) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_2.io.InLiveIn(3) <> icmp_cmp6381.io.Out(0)
+  Loop_2.io.InLiveIn(3) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_2.io.InLiveIn(4) <> InputSplitter.io.Out.data.elements("field1")(4)
+  Loop_2.io.InLiveIn(4) <> Gep_arrayidx103.io.Out(0)
 
-  Loop_2.io.InLiveIn(5) <> InputSplitter.io.Out.data.elements("field1")(4)
-
-  Loop_2.io.InLiveIn(6) <> InputSplitter.io.Out.data.elements("field0")(2)
-
-  Loop_2.io.InLiveIn(7) <> InputSplitter.io.Out.data.elements("field0")(2)
-
-  Loop_2.io.InLiveIn(8) <> Gep_arrayidx103.io.Out(0)
-
-  Loop_2.io.InLiveIn(9) <> Gep_arrayidx103.io.Out(0)
+  Loop_2.io.InLiveIn(5) <> Gep_arrayidx165.io.Out(0)
 
 
 
@@ -421,19 +393,19 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   Gep_arrayidx33.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field1")(0)
 
-  br_23.io.CmpIO <> Loop_1.io.OutLiveIn.elements("field0")(0)
+  icmp_exitcond4430.io.RightIO <> Loop_1.io.OutLiveIn.elements("field0")(1)
 
-  icmp_exitcond4430.io.RightIO <> Loop_1.io.OutLiveIn.elements("field1")(2)
+  br_23.io.CmpIO <> Loop_1.io.OutLiveIn.elements("field2")(0)
 
-  ld_26.io.GepAddr <> Loop_1.io.OutLiveIn.elements("field2")(0)
+  ld_26.io.GepAddr <> Loop_1.io.OutLiveIn.elements("field3")(0)
 
-  st_28.io.GepAddr <> Loop_1.io.OutLiveIn.elements("field2")(1)
+  st_28.io.GepAddr <> Loop_1.io.OutLiveIn.elements("field3")(1)
 
   br_12.io.CmpIO <> Loop_2.io.OutLiveIn.elements("field0")(0)
 
-  ld_15.io.GepAddr <> Loop_2.io.OutLiveIn.elements("field1")(0)
+  ld_15.io.GepAddr <> Loop_2.io.OutLiveIn.elements("field5")(0)
 
-  st_17.io.GepAddr <> Loop_2.io.OutLiveIn.elements("field1")(1)
+  st_17.io.GepAddr <> Loop_2.io.OutLiveIn.elements("field5")(1)
 
 
 
@@ -752,17 +724,17 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   br_39.io.CmpIO <> icmp_exitcond38.io.Out(0)
 
-  Gep_arrayidx103.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
+  Gep_arrayidx103.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  Gep_arrayidx165.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
+  Gep_arrayidx165.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(2)
 
-  icmp_cmp2400.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
+  icmp_cmp2400.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  icmp_cmp6381.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
+  icmp_cmp6381.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(2)
 
-  binaryOp_sub2.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(2)
+  binaryOp_sub2.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(3)
 
-  binaryOp_sub154.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(3)
+  binaryOp_sub154.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(4)
 
   st_17.io.Out(0).ready := true.B
 

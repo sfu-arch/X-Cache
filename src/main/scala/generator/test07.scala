@@ -246,11 +246,11 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
 
   Loop_0.io.InLiveIn(0) <> binaryOp_mul6.io.Out(0)
 
-  Loop_0.io.InLiveIn(1) <> Loop_1.io.OutLiveIn.elements("field1")(0)
+  Loop_0.io.InLiveIn(1) <> Loop_1.io.OutLiveIn.elements("field0")(0)
 
-  Loop_0.io.InLiveIn(2) <> Loop_1.io.OutLiveIn.elements("field0")(2)
+  Loop_0.io.InLiveIn(2) <> Loop_1.io.OutLiveIn.elements("field1")(0)
 
-  Loop_1.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field1")(1)
+  Loop_1.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
   Loop_1.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field0")(0)
 
@@ -262,13 +262,13 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
 
   binaryOp_add12.io.RightIO <> Loop_0.io.OutLiveIn.elements("field0")(0)
 
-  Gep_arrayidx13.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field1")(0)
+  icmp_exitcond18.io.RightIO <> Loop_0.io.OutLiveIn.elements("field1")(0)
 
-  icmp_exitcond18.io.RightIO <> Loop_0.io.OutLiveIn.elements("field2")(0)
+  Gep_arrayidx13.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field2")(0)
 
-  binaryOp_mul6.io.RightIO <> Loop_1.io.OutLiveIn.elements("field0")(0)
+  binaryOp_mul6.io.RightIO <> Loop_1.io.OutLiveIn.elements("field0")(1)
 
-  icmp_exitcond269.io.RightIO <> Loop_1.io.OutLiveIn.elements("field0")(1)
+  icmp_exitcond269.io.RightIO <> Loop_1.io.OutLiveIn.elements("field0")(2)
 
 
 
@@ -453,7 +453,7 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
 
   br_19.io.CmpIO <> icmp_exitcond18.io.Out(0)
 
-  icmp_cmp240.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
+  icmp_cmp240.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
 
   st_16.io.Out(0).ready := true.B
 
