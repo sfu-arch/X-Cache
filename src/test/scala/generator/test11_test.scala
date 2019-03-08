@@ -1,5 +1,8 @@
 package dataflow
 
+
+import java.io.PrintWriter
+import java.io.File
 import chisel3._
 import chisel3.util._
 import chisel3.Module
@@ -21,59 +24,55 @@ import node._
 import junctions._
 
 class test11MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32))))
-    val addr = Input(UInt(nastiXAddrBits.W))
-    val din  = Input(UInt(nastiXDataBits.W))
-    val write = Input(Bool())
-    val dout = Output(UInt(nastiXDataBits.W))
+  val io = IO( new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val req = Flipped(Decoupled(new MemReq))
+    val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
-
   })
+
+  def cloneType = new test11MainIO().asInstanceOf[this.type]
 }
 
 class test11MainDirect(implicit p: Parameters) extends test11MainIO{
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W))      // Local memory just to keep track of writes to cache for validation
 
-  // Store a copy of all data written to the cache.  This is done since the cache isn't
-  // 'write through' to the memory model and we have no easy way of reading the
-  // cache contents from the testbench.
-  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr>>2).asUInt(), cache.io.cpu.req.bits.data)
-  }
-  io.dout := memCopy.read((io.addr>>2).asUInt())
+  val cache = Module(new Cache) // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
   memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := io.addr
-  memModel.io.init.bits.data := io.din
-  memModel.io.init.valid := io.write
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := true.B
   cache.io.cpu.abort := false.B
 
+
   // Wire up the cache and modules under test.
-  val test11_add = Module(new test11_addDF())
   val test11 = Module(new test11DF())
+  val test11_inner = Module(new test11_innerDF())
 
 
-  val MemArbiter = Module(new MemArbiter(2))
+  val MemArbiter = Module(new MemArbiter(3))
 
 
   cache.io.cpu.req <> MemArbiter.io.cache.MemReq
   MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
 
-  MemArbiter.io.cpu.MemReq(0) <> test11_add.io.MemReq
-  test11_add.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
+  MemArbiter.io.cpu.MemReq(0) <> test11_inner.io.MemReq
+  test11_inner.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
 
   MemArbiter.io.cpu.MemReq(1) <> test11.io.MemReq
   test11.io.MemResp <> MemArbiter.io.cpu.MemResp(1)
 
-  test11.io.call_8_in <> test11_add.io.out
-  test11_add.io.in <> test11.io.call_8_out
+  MemArbiter.io.cpu.MemReq(2) <> io.req
+  io.resp <> MemArbiter.io.cpu.MemResp(2)
+
+  test11.io.call_5_in <> test11_inner.io.out
+  test11_inner.io.in <> test11.io.call_5_out
 
   test11.io.in <> io.in
   io.out <> test11.io.out
@@ -82,7 +81,6 @@ class test11MainDirect(implicit p: Parameters) extends test11MainIO{
 
 
 
-//class test11Test01(c: test11Main) extends PeekPokeTester(c) {
 class test11Test01[T <: test11MainDirect](c: T) extends PeekPokeTester(c) {
 
 
@@ -92,36 +90,58 @@ class test11Test01[T <: test11MainDirect](c: T) extends PeekPokeTester(c) {
   *    in = Flipped(new CallDecoupled(List(...)))
   *    out = new CallDecoupled(List(32))
   */
+  def MemRead(addr: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.iswrite, 0)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    while (peek(c.io.resp.valid) == 0) {
+      step(1)
+    }
+    val result = peek(c.io.resp.bits.data)
+    result
+  }
+
+  def MemWrite(addr: Int, data: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.data, data)
+    poke(c.io.req.bits.iswrite, 1)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    poke(c.io.req.valid, 0)
+    1
+  }
+
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").data, 10.U)
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 4.U)
-  poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 8.U)
-  poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
 
   step(1)
 
@@ -138,11 +158,12 @@ class test11Test01[T <: test11MainDirect](c: T) extends PeekPokeTester(c) {
       peek(c.io.out.bits.data("field0").predicate) == 1){
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 1) {
+      if (data != 475) {
         println(Console.RED + s"[LOG] *** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"[LOG] *** Correct result received." + Console.RESET)
+        println(Console.BLUE + s"*** Correct return result received ($data). Run time: $time cycles." + Console.RESET)
+
       }
     }
   }
@@ -154,7 +175,7 @@ class test11Test01[T <: test11MainDirect](c: T) extends PeekPokeTester(c) {
 
 }
 
-class test11Tester extends FlatSpec with Matchers {
+class test11Tester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that test11 works correctly." in {
     // iotester flags:
