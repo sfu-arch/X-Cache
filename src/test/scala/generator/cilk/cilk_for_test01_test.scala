@@ -31,7 +31,6 @@ class cilk_for_test01MainIO(implicit val p: Parameters) extends Module with Core
     val out = Decoupled(new Call(List(32)))
   })
 
-  /* Chisel 3.1 */
    def cloneType = new cilk_for_test01MainIO().asInstanceOf[this.type]
 }
 
@@ -53,12 +52,12 @@ class cilk_for_test01Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
 
   val NumTiles = tiles
   val cilk_for_tiles = for (i <- 0 until NumTiles) yield {
-    val cilk04 = Module(new cilk_for_test01_detach1DF())
-    cilk04
+    val cilk01 = Module(new cilk_for_test01_detach1DF())
+    cilk01
   }
 
-  val TC = Module(new TaskController(List(32, 32, 32), List(32), 1, numChild = NumTiles))
-  val CacheArb = Module(new MemArbiter(NumTiles + 1))
+  val TC = Module(new TaskController(List(32, 32, 32), List(), 1, numChild = NumTiles))
+  val CacheArb = Module(new MemArbiter(NumTiles + 2))
 
 
   // Merge the memory interfaces and connect to the stack memory
@@ -73,8 +72,12 @@ class cilk_for_test01Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
     TC.io.childIn(i) <> cilk_for_tiles(i).io.out
   }
 
-  TC.io.parentIn(0) <> cilk_for_testDF.io.call_9_out
-  cilk_for_testDF.io.call_9_in <> TC.io.parentOut(0)
+
+  CacheArb.io.cpu.MemReq(NumTiles + 1) <> cilk_for_testDF.io.MemReq
+  cilk_for_testDF.io.MemResp <> CacheArb.io.cpu.MemResp(NumTiles + 1)
+
+  TC.io.parentIn(0) <> cilk_for_testDF.io.call_8_out
+  cilk_for_testDF.io.call_8_in <> TC.io.parentOut(0)
 
 
   CacheArb.io.cpu.MemReq(NumTiles) <> io.req
