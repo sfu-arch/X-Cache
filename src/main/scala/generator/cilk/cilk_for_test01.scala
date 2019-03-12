@@ -75,7 +75,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
 
   val bb_sync_continue4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 4))
 
-  val bb_offload_pfor_body5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 5))
+  val bb_offload_pfor_body5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
 
 
@@ -108,7 +108,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   val ret_7 = Module(new RetNode2(retTypes = List(32), ID = 7))
 
   //  call void @cilk_for_test01_detach1(i32* %a, i32 %__begin.011, i32* %b), !UID !25
-  val call_8_out = Module(new CallOutNode(ID = 8, NumSuccOps = 0, argTypes = List(32, 32, 32)))
+  val call_8_out = Module(new CallOutNode(ID = 8, NumSuccOps = 0, argTypes = List(32,32,32)))
 
   val call_8_in = Module(new CallInNode(ID = 8, argTypes = List()))
 
@@ -251,6 +251,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
 
   phi__begin_0112.io.enable <> bb_pfor_detach2.io.Out(1)
 
+
   detach_3.io.enable <> bb_pfor_detach2.io.Out(2)
 
 
@@ -260,7 +261,9 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
 
   binaryOp_inc4.io.enable <> bb_pfor_inc3.io.Out(2)
 
+
   icmp_exitcond5.io.enable <> bb_pfor_inc3.io.Out(3)
+
 
   br_6.io.enable <> bb_pfor_inc3.io.Out(4)
 
@@ -270,7 +273,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   ret_7.io.In.enable <> bb_sync_continue4.io.Out(1)
 
 
-  call_8_in.io.enable.enq(ControlBundle.active())
+  call_8_in.io.enable <> bb_offload_pfor_body5.io.Out(1)
 
   call_8_out.io.enable <> bb_offload_pfor_body5.io.Out(0)
 
@@ -317,7 +320,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
 
   binaryOp_inc4.io.LeftIO <> phi__begin_0112.io.Out(0)
 
-  call_8_out.io.In("field1") <> phi__begin_0112.io.Out(1)
+  call_8_out.io.In.elements("field1") <> phi__begin_0112.io.Out(1)
 
   icmp_exitcond5.io.LeftIO <> binaryOp_inc4.io.Out(1)
 
