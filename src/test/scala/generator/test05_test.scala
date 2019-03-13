@@ -36,8 +36,8 @@ class test05MainIO(implicit val p: Parameters) extends Module with CoreParams wi
 class test05Main(implicit p: Parameters) extends test05MainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
+  val memModel = Module(new NastiInitMemSlave()()) // Model of DRAM to connect to Cache
+//  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
@@ -123,19 +123,21 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
 
 
 //  val inAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
-  val inAddrVec = List.range(0, (4 * 10), 4)
+  val addr_range = 0xcac0
+  val inAddrVec = List.range(addr_range, addr_range + (4 * 10), 4)
   val inDataVec = List(0, 1, 2, 3, 4, 0, 0, 0, 0, 0)
-  val outAddrVec = List.range(0, (4 * 10), 4)
+  val outAddrVec = List.range(addr_range, addr_range+ (4 * 10), 4)
 //  val outAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
   val outDataVec = inDataVec.zipWithIndex.map { case (a, b) => if (b < 5) a else (b - 5) * 2 }
 
 
-  //   Write initial contents to the memory model.
-  for (i <- 0 until inDataVec.length) {
-    MemWrite(inAddrVec(i), inDataVec(i))
-  }
-  step(1)
+  //Write initial contents to the memory model.
+//  for (i <- 0 until inDataVec.length) {
+//    MemWrite(inAddrVec(i), inDataVec(i))
+//  }
+  step(10)
   dumpMemory("memory.txt")
+
   step(1)
 
   // Initializing the signals
@@ -148,7 +150,7 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, addr_range) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
