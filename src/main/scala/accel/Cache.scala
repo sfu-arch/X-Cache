@@ -91,7 +91,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   // memory
   val valid = RegInit(0.U(nSets.W))
   val dirty = RegInit(0.U(nSets.W))
-  val metaMem = Mem(nSets, new MetaData)
+  val metaMem = SyncReadMem(nSets, new MetaData)
   val dataMem = Seq.fill(nWords)(Mem(nSets, Vec(wBytes, UInt(8.W))))
 
   val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
@@ -108,7 +108,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
 
   val is_idle = state === s_IDLE
   val is_read = state === s_READ_CACHE
-  val is_write = state === s_WRITE_CACHE
+  val is_write = RegNext(state === s_WRITE_CACHE)
   val is_alloc = state === s_REFILL && read_wrap_out
   val is_alloc_reg = RegNext(is_alloc)
 
@@ -149,13 +149,14 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   io.cpu.resp.bits.iswrite := cpu_iswrite
   io.cpu.resp.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.req.ready := is_idle || (state === s_READ_CACHE && hit)
-
+  //  printf(p"\n  V W : ${is_write} Hit: ${hit} valid ${valid(idx_reg)} Rmeta: ${rmeta.tag} Tag: ${tag_reg}\n")
   when(io.cpu.req.valid && io.cpu.req.ready) {
     addr_reg := addr
     cpu_tag := io.cpu.req.bits.tag
     cpu_data := io.cpu.req.bits.data
     cpu_mask := io.cpu.req.bits.mask
     cpu_iswrite := io.cpu.req.bits.iswrite
+    //    printf(p"Cache Req ${io.cpu.req}")
 
   }
 

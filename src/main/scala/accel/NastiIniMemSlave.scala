@@ -17,7 +17,7 @@ class NastiInitMemSlaveIO(implicit p: Parameters) extends CoreBundle( )(p) with 
   val nasti = Flipped(new NastiIO)
 }
 
-class NastiInitMemSlave(val depth: Int = 1 << 24, latency: Int = 20)
+class NastiInitMemSlave(val depth: Int = 1 << 28, latency: Int = 20)
                        (val targetDirName : String = "/Users/amirali/git/dandelion-lib/src/main/resources/verilog")
                        (implicit val p: Parameters) extends Module with CacheParams {
 
