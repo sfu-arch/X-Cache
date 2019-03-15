@@ -178,13 +178,18 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
 
   Gep_0.io.enable <> bb_my_pfor_body0.io.Out(1)
 
+
   ld_1.io.enable <> bb_my_pfor_body0.io.Out(2)
+
 
   binaryOp_2.io.enable <> bb_my_pfor_body0.io.Out(3)
 
+
   Gep_3.io.enable <> bb_my_pfor_body0.io.Out(4)
 
+
   st_4.io.enable <> bb_my_pfor_body0.io.Out(5)
+
 
   ret_5.io.In.enable <> bb_my_pfor_body0.io.Out(6)
 

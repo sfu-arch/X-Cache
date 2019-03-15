@@ -38,6 +38,8 @@ class GepNodeTwoIO(NumOuts: Int)
   val idx1        = Flipped(Decoupled(new DataBundle( )))
   val idx2        = Flipped(Decoupled(new DataBundle( )))
 
+  override def cloneType = new GepNodeTwoIO(NumOuts).asInstanceOf[this.type]
+
 }
 
 class GepNodeStackIO(NumOuts: Int)

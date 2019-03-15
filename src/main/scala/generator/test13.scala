@@ -1,5 +1,6 @@
 package dataflow
 
+import FPU._
 import accel._
 import arbiters._
 import chisel3._
@@ -27,7 +28,7 @@ import util._
 
 abstract class test13DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
@@ -41,15 +42,17 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
-		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RWArbiter=new ReadWriteArbiter()))
+  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 1)
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(1)))
+  val SharedFPU = Module(new SharedFPU(NumOps = 1, PipeDepth = 32)(t = p(FTYP)))
+
+  val InputSplitter = Module(new SplitCallNew(List(2, 3, 1)))
   InputSplitter.io.In <> io.in
 
 
@@ -58,9 +61,7 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(1), NumOuts = 1, NumExits=1, ID = 0))
-
-  val Loop_1 = Module(new LoopBlock(NumIns=List(1), NumOuts = 1, NumExits=1, ID = 1))
+  val Loop_0 = Module(new LoopBlockNode(NumIns = List(1, 1, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
 
 
 
@@ -68,23 +69,15 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 0))
 
-  val bb_for_cond1 = Module(new LoopHead(NumOuts = 6, NumPhi=2, BID = 1))
+  val bb_for_body_preheader1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
-  val bb_for_body2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_for_cond_cleanup_loopexit2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
-  val bb_for_cond13 = Module(new LoopHead(NumOuts = 6, NumPhi=2, BID = 3))
+  val bb_for_cond_cleanup3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 5, BID = 3))
 
-  val bb_for_body34 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 4))
-
-  val bb_for_inc5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 5))
-
-  val bb_for_end6 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
-
-  val bb_for_inc57 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 7))
-
-  val bb_for_end78 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 8))
+  val bb_for_body4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 10, NumPhi = 1, BID = 4))
 
 
 
@@ -92,59 +85,53 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  br label %for.cond
-  val br_0 = Module(new UBranchNode(ID = 0))
+  //  %cmp11 = icmp sgt i32 %n, 0, !dbg !31, !UID !33
+  val icmp_cmp110 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc6, %for.inc5 ]
-  val phi_i_01 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 1))
+  //  br i1 %cmp11, label %for.body.preheader, label %for.cond.cleanup, !dbg !34, !UID !35, !BB_UID !36
+  val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
 
-  //  %foo.0 = phi i32 [ %j, %entry ], [ %foo.1, %for.inc5 ]
-  val phi_foo_02 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 2))
+  //  br label %for.body, !dbg !37, !UID !39, !BB_UID !40
+  val br_2 = Module(new UBranchNode(ID = 2))
 
-  //  %cmp = icmp ult i32 %i.0, 5
-  val icmp_cmp3 = Module(new IcmpNode(NumOuts = 1, ID = 3, opCode = "ult")(sign=false))
+  //  br label %for.cond.cleanup, !dbg !41
+  val br_3 = Module(new UBranchNode(ID = 3))
 
-  //  br i1 %cmp, label %for.body, label %for.end7
-  val br_4 = Module(new CBranchNode(ID = 4))
+  //  %sub = add nsw i32 %n, -1, !dbg !41, !UID !42
+  val binaryOp_sub4 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign = false))
 
-  //  br label %for.cond1
-  val br_5 = Module(new UBranchNode(ID = 5))
+  //  %arrayidx2 = getelementptr inbounds float, float* %a, i32 %sub, !dbg !43, !UID !44
+  val Gep_arrayidx25 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 5)(ElementSize = 4, ArraySize = List()))
 
-  //  %foo.1 = phi i32 [ %foo.0, %for.body ], [ %inc, %for.inc ]
-  val phi_foo_16 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 6))
+  //  %0 = load float, float* %arrayidx2, align 4, !dbg !43, !tbaa !45, !UID !49
+  val ld_6 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 0))
 
-  //  %k.0 = phi i32 [ 0, %for.body ], [ %inc4, %for.inc ]
-  val phi_k_07 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 7))
+  //  ret float %0, !dbg !50, !UID !51, !BB_UID !52
+  val ret_7 = Module(new RetNode2(retTypes = List(32), ID = 7))
 
-  //  %cmp2 = icmp ult i32 %k.0, 5
-  val icmp_cmp28 = Module(new IcmpNode(NumOuts = 1, ID = 8, opCode = "ult")(sign=false))
+  //  %k.012 = phi i32 [ %inc, %for.body ], [ 0, %for.body.preheader ], !UID !53
+  val phik_0128 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 8, Res = false))
 
-  //  br i1 %cmp2, label %for.body3, label %for.end
-  val br_9 = Module(new CBranchNode(ID = 9))
+  //  %arrayidx = getelementptr inbounds float, float* %a, i32 %k.012, !dbg !37, !UID !54
+  val Gep_arrayidx9 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 9)(ElementSize = 4, ArraySize = List()))
 
-  //  %inc = add i32 %foo.1, 1
-  val binaryOp_inc10 = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "add")(sign=false))
+  //  %1 = load float, float* %arrayidx, align 4, !dbg !37, !tbaa !45, !UID !55
+  val ld_10 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 10, RouteID = 1))
 
-  //  br label %for.inc
-  val br_11 = Module(new UBranchNode(ID = 11))
+  //  %div = fdiv float %1, %mean, !dbg !56, !UID !57
+  val FP_div11 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 11, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
 
-  //  %inc4 = add i32 %k.0, 1
-  val binaryOp_inc412 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign=false))
+  //  store float %div, float* %arrayidx, align 4, !dbg !58, !tbaa !45, !UID !59
+  val st_12 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 12, RouteID = 0))
 
-  //  br label %for.cond1, !llvm.loop !6
-  val br_13 = Module(new UBranchNode(NumOuts=2, ID = 13))
+  //  %inc = add nuw nsw i32 %k.012, 1, !dbg !60, !UID !61
+  val binaryOp_inc13 = Module(new ComputeNode(NumOuts = 2, ID = 13, opCode = "add")(sign = false))
 
-  //  br label %for.inc5
-  val br_14 = Module(new UBranchNode(ID = 14))
+  //  %exitcond = icmp eq i32 %inc, %n, !dbg !31, !UID !62
+  val icmp_exitcond14 = Module(new IcmpNode(NumOuts = 1, ID = 14, opCode = "eq")(sign = false))
 
-  //  %inc6 = add i32 %i.0, 1
-  val binaryOp_inc615 = Module(new ComputeNode(NumOuts = 1, ID = 15, opCode = "add")(sign=false))
-
-  //  br label %for.cond, !llvm.loop !17
-  val br_16 = Module(new UBranchNode(NumOuts=2, ID = 16))
-
-  //  ret i32 %foo.0
-  val ret_17 = Module(new RetNode(retTypes=List(32), ID = 17))
+  //  br i1 %exitcond, label %for.cond.cleanup.loopexit, label %for.body, !dbg !34, !llvm.loop !63, !UID !65, !BB_UID !66
+  val br_15 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 15))
 
 
 
@@ -153,25 +140,16 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    * ================================================================== */
 
   //i32 0
-  val const0 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 0))
+  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
 
-  //i32 5
-  val const1 = Module(new ConstNode(value = 5, NumOuts = 1, ID = 1))
+  //i32 -1
+  val const1 = Module(new ConstFastNode(value = -1, ID = 1))
 
   //i32 0
-  val const2 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 2))
-
-  //i32 5
-  val const3 = Module(new ConstNode(value = 5, NumOuts = 1, ID = 3))
+  val const2 = Module(new ConstFastNode(value = 0, ID = 2))
 
   //i32 1
-  val const4 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 4))
-
-  //i32 1
-  val const5 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 5))
-
-  //i32 1
-  val const6 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 6))
+  val const3 = Module(new ConstFastNode(value = 1, ID = 3))
 
 
 
@@ -179,27 +157,25 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-  bb_for_cond1.io.activate <> Loop_1.io.activate
+  bb_for_body_preheader1.io.predicateIn(0) <> br_1.io.TrueOutput(0)
 
-  bb_for_cond1.io.loopBack <> br_16.io.Out(0)
+  bb_for_cond_cleanup3.io.predicateIn(1) <> br_1.io.FalseOutput(0)
 
-  bb_for_body2.io.predicateIn <> br_4.io.Out(0)
+  bb_for_cond_cleanup3.io.predicateIn(0) <> br_3.io.Out(0)
 
-  bb_for_cond13.io.activate <> Loop_0.io.activate
 
-  bb_for_cond13.io.loopBack <> br_13.io.Out(0)
 
-  bb_for_body34.io.predicateIn <> br_9.io.Out(0)
+  /* ================================================================== *
+   *                   BASICBLOCK -> PREDICATE LOOP                     *
+   * ================================================================== */
 
-  bb_for_inc5.io.predicateIn <> br_11.io.Out(0)
+  bb_for_cond_cleanup_loopexit2.io.predicateIn(0) <> Loop_0.io.loopExit(0)
 
-  bb_for_end6.io.predicateIn <> Loop_0.io.endEnable
+  bb_for_body4.io.predicateIn(1) <> Loop_0.io.activate_loop_start
 
-  bb_for_inc57.io.predicateIn <> br_14.io.Out(0)
-
-  bb_for_end78.io.predicateIn <> Loop_1.io.endEnable
+  bb_for_body4.io.predicateIn(0) <> Loop_0.io.activate_loop_back
 
 
 
@@ -213,17 +189,11 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   LOOP -> PREDICATE INSTRUCTION                    *
    * ================================================================== */
 
-  Loop_0.io.enable <> br_5.io.Out(0)
+  Loop_0.io.enable <> br_2.io.Out(0)
 
-  Loop_0.io.latchEnable <> br_13.io.Out(1)
+  Loop_0.io.loopBack(0) <> br_15.io.FalseOutput(0)
 
-  Loop_0.io.loopExit(0) <> br_9.io.Out(1)
-
-  Loop_1.io.enable <> br_0.io.Out(0)
-
-  Loop_1.io.latchEnable <> br_16.io.Out(1)
-
-  Loop_1.io.loopExit(0) <> br_4.io.Out(1)
+  Loop_0.io.loopFinish(0) <> br_15.io.TrueOutput(0)
 
 
 
@@ -237,9 +207,11 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> phi_foo_02.io.Out(0)
+  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_1.io.In(0) <> InputSplitter.io.Out.data.elements("field0")(0)
+  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field2")(0)
+
+  Loop_0.io.InLiveIn(2) <> InputSplitter.io.Out.data.elements("field1")(0)
 
 
 
@@ -247,9 +219,11 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  phi_foo_16.io.InData(0) <> Loop_0.io.liveIn.elements("field0")(0)
+  Gep_arrayidx9.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field0")(0)
 
-  phi_foo_02.io.InData(0) <> Loop_1.io.liveIn.elements("field0")(0)
+  FP_div11.io.b <> Loop_0.io.OutLiveIn.elements("field1")(0)
+
+  icmp_exitcond14.io.RightIO <> Loop_0.io.OutLiveIn.elements("field2")(0)
 
 
 
@@ -257,9 +231,27 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
 
-  Loop_0.io.liveOut(0) <> phi_foo_16.io.Out(0)
 
-  Loop_1.io.liveOut(0) <> phi_foo_02.io.Out(1)
+
+  /* ================================================================== *
+   *                   LOOP LIVE OUT DEPENDENCIES                       *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP CARRY DEPENDENCIES                          *
+   * ================================================================== */
+
+  Loop_0.io.CarryDepenIn(0) <> binaryOp_inc13.io.Out(0)
+
+
+
+  /* ================================================================== *
+   *                   LOOP DATA CARRY DEPENDENCIES                     *
+   * ================================================================== */
+
+  phik_0128.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
 
 
 
@@ -267,63 +259,60 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   BASICBLOCK -> ENABLE INSTRUCTION                 *
    * ================================================================== */
 
-  br_0.io.enable <> bb_entry0.io.Out(0)
+  const0.io.enable <> bb_entry0.io.Out(0)
+
+  icmp_cmp110.io.enable <> bb_entry0.io.Out(1)
 
 
-  const0.io.enable <> bb_for_cond1.io.Out(0)
-
-  const1.io.enable <> bb_for_cond1.io.Out(1)
-
-  phi_i_01.io.enable <> bb_for_cond1.io.Out(2)
-
-  phi_foo_02.io.enable <> bb_for_cond1.io.Out(3)
-
-  icmp_cmp3.io.enable <> bb_for_cond1.io.Out(4)
-
-  br_4.io.enable <> bb_for_cond1.io.Out(5)
+  br_1.io.enable <> bb_entry0.io.Out(2)
 
 
-  br_5.io.enable <> bb_for_body2.io.Out(0)
+  br_2.io.enable <> bb_for_body_preheader1.io.Out(0)
 
 
-  const2.io.enable <> bb_for_cond13.io.Out(0)
-
-  const3.io.enable <> bb_for_cond13.io.Out(1)
-
-  phi_foo_16.io.enable <> bb_for_cond13.io.Out(2)
-
-  phi_k_07.io.enable <> bb_for_cond13.io.Out(3)
-
-  icmp_cmp28.io.enable <> bb_for_cond13.io.Out(4)
-
-  br_9.io.enable <> bb_for_cond13.io.Out(5)
+  br_3.io.enable <> bb_for_cond_cleanup_loopexit2.io.Out(0)
 
 
-  const4.io.enable <> bb_for_body34.io.Out(0)
+  const1.io.enable <> bb_for_cond_cleanup3.io.Out(0)
 
-  binaryOp_inc10.io.enable <> bb_for_body34.io.Out(1)
-
-  br_11.io.enable <> bb_for_body34.io.Out(2)
+  binaryOp_sub4.io.enable <> bb_for_cond_cleanup3.io.Out(1)
 
 
-  const5.io.enable <> bb_for_inc5.io.Out(0)
-
-  binaryOp_inc412.io.enable <> bb_for_inc5.io.Out(1)
-
-  br_13.io.enable <> bb_for_inc5.io.Out(2)
+  Gep_arrayidx25.io.enable <> bb_for_cond_cleanup3.io.Out(2)
 
 
-  br_14.io.enable <> bb_for_end6.io.Out(0)
+  ld_6.io.enable <> bb_for_cond_cleanup3.io.Out(3)
 
 
-  const6.io.enable <> bb_for_inc57.io.Out(0)
-
-  binaryOp_inc615.io.enable <> bb_for_inc57.io.Out(1)
-
-  br_16.io.enable <> bb_for_inc57.io.Out(2)
+  ret_7.io.In.enable <> bb_for_cond_cleanup3.io.Out(4)
 
 
-  ret_17.io.enable <> bb_for_end78.io.Out(0)
+  const2.io.enable <> bb_for_body4.io.Out(0)
+
+  const3.io.enable <> bb_for_body4.io.Out(1)
+
+  phik_0128.io.enable <> bb_for_body4.io.Out(2)
+
+
+  Gep_arrayidx9.io.enable <> bb_for_body4.io.Out(3)
+
+
+  ld_10.io.enable <> bb_for_body4.io.Out(4)
+
+
+  FP_div11.io.enable <> bb_for_body4.io.Out(5)
+
+
+  st_12.io.enable <> bb_for_body4.io.Out(6)
+
+
+  binaryOp_inc13.io.enable <> bb_for_body4.io.Out(7)
+
+
+  icmp_exitcond14.io.enable <> bb_for_body4.io.Out(8)
+
+
+  br_15.io.enable <> bb_for_body4.io.Out(9)
 
 
 
@@ -332,13 +321,7 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
 
-  phi_i_01.io.Mask <> bb_for_cond1.io.MaskBB(0)
-
-  phi_foo_02.io.Mask <> bb_for_cond1.io.MaskBB(1)
-
-  phi_foo_16.io.Mask <> bb_for_cond13.io.MaskBB(0)
-
-  phi_k_07.io.Mask <> bb_for_cond13.io.MaskBB(1)
+  phik_0128.io.Mask <> bb_for_body4.io.MaskBB(0)
 
 
 
@@ -352,11 +335,26 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
 
+  MemCtrl.io.ReadIn(0) <> ld_6.io.memReq
+
+  ld_6.io.memResp <> MemCtrl.io.ReadOut(0)
+
+  MemCtrl.io.ReadIn(1) <> ld_10.io.memReq
+
+  ld_10.io.memResp <> MemCtrl.io.ReadOut(1)
+
+  MemCtrl.io.WriteIn(0) <> st_12.io.memReq
+
+  st_12.io.memResp <> MemCtrl.io.WriteOut(0)
+
 
 
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
+
+  SharedFPU.io.InData(0) <> FP_div11.io.FUReq
+  FP_div11.io.FUResp <> SharedFPU.io.OutData(0)
 
 
 
@@ -364,43 +362,45 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  phi_i_01.io.InData(0) <> const0.io.Out(0)
+  icmp_cmp110.io.RightIO <> const0.io.Out
 
-  icmp_cmp3.io.RightIO <> const1.io.Out(0)
+  binaryOp_sub4.io.RightIO <> const1.io.Out
 
-  phi_k_07.io.InData(0) <> const2.io.Out(0)
+  phik_0128.io.InData(1) <> const2.io.Out
 
-  icmp_cmp28.io.RightIO <> const3.io.Out(0)
+  binaryOp_inc13.io.RightIO <> const3.io.Out
 
-  binaryOp_inc10.io.RightIO <> const4.io.Out(0)
+  br_1.io.CmpIO <> icmp_cmp110.io.Out(0)
 
-  binaryOp_inc412.io.RightIO <> const5.io.Out(0)
+  Gep_arrayidx25.io.idx(0) <> binaryOp_sub4.io.Out(0)
 
-  binaryOp_inc615.io.RightIO <> const6.io.Out(0)
+  ld_6.io.GepAddr <> Gep_arrayidx25.io.Out(0)
 
-  icmp_cmp3.io.LeftIO <> phi_i_01.io.Out(0)
+  ret_7.io.In.data("field0") <> ld_6.io.Out(0)
 
-  binaryOp_inc615.io.LeftIO <> phi_i_01.io.Out(1)
+  Gep_arrayidx9.io.idx(0) <> phik_0128.io.Out(0)
 
-  br_4.io.CmpIO <> icmp_cmp3.io.Out(0)
+  binaryOp_inc13.io.LeftIO <> phik_0128.io.Out(1)
 
-  binaryOp_inc10.io.LeftIO <> phi_foo_16.io.Out(1)
+  ld_10.io.GepAddr <> Gep_arrayidx9.io.Out(0)
 
-  icmp_cmp28.io.LeftIO <> phi_k_07.io.Out(0)
+  st_12.io.GepAddr <> Gep_arrayidx9.io.Out(1)
 
-  binaryOp_inc412.io.LeftIO <> phi_k_07.io.Out(1)
+  FP_div11.io.a <> ld_10.io.Out(0)
 
-  br_9.io.CmpIO <> icmp_cmp28.io.Out(0)
+  st_12.io.inData <> FP_div11.io.Out(0)
 
-  phi_foo_16.io.InData(1) <> binaryOp_inc10.io.Out(0)
+  icmp_exitcond14.io.LeftIO <> binaryOp_inc13.io.Out(1)
 
-  phi_k_07.io.InData(1) <> binaryOp_inc412.io.Out(0)
+  br_15.io.CmpIO <> icmp_exitcond14.io.Out(0)
 
-  phi_i_01.io.InData(1) <> binaryOp_inc615.io.Out(0)
+  Gep_arrayidx25.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  phi_foo_02.io.InData(1) <> Loop_0.io.Out(0)
+  icmp_cmp110.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  ret_17.io.In.elements("field0") <> Loop_1.io.Out(0)
+  binaryOp_sub4.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(2)
+
+  st_12.io.Out(0).ready := true.B
 
 
 
@@ -408,13 +408,15 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out <> ret_17.io.Out
+  io.out <> ret_7.io.Out
 
 }
 
 import java.io.{File, FileWriter}
-object test13Main extends App {
-  val dir = new File("RTL/test13") ; dir.mkdirs
+
+object test13Top extends App {
+  val dir = new File("RTL/test13Top");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test13DF()))
 

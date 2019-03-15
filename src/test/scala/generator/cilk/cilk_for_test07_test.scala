@@ -21,7 +21,7 @@ import node._
 
 
 class cilk_for_test07MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
+  val io = IO( new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))  // Initialization address
     val din  = Input(UInt(nastiXDataBits.W))  // Initialization data
@@ -29,6 +29,8 @@ class cilk_for_test07MainIO(implicit val p: Parameters)  extends Module with Cor
     val dout = Output(UInt(nastiXDataBits.W))
     val out = Decoupled(new Call(List(32)))
   })
+
+  def cloneType = new cilk_for_test07MainIO().asInstanceOf[this.type]
 }
 
 class cilk_for_test07MainDirect(implicit p: Parameters) extends cilk_for_test07MainIO {
@@ -54,14 +56,17 @@ class cilk_for_test07MainDirect(implicit p: Parameters) extends cilk_for_test07M
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val cilk_for_test07_detach = Module(new cilk_for_test07_detachDF())
+  val cilk_for_test07_detach = Module(new cilk_for_test07_detach1DF())
   val cilk_for_test07 = Module(new cilk_for_test07DF())
+
+  cilk_for_test07.io.MemResp <> DontCare
+  cilk_for_test07.io.MemReq <> DontCare
 
   cache.io.cpu.req <> cilk_for_test07_detach.io.MemReq
   cilk_for_test07_detach.io.MemResp <> cache.io.cpu.resp
   cilk_for_test07.io.in <> io.in
-  cilk_for_test07_detach.io.in <> cilk_for_test07.io.call8_out
-  cilk_for_test07.io.call8_in <> cilk_for_test07_detach.io.out
+  cilk_for_test07_detach.io.in <> cilk_for_test07.io.call_8_out
+  cilk_for_test07.io.call_8_in <> cilk_for_test07_detach.io.out
   io.out <> cilk_for_test07.io.out
 
 }
@@ -95,7 +100,7 @@ class cilk_for_test07MainTM(implicit p: Parameters) extends cilk_for_test07MainI
   val cilk_for_test07 = Module(new cilk_for_test07DF())
 
   val cilk_for_test07_detach = for (i <- 0 until children) yield {
-    val foo = Module(new cilk_for_test07_detachDF())
+    val foo = Module(new cilk_for_test07_detach1DF())
     foo
   }
 
@@ -113,7 +118,7 @@ class cilk_for_test07MainTM(implicit p: Parameters) extends cilk_for_test07MainI
   cilk_for_test07.io.in <> io.in
 
   // cilk_for_test07 to task controller
-  TaskControllerModule.io.parentIn(0) <> cilk_for_test07.io.call8_out
+  TaskControllerModule.io.parentIn(0) <> cilk_for_test07.io.call_8_out
 
   // task controller to sub-task cilk_for_test07_detach
   for (i <- 0 until children ) {
@@ -122,7 +127,7 @@ class cilk_for_test07MainTM(implicit p: Parameters) extends cilk_for_test07MainI
   }
 
   // Task controller to cilk_for_test07
-  cilk_for_test07.io.call8_in <> TaskControllerModule.io.parentOut(0)
+  cilk_for_test07.io.call_8_in <> TaskControllerModule.io.parentOut(0)
 
   // cilk_for_test07 to tester
   io.out <> cilk_for_test07.io.out
