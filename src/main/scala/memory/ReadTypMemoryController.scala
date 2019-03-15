@@ -189,10 +189,9 @@ class ReadTypMemoryController(NumOps: Int,
   for (i <- 0 until NumOps) {
     in_arb.io.in(i) <> io.ReadIn(i)
     io.ReadOut(i) <> out_demux.io.outputs(i)
+    alloc_arb.io.in(i).bits := false.B
   }
 
-  alloc_arb.io.in(0).bits := false.B
-  alloc_arb.io.in(1).bits := false.B
 
   /*=============================================
 =           Declare Read Table                =

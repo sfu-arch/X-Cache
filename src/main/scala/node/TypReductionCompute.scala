@@ -51,6 +51,8 @@ object operationreduction {
 
         val ops = for (k <- 0 until l.N) yield {
           val reduction_node = Module(new UALU(p(XLEN), opcode))
+          reduction_node.io.in1 <> DontCare
+          reduction_node.io.in2 <> DontCare
           reduction_node
         }
 
@@ -92,6 +94,8 @@ class TypReduceComputeIO(NumOuts: Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
   // LeftIO: Left input data for computation
   val LeftIO = Flipped(Decoupled(new TypBundle))
+
+  override def cloneType = new TypReduceComputeIO(NumOuts).asInstanceOf[this.type]
 
 }
 

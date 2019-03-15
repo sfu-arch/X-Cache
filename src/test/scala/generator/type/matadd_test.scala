@@ -21,12 +21,14 @@ import node._
 
 
 class mataddMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
+  val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List()))
   })
+
+  def cloneType = new mataddMainIO().asInstanceOf[this.type]
 }
 
 

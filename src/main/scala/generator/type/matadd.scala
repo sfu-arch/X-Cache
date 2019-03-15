@@ -40,17 +40,12 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 2)
-  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RWArbiter = new ReadWriteArbiter()))
-
-  val StackFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 2, NWrites = 2)
-  (WControl = new WriteTypMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  val StackFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 2, NWrites = 1)
+  (WControl = new WriteTypMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
   (RControl = new ReadTypMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2)))
 
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
+  io.MemReq <> DontCare
+  io.MemResp <> DontCare
 
   val InputSplitter = Module(new SplitCallNew(List(1, 1, 1)))
   InputSplitter.io.In <> io.in

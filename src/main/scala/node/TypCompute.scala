@@ -248,6 +248,8 @@ class TypComputeIO(NumOuts: Int)(implicit p: Parameters)
 
   // RightIO: Right input data for computation
   val RightIO = Flipped(Decoupled(new TypBundle))
+
+  override def cloneType = new TypComputeIO(NumOuts).asInstanceOf[this.type]
 }
 
 class TypCompute[T <: Numbers : OperatorLike](NumOuts: Int, ID: Int, opCode: String)(sign: Boolean)(gen: => T)(implicit p: Parameters)

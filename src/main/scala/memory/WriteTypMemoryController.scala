@@ -209,6 +209,7 @@ class WriteTypMemoryController
   for (i <- 0 until NumOps) {
     in_arb.io.in(i) <> io.WriteIn(i)
     io.WriteOut(i) <> out_demux.io.outputs(i)
+    alloc_arb.io.in(i).bits <> false.B
   }
 
   /*=============================================
@@ -230,8 +231,6 @@ class WriteTypMemoryController
                5. Cache response demux                                                             =
   =========================================================================*/
 
-  alloc_arb.io.in(0).bits := false.B
-  alloc_arb.io.in(1).bits := false.B
 
   for (i <- 0 until MLPSize) {
     // val MSHR = Module(new WriteTableEntry(i))
