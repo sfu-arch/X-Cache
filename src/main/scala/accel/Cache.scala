@@ -53,72 +53,72 @@ object MemResp {
   }
 }*/
 
-class CacheIO(implicit p: Parameters) extends ParameterizedBundle()(p) {
-  val abort = Input(Bool())
-  val req = Flipped(Decoupled(new MemReq))
-  val resp = Output(Valid(new MemResp))
+class CacheIO(implicit p: Parameters) extends ParameterizedBundle( )(p) {
+  val abort = Input(Bool( ))
+  val req   = Flipped(Decoupled(new MemReq))
+  val resp  = Output(Valid(new MemResp))
 }
 
-class CacheModuleIO(implicit p: Parameters) extends CoreBundle()(p) {
-  val cpu = new CacheIO
+class CacheModuleIO(implicit p: Parameters) extends CoreBundle( )(p) {
+  val cpu   = new CacheIO
   val nasti = new NastiIO
-  val stat = Output(UInt(xlen.W))
+  val stat  = Output(UInt(xlen.W))
 }
 
 trait CacheParams extends CoreParams with HasNastiParameters {
   val nWays = p(NWays) // Not used...
-  val nSets = p(NSets)
-  val bBytes = p(CacheBlockBytes)
-  val bBits = bBytes << 3
-  val blen = log2Ceil(bBytes)
-  val slen = log2Ceil(nSets)
-  val taglen = xlen - (slen + blen)
-  val nWords = bBits / xlen
-  val wBytes = xlen / 8
+  val nSets          = p(NSets)
+  val bBytes         = p(CacheBlockBytes)
+  val bBits          = bBytes << 3
+  val blen           = log2Ceil(bBytes)
+  val slen           = log2Ceil(nSets)
+  val taglen         = xlen - (slen + blen)
+  val nWords         = bBits / xlen
+  val wBytes         = xlen / 8
   val byteOffsetBits = log2Ceil(wBytes)
-  val dataBeats = bBits / nastiXDataBits
+  val dataBeats      = bBits / nastiXDataBits
 }
 
-class MetaData(implicit val p: Parameters) extends ParameterizedBundle()(p) with CacheParams {
+class MetaData(implicit val p: Parameters) extends ParameterizedBundle( )(p) with CacheParams {
   val tag = UInt(taglen.W)
 }
 
 class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with CacheParams {
-  val io = IO(new CacheModuleIO)
+  val io                                                                                                            = IO(new CacheModuleIO)
   // cache states
   val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
-  val state = RegInit(s_IDLE)
+  val state                                                                                                         = RegInit(s_IDLE)
   // memory
-  val valid = RegInit(0.U(nSets.W))
-  val dirty = RegInit(0.U(nSets.W))
-  val metaMem = SyncReadMem(nSets, new MetaData)
-  val dataMem = Seq.fill(nWords)(Mem(nSets, Vec(wBytes, UInt(8.W))))
+  val valid                                                                                                         = RegInit(0.U(nSets.W))
+  val dirty                                                                                                         = RegInit(0.U(nSets.W))
+  val metaMem                                                                                                       = SyncReadMem(nSets, new MetaData)
+  val dataMem                                                                                                       = Seq.fill(nWords)(Mem(nSets, Vec(wBytes, UInt(8.W))))
 
-  val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
-  val cpu_data = Reg(io.cpu.req.bits.data.cloneType)
-  val cpu_mask = Reg(io.cpu.req.bits.mask.cloneType)
-  val cpu_tag = Reg(io.cpu.req.bits.tag.cloneType)
-  val cpu_tile = Reg(io.cpu.req.bits.tile.cloneType)
+  val addr_reg    = Reg(io.cpu.req.bits.addr.cloneType)
+  val cpu_data    = Reg(io.cpu.req.bits.data.cloneType)
+  val cpu_mask    = Reg(io.cpu.req.bits.mask.cloneType)
+  val cpu_tag     = Reg(io.cpu.req.bits.tag.cloneType)
+  val cpu_tile    = Reg(io.cpu.req.bits.tile.cloneType)
   val cpu_iswrite = Reg(io.cpu.req.bits.iswrite.cloneType)
 
   // Counters
   require(dataBeats > 0)
-  val (read_count, read_wrap_out) = Counter(io.nasti.r.fire(), dataBeats)
-  val (write_count, write_wrap_out) = Counter(io.nasti.w.fire(), dataBeats)
+  val (read_count, read_wrap_out)   = Counter(io.nasti.r.fire( ), dataBeats)
+  val (write_count, write_wrap_out) = Counter(io.nasti.w.fire( ), dataBeats)
 
-  val is_idle = state === s_IDLE
-  val is_read = state === s_READ_CACHE
-  val is_write = RegNext(state === s_WRITE_CACHE)
-  val is_alloc = state === s_REFILL && read_wrap_out
+  val is_idle      = state === s_IDLE
+  val is_read      = state === s_READ_CACHE
+  val is_write     = RegNext(state === s_WRITE_CACHE)
+  val is_alloc     = state === s_REFILL && read_wrap_out
   val is_alloc_reg = RegNext(is_alloc)
 
-  val hit = Wire(Bool())
-  val wen = is_write && (hit || is_alloc_reg) && !io.cpu.abort || is_alloc
-  val ren = !wen && (is_idle || is_read) && io.cpu.req.valid
+  val hit     = Wire(Bool( ))
+  val wen     = is_write && (hit || is_alloc_reg) && !io.cpu.abort || is_alloc
+  val ren     = !wen && (is_idle || is_read) && io.cpu.req.valid
   val ren_reg = RegNext(ren)
 
-  val addr = io.cpu.req.bits.addr
-  val idx = addr(slen + blen - 1, blen)
+  val addr    = io.cpu.req.bits.addr
+  val idx     = addr(slen + blen - 1, blen)
   val tag_reg = addr_reg(xlen - 1, slen + blen)
   val idx_reg = addr_reg(slen + blen - 1, blen)
   val off_reg = addr_reg(blen - 1, byteOffsetBits)
@@ -132,12 +132,22 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   }
 
   val rmeta = Reg(new MetaData)
-  rmeta := metaMem.read(idx)
+  when(io.cpu.req.fire) {
+    rmeta := metaMem.read(idx)
+  }.otherwise {
+    rmeta := metaMem.read(idx_reg)
+  }
   val rdata = RegInit(0.U(128.W))
-  rdata := Cat((dataMem map (_.read(idx).asUInt)).reverse)
-  val rdata_buf = RegEnable(rdata, ren_reg)
+
+  when(io.cpu.req.fire) {
+    rdata := Cat((dataMem map (_.read(idx).asUInt)).reverse)
+  }.otherwise {
+    rdata := Cat((dataMem map (_.read(idx_reg).asUInt)).reverse)
+  }
+
+  val rdata_buf  = RegEnable(rdata, ren_reg)
   val refill_buf = Reg(Vec(dataBeats, UInt(nastiXDataBits.W)))
-  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
+  val read       = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
   hit := valid(idx_reg) && rmeta.tag === tag_reg
 
@@ -149,10 +159,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   io.cpu.resp.bits.iswrite := cpu_iswrite
   io.cpu.resp.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.req.ready := is_idle || (state === s_READ_CACHE && hit)
-
-  //  if(p(TRACE)){
-  //    printf(p" V W : ${is_write} Hit: ${hit} valid ${valid(idx_reg)} Rmeta: ${rmeta.tag} Tag: ${tag_reg}\n")
-  //  }
+  printf(p"\n V W : ${is_write} Hit: ${hit} valid ${valid(idx_reg)} Rmeta: ${rmeta.tag} Tag: ${tag_reg}")
   when(io.cpu.req.valid && io.cpu.req.ready) {
     addr_reg := addr
     cpu_tag := io.cpu.req.bits.tag
@@ -166,7 +173,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   val wmeta = Wire(new MetaData)
   wmeta.tag := tag_reg
 
-  val wmask = Mux(!is_alloc, (cpu_mask << Cat(off_reg, 0.U(byteOffsetBits.W))).asUInt.zext, -1.S).asUInt()
+  val wmask = Mux(!is_alloc, (cpu_mask << Cat(off_reg, 0.U(byteOffsetBits.W))).asUInt.zext, -1.S).asUInt( )
   val wdata = Mux(!is_alloc, Fill(nWords, cpu_data),
     if (refill_buf.size == 1) io.nasti.r.bits.data
     else Cat(io.nasti.r.bits.data, Cat(refill_buf.init.reverse)))
@@ -187,23 +194,23 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   // ID : Is AXI request ID
   // @todo: Change @id value for each cache
   io.nasti.ar.bits := NastiReadAddressChannel(
-    id = ID.U, (Cat(tag_reg, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits / 8).U, (dataBeats - 1).U)
+    id = ID.U, (Cat(tag_reg, idx_reg) << blen.U).asUInt( ), log2Ceil(nastiXDataBits / 8).U, (dataBeats - 1).U)
   io.nasti.ar.valid := false.B
   io.nasti.ar.bits.prot := AXPROT(false, false, true)
   io.nasti.ar.bits.user := 0x1f.U
   io.nasti.ar.bits.cache := 0xf.U
   // read data
   io.nasti.r.ready := state === s_REFILL
-  when(io.nasti.r.fire()) {
+  when(io.nasti.r.fire( )) {
     refill_buf(read_count) := io.nasti.r.bits.data
   }
 
   // Dump state
-  io.stat := state.asUInt()
+  io.stat := state.asUInt( )
 
   // write addr
   io.nasti.aw.bits := NastiWriteAddressChannel(
-    id = ID.U, (Cat(rmeta.tag, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits / 8).U, (dataBeats - 1).U)
+    id = ID.U, (Cat(rmeta.tag, idx_reg) << blen.U).asUInt( ), log2Ceil(nastiXDataBits / 8).U, (dataBeats - 1).U)
   io.nasti.aw.valid := false.B
   io.nasti.aw.bits.prot := AXPROT(false, false, true)
   io.nasti.aw.bits.user := 0x1f.U
@@ -247,9 +254,9 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
       }.otherwise {
         io.nasti.aw.valid := is_dirty
         io.nasti.ar.valid := !is_dirty
-        when(io.nasti.aw.fire()) {
+        when(io.nasti.aw.fire( )) {
           state := s_WRITE_BACK
-        }.elsewhen(io.nasti.ar.fire()) {
+        }.elsewhen(io.nasti.ar.fire( )) {
           state := s_REFILL
         }
       }
@@ -261,9 +268,9 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
       }.otherwise {
         io.nasti.aw.valid := is_dirty
         io.nasti.ar.valid := !is_dirty
-        when(io.nasti.aw.fire()) {
+        when(io.nasti.aw.fire( )) {
           state := s_WRITE_BACK
-        }.elsewhen(io.nasti.ar.fire()) {
+        }.elsewhen(io.nasti.ar.fire( )) {
           state := s_REFILL
         }
       }
@@ -276,13 +283,13 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
     }
     is(s_WRITE_ACK) {
       io.nasti.b.ready := true.B
-      when(io.nasti.b.fire()) {
+      when(io.nasti.b.fire( )) {
         state := s_REFILL_READY
       }
     }
     is(s_REFILL_READY) {
       io.nasti.ar.valid := true.B
-      when(io.nasti.ar.fire()) {
+      when(io.nasti.ar.fire( )) {
         state := s_REFILL
       }
     }
