@@ -134,7 +134,6 @@ error] Error: Total 115, Failed 58, Errors 1, Passed 56
 [error] 	dataflow.Sample01Tests
 [error] 	memory.TypeStackFileTester
 [error] 	dataflow.dedupTester1
-[error] 	dataflow.Sample02Tests
 [error] 	node.TypLoadTester
 [error] 	dataflow.cilk_spawn_test02Tester
 [error] 	dataflow.test20Tester1

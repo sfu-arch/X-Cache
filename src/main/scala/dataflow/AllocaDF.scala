@@ -32,14 +32,14 @@ class StackDF(implicit p: Parameters) extends StackDFIO() {
     * @note Module's variables they should set during initialization
     */
   //BasicBlock
-  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0))
+  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
   //Compute
   val m0 = Module(new AllocaNode(NumOuts = 1,ID = 0,RouteID=0))
 //  val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(sign = false))
 
   //Stack
-  val stack = Module(new Stack(NumOps = 2))
+  val stack = Module(new Stack(NumOps = 1))
 
   /**
     * Wireing control signals from BasicBlock nodes
