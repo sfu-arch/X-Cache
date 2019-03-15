@@ -29,6 +29,9 @@ class CacheWrapper(val ops:Int)(implicit val p: Parameters) extends Module with 
   // Instantiate a memory model with AXI slave interface for cache
   val memModel = Module(new NastiMemSlave)
   memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
 
   io.Out <> c.io.Out
 

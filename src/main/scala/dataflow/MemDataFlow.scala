@@ -10,85 +10,88 @@ import arbiters._
 import memory._
 import accel._
 
-class UnTypMemDataFlow(val ops:Int)(implicit val p: Parameters) extends Module with CoreParams{
+class UnTypMemDataFlow(val ops: Int)(implicit val p: Parameters) extends Module with CoreParams {
 
-	val io = IO(new Bundle{
-		val MemResp = Flipped(Valid(new MemResp))
-		val MemReq = Decoupled(new MemReq)
-		val Out = Vec(ops, Decoupled(new DataBundle()))
-	})
+  val io = IO(new Bundle {
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
+    val Out = Vec(ops, Decoupled(new DataBundle()))
+  })
 
   // Fire enables and loads/stores after reset
-  val init = RegNext(init=true.B, next=false.B)
-	val fireEnables = RegNext(init=false.B, next=init)
-  val fireLoadsStores = RegNext(init=false.B, next=fireEnables)
+  val init = RegNext(init = true.B, next = false.B)
+  val fireEnables = RegNext(init = false.B, next = init)
+  val fireLoadsStores = RegNext(init = false.B, next = fireEnables)
 
-	val StackFile = Module(new TypeStackFile(ID=0,Size=32,NReads=ops*2,NWrites=ops*2)
-			          (WControl=new WriteMemoryController(NumOps=ops*2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=ops*2,BaseSize=2,NumEntries=2)))
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=ops*2,NWrites=ops*2)
-		            (WControl=new WriteMemoryController(NumOps=ops*2,BaseSize=2,NumEntries=2))
-	              (RControl=new ReadMemoryController(NumOps=ops*2,BaseSize=2,NumEntries=2))
-	              (RWArbiter=new ReadWriteArbiter()))
+  val CacheMem = Module(new UnifiedController(ID = 0, Size = 32, NReads = ops * 2, NWrites = ops * 2)
+  (WControl = new WriteMemoryController(NumOps = ops * 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = ops * 2, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
 
-	io.MemReq <> CacheMem.io.MemReq
-	CacheMem.io.MemResp <> io.MemResp
+  io.MemReq <> CacheMem.io.MemReq
+  CacheMem.io.MemResp <> io.MemResp
 
-	val Stores = for (i <- 0 until ops*2) yield {
-    val store = Module(new UnTypStore(NumPredOps=0,NumSuccOps=1,NumOuts=1,ID=i,RouteID=i))
+  val Stores = for (i <- 0 until ops * 2) yield {
+    val store = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = i, RouteID = i))
+    store.io.inData.bits <> DontCare
+    store.io.enable.bits <> DontCare
+    store.io.GepAddr <> DontCare
     store
   }
 
- val Loads = for (i <- 0 until ops*2) yield {
-    val load = Module(new UnTypLoad(NumPredOps=1,NumSuccOps=0,NumOuts=2,ID=i,RouteID=i))
+  val Loads = for (i <- 0 until ops * 2) yield {
+    val load = Module(new UnTypLoad(NumPredOps = 1, NumSuccOps = 0, NumOuts = 2, ID = i, RouteID = i))
+    load.io.GepAddr.bits <> DontCare
+    load.io.enable.bits <> DontCare
     load
   }
 
   val Ops = for (i <- 0 until ops) yield {
-    val op  = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
+    val op = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
+    op.io.enable.bits <> DontCare
     op
   }
 
 
- for (i <- 0 until ops*2) {
- 	CacheMem.io.ReadIn(i) <> Loads(i).io.memReq
- 	Loads(i).io.memResp  <> CacheMem.io.ReadOut(i)
+  for (i <- 0 until ops * 2) {
+    CacheMem.io.ReadIn(i) <> Loads(i).io.memReq
+    Loads(i).io.memResp <> CacheMem.io.ReadOut(i)
 
- 	CacheMem.io.WriteIn(i) <> Stores(i).io.memReq
- 	Stores(i).io.memResp  <> CacheMem.io.WriteOut(i)
-
-
- 	Stores(i).io.GepAddr.bits.data      := (8+(xlen/8)*i).U
- 	Stores(i).io.GepAddr.bits.predicate := true.B
- 	Stores(i).io.GepAddr.valid          := fireLoadsStores
-
- 	Stores(i).io.inData.bits.data       := (i+1).U
- 	Stores(i).io.inData.bits.predicate  := true.B
- 	Stores(i).io.inData.valid           := fireLoadsStores
-
- 	Stores(i).io.enable.bits.control  := true.B
- 	Stores(i).io.enable.valid := fireEnables
- 	Stores(i).io.Out(0).ready := true.B
+    CacheMem.io.WriteIn(i) <> Stores(i).io.memReq
+    Stores(i).io.memResp <> CacheMem.io.WriteOut(i)
 
 
- 	Loads(i).io.GepAddr.bits.data      := (8+(xlen/8)*i).U
- 	Loads(i).io.GepAddr.bits.predicate := true.B
- 	Loads(i).io.GepAddr.valid          := fireLoadsStores
+    Stores(i).io.GepAddr.bits.data := (8 + (xlen / 8) * i).U
+    Stores(i).io.GepAddr.bits.predicate := true.B
+    Stores(i).io.GepAddr.valid := fireLoadsStores
 
- 	Loads(i).io.enable.bits.control  := true.B
- 	Loads(i).io.enable.valid := fireEnables
- 	Loads(i).io.Out(0).ready := true.B
+    Stores(i).io.inData.bits.data := (i + 1).U
+    Stores(i).io.inData.bits.predicate := true.B
+    Stores(i).io.inData.valid := fireLoadsStores
 
- 	Loads(i).io.PredOp(0) <> Stores(i).io.SuccOp(0)
+    Stores(i).io.enable.bits.control := true.B
+    Stores(i).io.enable.valid := fireEnables
+    Stores(i).io.Out(0).ready := true.B
 
- }
 
- for (i <- 0 until ops) {
-   Ops(i).io.enable.bits.control := true.B
-   Ops(i).io.enable.valid := true.B
-   Ops(i).io.LeftIO <> Loads(2*i).io.Out(1)
-   Ops(i).io.RightIO <> Loads(2*i + 1).io.Out(1)
-   io.Out(i) <> Ops(i).io.Out(0)
- }
+    Loads(i).io.GepAddr.bits.data := (8 + (xlen / 8) * i).U
+    Loads(i).io.GepAddr.bits.predicate := true.B
+    Loads(i).io.GepAddr.valid := fireLoadsStores
+
+    Loads(i).io.enable.bits.control := true.B
+    Loads(i).io.enable.valid := fireEnables
+    Loads(i).io.Out(0).ready := true.B
+
+    Loads(i).io.PredOp(0) <> Stores(i).io.SuccOp(0)
+
+  }
+
+  for (i <- 0 until ops) {
+    Ops(i).io.enable.bits.control := true.B
+    Ops(i).io.enable.valid := true.B
+    Ops(i).io.LeftIO <> Loads(2 * i).io.Out(1)
+    Ops(i).io.RightIO <> Loads(2 * i + 1).io.Out(1)
+    io.Out(i) <> Ops(i).io.Out(0)
+  }
 
 }
