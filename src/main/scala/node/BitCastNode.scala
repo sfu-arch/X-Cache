@@ -14,12 +14,13 @@ class BitCastNodeIO(val NumOuts: Int)
     //val Input = Flipped(Decoupled(UInt(src.W)))
 
     //Enabl signal
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle()))
 
     //Output of the input (Zexted version)
     val Out = Vec(NumOuts, Decoupled(new DataBundle()))
     //val Out = Output(Vec(nout, Decoupled(UInt(des.W))))
 
+  override def cloneType = new BitCastNodeIO(NumOuts).asInstanceOf[this.type]
 }
 
 class BitCastNode(val NumOuts: Int,val ID : Int)(implicit val p: Parameters)

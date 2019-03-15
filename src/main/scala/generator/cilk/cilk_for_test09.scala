@@ -1,685 +1,455 @@
 package dataflow
 
+import FPU._
+import accel._
+import arbiters._
 import chisel3._
 import chisel3.util._
-import chisel3.Module
+import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
-import org.scalatest.{FlatSpec, Matchers}
-import muxes._
 import config._
 import control._
-import util._
 import interfaces._
-import regfile._
-import memory._
-import stack._
-import arbiters._
-import loop._
-import accel._
-import node._
 import junctions._
-
-
-/**
-  * This Object should be initialized at the first step
-  * It contains all the transformation from indices to their module's name
-  */
-
-object Data_cilk_for_test09_FlowParam {
-
-  val bb_entry_pred = Map(
-    "active" -> 0
-  )
-
-
-  val bb_pfor_preattach_pred = Map(
-    "br11" -> 0
-  )
-
-
-  val bb_pfor_cond_pred = Map(
-    "br2" -> 0,
-    "br14" -> 1
-  )
-
-
-  val bb_pfor_detach_pred = Map(
-    "br5" -> 0
-  )
-
-
-  val bb_pfor_end_pred = Map(
-    "br5" -> 0
-  )
-
-
-  val br2_brn_bb = Map(
-    "bb_pfor_cond" -> 0
-  )
-
-
-  val br5_brn_bb = Map(
-    "bb_pfor_detach" -> 0,
-    "bb_pfor_end" -> 1
-  )
-
-
-  val br11_brn_bb = Map(
-    "bb_pfor_preattach" -> 0
-  )
-
-
-  val br14_brn_bb = Map(
-    "bb_pfor_cond" -> 0
-  )
-
-
-  val bb_pfor_inc_pred = Map(
-    "detach6" -> 0
-  )
-
-
-  val bb_pfor_body_pred = Map(
-    "detach6" -> 0
-  )
-
-
-  val detach6_brn_bb = Map(
-    "bb_pfor_body" -> 0,
-    "bb_pfor_inc" -> 1
-  )
-
-
-  val bb_entry_activate = Map(
-    "alloca0" -> 0,
-    "store1" -> 1,
-    "br2" -> 2
-  )
-
-
-  val bb_pfor_cond_activate = Map(
-    "phi3" -> 0,
-    "icmp4" -> 1,
-    "br5" -> 2
-  )
-
-
-  val bb_pfor_detach_activate = Map(
-    "detach6" -> 0
-  )
-
-
-  val bb_pfor_body_activate = Map(
-    "call7" -> 0,
-    "load8" -> 1,
-    "add9" -> 2,
-    "store10" -> 3,
-    "br11" -> 4
-  )
-
-
-  val bb_pfor_preattach_activate = Map(
-    "reattach12" -> 0
-  )
-
-
-  val bb_pfor_inc_activate = Map(
-    "add13" -> 0,
-    "br14" -> 1
-  )
-
-
-  val bb_pfor_end_activate = Map(
-    "sync15" -> 0
-  )
-
-
-  val bb_pfor_end_continue_activate = Map(
-    "load16" -> 0,
-    "ret17" -> 1
-  )
-
-
-  val phi3_phi_in = Map(
-    "const_0" -> 0,
-    "add13" -> 1
-  )
-
-
-  //  %a = alloca i32, align 4, !UID !7, !ScalaLabel !8
-  val alloca0_in = Map(
-
-  )
-
-
-  //  store i32 0, i32* %a, align 4, !UID !9, !ScalaLabel !10
-  val store1_in = Map(
-    "alloca0" -> 0
-  )
-
-
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %pfor.inc ], !UID !14, !ScalaLabel !15
-  val phi3_in = Map(
-    "add13" -> 0
-  )
-
-
-  //  %cmp = icmp slt i32 %i.0, %m, !UID !16, !ScalaLabel !17
-  val icmp4_in = Map(
-    "phi3" -> 0,
-    "field0" -> 0
-  )
-
-
-  //  br i1 %cmp, label %pfor.detach, label %pfor.end, !UID !18, !BB_UID !19, !ScalaLabel !20
-  val br5_in = Map(
-    "icmp4" -> 0
-  )
-
-
-  //  detach label %pfor.body, label %pfor.inc, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val detach6_in = Map(
-    "" -> 0,
-    "" -> 1
-  )
-
-
-  //  %call = call i32 @cilk_for_test09_inner(i32 %n), !UID !24, !ScalaLabel !25
-  val call7_in = Map(
-    "field1" -> 0,
-    "" -> 2
-  )
-
-
-  //  %0 = load i32, i32* %a, align 4, !UID !26, !ScalaLabel !27
-  val load8_in = Map(
-    "alloca0" -> 1
-  )
-
-
-  //  %add = add nsw i32 %0, %call, !UID !28, !ScalaLabel !29
-  val add9_in = Map(
-    "load8" -> 0,
-    "call7" -> 0
-  )
-
-
-  //  store i32 %add, i32* %a, align 4, !UID !30, !ScalaLabel !31
-  val store10_in = Map(
-    "add9" -> 0,
-    "alloca0" -> 2
-  )
-
-
-  //  reattach label %pfor.inc, !UID !35, !BB_UID !36, !ScalaLabel !37
-  val reattach12_in = Map(
-    "" -> 3
-  )
-
-
-  //  %inc = add nsw i32 %i.0, 1, !UID !38, !ScalaLabel !39
-  val add13_in = Map(
-    "phi3" -> 1
-  )
-
-
-  //  sync label %pfor.end.continue, !UID !52, !BB_UID !53, !ScalaLabel !54
-  val sync15_in = Map(
-    "" -> 4
-  )
-
-
-  //  %1 = load i32, i32* %a, align 4, !UID !55, !ScalaLabel !56
-  val load16_in = Map(
-    "alloca0" -> 3
-  )
-
-
-  //  ret i32 %1, !UID !57, !BB_UID !58, !ScalaLabel !59
-  val ret17_in = Map(
-    "load16" -> 0
-  )
-
-
-}
-
-
-/* ================================================================== *
- *                   PRINTING PORTS DEFINITION                        *
- * ================================================================== */
-
+import loop._
+import memory._
+import muxes._
+import node._
+import org.scalatest._
+import regfile._
+import stack._
+import util._
+
+
+  /* ================================================================== *
+   *                   PRINTING PORTS DEFINITION                        *
+   * ================================================================== */
 
 abstract class cilk_for_test09DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
-    val call7_out = Decoupled(new Call(List(32)))
-    val call7_in = Flipped(Decoupled(new Call(List(32))))
+    val call_15_out = Decoupled(new Call(List(32, 32)))
+    val call_15_in = Flipped(Decoupled(new Call(List())))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
   })
 }
 
-
-/* ================================================================== *
- *                   PRINTING MODULE DEFINITION                       *
- * ================================================================== */
-
-
 class cilk_for_test09DF(implicit p: Parameters) extends cilk_for_test09DFIO()(p) {
 
 
   /* ================================================================== *
-   *                   PRINTING MEMORY SYSTEM                           *
+   *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
+  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 1, NWrites = 1)
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
+
+  io.MemReq <> MemCtrl.io.MemReq
+  MemCtrl.io.MemResp <> io.MemResp
 
   val StackPointer = Module(new Stack(NumOps = 1))
 
-  val RegisterFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 2, NWrites = 2)
-  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2)))
-
-  val CacheMem = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 2)
-  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RWArbiter = new ReadWriteArbiter()))
-
-  io.MemReq <> CacheMem.io.MemReq
-  CacheMem.io.MemResp <> io.MemResp
-
-  val InputSplitter = Module(new SplitCall(List(32, 32)))
+  val InputSplitter = Module(new SplitCallNew(List(2, 1)))
   InputSplitter.io.In <> io.in
+
 
 
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
+  val Loop_0 = Module(new LoopBlockNode(NumIns = List(1, 1, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
 
-  val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_2 = Module(new LiveInNode(NumOuts = 2, ID = 0))
 
 
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 7, BID = 0))
 
-  //Initializing BasicBlocks: 
+  val bb_pfor_detach_preheader1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_pfor_cond_cleanup_loopexit2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
-  val bb_pfor_cond = Module(new LoopHead(NumOuts = 3, NumPhi = 1, BID = 1))
+  val bb_pfor_cond_cleanup3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 1, BID = 3))
 
-  val bb_pfor_detach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_pfor_detach4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 4))
 
-  val bb_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 3))
+  val bb_pfor_inc5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 5))
 
-  val bb_pfor_preattach = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 4))
+  val bb_sync_continue6 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 6))
 
-  val bb_pfor_inc = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 5))
+  val bb_offload_pfor_body7 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 7))
 
-  val bb_pfor_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 6))
-
-  val bb_pfor_end_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 7))
 
 
   /* ================================================================== *
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
+  //  %a = alloca i32, align 4, !UID !10
+  val alloca_a0 = Module(new AllocaNode(NumOuts=4, ID = 0, RouteID=0))
 
-  //Initializing Instructions: 
+  //  %a.0.a.0..sroa_cast = bitcast i32* %a to i8*, !UID !11
+  val bitcast_a_0_a_0__sroa_cast1 = Module(new BitCastNode(NumOuts = 1, ID = 1))
 
-  // [BasicBlock]  entry:
+  //  store i32 0, i32* %a, align 4, !UID !12
+  val st_2 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 2, RouteID = 0))
 
-  //  %a = alloca i32, align 4, !UID !7, !ScalaLabel !8
-  val alloca0 = Module(new AllocaNode(NumOuts = 4, RouteID = 0, ID = 0))
+  //  %cmp16 = icmp sgt i32 %m, 0, !UID !13
+  val icmp_cmp163 = Module(new IcmpNode(NumOuts = 1, ID = 3, opCode = "ugt")(sign = false))
 
+  //  br i1 %cmp16, label %pfor.detach.preheader, label %pfor.cond.cleanup, !UID !14, !BB_UID !15
+  val br_4 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 4))
 
-  //  store i32 0, i32* %a, align 4, !UID !9, !ScalaLabel !10
-  val store1 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 1, RouteID = 0))
+  //  br label %pfor.detach, !UID !16, !BB_UID !17
+  val br_5 = Module(new UBranchNode(ID = 5))
 
+  //  br label %pfor.cond.cleanup, !UID !18, !BB_UID !19
+  val br_6 = Module(new UBranchNode(ID = 6))
 
-  //  br label %pfor.cond, !UID !11, !BB_UID !12, !ScalaLabel !13
-  val br2 = Module(new UBranchNode(ID = 2))
+  //  sync within %syncreg, label %sync.continue, !UID !20, !BB_UID !21
+  val sync_7 = Module(new SyncTC(ID = 7, NumInc=1, NumDec=1, NumOuts=1))
 
-  // [BasicBlock]  pfor.cond:
+  //  %__begin.017 = phi i32 [ %inc, %pfor.inc ], [ 0, %pfor.detach.preheader ], !UID !22
+  val phi__begin_0178 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 8, Res = false))
 
-  //  %i.0 = phi i32 [ 0, %entry ], [ %inc, %pfor.inc ], !UID !14, !ScalaLabel !15
-  val phi3 = Module(new PhiNode(NumInputs = 2, NumOuts = 2, ID = 3))
+  //  detach within %syncreg, label %offload.pfor.body, label %pfor.inc, !UID !23, !BB_UID !24
+  val detach_9 = Module(new Detach(ID = 9))
 
+  //  %inc = add nuw nsw i32 %__begin.017, 1, !UID !25
+  val binaryOp_inc10 = Module(new ComputeNode(NumOuts = 2, ID = 10, opCode = "add")(sign = false))
 
-  //  %cmp = icmp slt i32 %i.0, %m, !UID !16, !ScalaLabel !17
-  val icmp4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "ULT")(sign = false))
+  //  %exitcond = icmp eq i32 %inc, %m, !UID !26
+  val icmp_exitcond11 = Module(new IcmpNode(NumOuts = 1, ID = 11, opCode = "eq")(sign = false))
 
+  //  br i1 %exitcond, label %pfor.cond.cleanup.loopexit, label %pfor.detach, !llvm.loop !27, !UID !29, !BB_UID !30
+  val br_12 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 12))
 
-  //  br i1 %cmp, label %pfor.detach, label %pfor.end, !UID !18, !BB_UID !19, !ScalaLabel !20
-  val br5 = Module(new CBranchNode(ID = 5))
+  //  %a.0.load15 = load i32, i32* %a, align 4, !UID !31
+  val ld_13 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 13, RouteID = 0))
 
-  // [BasicBlock]  pfor.detach:
+  //  ret i32 %a.0.load15, !UID !32, !BB_UID !33
+  val ret_14 = Module(new RetNode2(retTypes = List(32), ID = 14))
 
-  //  detach label %pfor.body, label %pfor.inc, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val detach6 = Module(new Detach(ID = 6))
+  //  call void @cilk_for_test09_detach1(i32* %a, i32 %n), !UID !34
+  val call_15_out = Module(new CallOutNode(ID = 15, NumSuccOps = 0, argTypes = List(32,32)))
 
-  // [BasicBlock]  pfor.body:
+  val call_15_in = Module(new CallInNode(ID = 15, argTypes = List()))
 
-  //  %call = call i32 @cilk_for_test09_inner(i32 %n), !UID !24, !ScalaLabel !25
-  val call7 = Module(new CallNode(ID = 7, argTypes = List(32), retTypes = List(32)))
+  //  reattach within %syncreg, label %pfor.inc, !UID !35, !BB_UID !36
+  val reattach_16 = Module(new Reattach(NumPredOps= 1, ID = 16))
 
-
-  //  %0 = load i32, i32* %a, align 4, !UID !26, !ScalaLabel !27
-  val load8 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 8, RouteID = 0))
-
-
-  //  %add = add nsw i32 %0, %call, !UID !28, !ScalaLabel !29
-  val add9 = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "add")(sign = false))
-
-
-  //  store i32 %add, i32* %a, align 4, !UID !30, !ScalaLabel !31
-  val store10 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 10, RouteID = 1))
-
-
-  //  br label %pfor.preattach, !UID !32, !BB_UID !33, !ScalaLabel !34
-  val br11 = Module(new UBranchNode(ID = 11))
-
-  // [BasicBlock]  pfor.preattach:
-
-  //  reattach label %pfor.inc, !UID !35, !BB_UID !36, !ScalaLabel !37
-  val reattach12 = Module(new Reattach(NumPredOps = 1, ID = 12))
-
-  // [BasicBlock]  pfor.inc:
-
-  //  %inc = add nsw i32 %i.0, 1, !UID !38, !ScalaLabel !39
-  val add13 = Module(new ComputeNode(NumOuts = 1, ID = 13, opCode = "add")(sign = false))
-
-
-  //  br label %pfor.cond, !llvm.loop !40, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val br14 = Module(new UBranchNode(ID = 14))
-
-  // [BasicBlock]  pfor.end:
-
-  //  sync label %pfor.end.continue, !UID !52, !BB_UID !53, !ScalaLabel !54
-  val sync15 = Module(new Sync(ID = 15, NumOuts = 1, NumInc = 1, NumDec = 1))
-
-  // [BasicBlock]  pfor.end.continue:
-
-  //  %1 = load i32, i32* %a, align 4, !UID !55, !ScalaLabel !56
-  val load16 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 16, RouteID = 1))
-
-
-  //  ret i32 %1, !UID !57, !BB_UID !58, !ScalaLabel !59
-  val ret17 = Module(new RetNode(retTypes = List(32), ID = 17))
 
 
   /* ================================================================== *
-   *                   INITIALIZING PARAM                               *
+   *                   PRINTING CONSTANTS NODES                         *
    * ================================================================== */
 
+  //i32 0
+  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
 
-  /**
-    * Instantiating parameters
-    */
-  val param = Data_cilk_for_test09_FlowParam
+  //i32 0
+  val const1 = Module(new ConstFastNode(value = 0, ID = 1))
+
+  //i32 0
+  val const2 = Module(new ConstFastNode(value = 0, ID = 2))
+
+  //i32 1
+  val const3 = Module(new ConstFastNode(value = 1, ID = 3))
+
 
 
   /* ================================================================== *
-   *                   CONNECTING BASIC BLOCKS TO PREDICATE INSTRUCTIONS*
+   *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
+  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-  /**
-    * Connecting basic blocks to predicate instructions
-    */
+  bb_pfor_detach_preheader1.io.predicateIn(0) <> br_4.io.TrueOutput(0)
 
+  bb_pfor_cond_cleanup3.io.predicateIn(1) <> br_4.io.FalseOutput(0)
 
-  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_pfor_cond_cleanup3.io.predicateIn(0) <> br_6.io.Out(0)
 
-  /**
-    * Connecting basic blocks to predicate instructions
-    */
+  bb_pfor_inc5.io.predicateIn(0) <> detach_9.io.Out(0)
 
-  //Connecting br2 to bb_pfor_cond
-  bb_pfor_cond.io.activate <> br2.io.Out(param.br2_brn_bb("bb_pfor_cond"))
+  bb_sync_continue6.io.predicateIn(0) <> sync_7.io.Out(0)
 
+  bb_offload_pfor_body7.io.predicateIn(0) <> detach_9.io.Out(1)
 
-  //Connecting br5 to bb_pfor_detach
-  bb_pfor_detach.io.predicateIn <> br5.io.Out(param.br5_brn_bb("bb_pfor_detach"))
-
-
-  //Connecting br5 to bb_pfor_end
-  bb_pfor_end.io.predicateIn <> br5.io.Out(param.br5_brn_bb("bb_pfor_end"))
-
-
-  //Connecting br11 to bb_pfor_preattach
-  bb_pfor_preattach.io.predicateIn <> br11.io.Out(param.br11_brn_bb("bb_pfor_preattach"))
-
-
-  //Connecting br14 to bb_pfor_cond
-  bb_pfor_cond.io.loopBack <> br14.io.Out(param.br14_brn_bb("bb_pfor_cond"))
-
-
-  //Connecting detach6 to bb_pfor_body
-  bb_pfor_body.io.predicateIn <> detach6.io.Out(param.detach6_brn_bb("bb_pfor_body"))
-
-
-  //Connecting detach6 to bb_pfor_inc
-  bb_pfor_inc.io.predicateIn <> detach6.io.Out(param.detach6_brn_bb("bb_pfor_inc"))
 
 
   /* ================================================================== *
-   *                   CONNECTING BASIC BLOCKS TO INSTRUCTIONS          *
+   *                   BASICBLOCK -> PREDICATE LOOP                     *
    * ================================================================== */
 
+  bb_pfor_cond_cleanup_loopexit2.io.predicateIn(0) <> Loop_0.io.loopExit(0)
 
-  /**
-    * Wiring enable signals to the instructions
-    */
+  bb_pfor_detach4.io.predicateIn(1) <> Loop_0.io.activate_loop_start
 
-  alloca0.io.enable <> bb_entry.io.Out(param.bb_entry_activate("alloca0"))
+  bb_pfor_detach4.io.predicateIn(0) <> Loop_0.io.activate_loop_back
 
-  store1.io.enable <> bb_entry.io.Out(param.bb_entry_activate("store1"))
-
-  br2.io.enable <> bb_entry.io.Out(param.bb_entry_activate("br2"))
-
-
-  phi3.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("phi3"))
-
-  icmp4.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("icmp4"))
-
-  br5.io.enable <> bb_pfor_cond.io.Out(param.bb_pfor_cond_activate("br5"))
-
-
-  detach6.io.enable <> bb_pfor_detach.io.Out(param.bb_pfor_detach_activate("detach6"))
-
-
-  call7.io.In.enable <> bb_pfor_body.io.Out(param.bb_pfor_body_activate("call7"))
-
-  load8.io.enable <> bb_pfor_body.io.Out(param.bb_pfor_body_activate("load8"))
-
-  add9.io.enable <> bb_pfor_body.io.Out(param.bb_pfor_body_activate("add9"))
-
-  store10.io.enable <> bb_pfor_body.io.Out(param.bb_pfor_body_activate("store10"))
-
-  br11.io.enable <> bb_pfor_body.io.Out(param.bb_pfor_body_activate("br11"))
-
-
-  //  reattach12.io.enable <> bb_pfor_preattach.io.Out(param.bb_pfor_preattach_activate("reattach12"))
-  reattach12.io.enable.enq(ControlBundle.active()) // always enabled
-  bb_pfor_preattach.io.Out(param.bb_pfor_preattach_activate("reattach12")).ready := true.B
-
-
-  add13.io.enable <> bb_pfor_inc.io.Out(param.bb_pfor_inc_activate("add13"))
-
-  br14.io.enable <> bb_pfor_inc.io.Out(param.bb_pfor_inc_activate("br14"))
-
-
-  sync15.io.enable <> bb_pfor_end.io.Out(param.bb_pfor_end_activate("sync15"))
-
-  loop_L_0_liveIN_0.io.enable <> bb_pfor_end.io.Out(1)
-  loop_L_0_liveIN_1.io.enable <> bb_pfor_end.io.Out(2)
-  loop_L_0_liveIN_2.io.enable <> bb_pfor_end.io.Out(3)
-
-
-  bb_pfor_end_continue.io.predicateIn <> sync15.io.Out(0) // added manually
-
-
-  load16.io.enable <> bb_pfor_end_continue.io.Out(param.bb_pfor_end_continue_activate("load16"))
-
-  ret17.io.enable <> bb_pfor_end_continue.io.Out(param.bb_pfor_end_continue_activate("ret17"))
 
 
   /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
+   *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
 
+  sync_7.io.incIn(0) <> detach_9.io.Out(2)
 
-  // Connecting function argument to the loop header
-  //i32 %m
-  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field0")
+  sync_7.io.decIn(0) <> reattach_16.io.Out(0)
 
-  // Connecting function argument to the loop header
-  //i32 %n
-  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field1")
-
-  // Connecting instruction to the loop header
-  //  %a = alloca i32, align 4, !UID !7, !ScalaLabel !8
-  loop_L_0_liveIN_2.io.InData <> alloca0.io.Out(param.store10_in("alloca0"))
 
 
   /* ================================================================== *
-   *                   DUMPING PHI NODES                                *
+   *                   LOOP -> PREDICATE INSTRUCTION                    *
    * ================================================================== */
 
+  Loop_0.io.enable <> br_5.io.Out(0)
 
-  /**
-    * Connecting PHI Masks
-    */
-  //Connect PHI node
+  Loop_0.io.loopBack(0) <> br_12.io.FalseOutput(0)
 
-  phi3.io.InData(param.phi3_phi_in("const_0")).bits.data := 0.U
-  phi3.io.InData(param.phi3_phi_in("const_0")).bits.predicate := true.B
-  phi3.io.InData(param.phi3_phi_in("const_0")).valid := true.B
+  Loop_0.io.loopFinish(0) <> br_12.io.TrueOutput(0)
 
-  phi3.io.InData(param.phi3_phi_in("add13")) <> add13.io.Out(param.phi3_in("add13"))
-
-  /**
-    * Connecting PHI Masks
-    */
-  //Connect PHI node
-
-  phi3.io.Mask <> bb_pfor_cond.io.MaskBB(0)
 
 
   /* ================================================================== *
-   *                   DUMPING DATAFLOW                                 *
+   *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
 
 
-  /**
-    * Connecting Dataflow signals
-    */
 
-  // Wiring Alloca instructions with Static inputs
-  alloca0.io.allocaInputIO.bits.size := 1.U
-  alloca0.io.allocaInputIO.bits.numByte := 4.U
-  alloca0.io.allocaInputIO.bits.predicate := true.B
-  alloca0.io.allocaInputIO.bits.valid := true.B
-  alloca0.io.allocaInputIO.valid := true.B
+  /* ================================================================== *
+   *                   LOOP INPUT DATA DEPENDENCIES                     *
+   * ================================================================== */
 
-  // Connecting Alloca to Stack
-  StackPointer.io.InData(0) <> alloca0.io.allocaReqIO
-  alloca0.io.allocaRespIO <> StackPointer.io.OutData(0)
+  Loop_0.io.InLiveIn(0) <> alloca_a0.io.Out(0)
+
+  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field1")(0)
+
+  Loop_0.io.InLiveIn(2) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
-  // Wiring constant instructions to store
-  store1.io.inData.bits.data := 0.U
-  store1.io.inData.bits.predicate := true.B
-  store1.io.inData.valid := true.B
+
+  /* ================================================================== *
+   *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
+   * ================================================================== */
+
+  call_15_out.io.In.elements("field0") <> Loop_0.io.OutLiveIn.elements("field0")(0)
+
+  call_15_out.io.In.elements("field1") <> Loop_0.io.OutLiveIn.elements("field1")(0)
+
+  icmp_exitcond11.io.RightIO <> Loop_0.io.OutLiveIn.elements("field2")(0)
 
 
-  // Wiring Store instruction to the parent instruction
-  store1.io.GepAddr <> alloca0.io.Out(param.store1_in("alloca0"))
-  store1.io.memResp <> CacheMem.io.WriteOut(0)
-  CacheMem.io.WriteIn(0) <> store1.io.memReq
-  store1.io.Out(0).ready := true.B
+
+  /* ================================================================== *
+   *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
+   * ================================================================== */
 
 
-  // Wiring instructions
-  icmp4.io.LeftIO <> phi3.io.Out(param.icmp4_in("phi3"))
 
-  // Wiring Binary instruction to the loop header
-  icmp4.io.RightIO <> loop_L_0_liveIN_0.io.Out(param.icmp4_in("field0"))
-
-  // Wiring Branch instruction
-  br5.io.CmpIO <> icmp4.io.Out(param.br5_in("icmp4"))
-
-  // Wiring Call to I/O
-  io.call7_out <> call7.io.callOut
-  call7.io.retIn <> io.call7_in
-  call7.io.Out.enable.ready := true.B
-  // Wiring Call instruction to the loop header
-  call7.io.In.data.elements("field0") <> loop_L_0_liveIN_1.io.Out(param.call7_in("field1")) // Manually fixed
-
-  // Wiring Load instruction to the loop latch
-  load8.io.GepAddr <> loop_L_0_liveIN_2.io.Out(param.load8_in("alloca0")) // Manually fixed
-  load8.io.memResp <> CacheMem.io.ReadOut(0)
-  CacheMem.io.ReadIn(0) <> load8.io.memReq
+  /* ================================================================== *
+   *                   LOOP LIVE OUT DEPENDENCIES                       *
+   * ================================================================== */
 
 
-  // Wiring instructions
-  add9.io.LeftIO <> load8.io.Out(param.add9_in("load8"))
 
-  // Wiring instructions
-  add9.io.RightIO <> call7.io.Out.data("field0") // Manually fixed
+  /* ================================================================== *
+   *                   LOOP CARRY DEPENDENCIES                          *
+   * ================================================================== */
 
-  store10.io.inData <> add9.io.Out(param.store10_in("add9"))
-
-
-  // Wiring Store instruction to the parent instruction
-  store10.io.GepAddr <> alloca0.io.Out(param.store10_in("alloca0"))
-  store10.io.memResp <> CacheMem.io.WriteOut(1)
-  CacheMem.io.WriteIn(1) <> store10.io.memReq
-  store10.io.Out(0).ready := true.B
+  Loop_0.io.CarryDepenIn(0) <> binaryOp_inc10.io.Out(0)
 
 
-  // Wiring instructions
-  add13.io.LeftIO <> phi3.io.Out(param.add13_in("phi3"))
 
-  // Wiring constant
-  add13.io.RightIO.bits.data := 1.U
-  add13.io.RightIO.bits.predicate := true.B
-  add13.io.RightIO.valid := true.B
+  /* ================================================================== *
+   *                   LOOP DATA CARRY DEPENDENCIES                     *
+   * ================================================================== */
 
-  // Wiring Load instruction to another instruction
-  load16.io.GepAddr <> alloca0.io.Out(param.load16_in("alloca0"))
+  phi__begin_0178.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
 
 
-  // Reattach (Manual add)
-  reattach12.io.predicateIn(0) <> call7.io.Out.data.elements("field0")
 
-  // Sync (Manual add)
-  sync15.io.incIn(0) <> detach6.io.Out(2)
-  sync15.io.decIn(0) <> reattach12.io.Out(0)
+  /* ================================================================== *
+   *                   BASICBLOCK -> ENABLE INSTRUCTION                 *
+   * ================================================================== */
+
+  const0.io.enable <> bb_entry0.io.Out(0)
+
+  const1.io.enable <> bb_entry0.io.Out(1)
+
+  alloca_a0.io.enable <> bb_entry0.io.Out(2)
 
 
-  // Wiring return instruction
-  
-  
-  
-  ret17.io.In.elements("field0") <> load16.io.Out(param.ret17_in("load16"))
-  io.out <> ret17.io.Out
+  bitcast_a_0_a_0__sroa_cast1.io.enable <> bb_entry0.io.Out(3)
 
+  bitcast_a_0_a_0__sroa_cast1.io.Out(0).ready := true.B
+
+
+  st_2.io.enable <> bb_entry0.io.Out(4)
+
+
+  icmp_cmp163.io.enable <> bb_entry0.io.Out(5)
+
+
+  br_4.io.enable <> bb_entry0.io.Out(6)
+
+
+  br_5.io.enable <> bb_pfor_detach_preheader1.io.Out(0)
+
+
+  br_6.io.enable <> bb_pfor_cond_cleanup_loopexit2.io.Out(0)
+
+
+  sync_7.io.enable <> bb_pfor_cond_cleanup3.io.Out(0)
+
+
+  const2.io.enable <> bb_pfor_detach4.io.Out(0)
+
+  phi__begin_0178.io.enable <> bb_pfor_detach4.io.Out(1)
+
+
+  detach_9.io.enable <> bb_pfor_detach4.io.Out(2)
+
+
+  const3.io.enable <> bb_pfor_inc5.io.Out(0)
+
+  binaryOp_inc10.io.enable <> bb_pfor_inc5.io.Out(1)
+
+
+  icmp_exitcond11.io.enable <> bb_pfor_inc5.io.Out(2)
+
+
+  br_12.io.enable <> bb_pfor_inc5.io.Out(3)
+
+
+  ld_13.io.enable <> bb_sync_continue6.io.Out(0)
+
+
+  ret_14.io.In.enable <> bb_sync_continue6.io.Out(1)
+
+
+  call_15_in.io.enable <> bb_offload_pfor_body7.io.Out(1)
+
+  call_15_out.io.enable <> bb_offload_pfor_body7.io.Out(0)
+
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING PHI NODES                             *
+   * ================================================================== */
+
+  phi__begin_0178.io.Mask <> bb_pfor_detach4.io.MaskBB(0)
+
+
+
+  /* ================================================================== *
+   *                   PRINT ALLOCA OFFSET                              *
+   * ================================================================== */
+
+  alloca_a0.io.allocaInputIO.bits.size      := 1.U
+  alloca_a0.io.allocaInputIO.bits.numByte   := 4.U
+  alloca_a0.io.allocaInputIO.bits.predicate := true.B
+  alloca_a0.io.allocaInputIO.bits.valid     := true.B
+  alloca_a0.io.allocaInputIO.valid          := true.B
+
+
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING MEMORY CONNECTIONS                    *
+   * ================================================================== */
+
+  StackPointer.io.InData(0) <> alloca_a0.io.allocaReqIO
+
+  alloca_a0.io.allocaRespIO <> StackPointer.io.OutData(0)
+
+  MemCtrl.io.WriteIn(0) <> st_2.io.memReq
+
+  st_2.io.memResp <> MemCtrl.io.WriteOut(0)
+
+  MemCtrl.io.ReadIn(0) <> ld_13.io.memReq
+
+  ld_13.io.memResp <> MemCtrl.io.ReadOut(0)
+
+
+
+  /* ================================================================== *
+   *                   PRINT SHARED CONNECTIONS                         *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING DATA DEPENDENCIES                     *
+   * ================================================================== */
+
+  st_2.io.inData <> const0.io.Out
+
+  icmp_cmp163.io.RightIO <> const1.io.Out
+
+  phi__begin_0178.io.InData(1) <> const2.io.Out
+
+  binaryOp_inc10.io.RightIO <> const3.io.Out
+
+  bitcast_a_0_a_0__sroa_cast1.io.Input <> alloca_a0.io.Out(1)
+
+  st_2.io.GepAddr <> alloca_a0.io.Out(2)
+
+  ld_13.io.GepAddr <> alloca_a0.io.Out(3)
+
+  br_4.io.CmpIO <> icmp_cmp163.io.Out(0)
+
+  binaryOp_inc10.io.LeftIO <> phi__begin_0178.io.Out(0)
+
+  icmp_exitcond11.io.LeftIO <> binaryOp_inc10.io.Out(1)
+
+  br_12.io.CmpIO <> icmp_exitcond11.io.Out(0)
+
+  ret_14.io.In.data("field0") <> ld_13.io.Out(0)
+
+  icmp_cmp163.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(1)
+
+  st_2.io.Out(0).ready := true.B
+
+  reattach_16.io.predicateIn(0).enq(DataBundle.active(1.U))
+
+
+
+  /* ================================================================== *
+   *                   PRINTING CALLIN AND CALLOUT INTERFACE            *
+   * ================================================================== */
+
+  call_15_in.io.In <> io.call_15_in
+
+  io.call_15_out <> call_15_out.io.Out(0)
+
+  reattach_16.io.enable <> call_15_in.io.Out.enable
+
+
+
+  /* ================================================================== *
+   *                   PRINTING OUTPUT INTERFACE                        *
+   * ================================================================== */
+
+  io.out <> ret_14.io.Out
 
 }
 
 import java.io.{File, FileWriter}
 
-object cilk_for_test09Main extends App {
-  val dir = new File("RTL/cilk_for_test09");
+object cilk_for_test09Top extends App {
+  val dir = new File("RTL/cilk_for_test09Top");
   dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test09DF()))
@@ -691,4 +461,3 @@ object cilk_for_test09Main extends App {
   verilogWriter.write(compiledStuff.value)
   verilogWriter.close()
 }
-

@@ -92,9 +92,15 @@ libraryDependencies += "edu.sfu.arch" %% "dandelion-lib" % "0.1-SNAPSHOT"
 ```
 
 # Last status
-error] Error: Total 115, Failed 58, Errors 1, Passed 56
+
+[info] Run completed in 3 minutes, 17 seconds.
+[info] Total number of tests run: 112
+[info] Suites: completed 114, aborted 1
+[info] Tests: succeeded 59, failed 53, canceled 0, ignored 0, pending 0
+[info] *** 1 SUITE ABORTED ***
+[info] *** 53 TESTS FAILED ***
+[error] Error: Total 113, Failed 53, Errors 1, Passed 59
 [error] Failed tests:
-[error] 	dataflow.cilk_for_test09Tester1
 [error] 	dataflow.fuse.ComputeF02STests
 [error] 	dataflow.cilk_saxpyTester1
 [error] 	dataflow.cilk_for_test07Tester1
