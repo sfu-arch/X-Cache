@@ -1,5 +1,8 @@
 # Dandelion-lib
 
+[![pipeline status](https://csil-git1.cs.surrey.sfu.ca/Dandelion/dandelion-lib/badges/master/pipeline.svg)](https://csil-git1.cs.surrey.sfu.ca/Dandelion/dandelion-lib/commits/master)
+
+
 Dandelion is a library of hardware components **High Level Synthesis** tools.
 
 ## Getting Started on a Local Ubuntu Machine
