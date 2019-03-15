@@ -31,6 +31,8 @@ class LoopStartIO(val NumInputs: Int, val NumOuts: Int)
     */
   val Finish = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
 
+  override def cloneType = new LoopStartIO(NumInputs, NumOuts).asInstanceOf[this.type]
+
 }
 
 
