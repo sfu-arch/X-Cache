@@ -101,7 +101,6 @@ libraryDependencies += "edu.sfu.arch" %% "dandelion-lib" % "0.1-SNAPSHOT"
 [info] *** 53 TESTS FAILED ***
 [error] Error: Total 113, Failed 53, Errors 1, Passed 59
 [error] Failed tests:
-[error] 	dataflow.fuse.ComputeF02STests
 [error] 	dataflow.cilk_saxpyTester1
 [error] 	dataflow.cilk_for_test07Tester1
 [error] 	memory.ReadTypMemoryControllerTester

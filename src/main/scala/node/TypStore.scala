@@ -30,6 +30,8 @@ class TypStoreIO(NumPredOps: Int,
   val memReq = Decoupled(new WriteReq())
   // Memory response.
   val memResp = Input(Flipped(new WriteResp()))
+
+  override def cloneType = new TypStoreIO(NumPredOps, NumSuccOps, NumOuts).asInstanceOf[this.type]
 }
 
 /**
@@ -155,7 +157,7 @@ class TypStore(NumPredOps: Int,
         }
       }
     }
-  }.elsewhen(start & ~predicate) {
+  }.elsewhen(start && !predicate) {
     ValidSucc()
     ValidOut()
     state := s_Done

@@ -115,6 +115,13 @@ class  WordRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit val p: Paramet
   WriteRespDeMux.io.sel := WriteOutputChosen
   WriteRespDeMux.io.en := WriteOutputValid
   WriteRespDeMux.io.input.done := true.B
+  WriteRespDeMux.io.input.RouteID := 0.U
+  WriteRespDeMux.io.input.valid := false.B
+
+  ReadRespDeMux.io.input.valid := false.B
+  ReadRespDeMux.io.input.RouteID := 0.U
+
+  RegFile.io.raddr2 := 0.U
 
 
   //DEBUG prinln

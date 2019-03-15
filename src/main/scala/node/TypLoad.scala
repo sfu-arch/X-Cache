@@ -25,6 +25,8 @@ class TypLoadIO(NumPredOps: Int, NumSuccOps: Int, NumOuts: Int)(implicit p: Para
   val memReq  = Decoupled(new ReadReq( ))
   // Memory response.
   val memResp = Input(Flipped(new ReadResp( )))
+
+  override def cloneType = new TypLoadIO(NumPredOps, NumSuccOps, NumOuts).asInstanceOf[this.type]
 }
 
 /**

@@ -56,7 +56,7 @@ class cilk_for_test01Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
     cilk01
   }
 
-  val TC = Module(new TaskController(List(32, 32, 32), List(), 1, numChild = NumTiles))
+  val TC = Module(new TaskController(List(32, 32, 32, 32), List(), 1, numChild = NumTiles))
   val CacheArb = Module(new MemArbiter(NumTiles + 2))
 
 
@@ -102,7 +102,6 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.iswrite, 0)
     poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
     poke(c.io.req.bits.mask, -1)
     step(1)
     while (peek(c.io.resp.valid) == 0) {

@@ -102,9 +102,15 @@ class TypeStackFile(ID: Int,
   RegFile.io.wdata := WriteController.io.MemReq.bits.data
   RegFile.io.wmask := WriteController.io.MemReq.bits.mask
 
-  
+  RegFile.io.raddr2 := 0.U
+
+
+  WriteController.io.MemResp.bits.data := 0.U
   WriteController.io.MemResp.valid    := WriteValid
   WriteController.io.MemResp.bits.tag := WriteReq.tag
+  WriteController.io.MemResp.bits.iswrite := true.B
+  WriteController.io.MemResp.bits.valid := true.B
+  WriteController.io.MemResp.bits.tile := 0.U
 
 
 /*==============================================
@@ -118,6 +124,9 @@ class TypeStackFile(ID: Int,
   ReadController.io.MemResp.bits.data := RegFile.io.rdata1
   ReadController.io.MemResp.bits.valid  := true.B
   ReadController.io.MemResp.bits.data := 0.U
+  ReadController.io.MemResp.bits.tile := 0.U
+
+  ReadController.io.MemResp.bits.iswrite := false.B
 
   /// Printf debugging
   override val printfSigil = "RFile: " + ID + " Type " + (Typ_SZ)

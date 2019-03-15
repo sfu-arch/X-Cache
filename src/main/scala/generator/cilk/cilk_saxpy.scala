@@ -30,7 +30,7 @@ abstract class cilk_saxpyDFIO(implicit val p: Parameters) extends Module with Co
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val call_9_out = Decoupled(new Call(List(32, 32, 32, 32)))
-    val call_9_in = Flipped(Decoupled(new Call(List(32))))
+    val call_9_in = Flipped(Decoupled(new Call(List())))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List(32)))
@@ -44,13 +44,16 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 2)
-  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
-  (RWArbiter = new ReadWriteArbiter()))
+//  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 2)
+//  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+//  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+//  (RWArbiter = new ReadWriteArbiter()))
 
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
+//  io.MemReq <> MemCtrl.io.MemReq
+//  MemCtrl.io.MemResp <> io.MemResp
+
+  io.MemReq <> DontCare
+  io.MemResp <> DontCare
 
   val InputSplitter = Module(new SplitCallNew(List(1, 1, 1, 1)))
   InputSplitter.io.In <> io.in
@@ -312,7 +315,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   binaryOp_inc5.io.RightIO <> const1.io.Out
 
-  ret_8.io.In.elements("field0") <> const2.io.Out
+  ret_8.io.In.data.elements("field0") <> const2.io.Out
 
   icmp_cmp2.io.LeftIO <> phi_i_01.io.Out(0)
 
