@@ -19,7 +19,7 @@ import node._
   * This Object should be initialize at the first step
   * It contains all the transformation from indecies to their module's name
   */
-object functionParam{
+object functionParam {
 
   val b0_entry_pred = Map(
     "active" -> 0
@@ -36,7 +36,7 @@ object functionParam{
 
   val m1_brn_bb = Map(
     "b1_then" -> 0,
-    "b2_end"  -> 1
+    "b2_end" -> 1
   )
 
   val m3_ubrn_bb = Map(
@@ -93,7 +93,7 @@ class AddDF(implicit p: Parameters) extends AddDFIO() {
   val m2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "Add")(sign = false))
   val m3 = Module(new UBranchNode(ID = 3))
 
-  val m4 = Module(new PhiNode(NumInputs = 2, NumOuts = 1, ID = 4))
+  val m4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 4))
   val m5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "Add")(sign = false))
 
   /**
@@ -142,16 +142,16 @@ class AddDF(implicit p: Parameters) extends AddDFIO() {
     */
   //Connect PHI node
   m4.io.InData(param.m4_phi_in("m2")) <> m2.io.Out(0)
-//  m4.io.InData(param.m4_phi_in("const1")) <> io.Data0
+  //  m4.io.InData(param.m4_phi_in("const1")) <> io.Data0
   m4.io.InData(param.m4_phi_in("const1")).bits.data := 0.U
   m4.io.InData(param.m4_phi_in("const1")).bits.predicate := true.B
-// //   m4.io.InData(param.m4_phi_in("const1")).bits.valid := true.B
+  // //   m4.io.InData(param.m4_phi_in("const1")).bits.valid := true.B
   m4.io.InData(param.m4_phi_in("const1")).valid := true.B
-
+  m4.io.InData(param.m4_phi_in("const1")).bits.taskID := 0.U
 
 
   m4.io.Mask <> b2_end.io.MaskBB(0)
-//  m4.io.Mask <> b1_then.io.MaskBB(0)
+  //  m4.io.Mask <> b1_then.io.MaskBB(0)
 
 
   /**
@@ -171,20 +171,25 @@ class AddDF(implicit p: Parameters) extends AddDFIO() {
     */
   m0.io.RightIO.bits.data := 9.U
   m0.io.RightIO.bits.predicate := true.B
-// //   m0.io.RightIO.bits.valid := true.B
+  m0.io.RightIO.bits.taskID := 0.U
+  // //   m0.io.RightIO.bits.valid := true.B
   m0.io.RightIO.valid := true.B
 
   m2.io.RightIO.bits.data := 5.U
   m2.io.RightIO.bits.predicate := true.B
-// //   m2.io.RightIO.bits.valid := true.B
+  m2.io.RightIO.bits.taskID := 0.U
+  m2.io.RightIO.valid := true.B
+
   m0.io.RightIO.bits.data := 9.U
   m0.io.RightIO.bits.predicate := true.B
-// //   m0.io.RightIO.bits.valid := true.B
+
+  // //   m0.io.RightIO.bits.valid := true.B
   m0.io.RightIO.valid := true.B
 
   m5.io.RightIO.bits.data := 4.U
   m5.io.RightIO.bits.predicate := true.B
-// //   m5.io.RightIO.bits.valid := true.B
+  m5.io.RightIO.bits.taskID := 0.U
+  // //   m5.io.RightIO.bits.valid := true.B
   m5.io.RightIO.valid := true.B
 
   //Output

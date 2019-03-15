@@ -154,8 +154,8 @@ class UnifiedControllerTester extends  FlatSpec with Matchers {
 			"-td", "test_run_dir",
 			"-tts", "0001"),
 			() => new UnifiedController(ID=10,Size=32,NReads=1,NWrites=1)(
-			WControl=new WriteTypMemoryController(NumOps=1,BaseSize=2,NumEntries=2))(
-			RControl=new ReadTypMemoryController(NumOps=1,BaseSize=2,NumEntries=2))(
+			WControl=new WriteTypMemoryController(NumOps=1,BaseSize=2,NumEntries=1))(
+			RControl=new ReadTypMemoryController(NumOps=1,BaseSize=2,NumEntries=1))(
 			RWArbiter = new ReadWriteArbiter())(p)) {
 			c => new UnifiedControllerTests(c)
 		} should be(true)

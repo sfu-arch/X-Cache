@@ -209,6 +209,7 @@ class WriteTypMemoryController
   for (i <- 0 until NumOps) {
     in_arb.io.in(i) <> io.WriteIn(i)
     io.WriteOut(i) <> out_demux.io.outputs(i)
+
     alloc_arb.io.in(i).bits <> false.B
   }
 
