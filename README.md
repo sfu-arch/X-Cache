@@ -122,9 +122,7 @@ error] Error: Total 115, Failed 58, Errors 1, Passed 56
 [error] 	dataflow.vector_scaleTester1
 [error] 	dataflow.stencilTester1
 [error] 	dataflow.cilk_for_test08Tester1
-[error] 	dataflow.test18Tester1
 [error] 	dataflow.graph.Compute04Tests
-[error] 	accel.basePrefetchTester
 [error] 	dataflow.mataddTester1
 [error] 	node.FusedCompTests
 [error] 	dataflow.TypeLoadDataflowTests
@@ -141,9 +139,7 @@ error] Error: Total 115, Failed 58, Errors 1, Passed 56
 [error] 	dataflow.cilk_spawn_test02Tester
 [error] 	dataflow.test20Tester1
 [error] 	arbiters.ArbiterTests
-[error] 	dataflow.test15Tester1
 [error] 	dataflow.UnTypMemDataflowTests
-[error] 	dataflow.test17Tester
 [error] 	dataflow.bgemmTester2
 [error] 	dataflow.cilk_for_test05Tester1
 [error] 	dataflow.cilk_spawn_test01Tester

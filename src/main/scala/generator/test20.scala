@@ -42,9 +42,9 @@ class test20DF(implicit p: Parameters) extends test20DFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
-		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
+  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=1, NWrites=1)
+		 (WControl=new WriteMemoryController(NumOps=1, BaseSize=2, NumEntries=2))
+		 (RControl=new ReadMemoryController(NumOps=1, BaseSize=2, NumEntries=2))
 		 (RWArbiter=new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq

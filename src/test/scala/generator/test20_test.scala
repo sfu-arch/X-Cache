@@ -23,12 +23,13 @@ import node._
 
 
 class test20MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
+  val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
   })
+  def cloneType = new test20MainIO().asInstanceOf[this.type]
 }
 
 class test20Main(implicit p: Parameters) extends test20MainIO {

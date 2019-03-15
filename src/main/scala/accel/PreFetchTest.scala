@@ -45,9 +45,9 @@ class prefetchDF(implicit p: Parameters) extends prefetchDFIO()(p) {
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=2, NWrites=2)
-		 (WControl=new WriteMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=2, BaseSize=2, NumEntries=2))
+  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=1, NWrites=1)
+		 (WControl=new WriteMemoryController(NumOps=1, BaseSize=2, NumEntries=2))
+		 (RControl=new ReadMemoryController(NumOps=1, BaseSize=2, NumEntries=2))
 		 (RWArbiter=new ReadWriteArbiter()))
 
 
@@ -94,6 +94,9 @@ class prefetchDF(implicit p: Parameters) extends prefetchDFIO()(p) {
 
   MemCtrl.io.ReadIn(0) <> ld_2.io.memReq
   ld_2.io.memResp <> MemCtrl.io.ReadOut(0)
+
+  MemCtrl.io.WriteIn(0) <> DontCare
+  MemCtrl.io.WriteOut(0) <> DontCare
 
   //  ld_2.io.GepAddr <> InputSplitter.io.Out.data("field0")(0)
 

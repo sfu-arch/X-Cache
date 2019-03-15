@@ -24,6 +24,8 @@ class PrefetchIO(NumOuts: Int)(implicit p: Parameters)
   val GepAddr = Flipped(Decoupled(new DataBundle))
   // Memory request
   val memReq  = Decoupled(new MemReq( ))
+
+  override def cloneType = new PrefetchIO(NumOuts).asInstanceOf[this.type]
 }
 
 /**
