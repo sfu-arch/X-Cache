@@ -87,3 +87,67 @@ And then for adding dandelion-lib as a dependency to other projects you can add 
 ```scala
 libraryDependencies += "edu.sfu.arch" %% "dandelion-lib" % "0.1-SNAPSHOT"
 ```
+
+# Last status
+error] Error: Total 115, Failed 58, Errors 1, Passed 56
+[error] Failed tests:
+[error] 	dataflow.cilk_for_test09Tester1
+[error] 	dataflow.fuse.ComputeF02STests
+[error] 	dataflow.cilk_saxpyTester1
+[error] 	dataflow.cilk_for_test07Tester1
+[error] 	memory.ReadTypMemoryControllerTester
+[error] 	dataflow.graph.Compute03Tests
+[error] 	dataflow.fuse.ComputeF04PTests
+[error] 	dataflow.cilk_for_test06Tester1
+[error] 	dataflow.cilk_for_test12Tester1
+[error] 	dataflow.test13Tester
+[error] 	accel.CacheTests
+[error] 	dataflow.DecoupledTaskTests
+[error] 	dataflow.test14Tester
+[error] 	dataflow.cilk_for_test07Tester2
+[error] 	dataflow.cilk_for_test08Tester2
+[error] 	dataflow.fibTester1
+[error] 	dataflow.fuse.ComputeF03CTests
+[error] 	node.TypReduceCompTester
+[error] 	dataflow.TypeMemDataflowTests
+[error] 	dataflow.cilk_for_test09Tester2
+[error] 	dataflow.gemmTester1
+[error] 	dataflow.cilk_for_test04Tester1
+[error] 	dataflow.test16Tester
+[error] 	loop.LoopHeadTester
+[error] 	dataflow.bgemmTester1
+[error] 	dataflow.vector_scaleTester1
+[error] 	dataflow.stencilTester1
+[error] 	dataflow.cilk_for_test08Tester1
+[error] 	dataflow.test18Tester1
+[error] 	dataflow.graph.Compute04Tests
+[error] 	accel.basePrefetchTester
+[error] 	dataflow.mataddTester1
+[error] 	node.FusedCompTests
+[error] 	dataflow.TypeLoadDataflowTests
+[error] 	dataflow.cilk_for_test01Tester1
+[error] 	dataflow.mergesortTester1
+[error] 	memory.UnifiedControllerTester
+[error] 	FPU.FPResizeTests
+[error] 	dataflow.cilk_for_test02Tester2
+[error] 	dataflow.Sample01Tests
+[error] 	memory.TypeStackFileTester
+[error] 	dataflow.dedupTester1
+[error] 	dataflow.Sample02Tests
+[error] 	node.TypLoadTester
+[error] 	dataflow.cilk_spawn_test02Tester
+[error] 	dataflow.test20Tester1
+[error] 	arbiters.ArbiterTests
+[error] 	dataflow.test15Tester1
+[error] 	dataflow.UnTypMemDataflowTests
+[error] 	dataflow.test17Tester
+[error] 	dataflow.bgemmTester2
+[error] 	dataflow.cilk_for_test05Tester1
+[error] 	dataflow.cilk_spawn_test01Tester
+[error] 	node.TypCompTester
+[error] 	dataflow.cilk_for_test02Tester1
+[error] 	node.TypStoreTester
+[error] 	junctions.CombineDecoupledTests
+[error] 	dataflow.covarianceTester
+[error] Error during tests:
+[error] 	dataflow.fuse.ComputeF01Tests
