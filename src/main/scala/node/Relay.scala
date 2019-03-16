@@ -58,12 +58,10 @@ class RelayDecoupledNode(val NumConsum: Int = 2)(implicit p : Parameters) extend
   printf(p"tokenIn_reg: ${tokenIn_reg}\n")
 
 
-  val tokenConsum_reg = RegInit(Vec(Seq.fill(NumConsum)(0.U(tlen.W))))
+  val tokenConsum_reg = Seq.fill(NumConsum)(RegInit(false.B))
 
-  //val tokenCMP_w  = Wire(Vec(NumConsum, Bool()))
-  val tokenCMP_w  = Vec(Seq.fill(NumConsum){false.B})
+  val tokenCMP_w  = Seq.fill(NumConsum){WireInit(false.B)}
 
-  val res = tokenCMP_w.asUInt.andR
 
   io.DataIn.ready := ~dataV_reg
 
@@ -79,7 +77,6 @@ class RelayDecoupledNode(val NumConsum: Int = 2)(implicit p : Parameters) extend
   }
 
   printf(p"io.OutIO.DataNode: ${io.OutIO}\n")
-  printf(p"TokenCMP: ${tokenCMP_w.asUInt}\n")
 
   for(i <- 0 until NumConsum){
     when(io.OutIO(i).DataNode.ready){
@@ -97,67 +94,9 @@ class RelayDecoupledNode(val NumConsum: Int = 2)(implicit p : Parameters) extend
   //
   //tokenCMP_w(0) := false.B
 
-  when(res){
+  when(tokenCMP_w.reduce(_ & _)){
     dataV_reg := false.B
   }
 
 }
-
-//class DecoupledNode(val opCode: Int, val ID: Int = 0)(implicit p: Parameters) extends Node()(p){
-
-  //// Extra information
-  //val token_reg  = RegInit(0.U(tlen.W))
-  //val nodeID = RegInit(ID.U)
-
-  ////Instantiate ALU with selected code
-  //val FU = Module(new ALU(xlen, opCode))
-
-  //// Input data
-  //val LeftOperand   = RegInit(0.U(xlen.W))
-  //val RightOperand  = RegInit(0.U(xlen.W))
-
-  ////Input valid signals
-  //val LeftValid  = RegInit(false.B)
-  //val RightValid = RegInit(false.B)
-
-  ////output valid signal
-  //val outValid   = LeftValid & RightValid
-
-  //io.OutIO.valid := outValid
-
-  //// Connect operands to ALU.
-  //FU.io.in1 := LeftOperand
-  //FU.io.in2 := RightOperand
-
-  //// Connect output to ALU
-  //io.OutIO.bits:= FU.io.out
-
-  //io.LeftIO.ready   := ~LeftValid
-  //io.RightIO.ready  := ~RightValid
-
-  //io.TokenIO := token_reg
-
-  ////Latch Left input if it's fire
-  //when(io.LeftIO.fire()){
-    //LeftOperand := io.LeftIO.bits
-    //LeftValid   := io.LeftIO.valid
-  //}
-
-  ////Latch Righ input if it's fire
-  //when(io.RightIO.fire()){
-    //RightOperand := io.RightIO.bits
-    //RightValid   := io.RightIO.valid
-  //}
-
-  ////Reset the latches if we make sure that 
-  ////consumer has consumed the output
-  //when(outValid && io.OutIO.ready){
-    //RightOperand := 0.U
-    //LeftOperand  := 0.U
-    //RightValid   := false.B
-    //LeftValid    := false.B
-    //token_reg := token_reg + 1.U
-  //}
-
-//}
 

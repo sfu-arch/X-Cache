@@ -56,7 +56,7 @@ class cilk_for_test01Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
     cilk01
   }
 
-  val TC = Module(new TaskController(List(32, 32, 32, 32), List(), 1, numChild = NumTiles))
+  val TC = Module(new TaskController(List(32, 32, 32), List(), 1, numChild = NumTiles))
   val CacheArb = Module(new MemArbiter(NumTiles + 2))
 
 
@@ -139,20 +139,21 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
   }
 
 
-  val inAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
+  val inAddrVec = List.range(0, (4 * 5), 4)
   val inDataVec = List(1, 2, 3, 4, 5)
-  val outAddrVec = List(0x20, 0x24, 0x28, 0x2c, 0x30)
+  val outAddrVec = List.range(20, 20 + (4 * 5), 4)
   val outDataVec = List(2, 4, 6, 8, 10)
 
   // Write initial contents to the memory model.
   for (i <- 0 until 5) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
+
+  step(1)
+
   for (i <- 0 until 5) {
     MemWrite(outAddrVec(i), 0)
   }
-
-  //  step(1)
 
 
   step(1)
@@ -170,9 +171,9 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, "h0".U) // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0.U) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, "h20".U) // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, 20.U) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -218,6 +219,9 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
       println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
       valid_data = false
+    }
+    else {
+      println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
     }
   }
   if (valid_data) {
