@@ -127,7 +127,6 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
   val inAddrVec = List.range(addr_range, addr_range + (4 * 10), 4)
   val inDataVec = List(0, 1, 2, 3, 4, 0, 0, 0, 0, 0)
   val outAddrVec = List.range(addr_range, addr_range + (4 * 10), 4)
-  //  val outAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
   val outDataVec = inDataVec.zipWithIndex.map { case (a, b) => if (b < 5) a else (b - 5) * 2 }
 
 

@@ -37,28 +37,27 @@ class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int = 0, NoReturn
   val state                   = RegInit(s_idle)
 
   val data_R       = Reg(new VariableData(argTypes))
-  val data_valid_R = RegInit(VecInit(Seq.fill(argTypes.length) {
-    false.B
-  }))
+  val data_valid_R = Seq.fill(argTypes.length)(RegInit(false.B))
 
   for (i <- argTypes.indices) {
+    io.In.elements(s"field$i").ready := ~data_valid_R(i)
     when(io.In(s"field$i").fire( )) {
-      data_R(s"field$i") := io.In(s"field$i").bits
+      data_R(s"field$i") <> io.In(s"field$i").bits
       data_valid_R(i) := true.B
     }
-    io.In.elements(s"field$i").ready := !data_valid_R(i)
   }
 
   when(io.enable.fire( )) {
     succ_bundle_R.foreach(_ := io.enable.bits)
   }
+
   io.Out(0).bits.data := data_R
   io.Out(0).bits.enable := enable_R
 
   val error = WireInit(false.B)
   switch(state) {
     is(s_idle) {
-      when(enable_valid_R && data_valid_R.asUInt.andR) {
+      when(enable_valid_R && data_valid_R.reduce(_ & _)) {
         ValidSucc( )
         // Fire outputs if we're not returning (even if control=false.B)
         // Otherwise don't fire outputs if control = false and assume CallInNode will fake the response
@@ -68,8 +67,8 @@ class CallOutNode(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int = 0, NoReturn
           when(data_R(s"field$i").taskID =/= enable_R.taskID) {
             error := true.B
             printfError("#####%d\n", error)
+            printfError("##### Data taskID: %d <> Enable taskID: %d\n", data_R(s"field$i").taskID, enable_R.taskID)
           }
-          //  }
         }
         state := s_Done
       }
@@ -114,7 +113,7 @@ class CallOutNode2(ID: Int, val argTypes: Seq[Int], NumSuccOps: Int = 0, NoRetur
       data_R(s"field$i") := io.In(s"field$i").bits
       data_valid_R(i) := true.B
     }
-    io.In.elements(s"field$i").ready := !data_valid_R(i)
+    io.In.elements(s"field$i").ready := ~data_valid_R(i)
   }
 
   when(io.enable.fire( )) {
