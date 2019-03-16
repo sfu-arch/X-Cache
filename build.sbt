@@ -29,7 +29,7 @@ scalacOptions :=
   * F - show full stack traces
   * W - Without color
   **/
-testOptions in Test += Tests.Argument("-oDF")
+testOptions in Test += Tests.Argument("-oDS")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),

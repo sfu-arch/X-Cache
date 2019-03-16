@@ -316,13 +316,16 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
                   (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
                   (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
   */
-  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 64 * 1024, NReads = 2, NWrites = 2)
-  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 64 * 1024, NReads = 1, NWrites = 2)
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 1))
   (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
   (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
+
+  MemCtrl.io.ReadIn(0) <> DontCare
+  MemCtrl.io.ReadOut(0) <> DontCare
 
   val InputSplitter = Module(new SplitCallNew(List(4, 2)))
   InputSplitter.io.In <> io.in

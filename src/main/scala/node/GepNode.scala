@@ -51,6 +51,8 @@ class GepNodeStackIO(NumOuts: Int)
   // If Ready is LOW; Do not change the inputs as this will cause a bug
   val baseAddress = Flipped(Decoupled(new DataBundle( )))
 
+  override def cloneType = new GepNodeStackIO(NumOuts).asInstanceOf[this.type]
+
 }
 
 class GepNodeIO(NumIns: Int, NumOuts: Int)
