@@ -23,7 +23,7 @@ import node._
 
 
 class stencilMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
+  val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val addr = Input(UInt(nastiXAddrBits.W))
     val din = Input(UInt(nastiXDataBits.W))
@@ -31,6 +31,8 @@ class stencilMainIO(implicit val p: Parameters) extends Module with CoreParams w
     val dout = Output(UInt(nastiXDataBits.W))
     val out = Decoupled(new Call(List()))
   })
+
+  def cloneType = new stencilMainIO().asInstanceOf[this.type]
 }
 
 
@@ -61,6 +63,9 @@ class stencilMainTM(tiles: Int)(implicit p: Parameters) extends stencilMainIO {
   val children = tiles
   val TaskControllerModule = Module(new TaskController(List(32, 32, 32), List(), 1, children))
   val stencil = Module(new stencilDF())
+
+  stencil.io.MemReq <> DontCare
+  stencil.io.MemResp <> DontCare
 
   val stencil_detach1 = for (i <- 0 until children) yield {
     val detach1 = Module(new stencil_detach1DF())
@@ -239,7 +244,7 @@ class stencilTester1 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
 //  val tile_list = List(1,2,4,8)
-  val tile_list = List(4)
+  val tile_list = List(1)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(

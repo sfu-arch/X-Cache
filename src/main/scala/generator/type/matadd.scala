@@ -41,7 +41,7 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
    * ================================================================== */
 
   val StackFile = Module(new TypeStackFile(ID = 0, Size = 32, NReads = 2, NWrites = 1)
-  (WControl = new WriteTypMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (WControl = new WriteTypMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 1))
   (RControl = new ReadTypMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2)))
 
   io.MemReq <> DontCare

@@ -21,7 +21,7 @@ import node._
 
 
 class vector_scaleMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
+  val io = IO( new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32,32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))  // Initialization address
     val din  = Input(UInt(nastiXDataBits.W))  // Initialization data
@@ -29,6 +29,8 @@ class vector_scaleMainIO(implicit val p: Parameters)  extends Module with CorePa
     val dout = Output(UInt(nastiXDataBits.W))
     val out = Decoupled(new Call(List(32)))
   })
+
+  def cloneType = new vector_scaleMainIO().asInstanceOf[this.type]
 }
 
 
@@ -47,7 +49,7 @@ class vector_scaleMainTM(children :Int=3)(implicit p: Parameters) extends vector
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  val memModel = Module(new NastiMemSlave(latency = 0)) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiMemSlave(latency = 10)) // Model of DRAM to connect to Cache
   memModel.io.nasti <> cache.io.nasti
   memModel.io.init.bits.addr := io.addr
   memModel.io.init.bits.data := io.din
@@ -58,6 +60,9 @@ class vector_scaleMainTM(children :Int=3)(implicit p: Parameters) extends vector
 
   val TaskControllerModule = Module(new TaskController(List(32,32,32,32), List(), 1, children))
   val vector_scale = Module(new vector_scaleDF())
+
+  vector_scale.io.MemResp <> DontCare
+  vector_scale.io.MemReq <> DontCare
 
   val vector_scale_detach = for (i <- 0 until children) yield {
     val foo = Module(new vector_scale_detach1DF())

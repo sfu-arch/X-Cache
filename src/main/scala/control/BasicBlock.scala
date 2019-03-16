@@ -119,7 +119,7 @@ class BasicBlockNode(NumInputs: Int,
       when(start) {
         ValidOut()
         state := s_LATCH
-        assert(PopCount(predicate_control_R) < 2.U)
+        //        assert(PopCount(predicate_control_R) < 2.U)
       }
     }
     is(s_LATCH) {
@@ -632,7 +632,7 @@ class LoopHeadNodeIO(val NumOuts: Int, val NumPhi: Int)(implicit p: Parameters) 
   override def cloneType = new LoopHeadNodeIO(NumOuts, NumPhi).asInstanceOf[this.type]
 }
 
-@deprecated("Use LoopFastHead instead. For O1 the behaviour is not deterministic")
+@deprecated("Use LoopFastHead instead. For O1 the behaviour is not deterministic", "dandelion-1.0")
 class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
               (implicit val p: Parameters,
                name: sourcecode.Name,
@@ -1022,7 +1022,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
   } reduce (_ & _)
 
 
-  val out_fire_mask = (output_fire_R zip io.Out.map(_.fire)) map { case (a, b) => a | b}
+  val out_fire_mask = (output_fire_R zip io.Out.map(_.fire)) map { case (a, b) => a | b }
 
 
   //Masking output value
@@ -1032,7 +1032,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
 
   val predicate_val = in_data_R.map(_.control).reduce(_ | _)
 
-  output_R := ControlBundle.default(predicate_val, in_task_ID )
+  output_R := ControlBundle.default(predicate_val, in_task_ID)
 
   val s_idle :: s_fire :: Nil = Enum(2)
   val state = RegInit(s_idle)
@@ -1044,12 +1044,12 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
         output_valid_R.foreach(_ := true.B)
         state := s_fire
 
-        when(predicate_val){
+        when(predicate_val) {
           if (log) {
             printf("[LOG] " + "[" + module_name + "] [TID->%d] [BB]   "
               + node_name + ": Output [T] fired @ %d\n", output_R.taskID, cycleCount)
           }
-        }.otherwise{
+        }.otherwise {
           if (log) {
             printf("[LOG] " + "[" + module_name + "] [TID->%d] [BB]   "
               + node_name + ": Output [F] fired @ %d\n", output_R.taskID, cycleCount)

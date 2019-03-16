@@ -38,11 +38,13 @@ class DecoupledChildDF(val ID:Int)(implicit p: Parameters) extends Module {
 
   addModule3.io.enable.bits.control := true.B
   addModule3.io.enable.valid := true.B
+  addModule3.io.enable.bits.taskID := 0.U
   addModule3.io.LeftIO <> addModule1.io.Out(0)
   addModule3.io.RightIO <> addModule2.io.Out(0)
 
   ret4.io.enable.bits.control := true.B
   ret4.io.enable.valid := true.B
+  ret4.io.enable.bits.taskID := 0.U
   ret4.io.In.elements("field0") <> addModule3.io.Out(0)
   io.Out <> ret4.io.Out
 
