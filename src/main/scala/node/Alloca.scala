@@ -128,7 +128,8 @@ class AllocaNode(NumOuts: Int, ID: Int, RouteID: Int, FrameSize : Int = 16)
         pred_R := false.B
         state := s_idle
         Reset()
-        when (predicate) {printf("[LOG] " + "[" + module_name + "] " + node_name +  ": Output fired @ %d\n",cycleCount)}
+        when (predicate) {printf("[LOG] " + "[" + module_name + "] [TID ->%d] [ALLOCA] " +
+          node_name +  ": Output fired @ %d\n",enable_R.taskID, cycleCount)}
       }
     }
   }

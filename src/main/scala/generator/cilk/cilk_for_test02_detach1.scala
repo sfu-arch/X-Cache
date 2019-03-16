@@ -26,33 +26,27 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class cilk_for_test02DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class cilk_for_test02_detach1DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
-    val call_12_out = Decoupled(new Call(List(32)))
-    val call_12_in = Flipped(Decoupled(new Call(List())))
+    val call_8_out = Decoupled(new Call(List(32)))
+    val call_8_in = Flipped(Decoupled(new Call(List())))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
 
-class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p) {
+class cilk_for_test02_detach1DF(implicit p: Parameters) extends cilk_for_test02_detach1DFIO()(p) {
 
 
   /* ================================================================== *
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 1, NWrites = 1)
-  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 1))
-  (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 1))
-  (RWArbiter = new ReadWriteArbiter()))
-
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
-
-  val StackPointer = Module(new Stack(NumOps = 1))
+  //Remember if there is no mem operation io memreq/memresp should be grounded
+  io.MemReq <> DontCare
+  io.MemResp <> DontCare
 
   val InputSplitter = Module(new SplitCallNew(List(1)))
   InputSplitter.io.In <> io.in
@@ -71,17 +65,17 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 0))
+  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_pfor_cond_cleanup1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  val bb_my_pfor_detach91 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 1))
 
-  val bb_pfor_detach2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 2))
+  val bb_my_pfor_inc2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 2))
 
-  val bb_pfor_inc173 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 3))
+  val bb_my_pfor_cond_cleanup73 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 3))
 
-  val bb_sync_continue194 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 4))
+  val bb_my_sync_continue4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 4))
 
-  val bb_offload_pfor_body5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 5))
+  val bb_my_offload_pfor_body135 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
 
 
@@ -89,49 +83,37 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  %foo = alloca i32, align 4, !UID !10
-  val alloca_foo0 = Module(new AllocaNode(NumOuts=4, ID = 0, RouteID=0))
+  //  br label %my_pfor.detach9, !UID !10, !BB_UID !11
+  val br_0 = Module(new UBranchNode(ID = 0))
 
-  //  %foo.0.foo.0..sroa_cast = bitcast i32* %foo to i8*, !UID !11
-  val bitcast_foo_0_foo_0__sroa_cast1 = Module(new BitCastNode(NumOuts = 1, ID = 1))
+  //  %1 = phi i32 [ 0, %my_pfor.body ], [ %2, %my_pfor.inc ], !UID !12
+  val phi1 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 1, Res = true))
 
-  //  store i32 %j, i32* %foo, align 4, !UID !12
-  val st_2 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 2, RouteID = 0))
+  //  detach within %0, label %my_offload.pfor.body13, label %my_pfor.inc, !UID !13, !BB_UID !14
+  val detach_2 = Module(new Detach(ID = 2))
 
-  //  br label %pfor.detach, !UID !13, !BB_UID !14
-  val br_3 = Module(new UBranchNode(ID = 3))
+  //  %2 = add nuw nsw i32 %1, 1, !UID !15
+  val binaryOp_3 = Module(new ComputeNode(NumOuts = 2, ID = 3, opCode = "add")(sign = false))
 
-  //  sync within %syncreg, label %sync.continue19, !UID !15, !BB_UID !16
-  val sync_4 = Module(new SyncTC(ID = 4, NumInc=1, NumDec=1, NumOuts=1))
+  //  %3 = icmp eq i32 %2, 5, !UID !16
+  val icmp_4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "eq")(sign = false))
 
-  //  %__begin.040 = phi i32 [ 0, %entry ], [ %inc18, %pfor.inc17 ], !UID !17
-  val phi__begin_0405 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 5, Res = true))
+  //  br i1 %3, label %my_pfor.cond.cleanup7, label %my_pfor.detach9, !llvm.loop !17, !UID !19, !BB_UID !20
+  val br_5 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 5))
 
-  //  detach within %syncreg, label %offload.pfor.body, label %pfor.inc17, !UID !18, !BB_UID !19
-  val detach_6 = Module(new Detach(ID = 6))
+  //  sync within %0, label %my_sync.continue, !UID !21, !BB_UID !22
+  val sync_6 = Module(new SyncTC(ID = 6, NumInc=1, NumDec=1, NumOuts=1))
 
-  //  %inc18 = add nuw nsw i32 %__begin.040, 1, !UID !20
-  val binaryOp_inc187 = Module(new ComputeNode(NumOuts = 2, ID = 7, opCode = "add")(sign = false))
+  //  ret void, !UID !23, !BB_UID !24
+  val ret_7 = Module(new RetNode2(retTypes = List(), ID = 7))
 
-  //  %exitcond41 = icmp eq i32 %inc18, 5, !UID !21
-  val icmp_exitcond418 = Module(new IcmpNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
+  //  call void @cilk_for_test02_detach2(i32* %foo.in), !UID !25
+  val call_8_out = Module(new CallOutNode(ID = 8, NumSuccOps = 0, argTypes = List(32)))
 
-  //  br i1 %exitcond41, label %pfor.cond.cleanup, label %pfor.detach, !llvm.loop !22, !UID !24, !BB_UID !25
-  val br_9 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 9))
+  val call_8_in = Module(new CallInNode(ID = 8, argTypes = List()))
 
-  //  %foo.0.load38 = load i32, i32* %foo, align 4, !UID !26
-  val ld_10 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 10, RouteID = 0))
-
-  //  ret i32 %foo.0.load38, !UID !27, !BB_UID !28
-  val ret_11 = Module(new RetNode2(retTypes = List(32), ID = 11))
-
-  //  call void @cilk_for_test02_detach1(i32* %foo), !UID !29
-  val call_12_out = Module(new CallOutNode(ID = 12, NumSuccOps = 0, argTypes = List(32)))
-
-  val call_12_in = Module(new CallInNode(ID = 12, argTypes = List()))
-
-  //  reattach within %syncreg, label %pfor.inc17, !UID !30, !BB_UID !31
-  val reattach_13 = Module(new Reattach(NumPredOps= 1, ID = 13))
+  //  reattach within %0, label %my_pfor.inc, !UID !26, !BB_UID !27
+  val reattach_9 = Module(new Reattach(NumPredOps= 1, ID = 9))
 
 
 
@@ -154,13 +136,13 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_my_pfor_body0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-  bb_pfor_inc173.io.predicateIn(0) <> detach_6.io.Out(0)
+  bb_my_pfor_inc2.io.predicateIn(0) <> detach_2.io.Out(0)
 
-  bb_sync_continue194.io.predicateIn(0) <> sync_4.io.Out(0)
+  bb_my_sync_continue4.io.predicateIn(0) <> sync_6.io.Out(0)
 
-  bb_offload_pfor_body5.io.predicateIn(0) <> detach_6.io.Out(1)
+  bb_my_offload_pfor_body135.io.predicateIn(0) <> detach_2.io.Out(1)
 
 
 
@@ -168,11 +150,11 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   BASICBLOCK -> PREDICATE LOOP                     *
    * ================================================================== */
 
-  bb_pfor_cond_cleanup1.io.predicateIn(0) <> Loop_0.io.loopExit(0)
+  bb_my_pfor_detach91.io.predicateIn(1) <> Loop_0.io.activate_loop_start
 
-  bb_pfor_detach2.io.predicateIn(1) <> Loop_0.io.activate_loop_start
+  bb_my_pfor_detach91.io.predicateIn(0) <> Loop_0.io.activate_loop_back
 
-  bb_pfor_detach2.io.predicateIn(0) <> Loop_0.io.activate_loop_back
+  bb_my_pfor_cond_cleanup73.io.predicateIn(0) <> Loop_0.io.loopExit(0)
 
 
 
@@ -180,9 +162,9 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
 
-  sync_4.io.incIn(0) <> detach_6.io.Out(2)
+  sync_6.io.incIn(0) <> detach_2.io.Out(2)
 
-  sync_4.io.decIn(0) <> reattach_13.io.Out(0)
+  sync_6.io.decIn(0) <> reattach_9.io.Out(0)
 
 
 
@@ -190,11 +172,11 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   LOOP -> PREDICATE INSTRUCTION                    *
    * ================================================================== */
 
-  Loop_0.io.enable <> br_3.io.Out(0)
+  Loop_0.io.enable <> br_0.io.Out(0)
 
-  Loop_0.io.loopBack(0) <> br_9.io.FalseOutput(0)
+  Loop_0.io.loopBack(0) <> br_5.io.FalseOutput(0)
 
-  Loop_0.io.loopFinish(0) <> br_9.io.TrueOutput(0)
+  Loop_0.io.loopFinish(0) <> br_5.io.TrueOutput(0)
 
 
 
@@ -208,7 +190,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> alloca_foo0.io.Out(0)
+  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
 
@@ -216,7 +198,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_12_out.io.In.elements("field0") <> Loop_0.io.OutLiveIn.elements("field0")(0)
+  call_8_out.io.In.elements("field0") <> Loop_0.io.OutLiveIn.elements("field0")(0)
 
 
 
@@ -236,7 +218,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   LOOP CARRY DEPENDENCIES                          *
    * ================================================================== */
 
-  Loop_0.io.CarryDepenIn(0) <> binaryOp_inc187.io.Out(0)
+  Loop_0.io.CarryDepenIn(0) <> binaryOp_3.io.Out(0)
 
 
 
@@ -244,7 +226,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   LOOP DATA CARRY DEPENDENCIES                     *
    * ================================================================== */
 
-  phi__begin_0405.io.InData(1) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
+  phi1.io.InData(1) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
 
 
 
@@ -252,53 +234,39 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   BASICBLOCK -> ENABLE INSTRUCTION                 *
    * ================================================================== */
 
-  alloca_foo0.io.enable <> bb_entry0.io.Out(0)
+  br_0.io.enable <> bb_my_pfor_body0.io.Out(0)
 
 
-  bitcast_foo_0_foo_0__sroa_cast1.io.enable <> bb_entry0.io.Out(1)
+  const0.io.enable <> bb_my_pfor_detach91.io.Out(0)
+
+  phi1.io.enable <> bb_my_pfor_detach91.io.Out(1)
 
 
-  st_2.io.enable <> bb_entry0.io.Out(2)
+  detach_2.io.enable <> bb_my_pfor_detach91.io.Out(2)
 
 
-  bb_entry0.io.Out(3).ready := true.B
+  const1.io.enable <> bb_my_pfor_inc2.io.Out(0)
 
-  br_3.io.enable <> st_2.io.SuccOp(0)
+  const2.io.enable <> bb_my_pfor_inc2.io.Out(1)
 
-
-  sync_4.io.enable <> bb_pfor_cond_cleanup1.io.Out(0)
-
-
-  const0.io.enable <> bb_pfor_detach2.io.Out(0)
-
-  phi__begin_0405.io.enable <> bb_pfor_detach2.io.Out(1)
+  binaryOp_3.io.enable <> bb_my_pfor_inc2.io.Out(2)
 
 
-  detach_6.io.enable <> bb_pfor_detach2.io.Out(2)
+  icmp_4.io.enable <> bb_my_pfor_inc2.io.Out(3)
 
 
-  const1.io.enable <> bb_pfor_inc173.io.Out(0)
-
-  const2.io.enable <> bb_pfor_inc173.io.Out(1)
-
-  binaryOp_inc187.io.enable <> bb_pfor_inc173.io.Out(2)
+  br_5.io.enable <> bb_my_pfor_inc2.io.Out(4)
 
 
-  icmp_exitcond418.io.enable <> bb_pfor_inc173.io.Out(3)
+  sync_6.io.enable <> bb_my_pfor_cond_cleanup73.io.Out(0)
 
 
-  br_9.io.enable <> bb_pfor_inc173.io.Out(4)
+  ret_7.io.In.enable <> bb_my_sync_continue4.io.Out(0)
 
 
-  ld_10.io.enable <> bb_sync_continue194.io.Out(0)
+  call_8_in.io.enable <> bb_my_offload_pfor_body135.io.Out(1)
 
-
-  ret_11.io.In.enable <> bb_sync_continue194.io.Out(1)
-
-
-  call_12_in.io.enable <> bb_offload_pfor_body5.io.Out(1)
-
-  call_12_out.io.enable <> bb_offload_pfor_body5.io.Out(0)
+  call_8_out.io.enable <> bb_my_offload_pfor_body135.io.Out(0)
 
 
 
@@ -307,7 +275,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
 
-  phi__begin_0405.io.Mask <> bb_pfor_detach2.io.MaskBB(0)
+  phi1.io.Mask <> bb_my_pfor_detach91.io.MaskBB(0)
 
 
 
@@ -315,31 +283,11 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
 
-  alloca_foo0.io.allocaInputIO.bits.size      := 1.U
-  alloca_foo0.io.allocaInputIO.bits.numByte   := 4.U
-  alloca_foo0.io.allocaInputIO.bits.predicate := true.B
-  alloca_foo0.io.allocaInputIO.bits.valid     := true.B
-  alloca_foo0.io.allocaInputIO.valid          := true.B
-
-
-
 
 
   /* ================================================================== *
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
-
-  StackPointer.io.InData(0) <> alloca_foo0.io.allocaReqIO
-
-  alloca_foo0.io.allocaRespIO <> StackPointer.io.OutData(0)
-
-  MemCtrl.io.WriteIn(0) <> st_2.io.memReq
-
-  st_2.io.memResp <> MemCtrl.io.WriteOut(0)
-
-  MemCtrl.io.ReadIn(0) <> ld_10.io.memReq
-
-  ld_10.io.memResp <> MemCtrl.io.ReadOut(0)
 
 
 
@@ -353,33 +301,19 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  phi__begin_0405.io.InData(0) <> const0.io.Out
+  phi1.io.InData(0) <> const0.io.Out
 
-  binaryOp_inc187.io.RightIO <> const1.io.Out
+  binaryOp_3.io.RightIO <> const1.io.Out
 
-  icmp_exitcond418.io.RightIO <> const2.io.Out
+  icmp_4.io.RightIO <> const2.io.Out
 
-  bitcast_foo_0_foo_0__sroa_cast1.io.Input <> alloca_foo0.io.Out(1)
+  binaryOp_3.io.LeftIO <> phi1.io.Out(0)
 
-  bitcast_foo_0_foo_0__sroa_cast1.io.Out(0).ready := true.B
+  icmp_4.io.LeftIO <> binaryOp_3.io.Out(1)
 
-  st_2.io.GepAddr <> alloca_foo0.io.Out(2)
+  br_5.io.CmpIO <> icmp_4.io.Out(0)
 
-  ld_10.io.GepAddr <> alloca_foo0.io.Out(3)
-
-  binaryOp_inc187.io.LeftIO <> phi__begin_0405.io.Out(0)
-
-  icmp_exitcond418.io.LeftIO <> binaryOp_inc187.io.Out(1)
-
-  br_9.io.CmpIO <> icmp_exitcond418.io.Out(0)
-
-  ret_11.io.In.data("field0") <> ld_10.io.Out(0)
-
-  st_2.io.inData <> InputSplitter.io.Out.data.elements("field0")(0)
-
-  st_2.io.Out(0).ready := true.B
-
-  reattach_13.io.predicateIn(0).enq(DataBundle.active(1.U))
+  reattach_9.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 
 
@@ -387,11 +321,11 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   PRINTING CALLIN AND CALLOUT INTERFACE            *
    * ================================================================== */
 
-  call_12_in.io.In <> io.call_12_in
+  call_8_in.io.In <> io.call_8_in
 
-  io.call_12_out <> call_12_out.io.Out(0)
+  io.call_8_out <> call_8_out.io.Out(0)
 
-  reattach_13.io.enable <> call_12_in.io.Out.enable
+  reattach_9.io.enable <> call_8_in.io.Out.enable
 
 
 
@@ -399,17 +333,17 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out <> ret_11.io.Out
+  io.out <> ret_7.io.Out
 
 }
 
 import java.io.{File, FileWriter}
 
-object cilk_for_test02Top extends App {
-  val dir = new File("RTL/cilk_for_test02Top");
+object cilk_for_test02_detach1Top extends App {
+  val dir = new File("RTL/cilk_for_test02_detach1Top");
   dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test02DF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test02_detach1DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
