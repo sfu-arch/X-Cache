@@ -33,22 +33,16 @@ class UnTypMemDataFlow(val ops: Int)(implicit val p: Parameters) extends Module 
 
   val Stores = for (i <- 0 until ops * 2) yield {
     val store = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = i, RouteID = i))
-    store.io.inData.bits <> DontCare
-    store.io.enable.bits <> DontCare
-    store.io.GepAddr <> DontCare
     store
   }
 
   val Loads = for (i <- 0 until ops * 2) yield {
     val load = Module(new UnTypLoad(NumPredOps = 1, NumSuccOps = 0, NumOuts = 2, ID = i, RouteID = i))
-    load.io.GepAddr.bits <> DontCare
-    load.io.enable.bits <> DontCare
     load
   }
 
   val Ops = for (i <- 0 until ops) yield {
     val op = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false))
-    op.io.enable.bits <> DontCare
     op
   }
 
@@ -64,12 +58,15 @@ class UnTypMemDataFlow(val ops: Int)(implicit val p: Parameters) extends Module 
     Stores(i).io.GepAddr.bits.data := (8 + (xlen / 8) * i).U
     Stores(i).io.GepAddr.bits.predicate := true.B
     Stores(i).io.GepAddr.valid := fireLoadsStores
+    Stores(i).io.GepAddr.bits.taskID := 0.U
 
     Stores(i).io.inData.bits.data := (i + 1).U
     Stores(i).io.inData.bits.predicate := true.B
     Stores(i).io.inData.valid := fireLoadsStores
+    Stores(i).io.inData.bits.taskID := 0.U
 
     Stores(i).io.enable.bits.control := true.B
+    Stores(i).io.enable.bits.taskID := 0.U
     Stores(i).io.enable.valid := fireEnables
     Stores(i).io.Out(0).ready := true.B
 
@@ -77,9 +74,11 @@ class UnTypMemDataFlow(val ops: Int)(implicit val p: Parameters) extends Module 
     Loads(i).io.GepAddr.bits.data := (8 + (xlen / 8) * i).U
     Loads(i).io.GepAddr.bits.predicate := true.B
     Loads(i).io.GepAddr.valid := fireLoadsStores
+    Loads(i).io.GepAddr.bits.taskID := 0.U
 
     Loads(i).io.enable.bits.control := true.B
     Loads(i).io.enable.valid := fireEnables
+    Loads(i).io.enable.bits.taskID := 0.U
     Loads(i).io.Out(0).ready := true.B
 
     Loads(i).io.PredOp(0) <> Stores(i).io.SuccOp(0)
@@ -89,6 +88,7 @@ class UnTypMemDataFlow(val ops: Int)(implicit val p: Parameters) extends Module 
   for (i <- 0 until ops) {
     Ops(i).io.enable.bits.control := true.B
     Ops(i).io.enable.valid := true.B
+    Ops(i).io.enable.bits.taskID := 0.U
     Ops(i).io.LeftIO <> Loads(2 * i).io.Out(1)
     Ops(i).io.RightIO <> Loads(2 * i + 1).io.Out(1)
     io.Out(i) <> Ops(i).io.Out(0)

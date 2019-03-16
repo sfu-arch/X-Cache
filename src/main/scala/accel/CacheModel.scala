@@ -32,7 +32,7 @@ class CacheModel(implicit val p: Parameters) extends Module with CacheParams {
   val writeData = Vec(bBytes, UInt(8.W))
 
   def extractUInt(src: Vec[UInt], len: Int, offset: UInt): UInt = {
-    val result = Wire(UInt( ))
+    val result = WireInit(0.U)
     for (i <- 0 until len) {
       result((i + 1) * 8 - 1, i * 8) := src(i.U + offset)
     }

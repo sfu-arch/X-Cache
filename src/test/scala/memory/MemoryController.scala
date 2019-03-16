@@ -117,7 +117,7 @@ class ReadTypMemoryControllerTests(c: ReadTypMemoryController)
 class ReadTypMemoryControllerTester extends  FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Memory Controller tester" in {
-    chisel3.iotesters.Driver(() => new ReadTypMemoryController(NumOps=1,BaseSize=2,NumEntries=2)(p)) {
+    chisel3.iotesters.Driver(() => new ReadTypMemoryController(NumOps=1,BaseSize=2,NumEntries=1)(p)) {
       c => new ReadTypMemoryControllerTests(c)
     } should be(true)
   }

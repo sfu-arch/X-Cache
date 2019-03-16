@@ -31,6 +31,8 @@ class CombineCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Mod
 class CombineDataIO(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle {
   val In =  Flipped(new VariableDecoupledData(argTypes))
   val Out = Decoupled(new VariableData(argTypes))
+
+  override def cloneType = new CombineDataIO(argTypes).asInstanceOf[this.type]
 }
 
 class CombineData(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
