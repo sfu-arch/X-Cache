@@ -317,8 +317,8 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
                   (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
   */
   val MemCtrl = Module(new UnifiedController(ID = 0, Size = 64 * 1024, NReads = 1, NWrites = 2)
-  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 1))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 1))
   (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
@@ -346,15 +346,15 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 0))
+  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0))
 
   val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1))
 
-  val bb_if_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
+  val bb_if_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
 
   val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_det_cont = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 4))
+  val bb_det_cont = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 3, BID = 4))
 
   val bb_det_achd2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
@@ -476,6 +476,13 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   val ret20 = Module(new RetNode(retTypes = List(32), ID = 20)) // manual
 
 
+  val const1 = Module(new ConstFastNode(value = 1, ID = 40))
+
+  val const2 = Module(new ConstFastNode(value = 2, ID = 40))
+
+  val const3 = Module(new ConstFastNode(value = 2, ID = 40))
+
+
   /* ================================================================== *
    *                   INITIALIZING PARAM                               *
    * ================================================================== */
@@ -560,6 +567,8 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   icmp4.io.enable <> bb_entry.io.Out(1)
 
+  const3.io.enable <> bb_entry.io.Out(4)
+
   br5.io.enable <> bb_entry.io.Out(2)
 
 
@@ -567,9 +576,11 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   br7.io.enable <> bb_if_then.io.Out(param.bb_if_then_activate("br7"))
 
-  sub8.io.enable <> bb_if_end.io.Out(param.bb_if_end_activate("sub8"))
+  sub8.io.enable <> bb_if_end.io.Out(0)
 
-  detach9.io.enable <> bb_if_end.io.Out(param.bb_if_end_activate("detach9"))
+  const1.io.enable <> bb_if_end.io.Out(1)
+
+  detach9.io.enable <> bb_if_end.io.Out(2)
 
 
   call10_out.io.enable <> bb_det_achd.io.Out(param.bb_det_achd_activate("call10"))
@@ -579,6 +590,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   sub12.io.enable <> bb_det_cont.io.Out(param.bb_det_cont_activate("sub12"))
+  const2.io.enable <> bb_det_cont.io.Out(2)
 
   detach13.io.enable <> bb_det_cont.io.Out(param.bb_det_cont_activate("detach13"))
 
@@ -705,9 +717,10 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   icmp4.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
   // Wiring constant
-  icmp4.io.RightIO.bits.data := 2.U
-  icmp4.io.RightIO.bits.predicate := true.B
-  icmp4.io.RightIO.valid := true.B
+  icmp4.io.RightIO <> const3.io.Out
+  //  icmp4.io.RightIO.bits.data := 2.U
+  //  icmp4.io.RightIO.bits.predicate := true.B
+  //  icmp4.io.RightIO.valid := true.B
 
   // Wiring Branch instruction
   br5.io.CmpIO <> icmp4.io.Out(param.br5_in("icmp4"))
@@ -727,9 +740,11 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   sub8.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(2)
 
   // Wiring constant
-  sub8.io.RightIO.bits.data := 1.U
-  sub8.io.RightIO.bits.predicate := true.B
-  sub8.io.RightIO.valid := true.B
+  sub8.io.RightIO <> const1.io.Out
+  //  sub8.io.RightIO.bits.data := 1.U
+  //  sub8.io.RightIO.bits.taskID := InputSplitter.io.Out.data.elements("field0")(2).bits.taskID
+  //  sub8.io.RightIO.bits.predicate := true.B
+  //  sub8.io.RightIO.valid := true.B
 
   // Wiring Call to I/O
   io.call10_out <> call10_out.io.Out(0)
@@ -750,9 +765,10 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
   sub12.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(3)
 
   // Wiring constant
-  sub12.io.RightIO.bits.data := 2.U
-  sub12.io.RightIO.bits.predicate := true.B
-  sub12.io.RightIO.valid := true.B
+  sub12.io.RightIO <> const2.io.Out
+  //  sub12.io.RightIO.bits.data := 2.U
+  //  sub12.io.RightIO.bits.predicate := true.B
+  //  sub12.io.RightIO.valid := true.B
 
   // Wiring Call to I/O
   io.call14_out <> call14_out.io.Out(0)
