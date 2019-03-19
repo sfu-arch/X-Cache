@@ -36,8 +36,8 @@ class test05MainIO(implicit val p: Parameters) extends Module with CoreParams wi
 class test05Main(implicit p: Parameters) extends test05MainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
-  //  val memModel = Module(new NastiInitMemSlave()()) // Model of DRAM to connect to Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiInitMemSlave()()) // Model of DRAM to connect to Cache
+//  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
