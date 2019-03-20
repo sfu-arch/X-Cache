@@ -212,8 +212,6 @@ class RetNode(retTypes: Seq[Int], ID: Int)
 
 class RetNode2IO(val retTypes: Seq[Int])(implicit p: Parameters)
   extends Bundle {
-  //  val enable = Flipped(Decoupled(new ControlBundle()))
-  //  val In = Flipped(new VariableDecoupledData(retTypes)) // Data to be returned
   val In = Flipped(new CallDecoupled(retTypes))
   val Out = Decoupled(new Call(retTypes)) // Returns to calling block(s)
 }
