@@ -876,10 +876,10 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           out_live_in_valid_R.foreach(_.foreach(_ := true.B))
           out_carry_out_valid_R.foreach(_.foreach(_ := true.B))
 
-          active_loop_start_R := ControlBundle.active()
+          active_loop_start_R := ControlBundle.active(enable_R.taskID)
           active_loop_start_valid_R := true.B
 
-          active_loop_back_R := ControlBundle.deactivate()
+          active_loop_back_R := ControlBundle.deactivate(enable_R.taskID)
           active_loop_back_valid_R := true.B
 
           //Change state
@@ -906,10 +906,10 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
         //When loop needs to repeat itself
         when(loop_back_R.map(_.control).reduce(_ | _)) {
           //Drive loop internal output signals
-          active_loop_start_R := ControlBundle.deactivate()
+          active_loop_start_R := ControlBundle.deactivate(loop_back_R(0).taskID)
           active_loop_start_valid_R := true.B
 
-          active_loop_back_R := ControlBundle.active()
+          active_loop_back_R := ControlBundle.active(loop_back_R(0).taskID)
           active_loop_back_valid_R := true.B
 
           out_live_in_valid_R.foreach(_.foreach(_ := true.B))
@@ -943,7 +943,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           active_loop_back_R := ControlBundle.default
 
           // Fire Loop exists
-          loop_exit_R.foreach(_ := ControlBundle.active())
+          loop_exit_R.foreach(_ := ControlBundle.active(loop_back_R(0).taskID))
           loop_exit_valid_R.foreach(_ := true.B)
 
           //Change state

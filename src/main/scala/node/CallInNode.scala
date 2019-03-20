@@ -101,7 +101,7 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
   when(io.In.fire) {
     when (io.In.bits.enable.control)
     {
-      printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name  + ": Inonse @ %d\n", io.In.bits.enable.taskID, cycleCount)
+      printf("[LOG] " + "[" + module_name + "] [TID->%d] [CallIn] " + node_name  + ": fired@ %d\n", io.In.bits.enable.taskID, cycleCount)
     }
   }
 }

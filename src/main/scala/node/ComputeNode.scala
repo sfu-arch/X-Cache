@@ -53,7 +53,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   val right_R = RegInit(DataBundle.default)
   val right_valid_R = RegInit(false.B)
 
-  val task_ID_R = RegNext(next = enable_R.taskID)
+  val task_ID_R = right_R.taskID | left_R.taskID | enable_R.taskID
 
   //Output register
   val out_data_R = RegInit(DataBundle.default)
@@ -94,8 +94,8 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     // the taskID will be zero.  Logical OR'ing the IDs
     // Should produce a valid ID in either case regardless of
     // which input is constant.
-    //io.Out(i).bits.taskID := left_R.taskID | right_R.taskID
     io.Out(i).bits := out_data_R
+    io.Out(i).bits.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
   }
 
   /*============================================*
@@ -144,6 +144,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
 /**
   * Fast version of compute node. It saves extra latching cycles
   * in scenarios which all the inputs are ready
+  *
   * @param NumOuts
   * @param ID
   * @param opCode
@@ -204,7 +205,7 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
    *===============================================*/
 
 
-  val left_input =  (io.LeftIO.bits.data & Fill(xlen, io.LeftIO.valid)) | (left_R.data & Fill(xlen, left_valid_R))
+  val left_input = (io.LeftIO.bits.data & Fill(xlen, io.LeftIO.valid)) | (left_R.data & Fill(xlen, left_valid_R))
   val right_input = (io.RightIO.bits.data & Fill(xlen, io.RightIO.valid)) | (right_R.data & Fill(xlen, right_valid_R))
 
   val enable_input = (io.enable.bits.control & io.enable.valid) | (enable_R.control & enable_valid_R)
@@ -252,7 +253,7 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
 
   val fire_mask = (fire_R zip io.Out.map(_.fire)).map { case (a, b) => a | b }
 
-  def IsEnableValid(): Bool ={
+  def IsEnableValid(): Bool = {
     return enable_valid_R || io.enable.fire
   }
 
@@ -274,7 +275,7 @@ class ComputeFastNode(NumOuts: Int, ID: Int, opCode: String)
   switch(state) {
     is(s_idle) {
 
-      when(IsEnableValid() && IsLeftValid() && IsRightValid()){
+      when(IsEnableValid() && IsLeftValid() && IsRightValid()) {
 
         output_valid_R.foreach(_ := true.B)
 
