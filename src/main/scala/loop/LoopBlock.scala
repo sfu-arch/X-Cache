@@ -726,7 +726,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     }
   }
 
-  // Connect LiveIn registers to I/O
+  // Connect LiveOut registers to I/O
   for (i <- NumOuts.indices) {
     for (j <- 0 until NumOuts(i)) {
       when(io.OutLiveOut.elements(s"field$i")(j).fire()) {
@@ -799,8 +799,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   }
 
   def IsExitsFired(): Bool = {
-    val fire_mask = (loop_exit_fire_R zip io.loopExit.map(_.fire)).map { case (a, b) => a | b }
-    fire_mask.reduce(_ & _)
+    loop_exit_fire_R.reduce(_ & _)
   }
 
   def IsLiveOutFired(): Bool = {
@@ -809,9 +808,8 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     }
     else {
       val fire_mask = for (i <- NumOuts.indices) yield {
-        val fire_mask_live_out =
-          (out_live_out_fire_R(i) zip io.OutLiveOut.elements(s"field$i").map(_.fire())).map { case (a, b) => a | b }
-        fire_mask_live_out.reduce(_ & _)
+        val fire_mask_live_out = out_live_out_fire_R(i) reduce (_ & _)
+        fire_mask_live_out
       }
       fire_mask.reduce(_ & _)
     }
@@ -819,14 +817,13 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   }
 
   def IsLiveInFired(): Bool = {
-    if (NumOuts == 0) {
+    if (NumIns == 0) {
       return true.B
     }
     else {
-      val fire_mask = for (i <- NumOuts.indices) yield {
-        val fire_mask_live_out =
-          (out_live_in_fire_R(i) zip io.OutLiveIn.elements(s"field$i").map(_.fire())).map { case (a, b) => a | b }
-        fire_mask_live_out.reduce(_ & _)
+      val fire_mask = for (i <- NumIns.indices) yield {
+        val fire_mask_live_in = out_live_in_fire_R(i) reduce (_ & _)
+        fire_mask_live_in
       }
       fire_mask.reduce(_ & _)
     }
@@ -839,9 +836,8 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     }
     else {
       val fire_mask = for (i <- NumOuts.indices) yield {
-        val fire_mask_live_out =
-          (out_carry_out_fire_R(i) zip io.CarryDepenOut.elements(s"field$i").map(_.fire())).map { case (a, b) => a | b }
-        fire_mask_live_out.reduce(_ & _)
+        val fire_mask_live_out = out_carry_out_fire_R(i) reduce (_ & _)
+        fire_mask_live_out
       }
       fire_mask.reduce(_ & _)
     }
@@ -900,7 +896,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     }
     is(s_active) {
       when(IsLoopBackValid() && IsLoopFinishValid()
-        && IsLiveOutValid()
+        && IsLiveOutValid() && IsLiveInFired()
         && IsCarryDepenValid() && IsStoreDepnValid()) {
 
         //When loop needs to repeat itself
@@ -911,6 +907,9 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
 
           active_loop_back_R := ControlBundle.active(loop_back_R(0).taskID)
           active_loop_back_valid_R := true.B
+
+          out_live_in_fire_R.foreach(_.foreach(_ := false.B))
+          out_carry_out_fire_R.foreach(_.foreach(_ := false.B))
 
           out_live_in_valid_R.foreach(_.foreach(_ := true.B))
           out_carry_out_valid_R.foreach(_.foreach(_ := true.B))
@@ -934,7 +933,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
               + node_name + ": Restarted fired @ %d\n", io.activate_loop_start.bits.taskID, cycleCount)
           }
 
-        }.otherwise {
+        }.elsewhen(loop_finish_R.map(_.control).reduce(_ | _)) {
           // Fire live-outs and loop exit control signal
           out_live_out_valid_R.foreach(_.foreach(_ := true.B))
           loop_exit_valid_R.foreach(_ := true.B)
@@ -981,21 +980,4 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
     }
   }
 }
-
-// active.  This indicates a new iteration.
-//for (i <- 0 until NumIns.length) {
-//  for (j <- 0 until NumIns(i)) {
-//    when(io.latchEnable.fire()) {
-//      //            when(io.latchEnable.fire() && io.latchEnable.bits.control) {
-//      // Re-enable the liveIn latches to valid for next iteration
-//      liveIn_R(i).predicate := io.latchEnable.bits.control
-//      liveIn_R_valid(i).foreach(_ := true.B)
-//    }.elsewhen(io.liveIn.elements(s"field$i")(j).fire()) {
-//      // clear liveIn valid when loop has grabbed the data
-//      liveIn_R_valid(i)(j) := false.B
-//    }
-//  }
-//}
-
-
 

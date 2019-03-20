@@ -67,7 +67,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_pfor_cond_cleanup1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  //val bb_pfor_cond_cleanup1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
   val bb_pfor_detach2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 2))
 
@@ -113,7 +113,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   val call_8_in = Module(new CallInNode(ID = 8, argTypes = List()))
 
   //  reattach within %syncreg, label %pfor.inc, !UID !26, !BB_UID !27
-  val reattach_9 = Module(new Reattach(NumPredOps= 1, ID = 9))
+  //val reattach_9 = Module(new Reattach(NumPredOps= 1, ID = 9))
 
 
 
@@ -143,7 +143,8 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   bb_pfor_inc3.io.predicateIn(0) <> detach_3.io.Out(0)
 
-  bb_sync_continue4.io.predicateIn(0) <> sync_1.io.Out(0)
+  bb_sync_continue4.io.predicateIn(0) <> Loop_0.io.loopExit(0)
+  //  bb_sync_continue4.io.predicateIn(0) <> sync_1.io.Out(0)
 
   bb_offload_pfor_body5.io.predicateIn(0) <> detach_3.io.Out(1)
 
@@ -153,7 +154,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
    *                   BASICBLOCK -> PREDICATE LOOP                     *
    * ================================================================== */
 
-  bb_pfor_cond_cleanup1.io.predicateIn(0) <> Loop_0.io.loopExit(0)
+  //  bb_pfor_cond_cleanup1.io.predicateIn(0) <> Loop_0.io.loopExit(0)
 
   bb_pfor_detach2.io.predicateIn(1) <> Loop_0.io.activate_loop_start
 
@@ -167,7 +168,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   sync_1.io.incIn(0) <> detach_3.io.Out(2)
 
-  sync_1.io.decIn(0) <> reattach_9.io.Out(0)
+  sync_1.io.decIn(0) <> call_8_in.io.Out.enable
 
 
 
@@ -179,7 +180,9 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   Loop_0.io.loopBack(0) <> br_6.io.FalseOutput(0)
 
-  Loop_0.io.loopFinish(0) <> br_6.io.TrueOutput(0)
+  sync_1.io.enable <> br_6.io.TrueOutput(0)
+
+  Loop_0.io.loopFinish(0) <> sync_1.io.Out(0)
 
 
 
@@ -249,7 +252,8 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   br_0.io.enable <> bb_entry0.io.Out(0)
 
 
-  sync_1.io.enable <> bb_pfor_cond_cleanup1.io.Out(0)
+  //sync_1.io.enable <> bb_pfor_cond_cleanup1.io.Out(0)
+  //  sync_1.io.enable <> Loop_0.io.loopExit(0)
 
 
   const0.io.enable <> bb_pfor_detach2.io.Out(0)
@@ -278,7 +282,9 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
   ret_7.io.In.enable <> bb_sync_continue4.io.Out(1)
 
 
-  call_8_in.io.enable <> bb_offload_pfor_body5.io.Out(1)
+  bb_offload_pfor_body5.io.Out(1).ready := true.B
+
+  call_8_in.io.enable.enq(ControlBundle.active())
 
   call_8_out.io.enable <> bb_offload_pfor_body5.io.Out(0)
 
@@ -331,7 +337,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   br_6.io.CmpIO <> icmp_exitcond5.io.Out(0)
 
-  reattach_9.io.predicateIn(0).enq(DataBundle.active(1.U))
+  //reattach_9.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 
 
@@ -343,7 +349,7 @@ class cilk_for_test06DF(implicit p: Parameters) extends cilk_for_test06DFIO()(p)
 
   io.call_8_out <> call_8_out.io.Out(0)
 
-  reattach_9.io.enable <> call_8_in.io.Out.enable
+  //reattach_9.io.enable <> call_8_in.io.Out.enable
 
 
 

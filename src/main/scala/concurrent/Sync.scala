@@ -307,8 +307,10 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
 
   incArb.io.in <> io.incIn
   decArb.io.in <> io.decIn
+
   updateArb.io.in(0) <> incArb.io.out // increments are higher priority
   updateArb.io.in(1) <> decArb.io.out // decrements lower priority
+
   updateArb.io.out.ready := true.B
 
   val update   = RegNext(init = false.B, next = updateArb.io.out.fire() && updateArb.io.out.bits.control)
