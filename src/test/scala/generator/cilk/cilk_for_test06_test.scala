@@ -79,7 +79,6 @@ class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainI
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -100,13 +99,20 @@ class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainI
 
   // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
   // requests ports of any type.  Read or write is irrelevant.
-  val MemArbiter = Module(new MemArbiter(children))
+  val MemArbiter = Module(new MemArbiter(children + 1))
   for (i <- 0 until children) {
     MemArbiter.io.cpu.MemReq(i) <> cilk_for_test06_detach(i).io.MemReq
     cilk_for_test06_detach(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
   }
   cache.io.cpu.req <> MemArbiter.io.cache.MemReq
   MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+  MemArbiter.io.cpu.MemReq(children) <> io.req
+  io.resp <> MemArbiter.io.cpu.MemResp(children)
+
+  cilk_for_test06.io.MemResp <> DontCare
+  cilk_for_test06.io.MemReq <> DontCare
+
 
   // tester to cilk_for_test06
   cilk_for_test06.io.in <> io.in
