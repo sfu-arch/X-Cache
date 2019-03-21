@@ -219,12 +219,17 @@ class bgemmTest01[T <: bgemmMainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
-  val inAddrVec = List.range(0, 200, 4) // byte addresses
+  val inAddrVec = List.range(0, 4 * 32, 4) // byte addresses
   val inA = List.range(0, 16) // 4x4 array of uint32
   val inB = List.range(0, 16) // 4x4 array of uint32
   val inDataVec = inA ++ inB
-  val outAddrVec = List.range(256, 256 + 100, 4)
-  val outDataVec = inA.zip(inB).map { case (x, y) => x + y }
+  val outAddrVec = List.range(256, 256 + (4 * 16), 4)
+  val outDataVec = List(
+    56, 62, 68, 74
+    , 152, 174, 196, 218
+    , 248, 286, 324, 362
+    , 344, 398, 452, 506
+  )
 
   // Write initial contents to the memory model.
   for (i <- 0 until inDataVec.length) {
@@ -253,7 +258,7 @@ class bgemmTest01[T <: bgemmMainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.valid, true)
   poke(c.io.in.bits.data("field0").data, 0)
   poke(c.io.in.bits.data("field0").predicate, true)
-  poke(c.io.in.bits.data("field1").data, 100)
+  poke(c.io.in.bits.data("field1").data, 64)
   poke(c.io.in.bits.data("field1").predicate, true)
   poke(c.io.in.bits.data("field2").data, 256)
   poke(c.io.in.bits.data("field2").predicate, true)
@@ -278,17 +283,16 @@ class bgemmTest01[T <: bgemmMainIO](c: T) extends PeekPokeTester(c) {
   while (time < 2000) {
     time += 1
     step(1)
-    if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1
-    ) {
+    if (peek(c.io.out.valid) == 1) {
       result = true
-      val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 1) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
-        fail
-      } else {
-        println(Console.BLUE + s"*** Correct result received. Run time: $time cycles." + Console.RESET)
-      }
+      println(Console.BLUE + s"*** Bgemm finished. Run time: $time cycles." + Console.RESET)
+      //      val data = peek(c.io.out.bits.data("field0").data)
+      //      if (data != 1) {
+      //        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
+      //        fail
+      //      } else {
+      //        println(Console.BLUE + s"*** Correct result received. Run time: $time cycles." + Console.RESET)
+      //      }
     }
   }
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
