@@ -1,5 +1,6 @@
 package dataflow
 
+import FPU._
 import accel._
 import arbiters._
 import chisel3._
@@ -28,8 +29,8 @@ import util._
 abstract class stencil_detach1DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val call_6_out = Decoupled(new Call(List(32, 32, 32, 32, 32)))
-    val call_6_in = Flipped(Decoupled(new Call(List())))
+    val call_4_out = Decoupled(new Call(List(32, 32, 32, 32, 32)))
+    val call_4_in = Flipped(Decoupled(new Call(List())))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
     val out = Decoupled(new Call(List()))
@@ -43,15 +44,15 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=1, NWrites=1)
-		 (WControl=new WriteMemoryController(NumOps=1, BaseSize=2, NumEntries=1))
-		 (RControl=new ReadMemoryController(NumOps=1, BaseSize=2, NumEntries=1))
-		 (RWArbiter=new ReadWriteArbiter()))
+  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 1, NWrites = 1)
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(2,1,3)))
+  val InputSplitter = Module(new SplitCallNew(List(3, 1, 2)))
   InputSplitter.io.In <> io.in
 
 
@@ -60,7 +61,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlock(NumIns=List(1,1,1,1), NumOuts = 0, NumExits=1, ID = 0))
+  val Loop_0 = Module(new LoopBlockNode(NumIns = List(1, 1, 1, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
 
 
 
@@ -68,17 +69,11 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0))
+  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 0))
 
-  val bb_my_for_cond1 = Module(new LoopHead(NumOuts = 5, NumPhi=1, BID = 1))
+  val bb_my_for_body1 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 9, NumPhi = 1, BID = 1))
 
-  val bb_my_for_body2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
-
-  val bb_my_for_inc3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3))
-
-  val bb_my_for_end4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 13, BID = 4))
-
-  val bb_my_pfor_preattach5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
+  val bb_my_for_cond_cleanup2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 8, BID = 2))
 
 
 
@@ -86,70 +81,49 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  %0 = lshr i32 %pos.0.in, 2, !UID !1
-  val binaryOp_0 = Module(new ComputeNode(NumOuts = 3, ID = 0, opCode = "lshr")(sign=false))
+  //  %0 = lshr i32 %__begin.031.in, 2, !UID !21
+  val binaryOp_0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "lshr")(sign = false))
 
-  //  %1 = and i32 %pos.0.in, 3, !UID !2
-  val binaryOp_1 = Module(new ComputeNode(NumOuts = 3, ID = 1, opCode = "and")(sign=false))
+  //  %1 = and i32 %__begin.031.in, 3, !UID !22
+  val binaryOp_1 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "and")(sign = false))
 
-  //  br label %my_for.cond, !UID !3, !BB_UID !4
+  //  br label %my_for.body, !UID !23, !BB_UID !24
   val br_2 = Module(new UBranchNode(ID = 2))
 
-  //  %2 = phi i32 [ 0, %my_pfor.body ], [ %4, %my_for.inc ], !UID !5
-  val phi_3 = Module(new PhiNode(NumInputs = 2, NumOuts = 3, ID = 3))
+  //  %2 = phi i32 [ 0, %my_pfor.body ], [ %3, %my_for.body ], !UID !25
+  val phi3 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 3, Res = true))
 
-  //  %3 = icmp ule i32 %2, 2, !UID !6
-  val icmp_4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "ule")(sign=false))
+  //  tail call void @stencil_inner(i32* %in.in, i32* %out.in, i32 %0, i32 %1, i32 %2), !UID !26
+  val call_4_out = Module(new CallOutNode(ID = 4, NumSuccOps = 0, argTypes = List(32,32,32,32,32)))
 
-  //  br i1 %3, label %my_for.body, label %my_for.end, !UID !7, !BB_UID !8
-  val br_5 = Module(new CBranchNode(ID = 5))
+  val call_4_in = Module(new CallInNode(ID = 4, argTypes = List()))
 
-  //  call void @stencil_inner(i32* %in.in, i32* %out.in, i32 %0, i32 %1, i32 %2), !UID !9
-  val call_6_out = Module(new CallOutNode(ID = 6, NumSuccOps = 0, argTypes = List(32,32,32,32,32)))
+  //  %3 = add nuw nsw i32 %2, 1, !UID !27
+  val binaryOp_5 = Module(new ComputeNode(NumOuts = 2, ID = 5, opCode = "add")(sign = false))
 
-  val call_6_in = Module(new CallInNode(ID = 6, argTypes = List()))
+  //  %4 = icmp eq i32 %3, 3, !UID !28
+  val icmp_6 = Module(new IcmpNode(NumOuts = 1, ID = 6, opCode = "eq")(sign = false))
 
-  //  br label %my_for.inc, !UID !10, !BB_UID !11
-  val br_7 = Module(new UBranchNode(ID = 7, NumPredOps = 1))
+  //  br i1 %4, label %my_for.cond.cleanup, label %my_for.body, !UID !29, !BB_UID !30
+  val br_7 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 1, ID = 7))
 
-  //  %4 = add i32 %2, 1, !UID !12
-  val binaryOp_8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
+  //  %5 = getelementptr inbounds i32, i32* %out.in, i32 %__begin.031.in, !UID !31
+  val Gep_8 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 8)(ElementSize = 4, ArraySize = List()))
 
-  //  br label %my_for.cond, !UID !13, !BB_UID !14
-  val br_9 = Module(new UBranchNode(NumOuts=2, ID = 9))
+  //  %6 = load i32, i32* %5, align 4, !tbaa !32, !UID !36
+  val ld_9 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 9, RouteID = 0))
 
-  //  %5 = mul i32 %0, 4, !UID !15
-  val binaryOp_10 = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "mul")(sign=false))
+  //  %7 = add i32 %6, 9, !UID !37
+  val binaryOp_10 = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "add")(sign = false))
 
-  //  %6 = add i32 %5, %1, !UID !16
-  val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "add")(sign=false))
+  //  %8 = udiv i32 %7, 9, !UID !38
+  val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "udiv")(sign = false))
 
-  //  %7 = getelementptr inbounds i32, i32* %out.in, i32 %6, !UID !17
-  val Gep_12 = Module(new GepArrayOneNode(NumOuts=1, ID=12)(numByte=4)(size=1))
+  //  store i32 %8, i32* %5, align 4, !tbaa !32, !UID !39
+  val st_12 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 12, RouteID = 0))
 
-  //  %8 = load i32, i32* %7, align 4, !UID !18
-  val ld_13 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=13, RouteID=0))
-
-  //  %9 = add i32 %8, 9, !UID !19
-  val binaryOp_14 = Module(new ComputeNode(NumOuts = 1, ID = 14, opCode = "add")(sign=false))
-
-  //  %10 = mul i32 %0, 4, !UID !20
-  val binaryOp_15 = Module(new ComputeNode(NumOuts = 1, ID = 15, opCode = "mul")(sign=false))
-
-  //  %11 = add i32 %10, %1, !UID !21
-  val binaryOp_16 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "add")(sign=false))
-
-  //  %12 = getelementptr inbounds i32, i32* %out.in, i32 %11, !UID !22
-  val Gep_17 = Module(new GepArrayOneNode(NumOuts=1, ID=17)(numByte=4)(size=1))
-
-  //  store i32 %9, i32* %12, align 4, !UID !23
-  val st_18 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=18, RouteID=0))
-
-  //  br label %my_pfor.preattach, !UID !24, !BB_UID !25
-  val br_19 = Module(new UBranchNode(ID = 19))
-
-  //  ret void
-  val ret_20 = Module(new RetNode2(retTypes=List(), ID = 20))
+  //  ret void, !UID !40, !BB_UID !41
+  val ret_13 = Module(new RetNode2(retTypes = List(), ID = 13))
 
 
 
@@ -158,28 +132,25 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    * ================================================================== */
 
   //i32 2
-  val const0 = Module(new ConstNode(value = 2, NumOuts = 1, ID = 0))
+  val const0 = Module(new ConstFastNode(value = 2, ID = 0))
 
   //i32 3
-  val const1 = Module(new ConstNode(value = 3, NumOuts = 1, ID = 1))
+  val const1 = Module(new ConstFastNode(value = 3, ID = 1))
 
   //i32 0
-  val const2 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 2))
-
-  //i32 2
-  val const3 = Module(new ConstNode(value = 2, NumOuts = 1, ID = 3))
+  val const2 = Module(new ConstFastNode(value = 0, ID = 2))
 
   //i32 1
-  val const4 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 4))
+  val const3 = Module(new ConstFastNode(value = 1, ID = 3))
 
-  //i32 4
-  val const5 = Module(new ConstNode(value = 4, NumOuts = 1, ID = 5))
+  //i32 3
+  val const4 = Module(new ConstFastNode(value = 3, ID = 4))
 
   //i32 9
-  val const6 = Module(new ConstNode(value = 9, NumOuts = 1, ID = 6))
+  val const5 = Module(new ConstFastNode(value = 9, ID = 5))
 
-  //i32 4
-  val const7 = Module(new ConstNode(value = 4, NumOuts = 1, ID = 7))
+  //i32 9
+  val const6 = Module(new ConstFastNode(value = 9, ID = 6))
 
 
 
@@ -187,19 +158,19 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_my_pfor_body0.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_my_pfor_body0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-  bb_my_for_cond1.io.activate <> Loop_0.io.activate
 
-  bb_my_for_cond1.io.loopBack <> br_9.io.Out(0)
 
-  bb_my_for_body2.io.predicateIn <> br_5.io.Out(0)
+  /* ================================================================== *
+   *                   BASICBLOCK -> PREDICATE LOOP                     *
+   * ================================================================== */
 
-  bb_my_for_inc3.io.predicateIn <> br_7.io.Out(0)
+  bb_my_for_body1.io.predicateIn(1) <> Loop_0.io.activate_loop_start
 
-  bb_my_for_end4.io.predicateIn <> Loop_0.io.endEnable
+  bb_my_for_body1.io.predicateIn(0) <> Loop_0.io.activate_loop_back
 
-  bb_my_pfor_preattach5.io.predicateIn <> br_19.io.Out(0)
+  bb_my_for_cond_cleanup2.io.predicateIn(0) <> Loop_0.io.loopExit(0)
 
 
 
@@ -215,9 +186,9 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   Loop_0.io.enable <> br_2.io.Out(0)
 
-  Loop_0.io.latchEnable <> br_9.io.Out(1)
+  Loop_0.io.loopBack(0) <> br_7.io.FalseOutput(0)
 
-  Loop_0.io.loopExit(0) <> br_5.io.Out(1)
+  Loop_0.io.loopFinish(0) <> br_7.io.TrueOutput(0)
 
 
 
@@ -231,13 +202,13 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.In(0) <> InputSplitter.io.Out.data.elements("field1")(0)
+  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.In(1) <> InputSplitter.io.Out.data.elements("field2")(0)
+  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Loop_0.io.In(2) <> binaryOp_0.io.Out(0)
+  Loop_0.io.InLiveIn(2) <> binaryOp_0.io.Out(0)
 
-  Loop_0.io.In(3) <> binaryOp_1.io.Out(0)
+  Loop_0.io.InLiveIn(3) <> binaryOp_1.io.Out(0)
 
 
 
@@ -245,19 +216,41 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
 
-  call_6_out.io.In("field0") <> Loop_0.io.liveIn.elements("field0")(0)
+  call_4_out.io.In.elements("field0") <> Loop_0.io.OutLiveIn.elements("field0")(0)
 
-  call_6_out.io.In("field1") <> Loop_0.io.liveIn.elements("field1")(0)
+  call_4_out.io.In.elements("field1") <> Loop_0.io.OutLiveIn.elements("field1")(0)
 
-  call_6_out.io.In("field2") <> Loop_0.io.liveIn.elements("field2")(0)
+  call_4_out.io.In.elements("field2") <> Loop_0.io.OutLiveIn.elements("field2")(0)
 
-  call_6_out.io.In("field3") <> Loop_0.io.liveIn.elements("field3")(0)
+  call_4_out.io.In.elements("field3") <> Loop_0.io.OutLiveIn.elements("field3")(0)
 
 
 
   /* ================================================================== *
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP LIVE OUT DEPENDENCIES                       *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP CARRY DEPENDENCIES                          *
+   * ================================================================== */
+
+  Loop_0.io.CarryDepenIn(0) <> binaryOp_5.io.Out(0)
+
+
+
+  /* ================================================================== *
+   *                   LOOP DATA CARRY DEPENDENCIES                     *
+   * ================================================================== */
+
+  phi3.io.InData(1) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
 
 
 
@@ -271,64 +264,56 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
 
   binaryOp_0.io.enable <> bb_my_pfor_body0.io.Out(2)
 
+
   binaryOp_1.io.enable <> bb_my_pfor_body0.io.Out(3)
+
 
   br_2.io.enable <> bb_my_pfor_body0.io.Out(4)
 
 
-  const2.io.enable <> bb_my_for_cond1.io.Out(0)
+  const2.io.enable <> bb_my_for_body1.io.Out(0)
 
-  const3.io.enable <> bb_my_for_cond1.io.Out(1)
+  const3.io.enable <> bb_my_for_body1.io.Out(1)
 
-  phi_3.io.enable <> bb_my_for_cond1.io.Out(2)
+  const4.io.enable <> bb_my_for_body1.io.Out(2)
 
-  icmp_4.io.enable <> bb_my_for_cond1.io.Out(3)
-
-  br_5.io.enable <> bb_my_for_cond1.io.Out(4)
+  phi3.io.enable <> bb_my_for_body1.io.Out(3)
 
 
-  call_6_in.io.enable.enq(ControlBundle.active())
+  call_4_in.io.enable <> bb_my_for_body1.io.Out(5)
 
-  call_6_out.io.enable <> bb_my_for_body2.io.Out(0)
-
-  br_7.io.enable <> bb_my_for_body2.io.Out(1)
+  call_4_out.io.enable <> bb_my_for_body1.io.Out(4)
 
 
-  const4.io.enable <> bb_my_for_inc3.io.Out(0)
-
-  binaryOp_8.io.enable <> bb_my_for_inc3.io.Out(1)
-
-  br_9.io.enable <> bb_my_for_inc3.io.Out(2)
+  binaryOp_5.io.enable <> bb_my_for_body1.io.Out(6)
 
 
-  const5.io.enable <> bb_my_for_end4.io.Out(0)
-
-  const6.io.enable <> bb_my_for_end4.io.Out(1)
-
-  const7.io.enable <> bb_my_for_end4.io.Out(2)
-
-  binaryOp_10.io.enable <> bb_my_for_end4.io.Out(3)
-
-  binaryOp_11.io.enable <> bb_my_for_end4.io.Out(4)
-
-  Gep_12.io.enable <> bb_my_for_end4.io.Out(5)
-
-  ld_13.io.enable <> bb_my_for_end4.io.Out(6)
-
-  binaryOp_14.io.enable <> bb_my_for_end4.io.Out(7)
-
-  binaryOp_15.io.enable <> bb_my_for_end4.io.Out(8)
-
-  binaryOp_16.io.enable <> bb_my_for_end4.io.Out(9)
-
-  Gep_17.io.enable <> bb_my_for_end4.io.Out(10)
-
-  st_18.io.enable <> bb_my_for_end4.io.Out(11)
-
-  br_19.io.enable <> bb_my_for_end4.io.Out(12)
+  icmp_6.io.enable <> bb_my_for_body1.io.Out(7)
 
 
-  ret_20.io.In.enable <> bb_my_pfor_preattach5.io.Out(0)
+  br_7.io.enable <> bb_my_for_body1.io.Out(8)
+
+
+  const5.io.enable <> bb_my_for_cond_cleanup2.io.Out(0)
+
+  const6.io.enable <> bb_my_for_cond_cleanup2.io.Out(1)
+
+  Gep_8.io.enable <> bb_my_for_cond_cleanup2.io.Out(2)
+
+
+  ld_9.io.enable <> bb_my_for_cond_cleanup2.io.Out(3)
+
+
+  binaryOp_10.io.enable <> bb_my_for_cond_cleanup2.io.Out(4)
+
+
+  binaryOp_11.io.enable <> bb_my_for_cond_cleanup2.io.Out(5)
+
+
+  st_12.io.enable <> bb_my_for_cond_cleanup2.io.Out(6)
+
+
+  ret_13.io.In.enable <> bb_my_for_cond_cleanup2.io.Out(7)
 
 
 
@@ -337,7 +322,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
 
-  phi_3.io.Mask <> bb_my_for_cond1.io.MaskBB(0)
+  phi3.io.Mask <> bb_my_for_body1.io.MaskBB(0)
 
 
 
@@ -351,13 +336,13 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
 
-  MemCtrl.io.ReadIn(0) <> ld_13.io.memReq
+  MemCtrl.io.ReadIn(0) <> ld_9.io.memReq
 
-  ld_13.io.memResp <> MemCtrl.io.ReadOut(0)
+  ld_9.io.memResp <> MemCtrl.io.ReadOut(0)
 
-  MemCtrl.io.WriteIn(0) <> st_18.io.memReq
+  MemCtrl.io.WriteIn(0) <> st_12.io.memReq
 
-  st_18.io.memResp <> MemCtrl.io.WriteOut(0)
+  st_12.io.memResp <> MemCtrl.io.WriteOut(0)
 
 
 
@@ -371,67 +356,47 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  binaryOp_0.io.RightIO <> const0.io.Out(0)
+  binaryOp_0.io.RightIO <> const0.io.Out
 
-  binaryOp_1.io.RightIO <> const1.io.Out(0)
+  binaryOp_1.io.RightIO <> const1.io.Out
 
-  phi_3.io.InData(0) <> const2.io.Out(0)
+  phi3.io.InData(0) <> const2.io.Out
 
-  icmp_4.io.RightIO <> const3.io.Out(0)
+  binaryOp_5.io.RightIO <> const3.io.Out
 
-  binaryOp_8.io.RightIO <> const4.io.Out(0)
+  icmp_6.io.RightIO <> const4.io.Out
 
-  binaryOp_10.io.RightIO <> const5.io.Out(0)
+  binaryOp_10.io.RightIO <> const5.io.Out
 
-  binaryOp_14.io.RightIO <> const6.io.Out(0)
+  binaryOp_11.io.RightIO <> const6.io.Out
 
-  binaryOp_15.io.RightIO <> const7.io.Out(0)
+  call_4_out.io.In.elements("field4") <> phi3.io.Out(0)
 
-  binaryOp_10.io.LeftIO <> binaryOp_0.io.Out(1)
+  binaryOp_5.io.LeftIO <> phi3.io.Out(1)
 
-  binaryOp_15.io.LeftIO <> binaryOp_0.io.Out(2)
+  icmp_6.io.LeftIO <> binaryOp_5.io.Out(1)
 
-  binaryOp_11.io.RightIO <> binaryOp_1.io.Out(1)
+  br_7.io.CmpIO <> icmp_6.io.Out(0)
 
-  binaryOp_16.io.RightIO <> binaryOp_1.io.Out(2)
+  ld_9.io.GepAddr <> Gep_8.io.Out(0)
 
-  icmp_4.io.LeftIO <> phi_3.io.Out(0)
+  st_12.io.GepAddr <> Gep_8.io.Out(1)
 
-  call_6_out.io.In("field4") <> phi_3.io.Out(1)
-
-  binaryOp_8.io.LeftIO <> phi_3.io.Out(2)
-
-  br_5.io.CmpIO <> icmp_4.io.Out(0)
-
-//  br_7.io.CmpIO <> call_6_in.io.Out.elements("field0")
-
-  phi_3.io.InData(1) <> binaryOp_8.io.Out(0)
+  binaryOp_10.io.LeftIO <> ld_9.io.Out(0)
 
   binaryOp_11.io.LeftIO <> binaryOp_10.io.Out(0)
 
-  Gep_12.io.idx1 <> binaryOp_11.io.Out(0)
-
-  ld_13.io.GepAddr <> Gep_12.io.Out(0)
-
-  binaryOp_14.io.LeftIO <> ld_13.io.Out(0)
-
-  st_18.io.inData <> binaryOp_14.io.Out(0)
-
-  binaryOp_16.io.LeftIO <> binaryOp_15.io.Out(0)
-
-  Gep_17.io.idx1 <> binaryOp_16.io.Out(0)
-
-  st_18.io.GepAddr <> Gep_17.io.Out(0)
+  st_12.io.inData <> binaryOp_11.io.Out(0)
 
   binaryOp_0.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
   binaryOp_1.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(1)
 
-  Gep_12.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(1)
+  Gep_8.io.idx(0) <> InputSplitter.io.Out.data.elements("field0")(2)
 
-  Gep_17.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(2)
+  Gep_8.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(1)
 
-  st_18.io.Out(0).ready := true.B
+  st_12.io.Out(0).ready := true.B
 
 
 
@@ -439,11 +404,11 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING CALLIN AND CALLOUT INTERFACE            *
    * ================================================================== */
 
-  call_6_in.io.In <> io.call_6_in
+  call_4_in.io.In <> io.call_4_in
 
-  io.call_6_out <> call_6_out.io.Out(0)
+  io.call_4_out <> call_4_out.io.Out(0)
 
-  br_7.io.PredOp(0) <> call_6_in.io.Out.enable
+  br_7.io.PredOp(0) <> call_4_in.io.Out.enable
 
 
 
@@ -451,13 +416,15 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out <> ret_20.io.Out
+  io.out <> ret_13.io.Out
 
 }
 
 import java.io.{File, FileWriter}
-object stencil_detach1Main extends App {
-  val dir = new File("RTL/stencil_detach1") ; dir.mkdirs
+
+object stencil_detach1Top extends App {
+  val dir = new File("RTL/stencil_detach1Top");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new stencil_detach1DF()))
 

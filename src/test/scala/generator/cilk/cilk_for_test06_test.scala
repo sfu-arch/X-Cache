@@ -204,7 +204,7 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
   }
 
   step(10)
-  dumpMemoryInit("memory.txt")
+  dumpMemoryInit("memory.init")
 
   step(1)
 
