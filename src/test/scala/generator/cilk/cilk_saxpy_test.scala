@@ -129,8 +129,8 @@ class cilk_saxpyMainTM(children: Int)(implicit p: Parameters) extends cilk_saxpy
   CacheArbiter.io.cpu.MemReq(children + 1) <> saxpy.io.MemReq
   saxpy.io.MemResp <> CacheArbiter.io.cpu.MemResp(children + 1)
 
-  TaskControllerModule.io.parentIn(0) <> saxpy.io.call_9_out
-  saxpy.io.call_9_in <> TaskControllerModule.io.parentOut(0)
+  TaskControllerModule.io.parentIn(0) <> saxpy.io.call_11_out
+  saxpy.io.call_11_in <> TaskControllerModule.io.parentOut(0)
 
 
   cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
@@ -145,50 +145,6 @@ class cilk_saxpyMainTM(children: Int)(implicit p: Parameters) extends cilk_saxpy
 
 class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends PeekPokeTester(c) {
 
-  //  def MemRead(addr: Int): BigInt = {
-  //    while (peek(c.io.req.ready) == 0) {
-  //      step(1)
-  //    }
-  //    poke(c.io.req.valid, 1)
-  //    poke(c.io.req.bits.addr, addr)
-  //    poke(c.io.req.bits.iswrite, 0)
-  //    poke(c.io.req.bits.tag, 0)
-  //    poke(c.io.req.bits.mask, 0)
-  //    poke(c.io.req.bits.mask, -1)
-  //    step(1)
-  //    while (peek(c.io.resp.valid) == 0) {
-  //      step(1)
-  //    }
-  //    val result = peek(c.io.resp.bits.data)
-  //    result
-  //  }
-  //
-  //  def MemWrite(addr: Int, data: Int): BigInt = {
-  //    while (peek(c.io.req.ready) == 0) {
-  //      step(1)
-  //    }
-  //    poke(c.io.req.valid, 1)
-  //    poke(c.io.req.bits.addr, addr)
-  //    poke(c.io.req.bits.data, data)
-  //    poke(c.io.req.bits.iswrite, 1)
-  //    poke(c.io.req.bits.tag, 0)
-  //    poke(c.io.req.bits.mask, 0)
-  //    poke(c.io.req.bits.mask, -1)
-  //    step(1)
-  //    poke(c.io.req.valid, 0)
-  //    1
-  //  }
-  //
-  //  def dumpMemory(path: String) = {
-  //    //Writing mem states back to the file
-  //    val pw = new PrintWriter(new File(path))
-  //    for (i <- 0 until outDataVec.length) {
-  //      val data = MemRead(outAddrVec(i))
-  //      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
-  //    }
-  //    pw.close
-  //
-  //  }
   /**
     * cacheDF interface:
     *
