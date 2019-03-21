@@ -23,7 +23,7 @@ import accel._
 import node._
 
 
-class cilk_for_test06MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+class cilk_for_test07MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -31,10 +31,10 @@ class cilk_for_test06MainIO(implicit val p: Parameters) extends Module with Core
     val out = Decoupled(new Call(List(32)))
   })
 
-  def cloneType = new cilk_for_test06MainIO().asInstanceOf[this.type]
+  def cloneType = new cilk_for_test07MainIO().asInstanceOf[this.type]
 }
 
-class cilk_for_test06MainDirect(implicit p: Parameters) extends cilk_for_test06MainIO {
+class cilk_for_test07MainDirect(implicit p: Parameters) extends cilk_for_test07MainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -48,14 +48,13 @@ class cilk_for_test06MainDirect(implicit p: Parameters) extends cilk_for_test06M
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val cilk_for_test06_detach = Module(new cilk_for_test06_detach1DF())
-  val cilk_for_test06 = Module(new cilk_for_test06DF())
-
+  val cilk_for_test07_detach = Module(new cilk_for_test07_detach1DF())
+  val cilk_for_test07 = Module(new cilk_for_test07DF())
 
   val MemArbiter = Module(new MemArbiter(2))
 
-  MemArbiter.io.cpu.MemReq(0) <> cilk_for_test06_detach.io.MemReq
-  cilk_for_test06_detach.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
+  MemArbiter.io.cpu.MemReq(0) <> cilk_for_test07_detach.io.MemReq
+  cilk_for_test07_detach.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
 
   MemArbiter.io.cpu.MemReq(1) <> io.req
   io.resp <> MemArbiter.io.cpu.MemResp(1)
@@ -64,18 +63,19 @@ class cilk_for_test06MainDirect(implicit p: Parameters) extends cilk_for_test06M
   MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
 
-  cilk_for_test06.io.MemResp <> DontCare
-  cilk_for_test06.io.MemReq <> DontCare
+  cilk_for_test07.io.MemResp <> DontCare
+  cilk_for_test07.io.MemReq <> DontCare
 
-  cilk_for_test06.io.in <> io.in
-  io.out <> cilk_for_test06.io.out
+  cilk_for_test07.io.in <> io.in
+  io.out <> cilk_for_test07.io.out
 
-  cilk_for_test06_detach.io.in <> cilk_for_test06.io.call_8_out
-  cilk_for_test06.io.call_8_in <> cilk_for_test06_detach.io.out
+  cilk_for_test07_detach.io.in <> cilk_for_test07.io.call_8_out
+  cilk_for_test07.io.call_8_in <> cilk_for_test07_detach.io.out
+
 
 }
 
-class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for_test06MainIO {
+class cilk_for_test07MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for_test07MainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -88,15 +88,15 @@ class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for
   memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
 
-  val cilk_for_testDF = Module(new cilk_for_test06DF())
+  val cilk_for_testDF = Module(new cilk_for_test07DF())
 
   val NumTiles = tiles
   val cilk_for_tiles = for (i <- 0 until NumTiles) yield {
-    val cilk01 = Module(new cilk_for_test06_detach1DF())
+    val cilk01 = Module(new cilk_for_test07_detach1DF())
     cilk01
   }
 
-  val TC = Module(new TaskController(List(32, 32, 32, 32), List(), 1, numChild = NumTiles))
+  val TC = Module(new TaskController(List(32, 32, 32), List(), 1, numChild = NumTiles))
   val CacheArb = Module(new MemArbiter(NumTiles + 2))
 
 
@@ -132,7 +132,9 @@ class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for
 }
 
 
-class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTester(c) {
+
+class cilk_for_test07Test01[T <: cilk_for_test07MainIO](c: T) extends PeekPokeTester(c) {
+
   def MemRead(addr: Int): BigInt = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
@@ -192,11 +194,16 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
   }
 
 
-  val inAddrVec = List.range(0, (2*18)*4, 4)
-  val inDataVec = List(0, 0, 0, 1, 0, 2, 1, 0, 1, 1, 1, 2, 2, 0, 2, 1, 2, 2,
-    7, 5, 1, 1, 3, 5, 2, 1, 9, 2, 4, 3, 3, 3, 0, 0, 6, 2)
-  val outAddrVec = List.range(0x100, 0x100 + 0x24, 4)
-  val outDataVec = List(74, 1, 18, 2, 65, 10, 10, 5, 16)
+  val pixels = 8
+  val inAddrVec = List.range(0, pixels * 3 * 4, 4)
+  val inDataVec = List(1, 1, 1, 0, 10, 3, 0, 2, 5,
+    255, 192, 32, 52, 71, 98, 31, 27, 99,
+    12, 77, 52, 128, 7, 7)
+  val outAddrVec = List.range(256, 256 + (pixels * 3 * 4), 4)
+  val outDataVec = List(0, 0, 1, 4, 7, 4, 1, 1, 4,
+    179, 193, 58, 64, 68, 102, 40, 33, 97,
+    41, 61, 58, 56, 32, 9d)
+
 
   // Write initial contents to the memory model.
   for (i <- 0 until inDataVec.length) {
@@ -210,38 +217,31 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
 
 
   // Initializing the signals
-  poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.bits.enable.taskID, 5.U)
-  poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").taskID, 5.U)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 5.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field2").taskID, 5.U)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
-  poke(c.io.out.ready, false.B)
-  step(1)
-  poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0.U) // Array a[] base address
-  poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 0x48) // Array b[] base address
-  poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 0x100) // Array c[] base address
-  poke(c.io.in.bits.data("field2").predicate, true.B)
-  poke(c.io.out.ready, true.B)
-  step(1)
-  poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.enable.control, false)
+  poke(c.io.in.bits.enable.taskID, 5)
+  poke(c.io.in.valid, false)
   poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
+  poke(c.io.in.bits.data("field0").taskID, 5)
+  poke(c.io.in.bits.data("field0").predicate, false)
+  poke(c.io.in.bits.data("field1").data, 0)
+  poke(c.io.in.bits.data("field1").taskID, 5)
+  poke(c.io.in.bits.data("field1").predicate, false)
+  poke(c.io.out.ready, false)
+  step(1)
+  poke(c.io.in.bits.enable.control, true)
+  poke(c.io.in.valid, true)
+  poke(c.io.in.bits.data("field0").data, 0) // Array rgb[] base address
+  poke(c.io.in.bits.data("field0").predicate, true)
+  poke(c.io.in.bits.data("field1").data, 256) // Array xyz[] base address
+  poke(c.io.in.bits.data("field1").predicate, true)
+  poke(c.io.out.ready, true)
+  step(1)
+  poke(c.io.in.bits.enable.control, false)
+  poke(c.io.in.valid, false)
+  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").predicate, false)
   poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
+  poke(c.io.in.bits.data("field1").predicate, false)
 
   step(1)
 
@@ -291,9 +291,9 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
   }
 }
 
-class cilk_for_test06Tester1 extends FlatSpec with Matchers {
+class cilk_for_test07Tester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that cilk_for_test06 works correctly." in {
+  it should "Check that cilk_for_test07 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>
@@ -303,15 +303,15 @@ class cilk_for_test06Tester1 extends FlatSpec with Matchers {
       Array(
         // "-ll", "Info",
         "-tbn", "verilator",
-        "-td", "test_run_dir/cilk_for_test06/test2/",
+        "-td", "test_run_dir/cilk_for_test07_1",
         "-tts", "0001"),
-      () => new cilk_for_test06MainDirect()) {
-      c => new cilk_for_test06Test01(c)
+      () => new cilk_for_test07MainDirect()) {
+      c => new cilk_for_test07Test01(c)
     } should be(true)
   }
 }
 
-class cilk_for_test06Tester2 extends FlatSpec with Matchers {
+class cilk_for_test07Tester2 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -323,10 +323,10 @@ class cilk_for_test06Tester2 extends FlatSpec with Matchers {
       Array(
         // "-ll", "Info",
         "-tbn", "verilator",
-        "-td", "test_run_dir/cilk_for_test06/test2/",
+        "-td", "test_run_dir/cilk_for_test07_2",
         "-tts", "0001"),
-      () => new cilk_for_test06MainTM(1)) {
-      c => new cilk_for_test06Test01(c)
+      () => new cilk_for_test07MainTM(1)) {
+      c => new cilk_for_test07Test01(c)
     } should be(true)
   }
 }
