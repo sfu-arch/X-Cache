@@ -134,7 +134,7 @@ import utility.UniformPrintfs
 //}
 
 class IcmpNodeIO(NumOuts: Int)
-                   (implicit p: Parameters)
+                (implicit p: Parameters)
   extends HandShakingIONPS(NumOuts)(new DataBundle) {
   // LeftIO: Left input data for computation
   val LeftIO = Flipped(Decoupled(new DataBundle()))
@@ -147,10 +147,10 @@ class IcmpNodeIO(NumOuts: Int)
 }
 
 class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
-                 (sign: Boolean)
-                 (implicit p: Parameters,
-                  name: sourcecode.Name,
-                  file: sourcecode.File)
+              (sign: Boolean)
+              (implicit p: Parameters,
+               name: sourcecode.Name,
+               file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle())(p) {
   override lazy val io = IO(new ComputeNodeIO(NumOuts))
 
@@ -236,6 +236,10 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
             out_data_R.predicate := predicate
             out_data_R.taskID := left_R.taskID | right_R.taskID | enable_R.taskID
           }
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [ICMP] " +
+              node_name + ": Output fired @ %d, Value: %d (%d + %d)\n", task_ID_R, cycleCount, FU.io.out, left_R.data, right_R.data)
+          }
         }
       }
     }
@@ -251,10 +255,6 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
         //Reset output
         out_data_R.predicate := false.B
         Reset()
-        if (log) {
-          printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [ICMP] " +
-            node_name + ": Output fired @ %d, Value: %d (%d + %d)\n", task_ID_R, cycleCount, FU.io.out, left_R.data, right_R.data)
-        }
       }
     }
   }

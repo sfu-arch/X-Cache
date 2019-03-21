@@ -13,7 +13,7 @@ class SyncIO(NumOuts: Int, NumInc: Int, NumDec: Int)(implicit p: Parameters)
   val incIn = Flipped(Vec(NumInc, Decoupled(new ControlBundle())))
   val decIn = Flipped(Vec(NumDec, Decoupled(new ControlBundle())))
 
-  override def cloneType = new SyncIO(NumOuts,NumInc,NumDec).asInstanceOf[this.type]
+  override def cloneType = new SyncIO(NumOuts, NumInc, NumDec).asInstanceOf[this.type]
 }
 
 class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
@@ -44,7 +44,7 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
    *==========================================*/
 
   val predicate = IsEnable()
-  val start     = IsEnableValid()
+  val start = IsEnableValid()
 
   io.enable.ready := (state === s_IDLE)
 
@@ -77,7 +77,7 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
         when(predicate) {
           state := s_COMPUTE
         }.otherwise {
-//          Reset()
+          //          Reset()
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Read value only @ %d, value: %d\n", cycleCount, syncCount)
           ValidOut()
           state := s_DONE
@@ -112,7 +112,8 @@ class SyncNodeIO(val NumOuts: Int)(implicit p: Parameters)
   val Out = Vec(NumOuts, Decoupled(new ControlBundle()))
 }
 
-class SyncNode(NumOuts: Int, ID: Int)
+class SyncNode(NumOuts: Int, ID: Int,
+               NumInc: Int = 1, NumDec: Int = 1)
               (implicit val p: Parameters,
                name: sourcecode.Name,
                file: sourcecode.File)
@@ -268,7 +269,7 @@ class SyncNode(NumOuts: Int, ID: Int)
 
 }
 
-class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
+class SyncTC(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
             (implicit p: Parameters,
              name: sourcecode.Name,
              file: sourcecode.File)
@@ -277,8 +278,8 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   // Printf debugging
   val node_name = name.value
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-  override val printfSigil =  "[" + module_name + "] " + node_name + ": " + ID + " "
-  val (cycleCount,_) = Counter(true.B,32*1024)
+  override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
+  val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
 
   /*===========================================*
@@ -288,14 +289,14 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   // idState machine
   val s_IDLE :: s_COMPUTE :: s_DONE :: Nil = Enum(3)
   val state = RegInit(s_IDLE)
-  val syncCount = RegInit(VecInit(Seq.fill(1<<tlen)(0.U(tlen.W))))
+  val syncCount = RegInit(VecInit(Seq.fill(1 << tlen)(0.U(tlen.W))))
 
   /*==========================================*
    *           Predicate Evaluation           *
    *==========================================*/
 
   val predicate = IsEnable()
-  val start     = IsEnableValid()
+  val start = IsEnableValid()
 
 
   /*============================================*
@@ -313,14 +314,14 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
 
   updateArb.io.out.ready := true.B
 
-  val update   = RegNext(init = false.B, next = updateArb.io.out.fire() && updateArb.io.out.bits.control)
-  val dec      = RegNext(init = 0.U, next = updateArb.io.chosen)
+  val update = RegNext(init = false.B, next = updateArb.io.out.fire() && updateArb.io.out.bits.control)
+  val dec = RegNext(init = 0.U, next = updateArb.io.chosen)
   val updateID = RegNext(init = 0.U, next = updateArb.io.out.bits.taskID)
 
   when(update) {
-    when (dec === 0.U) {
+    when(dec === 0.U) {
       syncCount(updateID) := syncCount(updateID) + 1.U
-    }.otherwise{
+    }.otherwise {
       syncCount(updateID) := syncCount(updateID) - 1.U
     }
   }
@@ -366,10 +367,10 @@ class SyncTC(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
 
 }
 
-class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
-            (implicit p: Parameters,
-             name: sourcecode.Name,
-             file: sourcecode.File)
+class SyncTC2(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
+             (implicit p: Parameters,
+              name: sourcecode.Name,
+              file: sourcecode.File)
   extends HandShakingCtrlNPS(NumOuts, ID)(p) {
   override lazy val io = IO(new SyncIO(NumOuts, NumInc, NumDec)(p))
   // Printf debugging
@@ -424,7 +425,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   doneQueue.io.enq.bits := ControlBundle.default
 
   // Counter RAM
-  val updateAddr  = WireInit(0.U((1<<tlen).W))
+  val updateAddr = WireInit(0.U((1 << tlen).W))
   val updateCount = WireInit(0.U(countBits.W))
 
   // Mux write address and data
@@ -432,11 +433,11 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
   when(initCounters) {
     updateAddr := initCount
     updateCount := 0.U
-  }.elsewhen(state === s_WRITE){
+  }.elsewhen(state === s_WRITE) {
     updateAddr := updateArb_R.taskID
     when(dec_R === 0.U) {
       updateCount := currCount + 1.U
-    }.otherwise{
+    }.otherwise {
       assert(currCount =/= 0.U)
       updateCount := currCount - 1.U
     }
@@ -463,7 +464,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
     }
     is(s_WRITE) {
       // Update count
-       // If decrementing to zero then last re-attach has arrived.
+      // If decrementing to zero then last re-attach has arrived.
       when(updateCount === 0.U) {
         when(doneQueue.io.enq.ready) {
           doneQueue.io.enq.valid := true.B
@@ -474,7 +475,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
           updateArb.io.out.ready := false.B
           state := s_WAIT
         }
-      }.otherwise{
+      }.otherwise {
         updateArb.io.out.ready := true.B
         state := s_IDLE
       }
@@ -485,7 +486,7 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
         doneQueue.io.enq.bits := updateArb_R
         updateArb.io.out.ready := true.B
         state := s_IDLE
-      }.otherwise{
+      }.otherwise {
         updateArb.io.out.ready := true.B
         state := s_WAIT
       }
@@ -497,10 +498,9 @@ class SyncTC2(NumOuts : Int,  NumInc : Int, NumDec : Int, ID: Int)
    *============================================*/
 
 
+  val outPorts = Module(new ExpandNode(NumOuts = NumOuts, ID = 0)(new ControlBundle))
 
-  val outPorts = Module(new ExpandNode(NumOuts=NumOuts, ID=0)(new ControlBundle))
-
-  outPorts.io.InData <> doneQueue.io.deq//outArb.io.out
+  outPorts.io.InData <> doneQueue.io.deq //outArb.io.out
   outPorts.io.enable.enq(ControlBundle.active())
 
   io.Out <> outPorts.io.Out

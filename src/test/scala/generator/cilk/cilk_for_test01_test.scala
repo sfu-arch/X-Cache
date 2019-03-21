@@ -31,7 +31,7 @@ class cilk_for_test01MainIO(implicit val p: Parameters) extends Module with Core
     val out = Decoupled(new Call(List(32)))
   })
 
-   def cloneType = new cilk_for_test01MainIO().asInstanceOf[this.type]
+  def cloneType = new cilk_for_test01MainIO().asInstanceOf[this.type]
 }
 
 
@@ -151,9 +151,9 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
 
   step(1)
 
-  for (i <- 0 until 5) {
-    MemWrite(outAddrVec(i), 0)
-  }
+  //  for (i <- 0 until 5) {
+  //    MemWrite(outAddrVec(i), 0)
+  //  }
 
 
   step(1)

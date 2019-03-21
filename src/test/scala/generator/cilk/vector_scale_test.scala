@@ -1,5 +1,8 @@
 package dataflow
 
+
+import java.io.PrintWriter
+import java.io.File
 import chisel3._
 import chisel3.util._
 import chisel3.Module
@@ -23,10 +26,8 @@ import node._
 class vector_scaleMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32))))
-    val addr = Input(UInt(nastiXAddrBits.W)) // Initialization address
-    val din = Input(UInt(nastiXDataBits.W)) // Initialization data
-    val write = Input(Bool()) // Initialization write strobe
-    val dout = Output(UInt(nastiXDataBits.W))
+    val req = Flipped(Decoupled(new MemReq))
+    val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
   })
 
@@ -34,72 +35,112 @@ class vector_scaleMainIO(implicit val p: Parameters) extends Module with CorePar
 }
 
 
-class vector_scaleMainTM(children: Int = 1)(implicit p: Parameters) extends vector_scaleMainIO {
+class vector_scaleMainTM(NumTiles: Int = 1)(implicit p: Parameters) extends vector_scaleMainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
-  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
-
-  // Store a copy of all data written to the cache.  This is done since the cache isn't
-  // 'write through' to the memory model and we have no easy way of reading the
-  // cache contents from the testbench.
-  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-    memCopy.write((cache.io.cpu.req.bits.addr >> 2).asUInt(), cache.io.cpu.req.bits.data)
-  }
-  io.dout := memCopy.read((io.addr >> 2).asUInt())
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  val memModel = Module(new NastiMemSlave(latency = 10)) // Model of DRAM to connect to Cache
   memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := io.addr
-  memModel.io.init.bits.data := io.din
-  memModel.io.init.valid := io.write
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
 
-  // Wire up the cache, TM, and modules under test.
 
-  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))
-  val vector_scale = Module(new vector_scaleDF())
+  val cilk_for_testDF = Module(new vector_scaleDF())
 
-  vector_scale.io.MemResp <> DontCare
-  vector_scale.io.MemReq <> DontCare
-
-  val vector_scale_detach = for (i <- 0 until children) yield {
+  val cilk_for_tiles = for (i <- 0 until NumTiles) yield {
     val foo = Module(new vector_scale_detach1DF())
     foo
   }
 
-  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
-  // requests ports of any type.  Read or write is irrelevant.
-  val CacheArbiter = Module(new MemArbiter(children))
-  for (i <- 0 until children) {
-    CacheArbiter.io.cpu.MemReq(i) <> vector_scale_detach(i).io.MemReq
-    vector_scale_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
-  }
-  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
-  // tester to vector_scale
-  vector_scale.io.in <> io.in
+  val TC = Module(new TaskController(List(32, 32, 32, 32), List(), 1, NumTiles))
+  val CacheArb = Module(new MemArbiter(NumTiles + 2))
 
-  // vector_scale to task controller
-  TaskControllerModule.io.parentIn(0) <> vector_scale.io.call_11_out
 
-  // task controller to sub-task vector_scale_detach
-  for (i <- 0 until children) {
-    vector_scale_detach(i).io.in <> TaskControllerModule.io.childOut(i)
-    TaskControllerModule.io.childIn(i) <> vector_scale_detach(i).io.out
+  // Merge the memory interfaces and connect to the stack memory
+  for (i <- 0 until NumTiles) {
+    // Connect to stack memory interface
+    CacheArb.io.cpu.MemReq(i) <> cilk_for_tiles(i).io.MemReq
+    cilk_for_tiles(i).io.MemResp <> CacheArb.io.cpu.MemResp(i)
+
+
+    // Connect to task controller
+    cilk_for_tiles(i).io.in <> TC.io.childOut(i)
+    TC.io.childIn(i) <> cilk_for_tiles(i).io.out
   }
 
-  // Task controller to vector_scale
-  vector_scale.io.call_11_in <> TaskControllerModule.io.parentOut(0)
 
-  // vector_scale to tester
-  io.out <> vector_scale.io.out
+  CacheArb.io.cpu.MemReq(NumTiles + 1) <> cilk_for_testDF.io.MemReq
+  cilk_for_testDF.io.MemResp <> CacheArb.io.cpu.MemResp(NumTiles + 1)
+
+  TC.io.parentIn(0) <> cilk_for_testDF.io.call_11_out
+  cilk_for_testDF.io.call_11_in <> TC.io.parentOut(0)
+
+
+  CacheArb.io.cpu.MemReq(NumTiles) <> io.req
+  io.resp <> CacheArb.io.cpu.MemResp(NumTiles)
+
+  cache.io.cpu.req <> CacheArb.io.cache.MemReq
+  CacheArb.io.cache.MemResp <> cache.io.cpu.resp
+
+  cilk_for_testDF.io.in <> io.in
+  io.out <> cilk_for_testDF.io.out
+
 
 }
 
 class vector_scaleTest01[T <: vector_scaleMainIO](c: T, tiles: Int) extends PeekPokeTester(c) {
+  def MemRead(addr: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.iswrite, 0)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    while (peek(c.io.resp.valid) == 0) {
+      step(1)
+    }
+    val result = peek(c.io.resp.bits.data)
+    result
+  }
+
+  def MemWrite(addr: Int, data: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.data, data)
+    poke(c.io.req.bits.iswrite, 1)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    poke(c.io.req.valid, 0)
+    1
+  }
+
+
+  def dumpMemory(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until outDataVec.length) {
+      val data = MemRead(outAddrVec(i))
+      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+    }
+    pw.close
+
+  }
+
+
   //  val inDataVec = List(-4,-22,9,221,178,152,80,98,163,40,239,169,89,179,98,69,117,196,16,44,12,59,
   //    23,14,68,13,57,137,175,195,165,68,199,71,34,-6,249,139,118,157,76,254,71,190,179,66,157,193,7,
   //    198,-18,44,2,182,236,247,221,190,129,141,131,192,106,227,8,166,246,154,202,-19,56,24,-19,25,
@@ -116,35 +157,31 @@ class vector_scaleTest01[T <: vector_scaleMainIO](c: T, tiles: Int) extends Peek
     255, 255, 0, 175, 75, 0, 78, 255, 178, 0, 40, 0, 65, 255, 255, 255, 21, 255, 255, 0, 255, 96, 81, 255, 184, 255, 255,
     255, 65, 255, 255, 255, 255)
 
-  poke(c.io.addr, 0.U)
-  poke(c.io.din, 0.U)
-  poke(c.io.write, false.B)
-  var i = 0
-
   // Write initial contents to the memory model.
   for (i <- 0 until inDataVec.length) {
-    poke(c.io.addr, inAddrVec(i))
-    poke(c.io.din, inDataVec(i))
-    poke(c.io.write, true.B)
-    step(1)
+    MemWrite(inAddrVec(i), inDataVec(i))
   }
-  poke(c.io.write, false.B)
+
+  step(10)
+  dumpMemory("Init.mem")
+
   step(1)
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
+  poke(c.io.in.bits.enable.taskID, 0)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").taskID, 5.U)
+  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").taskID, 0)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 5.U)
+  poke(c.io.in.bits.data("field1").data, 0)
+  poke(c.io.in.bits.data("field1").taskID, 0)
   poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field2").taskID, 5.U)
+  poke(c.io.in.bits.data("field2").data, 0)
+  poke(c.io.in.bits.data("field2").taskID, 0)
   poke(c.io.in.bits.data("field2").predicate, false.B)
-  poke(c.io.in.bits.data("field3").data, 0.U)
-  poke(c.io.in.bits.data("field3").taskID, 5.U)
+  poke(c.io.in.bits.data("field3").data, 0)
+  poke(c.io.in.bits.data("field3").taskID, 0)
   poke(c.io.in.bits.data("field3").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
@@ -178,21 +215,26 @@ class vector_scaleTest01[T <: vector_scaleMainIO](c: T, tiles: Int) extends Peek
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 50000 && !result) {
+  while (time < 10000) {
     time += 1
     step(1)
-    if (peek(c.io.out.valid) == 1 && peek(c.io.out.bits.enable.control) == 1) {
+    if (peek(c.io.out.valid) == 1 &&
+      peek(c.io.out.bits.data("field0").predicate) == 1) {
       result = true
-      println(Console.BLUE + s"*** Return received for t=$tiles. Run time: $time cycles." + Console.RESET)
+      val data = peek(c.io.out.bits.data("field0").data)
+      if (data != 1) {
+        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
+        fail
+      } else {
+        println(Console.BLUE + s"*** Return received for t=$tiles. Run time: $time cycles." + Console.RESET)
+      }
     }
   }
 
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
   for (i <- 0 until outDataVec.length) {
-    poke(c.io.addr, outAddrVec(i))
-    step(1)
-    val data = peek(c.io.dout)
+    val data = MemRead(outAddrVec(i))
     if (data != outDataVec(i).toInt) {
       println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
@@ -217,14 +259,14 @@ class vector_scaleTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case TLEN => 6
-    case TRACE => false
+    case TRACE => true
   })
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  val tile_list = List(4)
+  val tile_list = List(1)
   //  val tile_list = List(1,2,4,8)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
