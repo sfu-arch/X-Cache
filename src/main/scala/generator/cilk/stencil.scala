@@ -9,7 +9,6 @@ import chisel3.testers._
 import chisel3.iotesters._
 import config._
 import control._
-import dataflow.vector_scaleMain.p
 import interfaces._
 import junctions._
 import loop._

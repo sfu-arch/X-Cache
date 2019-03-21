@@ -17,7 +17,6 @@ import stack._
 import arbiters._
 import loop._
 import accel._
-import dataflow.vector_scaleMain.p
 import node._
 import junctions._
 
