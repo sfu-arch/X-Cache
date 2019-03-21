@@ -75,7 +75,65 @@ class cilk_for_test06MainDirect(implicit p: Parameters) extends cilk_for_test06M
 
 }
 
-class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainIO {
+//class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainIO {
+//
+//  val cache = Module(new Cache) // Simple Nasti Cache
+//  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+//
+//  // Connect the wrapper I/O to the memory model initialization interface so the
+//  // test bench can write contents at start.
+//  memModel.io.nasti <> cache.io.nasti
+//  memModel.io.init.bits.addr := 0.U
+//  memModel.io.init.bits.data := 0.U
+//  memModel.io.init.valid := false.B
+//  cache.io.cpu.abort := false.B
+//
+//  val children = 1
+//  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))
+//  val cilk_for_test06 = Module(new cilk_for_test06DF())
+//
+//  val cilk_for_test06_detach = for (i <- 0 until children) yield {
+//    val foo = Module(new cilk_for_test06_detach1DF())
+//    foo
+//  }
+//
+//  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
+//  // requests ports of any type.  Read or write is irrelevant.
+//  val MemArbiter = Module(new MemArbiter(children + 1))
+//
+//  for (i <- 0 until children) {
+//    MemArbiter.io.cpu.MemReq(i) <> cilk_for_test06_detach(i).io.MemReq
+//    cilk_for_test06_detach(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
+//  }
+//
+//  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+//  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
+//
+//  MemArbiter.io.cpu.MemReq(children) <> io.req
+//  io.resp <> MemArbiter.io.cpu.MemResp(children)
+//
+//  cilk_for_test06.io.MemResp <> DontCare
+//  cilk_for_test06.io.MemReq <> DontCare
+//
+//
+//  // task controller to sub-task cilk_for_test06_detach
+//  for (i <- 0 until children) {
+//    cilk_for_test06_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+//    TaskControllerModule.io.childIn(i) <> cilk_for_test06_detach(i).io.out
+//  }
+//
+//  // Task controller to cilk_for_test06
+//  // cilk_for_test06 to task controller
+//  TaskControllerModule.io.parentIn(0) <> cilk_for_test06.io.call_8_out
+//  cilk_for_test06.io.call_8_in <> TaskControllerModule.io.parentOut(0)
+//
+//  // cilk_for_test06 to tester
+//  cilk_for_test06.io.in <> io.in
+//  io.out <> cilk_for_test06.io.out
+//
+//}
+
+class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for_test06MainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -88,51 +146,49 @@ class cilk_for_test06MainTM(implicit p: Parameters) extends cilk_for_test06MainI
   memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
 
-  val children = 2
-  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(32), 1, children))
-  val cilk_for_test06 = Module(new cilk_for_test06DF())
+  val cilk_for_testDF = Module(new cilk_for_test06DF())
 
-  val cilk_for_test06_detach = for (i <- 0 until children) yield {
-    val foo = Module(new cilk_for_test06_detach1DF())
-    foo
+  val NumTiles = tiles
+  val cilk_for_tiles = for (i <- 0 until NumTiles) yield {
+    val cilk01 = Module(new cilk_for_test06_detach1DF())
+    cilk01
   }
 
-  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
-  // requests ports of any type.  Read or write is irrelevant.
-  val MemArbiter = Module(new MemArbiter(children + 1))
-  for (i <- 0 until children) {
-    MemArbiter.io.cpu.MemReq(i) <> cilk_for_test06_detach(i).io.MemReq
-    cilk_for_test06_detach(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
-  }
-  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
-  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
-
-  MemArbiter.io.cpu.MemReq(children) <> io.req
-  io.resp <> MemArbiter.io.cpu.MemResp(children)
-
-  cilk_for_test06.io.MemResp <> DontCare
-  cilk_for_test06.io.MemReq <> DontCare
+  val TC = Module(new TaskController(List(32, 32, 32, 32), List(), 1, numChild = NumTiles))
+  val CacheArb = Module(new MemArbiter(NumTiles + 2))
 
 
-  // tester to cilk_for_test06
-  cilk_for_test06.io.in <> io.in
+  // Merge the memory interfaces and connect to the stack memory
+  for (i <- 0 until NumTiles) {
+    // Connect to stack memory interface
+    CacheArb.io.cpu.MemReq(i) <> cilk_for_tiles(i).io.MemReq
+    cilk_for_tiles(i).io.MemResp <> CacheArb.io.cpu.MemResp(i)
 
-  // cilk_for_test06 to task controller
-  TaskControllerModule.io.parentIn(0) <> cilk_for_test06.io.call_8_out
 
-  // task controller to sub-task cilk_for_test06_detach
-  for (i <- 0 until children) {
-    cilk_for_test06_detach(i).io.in <> TaskControllerModule.io.childOut(i)
-    TaskControllerModule.io.childIn(i) <> cilk_for_test06_detach(i).io.out
+    // Connect to task controller
+    cilk_for_tiles(i).io.in <> TC.io.childOut(i)
+    TC.io.childIn(i) <> cilk_for_tiles(i).io.out
   }
 
-  // Task controller to cilk_for_test06
-  cilk_for_test06.io.call_8_in <> TaskControllerModule.io.parentOut(0)
 
-  // cilk_for_test06 to tester
-  io.out <> cilk_for_test06.io.out
+  CacheArb.io.cpu.MemReq(NumTiles + 1) <> cilk_for_testDF.io.MemReq
+  cilk_for_testDF.io.MemResp <> CacheArb.io.cpu.MemResp(NumTiles + 1)
+
+  TC.io.parentIn(0) <> cilk_for_testDF.io.call_8_out
+  cilk_for_testDF.io.call_8_in <> TC.io.parentOut(0)
+
+
+  CacheArb.io.cpu.MemReq(NumTiles) <> io.req
+  io.resp <> CacheArb.io.cpu.MemResp(NumTiles)
+
+  cache.io.cpu.req <> CacheArb.io.cache.MemReq
+  CacheArb.io.cache.MemResp <> cache.io.cpu.resp
+
+  cilk_for_testDF.io.in <> io.in
+  io.out <> cilk_for_testDF.io.out
 
 }
+
 
 class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTester(c) {
   def MemRead(addr: Int): BigInt = {
@@ -327,7 +383,7 @@ class cilk_for_test06Tester2 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/cilk_for_test06",
         "-tts", "0001"),
-      () => new cilk_for_test06MainTM()) {
+      () => new cilk_for_test06MainTM(1)) {
       c => new cilk_for_test06Test01(c)
     } should be(true)
   }

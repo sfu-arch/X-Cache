@@ -67,16 +67,22 @@ class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: 
     initQueue := false.B
   }
 
+  /**
+      @TODO: Making retExpand output.ready false at initialization looks wrong
+      It needs more investigation
+    */
+
   when(initQueue) {
     freeList.io.enq.bits := initCount.asUInt( )
     freeList.io.enq.valid := true.B
-    retExpand.io.Out(0).ready := false.B
+    //retExpand.io.Out(0).ready := false.B
   }.otherwise {
     freeList.io.enq.bits := retExpand.io.Out(0).bits.enable.taskID
     freeList.io.enq.valid := retExpand.io.Out(0).valid
-    retExpand.io.Out(0).ready := freeList.io.enq.ready
+    //retExpand.io.Out(0).ready := freeList.io.enq.ready
   }
-  freeList.io.deq.ready := exeList.io.enq.ready && taskArb.io.out.valid
+  retExpand.io.Out(0).ready := freeList.io.enq.ready
+  freeList.io.deq.ready := exeList.io.enq.ready & taskArb.io.out.valid
 
   /** *************************************************************************
     * Task Request Queue
