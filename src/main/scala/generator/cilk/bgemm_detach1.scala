@@ -1,288 +1,54 @@
 package dataflow
 
+import FPU._
+import accel._
+import arbiters._
 import chisel3._
 import chisel3.util._
-import chisel3.Module
+import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
-import org.scalatest.{FlatSpec, Matchers}
-import muxes._
 import config._
 import control._
-import util._
 import interfaces._
-import regfile._
-import memory._
-import stack._
-import arbiters._
-import loop._
-import accel._
-import node._
 import junctions._
-
-
-/**
-  * This Object should be initialized at the first step
-  * It contains all the transformation from indices to their module's name
-  */
-
-object Data_bgemm_detach1_FlowParam{
-
-  val bb_my_pfor_body_pred = Map(
-    "active" -> 0
-  )
-
-
-  val bb_my_loopkk_pred = Map(
-    "br2" -> 0
-  )
-
-
-  val bb_my_pfor_cond5_pred = Map(
-    "br3" -> 0,
-    "br9" -> 1
-  )
-
-
-  val bb_my_pfor_detach7_pred = Map(
-    "br6" -> 0
-  )
-
-
-  val bb_my_pfor_end40_pred = Map(
-    "br6" -> 0
-  )
-
-
-  val bb_my_pfor_preattach42_pred = Map(
-    "br11" -> 0
-  )
-
-
-  val br2_brn_bb = Map(
-    "bb_my_loopkk" -> 0
-  )
-
-
-  val br3_brn_bb = Map(
-    "bb_my_pfor_cond5" -> 0
-  )
-
-
-  val br6_brn_bb = Map(
-    "bb_my_pfor_detach7" -> 0,
-    "bb_my_pfor_end40" -> 1
-  )
-
-
-  val br9_brn_bb = Map(
-    "bb_my_pfor_cond5" -> 0
-  )
-
-
-  val br11_brn_bb = Map(
-    "bb_my_pfor_preattach42" -> 0
-  )
-
-
-  val bb_my_pfor_inc38_pred = Map(
-    "detach7" -> 0
-  )
-
-
-  val bb_my_offload_pfor_body8_pred = Map(
-    "detach7" -> 0
-  )
-
-
-  val detach7_brn_bb = Map(
-    "bb_my_offload_pfor_body8" -> 0,
-    "bb_my_pfor_inc38" -> 1
-  )
-
-
-  val bb_my_pfor_body_activate = Map(
-    "mul0" -> 0,
-    "add1" -> 1,
-    "br2" -> 2
-  )
-
-
-  val bb_my_loopkk_activate = Map(
-    "br3" -> 0
-  )
-
-
-  val bb_my_pfor_cond5_activate = Map(
-    "phi4" -> 0,
-    "icmp5" -> 1,
-    "br6" -> 2
-  )
-
-
-  val bb_my_pfor_detach7_activate = Map(
-    "detach7" -> 0
-  )
-
-
-  val bb_my_pfor_inc38_activate = Map(
-    "add8" -> 0,
-    "br9" -> 1
-  )
-
-
-  val bb_my_pfor_end40_activate = Map(
-    "sync10" -> 0
-  )
-
-
-  val bb_my_pfor_end_continue41_activate = Map(
-    "br11" -> 0
-  )
-
-
-  val bb_my_pfor_preattach42_activate = Map(
-    "ret12" -> 0
-  )
-
-
-  val bb_my_offload_pfor_body8_activate = Map(
-    "call13" -> 0,
-    "reattach14" -> 1
-  )
-
-
-  val phi4_phi_in = Map(
-    "const_0" -> 0,
-    "add8" -> 1
-  )
-
-
-  //  %0 = mul nsw i32 %__begin.0.in, 2, !UID !7, !ScalaLabel !8
-  val mul0_in = Map(
-    "field0" -> 0
-  )
-
-
-  //  %1 = add nsw i32 0, %0, !UID !9, !ScalaLabel !10
-  val add1_in = Map(
-    "mul0" -> 0
-  )
-
-
-  //  %2 = phi i32 [ 0, %my_loopkk ], [ %4, %my_pfor.inc38 ], !UID !17, !ScalaLabel !18
-  val phi4_in = Map(
-    "add8" -> 0
-  )
-
-
-  //  %3 = icmp slt i32 %2, 2, !UID !19, !ScalaLabel !20
-  val icmp5_in = Map(
-    "phi4" -> 0
-  )
-
-
-  //  br i1 %3, label %my_pfor.detach7, label %my_pfor.end40, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val br6_in = Map(
-    "icmp5" -> 0
-  )
-
-
-  //  detach label %my_offload.pfor.body8, label %my_pfor.inc38, !UID !24, !BB_UID !25, !ScalaLabel !26
-  val detach7_in = Map(
-    "" -> 0,
-    "" -> 1
-  )
-
-
-  //  %4 = add nsw i32 %2, 1, !UID !27, !ScalaLabel !28
-  val add8_in = Map(
-    "phi4" -> 1
-  )
-
-
-  //  sync label %my_pfor.end.continue41, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val sync10_in = Map(
-    "" -> 2
-  )
-
-
-  //  ret void, !UID !52, !BB_UID !53, !ScalaLabel !54
-  val ret12_in = Map(
-
-  )
-
-
-  //  call void @bgemm_detach2(i32 %2, i32* %m1.in, i32 %1, i32* %m2.in, i32* %prod.in), !UID !55, !ScalaLabel !56
-  val call13_in = Map(
-    "phi4" -> 2,
-    "field1" -> 0,
-    "add1" -> 0,
-    "field2" -> 0,
-    "field3" -> 0,
-    "" -> 3
-  )
-
-
-  //  reattach label %my_pfor.inc38, !UID !57, !BB_UID !58, !ScalaLabel !59
-  val reattach14_in = Map(
-    "" -> 4
-  )
-
-
-}
-
-
+import loop._
+import memory._
+import muxes._
+import node._
+import org.scalatest._
+import regfile._
+import stack._
+import util._
 
 
   /* ================================================================== *
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-
 abstract class bgemm_detach1DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
-    val call13_out = Decoupled(new Call(List(32,32,32,32,32)))
-    val call13_in = Flipped(Decoupled(new Call(List(32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
+    val call_9_out = Decoupled(new Call(List(32, 32, 32, 32, 32)))
+    val call_9_in = Flipped(Decoupled(new Call(List())))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List()))
   })
 }
-
-
-
-
-  /* ================================================================== *
-   *                   PRINTING MODULE DEFINITION                       *
-   * ================================================================== */
-
 
 class bgemm_detach1DF(implicit p: Parameters) extends bgemm_detach1DFIO()(p) {
 
 
-
   /* ================================================================== *
-   *                   PRINTING MEMORY SYSTEM                           *
+   *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
+  //Remember if there is no mem operation io memreq/memresp should be grounded
+  io.MemReq <> DontCare
+  io.MemResp <> DontCare
 
-	val StackPointer = Module(new Stack(NumOps = 1))
-
-	val RegisterFile = Module(new TypeStackFile(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2)))
-
-	val CacheMem = Module(new UnifiedController(ID=0,Size=32,NReads=2,NWrites=2)
-		            (WControl=new WriteMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RControl=new ReadMemoryController(NumOps=2,BaseSize=2,NumEntries=2))
-		            (RWArbiter=new ReadWriteArbiter()))
-
-  io.MemReq <> CacheMem.io.MemReq
-  CacheMem.io.MemResp <> io.MemResp
-
-  val InputSplitter = Module(new SplitCall(List(32,32,32,32)))
+  val InputSplitter = Module(new SplitCallNew(List(1, 1, 1, 1)))
   InputSplitter.io.In <> io.in
 
 
@@ -291,12 +57,7 @@ class bgemm_detach1DF(implicit p: Parameters) extends bgemm_detach1DFIO()(p) {
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-
-  val loop_L_0_liveIN_0 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_1 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_2 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-  val loop_L_0_liveIN_3 = Module(new LiveInNode(NumOuts = 1, ID = 0))
-
+  val Loop_0 = Module(new LoopBlockNode(NumIns = List(1, 1, 1, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
 
 
 
@@ -304,29 +65,17 @@ class bgemm_detach1DF(implicit p: Parameters) extends bgemm_detach1DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
+  val bb_my_loopkk0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  //Initializing BasicBlocks: 
+  val bb_my_pfor_detach101 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 5, NumPhi = 1, BID = 1))
 
-  val bb_my_pfor_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 0))
+  val bb_my_pfor_inc532 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 2))
 
-  val bb_my_loopkk = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  val bb_my_pfor_cond_cleanup83 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 3))
 
-  val bb_my_pfor_cond5 = Module(new BasicBlockLoopHeadNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 2))
+  val bb_my_sync_continue554 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 4))
 
-  val bb_my_pfor_detach7 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 3))
-
-  val bb_my_pfor_inc38 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 4))
-
-  val bb_my_pfor_end40 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 5))
-
-  val bb_my_pfor_end_continue41 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
-
-  val bb_my_pfor_preattach42 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 7))
-
-  val bb_my_offload_pfor_body8 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 8))
-
-
-
+  val bb_my_offload_loopi5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
 
 
@@ -334,339 +83,294 @@ class bgemm_detach1DF(implicit p: Parameters) extends bgemm_detach1DFIO()(p) {
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
+  //  br label %my_pfor.detach10, !UID !10, !BB_UID !11
+  val br_0 = Module(new UBranchNode(ID = 0))
 
-  //Initializing Instructions: 
+  //  %1 = phi i32 [ 0, %my_loopkk ], [ %3, %my_pfor.inc53 ], !UID !12
+  val phi1 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 1, Res = true))
 
-  // [BasicBlock]  my_pfor.body:
+  //  %2 = shl nuw nsw i32 %1, 1, !UID !13
+  val binaryOp_2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "shl")(sign = false))
 
-  //  %0 = mul nsw i32 %__begin.0.in, 2, !UID !7, !ScalaLabel !8
-  val mul0 = Module (new ComputeNode(NumOuts = 1, ID = 0, opCode = "mul")(sign=false))
+  //  detach within %0, label %my_offload.loopi, label %my_pfor.inc53, !UID !14, !BB_UID !15
+  val detach_3 = Module(new Detach(ID = 3))
 
+  //  %3 = add nuw nsw i32 %1, 1, !UID !16
+  val binaryOp_4 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
 
-  //  %1 = add nsw i32 0, %0, !UID !9, !ScalaLabel !10
-  val add1 = Module (new ComputeNode(NumOuts = 1, ID = 1, opCode = "add")(sign=false))
+  //  %4 = icmp eq i32 %3, 2, !UID !17
+  val icmp_5 = Module(new IcmpNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
 
+  //  br i1 %4, label %my_pfor.cond.cleanup8, label %my_pfor.detach10, !llvm.loop !18, !UID !20, !BB_UID !21
+  val br_6 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 6))
 
-  //  br label %my_loopkk, !UID !11, !BB_UID !12, !ScalaLabel !13
-  val br2 = Module (new UBranchNode(ID = 2))
+  //  sync within %0, label %my_sync.continue55, !UID !22, !BB_UID !23
+  val sync_7 = Module(new SyncTC(ID = 7, NumInc=1, NumDec=1, NumOuts=1))
 
-  // [BasicBlock]  my_loopkk:
+  //  ret void, !UID !24, !BB_UID !25
+  val ret_8 = Module(new RetNode2(retTypes = List(), ID = 8))
 
-  //  br label %my_pfor.cond5, !UID !14, !BB_UID !15, !ScalaLabel !16
-  val br3 = Module (new UBranchNode(ID = 3))
+  //  call void @bgemm_detach2(i32 %2, i32* %m1.in, i32 %mul1.in, i32* %m2.in, i32* %prod.in), !UID !26
+  val call_9_out = Module(new CallOutNode(ID = 9, NumSuccOps = 0, argTypes = List(32,32,32,32,32)))
 
-  // [BasicBlock]  my_pfor.cond5:
+  val call_9_in = Module(new CallInNode(ID = 9, argTypes = List()))
 
-  //  %2 = phi i32 [ 0, %my_loopkk ], [ %4, %my_pfor.inc38 ], !UID !17, !ScalaLabel !18
-  val phi4 = Module (new PhiNode(NumInputs = 2, NumOuts = 3, ID = 4))
-
-
-  //  %3 = icmp slt i32 %2, 2, !UID !19, !ScalaLabel !20
-  val icmp5 = Module (new IcmpNode(NumOuts = 1, ID = 5, opCode = "ULT")(sign=false))
-
-
-  //  br i1 %3, label %my_pfor.detach7, label %my_pfor.end40, !UID !21, !BB_UID !22, !ScalaLabel !23
-  val br6 = Module (new CBranchNode(ID = 6))
-
-  // [BasicBlock]  my_pfor.detach7:
-
-  //  detach label %my_offload.pfor.body8, label %my_pfor.inc38, !UID !24, !BB_UID !25, !ScalaLabel !26
-  val detach7 = Module(new Detach(ID = 7))
-
-  // [BasicBlock]  my_pfor.inc38:
-
-  //  %4 = add nsw i32 %2, 1, !UID !27, !ScalaLabel !28
-  val add8 = Module (new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign=false))
+  //  reattach within %0, label %my_pfor.inc53, !UID !27, !BB_UID !28
+  val reattach_10 = Module(new Reattach(NumPredOps= 1, ID = 10))
 
 
-  //  br label %my_pfor.cond5, !llvm.loop !29, !UID !43, !BB_UID !44, !ScalaLabel !45
-  val br9 = Module (new UBranchNode(ID = 9))
 
-  // [BasicBlock]  my_pfor.end40:
+  /* ================================================================== *
+   *                   PRINTING CONSTANTS NODES                         *
+   * ================================================================== */
 
-  //  sync label %my_pfor.end.continue41, !UID !46, !BB_UID !47, !ScalaLabel !48
-  val sync10 = Module(new Sync(ID = 10, NumOuts = 1, NumInc = 1, NumDec = 1))
+  //i32 0
+  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
 
-  // [BasicBlock]  my_pfor.end.continue41:
+  //i32 1
+  val const1 = Module(new ConstFastNode(value = 1, ID = 1))
 
-  //  br label %my_pfor.preattach42, !UID !49, !BB_UID !50, !ScalaLabel !51
-  val br11 = Module (new UBranchNode(ID = 11))
+  //i32 1
+  val const2 = Module(new ConstFastNode(value = 1, ID = 2))
 
-  // [BasicBlock]  my_pfor.preattach42:
-
-  //  ret void, !UID !52, !BB_UID !53, !ScalaLabel !54
-  val ret12 = Module(new RetNode(retTypes=List(32), ID=12))
-
-  // [BasicBlock]  my_offload.pfor.body8:
-
-  //  call void @bgemm_detach2(i32 %2, i32* %m1.in, i32 %1, i32* %m2.in, i32* %prod.in), !UID !55, !ScalaLabel !56
-  val call13 = Module(new CallNode(ID=13,argTypes=List(32,32,32,32,32),retTypes=List(32)))
+  //i32 2
+  val const3 = Module(new ConstFastNode(value = 2, ID = 3))
 
 
-  //  reattach label %my_pfor.inc38, !UID !57, !BB_UID !58, !ScalaLabel !59
-  val reattach14 = Module(new Reattach(NumPredOps=1, ID=14))
 
+  /* ================================================================== *
+   *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
+   * ================================================================== */
+
+  bb_my_loopkk0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+
+  bb_my_pfor_inc532.io.predicateIn(0) <> detach_3.io.Out(0)
+
+  bb_my_sync_continue554.io.predicateIn(0) <> sync_7.io.Out(0)
+
+  bb_my_offload_loopi5.io.predicateIn(0) <> detach_3.io.Out(1)
+
+
+
+  /* ================================================================== *
+   *                   BASICBLOCK -> PREDICATE LOOP                     *
+   * ================================================================== */
+
+  bb_my_pfor_detach101.io.predicateIn(1) <> Loop_0.io.activate_loop_start
+
+  bb_my_pfor_detach101.io.predicateIn(0) <> Loop_0.io.activate_loop_back
+
+  bb_my_pfor_cond_cleanup83.io.predicateIn(0) <> Loop_0.io.loopExit(0)
+
+
+
+  /* ================================================================== *
+   *                   PRINTING PARALLEL CONNECTIONS                    *
+   * ================================================================== */
+
+  sync_7.io.incIn(0) <> detach_3.io.Out(2)
+
+  sync_7.io.decIn(0) <> reattach_10.io.Out(0)
+
+
+
+  /* ================================================================== *
+   *                   LOOP -> PREDICATE INSTRUCTION                    *
+   * ================================================================== */
+
+  Loop_0.io.enable <> br_0.io.Out(0)
+
+  Loop_0.io.loopBack(0) <> br_6.io.FalseOutput(0)
+
+  Loop_0.io.loopFinish(0) <> br_6.io.TrueOutput(0)
+
+
+
+  /* ================================================================== *
+   *                   ENDING INSTRUCTIONS                              *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP INPUT DATA DEPENDENCIES                     *
+   * ================================================================== */
+
+  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field0")(0)
+
+  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field1")(0)
+
+  Loop_0.io.InLiveIn(2) <> InputSplitter.io.Out.data.elements("field2")(0)
+
+  Loop_0.io.InLiveIn(3) <> InputSplitter.io.Out.data.elements("field3")(0)
+
+
+
+  /* ================================================================== *
+   *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
+   * ================================================================== */
+
+  call_9_out.io.In.elements("field1") <> Loop_0.io.OutLiveIn.elements("field0")(0)
+
+  call_9_out.io.In.elements("field2") <> Loop_0.io.OutLiveIn.elements("field1")(0)
+
+  call_9_out.io.In.elements("field3") <> Loop_0.io.OutLiveIn.elements("field2")(0)
+
+  call_9_out.io.In.elements("field4") <> Loop_0.io.OutLiveIn.elements("field3")(0)
+
+
+
+  /* ================================================================== *
+   *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP LIVE OUT DEPENDENCIES                       *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP CARRY DEPENDENCIES                          *
+   * ================================================================== */
+
+  Loop_0.io.CarryDepenIn(0) <> binaryOp_4.io.Out(0)
+
+
+
+  /* ================================================================== *
+   *                   LOOP DATA CARRY DEPENDENCIES                     *
+   * ================================================================== */
+
+  phi1.io.InData(1) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
+
+
+
+  /* ================================================================== *
+   *                   BASICBLOCK -> ENABLE INSTRUCTION                 *
+   * ================================================================== */
+
+  br_0.io.enable <> bb_my_loopkk0.io.Out(0)
+
+
+  const0.io.enable <> bb_my_pfor_detach101.io.Out(0)
+
+  const1.io.enable <> bb_my_pfor_detach101.io.Out(1)
+
+  phi1.io.enable <> bb_my_pfor_detach101.io.Out(2)
+
+
+  binaryOp_2.io.enable <> bb_my_pfor_detach101.io.Out(3)
+
+
+  detach_3.io.enable <> bb_my_pfor_detach101.io.Out(4)
+
+
+  const2.io.enable <> bb_my_pfor_inc532.io.Out(0)
+
+  const3.io.enable <> bb_my_pfor_inc532.io.Out(1)
+
+  binaryOp_4.io.enable <> bb_my_pfor_inc532.io.Out(2)
+
+
+  icmp_5.io.enable <> bb_my_pfor_inc532.io.Out(3)
+
+
+  br_6.io.enable <> bb_my_pfor_inc532.io.Out(4)
+
+
+  sync_7.io.enable <> bb_my_pfor_cond_cleanup83.io.Out(0)
+
+
+  ret_8.io.In.enable <> bb_my_sync_continue554.io.Out(0)
+
+
+  call_9_in.io.enable <> bb_my_offload_loopi5.io.Out(1)
+
+  call_9_out.io.enable <> bb_my_offload_loopi5.io.Out(0)
 
 
 
 
   /* ================================================================== *
-   *                   INITIALIZING PARAM                               *
+   *                   CONNECTING PHI NODES                             *
    * ================================================================== */
 
-
-  /**
-    * Instantiating parameters
-    */
-  val param = Data_bgemm_detach1_FlowParam
+  phi1.io.Mask <> bb_my_pfor_detach101.io.MaskBB(0)
 
 
 
   /* ================================================================== *
-   *                   CONNECTING BASIC BLOCKS TO PREDICATE INSTRUCTIONS*
+   *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
-
-
-  /**
-     * Connecting basic blocks to predicate instructions
-     */
-
-
-  bb_my_pfor_body.io.predicateIn <> InputSplitter.io.Out.enable
-
-  /**
-    * Connecting basic blocks to predicate instructions
-    */
-
-  //Connecting br2 to bb_my_loopkk
-  bb_my_loopkk.io.predicateIn <> br2.io.Out(param.br2_brn_bb("bb_my_loopkk"))
-
-
-  //Connecting br3 to bb_my_pfor_cond5
-  bb_my_pfor_cond5.io.predicateIn(param.bb_my_pfor_cond5_pred("br3")) <> br3.io.Out(param.br3_brn_bb("bb_my_pfor_cond5"))
-
-
-  //Connecting br6 to bb_my_pfor_detach7
-  bb_my_pfor_detach7.io.predicateIn <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_detach7"))
-
-
-  //Connecting br6 to bb_my_pfor_end40
-  bb_my_pfor_end40.io.predicateIn <> br6.io.Out(param.br6_brn_bb("bb_my_pfor_end40"))
-
-
-  //Connecting br9 to bb_my_pfor_cond5
-  bb_my_pfor_cond5.io.predicateIn(param.bb_my_pfor_cond5_pred("br9")) <> br9.io.Out(param.br9_brn_bb("bb_my_pfor_cond5"))
-
-
-  //Connecting br11 to bb_my_pfor_preattach42
-  bb_my_pfor_preattach42.io.predicateIn <> br11.io.Out(param.br11_brn_bb("bb_my_pfor_preattach42"))
-
-
-  //Connecting detach7 to bb_my_offload_pfor_body8
-  bb_my_offload_pfor_body8.io.predicateIn <> detach7.io.Out(param.detach7_brn_bb("bb_my_offload_pfor_body8"))
-
-
-  //Connecting detach7 to bb_my_pfor_inc38
-  bb_my_pfor_inc38.io.predicateIn <> detach7.io.Out(param.detach7_brn_bb("bb_my_pfor_inc38"))
-
 
 
 
   /* ================================================================== *
-   *                   CONNECTING BASIC BLOCKS TO INSTRUCTIONS          *
+   *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
-
-
-  /**
-    * Wiring enable signals to the instructions
-    */
-
-  mul0.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("mul0"))
-
-  add1.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("add1"))
-
-  br2.io.enable <> bb_my_pfor_body.io.Out(param.bb_my_pfor_body_activate("br2"))
-
-
-
-  br3.io.enable <> bb_my_loopkk.io.Out(param.bb_my_loopkk_activate("br3"))
-
-
-
-  phi4.io.enable <> bb_my_pfor_cond5.io.Out(param.bb_my_pfor_cond5_activate("phi4"))
-
-  icmp5.io.enable <> bb_my_pfor_cond5.io.Out(param.bb_my_pfor_cond5_activate("icmp5"))
-
-  br6.io.enable <> bb_my_pfor_cond5.io.Out(param.bb_my_pfor_cond5_activate("br6"))
-
-
-
-  detach7.io.enable <> bb_my_pfor_detach7.io.Out(param.bb_my_pfor_detach7_activate("detach7"))
-
-
-
-  add8.io.enable <> bb_my_pfor_inc38.io.Out(param.bb_my_pfor_inc38_activate("add8"))
-
-  br9.io.enable <> bb_my_pfor_inc38.io.Out(param.bb_my_pfor_inc38_activate("br9"))
-
-
-
-  sync10.io.enable <> bb_my_pfor_end40.io.Out(param.bb_my_pfor_end40_activate("sync10"))
-
-  loop_L_0_liveIN_0.io.enable <> bb_my_pfor_end40.io.Out(1)
-  loop_L_0_liveIN_1.io.enable <> bb_my_pfor_end40.io.Out(2)
-  loop_L_0_liveIN_2.io.enable <> bb_my_pfor_end40.io.Out(3)
-  loop_L_0_liveIN_3.io.enable <> bb_my_pfor_end40.io.Out(4)
-
-
-
-
-  br11.io.enable <> bb_my_pfor_end_continue41.io.Out(param.bb_my_pfor_end_continue41_activate("br11"))
-
-
-
-  ret12.io.enable <> bb_my_pfor_preattach42.io.Out(param.bb_my_pfor_preattach42_activate("ret12"))
-
-
-
-  call13.io.In.enable <> bb_my_offload_pfor_body8.io.Out(param.bb_my_offload_pfor_body8_activate("call13"))
-
-  reattach14.io.enable <> bb_my_offload_pfor_body8.io.Out(param.bb_my_offload_pfor_body8_activate("reattach14"))
-
-
 
 
 
   /* ================================================================== *
-   *                   CONNECTING LOOPHEADERS                           *
+   *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
-
-
-  // Connecting function argument to the loop header
-  //i32* %m1.in
-  loop_L_0_liveIN_0.io.InData <> InputSplitter.io.Out.data.elements("field1")
-
-  // Connecting function argument to the loop header
-  //i32* %m2.in
-  loop_L_0_liveIN_1.io.InData <> InputSplitter.io.Out.data.elements("field2")
-
-  // Connecting function argument to the loop header
-  //i32* %prod.in
-  loop_L_0_liveIN_2.io.InData <> InputSplitter.io.Out.data.elements("field3")
-
-  // Connecting instruction to the loop header
-  //  %1 = add nsw i32 0, %0, !UID !9, !ScalaLabel !10
-  loop_L_0_liveIN_3.io.InData <> add1.io.Out(param.call13_in("add1"))
 
 
 
   /* ================================================================== *
-   *                   DUMPING PHI NODES                                *
+   *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
+  phi1.io.InData(0) <> const0.io.Out
 
-  /**
-    * Connecting PHI Masks
-    */
-  //Connect PHI node
+  binaryOp_2.io.RightIO <> const1.io.Out
 
-  phi4.io.InData(param.phi4_phi_in("const_0")).bits.data := 0.U
-  phi4.io.InData(param.phi4_phi_in("const_0")).bits.predicate := true.B
-  phi4.io.InData(param.phi4_phi_in("const_0")).valid := true.B
+  binaryOp_4.io.RightIO <> const2.io.Out
 
-  phi4.io.InData(param.phi4_phi_in("add8")) <> add8.io.Out(param.phi4_in("add8"))
+  icmp_5.io.RightIO <> const3.io.Out
 
-  /**
-    * Connecting PHI Masks
-    */
-  //Connect PHI node
+  binaryOp_2.io.LeftIO <> phi1.io.Out(0)
 
-  phi4.io.Mask <> bb_my_pfor_cond5.io.MaskBB(0)
+  binaryOp_4.io.LeftIO <> phi1.io.Out(1)
+
+  call_9_out.io.In.elements("field0") <> binaryOp_2.io.Out(0)
+
+  icmp_5.io.LeftIO <> binaryOp_4.io.Out(1)
+
+  br_6.io.CmpIO <> icmp_5.io.Out(0)
+
+  reattach_10.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 
 
   /* ================================================================== *
-   *                   DUMPING DATAFLOW                                 *
+   *                   PRINTING CALLIN AND CALLOUT INTERFACE            *
    * ================================================================== */
 
+  call_9_in.io.In <> io.call_9_in
 
-  /**
-    * Connecting Dataflow signals
-    */
+  io.call_9_out <> call_9_out.io.Out(0)
 
-  // Wiring Binary instruction to the function argument
-  mul0.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")
-
-  // Wiring constant
-  mul0.io.RightIO.bits.data := 2.U
-  mul0.io.RightIO.bits.predicate := true.B
-  mul0.io.RightIO.valid := true.B
-
-  // Wiring constant
-  add1.io.LeftIO.bits.data := 0.U
-  add1.io.LeftIO.bits.predicate := true.B
-  add1.io.LeftIO.valid := true.B
-
-  // Wiring instructions
-  add1.io.RightIO <> mul0.io.Out(param.add1_in("mul0"))
-
-  // Wiring instructions
-  icmp5.io.LeftIO <> phi4.io.Out(param.icmp5_in("phi4"))
-
-  // Wiring constant
-  icmp5.io.RightIO.bits.data := 2.U
-  icmp5.io.RightIO.bits.predicate := true.B
-  icmp5.io.RightIO.valid := true.B
-
-  // Wiring Branch instruction
-  br6.io.CmpIO <> icmp5.io.Out(param.br6_in("icmp5"))
-
-  // Wiring instructions
-  add8.io.LeftIO <> phi4.io.Out(param.add8_in("phi4"))
-
-  // Wiring constant
-  add8.io.RightIO.bits.data := 1.U
-  add8.io.RightIO.bits.predicate := true.B
-  add8.io.RightIO.valid := true.B
-
-  /**
-    * Connecting Dataflow signals
-    */
-  
-  
-  
-  ret12.io.In.elements("field0").bits.data := 1.U
-  ret12.io.In.elements("field0").bits.predicate := true.B
-  ret12.io.In.elements("field0").valid := true.B
-  io.out <> ret12.io.Out
+  reattach_10.io.enable <> call_9_in.io.Out.enable
 
 
-  // Wiring Call to I/O
-  io.call13_out <> call13.io.callOut
-  call13.io.retIn <> io.call13_in
-  call13.io.Out.enable.ready := true.B // Manual fix
-  // Wiring instructions
-  call13.io.In.data.elements("field0") <> phi4.io.Out(param.call13_in("phi4"))
 
-  // Wiring Call to the function argument
-  call13.io.In.data.elements("field1") <> InputSplitter.io.Out.data.elements("field1")
+  /* ================================================================== *
+   *                   PRINTING OUTPUT INTERFACE                        *
+   * ================================================================== */
 
-  // Wiring instructions
-  call13.io.In.data.elements("field2") <> add1.io.Out(param.call13_in("add1"))
-
-  // Wiring Call to the function argument
-  call13.io.In.data.elements("field3") <> InputSplitter.io.Out.data.elements("field2")
-
-  // Wiring Call to the function argument
-  call13.io.In.data.elements("field4") <> InputSplitter.io.Out.data.elements("field3")
-
-
+  io.out <> ret_8.io.Out
 
 }
 
 import java.io.{File, FileWriter}
-object bgemm_detach1Main extends App {
-  val dir = new File("RTL/bgemm_detach1") ; dir.mkdirs
+
+object bgemm_detach1Top extends App {
+  val dir = new File("RTL/bgemm_detach1Top");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new bgemm_detach1DF()))
 
@@ -677,4 +381,3 @@ object bgemm_detach1Main extends App {
   verilogWriter.write(compiledStuff.value)
   verilogWriter.close()
 }
-

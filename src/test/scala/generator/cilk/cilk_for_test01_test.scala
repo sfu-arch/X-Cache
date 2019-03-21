@@ -149,31 +149,26 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
     MemWrite(inAddrVec(i), inDataVec(i))
   }
 
-  step(1)
-
-  //  for (i <- 0 until 5) {
-  //    MemWrite(outAddrVec(i), 0)
-  //  }
-
-
+  step(10)
+  dumpMemory("Init.mem")
   step(1)
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").taskID, 5.U)
+  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").taskID, 0)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 5.U)
+  poke(c.io.in.bits.data("field1").data, 0)
+  poke(c.io.in.bits.data("field1").taskID, 0)
   poke(c.io.in.bits.data("field1").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0.U) // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 20.U) // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, 20) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -191,7 +186,7 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 2000 && !result) {
+  while (time < 2000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1 &&

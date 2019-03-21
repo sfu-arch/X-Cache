@@ -283,8 +283,6 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
   if (valid_data) {
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
   }
-
-
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
     fail
