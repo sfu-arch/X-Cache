@@ -167,8 +167,8 @@ class stencilTest01[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
     3, 5, 6, 2,
     9, 1, 2, 7,
     0, 9, 3, 6)
-  val inAddrVec = List.range(0, 4 * inDataVec.length, 4)
-  val outAddrVec = List.range(4 * inDataVec.length, 2 * 4 * inDataVec.length, 4)
+  val inAddrVec = List.range(0, 4 * 16, 4)
+  val outAddrVec = List.range(256, 256 + (4*16), 4)
   val outDataVec = List(
     26, 39, 40, 29,
     36, 51, 50, 38,
@@ -203,7 +203,7 @@ class stencilTest01[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 4 * inDataVec.length) // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, 256) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -263,7 +263,7 @@ class stencilTester1 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
   //  val tile_list = List(1,2,4,8)
-  val tile_list = List(1)
+  val tile_list = List(2)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(

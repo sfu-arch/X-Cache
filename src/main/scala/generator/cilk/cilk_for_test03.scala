@@ -98,7 +98,7 @@ class cilk_for_test03DF(implicit p: Parameters) extends cilk_for_test03DFIO()(p)
   //  %inc = add nuw nsw i32 %__begin.013, 1, !UID !17
   val binaryOp_inc4 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
 
-  //  %exitcond = icmp eq i32 %inc, 5, !UID !18
+  //  %exitcond = icmp eq i32 %inc, 10, !UID !18
   val icmp_exitcond5 = Module(new IcmpNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %pfor.cond.cleanup, label %pfor.detach, !llvm.loop !19, !UID !21, !BB_UID !22
@@ -127,8 +127,8 @@ class cilk_for_test03DF(implicit p: Parameters) extends cilk_for_test03DFIO()(p)
   //i32 1
   val const1 = Module(new ConstFastNode(value = 1, ID = 1))
 
-  //i32 5
-  val const2 = Module(new ConstFastNode(value = 5, ID = 2))
+  //i32 10
+  val const2 = Module(new ConstFastNode(value = 10, ID = 2))
 
   //i32 1
   val const3 = Module(new ConstFastNode(value = 1, ID = 3))

@@ -92,7 +92,7 @@ class cilk_for_test03_detach1DF(implicit p: Parameters) extends cilk_for_test03_
   val Gep_5 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 5)(ElementSize = 4, ArraySize = List()))
 
   //  store i32 %4, i32* %5, align 4, !tbaa !11, !UID !20
-  val st_6 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 6, RouteID = 0))
+  val st_6 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 6, RouteID = 0))
 
   //  ret void, !UID !21, !BB_UID !22
   val ret_7 = Module(new RetNode2(retTypes = List(), ID = 7))
@@ -198,9 +198,7 @@ class cilk_for_test03_detach1DF(implicit p: Parameters) extends cilk_for_test03_
   st_6.io.enable <> bb_my_pfor_body0.io.Out(6)
 
 
-  //  ret_7.io.In.enable <> bb_my_pfor_body0.io.Out(7)
-  bb_my_pfor_body0.io.Out(7).ready := true.B
-  ret_7.io.In.enable <> st_6.io.SuccOp(0)
+  ret_7.io.In.enable <> bb_my_pfor_body0.io.Out(7)
 
 
 
