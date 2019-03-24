@@ -474,7 +474,7 @@ class cilk_for_test03Test02Cache[T <: cilk_for_test03MainIO](c: T, tiles: Int) e
 
 
 
-class cilk_for_test02Tester1 extends FlatSpec with Matchers {
+class cilk_for_test03Tester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that cilk_for_test03 works correctly." in {
     // iotester flags:
