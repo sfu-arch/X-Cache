@@ -69,6 +69,7 @@ class stencilMainTM(tiles: Int)(implicit p: Parameters) extends stencilMainIO {
   for (i <- 0 until children) {
     MemArbiter.io.cpu.MemReq(i) <> stencil_inner(i).io.MemReq
     stencil_inner(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
+
     MemArbiter.io.cpu.MemReq(children + i) <> stencil_detach1(i).io.MemReq
     stencil_detach1(i).io.MemResp <> MemArbiter.io.cpu.MemResp(children + i)
   }
@@ -168,6 +169,7 @@ class stencilTest01[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
     9, 1, 2, 7,
     0, 9, 3, 6)
   val inAddrVec = List.range(0, 4 * 16, 4)
+
   val outAddrVec = List.range(256, 256 + (4*16), 4)
   val outDataVec = List(
     26, 39, 40, 29,
@@ -263,7 +265,7 @@ class stencilTester1 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
   //  val tile_list = List(1,2,4,8)
-  val tile_list = List(2)
+  val tile_list = List(1)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(

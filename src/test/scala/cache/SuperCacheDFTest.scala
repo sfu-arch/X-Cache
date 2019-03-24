@@ -204,7 +204,7 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
   }
 
   step(20)
-  dumpMemory("final.mem")
+    dumpMemory("final.mem")
 
 }
 

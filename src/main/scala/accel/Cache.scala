@@ -108,8 +108,8 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
 
   val is_idle = state === s_IDLE
   val is_read = state === s_READ_CACHE
-  //val is_write = RegNext(state === s_WRITE_CACHE)
-  val is_write = state === s_WRITE_CACHE
+  val is_write = RegNext(state === s_WRITE_CACHE)
+  val is_write_r = state === s_WRITE_CACHE
   val is_alloc = state === s_REFILL && read_wrap_out
   val is_alloc_reg = RegNext(is_alloc)
 
@@ -156,7 +156,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i + 1) * xlen - 1, i * xlen))(off_reg)
   io.cpu.resp.bits.tag := cpu_tag
   io.cpu.resp.bits.tile := cpu_tile
-  io.cpu.resp.bits.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
+  io.cpu.resp.bits.valid := (is_write_r && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.resp.bits.iswrite := cpu_iswrite
   io.cpu.resp.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.req.ready := is_idle || (state === s_READ_CACHE && hit)

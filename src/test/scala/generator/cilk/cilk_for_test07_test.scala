@@ -321,14 +321,14 @@ class cilk_for_test07Tester2 extends FlatSpec with Matchers {
   it should "Check that cilk_for_test02 works when called via task manager." in {
 
     val Tiles = List(1, 2, 4)
-    for (i <- 0 until Tiles.length) {
+    for (tile <- Tiles) {
       chisel3.iotesters.Driver.execute(
         Array(
           // "-ll", "Info",
           "-tbn", "verilator",
-          "-td", s"test_run_dir/cilk_for_test07_${i}",
+          "-td", s"test_run_dir/cilk_for_test07_${tile}",
           "-tts", "0001"),
-        () => new cilk_for_test07MainTM(tiles = Tiles(i))) {
+        () => new cilk_for_test07MainTM(tiles = tile)) {
         c => new cilk_for_test07Test01(c)
       } should be(true)
     }
