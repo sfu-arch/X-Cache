@@ -113,15 +113,15 @@ class cilk_for_test07MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for
   }
 
 
-  CacheArb.io.cpu.MemReq(NumTiles + 1) <> cilk_for_testDF.io.MemReq
-  cilk_for_testDF.io.MemResp <> CacheArb.io.cpu.MemResp(NumTiles + 1)
+  CacheArb.io.cpu.MemReq(NumTiles) <> cilk_for_testDF.io.MemReq
+  cilk_for_testDF.io.MemResp <> CacheArb.io.cpu.MemResp(NumTiles)
 
   TC.io.parentIn(0) <> cilk_for_testDF.io.call_8_out
   cilk_for_testDF.io.call_8_in <> TC.io.parentOut(0)
 
 
-  CacheArb.io.cpu.MemReq(NumTiles) <> io.req
-  io.resp <> CacheArb.io.cpu.MemResp(NumTiles)
+  CacheArb.io.cpu.MemReq(NumTiles + 1) <> io.req
+  io.resp <> CacheArb.io.cpu.MemResp(NumTiles + 1)
 
   cache.io.cpu.req <> CacheArb.io.cache.MemReq
   CacheArb.io.cache.MemResp <> cache.io.cpu.resp
@@ -130,7 +130,6 @@ class cilk_for_test07MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for
   io.out <> cilk_for_testDF.io.out
 
 }
-
 
 
 class cilk_for_test07Test01[T <: cilk_for_test07MainIO](c: T) extends PeekPokeTester(c) {
@@ -218,13 +217,13 @@ class cilk_for_test07Test01[T <: cilk_for_test07MainIO](c: T) extends PeekPokeTe
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false)
-  poke(c.io.in.bits.enable.taskID, 5)
+  poke(c.io.in.bits.enable.taskID, 0)
   poke(c.io.in.valid, false)
   poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").taskID, 5)
+  poke(c.io.in.bits.data("field0").taskID, 0)
   poke(c.io.in.bits.data("field0").predicate, false)
   poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").taskID, 5)
+  poke(c.io.in.bits.data("field1").taskID, 0)
   poke(c.io.in.bits.data("field1").predicate, false)
   poke(c.io.out.ready, false)
   step(1)
@@ -272,7 +271,8 @@ class cilk_for_test07Test01[T <: cilk_for_test07MainIO](c: T) extends PeekPokeTe
   for (i <- 0 until outDataVec.length) {
     val data = MemRead(outAddrVec(i))
     if (data != outDataVec(i).toInt) {
-      println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      //println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      println(Console.RED + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data. \tHoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
       valid_data = false
     }
@@ -319,14 +319,18 @@ class cilk_for_test07Tester2 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
   it should "Check that cilk_for_test02 works when called via task manager." in {
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir/cilk_for_test07_2",
-        "-tts", "0001"),
-      () => new cilk_for_test07MainTM(1)) {
-      c => new cilk_for_test07Test01(c)
-    } should be(true)
+
+    val Tiles = List(1, 2, 4)
+    for (i <- 0 until Tiles.length) {
+      chisel3.iotesters.Driver.execute(
+        Array(
+          // "-ll", "Info",
+          "-tbn", "verilator",
+          "-td", s"test_run_dir/cilk_for_test07_${i}",
+          "-tts", "0001"),
+        () => new cilk_for_test07MainTM(tiles = Tiles(i))) {
+        c => new cilk_for_test07Test01(c)
+      } should be(true)
+    }
   }
 }

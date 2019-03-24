@@ -108,7 +108,8 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
 
   val is_idle = state === s_IDLE
   val is_read = state === s_READ_CACHE
-  val is_write = RegNext(state === s_WRITE_CACHE)
+  //val is_write = RegNext(state === s_WRITE_CACHE)
+  val is_write = state === s_WRITE_CACHE
   val is_alloc = state === s_REFILL && read_wrap_out
   val is_alloc_reg = RegNext(is_alloc)
 
@@ -159,7 +160,11 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   io.cpu.resp.bits.iswrite := cpu_iswrite
   io.cpu.resp.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.req.ready := is_idle || (state === s_READ_CACHE && hit)
-  //  printf(p"\n V W : ${is_write} Hit: ${hit} valid ${valid(idx_reg)} Rmeta: ${rmeta.tag} Tag: ${tag_reg}")
+
+  if (clog) {
+    printf(p"\n V W : ${is_write} Hit: ${hit} valid ${valid(idx_reg)} Rmeta: ${rmeta.tag} Tag: ${tag_reg}")
+  }
+
   when(io.cpu.req.valid && io.cpu.req.ready) {
     addr_reg := addr
     cpu_tag := io.cpu.req.bits.tag
@@ -173,7 +178,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   val wmeta = Wire(new MetaData)
   wmeta.tag := tag_reg
 
-  val wmask = Mux(!is_alloc, (cpu_mask << Cat(off_reg, 0.U(byteOffsetBits.W))).asUInt.zext, -1.S).asUInt()
+  val wmask = Mux(!is_alloc, (cpu_mask << Cat(off_reg, 0.U(byteOffsetBits.W))).asUInt.zext, (-1).S).asUInt()
   val wdata = Mux(!is_alloc, Fill(nWords, cpu_data),
     if (refill_buf.size == 1) io.nasti.r.bits.data
     else Cat(io.nasti.r.bits.data, Cat(refill_buf.init.reverse)))
@@ -233,14 +238,14 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   switch(state) {
     is(s_IDLE) {
       when(io.cpu.req.valid) {
-        state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
-        /*
-                when (io.cpu.req.bits.iswrite) {
-                  printf("\nSTORE START: %d\n", counterValue)
-                }.otherwise {
-                  printf("\nLOAD START:  %d\n", counterValue)
-                }
-        */
+        //state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
+        when(io.cpu.req.bits.iswrite) {
+          state := s_WRITE_CACHE
+          //printf("\nSTORE START: %d\n", counterValue)
+        }.otherwise {
+          state := s_READ_CACHE
+          //printf("\nLOAD START:  %d\n", counterValue)
+        }
       }
     }
     is(s_READ_CACHE) {
