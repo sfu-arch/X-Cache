@@ -320,7 +320,7 @@ class cilk_for_test07Tester2 extends FlatSpec with Matchers {
   // -tts = seed for RNG
   it should "Check that cilk_for_test02 works when called via task manager." in {
 
-    val Tiles = List(1, 2, 4)
+    val Tiles = List(4)
     for (tile <- Tiles) {
       chisel3.iotesters.Driver.execute(
         Array(

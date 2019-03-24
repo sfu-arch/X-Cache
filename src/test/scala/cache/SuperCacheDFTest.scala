@@ -26,13 +26,13 @@ import junctions._
 
 class SuperCacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new Bundle {
-    val in   = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val req  = Flipped(Decoupled(new MemReq))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
+    val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
-    val out  = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List(32)))
   })
 
-  def cloneType = new SuperCacheDFMainIO( ).asInstanceOf[this.type]
+  def cloneType = new SuperCacheDFMainIO().asInstanceOf[this.type]
 }
 
 class SuperCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
@@ -50,7 +50,7 @@ class SuperCacheDFMain(implicit p: Parameters) extends SuperCacheDFMainIO {
 
 
   // Wire up the cache and modules under test.
-  val cache_dataflow = Module(new cacheDF( ))
+  val cache_dataflow = Module(new cacheDF())
 
   //Connection DF to cache arbiter
   cache.io.cpu.MemReq(0) <> cache_dataflow.io.MemReq
@@ -77,7 +77,17 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
     * out = Decoupled(new Call(List(32)))
     */
 
-  def MemRead(addr: Int): BigInt = {
+
+  /**
+    * cacheDF interface:
+    *
+    * in = Flipped(Decoupled(new Call(List(...))))
+    * out = Decoupled(new Call(List(32)))
+    */
+
+  var writesync = 0
+
+  def MemReadBlocking(addr: Int): BigInt = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
@@ -85,7 +95,7 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.iswrite, 0)
     poke(c.io.req.bits.tag, 10)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
     step(1)
     poke(c.io.req.valid, 0)
     while (peek(c.io.resp.valid) == 0) {
@@ -95,35 +105,48 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
     result
   }
 
-  def MemWrite(addr: Int, data: Int): BigInt = {
+  def MemWriteNonBlocking(addr: Int, data: Int, tag: Int) = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
+      MemWriteSyncCount()
     }
     poke(c.io.req.valid, 1)
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.data, data)
     poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 20)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.tag, 20 + tag)
+    //    [HACK]. Chisel and/or Verilator has a bug where it does not model 8 bit values correctly.
+    // If you set this to a value exceeding the bitwidth; it will overwrite the neighboring fields in the msg.
+    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
+    //poke(c.io.req.bits.mask, -1)
     step(1)
+    MemWriteSyncCount()
     poke(c.io.req.valid, 0)
-    1
   }
+
+
+  def MemWriteSyncCount() = {
+    if (peek(c.io.resp.valid) == 1) {
+      writesync += 1
+    }
+  }
+
 
   def dumpMemory(path: String) = {
     //Writing mem states back to the file
     val pw = new PrintWriter(new File(path))
     for (i <- 0 until outDataVec.length) {
       //      for (i <- 0 until outDataVec.length) {
-      val data = MemRead(outAddrVec(i))
+      val data = MemReadBlocking(outAddrVec(i))
       pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
     }
     pw.close
 
   }
 
-  val inAddrVec  = List(0x0, 0xB000, 0xA000, 0xD000)
-  val inDataVec  = List(10, 20, 30, 40)
+
+  val inAddrVec = List(0x0, 0xB000, 0xA000, 0xD000)
+  val inDataVec = List(10, 20, 30, 40)
   val outAddrVec = List(0x0, 0xB000, 0xA000, 0xD000)
   val outDataVec = List(10, 20, 30, 40)
 
@@ -132,7 +155,7 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
 
   // Write initial contents to the memory model.
   for (i <- 0 until inDataVec.length) {
-    MemWrite(inAddrVec(i), inDataVec(i))
+    MemWriteNonBlocking(inAddrVec(i), inDataVec(i), i)
   }
   step(200)
 
@@ -179,7 +202,7 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
   poke(c.io.out.ready, true.B)
   step(1)
 
-  var time   = 1
+  var time = 1
   var result = false
 
   while (time < 100) {
@@ -203,8 +226,7 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
     fail
   }
 
-  step(20)
-    dumpMemory("final.mem")
+  //dumpMemory("final.mem")
 
 }
 
@@ -222,7 +244,7 @@ class SuperCacheDFTester extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/cacheTest",
         "-tts", "0001"),
-      () => new SuperCacheDFMain( )) {
+      () => new SuperCacheDFMain()) {
       c => new SuperCacheTest01(c)
     } should be(true)
   }
