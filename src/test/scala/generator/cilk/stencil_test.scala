@@ -354,7 +354,7 @@ class stencilTester2 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
   //  val tile_list = List(1,2,4,8)
-  val tile_list = List(1)
+  val tile_list = List(2)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
