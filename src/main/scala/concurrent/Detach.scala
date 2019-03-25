@@ -74,8 +74,10 @@ class Detach(ID: Int)
     //Reset state
     state := s_idle
     when(latchedEnable.control) {
-      printf("[LOG] " + "[" + module_name + "] [TID->%d] [Detach]" +
-        node_name + ": Output fired @ %d\n", latchedEnable.taskID,cycleCount)
+      if(log){
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] [Detach]" +
+          node_name + ": Output fired @ %d\n", latchedEnable.taskID,cycleCount)
+      }
     }
   }
 

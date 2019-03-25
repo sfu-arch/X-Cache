@@ -79,7 +79,9 @@ class Reattach(val NumPredOps: Int, ID: Int)
     }
 
     when(predicate) {
-      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+      if(log){
+        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+      }
     }
 
 
