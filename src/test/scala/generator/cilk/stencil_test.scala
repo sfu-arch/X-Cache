@@ -35,6 +35,57 @@ class stencilMainIO(implicit val p: Parameters) extends Module with CoreParams w
 }
 
 
+class stencilDirect()(implicit p: Parameters) extends stencilMainIO {
+
+  val cache = Module(new Cache) // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
+  memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
+  cache.io.cpu.abort := false.B
+
+  // Wire up the cache, TM, and modules under test.
+  val stencil = Module(new stencilDF())
+  val stencil_detach1 = Module(new stencil_detach1DF())
+  val stencil_inner = Module(new stencil_innerDF())
+
+  stencil.io.MemReq <> DontCare
+  stencil.io.MemResp <> DontCare
+
+  val MemArbiter = Module(new MemArbiter(3))
+
+  MemArbiter.io.cpu.MemReq(0) <> stencil_inner.io.MemReq
+  stencil_inner.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
+
+  MemArbiter.io.cpu.MemReq(1) <> stencil_detach1.io.MemReq
+  stencil_detach1.io.MemResp <> MemArbiter.io.cpu.MemResp(1)
+
+  MemArbiter.io.cpu.MemReq(2) <> io.req
+  io.resp <> MemArbiter.io.cpu.MemResp(2)
+
+  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+  // tester to cilk_for_test02
+  stencil.io.in <> io.in
+
+  // cilk_for_test02 to task controller
+  stencil_detach1.io.in <> stencil.io.call_8_out
+  stencil.io.call_8_in <> stencil_detach1.io.out
+
+  stencil_inner.io.in <> stencil_detach1.io.call_4_out
+  stencil_detach1.io.call_4_in <> stencil_inner.io.out
+
+  // cilk_for_test02 to tester
+  io.out <> stencil.io.out
+
+}
+
+
 class stencilMainTM(tiles: Int)(implicit p: Parameters) extends stencilMainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
@@ -158,6 +209,10 @@ class stencilTest01[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
       val data = MemRead(inAddrVec(i))
       pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
     }
+    for (i <- 0 until inDataVec.length) {
+      val data = 0
+      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+    }
     pw.close
 
   }
@@ -170,21 +225,29 @@ class stencilTest01[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
     0, 9, 3, 6)
   val inAddrVec = List.range(0, 4 * 16, 4)
 
-  val outAddrVec = List.range(256, 256 + (4*16), 4)
-  val outDataVec = List(
+  val outAddrVec = List.range(256, 256 + (4 * 16), 4)
+
+  val outAddVec = List(
     26, 39, 40, 29,
     36, 51, 50, 38,
     36, 47, 50, 35,
     28, 33, 37, 27
   )
 
+  val outDataVec = outAddVec.map( e => math.floor((e)/9).toInt)
+
+
+
   // Write initial contents to the memory model.
   for (i <- 0 until inDataVec.length) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
-
+  for (i <- 0 until inDataVec.length) {
+    MemWrite(outAddrVec(i),0)
+  }
   step(10)
-  dumpMemoryInit("memory.init")
+
+  dumpMemoryInit("init.mem")
 
   step(1)
 
@@ -234,7 +297,9 @@ class stencilTest01[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
   for (i <- 0 until outDataVec.length) {
     val data = MemRead(outAddrVec(i))
     if (data != outDataVec(i).toInt) {
-      println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      println(Console.RED + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data. Hoping for \t ${outDataVec(i).toInt}" + Console.RESET)
+      //println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      //println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
       valid_data = false
     }
@@ -254,6 +319,30 @@ class stencilTest01[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
 }
 
 class stencilTester1 extends FlatSpec with Matchers {
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  val testParams = p.alterPartial({
+    case TLEN => 8
+    case TRACE => true
+  })
+  // iotester flags:
+  // -ll  = log level <Error|Warn|Info|Debug|Trace>
+  // -tbn = backend <firrtl|verilator|vcs>
+  // -td  = target directory
+  // -tts = seed for RNG
+  it should s"Test: Direct connection" in {
+    chisel3.iotesters.Driver.execute(
+      Array(
+        "-ll", "Error",
+        "-tbn", "verilator",
+        "-td", s"test_run_dir/stencil_direct",
+        "-tts", "0001"),
+      () => new stencilDirect()(testParams)) {
+      c => new stencilTest01(c, 0)
+    } should be(true)
+  }
+}
+
+class stencilTester2 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case TLEN => 8
