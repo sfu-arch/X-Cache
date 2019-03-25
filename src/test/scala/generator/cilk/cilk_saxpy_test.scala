@@ -293,13 +293,16 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends Pee
   for (i <- 0 until outDataVec.length) {
     val data = MemRead(outAddrVec(i))
     if (data != outDataVec(i).toInt) {
-      //println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
-      println(Console.RED + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data -- Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      if(c.log){
+        println(Console.RED + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data -- Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+      }
       fail
       valid_data = false
     }
     else {
-      println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
+      if(c.log){
+        println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
+      }
     }
   }
   if (valid_data) {

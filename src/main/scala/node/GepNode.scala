@@ -283,7 +283,9 @@ class GepTwoNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        }
       }
     }
   }
@@ -363,7 +365,9 @@ class GepNodeStack(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        }
       }
     }
   }
@@ -475,7 +479,9 @@ class GepStructOneNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        }
       }
     }
   }
@@ -596,7 +602,9 @@ class GepStructTwoNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        }
       }
     }
   }
@@ -704,7 +712,9 @@ class GepArrayOneNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        }
       }
     }
   }
@@ -826,7 +836,9 @@ class GepArrayTwoNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
+        }
       }
     }
   }
