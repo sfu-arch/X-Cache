@@ -107,6 +107,7 @@ class UALU(val xlen: Int, val opCode: String) extends Module {
     AluOpCode.Xnor -> (~(io.in1 ^ io.in2)),
     AluOpCode.ShiftLeft -> (io.in1 << io.in2(8,0)),
     AluOpCode.ShiftRight -> (io.in1 >> io.in2(8,0)),
+    AluOpCode.ShiftRightLogical -> (io.in1.asUInt >> io.in2(8, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
     AluOpCode.ShiftRightArithmetic -> (io.in1.asSInt >> io.in2(8, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
     AluOpCode.SetLessThan -> (io.in1.asSInt < io.in2.asSInt),
     AluOpCode.SetLessThanUnsigned -> (io.in1 < io.in2),
