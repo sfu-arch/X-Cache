@@ -127,9 +127,9 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
 
   }
 
-  val inAddrVec  = List(0x0, 0x4, 0x8, 0x10, 0xc, 0x1004)
+  val inAddrVec  = List(0x0, 0x4, 0x8, 0x10, 0xc, 0xca1004)
   val inDataVec  = List(10, 20, 30, 40, 50, 60)
-  val outAddrVec = List(0x0, 0x4, 0x8, 0x10, 0xc, 0x1004)
+  val outAddrVec = List(0x0, 0x4, 0x8, 0x10, 0xc, 0xca1004)
   val outDataVec = List(1, 2, 3, 4, 5, 6)
 
 
@@ -153,7 +153,7 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
   println("WriteSync" + writesync)
 
 
-  //  dumpMemory("init.mem")
+  dumpMemory("init.mem")
   //
   //
   // // Initializing the signals

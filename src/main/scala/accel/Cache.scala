@@ -108,13 +108,13 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
 
   val is_idle = state === s_IDLE
   val is_read = state === s_READ_CACHE
-  val is_write = RegNext(state === s_WRITE_CACHE)
-  val is_write_r = state === s_WRITE_CACHE
+  val is_write_reg = RegNext(state === s_WRITE_CACHE)
+  val is_write = state === s_WRITE_CACHE
   val is_alloc = state === s_REFILL && read_wrap_out
   val is_alloc_reg = RegNext(is_alloc)
 
   val hit = Wire(Bool())
-  val wen = is_write_r && (hit || is_alloc_reg) && !io.cpu.abort || is_alloc
+  val wen = is_write && (hit || is_alloc_reg) && !io.cpu.abort || is_alloc
   val ren = !wen && (is_idle || is_read) && io.cpu.req.valid
   val ren_reg = RegNext(ren)
 
@@ -156,13 +156,13 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i + 1) * xlen - 1, i * xlen))(off_reg)
   io.cpu.resp.bits.tag := cpu_tag
   io.cpu.resp.bits.tile := cpu_tile
-  io.cpu.resp.bits.valid := (is_write_r && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
+  io.cpu.resp.bits.valid := (is_write_reg && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.resp.bits.iswrite := cpu_iswrite
-  io.cpu.resp.valid := (is_write_r && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
+  io.cpu.resp.valid := (is_write_reg && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.req.ready := is_idle || (state === s_READ_CACHE && hit)
 
   if (clog) {
-    printf(p"\n V W : ${is_write_r} Hit: ${hit} valid ${valid(idx_reg)} Rmeta: ${rmeta.tag} Tag: ${tag_reg}")
+    printf(p"\n V W : ${is_write_reg} Hit: ${hit} valid ${valid(idx_reg)} Rmeta: ${rmeta.tag} Tag: ${tag_reg}")
   }
 
   when(io.cpu.req.valid && io.cpu.req.ready) {
