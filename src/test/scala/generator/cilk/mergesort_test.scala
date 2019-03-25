@@ -385,31 +385,31 @@ object mergesortTesterParams {
   val len_list = List(100)
 }
 
-class mergesortTester1 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 11
-    case TRACE => false
-  })
-  it should "Check that mergesort works correctly." in {
-    // iotester flags:
-    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
-    // -td  = target directory
-    // -tts = seed for RNG
-    for (tiles <- mergesortTesterParams.tile_list) {
-      for (len <- mergesortTesterParams.len_list) {
-        chisel3.iotesters.Driver.execute(
-          Array(
-            // "-ll", "Info",
-            s"-tbn", "verilator",
-            "-td", s"test_run_dir/mergesort_${tiles}_l${len}",
-            "-tts", "0001"),
-          () => new mergesortMain1(tiles)(testParams)) {
-          c => new mergesortTest01(c, len)
-        } should be(true)
-      }
-    }
-  }
-}
+//class mergesortTester1 extends FlatSpec with Matchers {
+//  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//  val testParams = p.alterPartial({
+//    case TLEN => 11
+//    case TRACE => false
+//  })
+//  it should "Check that mergesort works correctly." in {
+//    // iotester flags:
+//    // -ll  = log level <Error|Warn|Info|Debug|Trace>
+//    // -tbn = backend <firrtl|verilator|vcs>
+//    // -td  = target directory
+//    // -tts = seed for RNG
+//    for (tiles <- mergesortTesterParams.tile_list) {
+//      for (len <- mergesortTesterParams.len_list) {
+//        chisel3.iotesters.Driver.execute(
+//          Array(
+//            // "-ll", "Info",
+//            s"-tbn", "verilator",
+//            "-td", s"test_run_dir/mergesort_${tiles}_l${len}",
+//            "-tts", "0001"),
+//          () => new mergesortMain1(tiles)(testParams)) {
+//          c => new mergesortTest01(c, len)
+//        } should be(true)
+//      }
+//    }
+//  }
+//}
 

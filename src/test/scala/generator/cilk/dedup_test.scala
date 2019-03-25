@@ -232,26 +232,26 @@ class dedupTest01[T <: dedupMainIO](c: T, tiles : Int) extends PeekPokeTester(c)
   }
 }
 
-class dedupTester1 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  // iotester flags:
-  // -ll  = log level <Error|Warn|Info|Debug|Trace>
-  // -tbn = backend <firrtl|verilator|vcs>
-  // -td  = target directory
-  // -tts = seed for RNG
-//  val tile_list = List(1,2,4,8)
-  val tile_list = List(1)
-  for (tile <- tile_list) {
-    it should s"Test: $tile tiles" in {
-      chisel3.iotesters.Driver.execute(
-        Array(
-          // "-ll", "Info",
-          "-tbn", "verilator",
-          "-td", s"test_run_dir/dedup_${tile}",
-          "-tts", "0001"),
-        () => new dedupMainTM(tile)(p.alterPartial({case TLEN => 8}))) {
-        c => new dedupTest01(c,tile)
-      } should be(true)
-    }
-  }
-}
+//class dedupTester1 extends FlatSpec with Matchers {
+//  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//  // iotester flags:
+//  // -ll  = log level <Error|Warn|Info|Debug|Trace>
+//  // -tbn = backend <firrtl|verilator|vcs>
+//  // -td  = target directory
+//  // -tts = seed for RNG
+////  val tile_list = List(1,2,4,8)
+//  val tile_list = List(1)
+//  for (tile <- tile_list) {
+//    it should s"Test: $tile tiles" in {
+//      chisel3.iotesters.Driver.execute(
+//        Array(
+//          // "-ll", "Info",
+//          "-tbn", "verilator",
+//          "-td", s"test_run_dir/dedup_${tile}",
+//          "-tts", "0001"),
+//        () => new dedupMainTM(tile)(p.alterPartial({case TLEN => 8}))) {
+//        c => new dedupTest01(c,tile)
+//      } should be(true)
+//    }
+//  }
+//}
