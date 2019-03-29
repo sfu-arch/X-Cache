@@ -101,33 +101,28 @@ class fftTest01[T <: fftMainIO](c: T) extends PeekPokeTester(c) {
     1
   }
 
-  def dumpMemory(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until outDataVec.length) {
-      val data = MemRead(outAddrVec(i))
-      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
+//  def dumpMemory(path: String) = {
+//    //Writing mem states back to the file
+//    val pw = new PrintWriter(new File(path))
+//    for (i <- 0 until outDataVec.length) {
+//      val data = MemRead(outAddrVec(i))
+//      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+//    }
+//    pw.close
+//
+//  }
 
 
   //  val inAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
   val addr_range = 0x0
-  val inAddrVec = List.range(addr_range, addr_range + (4 * 10), 4)
-  val inDataVec = List(0, 10, 2, 3, 4, 0, 0, 0, 0, 0)
-  val outAddrVec = List.range(addr_range, addr_range + (4 * 10), 4)
-  val outDataVec = inDataVec.zipWithIndex.map { case (a, b) => if (b < 5) a else inDataVec(b-5) * 2 }
-
 
   //Write initial contents to the memory model.
   //for (i <- 0 until inDataVec.length) {
    // MemWrite(inAddrVec(i), inDataVec(i))
   //}
 
-  step(10)
-  dumpMemory("memory.txt")
+  //  step(10)
+  //dumpMemory("memory.txt")
 
   step(1)
 
@@ -212,7 +207,7 @@ class fftTest01[T <: fftMainIO](c: T) extends PeekPokeTester(c) {
 
 
   if (!result) {
-    println(Console.RED + "*** Timeout." + Console.RESET)
+    println(Console.RED + s"*** Timeout after $time cycles." + Console.RESET)
     dumpMemory("memory.txt")
     fail
   }
@@ -221,6 +216,10 @@ class fftTest01[T <: fftMainIO](c: T) extends PeekPokeTester(c) {
 
 class fftTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  val testParams = p.alterPartial({
+    case XLEN => 32
+    case TRACE => true
+  })
   it should "Check that fft works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -234,7 +233,7 @@ class fftTester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/fft",
         "-tts", "0001"),
-      () => new fftMain()) {
+      () => new fftMain()(testParams)) {
       c => new fftTest01(c)
     } should be(true)
   }
