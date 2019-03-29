@@ -187,7 +187,7 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val br_30 = Module(new CBranchFastNodeVariable2(NumFalse = 1, NumTrue = 1, ID = 30))
 
   //  %idxprom28111 = zext i32 %and to i64
-  val sextidxprom2811131 = Module(new ZextNode())
+  val sextidxprom2811131 = Module(new ZextNode(NumOuts = 2))
 
   //  %arrayidx29 = getelementptr inbounds double, double* %real_twid, i64 %idxprom28111
   val Gep_arrayidx2932 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 32)(ElementSize = 8, ArraySize = List()))
