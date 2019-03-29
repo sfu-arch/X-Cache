@@ -28,8 +28,8 @@ import util._
 
 abstract class cilk_for_test07DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val call_8_out = Decoupled(new Call(List(32, 32, 32, 32)))
+    val in = Flipped(Decoupled(new Call(List(32, 32))))
+    val call_8_out = Decoupled(new Call(List(32, 32, 32)))
     val call_8_in = Flipped(Decoupled(new Call(List())))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
@@ -48,7 +48,7 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
   io.MemReq <> DontCare
   io.MemResp <> DontCare
 
-  val InputSplitter = Module(new SplitCallNew(List(1, 1, 1)))
+  val InputSplitter = Module(new SplitCallNew(List(1, 1)))
   InputSplitter.io.In <> io.in
 
 
@@ -57,7 +57,7 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlockNode(NumIns = List(1, 1, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
+  val Loop_0 = Module(new LoopBlockNode(NumIns = List(1, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
 
 
 
@@ -83,36 +83,36 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  br label %pfor.detach, !UID !10, !BB_UID !11
+  //  br label %pfor.detach, !UID !18, !BB_UID !19
   val br_0 = Module(new UBranchNode(ID = 0))
 
-  //  sync within %syncreg, label %sync.continue, !UID !12, !BB_UID !13
+  //  sync within %syncreg, label %sync.continue, !UID !20, !BB_UID !21
   val sync_1 = Module(new SyncTC(ID = 1, NumInc=1, NumDec=1, NumOuts=1))
 
-  //  %__begin.037 = phi i32 [ 0, %entry ], [ %inc, %pfor.inc ], !UID !14
-  val phi__begin_0372 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 2, Res = true))
+  //  %__begin.054 = phi i32 [ 0, %entry ], [ %inc, %pfor.inc ], !UID !22
+  val phi__begin_0542 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 2, Res = true))
 
-  //  detach within %syncreg, label %offload.pfor.body, label %pfor.inc, !UID !15, !BB_UID !16
+  //  detach within %syncreg, label %offload.pfor.body, label %pfor.inc, !UID !23, !BB_UID !24
   val detach_3 = Module(new Detach(ID = 3))
 
-  //  %inc = add nuw nsw i32 %__begin.037, 1, !UID !17
+  //  %inc = add nuw nsw i32 %__begin.054, 1, !UID !25
   val binaryOp_inc4 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
 
-  //  %exitcond = icmp eq i32 %inc, 9, !UID !18
+  //  %exitcond = icmp eq i32 %inc, 8, !UID !26
   val icmp_exitcond5 = Module(new IcmpNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond, label %pfor.cond.cleanup, label %pfor.detach, !llvm.loop !19, !UID !21, !BB_UID !22
+  //  br i1 %exitcond, label %pfor.cond.cleanup, label %pfor.detach, !llvm.loop !27, !UID !29, !BB_UID !30
   val br_6 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 6))
 
-  //  ret i32 1, !UID !23, !BB_UID !24
+  //  ret i32 1, !UID !31, !BB_UID !32
   val ret_7 = Module(new RetNode2(retTypes = List(32), ID = 7))
 
-  //  call void @cilk_for_test07_detach1([2 x i32]* %p1, i32 %__begin.037, [2 x i32]* %p2, i32* %d), !UID !25
-  val call_8_out = Module(new CallOutNode(ID = 8, NumSuccOps = 0, argTypes = List(32,32,32,32)))
+  //  call void @cilk_for_test07_detach1([3 x i32]* %rgb, i32 %__begin.054, [3 x i32]* %xyz), !UID !33
+  val call_8_out = Module(new CallOutNode(ID = 8, NumSuccOps = 0, argTypes = List(32,32,32)))
 
   val call_8_in = Module(new CallInNode(ID = 8, argTypes = List()))
 
-  //  reattach within %syncreg, label %pfor.inc, !UID !26, !BB_UID !27
+  //  reattach within %syncreg, label %pfor.inc, !UID !34, !BB_UID !35
   val reattach_9 = Module(new Reattach(NumPredOps= 1, ID = 9))
 
 
@@ -127,8 +127,8 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
   //i32 1
   val const1 = Module(new ConstFastNode(value = 1, ID = 1))
 
-  //i32 9
-  val const2 = Module(new ConstFastNode(value = 9, ID = 2))
+  //i32 8
+  val const2 = Module(new ConstFastNode(value = 8, ID = 2))
 
   //i32 1
   val const3 = Module(new ConstFastNode(value = 1, ID = 3))
@@ -197,8 +197,6 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
 
   Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.InLiveIn(2) <> InputSplitter.io.Out.data.elements("field2")(0)
-
 
 
   /* ================================================================== *
@@ -208,8 +206,6 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
   call_8_out.io.In.elements("field0") <> Loop_0.io.OutLiveIn.elements("field0")(0)
 
   call_8_out.io.In.elements("field2") <> Loop_0.io.OutLiveIn.elements("field1")(0)
-
-  call_8_out.io.In.elements("field3") <> Loop_0.io.OutLiveIn.elements("field2")(0)
 
 
 
@@ -237,7 +233,7 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
    *                   LOOP DATA CARRY DEPENDENCIES                     *
    * ================================================================== */
 
-  phi__begin_0372.io.InData(1) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
+  phi__begin_0542.io.InData(1) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
 
 
 
@@ -253,7 +249,7 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
 
   const0.io.enable <> bb_pfor_detach2.io.Out(0)
 
-  phi__begin_0372.io.enable <> bb_pfor_detach2.io.Out(1)
+  phi__begin_0542.io.enable <> bb_pfor_detach2.io.Out(1)
 
 
   detach_3.io.enable <> bb_pfor_detach2.io.Out(2)
@@ -288,7 +284,7 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
 
-  phi__begin_0372.io.Mask <> bb_pfor_detach2.io.MaskBB(0)
+  phi__begin_0542.io.Mask <> bb_pfor_detach2.io.MaskBB(0)
 
 
 
@@ -314,7 +310,7 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  phi__begin_0372.io.InData(0) <> const0.io.Out
+  phi__begin_0542.io.InData(0) <> const0.io.Out
 
   binaryOp_inc4.io.RightIO <> const1.io.Out
 
@@ -322,9 +318,9 @@ class cilk_for_test07DF(implicit p: Parameters) extends cilk_for_test07DFIO()(p)
 
   ret_7.io.In.data("field0") <> const3.io.Out
 
-  binaryOp_inc4.io.LeftIO <> phi__begin_0372.io.Out(0)
+  binaryOp_inc4.io.LeftIO <> phi__begin_0542.io.Out(0)
 
-  call_8_out.io.In.elements("field1") <> phi__begin_0372.io.Out(1)
+  call_8_out.io.In.elements("field1") <> phi__begin_0542.io.Out(1)
 
   icmp_exitcond5.io.LeftIO <> binaryOp_inc4.io.Out(1)
 

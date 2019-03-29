@@ -50,8 +50,8 @@ class WriteTypTableEntry
   val inptr      = RegInit(0.U((log2Ceil(Beats) + 20).W))
   val sendptr    = RegInit(0.U((log2Ceil(Beats) + 1).W))
   val recvptr    = RegInit(0.U((log2Ceil(Beats) + 1).W))
-  val linebuffer = RegInit(Vec(Seq.fill(Beats)(0.U(xlen.W))))
-  val linemask   = RegInit(Vec(Seq.fill(Beats)(0.U((xlen / 8).W))))
+  val linebuffer = RegInit(VecInit(Seq.fill(Beats)(0.U(xlen.W))))
+  val linemask   = RegInit(VecInit(Seq.fill(Beats)(0.U((xlen / 8).W))))
   val xlen_bytes = xlen / 8
 
   // State machine

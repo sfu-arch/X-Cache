@@ -29,14 +29,14 @@ class LoadIO(NumPredOps: Int,
   // Memory response.
   val memResp = Input(Flipped(new ReadResp()))
 
-  override def cloneType = new LoadIO(NumPredOps,NumSuccOps,NumOuts).asInstanceOf[this.type]
+  override def cloneType = new LoadIO(NumPredOps, NumSuccOps, NumOuts).asInstanceOf[this.type]
 }
+
 /**
- * @brief Load Node. Implements load operations
- * @details [load operations can either reference values in a scratchpad or cache]
- *
- * @param NumPredOps [Number of predicate memory operations]
- */
+  * @brief Load Node. Implements load operations
+  * @details [load operations can either reference values in a scratchpad or cache]
+  * @param NumPredOps [Number of predicate memory operations]
+  */
 class UnTypLoad(NumPredOps: Int,
                 NumSuccOps: Int,
                 NumOuts: Int,
@@ -123,7 +123,7 @@ class UnTypLoad(NumPredOps: Int,
             state := s_RECEIVING
           }
         }.otherwise {
-          data_R.predicate :=false.B
+          data_R.predicate := false.B
           ValidSucc()
           ValidOut()
           // Completion state.
@@ -149,18 +149,20 @@ class UnTypLoad(NumPredOps: Int,
       when(complete) {
         // Clear all the valid states.
         // Reset address
-//        addr_R := DataBundle.default
+        // addr_R := DataBundle.default
         addr_valid_R := false.B
         // Reset data
-//        data_R := DataBundle.default
+        // data_R := DataBundle.default
         data_valid_R := false.B
         // Reset state.
         Reset()
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOAD] " + node_name + ": Output fired @ %d, Address:%d, Value: %d\n",
-          enable_R.taskID, cycleCount, addr_R.data, data_R.data)
-        //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOAD] " + node_name + ": Output fired @ %d, Address:%d, Value: %d\n",
+            enable_R.taskID, cycleCount, addr_R.data, data_R.data)
+          //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
+        }
       }
     }
   }
@@ -176,8 +178,8 @@ class UnTypLoad(NumPredOps: Int,
         printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\":\"%x,%x,%x\" },", state, data_valid_R, data_R.data, data_R.predicate)
         printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
         printf("}")
-        }
-      case everythingElse => {}
       }
+      case everythingElse => {}
+    }
   }
 }

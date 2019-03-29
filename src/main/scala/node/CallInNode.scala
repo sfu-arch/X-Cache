@@ -20,10 +20,10 @@ class CallInNodeIO(val argTypes: Seq[Int])(implicit p: Parameters)
 }
 
 class CallInNode(ID: Int, argTypes: Seq[Int])
-              (implicit p: Parameters,
+              (implicit val p: Parameters,
                name: sourcecode.Name,
                file: sourcecode.File) extends Module
-  with UniformPrintfs {
+  with UniformPrintfs with CoreParams {
   override lazy val io = IO(new CallInNodeIO(argTypes)(p))
 
   val node_name = name.value
@@ -101,7 +101,9 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
   when(io.In.fire) {
     when (io.In.bits.enable.control)
     {
-      printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name  + ": Inonse @ %d\n", io.In.bits.enable.taskID, cycleCount)
+      if(log){
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] [CallIn] " + node_name  + ": fired@ %d\n", io.In.bits.enable.taskID, cycleCount)
+      }
     }
   }
 }

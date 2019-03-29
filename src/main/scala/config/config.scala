@@ -29,6 +29,8 @@ case object COMPONENTS extends Field[String]
 
 case object TRACE extends Field[Boolean]
 
+case object CTRACE extends Field[Boolean]
+
 case object BuildRFile extends Field[Parameters => AbstractRFile]
 
 case object FTYP extends Field[FType]
@@ -43,7 +45,8 @@ abstract trait CoreParams {
   val mshrlen = p(MSHRLEN)
   val Ftyp    = p(FTYP)
   // Debugging dumps
-  val log     = p(TRACE)
+  val log      = p(TRACE)
+  val clog     = p(CTRACE)
   val verb    = p(VERBOSITY)
   val comp    = p(COMPONENTS)
 
@@ -64,7 +67,8 @@ class MiniConfig extends Config((site, here, up) => {
     //    case COMPONENTS => "TYPLOAD;TYPOP;TYPSTORE"
     case COMPONENTS => ""
     // Max size of type memory system may see
-    case TRACE => true
+    case TRACE => false
+    case CTRACE => false
     case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))
 
     //-------------------------

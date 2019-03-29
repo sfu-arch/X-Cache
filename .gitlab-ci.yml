@@ -35,4 +35,5 @@ job1:
 #     - sbt sbtVersion
   script:
     - sbt compile
+    - sbt test
     - echo "RUN"

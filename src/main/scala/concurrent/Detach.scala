@@ -48,11 +48,11 @@ class Detach(ID: Int)
    *            Latch inputs. Wire up output       *
    *===============================================*/
   when(io.enable.fire()) {
-    latchedEnable := io.enable.bits
+    latchedEnable <> io.enable.bits
   }
   // Wire up Outputs
   for (i <- 0 until 3) {
-    io.Out(i).bits := latchedEnable // current task path
+    io.Out(i).bits <> latchedEnable // current task path
   }
 
   /*============================================*
@@ -74,7 +74,10 @@ class Detach(ID: Int)
     //Reset state
     state := s_idle
     when(latchedEnable.control) {
-      printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+      if(log){
+        printf("[LOG] " + "[" + module_name + "] [TID->%d] [Detach]" +
+          node_name + ": Output fired @ %d\n", latchedEnable.taskID,cycleCount)
+      }
     }
   }
 

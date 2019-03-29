@@ -64,7 +64,7 @@ class TypLoad(NumPredOps: Int,
   val data_R       = RegInit(TypBundle.default)
   val data_valid_R = RegInit(false.B)
   val recvptr      = RegInit(0.U(log2Ceil(Beats + 1).W))
-  val linebuffer   = RegInit(Vec(Seq.fill(Beats)(0.U(xlen.W))))
+  val linebuffer   = RegInit(VecInit(Seq.fill(Beats)(0.U(xlen.W))))
 
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)

@@ -30,7 +30,7 @@ class StoreIO(NumPredOps: Int,
   // Memory response.
   val memResp = Input(Flipped(new WriteResp()))
 
-  override def cloneType = new StoreIO(NumPredOps,NumSuccOps,NumOuts).asInstanceOf[this.type]
+  override def cloneType = new StoreIO(NumPredOps, NumSuccOps, NumOuts).asInstanceOf[this.type]
 }
 
 /**
@@ -75,8 +75,8 @@ class UnTypStore(NumPredOps: Int,
   =            Predicate Evaluation            =
   ============================================*/
 
-//  val predicate = IsEnable()
-//  val start = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
+  //  val predicate = IsEnable()
+  //  val start = addr_valid_R & data_valid_R & IsPredValid() & IsEnableValid()
 
   /*================================================
   =            Latch inputs. Set output            =
@@ -105,7 +105,7 @@ class UnTypStore(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.taskID := data_R.taskID |  addr_R.taskID | enable_R.taskID
+    io.Out(i).bits.taskID := data_R.taskID | addr_R.taskID | enable_R.taskID
   }
   // Outgoing Address Req ->
   io.memReq.bits.address := addr_R.data
@@ -160,9 +160,11 @@ class UnTypStore(NumPredOps: Int,
         Reset()
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] [STORE]" + node_name + ": Fired @ %d Mem[%d] = %d\n",
-          enable_R.taskID, cycleCount, addr_R.data, data_R.data)
-        //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
+        if (log) {
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] [STORE]" + node_name + ": Fired @ %d Mem[%d] = %d\n",
+            enable_R.taskID, cycleCount, addr_R.data, data_R.data)
+          //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
+        }
       }
     }
   }

@@ -1,5 +1,6 @@
 package dataflow
 
+import FPU._
 import accel._
 import arbiters._
 import chisel3._
@@ -41,15 +42,15 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID=0, Size=32, NReads=3, NWrites=3)
-		 (WControl=new WriteMemoryController(NumOps=3, BaseSize=2, NumEntries=2))
-		 (RControl=new ReadMemoryController(NumOps=3, BaseSize=2, NumEntries=2))
-		 (RWArbiter=new ReadWriteArbiter()))
+  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 1, NWrites = 2)
+  (WControl = new WriteMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
+  (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(2,6,4,1)))
+  val InputSplitter = Module(new SplitCallNew(List(1, 3, 2, 1)))
   InputSplitter.io.In <> io.in
 
 
@@ -64,19 +65,13 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0))
+  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 0))
 
-  val bb_my_if_then1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 1))
+  val bb_my_if_then1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 1))
 
-  val bb_my_if_end92 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 2))
+  val bb_my_pfor_preattach2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 1, BID = 2))
 
-  val bb_my_pfor_preattach3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
-
-  val bb_my_if_else4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 12, BID = 4))
-
-  val bb_my_if_then75 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 5))
-
-  val bb_my_if_end6 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 1, NumPhi=0, BID = 6)) // manual
+  val bb_my_if_else3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 10, BID = 3))
 
 
 
@@ -84,74 +79,50 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  %0 = getelementptr inbounds i32, i32* %a.in, i32 %i.0.in, !UID !1
-  val Gep_0 = Module(new GepArrayOneNode(NumOuts=1, ID=0)(numByte=4)(size=1))
+  //  %0 = getelementptr inbounds i32, i32* %a.in, i32 %__begin.030.in, !UID !21
+  val Gep_0 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 0)(ElementSize = 4, ArraySize = List()))
 
-  //  %1 = load i32, i32* %0, align 4, !UID !2
-  val ld_1 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=1, RouteID=0))
+  //  %1 = load i32, i32* %0, align 4, !tbaa !22, !UID !26
+  val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 1, RouteID = 0))
 
-  //  %2 = icmp slt i32 %1, 0, !UID !3
-  val icmp_2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign=false))
+  //  %2 = icmp slt i32 %1, 0, !UID !27
+  val icmp_2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
 
-  //  br i1 %2, label %my_if.then, label %my_if.else, !UID !4, !BB_UID !5
-  val br_3 = Module(new CBranchNode(ID = 3))
+  //  br i1 %2, label %my_if.then, label %my_if.else, !UID !28, !BB_UID !29
+  val br_3 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 3))
 
-  //  %3 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !6
-  val Gep_4 = Module(new GepArrayOneNode(NumOuts=1, ID=4)(numByte=4)(size=1))
+  //  %3 = getelementptr inbounds i32, i32* %c.in, i32 %__begin.030.in, !UID !30
+  val Gep_4 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 4)(ElementSize = 4, ArraySize = List()))
 
-  //  store i32 0, i32* %3, align 4, !UID !7
-  val st_5 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=5, RouteID=0))
+  //  store i32 0, i32* %3, align 4, !tbaa !22, !UID !31
+  val st_5 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 5, RouteID = 0))
 
-  //  br label %my_if.end9, !UID !8, !BB_UID !9
+  //  br label %my_pfor.preattach, !UID !32, !BB_UID !33
   val br_6 = Module(new UBranchNode(ID = 6))
 
-  //  br label %my_pfor.preattach, !UID !10, !BB_UID !11
-  val br_7 = Module(new UBranchNode(ID = 7))
+  //  ret void, !UID !34, !BB_UID !35
+  val ret_7 = Module(new RetNode2(retTypes = List(), ID = 7))
 
-  //  ret void
-  val ret_8 = Module(new RetNode2(retTypes=List(), ID = 8))
+  //  %4 = mul nsw i32 %1, %scale.in, !UID !36
+  val binaryOp_8 = Module(new ComputeNode(NumOuts = 2, ID = 8, opCode = "mul")(sign = false))
 
-  //  %4 = getelementptr inbounds i32, i32* %a.in, i32 %i.0.in, !UID !12
-  val Gep_9 = Module(new GepArrayOneNode(NumOuts=1, ID=9)(numByte=4)(size=1))
+  //  %5 = ashr i32 %4, 8, !UID !37
+  val binaryOp_9 = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "ashr")(sign = false))
 
-  //  %5 = load i32, i32* %4, align 4, !UID !13
-  val ld_10 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=10, RouteID=1))
+  //  %6 = getelementptr inbounds i32, i32* %c.in, i32 %__begin.030.in, !UID !38
+  val Gep_10 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 10)(ElementSize = 4, ArraySize = List()))
 
-  //  %6 = mul nsw i32 %5, %scale.in, !UID !14
-  val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "mul")(sign=false))
+  //  %7 = icmp sgt i32 %4, 65535, !UID !39
+  val icmp_11 = Module(new IcmpNode(NumOuts = 1, ID = 11, opCode = "ugt")(sign = false))
 
-  //  %7 = ashr i32 %6, 8, !UID !15
-  val binaryOp_12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "ShiftRight")(sign=false))  // Manual
+  //  %8 = select i1 %7, i32 255, i32 %5, !UID !40
+  val select_12 = Module(new SelectNode(NumOuts = 1, ID = 12))
 
-  //  %8 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !16
-  val Gep_13 = Module(new GepArrayOneNode(NumOuts=1, ID=13)(numByte=4)(size=1))
+  //  store i32 %8, i32* %6, align 4, !UID !41
+  val st_13 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 13, RouteID = 1))
 
-  //  store i32 %7, i32* %8, align 4, !UID !17
-  val st_14 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=1, ID=14, RouteID=1))
-
-  //  %9 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !18
-  val Gep_15 = Module(new GepArrayOneNode(NumOuts=1, ID=15)(numByte=4)(size=1))
-
-  //  %10 = load i32, i32* %9, align 4, !UID !19
-  val ld_16 = Module(new UnTypLoad(NumPredOps=1, NumSuccOps=0, NumOuts=1, ID=16, RouteID=2))
-
-  //  %11 = icmp sgt i32 %10, 255, !UID !20
-  val icmp_17 = Module(new IcmpNode(NumOuts = 1, ID = 17, opCode = "ugt")(sign=false))
-
-  //  br i1 %11, label %my_if.then7, label %my_if.end, !UID !21, !BB_UID !22
-  val br_18 = Module(new CBranchNode(ID = 18))
-
-  //  %12 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !23
-  val Gep_19 = Module(new GepArrayOneNode(NumOuts=1, ID=19)(numByte=4)(size=1))
-
-  //  store i32 255, i32* %12, align 4, !UID !24
-  val st_20 = Module(new UnTypStore(NumPredOps=0, NumSuccOps=0, ID=20, RouteID=2))
-
-  //  br label %my_if.end, !UID !25, !BB_UID !26
-  val br_21 = Module(new UBranchNode(ID = 21))
-
-  //  br label %my_if.end9, !UID !27, !BB_UID !28
-  val br_22 = Module(new UBranchNode(ID = 22))
+  //  br label %my_pfor.preattach, !UID !42, !BB_UID !43
+  val br_14 = Module(new UBranchNode(ID = 14))
 
 
 
@@ -160,22 +131,19 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
    * ================================================================== */
 
   //i32 0
-  val const0 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 0))
+  val const0 = Module(new ConstFastNode(value = 0, ID = 0))
 
   //i32 0
-  val const1 = Module(new ConstNode(value = 0, NumOuts = 1, ID = 1))
+  val const1 = Module(new ConstFastNode(value = 0, ID = 1))
 
   //i32 8
-  val const2 = Module(new ConstNode(value = 8, NumOuts = 1, ID = 2))
+  val const2 = Module(new ConstFastNode(value = 8, ID = 2))
+
+  //i32 65535
+  val const3 = Module(new ConstFastNode(value = 65535, ID = 3))
 
   //i32 255
-  val const3 = Module(new ConstNode(value = 255, NumOuts = 1, ID = 3))
-
-  //i32 255
-  val const4 = Module(new ConstNode(value = 255, NumOuts = 1, ID = 4))
-
-  //i32 1
-  //val const5 = Module(new ConstNode(value = 1, NumOuts = 1, ID = 5))
+  val const4 = Module(new ConstFastNode(value = 255, ID = 4))
 
 
 
@@ -183,23 +151,21 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_my_pfor_body0.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_my_pfor_body0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-  bb_my_if_then1.io.predicateIn <> br_3.io.Out(0)
+  bb_my_if_then1.io.predicateIn(0) <> br_3.io.TrueOutput(0)
 
-  bb_my_if_end92.io.predicateIn(0) <> br_6.io.Out(0)
+  bb_my_pfor_preattach2.io.predicateIn(1) <> br_6.io.Out(0)
 
-  bb_my_if_end92.io.predicateIn(1) <> br_22.io.Out(0)
+  bb_my_pfor_preattach2.io.predicateIn(0) <> br_14.io.Out(0)
 
-  bb_my_pfor_preattach3.io.predicateIn <> br_7.io.Out(0)
+  bb_my_if_else3.io.predicateIn(0) <> br_3.io.FalseOutput(0)
 
-  bb_my_if_else4.io.predicateIn <> br_3.io.Out(1)
 
-  bb_my_if_then75.io.predicateIn <> br_18.io.Out(0)
 
-  bb_my_if_end6.io.predicateIn(0) <> br_18.io.Out(1)
-
-  bb_my_if_end6.io.predicateIn(1) <> br_21.io.Out(0)
+  /* ================================================================== *
+   *                   BASICBLOCK -> PREDICATE LOOP                     *
+   * ================================================================== */
 
 
 
@@ -240,6 +206,24 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
 
   /* ================================================================== *
+   *                   LOOP LIVE OUT DEPENDENCIES                       *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP CARRY DEPENDENCIES                          *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP DATA CARRY DEPENDENCIES                     *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
    *                   BASICBLOCK -> ENABLE INSTRUCTION                 *
    * ================================================================== */
 
@@ -247,9 +231,12 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
   Gep_0.io.enable <> bb_my_pfor_body0.io.Out(1)
 
+
   ld_1.io.enable <> bb_my_pfor_body0.io.Out(2)
 
+
   icmp_2.io.enable <> bb_my_pfor_body0.io.Out(3)
+
 
   br_3.io.enable <> bb_my_pfor_body0.io.Out(4)
 
@@ -258,54 +245,41 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
   Gep_4.io.enable <> bb_my_if_then1.io.Out(1)
 
+
   st_5.io.enable <> bb_my_if_then1.io.Out(2)
+
 
   br_6.io.enable <> bb_my_if_then1.io.Out(3)
 
 
-  br_7.io.enable <> bb_my_if_end92.io.Out(0)
+  ret_7.io.In.enable <> bb_my_pfor_preattach2.io.Out(0)
 
 
-  ret_8.io.In.enable  <> bb_my_pfor_preattach3.io.Out(0)
-  //const5.io.enable <> bb_my_pfor_preattach3.io.Out(1)
-  bb_my_pfor_preattach3.io.Out(1).ready := true.B
+  const2.io.enable <> bb_my_if_else3.io.Out(0)
 
-  const2.io.enable <> bb_my_if_else4.io.Out(0)
+  const3.io.enable <> bb_my_if_else3.io.Out(1)
 
-  const3.io.enable <> bb_my_if_else4.io.Out(1)
+  const4.io.enable <> bb_my_if_else3.io.Out(2)
 
-  Gep_9.io.enable <> bb_my_if_else4.io.Out(2)
-
-  ld_10.io.enable <> bb_my_if_else4.io.Out(3)
-
-  binaryOp_11.io.enable <> bb_my_if_else4.io.Out(4)
-
-  binaryOp_12.io.enable <> bb_my_if_else4.io.Out(5)
-
-  Gep_13.io.enable <> bb_my_if_else4.io.Out(6)
-
-  st_14.io.enable <> bb_my_if_else4.io.Out(7)
-
-  Gep_15.io.enable <> bb_my_if_else4.io.Out(8)
-
-  ld_16.io.PredOp(0) <> st_14.io.SuccOp(0)
-  ld_16.io.enable <> bb_my_if_else4.io.Out(9)
-
-  icmp_17.io.enable <> bb_my_if_else4.io.Out(10)
-
-  br_18.io.enable <> bb_my_if_else4.io.Out(11)
+  binaryOp_8.io.enable <> bb_my_if_else3.io.Out(3)
 
 
-  const4.io.enable <> bb_my_if_then75.io.Out(0)
-
-  Gep_19.io.enable <> bb_my_if_then75.io.Out(1)
-
-  st_20.io.enable <> bb_my_if_then75.io.Out(2)
-
-  br_21.io.enable <> bb_my_if_then75.io.Out(3)
+  binaryOp_9.io.enable <> bb_my_if_else3.io.Out(4)
 
 
-  br_22.io.enable <> bb_my_if_end6.io.Out(0)
+  Gep_10.io.enable <> bb_my_if_else3.io.Out(5)
+
+
+  icmp_11.io.enable <> bb_my_if_else3.io.Out(6)
+
+
+  select_12.io.enable <> bb_my_if_else3.io.Out(7)
+
+
+  st_13.io.enable <> bb_my_if_else3.io.Out(8)
+
+
+  br_14.io.enable <> bb_my_if_else3.io.Out(9)
 
 
 
@@ -334,21 +308,9 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
 
   st_5.io.memResp <> MemCtrl.io.WriteOut(0)
 
-  MemCtrl.io.ReadIn(1) <> ld_10.io.memReq
+  MemCtrl.io.WriteIn(1) <> st_13.io.memReq
 
-  ld_10.io.memResp <> MemCtrl.io.ReadOut(1)
-
-  MemCtrl.io.WriteIn(1) <> st_14.io.memReq
-
-  st_14.io.memResp <> MemCtrl.io.WriteOut(1)
-
-  MemCtrl.io.ReadIn(2) <> ld_16.io.memReq
-
-  ld_16.io.memResp <> MemCtrl.io.ReadOut(2)
-
-  MemCtrl.io.WriteIn(2) <> st_20.io.memReq
-
-  st_20.io.memResp <> MemCtrl.io.WriteOut(2)
+  st_13.io.memResp <> MemCtrl.io.WriteOut(1)
 
 
 
@@ -362,88 +324,71 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  icmp_2.io.RightIO <> const0.io.Out(0)
+  icmp_2.io.RightIO <> const0.io.Out
 
-  st_5.io.inData <> const1.io.Out(0)
+  st_5.io.inData <> const1.io.Out
 
-  binaryOp_12.io.RightIO <> const2.io.Out(0)
+  binaryOp_9.io.RightIO <> const2.io.Out
 
-  icmp_17.io.RightIO <> const3.io.Out(0)
+  icmp_11.io.RightIO <> const3.io.Out
 
-  st_20.io.inData <> const4.io.Out(0)
+  select_12.io.InData1 <> const4.io.Out
 
   ld_1.io.GepAddr <> Gep_0.io.Out(0)
 
   icmp_2.io.LeftIO <> ld_1.io.Out(0)
 
+  binaryOp_8.io.LeftIO <> ld_1.io.Out(1)
+
   br_3.io.CmpIO <> icmp_2.io.Out(0)
 
   st_5.io.GepAddr <> Gep_4.io.Out(0)
 
-  ld_10.io.GepAddr <> Gep_9.io.Out(0)
+  binaryOp_9.io.LeftIO <> binaryOp_8.io.Out(0)
 
-  binaryOp_11.io.LeftIO <> ld_10.io.Out(0)
+  icmp_11.io.LeftIO <> binaryOp_8.io.Out(1)
 
-  binaryOp_12.io.LeftIO <> binaryOp_11.io.Out(0)
+  select_12.io.InData2 <> binaryOp_9.io.Out(0)
 
-  st_14.io.inData <> binaryOp_12.io.Out(0)
+  st_13.io.GepAddr <> Gep_10.io.Out(0)
 
-  st_14.io.GepAddr <> Gep_13.io.Out(0)
+  select_12.io.Select <> icmp_11.io.Out(0)
 
-  ld_16.io.GepAddr <> Gep_15.io.Out(0)
-
-  icmp_17.io.LeftIO <> ld_16.io.Out(0)
-
-  br_18.io.CmpIO <> icmp_17.io.Out(0)
-
-  st_20.io.GepAddr <> Gep_19.io.Out(0)
+  st_13.io.inData <> select_12.io.Out(0)
 
   Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Gep_9.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
+  Gep_0.io.idx(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
+  Gep_4.io.idx(0) <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Gep_4.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(1)
-
-  Gep_9.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(2)
-
-  Gep_13.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(3)
-
-  Gep_15.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(4)
-
-  Gep_19.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(5)
+  Gep_10.io.idx(0) <> InputSplitter.io.Out.data.elements("field1")(2)
 
   Gep_4.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Gep_13.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(1)
+  Gep_10.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(1)
 
-  Gep_15.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(2)
-
-  Gep_19.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(3)
-
-  binaryOp_11.io.RightIO <> InputSplitter.io.Out.data.elements("field3")(0)
+  binaryOp_8.io.RightIO <> InputSplitter.io.Out.data.elements("field3")(0)
 
   st_5.io.Out(0).ready := true.B
 
-  st_14.io.Out(0).ready := true.B
+  st_13.io.Out(0).ready := true.B
 
-  st_20.io.Out(0).ready := true.B
-
-//  ret_8.io.In.data("field0") <> const5.io.Out(0)
 
 
   /* ================================================================== *
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out <> ret_8.io.Out
+  io.out <> ret_7.io.Out
 
 }
 
 import java.io.{File, FileWriter}
-object vector_scale_detach1Main extends App {
-  val dir = new File("RTL/vector_scale_detach1") ; dir.mkdirs
+
+object vector_scale_detach1Top extends App {
+  val dir = new File("RTL/vector_scale_detach1Top");
+  dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new vector_scale_detach1DF()))
 

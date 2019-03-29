@@ -1,5 +1,6 @@
 package dataflow
 
+import FPU._
 import accel._
 import arbiters._
 import chisel3._
@@ -21,9 +22,9 @@ import stack._
 import util._
 
 
-/* ================================================================== *
- *                   PRINTING PORTS DEFINITION                        *
- * ================================================================== */
+  /* ================================================================== *
+   *                   PRINTING PORTS DEFINITION                        *
+   * ================================================================== */
 
 abstract class cilk_saxpy_detach1DFIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new Bundle {
@@ -49,8 +50,9 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(1, 3, 1, 2)))
+  val InputSplitter = Module(new SplitCallNew(List(1, 2, 1, 1)))
   InputSplitter.io.In <> io.in
+
 
 
   /* ================================================================== *
@@ -58,50 +60,43 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
    * ================================================================== */
 
 
+
   /* ================================================================== *
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 9, BID = 0))
+  val bb_my_pfor_body0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 8, BID = 0))
 
-  val bb_my_pfor_preattach1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
 
   /* ================================================================== *
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  %0 = getelementptr inbounds i32, i32* %x.in, i32 %i.0.in, !UID !1
-  //    val Gep_0 = Module(new GepArrayOneNode(NumOuts = 1, ID = 0)(numByte = 4)(size = 1))
-  //  val Gep_0 = Module(new GepNode(NumIns = 1, NumOuts = 1, ArraySize = List(List(4)), ID = 0))
+  //  %0 = getelementptr inbounds i32, i32* %x.in, i32 %__begin.018.in, !UID !21
   val Gep_0 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 0)(ElementSize = 4, ArraySize = List()))
 
-  //  %1 = load i32, i32* %0, align 4, !UID !2
+  //  %1 = load i32, i32* %0, align 4, !tbaa !22, !UID !26
   val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 1, RouteID = 0))
 
-  //  %2 = mul nsw i32 %a.in, %1, !UID !3
+  //  %2 = mul nsw i32 %1, %a.in, !UID !27
   val binaryOp_2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "mul")(sign = false))
 
-  //  %3 = getelementptr inbounds i32, i32* %y.in, i32 %i.0.in, !UID !4
-  val Gep_3 = Module(new GepArrayOneNode(NumOuts = 1, ID = 3)(numByte = 4)(size = 1))
+  //  %3 = getelementptr inbounds i32, i32* %y.in, i32 %__begin.018.in, !UID !28
+  val Gep_3 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 3)(ElementSize = 4, ArraySize = List()))
 
-  //  %4 = load i32, i32* %3, align 4, !UID !5
+  //  %4 = load i32, i32* %3, align 4, !tbaa !22, !UID !29
   val ld_4 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 4, RouteID = 1))
 
-  //  %5 = add nsw i32 %2, %4, !UID !6
+  //  %5 = add nsw i32 %2, %4, !UID !30
   val binaryOp_5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
 
-  //  %6 = getelementptr inbounds i32, i32* %y.in, i32 %i.0.in, !UID !7
-  val Gep_6 = Module(new GepArrayOneNode(NumOuts = 1, ID = 6)(numByte = 4)(size = 1))
+  //  store i32 %5, i32* %3, align 4, !tbaa !22, !UID !31
+  val st_6 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 6, RouteID = 0))
 
-  //  store i32 %5, i32* %6, align 4, !UID !8
-  val st_7 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 7, RouteID = 0))
+  //  ret void, !UID !32, !BB_UID !33
+  val ret_7 = Module(new RetNode2(retTypes = List(), ID = 7))
 
-  //  br label %my_pfor.preattach, !UID !9, !BB_UID !10
-  val br_8 = Module(new UBranchNode(ID = 8, NumPredOps = 1))
-
-  //  ret void
-  val ret_9 = Module(new RetNode2(retTypes = List(), ID = 9))
 
 
   /* ================================================================== *
@@ -109,13 +104,19 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
    * ================================================================== */
 
 
+
   /* ================================================================== *
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_my_pfor_body0.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_my_pfor_body0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
-  bb_my_pfor_preattach1.io.predicateIn <> br_8.io.Out(0)
+
+
+  /* ================================================================== *
+   *                   BASICBLOCK -> PREDICATE LOOP                     *
+   * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -123,9 +124,11 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
    * ================================================================== */
 
 
+
   /* ================================================================== *
    *                   LOOP -> PREDICATE INSTRUCTION                    *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -133,9 +136,11 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
    * ================================================================== */
 
 
+
   /* ================================================================== *
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -143,9 +148,29 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
    * ================================================================== */
 
 
+
   /* ================================================================== *
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP LIVE OUT DEPENDENCIES                       *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP CARRY DEPENDENCIES                          *
+   * ================================================================== */
+
+
+
+  /* ================================================================== *
+   *                   LOOP DATA CARRY DEPENDENCIES                     *
+   * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -154,24 +179,28 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
 
   Gep_0.io.enable <> bb_my_pfor_body0.io.Out(0)
 
+
   ld_1.io.enable <> bb_my_pfor_body0.io.Out(1)
+
 
   binaryOp_2.io.enable <> bb_my_pfor_body0.io.Out(2)
 
+
   Gep_3.io.enable <> bb_my_pfor_body0.io.Out(3)
+
 
   ld_4.io.enable <> bb_my_pfor_body0.io.Out(4)
 
+
   binaryOp_5.io.enable <> bb_my_pfor_body0.io.Out(5)
 
-  Gep_6.io.enable <> bb_my_pfor_body0.io.Out(6)
 
-  st_7.io.enable <> bb_my_pfor_body0.io.Out(7)
+  st_6.io.enable <> bb_my_pfor_body0.io.Out(6)
 
-  br_8.io.enable <> bb_my_pfor_body0.io.Out(8)
-  br_8.io.PredOp(0) <> st_7.io.SuccOp(0)
 
-  ret_9.io.In.enable <> bb_my_pfor_preattach1.io.Out(0)
+  ret_7.io.In.enable <> bb_my_pfor_body0.io.Out(7)
+
+
 
 
   /* ================================================================== *
@@ -179,9 +208,11 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
    * ================================================================== */
 
 
+
   /* ================================================================== *
    *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -196,14 +227,16 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
 
   ld_4.io.memResp <> MemCtrl.io.ReadOut(1)
 
-  MemCtrl.io.WriteIn(0) <> st_7.io.memReq
+  MemCtrl.io.WriteIn(0) <> st_6.io.memReq
 
-  st_7.io.memResp <> MemCtrl.io.WriteOut(0)
+  st_6.io.memResp <> MemCtrl.io.WriteOut(0)
+
 
 
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
+
 
 
   /* ================================================================== *
@@ -212,49 +245,44 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
 
   ld_1.io.GepAddr <> Gep_0.io.Out(0)
 
-  binaryOp_2.io.RightIO <> ld_1.io.Out(0)
+  binaryOp_2.io.LeftIO <> ld_1.io.Out(0)
 
   binaryOp_5.io.LeftIO <> binaryOp_2.io.Out(0)
 
   ld_4.io.GepAddr <> Gep_3.io.Out(0)
 
+  st_6.io.GepAddr <> Gep_3.io.Out(1)
+
   binaryOp_5.io.RightIO <> ld_4.io.Out(0)
 
-  st_7.io.inData <> binaryOp_5.io.Out(0)
+  st_6.io.inData <> binaryOp_5.io.Out(0)
 
-  st_7.io.GepAddr <> Gep_6.io.Out(0)
-
-  //  Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
   Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  //  Gep_0.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(0)
   Gep_0.io.idx(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_3.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(1)
+  Gep_3.io.idx(0) <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Gep_6.io.idx1 <> InputSplitter.io.Out.data.elements("field1")(2)
-
-  binaryOp_2.io.LeftIO <> InputSplitter.io.Out.data.elements("field2")(0)
+  binaryOp_2.io.RightIO <> InputSplitter.io.Out.data.elements("field2")(0)
 
   Gep_3.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  Gep_6.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(1)
+  st_6.io.Out(0).ready := true.B
 
-  st_7.io.Out(0).ready := true.B
 
 
   /* ================================================================== *
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out <> ret_9.io.Out
+  io.out <> ret_7.io.Out
 
 }
 
 import java.io.{File, FileWriter}
 
-object cilk_saxpy_detach1Main extends App {
-  val dir = new File("RTL/cilk_saxpy_detach1");
+object cilk_saxpy_detach1Top extends App {
+  val dir = new File("RTL/cilk_saxpy_detach1Top");
   dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_saxpy_detach1DF()))

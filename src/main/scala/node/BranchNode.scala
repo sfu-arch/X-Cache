@@ -178,7 +178,7 @@ class CBranchFastNode(ID: Int)
   * @param ID         Node id
   */
 
-@deprecated("Use CBranchFastNodeVariable2 instead. The behaviour is not deterministic")
+@deprecated("Use CBranchFastNodeVariable2 instead. The behaviour is not deterministic","dandelion-1.0")
 class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val ID: Int)
                              (implicit val p: Parameters,
                               name: sourcecode.Name,
@@ -603,7 +603,7 @@ class UBranchNode(NumPredOps: Int = 0,
     */
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
-    io.Out(i).bits := enable_R
+    io.Out(i).bits <> enable_R
   }
 
   switch(state) {
@@ -639,7 +639,7 @@ class UBranchNode(NumPredOps: Int = 0,
 
 }
 
-@deprecated("Use UBranchFastNode instead. It wastes one extra cycle")
+@deprecated("Use UBranchFastNode instead. It wastes one extra cycle","dandelion-1.0")
 class UBranchEndNode(NumPredOps: Int = 0,
                      NumOuts: Int = 1,
                      ID: Int)
@@ -1292,7 +1292,7 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val NumPr
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
 
   //Latching input comparision result
-  val cmp_R = RegInit(false.B)
+  val cmp_R = RegInit(ControlBundle.default)
   val cmp_valid = RegInit(false.B)
 
   //Latching control signal
@@ -1311,13 +1311,14 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val NumPr
   val output_false_valid_R = Seq.fill(NumFalse)(RegInit(false.B))
   val fire_false_R = Seq.fill(NumFalse)(RegInit(false.B))
 
-  val task_id = enable_R.taskID & enable_valid_R
+  val task_id = enable_R.taskID | cmp_R.taskID
 
 
   // Latching CMP input
   io.CmpIO.ready := ~cmp_valid
   when(io.CmpIO.fire) {
-    cmp_R := io.CmpIO.bits.data.orR()
+    cmp_R.control := io.CmpIO.bits.data.orR()
+    cmp_R.taskID := io.CmpIO.bits.taskID
     cmp_valid := true.B
   }
 
@@ -1348,8 +1349,8 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val NumPr
 
   // Output for true and false sides
   val predicate = enable_R.control & enable_valid_R
-  val true_output = predicate & cmp_R
-  val false_output = predicate & (~cmp_R).toBool
+  val true_output = predicate & cmp_R.control
+  val false_output = predicate & (~cmp_R.control).toBool
 
   // Defalut values for Trueoutput
   //
@@ -1434,7 +1435,7 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val NumPr
       //Now we can restart the states
       when(fire_true_mask && fire_false_mask) {
         //Latching input comparision result
-        cmp_R := false.B
+        cmp_R <> ControlBundle.default
         cmp_valid := false.B
 
         //Latching control signal
