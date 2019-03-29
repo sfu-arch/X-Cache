@@ -14,11 +14,13 @@ class ZextNodeIO(val src: Int, val des: Int, val nout: Int)
     //val Input = Flipped(Decoupled(UInt(src.W)))
 
     //Enabl signal
-    val enable = Flipped(Decoupled(Bool()))
+    val enable = Flipped(Decoupled(new ControlBundle()))
 
     //Output of the input (Zexted version)
     val Out = Vec(nout, Decoupled(new DataBundle()))
     //val Out = Output(Vec(nout, Decoupled(UInt(des.W))))
+
+    override def cloneType = new ZextNodeIO(src, des, nout).asInstanceOf[this.type]
 
 }
 

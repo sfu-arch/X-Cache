@@ -123,17 +123,17 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
 
 
   //  val inAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
-  val addr_range = 0x20
+  val addr_range = 0x0
   val inAddrVec = List.range(addr_range, addr_range + (4 * 10), 4)
-  val inDataVec = List(0, 1, 2, 3, 4, 0, 0, 0, 0, 0)
+  val inDataVec = List(0, 10, 2, 3, 4, 0, 0, 0, 0, 0)
   val outAddrVec = List.range(addr_range, addr_range + (4 * 10), 4)
-  val outDataVec = inDataVec.zipWithIndex.map { case (a, b) => if (b < 5) a else (b - 5) * 2 }
+  val outDataVec = inDataVec.zipWithIndex.map { case (a, b) => if (b < 5) a else inDataVec(b-5) * 2 }
 
 
   //Write initial contents to the memory model.
-  for (i <- 0 until inDataVec.length) {
-    MemWrite(inAddrVec(i), inDataVec(i))
-  }
+  //for (i <- 0 until inDataVec.length) {
+   // MemWrite(inAddrVec(i), inDataVec(i))
+  //}
 
   step(10)
   dumpMemory("memory.txt")

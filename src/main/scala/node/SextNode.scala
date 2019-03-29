@@ -15,7 +15,7 @@ class SextNode()(implicit val p: Parameters)
       val Input = Flipped(Decoupled(new DataBundle()))
 
       //Enabl signal
-      val enable = Flipped(Decoupled(Bool()))
+      val enable = Flipped(Decoupled(new ControlBundle()))
 
       //Output of the input (Sexted version)
       val Out = Decoupled(new DataBundle())

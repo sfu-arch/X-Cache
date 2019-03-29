@@ -760,9 +760,9 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
 
   br_30.io.CmpIO <> icmp_tobool2729.io.Out(0)
 
-  Gep_arrayidx2932.io.idx(0) <> sextidxprom2811131.io.Out
+  Gep_arrayidx2932.io.idx(0) <> sextidxprom2811131.io.Out(0)
 
-  Gep_arrayidx3336.io.idx(0) <> sextidxprom2811131.io.Out
+  Gep_arrayidx3336.io.idx(0) <> sextidxprom2811131.io.Out(1)
 
   ld_33.io.GepAddr <> Gep_arrayidx2932.io.Out(0)
 
