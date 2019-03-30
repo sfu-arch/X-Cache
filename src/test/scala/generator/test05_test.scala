@@ -37,7 +37,7 @@ class test05Main(implicit p: Parameters) extends test05MainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   //val memModel = Module(new NastiInitMemSlave()()) // Model of DRAM to connect to Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiMemSlave()) // Model of DRAM to connect to Cache
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
@@ -131,9 +131,9 @@ class test05Test01[T <: test05MainIO](c: T) extends PeekPokeTester(c) {
 
 
   //Write initial contents to the memory model.
-  //for (i <- 0 until inDataVec.length) {
-   // MemWrite(inAddrVec(i), inDataVec(i))
-  //}
+  for (i <- 0 until inDataVec.length) {
+    MemWrite(inAddrVec(i), inDataVec(i))
+  }
 
   step(10)
   dumpMemory("memory.txt")
