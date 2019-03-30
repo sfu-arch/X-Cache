@@ -175,7 +175,7 @@ class fftTest01[T <: fftMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 0
   var result = false
-  while (time < 1000) {
+  while (time < 100000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1) {
@@ -208,7 +208,6 @@ class fftTest01[T <: fftMainIO](c: T) extends PeekPokeTester(c) {
 
   if (!result) {
     println(Console.RED + s"*** Timeout after $time cycles." + Console.RESET)
-    dumpMemory("memory.txt")
     fail
   }
 }
