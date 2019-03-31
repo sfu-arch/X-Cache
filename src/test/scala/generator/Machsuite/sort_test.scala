@@ -7,7 +7,6 @@ import chisel3.iotesters._
 import chisel3.util._
 import chisel3.{Module, _}
 import config._
-import dataflow.fftDF
 import interfaces._
 import memory._
 import org.scalatest.{FlatSpec, Matchers}
@@ -15,7 +14,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class sortMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
+    val in = Flipped(Decoupled(new Call(List(32))))
     val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List()))
@@ -40,26 +39,40 @@ class sortMain(implicit p: Parameters) extends sortMainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val sort = Module(new sortDF())
+  val sort_main = Module(new ms_mergesortDF())
+  val sort1 = Module(new mergeDF())
+  val sort2 = Module(new mergeDF())
 
   //Put an arbiter infront of cache
-  val CacheArbiter = Module(new MemArbiter(2))
+  val CacheArbiter = Module(new MemArbiter(3))
 
   // Connect input signals to cache
-  CacheArbiter.io.cpu.MemReq(0) <> sort.io.MemReq
-  sort.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+  CacheArbiter.io.cpu.MemReq(0) <> sort1.io.MemReq
+  sort1.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+
+  CacheArbiter.io.cpu.MemReq(1) <> sort2.io.MemReq
+  sort2.io.MemResp <> CacheArbiter.io.cpu.MemResp(1)
 
   //Connect main module to cache arbiter
-  CacheArbiter.io.cpu.MemReq(1) <> io.req
-  io.resp <> CacheArbiter.io.cpu.MemResp(1)
+  CacheArbiter.io.cpu.MemReq(2) <> io.req
+  io.resp <> CacheArbiter.io.cpu.MemResp(2)
+
+  sort_main.io.MemReq <> DontCare
+  sort_main.io.MemResp <> DontCare
 
   //Connect cache to the arbiter
   cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
   CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
+  sort1.io.in <> sort_main.io.call_11_out
+  sort_main.io.call_11_in <> sort1.io.out
+
+  sort2.io.in <> sort_main.io.call_13_out
+  sort_main.io.call_13_in <> sort2.io.out
+
   //Connect in/out ports
-  sort.io.in <> io.in
-  io.out <> sort.io.out
+  sort_main.io.in <> io.in
+  io.out <> sort_main.io.out
 
 }
 
@@ -134,39 +147,18 @@ class sortTest01[T <: sortMainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field0").data, 0)
   poke(c.io.in.bits.data("field0").taskID, 0)
   poke(c.io.in.bits.data("field0").predicate, false)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").taskID, 0)
-  poke(c.io.in.bits.data("field1").predicate, false)
-  poke(c.io.in.bits.data("field2").data, 0)
-  poke(c.io.in.bits.data("field2").taskID, 0)
-  poke(c.io.in.bits.data("field2").predicate, false)
-  poke(c.io.in.bits.data("field3").data, 0)
-  poke(c.io.in.bits.data("field3").taskID, 0)
-  poke(c.io.in.bits.data("field3").predicate, false)
   poke(c.io.out.ready, false)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.data("field0").data, addr_range) //
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, addr_range + 0x200) //
-  poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, addr_range + 0x400) //
-  poke(c.io.in.bits.data("field2").predicate, true.B)
-  poke(c.io.in.bits.data("field3").data, addr_range + 0x600) //
-  poke(c.io.in.bits.data("field3").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
   poke(c.io.in.bits.data("field0").data, 0)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
-  poke(c.io.in.bits.data("field3").data, 0)
-  poke(c.io.in.bits.data("field3").predicate, false.B)
 
   step(1)
 

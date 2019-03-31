@@ -109,7 +109,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
   val alloca_0 = Module(new AllocaNode(NumOuts=4, ID = 0, RouteID=0))
 
   //  %6 = bitcast [2048 x i64]* %5 to i8*, !dbg !83, !UID !84
-  val bitcast_1 = Module(new BitCastNode(NumOuts = 0, ID = 1))
+  val bitcast_1 = Module(new BitCastNode(NumOuts = 1, ID = 1))
 
   //  %7 = icmp sgt i32 %1, %2, !dbg !87, !UID !90
   val icmp_2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ugt")(sign = false))
@@ -427,7 +427,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> sext37.io.Out
+  Loop_0.io.InLiveIn(0) <> sext37.io.Out(0)
 
   Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field1")(0)
 
@@ -437,9 +437,9 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
 
   Loop_0.io.InLiveIn(4) <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.InLiveIn(5) <> sext38.io.Out
+  Loop_0.io.InLiveIn(5) <> sext38.io.Out(0)
 
-  Loop_1.io.InLiveIn(0) <> sext20.io.Out
+  Loop_1.io.InLiveIn(0) <> sext20.io.Out(0)
 
   Loop_1.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field0")(1)
 
@@ -447,7 +447,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
 
   Loop_1.io.InLiveIn(3) <> alloca_0.io.Out(1)
 
-  Loop_1.io.InLiveIn(4) <> sext21.io.Out
+  Loop_1.io.InLiveIn(4) <> sext21.io.Out(0)
 
 
 
@@ -844,13 +844,15 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
 
   bitcast_1.io.Input <> alloca_0.io.Out(2)
 
+  bitcast_1.io.Out(0).ready := true.B
+
   Gep_5.io.baseAddress <> alloca_0.io.Out(3)
 
   br_3.io.CmpIO <> icmp_2.io.Out(0)
 
-  Gep_5.io.idx(1) <> sext4.io.Out
+  Gep_5.io.idx(1) <> sext4.io.Out(0)
 
-  Gep_7.io.idx(0) <> sext4.io.Out
+  Gep_7.io.idx(0) <> sext4.io.Out(1)
 
   bitcast_6.io.Input <> Gep_5.io.Out(0)
 
@@ -886,7 +888,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
 
   sext29.io.Input <> binaryOp_28.io.Out(0)
 
-  Gep_30.io.idx(1) <> sext29.io.Out
+  Gep_30.io.idx(1) <> sext29.io.Out(0)
 
   st_31.io.GepAddr <> Gep_30.io.Out(0)
 
@@ -912,7 +914,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
 
   phi58.io.InData(1) <> phi42.io.Out(2)
 
-  Gep_44.io.idx(1) <> sext43.io.Out
+  Gep_44.io.idx(1) <> sext43.io.Out(0)
 
   ld_45.io.GepAddr <> Gep_44.io.Out(0)
 
@@ -920,7 +922,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
 
   st_52.io.inData <> ld_45.io.Out(1)
 
-  Gep_47.io.idx(1) <> sext46.io.Out
+  Gep_47.io.idx(1) <> sext46.io.Out(0)
 
   ld_48.io.GepAddr <> Gep_47.io.Out(0)
 

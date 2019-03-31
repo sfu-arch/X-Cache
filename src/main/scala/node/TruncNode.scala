@@ -7,7 +7,7 @@ import interfaces.{ControlBundle, DataBundle}
 import util._
 import utility.UniformPrintfs
 
-class BitCastNodeIO(val src: Int, val des: Int, val nout: Int)
+class TruncNodeIO(val src: Int, val des: Int, val nout: Int)
                 (implicit p: Parameters) extends CoreBundle()(p) {
 
   //Input for Zext
@@ -25,7 +25,7 @@ class BitCastNodeIO(val src: Int, val des: Int, val nout: Int)
 
 }
 
-class BitCastNode(val SrcW: Int = 0, val DesW: Int = 0, val NumOuts: Int = 1, val ID: Int = 0)
+class TruncNode(val SrcW: Int = 0, val DesW: Int = 0, val NumOuts: Int = 1, val ID: Int = 0)
               (implicit val p: Parameters,
                name: sourcecode.Name,
                file: sourcecode.File)
@@ -97,15 +97,6 @@ class BitCastNode(val SrcW: Int = 0, val DesW: Int = 0, val NumOuts: Int = 1, va
     return input_valid_R || io.Input.fire
   }
 
-  def IsfireValid(): Bool = {
-    if(NumOuts == 0){
-      true.B
-    }
-    else{
-      fire_mask.reduce(_ & _)
-    }
-  }
-
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
@@ -131,7 +122,7 @@ class BitCastNode(val SrcW: Int = 0, val DesW: Int = 0, val NumOuts: Int = 1, va
     }
 
     is(s_fire) {
-      when(IsfireValid()) {
+      when(fire_mask.reduce(_ & _)) {
 
         input_R := DataBundle.default
         input_valid_R := false.B
