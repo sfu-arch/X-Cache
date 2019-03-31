@@ -1,0 +1,11 @@
+Analysis & Synthesis Status : Failed - Sun Mar 31 14:35:39 2019
+Quartus Prime Version : 16.0.0 Build 211 04/27/2016 SJ Standard Edition
+Revision Name : top
+Top-level Entity Name : bbgemmTop
+Family : Arria 10
+Logic utilization (in ALMs) : N/A until Partition Merge
+Total registers : N/A until Partition Merge
+Total pins : N/A until Partition Merge
+Total virtual pins : N/A until Partition Merge
+Total block memory bits : N/A until Partition Merge
+Total PLLs : N/A until Partition Merge

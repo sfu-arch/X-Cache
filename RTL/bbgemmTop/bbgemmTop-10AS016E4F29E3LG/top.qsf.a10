@@ -1,0 +1,54 @@
+set_global_assignment -name FAMILY <FAMILY>
+set_global_assignment -name DEVICE <PART>
+set_global_assignment -name TOP_LEVEL_ENTITY <INSTANCE>
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+
+
+#============================================================
+# Optimization Settings
+#============================================================
+set_global_assignment -name NUM_PARALLEL_PROCESSORS 1
+set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
+set_global_assignment -name ADV_NETLIST_OPT_SYNTH_WYSIWYG_REMAP ON
+set_global_assignment -name PRE_MAPPING_RESYNTHESIS ON
+set_global_assignment -name ROUTER_TIMING_OPTIMIZATION_LEVEL MAXIMUM
+set_global_assignment -name PLACEMENT_EFFORT_MULTIPLIER 2
+set_global_assignment -name FINAL_PLACEMENT_OPTIMIZATION ALWAYS
+set_global_assignment -name FITTER_EFFORT "STANDARD FIT"
+
+
+set_global_assignment -name LAST_QUARTUS_VERSION "17.1.1 Standard Edition"
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 100
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+
+set_global_assignment -name VERILOG_FILE <SRC>
+set_global_assignment -name SDC_FILE top.sdc
+
+set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (Verilog)"
+set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
+
+
+set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
+set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "<RATE> %"
+set_global_assignment -name POWER_REPORT_POWER_DISSIPATION ON
+set_global_assignment -name POWER_DEFAULT_TOGGLE_RATE "<RATE> %"
+set_global_assignment -name POWER_USE_PVA OFF
+set_global_assignment -name POWER_USE_INPUT_FILES <USE_VCD>
+set_global_assignment -name POWER_INPUT_FILE_NAME <VCD> -section_id vcd
+set_instance_assignment -name POWER_READ_INPUT_FILE vcd -to <INSTANCE>
+set_global_assignment -name POWER_REPORT_SIGNAL_ACTIVITY ON
+
+
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_instance_assignment -name VIRTUAL_PIN ON -to *
+set_global_assignment -name TCL_SCRIPT_FILE virtual_pins.tcl
+set_global_assignment -name EDA_MAP_ILLEGAL_CHARACTERS ON -section_id eda_simulation
+set_global_assignment -name EDA_ENABLE_GLITCH_FILTERING ON -section_id eda_simulation
+set_global_assignment -name EDA_WRITE_NODES_FOR_POWER_ESTIMATION ALL_NODES -section_id eda_simulation
+set_global_assignment -name EDA_TEST_BENCH_DESIGN_INSTANCE_NAME <INSTANCE> -section_id eda_simulation
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
