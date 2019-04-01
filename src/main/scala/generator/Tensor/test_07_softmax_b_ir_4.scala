@@ -181,7 +181,8 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
   val ld_26 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 26, RouteID = 5))
 
   //  %13 = fsub float %11, %12, !UID !34
-  val FP_27 = Module(new FPComputeNode(NumOuts = 0, ID = 27, opCode = "fsub")(t = p(FTYP)))
+  //val FP_27 = Module(new FPComputeNode(NumOuts = 0, ID = 27, opCode = "fsub")(t = p(FTYP)))
+  val FP_27 = Module(new FPCustomSubtractorNode(NumOuts = 0, ID = 27, opCode = "fsub")(t = p(FTYP)))
 
   //  %tmp4 = getelementptr [1 x [64 x float]], [1 x [64 x float]]* %fusion.1, i64 0, i64 0, !UID !35
   val Gep_tmp428 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 28)(ElementSize = 256, ArraySize = List(256)))
@@ -223,7 +224,8 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
   val ld_40 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 40, RouteID = 6))
 
   //  %19 = fadd float %17, %18, !UID !50
-  val FP_41 = Module(new FPComputeNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = p(FTYP)))
+  //val FP_41 = Module(new FPComputeNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = p(FTYP)))
+  val FP_41 = Module(new FPCustomAddNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = p(FTYP)))
 
   //  %invar.inc6 = add nuw nsw i64 %reduce.1.inner.indvar.reduction_dim.14, 1, !UID !51
   val binaryOp_invar_inc642 = Module(new ComputeNode(NumOuts = 2, ID = 42, opCode = "add")(sign = false))

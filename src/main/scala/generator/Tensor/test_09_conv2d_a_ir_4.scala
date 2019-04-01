@@ -264,10 +264,12 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   val ld_47 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 47, RouteID = 4))
 
   //  %19 = fmul float %17, %18, !UID !56
-  val FP_48 = Module(new FPComputeNode(NumOuts = 1, ID = 48, opCode = "fmul")(t = p(FTYP)))
+  //val FP_48 = Module(new FPComputeNode(NumOuts = 1, ID = 48, opCode = "fmul")(t = p(FTYP)))
+  val FP_48 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 48, opCode = "fmul")(t = p(FTYP)))
 
   //  %20 = fadd float %13, %19, !UID !57
-  val FP_49 = Module(new FPComputeNode(NumOuts = 2, ID = 49, opCode = "fadd")(t = p(FTYP)))
+  //val FP_49 = Module(new FPComputeNode(NumOuts = 2, ID = 49, opCode = "fadd")(t = p(FTYP)))
+  val FP_49 = Module(new FPCustomAddNode(NumOuts = 2, ID = 49, opCode = "fadd")(t = p(FTYP)))
 
   //  br label %convolution.inner.loop_exit.iz.us, !UID !58, !BB_UID !59
   val br_50 = Module(new UBranchNode(ID = 50))
