@@ -19,10 +19,10 @@ APPS=( \
     #'xorTop'
     #'stencilTop'\
     #'bbgemmTop'\
-    #'fftTop'\
+    'test_09_conv2d_a_ir_4Top'
     #'covarianceTop'\
     #'test18Top'\
-    'testf02Top'\
+    #'testf02Top'\
     #'kernel_2mmTop'\
     #'kernel_3mmTop'\
     #'saxpy'\
