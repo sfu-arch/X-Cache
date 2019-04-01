@@ -21,6 +21,7 @@ import arbiters._
 import loop._
 import accel._
 import node._
+import scala.util.Random
 
 
 class bgemmMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
@@ -36,7 +37,7 @@ class bgemmMainIO(implicit val p: Parameters) extends Module with CoreParams wit
 
 class bgemmMainDirect(implicit p: Parameters) extends bgemmMainIO()(p) {
   val cache = Module(new Cache) // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiMemSlave(latency = 80)) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -88,7 +89,7 @@ class bgemmMainDirect(implicit p: Parameters) extends bgemmMainIO()(p) {
 class bgemmMainTM(val Tile:Int = 1)(implicit p: Parameters) extends bgemmMainIO()(p) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiMemSlave(latency=80)) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -290,7 +291,7 @@ class bgemmTest01[T <: bgemmMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 0 //Cycle counter
   var result = false
-  while (time < 2000) {
+  while (time < 8000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1) {
@@ -332,6 +333,179 @@ class bgemmTest01[T <: bgemmMainIO](c: T) extends PeekPokeTester(c) {
   }
 }
 
+
+class bgemmTest02[T <: bgemmMainIO](c: T) extends PeekPokeTester(c) {
+
+
+  def MemRead(addr: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.iswrite, 0)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    while (peek(c.io.resp.valid) == 0) {
+      step(1)
+    }
+    val result = peek(c.io.resp.bits.data)
+    result
+  }
+
+  def MemWrite(addr: Int, data: Int): BigInt = {
+    while (peek(c.io.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.req.valid, 1)
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.data, data)
+    poke(c.io.req.bits.iswrite, 1)
+    poke(c.io.req.bits.tag, 0)
+    poke(c.io.req.bits.mask, 0)
+    poke(c.io.req.bits.mask, -1)
+    step(1)
+    poke(c.io.req.valid, 0)
+    1
+  }
+
+
+  def dumpMemory(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until outDataVec.length) {
+      val data = MemRead(outAddrVec(i))
+      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+    }
+    pw.close
+
+  }
+
+
+  def dumpMemoryInit(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until inDataVec.length) {
+      val data = MemRead(inAddrVec(i))
+      pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
+    }
+    pw.close
+
+  }
+
+
+  //val inAddrVec = List.range(0, 4 * 32, 4) // byte addresses
+  //val inA = List.range(0, 16) // 4x4 array of uint32
+  //val inB = List.range(0, 16) // 4x4 array of uint32
+
+  val DataSize = 8
+  val inAddrVec = List.range(0, 4 * 2*(DataSize * DataSize), 4) // byte addresses
+  val inA = Seq.fill(DataSize*DataSize)(Random.nextInt) // 4x4 array of uint32
+  val inB = Seq.fill(DataSize*DataSize)(Random.nextInt) // 4x4 array of uint32
+
+
+  val inDataVec = inA ++ inB
+  val outAddrVec = List.range(256, 256 + (4 * 16), 4)
+  val outDataVec = List(
+    56, 62, 68, 74
+    , 152, 174, 196, 218
+    , 248, 286, 324, 362
+    , 344, 398, 452, 506
+  )
+
+  // Write initial contents to the memory model.
+  for (i <- 0 until inDataVec.length) {
+    MemWrite(inAddrVec(i), inDataVec(i))
+  }
+
+  step(10)
+  //dumpMemoryInit("memory.txt")
+
+
+  // Initializing the signals
+  poke(c.io.in.bits.enable.control, false)
+  poke(c.io.in.bits.enable.taskID, 0)
+  poke(c.io.in.valid, false)
+  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").predicate, false)
+  poke(c.io.in.bits.data("field1").data, 0)
+  poke(c.io.in.bits.data("field1").predicate, false)
+  poke(c.io.in.bits.data("field2").data, 0)
+  poke(c.io.in.bits.data("field2").predicate, false)
+  poke(c.io.out.ready, false)
+  step(1)
+  poke(c.io.in.bits.enable.control, true)
+  poke(c.io.in.valid, true)
+  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").predicate, true)
+  poke(c.io.in.bits.data("field1").data, (DataSize * DataSize))
+  poke(c.io.in.bits.data("field1").predicate, true)
+  poke(c.io.in.bits.data("field2").data, 2*8*8)
+  poke(c.io.in.bits.data("field2").predicate, true)
+  poke(c.io.out.ready, true)
+  step(1)
+  poke(c.io.in.bits.enable.control, false)
+  poke(c.io.in.valid, false)
+  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").predicate, false)
+  poke(c.io.in.bits.data("field1").data, 0)
+  poke(c.io.in.bits.data("field1").predicate, false)
+  poke(c.io.in.bits.data("field2").data, 0)
+  poke(c.io.in.bits.data("field2").predicate, false)
+
+  step(1)
+
+  // NOTE: Don't use assert().  It seems to terminate the writing of VCD files
+  // early (before the error) which makes debugging very difficult. Check results
+  // using if() and fail command.
+  var time = 0 //Cycle counter
+  var result = false
+  while (time < 80000000) {
+    time += 1
+    step(1)
+    if (peek(c.io.out.valid) == 1) {
+      result = true
+      println(Console.BLUE + s"*** Bgemm finished. Run time: $time cycles." + Console.RESET)
+      //      val data = peek(c.io.out.bits.data("field0").data)
+      //      if (data != 1) {
+      //        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 1" + Console.RESET)
+      //        fail
+      //      } else {
+      //        println(Console.BLUE + s"*** Correct result received. Run time: $time cycles." + Console.RESET)
+      //      }
+    }
+  }
+  //  Peek into the CopyMem to see if the expected data is written back to the Cache
+//  var valid_data = true
+//  for (i <- 0 until outDataVec.length) {
+//    val data = MemRead(outAddrVec(i))
+//    if (data != outDataVec(i).toInt) {
+//      if(c.log){
+//        println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+//      }
+//      fail
+//      valid_data = false
+//    }
+//    else {
+//      if(c.log){
+//        println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
+//      }
+//    }
+//  }
+//  if (valid_data) {
+//    println(Console.BLUE + "*** Correct data written back." + Console.RESET)
+//  }
+
+  if (!result) {
+    println(Console.RED + "*** Timeout." + Console.RESET)
+    fail
+  }
+}
+
+
+
 class bgemmTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that bgemm works correctly." in {
@@ -366,29 +540,9 @@ class bgemmTester2 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir",
         "-tts", "0001"),
-      () => new bgemmMainTM()) {
-      c => new bgemmTest01(c)
+      () => new bgemmMainTM(Tile = 1)) {
+      c => new bgemmTest02(c)
     } should be(true)
   }
 }
 
-
-//class bgemmTester2 extends FlatSpec with Matchers {
-//  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-//  // iotester flags:
-//  // -ll  = log level <Error|Warn|Info|Debug|Trace>
-//  // -tbn = backend <firrtl|verilator|vcs>
-//  // -td  = target directory
-//  // -tts = seed for RNG
-//  it should "Check that cilk_for_test02 works when called via task manager." in {
-//    chisel3.iotesters.Driver.execute(
-//      Array(
-//        // "-ll", "Info",
-//        "-tbn", "verilator",
-//        "-td", "test_run_dir",
-//        "-tts", "0001"),
-//      () => new bgemmMainTM()) {
-//      c => new bgemmTest01(c)
-//    } should be(true)
-//  }
-//}
