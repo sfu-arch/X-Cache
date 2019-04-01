@@ -50,7 +50,7 @@ class test_05_dense_b_ir_4DF(implicit p: Parameters) extends test_05_dense_b_ir_
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(1, 0, 3, 2, 0)))
+  val InputSplitter = Module(new SplitCallNew(List(1, 3, 2)))
   InputSplitter.io.In <> io.in
 
 
@@ -142,7 +142,7 @@ class test_05_dense_b_ir_4DF(implicit p: Parameters) extends test_05_dense_b_ir_
 
   //  %7 = fadd float %6, 0.000000e+00, !UID !23
   //val FP_18 = Module(new FPComputeNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = p(FTYP)))
-  val FP_18 = Module(new FPCustomAddNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = p(FTYP)))
+  val FP_18 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = p(FTYP)))
 
   //  %tmp2 = getelementptr [1 x [64 x float]], [1 x [64 x float]]* %dot, i64 0, i64 0, !UID !24
   val Gep_tmp219 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 19)(ElementSize = 256, ArraySize = List(256)))
@@ -191,7 +191,7 @@ class test_05_dense_b_ir_4DF(implicit p: Parameters) extends test_05_dense_b_ir_
 
   //  %13 = fadd float %11, %12, !UID !41
   //val FP_34 = Module(new FPComputeNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = p(FTYP)))
-  val FP_34 = Module(new FPCustomAddNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = p(FTYP)))
+  val FP_34 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = p(FTYP)))
 
   //  %14 = getelementptr inbounds [64 x float], [64 x float]* %fusion, i64 0, i64 %fusion.indvar.dim.02, !UID !42
   val Gep_35 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 35)(ElementSize = 4, ArraySize = List(256)))
@@ -785,15 +785,15 @@ class test_05_dense_b_ir_4DF(implicit p: Parameters) extends test_05_dense_b_ir_
 
   bitcast_40.io.Input <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(0)
+  Gep_0.io.baseAddress <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  ld_3.io.GepAddr <> InputSplitter.io.Out.data.elements("field2")(1)
+  ld_3.io.GepAddr <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  Gep_4.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(2)
+  Gep_4.io.baseAddress <> InputSplitter.io.Out.data.elements("field1")(2)
 
-  Gep_7.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(0)
+  Gep_7.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  ld_25.io.GepAddr <> InputSplitter.io.Out.data.elements("field3")(1)
+  ld_25.io.GepAddr <> InputSplitter.io.Out.data.elements("field2")(1)
 
   st_21.io.Out(0).ready := true.B
 

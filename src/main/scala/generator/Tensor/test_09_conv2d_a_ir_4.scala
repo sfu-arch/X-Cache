@@ -50,7 +50,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(1, 0, 2, 1, 0)))
+  val InputSplitter = Module(new SplitCallNew(List(1,2, 1)))
   InputSplitter.io.In <> io.in
 
 
@@ -269,7 +269,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
 
   //  %20 = fadd float %13, %19, !UID !57
   //val FP_49 = Module(new FPComputeNode(NumOuts = 2, ID = 49, opCode = "fadd")(t = p(FTYP)))
-  val FP_49 = Module(new FPCustomAddNode(NumOuts = 2, ID = 49, opCode = "fadd")(t = p(FTYP)))
+  val FP_49 = Module(new FPCustomAdderNode(NumOuts = 2, ID = 49, opCode = "fadd")(t = p(FTYP)))
 
   //  br label %convolution.inner.loop_exit.iz.us, !UID !58, !BB_UID !59
   val br_50 = Module(new UBranchNode(ID = 50))
@@ -692,7 +692,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
 
   Loop_1.io.InLiveOut(0) <> phi27.io.Out(0)
 
-  Loop_1.io.InLiveOut(0) <> phi28.io.Out(0)
+  Loop_1.io.InLiveOut(1) <> phi28.io.Out(0)
 
   Loop_2.io.InLiveOut(0) <> phi58.io.Out(0)
 
@@ -1358,11 +1358,11 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
 
   bitcast_73.io.Input <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  ld_0.io.GepAddr <> InputSplitter.io.Out.data.elements("field2")(0)
+  ld_0.io.GepAddr <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  Gep_2.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(1)
+  Gep_2.io.baseAddress <> InputSplitter.io.Out.data.elements("field1")(1)
 
-  ld_5.io.GepAddr <> InputSplitter.io.Out.data.elements("field3")(0)
+  ld_5.io.GepAddr <> InputSplitter.io.Out.data.elements("field2")(0)
 
   st_63.io.Out(0).ready := true.B
 

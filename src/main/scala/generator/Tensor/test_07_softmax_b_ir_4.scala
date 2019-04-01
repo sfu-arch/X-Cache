@@ -50,9 +50,9 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val SharedFPU = Module(new SharedFPU(NumOps = 1, PipeDepth = 32)(t = p(FTYP)))
+  //val SharedFPU = Module(new SharedFPU(NumOps = 1, PipeDepth = 32)(t = p(FTYP)))
 
-  val InputSplitter = Module(new SplitCallNew(List(1, 0, 1, 2, 0)))
+  val InputSplitter = Module(new SplitCallNew(List(1, 1, 2)))
   InputSplitter.io.In <> io.in
 
 
@@ -127,10 +127,10 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
   val ld_8 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 8, RouteID = 2))
 
   //  %3 = fcmp oge float %1, %2, !UID !13
-  val FPCMP_9 = Module(new FPCompareNode(NumOuts = 1, ID = 9, opCode = "")(t = p(FTYP)))
+  val FPCMP_9 = Module(new FPCompareNode(NumOuts = 1, ID = 9, opCode = ">GT")(t = p(FTYP)))
 
   //  %4 = fcmp uno float %1, 0.000000e+00, !UID !14
-  val FPCMP_10 = Module(new FPCompareNode(NumOuts = 1, ID = 10, opCode = "")(t = p(FTYP)))
+  val FPCMP_10 = Module(new FPCompareNode(NumOuts = 1, ID = 10, opCode = "=EQ")(t = p(FTYP)))
 
   //  %5 = or i1 %3, %4, !UID !15
   val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "or")(sign = false))
@@ -182,7 +182,7 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
 
   //  %13 = fsub float %11, %12, !UID !34
   //val FP_27 = Module(new FPComputeNode(NumOuts = 0, ID = 27, opCode = "fsub")(t = p(FTYP)))
-  val FP_27 = Module(new FPCustomSubtractorNode(NumOuts = 0, ID = 27, opCode = "fsub")(t = p(FTYP)))
+  val FP_27 = Module(new FPCustomSubtractorNode(NumOuts = 1, ID = 27, opCode = "fsub")(t = p(FTYP)))
 
   //  %tmp4 = getelementptr [1 x [64 x float]], [1 x [64 x float]]* %fusion.1, i64 0, i64 0, !UID !35
   val Gep_tmp428 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 28)(ElementSize = 256, ArraySize = List(256)))
@@ -225,7 +225,7 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
 
   //  %19 = fadd float %17, %18, !UID !50
   //val FP_41 = Module(new FPComputeNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = p(FTYP)))
-  val FP_41 = Module(new FPCustomAddNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = p(FTYP)))
+  val FP_41 = Module(new FPCustomAdderNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = p(FTYP)))
 
   //  %invar.inc6 = add nuw nsw i64 %reduce.1.inner.indvar.reduction_dim.14, 1, !UID !51
   val binaryOp_invar_inc642 = Module(new ComputeNode(NumOuts = 2, ID = 42, opCode = "add")(sign = false))
@@ -264,7 +264,8 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
   val ld_53 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 53, RouteID = 8))
 
   //  %24 = fdiv float %22, %23, !UID !65
-  val FP_54 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 54, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
+  //val FP_54 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 54, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
+  val FP_54 = Module(new FPCustomDividerNode(NumOuts = 1, ID = 54, opCode = "fdiv")(t = p(FTYP)))
 
   //  %25 = getelementptr inbounds [64 x float], [64 x float]* %fusion, i64 0, i64 %fusion.indvar.dim.02, !UID !66
   val Gep_55 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 55)(ElementSize = 4, ArraySize = List(256)))
@@ -928,8 +929,8 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
 
-  SharedFPU.io.InData(0) <> FP_54.io.FUReq
-  FP_54.io.FUResp <> SharedFPU.io.OutData(0)
+  //SharedFPU.io.InData(0) <> FP_54.io.FUReq
+  //FP_54.io.FUResp <> SharedFPU.io.OutData(0)
 
 
 
@@ -1063,7 +1064,9 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
 
   Gep_tmp529.io.baseAddress <> Gep_tmp428.io.Out(0)
 
-  st_30.io.inData <> Gep_tmp529.io.Out(0)
+  st_30.io.GepAddr <> Gep_tmp529.io.Out(0)
+
+  st_30.io.inData <> FP_27.io.Out(0)
 
   icmp_32.io.LeftIO <> binaryOp_invar_inc331.io.Out(1)
 
@@ -1099,9 +1102,9 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
 
   ld_52.io.GepAddr <> Gep_tmp951.io.Out(0)
 
-  FP_54.io.a <> ld_52.io.Out(0)
+  FP_54.io.LeftIO <> ld_52.io.Out(0)
 
-  FP_54.io.b <> ld_53.io.Out(0)
+  FP_54.io.RightIO <> ld_53.io.Out(0)
 
   st_56.io.inData <> FP_54.io.Out(0)
 
@@ -1115,11 +1118,11 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
 
   bitcast_60.io.Input <> InputSplitter.io.Out.data.elements("field0")(0)
 
-  ld_0.io.GepAddr <> InputSplitter.io.Out.data.elements("field2")(0)
+  ld_0.io.GepAddr <> InputSplitter.io.Out.data.elements("field1")(0)
 
-  ld_2.io.GepAddr <> InputSplitter.io.Out.data.elements("field3")(0)
+  ld_2.io.GepAddr <> InputSplitter.io.Out.data.elements("field2")(0)
 
-  Gep_18.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(1)
+  Gep_18.io.baseAddress <> InputSplitter.io.Out.data.elements("field2")(1)
 
   st_17.io.Out(0).ready := true.B
 

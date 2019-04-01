@@ -817,7 +817,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   }
 
   def IsLiveInFired(): Bool = {
-    if (NumIns == 0) {
+    if (NumIns.length == 0) {
       return true.B
     }
     else {
@@ -831,7 +831,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
   }
 
   def IsCarryOutFired(): Bool = {
-    if (NumOuts == 0) {
+    if (NumOuts.length == 0) {
       return true.B
     }
     else {
