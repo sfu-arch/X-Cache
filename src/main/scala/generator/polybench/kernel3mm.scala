@@ -140,10 +140,10 @@ class kernel_3mmDF(implicit p: Parameters) extends kernel_3mmDFIO()(p) {
   val phi3 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 3, Res = true))
 
   //  %tmp = getelementptr [900 x double], [900 x double]* %0, i64 %9, !UID !105
-  val Gep_tmp4 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 4)(ElementSize = 8, ArraySize = List(7200)))
+  val Gep_tmp4 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 4)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp1 = getelementptr [900 x double], [900 x double]* %tmp, i64 0, i64 %11, !UID !106
-  val Gep_tmp15 = Module(new GepNode(NumIns = 2, NumOuts = 2, ID = 5)(ElementSize = 8, ArraySize = List(7200)))
+  val Gep_tmp15 = Module(new GepNode(NumIns = 2, NumOuts = 2, ID = 5)(ElementSize = 8, ArraySize = List()))
 
   //  store double 0.000000e+00, double* %tmp1, align 8, !dbg !107, !tbaa !110, !UID !114
   val st_6 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 6, RouteID = 0))
@@ -155,31 +155,33 @@ class kernel_3mmDF(implicit p: Parameters) extends kernel_3mmDFIO()(p) {
   val phi8 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 8, Res = true))
 
   //  %tmp2 = getelementptr [1000 x double], [1000 x double]* %1, i64 %9, !UID !121
-  val Gep_tmp29 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 9)(ElementSize = 8, ArraySize = List(8000)))
+  val Gep_tmp29 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 9)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp3 = getelementptr [1000 x double], [1000 x double]* %tmp2, i64 0, i64 %13, !UID !122
-  val Gep_tmp310 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 10)(ElementSize = 8, ArraySize = List(8000)))
+  val Gep_tmp310 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 10)(ElementSize = 8, ArraySize = List()))
 
   //  %14 = load double, double* %tmp3, align 8, !dbg !123, !tbaa !110, !UID !125
   val ld_11 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 11, RouteID = 0))
 
   //  %tmp4 = getelementptr [900 x double], [900 x double]* %2, i64 %13, !UID !126
-  val Gep_tmp412 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 12)(ElementSize = 8, ArraySize = List(7200)))
+  val Gep_tmp412 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 12)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp5 = getelementptr [900 x double], [900 x double]* %tmp4, i64 0, i64 %11, !UID !127
-  val Gep_tmp513 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 13)(ElementSize = 8, ArraySize = List(7200)))
+  val Gep_tmp513 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 13)(ElementSize = 8, ArraySize = List()))
 
   //  %15 = load double, double* %tmp5, align 8, !dbg !128, !tbaa !110, !UID !129
   val ld_14 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 14, RouteID = 1))
 
   //  %16 = fmul double %14, %15, !dbg !130, !UID !131
-  val FP_15 = Module(new FPComputeNode(NumOuts = 1, ID = 15, opCode = "fmul")(t = p(FTYP)))
+  //val FP_15 = Module(new FPComputeNode(NumOuts = 1, ID = 15, opCode = "fmul")(t = p(FTYP)))
+  val FP_15 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 15, opCode = "fmul")(t = p(FTYP)))
 
   //  %17 = load double, double* %tmp1, align 8, !dbg !132, !tbaa !110, !UID !133
   val ld_16 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 16, RouteID = 2))
 
   //  %18 = fadd double %17, %16, !dbg !132, !UID !134
-  val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fadd")(t = p(FTYP)))
+  //val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fadd")(t = p(FTYP)))
+  val FP_17 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 17, opCode = "fadd")(t = p(FTYP)))
 
   //  store double %18, double* %tmp1, align 8, !dbg !132, !tbaa !110, !UID !135
   val st_18 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 18, RouteID = 1))
@@ -224,10 +226,10 @@ class kernel_3mmDF(implicit p: Parameters) extends kernel_3mmDFIO()(p) {
   val phi31 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 31, Res = true))
 
   //  %tmp6 = getelementptr [1100 x double], [1100 x double]* %3, i64 %29, !UID !170
-  val Gep_tmp632 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 32)(ElementSize = 8, ArraySize = List(8800)))
+  val Gep_tmp632 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 32)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp7 = getelementptr [1100 x double], [1100 x double]* %tmp6, i64 0, i64 %31, !UID !171
-  val Gep_tmp733 = Module(new GepNode(NumIns = 2, NumOuts = 2, ID = 33)(ElementSize = 8, ArraySize = List(8800)))
+  val Gep_tmp733 = Module(new GepNode(NumIns = 2, NumOuts = 2, ID = 33)(ElementSize = 8, ArraySize = List()))
 
   //  store double 0.000000e+00, double* %tmp7, align 8, !dbg !172, !tbaa !110, !UID !175
   val st_34 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 34, RouteID = 2))
@@ -239,31 +241,33 @@ class kernel_3mmDF(implicit p: Parameters) extends kernel_3mmDFIO()(p) {
   val phi36 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 36, Res = true))
 
   //  %tmp8 = getelementptr [1200 x double], [1200 x double]* %4, i64 %29, !UID !181
-  val Gep_tmp837 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 37)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp837 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 37)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp9 = getelementptr [1200 x double], [1200 x double]* %tmp8, i64 0, i64 %33, !UID !182
-  val Gep_tmp938 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 38)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp938 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 38)(ElementSize = 8, ArraySize = List()))
 
   //  %34 = load double, double* %tmp9, align 8, !dbg !183, !tbaa !110, !UID !185
   val ld_39 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 39, RouteID = 3))
 
   //  %tmp10 = getelementptr [1100 x double], [1100 x double]* %5, i64 %33, !UID !186
-  val Gep_tmp1040 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 40)(ElementSize = 8, ArraySize = List(8800)))
+  val Gep_tmp1040 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 40)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp11 = getelementptr [1100 x double], [1100 x double]* %tmp10, i64 0, i64 %31, !UID !187
-  val Gep_tmp1141 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 41)(ElementSize = 8, ArraySize = List(8800)))
+  val Gep_tmp1141 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 41)(ElementSize = 8, ArraySize = List()))
 
   //  %35 = load double, double* %tmp11, align 8, !dbg !188, !tbaa !110, !UID !189
   val ld_42 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 42, RouteID = 4))
 
   //  %36 = fmul double %34, %35, !dbg !190, !UID !191
-  val FP_43 = Module(new FPComputeNode(NumOuts = 1, ID = 43, opCode = "fmul")(t = p(FTYP)))
+  //val FP_43 = Module(new FPComputeNode(NumOuts = 1, ID = 43, opCode = "fmul")(t = p(FTYP)))
+  val FP_43 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 43, opCode = "fmul")(t = p(FTYP)))
 
   //  %37 = load double, double* %tmp7, align 8, !dbg !192, !tbaa !110, !UID !193
   val ld_44 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 44, RouteID = 5))
 
   //  %38 = fadd double %37, %36, !dbg !192, !UID !194
-  val FP_45 = Module(new FPComputeNode(NumOuts = 1, ID = 45, opCode = "fadd")(t = p(FTYP)))
+  //val FP_45 = Module(new FPComputeNode(NumOuts = 1, ID = 45, opCode = "fadd")(t = p(FTYP)))
+  val FP_45 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 45, opCode = "fadd")(t = p(FTYP)))
 
   //  store double %38, double* %tmp7, align 8, !dbg !192, !tbaa !110, !UID !195
   val st_46 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 46, RouteID = 3))
@@ -308,10 +312,10 @@ class kernel_3mmDF(implicit p: Parameters) extends kernel_3mmDFIO()(p) {
   val phi59 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 59, Res = true))
 
   //  %tmp12 = getelementptr [1100 x double], [1100 x double]* %6, i64 %49, !UID !231
-  val Gep_tmp1260 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 60)(ElementSize = 8, ArraySize = List(8800)))
+  val Gep_tmp1260 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 60)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp13 = getelementptr [1100 x double], [1100 x double]* %tmp12, i64 0, i64 %51, !UID !232
-  val Gep_tmp1361 = Module(new GepNode(NumIns = 2, NumOuts = 2, ID = 61)(ElementSize = 8, ArraySize = List(8800)))
+  val Gep_tmp1361 = Module(new GepNode(NumIns = 2, NumOuts = 2, ID = 61)(ElementSize = 8, ArraySize = List()))
 
   //  store double 0.000000e+00, double* %tmp13, align 8, !dbg !233, !tbaa !110, !UID !236
   val st_62 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 62, RouteID = 4))
@@ -323,31 +327,33 @@ class kernel_3mmDF(implicit p: Parameters) extends kernel_3mmDFIO()(p) {
   val phi64 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 64, Res = true))
 
   //  %tmp14 = getelementptr [900 x double], [900 x double]* %0, i64 %49, !UID !242
-  val Gep_tmp1465 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 65)(ElementSize = 8, ArraySize = List(7200)))
+  val Gep_tmp1465 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 65)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp15 = getelementptr [900 x double], [900 x double]* %tmp14, i64 0, i64 %53, !UID !243
-  val Gep_tmp1566 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 66)(ElementSize = 8, ArraySize = List(7200)))
+  val Gep_tmp1566 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 66)(ElementSize = 8, ArraySize = List()))
 
   //  %54 = load double, double* %tmp15, align 8, !dbg !244, !tbaa !110, !UID !246
   val ld_67 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 67, RouteID = 6))
 
   //  %tmp16 = getelementptr [1100 x double], [1100 x double]* %3, i64 %53, !UID !247
-  val Gep_tmp1668 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 68)(ElementSize = 8, ArraySize = List(8800)))
+  val Gep_tmp1668 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 68)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp17 = getelementptr [1100 x double], [1100 x double]* %tmp16, i64 0, i64 %51, !UID !248
-  val Gep_tmp1769 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 69)(ElementSize = 8, ArraySize = List(8800)))
+  val Gep_tmp1769 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 69)(ElementSize = 8, ArraySize = List()))
 
   //  %55 = load double, double* %tmp17, align 8, !dbg !249, !tbaa !110, !UID !250
   val ld_70 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 70, RouteID = 7))
 
   //  %56 = fmul double %54, %55, !dbg !251, !UID !252
-  val FP_71 = Module(new FPComputeNode(NumOuts = 1, ID = 71, opCode = "fmul")(t = p(FTYP)))
+  //val FP_71 = Module(new FPComputeNode(NumOuts = 1, ID = 71, opCode = "fmul")(t = p(FTYP)))
+  val FP_71 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 71, opCode = "fmul")(t = p(FTYP)))
 
   //  %57 = load double, double* %tmp13, align 8, !dbg !253, !tbaa !110, !UID !254
   val ld_72 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 72, RouteID = 8))
 
   //  %58 = fadd double %57, %56, !dbg !253, !UID !255
-  val FP_73 = Module(new FPComputeNode(NumOuts = 1, ID = 73, opCode = "fadd")(t = p(FTYP)))
+  //val FP_73 = Module(new FPComputeNode(NumOuts = 1, ID = 73, opCode = "fadd")(t = p(FTYP)))
+  val FP_73 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 73, opCode = "fadd")(t = p(FTYP)))
 
   //  store double %58, double* %tmp13, align 8, !dbg !253, !tbaa !110, !UID !256
   val st_74 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 74, RouteID = 5))

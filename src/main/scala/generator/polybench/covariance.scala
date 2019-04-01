@@ -50,7 +50,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val SharedFPU = Module(new SharedFPU(NumOps = 2, PipeDepth = 32)(t = p(FTYP)))
+  //val SharedFPU = Module(new SharedFPU(NumOps = 2, PipeDepth = 32)(t = p(FTYP)))
 
   val InputSplitter = Module(new SplitCallNew(List(2, 3, 1, 2)))
   InputSplitter.io.In <> io.in
@@ -136,10 +136,10 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val phi5 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 5, Res = true))
 
   //  %tmp = getelementptr [1200 x double], [1200 x double]* %1, i64 %9, !UID !78
-  val Gep_tmp6 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 6)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp6 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 6)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp1 = getelementptr [1200 x double], [1200 x double]* %tmp, i64 0, i64 %6, !UID !79
-  val Gep_tmp17 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 7)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp17 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 7)(ElementSize = 8, ArraySize = List()))
 
   //  %10 = load double, double* %tmp1, align 8, !dbg !80, !tbaa !67, !UID !82
   val ld_8 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 8, RouteID = 0))
@@ -148,7 +148,8 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val ld_9 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 9, RouteID = 1))
 
   //  %12 = fadd double %10, %11, !dbg !83, !UID !85
-  val FP_10 = Module(new FPComputeNode(NumOuts = 1, ID = 10, opCode = "fadd")(t = p(FTYP)))
+//  val FP_10 = Module(new FPComputeNode(NumOuts = 1, ID = 10, opCode = "fadd")(t = p(FTYP)))
+  val FP_10 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 10, opCode = "fadd")(t = p(FTYP)))
 
   //  store double %12, double* %7, align 8, !dbg !83, !tbaa !67, !UID !86
   val st_11 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 11, RouteID = 1))
@@ -166,7 +167,8 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val ld_15 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 15, RouteID = 2))
 
   //  %17 = fdiv double %16, %0, !dbg !95, !UID !97
-  val FP_16 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 16, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
+  //val FP_16 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 16, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
+  val FP_16 = Module(new FPCustomDividerNode(NumOuts = 1, ID = 62, opCode = "fdiv")(t = p(FTYP)))
 
   //  store double %17, double* %7, align 8, !dbg !95, !tbaa !67, !UID !98
   val st_17 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 17, RouteID = 2))
@@ -199,16 +201,17 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val ld_26 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 26, RouteID = 3))
 
   //  %tmp2 = getelementptr [1200 x double], [1200 x double]* %1, i64 %22, !UID !121
-  val Gep_tmp227 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 27)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp227 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 27)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp3 = getelementptr [1200 x double], [1200 x double]* %tmp2, i64 0, i64 %24, !UID !122
-  val Gep_tmp328 = Module(new GepNode(NumIns = 2, NumOuts = 2, ID = 28)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp328 = Module(new GepNode(NumIns = 2, NumOuts = 2, ID = 28)(ElementSize = 8, ArraySize = List()))
 
   //  %27 = load double, double* %tmp3, align 8, !dbg !123, !tbaa !67, !UID !124
   val ld_29 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 29, RouteID = 4))
 
   //  %28 = fsub double %27, %26, !dbg !123, !UID !125
-  val FP_30 = Module(new FPComputeNode(NumOuts = 1, ID = 30, opCode = "fsub")(t = p(FTYP)))
+  //val FP_30 = Module(new FPComputeNode(NumOuts = 1, ID = 30, opCode = "fsub")(t = p(FTYP)))
+  val FP_30 = Module(new FPCustomSubtractorNode(NumOuts = 1, ID = 30, opCode = "fsub")(t = p(FTYP)))
 
   //  store double %28, double* %tmp3, align 8, !dbg !123, !tbaa !67, !UID !126
   val st_31 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 31, RouteID = 3))
@@ -232,7 +235,8 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val br_37 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 37))
 
   //  %35 = fadd double %0, -1.000000e+00, !UID !144
-  val FP_38 = Module(new FPComputeNode(NumOuts = 1, ID = 38, opCode = "fadd")(t = p(FTYP)))
+  //val FP_38 = Module(new FPComputeNode(NumOuts = 1, ID = 38, opCode = "fadd")(t = p(FTYP)))
+  val FP_38 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 38, opCode = "fadd")(t = p(FTYP)))
 
   //  br label %36, !dbg !145, !UID !147, !BB_UID !148
   val br_39 = Module(new UBranchNode(ID = 39))
@@ -247,10 +251,10 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val phi42 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 4, ID = 42, Res = true))
 
   //  %tmp4 = getelementptr [1200 x double], [1200 x double]* %2, i64 %37, !UID !156
-  val Gep_tmp443 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 43)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp443 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 43)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp5 = getelementptr [1200 x double], [1200 x double]* %tmp4, i64 0, i64 %39, !UID !157
-  val Gep_tmp544 = Module(new GepNode(NumIns = 2, NumOuts = 4, ID = 44)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp544 = Module(new GepNode(NumIns = 2, NumOuts = 4, ID = 44)(ElementSize = 8, ArraySize = List()))
 
   //  store double 0.000000e+00, double* %tmp5, align 8, !dbg !158, !tbaa !67, !UID !161
   val st_45 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 45, RouteID = 4))
@@ -262,31 +266,33 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val phi47 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 47, Res = true))
 
   //  %tmp6 = getelementptr [1200 x double], [1200 x double]* %1, i64 %41, !UID !168
-  val Gep_tmp648 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 48)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp648 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 48)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp7 = getelementptr [1200 x double], [1200 x double]* %tmp6, i64 0, i64 %37, !UID !169
-  val Gep_tmp749 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 49)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp749 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 49)(ElementSize = 8, ArraySize = List()))
 
   //  %42 = load double, double* %tmp7, align 8, !dbg !170, !tbaa !67, !UID !172
   val ld_50 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 50, RouteID = 5))
 
   //  %tmp8 = getelementptr [1200 x double], [1200 x double]* %1, i64 %41, !UID !173
-  val Gep_tmp851 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 51)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp851 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 51)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp9 = getelementptr [1200 x double], [1200 x double]* %tmp8, i64 0, i64 %39, !UID !174
-  val Gep_tmp952 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 52)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp952 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 52)(ElementSize = 8, ArraySize = List()))
 
   //  %43 = load double, double* %tmp9, align 8, !dbg !175, !tbaa !67, !UID !176
   val ld_53 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 53, RouteID = 6))
 
   //  %44 = fmul double %42, %43, !dbg !177, !UID !178
-  val FP_54 = Module(new FPComputeNode(NumOuts = 1, ID = 54, opCode = "fmul")(t = p(FTYP)))
+  //val FP_54 = Module(new FPComputeNode(NumOuts = 1, ID = 54, opCode = "fmul")(t = p(FTYP)))
+  val FP_54 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 54, opCode = "fmul")(t = p(FTYP)))
 
   //  %45 = load double, double* %tmp5, align 8, !dbg !179, !tbaa !67, !UID !180
   val ld_55 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 55, RouteID = 7))
 
   //  %46 = fadd double %45, %44, !dbg !179, !UID !181
-  val FP_56 = Module(new FPComputeNode(NumOuts = 1, ID = 56, opCode = "fadd")(t = p(FTYP)))
+  //val FP_56 = Module(new FPComputeNode(NumOuts = 1, ID = 56, opCode = "fadd")(t = p(FTYP)))
+  val FP_56 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 56, opCode = "fadd")(t = p(FTYP)))
 
   //  store double %46, double* %tmp5, align 8, !dbg !179, !tbaa !67, !UID !182
   val st_57 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 57, RouteID = 5))
@@ -304,16 +310,17 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
   val ld_61 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 61, RouteID = 8))
 
   //  %51 = fdiv double %50, %35, !dbg !191, !UID !193
-  val FP_62 = Module(new FPDivSqrtNode(NumOuts = 2, ID = 62, RouteID = 1, opCode = "fdiv")(t = p(FTYP)))
+  //val FP_62 = Module(new FPDivSqrtNode(NumOuts = 2, ID = 62, RouteID = 1, opCode = "fdiv")(t = p(FTYP)))
+  val FP_62 = Module(new FPCustomDividerNode(NumOuts = 2, ID = 62, opCode = "fdiv")(t = p(FTYP)))
 
   //  store double %51, double* %tmp5, align 8, !dbg !191, !tbaa !67, !UID !194
   val st_63 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 63, RouteID = 6))
 
   //  %tmp10 = getelementptr [1200 x double], [1200 x double]* %2, i64 %39, !UID !195
-  val Gep_tmp1064 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 64)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp1064 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 64)(ElementSize = 8, ArraySize = List()))
 
   //  %tmp11 = getelementptr [1200 x double], [1200 x double]* %tmp10, i64 0, i64 %37, !UID !196
-  val Gep_tmp1165 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 65)(ElementSize = 8, ArraySize = List(9600)))
+  val Gep_tmp1165 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 65)(ElementSize = 8, ArraySize = List()))
 
   //  store double %51, double* %tmp11, align 8, !dbg !197, !tbaa !67, !UID !198
   val st_66 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 66, RouteID = 7))
@@ -626,7 +633,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Gep_tmp1064.io.baseAddress <> Loop_1.io.OutLiveIn.elements("field2")(1)
 
-  FP_62.io.b <> Loop_1.io.OutLiveIn.elements("field3")(0)
+  FP_62.io.RightIO <> Loop_1.io.OutLiveIn.elements("field3")(0)
 
   Gep_tmp227.io.idx(0) <> Loop_3.io.OutLiveIn.elements("field0")(0)
 
@@ -644,7 +651,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   Gep_2.io.baseAddress <> Loop_6.io.OutLiveIn.elements("field0")(0)
 
-  FP_16.io.b <> Loop_6.io.OutLiveIn.elements("field2")(0)
+  FP_16.io.RightIO <> Loop_6.io.OutLiveIn.elements("field2")(0)
 
 
 
@@ -1090,11 +1097,11 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
 
-  SharedFPU.io.InData(0) <> FP_16.io.FUReq
-  FP_16.io.FUResp <> SharedFPU.io.OutData(0)
+  //SharedFPU.io.InData(0) <> FP_16.io.FUReq
+  //FP_16.io.FUResp <> SharedFPU.io.OutData(0)
 
-  SharedFPU.io.InData(1) <> FP_62.io.FUReq
-  FP_62.io.FUResp <> SharedFPU.io.OutData(1)
+  //SharedFPU.io.InData(1) <> FP_62.io.FUReq
+  //FP_62.io.FUResp <> SharedFPU.io.OutData(1)
 
 
 
@@ -1188,7 +1195,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   br_14.io.CmpIO <> icmp_13.io.Out(0)
 
-  FP_16.io.a <> ld_15.io.Out(0)
+  FP_16.io.LeftIO <> ld_15.io.Out(0)
 
   st_17.io.inData <> FP_16.io.Out(0)
 
@@ -1270,7 +1277,7 @@ class kernel_covarianceDF(implicit p: Parameters) extends kernel_covarianceDFIO(
 
   br_60.io.CmpIO <> icmp_59.io.Out(0)
 
-  FP_62.io.a <> ld_61.io.Out(0)
+  FP_62.io.LeftIO <> ld_61.io.Out(0)
 
   st_63.io.inData <> FP_62.io.Out(0)
 

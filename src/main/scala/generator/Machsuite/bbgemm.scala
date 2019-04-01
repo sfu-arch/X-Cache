@@ -167,7 +167,8 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
   val ld_20 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 20, RouteID = 1))
 
   //  %25 = fmul double %18, %24, !dbg !146, !UID !147
-  val FP_21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = p(FTYP)))
+  //val FP_21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = p(FTYP)))
+  val FP_21 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = p(FTYP)))
 
   //  %26 = add nuw nsw i64 %20, %5, !dbg !149, !UID !150
   val binaryOp_22 = Module(new ComputeNode(NumOuts = 1, ID = 22, opCode = "add")(sign = false))
@@ -182,7 +183,8 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
   val ld_25 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 25, RouteID = 2))
 
   //  %30 = fadd double %29, %25, !dbg !155, !UID !157
-  val FP_26 = Module(new FPComputeNode(NumOuts = 1, ID = 26, opCode = "fadd")(t = p(FTYP)))
+  //val FP_26 = Module(new FPComputeNode(NumOuts = 1, ID = 26, opCode = "fadd")(t = p(FTYP)))
+  val FP_26 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 26, opCode = "fadd")(t = p(FTYP)))
 
   //  store double %30, double* %28, align 8, !dbg !155, !tbaa !125, !UID !158
   val st_27 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 27, RouteID = 0))

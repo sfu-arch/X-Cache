@@ -136,10 +136,12 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val ld_14 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 14, RouteID = 1))
 
   //  %add = fadd double %0, %1, !dbg !124, !UID !125
-  val FP_add15 = Module(new FPComputeNode(NumOuts = 1, ID = 15, opCode = "fadd")(t = p(FTYP)))
+  //val FP_add15 = Module(new FPComputeNode(NumOuts = 1, ID = 15, opCode = "fadd")(t = p(FTYP)))
+  val FP_add15 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 15, opCode = "fadd")(t = p(FTYP)))
 
   //  %sub = fsub double %0, %1, !dbg !127, !UID !128
-  val FP_sub16 = Module(new FPComputeNode(NumOuts = 1, ID = 16, opCode = "fsub")(t = p(FTYP)))
+  //val FP_sub16 = Module(new FPComputeNode(NumOuts = 1, ID = 16, opCode = "fsub")(t = p(FTYP)))
+  val FP_sub16 = Module(new FPCustomSubtractorNode(NumOuts = 1, ID = 16, opCode = "fsub")(t = p(FTYP)))
 
   //  store double %sub, double* %arrayidx4, align 8, !dbg !129, !tbaa !115, !UID !130
   val st_17 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 17, RouteID = 0))
@@ -160,10 +162,12 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val ld_22 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 22, RouteID = 3))
 
   //  %add17 = fadd double %2, %3, !dbg !139, !UID !140
-  val FP_add1723 = Module(new FPComputeNode(NumOuts = 1, ID = 23, opCode = "fadd")(t = p(FTYP)))
+  //val FP_add1723 = Module(new FPComputeNode(NumOuts = 1, ID = 23, opCode = "fadd")(t = p(FTYP)))
+  val FP_add1723 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 23, opCode = "fadd")(t = p(FTYP)))
 
   //  %sub22 = fsub double %2, %3, !dbg !141, !UID !142
-  val FP_sub2224 = Module(new FPComputeNode(NumOuts = 1, ID = 24, opCode = "fsub")(t = p(FTYP)))
+  //val FP_sub2224 = Module(new FPComputeNode(NumOuts = 1, ID = 24, opCode = "fsub")(t = p(FTYP)))
+  val FP_sub2224 = Module(new FPCustomSubtractorNode(NumOuts = 1, ID = 24, opCode = "fsub")(t = p(FTYP)))
 
   //  store double %sub22, double* %arrayidx16, align 8, !dbg !143, !tbaa !115, !UID !144
   val st_25 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 25, RouteID = 2))
@@ -196,7 +200,8 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val ld_34 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 34, RouteID = 5))
 
   //  %mul = fmul double %5, %6, !dbg !165, !UID !166
-  val FP_mul35 = Module(new FPComputeNode(NumOuts = 1, ID = 35, opCode = "fmul")(t = p(FTYP)))
+  //val FP_mul35 = Module(new FPComputeNode(NumOuts = 1, ID = 35, opCode = "fmul")(t = p(FTYP)))
+  val FP_mul35 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 35, opCode = "fmul")(t = p(FTYP)))
 
   //  %arrayidx33 = getelementptr inbounds double, double* %img_twid, i64 %4, !dbg !167, !UID !168
   val Gep_arrayidx3336 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 36)(ElementSize = 8, ArraySize = List()))
@@ -208,19 +213,24 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val ld_38 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 38, RouteID = 7))
 
   //  %mul36 = fmul double %7, %8, !dbg !172, !UID !173
-  val FP_mul3639 = Module(new FPComputeNode(NumOuts = 1, ID = 39, opCode = "fmul")(t = p(FTYP)))
+  //val FP_mul3639 = Module(new FPComputeNode(NumOuts = 1, ID = 39, opCode = "fmul")(t = p(FTYP)))
+  val FP_mul3639 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 39, opCode = "fmul")(t = p(FTYP)))
 
   //  %sub37 = fsub double %mul, %mul36, !dbg !174, !UID !175
-  val FP_sub3740 = Module(new FPComputeNode(NumOuts = 1, ID = 40, opCode = "fsub")(t = p(FTYP)))
+  //val FP_sub3740 = Module(new FPComputeNode(NumOuts = 1, ID = 40, opCode = "fsub")(t = p(FTYP)))
+  val FP_sub3740 = Module(new FPCustomSubtractorNode(NumOuts = 1, ID = 40, opCode = "fsub")(t = p(FTYP)))
 
   //  %mul42 = fmul double %5, %8, !dbg !176, !UID !177
-  val FP_mul4241 = Module(new FPComputeNode(NumOuts = 1, ID = 41, opCode = "fmul")(t = p(FTYP)))
+  //val FP_mul4241 = Module(new FPComputeNode(NumOuts = 1, ID = 41, opCode = "fmul")(t = p(FTYP)))
+  val FP_mul4241 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 41, opCode = "fmul")(t = p(FTYP)))
 
   //  %mul47 = fmul double %6, %7, !dbg !178, !UID !179
-  val FP_mul4742 = Module(new FPComputeNode(NumOuts = 1, ID = 42, opCode = "fmul")(t = p(FTYP)))
+  //val FP_mul4742 = Module(new FPComputeNode(NumOuts = 1, ID = 42, opCode = "fmul")(t = p(FTYP)))
+  val FP_mul4742 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 42, opCode = "fmul")(t = p(FTYP)))
 
   //  %add48 = fadd double %mul47, %mul42, !dbg !180, !UID !181
-  val FP_add4843 = Module(new FPComputeNode(NumOuts = 1, ID = 43, opCode = "fadd")(t = p(FTYP)))
+  //val FP_add4843 = Module(new FPComputeNode(NumOuts = 1, ID = 43, opCode = "fadd")(t = p(FTYP)))
+  val FP_add4843 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 43, opCode = "fadd")(t = p(FTYP)))
 
   //  store double %add48, double* %arrayidx16, align 8, !dbg !182, !tbaa !115, !UID !183
   val st_44 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 44, RouteID = 4))
@@ -759,9 +769,9 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
 
   binaryOp_shl27.io.LeftIO <> binaryOp_xor8.io.Out(1)
 
-  Gep_arrayidx10.io.idx(0) <> sextidxprom9.io.Out
+  Gep_arrayidx10.io.idx(0) <> sextidxprom9.io.Out(0)
 
-  Gep_arrayidx1419.io.idx(0) <> sextidxprom9.io.Out
+  Gep_arrayidx1419.io.idx(0) <> sextidxprom9.io.Out(0)
 
   ld_11.io.GepAddr <> Gep_arrayidx10.io.Out(0)
 
@@ -771,9 +781,9 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
 
   FP_sub16.io.LeftIO <> ld_11.io.Out(1)
 
-  Gep_arrayidx413.io.idx(0) <> sextidxprom312.io.Out
+  Gep_arrayidx413.io.idx(0) <> sextidxprom312.io.Out(0)
 
-  Gep_arrayidx1621.io.idx(0) <> sextidxprom312.io.Out
+  Gep_arrayidx1621.io.idx(0) <> sextidxprom312.io.Out(0)
 
   ld_14.io.GepAddr <> Gep_arrayidx413.io.Out(0)
 
