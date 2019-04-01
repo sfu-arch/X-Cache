@@ -85,77 +85,87 @@ class bgemmMainDirect(implicit p: Parameters) extends bgemmMainIO()(p) {
 
 }
 
-//class bgemmMainTM(implicit p: Parameters) extends bgemmMainIO()(p) {
-//
-//  val cache = Module(new Cache) // Simple Nasti Cache
-//  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-//  val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
-//
-//  // Store a copy of all data written to the cache.  This is done since the cache isn't
-//  // 'write through' to the memory model and we have no easy way of reading the
-//  // cache contents from the testbench.
-//  when(cache.io.cpu.req.valid && cache.io.cpu.req.bits.iswrite) {
-//    memCopy.write((cache.io.cpu.req.bits.addr >> 2).asUInt(), cache.io.cpu.req.bits.data)
-//  }
-//  io.dout := memCopy.read((io.addr >> 2).asUInt())
-//
-//  // Connect the wrapper I/O to the memory model initialization interface so the
-//  // test bench can write contents at start.
-//  memModel.io.nasti <> cache.io.nasti
-//  memModel.io.init.bits.addr := io.addr
-//  memModel.io.init.bits.data := io.din
-//  memModel.io.init.valid := io.write
-//  cache.io.cpu.abort := false.B
-//
-//  val children = 3
-//  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(32), 1, children))
-//  val bgemm = Module(new bgemmDF())
-//
-//  val bgemm_detach1 = for (i <- 0 until children) yield {
-//    val detach = Module(new bgemm_detach1DF())
-//    detach
-//  }
-//  val bgemm_detach2 = for (i <- 0 until children) yield {
-//    val detach2 = Module(new bgemm_detach2DF)
-//    detach2
-//  }
-//  val bgemm_detach3 = for (i <- 0 until children) yield {
-//    val detach3 = Module(new bgemm_detach3DF)
-//    detach3
-//  }
-//
-//  // Merge requests from two children.
-//  val MemArbiter = Module(new MemArbiter(children))
-//  for (i <- 0 until children) {
-//    MemArbiter.io.cpu.MemReq(i) <> bgemm_detach2(i).io.MemReq
-//    bgemm_detach2(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
-//  }
-//  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
-//  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
-//
-//  // tester to cilk_for_test02
-//  bgemm.io.in <> io.in
-//
-//  // cilk_for_test02 to task controller
-//  TaskControllerModule.io.parentIn(0) <> bgemm.io.call10_out
-//
-//  // task controller to sub-task bgemm_detach
-//  for (i <- 0 until children) {
-//    bgemm_detach1(i).io.in <> TaskControllerModule.io.childOut(i)
-//    bgemm_detach2(i).io.in <> bgemm_detach1(i).io.call13_out
-//    bgemm_detach3(i).io.in <> bgemm_detach2(i).io.call13_out
-//    bgemm_detach2(i).io.call13_in <> bgemm_detach3(i).io.out
-//    bgemm_detach1(i).io.call13_in <> bgemm_detach2(i).io.out
-//    TaskControllerModule.io.childIn(i) <> bgemm_detach1(i).io.out
-//  }
-//
-//  // Task controller to cilk_for_test02
-//  bgemm.io.call10_in <> TaskControllerModule.io.parentOut(0)
-//
-//  // cilk_for_test02 to tester
-//  io.out <> bgemm.io.out
-//
-//}
+class bgemmMainTM(val Tile:Int = 1)(implicit p: Parameters) extends bgemmMainIO()(p) {
+
+  val cache = Module(new Cache) // Simple Nasti Cache
+  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
+  memModel.io.nasti <> cache.io.nasti
+  memModel.io.init.bits.addr := 0.U
+  memModel.io.init.bits.data := 0.U
+  memModel.io.init.valid := false.B
+  cache.io.cpu.abort := false.B
+
+
+  val children = Tile
+  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))
+
+
+  val bgemm = Module(new bgemmDF())
+
+  val bgemm_detach1 = for (i <- 0 until children) yield {
+    val detach = Module(new bgemm_detach1DF())
+    detach
+  }
+  val bgemm_detach2 = for (i <- 0 until children) yield {
+    val detach2 = Module(new bgemm_detach2DF)
+    detach2
+  }
+  val bgemm_detach3 = for (i <- 0 until children) yield {
+    val detach3 = Module(new bgemm_detach3DF)
+    detach3
+  }
+
+  // Merge requests from two children.
+  val MemArbiter = Module(new MemArbiter(children + 1))
+  for (i <- 0 until children) {
+    MemArbiter.io.cpu.MemReq(i) <> bgemm_detach3(i).io.MemReq
+    bgemm_detach3(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
+  }
+
+  for (i <- 0 until children){
+    bgemm_detach1(i).io.MemReq <> DontCare
+    bgemm_detach1(i).io.MemResp <> DontCare
+
+    bgemm_detach2(i).io.MemReq <> DontCare
+    bgemm_detach2(i).io.MemResp <> DontCare
+
+  }
+
+  bgemm.io.MemResp <> DontCare
+  bgemm.io.MemReq <> DontCare
+
+  MemArbiter.io.cpu.MemReq(children) <> io.req
+  io.resp <> MemArbiter.io.cpu.MemResp( children)
+
+  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
+  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+  // tester to cilk_for_test02
+  bgemm.io.in <> io.in
+
+  // cilk_for_test02 to task controller
+  TaskControllerModule.io.parentIn(0) <> bgemm.io.call_9_out
+
+  // task controller to sub-task bgemm_detach
+  for (i <- 0 until children) {
+    bgemm_detach1(i).io.in <> TaskControllerModule.io.childOut(i)
+    bgemm_detach2(i).io.in <> bgemm_detach1(i).io.call_9_out
+    bgemm_detach3(i).io.in <> bgemm_detach2(i).io.call_8_out
+    bgemm_detach2(i).io.call_8_in <> bgemm_detach3(i).io.out
+    bgemm_detach1(i).io.call_9_in <> bgemm_detach2(i).io.out
+    TaskControllerModule.io.childIn(i) <> bgemm_detach1(i).io.out
+  }
+
+  // Task controller to cilk_for_test02
+  bgemm.io.call_9_in <> TaskControllerModule.io.parentOut(0)
+
+  // cilk_for_test02 to tester
+  io.out <> bgemm.io.out
+
+}
 
 class bgemmTest01[T <: bgemmMainIO](c: T) extends PeekPokeTester(c) {
 
@@ -341,6 +351,27 @@ class bgemmTester1 extends FlatSpec with Matchers {
     } should be(true)
   }
 }
+
+class bgemmTester2 extends FlatSpec with Matchers {
+  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  it should "Check that bgemm works correctly." in {
+    // iotester flags:
+    // -ll  = log level <Error|Warn|Info|Debug|Trace>
+    // -tbn = backend <firrtl|verilator|vcs>
+    // -td  = target directory
+    // -tts = seed for RNG
+    chisel3.iotesters.Driver.execute(
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir",
+        "-tts", "0001"),
+      () => new bgemmMainTM()) {
+      c => new bgemmTest01(c)
+    } should be(true)
+  }
+}
+
 
 //class bgemmTester2 extends FlatSpec with Matchers {
 //  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
