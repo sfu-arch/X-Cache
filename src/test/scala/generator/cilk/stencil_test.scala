@@ -89,7 +89,7 @@ class stencilDirect()(implicit p: Parameters) extends stencilMainIO {
 class stencilMainTM(tiles: Int)(implicit p: Parameters) extends stencilMainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiMemSlave(latency = 80)) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -354,7 +354,7 @@ class stencilTester2 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
   //  val tile_list = List(1,2,4,8)
-  val tile_list = List(2)
+  val tile_list = List(1)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
