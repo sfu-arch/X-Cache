@@ -95,7 +95,7 @@ class bgemm_detach2DF(implicit p: Parameters) extends bgemm_detach2DFIO()(p) {
   //  %2 = add nuw nsw i32 %1, 1, !UID !15
   val binaryOp_3 = Module(new ComputeNode(NumOuts = 2, ID = 3, opCode = "add")(sign = false))
 
-  //  %3 = icmp eq i32 %2, 32, !UID !16
+  //  %3 = icmp eq i32 %2, 8, !UID !16
   val icmp_4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "eq")(sign = false))
 
   //  br i1 %3, label %my_pfor.cond.cleanup21, label %my_pfor.detach23, !llvm.loop !17, !UID !19, !BB_UID !20
@@ -127,8 +127,8 @@ class bgemm_detach2DF(implicit p: Parameters) extends bgemm_detach2DFIO()(p) {
   //i32 1
   val const1 = Module(new ConstFastNode(value = 1, ID = 1))
 
-  //i32 32
-  val const2 = Module(new ConstFastNode(value = 32, ID = 2))
+  //i32 8
+  val const2 = Module(new ConstFastNode(value = 8, ID = 2))
 
 
 
