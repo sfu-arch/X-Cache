@@ -98,7 +98,7 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   //  %inc10 = add nuw nsw i32 %__begin.031, 1, !UID !28
   val binaryOp_inc104 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
 
-  //  %exitcond33 = icmp eq i32 %inc10, 1048576, !UID !29
+  //  %exitcond33 = icmp eq i32 %inc10, 1024, !UID !29
   val icmp_exitcond335 = Module(new IcmpNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond33, label %pfor.cond.cleanup, label %pfor.detach, !llvm.loop !30, !UID !32, !BB_UID !33
@@ -127,8 +127,8 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   //i32 1
   val const1 = Module(new ConstFastNode(value = 1, ID = 1))
 
-  //i32 1048576
-  val const2 = Module(new ConstFastNode(value = 1048576, ID = 2))
+  //i32 1024
+  val const2 = Module(new ConstFastNode(value = 1024, ID = 2))
 
 
 

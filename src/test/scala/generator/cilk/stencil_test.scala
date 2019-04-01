@@ -415,10 +415,10 @@ class stencilTest02[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
 //    9, 1, 2, 7,
 //    0, 9, 3, 6)
 
-  val inDataVec = Seq.fill(1024*1024)(Random.nextInt)
-  val inAddrVec = List.range(0, 4 * (1024*1024), 4)
+  val inDataVec = Seq.fill(32*32)(Random.nextInt)
+  val inAddrVec = List.range(0, 4 * (32*32), 4)
 
-  val outAddrVec = List.range(256, 256 + (4 * 1024*1024), 4)
+  val outAddrVec = List.range(256, 256 + (4 * 32*32), 4)
 
   val outAddVec = List(
     26, 39, 40, 29,
@@ -461,7 +461,7 @@ class stencilTest02[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 1024*1024) // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, 32*32) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)

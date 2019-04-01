@@ -85,7 +85,7 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  %0 = shl nsw i32 %__begin17.099.in, 10, !UID !10
+  //  %0 = shl nsw i32 %__begin17.099.in, 5, !UID !10
   val binaryOp_0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "shl")(sign = false))
 
   //  br label %my_for.body, !UID !11, !BB_UID !12
@@ -97,7 +97,7 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
   //  %2 = add nuw nsw i32 %1, %mul11.in, !UID !14
   val binaryOp_3 = Module(new ComputeNode(NumOuts = 1, ID = 3, opCode = "add")(sign = false))
 
-  //  %3 = shl i32 %2, 10, !UID !15
+  //  %3 = shl i32 %2, 5, !UID !15
   val binaryOp_4 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "shl")(sign = false))
 
   //  %4 = add nuw nsw i32 %1, %mul11.in, !UID !16
@@ -178,14 +178,14 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
    *                   PRINTING CONSTANTS NODES                         *
    * ================================================================== */
 
-  //i32 10
-  val const0 = Module(new ConstFastNode(value = 10, ID = 0))
+  //i32 5
+  val const0 = Module(new ConstFastNode(value = 5, ID = 0))
 
   //i32 0
   val const1 = Module(new ConstFastNode(value = 0, ID = 1))
 
-  //i32 10
-  val const2 = Module(new ConstFastNode(value = 10, ID = 2))
+  //i32 5
+  val const2 = Module(new ConstFastNode(value = 5, ID = 2))
 
   //i32 0
   val const3 = Module(new ConstFastNode(value = 0, ID = 3))
@@ -272,9 +272,9 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
 
   Loop_0.io.InLiveIn(3) <> Loop_1.io.OutLiveIn.elements("field3")(0)
 
-  Loop_0.io.InLiveIn(4) <> Loop_1.io.OutLiveIn.elements("field4")(0)
+  Loop_0.io.InLiveIn(4) <> Loop_1.io.OutLiveIn.elements("field5")(0)
 
-  Loop_0.io.InLiveIn(5) <> Loop_1.io.OutLiveIn.elements("field5")(0)
+  Loop_0.io.InLiveIn(5) <> Loop_1.io.OutLiveIn.elements("field4")(0)
 
   Loop_1.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field1")(0)
 
@@ -304,9 +304,9 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
 
   binaryOp_16.io.RightIO <> Loop_0.io.OutLiveIn.elements("field3")(1)
 
-  Gep_13.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field4")(0)
+  Gep_18.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field4")(0)
 
-  Gep_18.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field5")(0)
+  Gep_13.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field5")(0)
 
   binaryOp_3.io.RightIO <> Loop_1.io.OutLiveIn.elements("field0")(0)
 
