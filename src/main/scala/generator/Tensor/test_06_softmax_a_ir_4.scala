@@ -1146,11 +1146,38 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
 
 import java.io.{File, FileWriter}
 
+abstract class softmax06aTopIO(implicit val p: Parameters) extends Module with CoreParams {
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32))))
+    val out = Decoupled(new Call(List()))
+  })
+}
+
+
+class softmax06aMain(implicit p: Parameters) extends softmax06aTopIO {
+
+  // Wire up the cache and modules under test.
+  val test = Module(new test_06_softmax_a_ir_4DF())
+  val Stack = Module(new StackMem((1 << tlen) * 4))
+
+  //Put an arbiter infront of cache
+
+  // Connect input signals to cache
+  Stack.io.req <> test.io.MemReq
+  test.io.MemResp <> Stack.io.resp
+
+  //Connect in/out ports
+  test.io.in <> io.in
+  io.out <> test.io.out
+
+}
+
+
 object test_06_softmax_a_ir_4Top extends App {
   val dir = new File("RTL/test_06_softmax_a_ir_4Top");
   dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test_06_softmax_a_ir_4DF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new softmax06aMain()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

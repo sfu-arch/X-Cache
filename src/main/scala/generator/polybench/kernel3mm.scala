@@ -1530,11 +1530,38 @@ class kernel_3mmDF(implicit p: Parameters) extends kernel_3mmDFIO()(p) {
 
 import java.io.{File, FileWriter}
 
+abstract class kernel3mmTopIO(implicit val p: Parameters) extends Module with CoreParams {
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32, 32, 32))))
+    val out = Decoupled(new Call(List()))
+  })
+}
+
+
+class kernel3mmMain(implicit p: Parameters) extends kernel3mmTopIO {
+
+  // Wire up the cache and modules under test.
+  val test = Module(new kernel_3mmDF())
+  val Stack = Module(new StackMem((1 << tlen) * 4))
+
+  //Put an arbiter infront of cache
+
+  // Connect input signals to cache
+  Stack.io.req <> test.io.MemReq
+  test.io.MemResp <> Stack.io.resp
+
+  //Connect in/out ports
+  test.io.in <> io.in
+  io.out <> test.io.out
+
+}
+
+
 object kernel_3mmTop extends App {
   val dir = new File("RTL/kernel_3mmTop");
   dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new kernel_3mmDF()))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new kernel3mmMain()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
