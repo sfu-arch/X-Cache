@@ -400,7 +400,7 @@ class bgemmTest02[T <: bgemmMainIO](c: T) extends PeekPokeTester(c) {
   //val inA = List.range(0, 16) // 4x4 array of uint32
   //val inB = List.range(0, 16) // 4x4 array of uint32
 
-  val DataSize = 8
+  val DataSize = 4
   val inAddrVec = List.range(0, 4 * 2*(DataSize * DataSize), 4) // byte addresses
   val inA = Seq.fill(DataSize*DataSize)(Random.nextInt) // 4x4 array of uint32
   val inB = Seq.fill(DataSize*DataSize)(Random.nextInt) // 4x4 array of uint32
@@ -462,7 +462,7 @@ class bgemmTest02[T <: bgemmMainIO](c: T) extends PeekPokeTester(c) {
   // using if() and fail command.
   var time = 0 //Cycle counter
   var result = false
-  while (time < 80000000) {
+  while (time < 8000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1) {
