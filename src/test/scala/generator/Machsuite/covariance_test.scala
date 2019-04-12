@@ -12,7 +12,7 @@ import memory._
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class ellpackMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+class covarianceMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -20,10 +20,10 @@ class ellpackMainIO(implicit val p: Parameters) extends Module with CoreParams w
     val out = Decoupled(new Call(List()))
   })
 
-  def cloneType = new ellpackMainIO().asInstanceOf[this.type]
+  def cloneType = new covarianceMainIO().asInstanceOf[this.type]
 }
 
-class ellpackMain(implicit p: Parameters) extends ellpackMainIO {
+class covarianceMain(implicit p: Parameters) extends covarianceMainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiInitMemSlave()()) // Model of DRAM to connect to Cache
@@ -39,14 +39,14 @@ class ellpackMain(implicit p: Parameters) extends ellpackMainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val ellpack = Module(new ellpackDF())
+  val covariance = Module(new covarianceDF())
 
   //Put an arbiter infront of cache
   val CacheArbiter = Module(new MemArbiter(2))
 
   // Connect input signals to cache
-  CacheArbiter.io.cpu.MemReq(0) <> ellpack.io.MemReq
-  ellpack.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+  CacheArbiter.io.cpu.MemReq(0) <> covariance.io.MemReq
+  covariance.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
 
   //Connect main module to cache arbiter
   CacheArbiter.io.cpu.MemReq(1) <> io.req
@@ -57,13 +57,13 @@ class ellpackMain(implicit p: Parameters) extends ellpackMainIO {
   CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   //Connect in/out ports
-  ellpack.io.in <> io.in
-  io.out <> ellpack.io.out
+  covariance.io.in <> io.in
+  io.out <> covariance.io.out
 
 }
 
 
-class ellpackTest01[T <: ellpackMainIO](c: T) extends PeekPokeTester(c) {
+class covarianceTest01[T <: covarianceMainIO](c: T) extends PeekPokeTester(c) {
 
 
   def MemRead(addr: Int): BigInt = {
@@ -125,13 +125,13 @@ class ellpackTest01[T <: ellpackMainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0) //
+  poke(c.io.in.bits.data("field0").data, 0x40400000) //
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 0x9a60) //
+  poke(c.io.in.bits.data("field1").data, 0) //
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 0xe790) //
+  poke(c.io.in.bits.data("field2").data, 0x200) //
   poke(c.io.in.bits.data("field2").predicate, true.B)
-  poke(c.io.in.bits.data("field3").data, 0xf700) //
+  poke(c.io.in.bits.data("field3").data, 0x400) //
   poke(c.io.in.bits.data("field3").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -191,13 +191,13 @@ class ellpackTest01[T <: ellpackMainIO](c: T) extends PeekPokeTester(c) {
 }
 
 
-class ellpackTester1 extends FlatSpec with Matchers {
+class covarianceTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case XLEN => 32
     case TRACE => true
   })
-  it should "Check that ellpack works correctly." in {
+  it should "Check that covariance works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>
@@ -206,12 +206,12 @@ class ellpackTester1 extends FlatSpec with Matchers {
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",
-        "-tn", "ellpackMain",
+        "-tn", "covarianceMain",
         "-tbn", "verilator",
-        "-td", "test_run_dir/ellpack",
+        "-td", "test_run_dir/covariance",
         "-tts", "0001"),
-      () => new ellpackMain()(testParams)) {
-      c => new ellpackTest01(c)
+      () => new covarianceMain()(testParams)) {
+      c => new covarianceTest01(c)
     } should be(true)
   }
 }
