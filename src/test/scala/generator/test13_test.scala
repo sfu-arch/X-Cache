@@ -93,9 +93,10 @@ class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.iswrite, 0)
     poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
     step(1)
+
+    poke(c.io.req.valid, 0)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
     }
@@ -112,14 +113,25 @@ class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
     poke(c.io.req.bits.data, data)
     poke(c.io.req.bits.iswrite, 1)
     poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
     step(1)
     poke(c.io.req.valid, 0)
     1
   }
 
-  def dumpMemory(path: String) = {
+  def dumpMemoryInit(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until inDataVec.length) {
+      val data = MemRead(inAddrVec(i))
+      pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
+    }
+    pw.close
+
+  }
+
+
+  def dumpMemoryFinal(path: String) = {
     //Writing mem states back to the file
     val pw = new PrintWriter(new File(path))
     for (i <- 0 until outDataVec.length) {
@@ -154,7 +166,7 @@ class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
   }
 
   step(10)
-  dumpMemory("memory.txt")
+  dumpMemoryInit("init.mem")
 
   step(1)
 
@@ -242,13 +254,13 @@ class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
   }
   if (valid_data) {
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-    dumpMemory("memory.txt")
+    dumpMemoryFinal("final.mem")
   }
 
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
-    dumpMemory("memory.txt")
+    dumpMemoryFinal("final.mem")
     fail
   }
 

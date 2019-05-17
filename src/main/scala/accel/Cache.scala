@@ -94,11 +94,11 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   val metaMem = SyncReadMem(nSets, new MetaData)
   val dataMem = Seq.fill(nWords)(Mem(nSets, Vec(wBytes, UInt(8.W))))
 
-  val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
-  val cpu_data = Reg(io.cpu.req.bits.data.cloneType)
-  val cpu_mask = Reg(io.cpu.req.bits.mask.cloneType)
-  val cpu_tag = Reg(io.cpu.req.bits.tag.cloneType)
-  val cpu_tile = Reg(io.cpu.req.bits.tile.cloneType)
+  val addr_reg    = Reg(io.cpu.req.bits.addr.cloneType)
+  val cpu_data    = Reg(io.cpu.req.bits.data.cloneType)
+  val cpu_mask    = Reg(io.cpu.req.bits.mask.cloneType)
+  val cpu_tag     = Reg(io.cpu.req.bits.tag.cloneType)
+  val cpu_tile    = Reg(io.cpu.req.bits.tile.cloneType)
   val cpu_iswrite = Reg(io.cpu.req.bits.iswrite.cloneType)
 
   // Counters

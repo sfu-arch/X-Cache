@@ -99,124 +99,124 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  %cmp240 = icmp eq i32 %n, 0, !UID !10
+  //  %cmp240 = icmp eq i32 %n, 0, !UID !34
   val icmp_cmp2400 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
 
-  //  %cmp638 = icmp eq i32 %n, 0, !UID !11
+  //  %cmp638 = icmp eq i32 %n, 0, !UID !35
   val icmp_cmp6381 = Module(new IcmpNode(NumOuts = 1, ID = 1, opCode = "eq")(sign = false))
 
-  //  %sub = add i32 %n, -1, !UID !12
+  //  %sub = add i32 %n, -1, !UID !36
   val binaryOp_sub2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "add")(sign = false))
 
-  //  %arrayidx10 = getelementptr inbounds i32, i32* %a, i32 %sub, !UID !13
+  //  %arrayidx10 = getelementptr inbounds i32, i32* %a, i32 %sub, !UID !37
   val Gep_arrayidx103 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 3)(ElementSize = 4, ArraySize = List()))
 
-  //  %sub15 = add i32 %n, -1, !UID !14
+  //  %sub15 = add i32 %n, -1, !UID !38
   val binaryOp_sub154 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "add")(sign = false))
 
-  //  %arrayidx16 = getelementptr inbounds i32, i32* %a, i32 %sub15, !UID !15
+  //  %arrayidx16 = getelementptr inbounds i32, i32* %a, i32 %sub15, !UID !39
   val Gep_arrayidx165 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 5)(ElementSize = 4, ArraySize = List()))
 
-  //  br label %for.body, !UID !16, !BB_UID !17
+  //  br label %for.body, !dbg !40, !UID !41, !BB_UID !42
   val br_6 = Module(new UBranchNode(ID = 6))
 
-  //  %add.lcssa = phi i32 [ %add, %for.cond.cleanup3 ], !UID !18
+  //  %add.lcssa = phi i32 [ %add, %for.cond.cleanup3 ], !UID !43
   val phiadd_lcssa7 = Module(new PhiFastNode(NumInputs = 1, NumOutputs = 1, ID = 7, Res = false))
 
-  //  %div = sdiv i32 %add.lcssa, 2, !UID !19
-  val binaryOp_div8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "udiv")(sign = false))
+  //  %div = sdiv i32 %add.lcssa, 2, !dbg !44, !UID !45
+  val binaryOp_div8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "sdiv")(sign = false))
 
-  //  ret i32 %div, !UID !20, !BB_UID !21
+  //  ret i32 %div, !dbg !46, !UID !47, !BB_UID !48
   val ret_9 = Module(new RetNode2(retTypes = List(32), ID = 9))
 
-  //  %i.043 = phi i32 [ 0, %entry ], [ %inc19, %for.cond.cleanup3 ], !UID !22
+  //  %i.043 = phi i32 [ 0, %entry ], [ %inc19, %for.cond.cleanup3 ], !UID !49
   val phii_04310 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 10, Res = true))
 
-  //  %result.042 = phi i32 [ 0, %entry ], [ %add, %for.cond.cleanup3 ], !UID !23
+  //  %result.042 = phi i32 [ 0, %entry ], [ %add, %for.cond.cleanup3 ], !UID !50
   val phiresult_04211 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 11, Res = true))
 
-  //  br i1 %cmp240, label %for.cond.cleanup3, label %for.body4.preheader, !UID !24, !BB_UID !25
+  //  br i1 %cmp240, label %for.cond.cleanup3, label %for.body4.preheader, !dbg !52, !UID !53, !BB_UID !54
   val br_12 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 12))
 
-  //  br label %for.body4, !UID !26, !BB_UID !27
+  //  br label %for.body4, !dbg !55, !UID !56, !BB_UID !57
   val br_13 = Module(new UBranchNode(ID = 13))
 
-  //  br label %for.cond.cleanup3
+  //  br label %for.cond.cleanup3, !dbg !58
   val br_14 = Module(new UBranchNode(ID = 14))
 
-  //  %0 = load i32, i32* %arrayidx16, align 4, !tbaa !28, !UID !32
+  //  %0 = load i32, i32* %arrayidx16, align 4, !dbg !58, !tbaa !59, !UID !63
   val ld_15 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 15, RouteID = 0))
 
-  //  %inc17 = add i32 %0, 1, !UID !33
+  //  %inc17 = add i32 %0, 1, !dbg !58, !UID !64
   val binaryOp_inc1716 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "add")(sign = false))
 
-  //  store i32 %inc17, i32* %arrayidx16, align 4, !tbaa !28, !UID !34
+  //  store i32 %inc17, i32* %arrayidx16, align 4, !dbg !58, !tbaa !59, !UID !65
   val st_17 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 17, RouteID = 0))
 
-  //  %add = add i32 %0, %result.042, !UID !35
+  //  %add = add i32 %0, %result.042, !dbg !66, !UID !67
   val binaryOp_add18 = Module(new ComputeNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))
 
-  //  %inc19 = add nuw nsw i32 %i.043, 1, !UID !36
+  //  %inc19 = add nuw nsw i32 %i.043, 1, !dbg !68, !UID !69
   val binaryOp_inc1919 = Module(new ComputeNode(NumOuts = 2, ID = 19, opCode = "add")(sign = false))
 
-  //  %exitcond45 = icmp eq i32 %inc19, 3, !UID !37
+  //  %exitcond45 = icmp eq i32 %inc19, 3, !dbg !70, !UID !71
   val icmp_exitcond4520 = Module(new IcmpNode(NumOuts = 1, ID = 20, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond45, label %for.cond.cleanup, label %for.body, !UID !38, !BB_UID !39
+  //  br i1 %exitcond45, label %for.cond.cleanup, label %for.body, !dbg !40, !llvm.loop !72, !UID !74, !BB_UID !75
   val br_21 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 21))
 
-  //  %j.041 = phi i32 [ %inc13, %for.cond.cleanup7 ], [ 0, %for.body4.preheader ], !UID !40
+  //  %j.041 = phi i32 [ %inc13, %for.cond.cleanup7 ], [ 0, %for.body4.preheader ], !UID !76
   val phij_04122 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 22, Res = false))
 
-  //  br i1 %cmp638, label %for.cond.cleanup7, label %for.body8.preheader, !UID !41, !BB_UID !42
+  //  br i1 %cmp638, label %for.cond.cleanup7, label %for.body8.preheader, !dbg !55, !UID !78, !BB_UID !79
   val br_23 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 23))
 
-  //  br label %for.body8, !UID !43, !BB_UID !44
+  //  br label %for.body8, !dbg !80, !UID !83, !BB_UID !84
   val br_24 = Module(new UBranchNode(ID = 24))
 
-  //  br label %for.cond.cleanup7
+  //  br label %for.cond.cleanup7, !dbg !85
   val br_25 = Module(new UBranchNode(ID = 25))
 
-  //  %1 = load i32, i32* %arrayidx10, align 4, !tbaa !28, !UID !45
+  //  %1 = load i32, i32* %arrayidx10, align 4, !dbg !85, !tbaa !59, !UID !86
   val ld_26 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 26, RouteID = 1))
 
-  //  %inc11 = add i32 %1, 1, !UID !46
+  //  %inc11 = add i32 %1, 1, !dbg !85, !UID !87
   val binaryOp_inc1127 = Module(new ComputeNode(NumOuts = 1, ID = 27, opCode = "add")(sign = false))
 
-  //  store i32 %inc11, i32* %arrayidx10, align 4, !tbaa !28, !UID !47
+  //  store i32 %inc11, i32* %arrayidx10, align 4, !dbg !85, !tbaa !59, !UID !88
   val st_28 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 28, RouteID = 1))
 
-  //  %inc13 = add nuw i32 %j.041, 1, !UID !48
+  //  %inc13 = add nuw i32 %j.041, 1, !dbg !89, !UID !90
   val binaryOp_inc1329 = Module(new ComputeNode(NumOuts = 2, ID = 29, opCode = "add")(sign = false))
 
-  //  %exitcond44 = icmp eq i32 %inc13, %n, !UID !49
+  //  %exitcond44 = icmp eq i32 %inc13, %n, !dbg !91, !UID !92
   val icmp_exitcond4430 = Module(new IcmpNode(NumOuts = 1, ID = 30, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond44, label %for.cond.cleanup3.loopexit, label %for.body4, !UID !50, !BB_UID !51
+  //  br i1 %exitcond44, label %for.cond.cleanup3.loopexit, label %for.body4, !dbg !52, !llvm.loop !93, !UID !95, !BB_UID !96
   val br_31 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 31))
 
-  //  %k.039 = phi i32 [ %inc, %for.body8 ], [ 0, %for.body8.preheader ], !UID !52
+  //  %k.039 = phi i32 [ %inc, %for.body8 ], [ 0, %for.body8.preheader ], !UID !97
   val phik_03932 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 32, Res = false))
 
-  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %k.039, !UID !53
+  //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %k.039, !dbg !80, !UID !98
   val Gep_arrayidx33 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 33)(ElementSize = 4, ArraySize = List()))
 
-  //  %2 = load i32, i32* %arrayidx, align 4, !tbaa !28, !UID !54
+  //  %2 = load i32, i32* %arrayidx, align 4, !dbg !80, !tbaa !59, !UID !99
   val ld_34 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 34, RouteID = 2))
 
-  //  %mul = shl i32 %2, 1, !UID !55
+  //  %mul = shl i32 %2, 1, !dbg !100, !UID !101
   val binaryOp_mul35 = Module(new ComputeNode(NumOuts = 1, ID = 35, opCode = "shl")(sign = false))
 
-  //  store i32 %mul, i32* %arrayidx, align 4, !tbaa !28, !UID !56
+  //  store i32 %mul, i32* %arrayidx, align 4, !dbg !102, !tbaa !59, !UID !103
   val st_36 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 36, RouteID = 2))
 
-  //  %inc = add nuw i32 %k.039, 1, !UID !57
+  //  %inc = add nuw i32 %k.039, 1, !dbg !104, !UID !105
   val binaryOp_inc37 = Module(new ComputeNode(NumOuts = 2, ID = 37, opCode = "add")(sign = false))
 
-  //  %exitcond = icmp eq i32 %inc, %n, !UID !58
+  //  %exitcond = icmp eq i32 %inc, %n, !dbg !106, !UID !107
   val icmp_exitcond38 = Module(new IcmpNode(NumOuts = 1, ID = 38, opCode = "eq")(sign = false))
 
-  //  br i1 %exitcond, label %for.cond.cleanup7.loopexit, label %for.body8, !UID !59, !BB_UID !60
+  //  br i1 %exitcond, label %for.cond.cleanup7.loopexit, label %for.body8, !dbg !55, !llvm.loop !108, !UID !110, !BB_UID !111
   val br_39 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 39))
 
 
@@ -467,15 +467,21 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   icmp_cmp2400.io.enable <> bb_entry0.io.Out(4)
 
+
   icmp_cmp6381.io.enable <> bb_entry0.io.Out(5)
+
 
   binaryOp_sub2.io.enable <> bb_entry0.io.Out(6)
 
+
   Gep_arrayidx103.io.enable <> bb_entry0.io.Out(7)
+
 
   binaryOp_sub154.io.enable <> bb_entry0.io.Out(8)
 
+
   Gep_arrayidx165.io.enable <> bb_entry0.io.Out(9)
+
 
   br_6.io.enable <> bb_entry0.io.Out(10)
 
@@ -484,7 +490,9 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   phiadd_lcssa7.io.enable <> bb_for_cond_cleanup1.io.Out(1)
 
+
   binaryOp_div8.io.enable <> bb_for_cond_cleanup1.io.Out(2)
+
 
   ret_9.io.In.enable <> bb_for_cond_cleanup1.io.Out(3)
 
@@ -495,7 +503,9 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   phii_04310.io.enable <> bb_for_body2.io.Out(2)
 
+
   phiresult_04211.io.enable <> bb_for_body2.io.Out(3)
+
 
   br_12.io.enable <> bb_for_body2.io.Out(4)
 
@@ -514,15 +524,21 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   ld_15.io.enable <> bb_for_cond_cleanup35.io.Out(3)
 
+
   binaryOp_inc1716.io.enable <> bb_for_cond_cleanup35.io.Out(4)
+
 
   st_17.io.enable <> bb_for_cond_cleanup35.io.Out(5)
 
+
   binaryOp_add18.io.enable <> bb_for_cond_cleanup35.io.Out(6)
+
 
   binaryOp_inc1919.io.enable <> bb_for_cond_cleanup35.io.Out(7)
 
+
   icmp_exitcond4520.io.enable <> bb_for_cond_cleanup35.io.Out(8)
+
 
   br_21.io.enable <> bb_for_cond_cleanup35.io.Out(9)
 
@@ -530,6 +546,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   const10.io.enable <> bb_for_body46.io.Out(0)
 
   phij_04122.io.enable <> bb_for_body46.io.Out(1)
+
 
   br_23.io.enable <> bb_for_body46.io.Out(2)
 
@@ -546,13 +563,18 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   ld_26.io.enable <> bb_for_cond_cleanup79.io.Out(2)
 
+
   binaryOp_inc1127.io.enable <> bb_for_cond_cleanup79.io.Out(3)
+
 
   st_28.io.enable <> bb_for_cond_cleanup79.io.Out(4)
 
+
   binaryOp_inc1329.io.enable <> bb_for_cond_cleanup79.io.Out(5)
 
+
   icmp_exitcond4430.io.enable <> bb_for_cond_cleanup79.io.Out(6)
+
 
   br_31.io.enable <> bb_for_cond_cleanup79.io.Out(7)
 
@@ -565,17 +587,24 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   phik_03932.io.enable <> bb_for_body810.io.Out(3)
 
+
   Gep_arrayidx33.io.enable <> bb_for_body810.io.Out(4)
+
 
   ld_34.io.enable <> bb_for_body810.io.Out(5)
 
+
   binaryOp_mul35.io.enable <> bb_for_body810.io.Out(6)
+
 
   st_36.io.enable <> bb_for_body810.io.Out(7)
 
+
   binaryOp_inc37.io.enable <> bb_for_body810.io.Out(8)
 
+
   icmp_exitcond38.io.enable <> bb_for_body810.io.Out(9)
+
 
   br_39.io.enable <> bb_for_body810.io.Out(10)
 

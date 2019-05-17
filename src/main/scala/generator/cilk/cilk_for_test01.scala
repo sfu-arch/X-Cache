@@ -84,7 +84,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
    * ================================================================== */
 
   //  br label %pfor.detach, !UID !10, !BB_UID !11
-  val br_0 = Module(new UBranchNode(ID = 0))
+  val br_0 = Module(new UBranchFastNode(ID = 0))
 
   //  sync within %syncreg, label %sync.continue, !UID !12, !BB_UID !13
   val sync_1 = Module(new SyncTC(ID = 1, NumInc=1, NumDec=1, NumOuts=1))
@@ -96,10 +96,10 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   val detach_3 = Module(new Detach(ID = 3))
 
   //  %inc = add nuw nsw i32 %__begin.011, 1, !UID !17
-  val binaryOp_inc4 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
+  val binaryOp_inc4 = Module(new ComputeFastNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, 5, !UID !18
-  val icmp_exitcond5 = Module(new IcmpNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
+  val icmp_exitcond5 = Module(new IcmpFastNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %pfor.cond.cleanup, label %pfor.detach, !llvm.loop !19, !UID !21, !BB_UID !22
   val br_6 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 6))

@@ -94,7 +94,8 @@ class cilk_for_test01Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
 
 class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int) extends PeekPokeTester(c) {
 
-  def MemRead(addr: Int): BigInt = {
+  var writesync = 0
+  def MemReadBlocking(addr: Int): BigInt = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
@@ -102,8 +103,9 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.iswrite, 0)
     poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
     step(1)
+    poke(c.io.req.valid, 0)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
     }
@@ -111,32 +113,57 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
     result
   }
 
-  def MemWrite(addr: Int, data: Int): BigInt = {
+  def MemWriteNonBlocking(addr: Int, data: Int, tag: Int) = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
+      MemWriteSyncCount()
     }
     poke(c.io.req.valid, 1)
     poke(c.io.req.bits.addr, addr)
     poke(c.io.req.bits.data, data)
     poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.tag, 20 + tag)
+    //    [HACK]. Chisel and/or Verilator has a bug where it does not model 8 bit values correctly.
+    // If you set this to a value exceeding the bitwidth; it will overwrite the neighboring fields in the msg.
+    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
+    //poke(c.io.req.bits.mask, -1)
     step(1)
+    MemWriteSyncCount()
     poke(c.io.req.valid, 0)
-    1
   }
 
-  def dumpMemory(path: String) = {
+
+  def MemWriteSyncCount() = {
+    if (peek(c.io.resp.valid) == 1) {
+      writesync += 1
+    }
+  }
+
+
+  def dumpMemoryInit(path: String) = {
+    //Writing mem states back to the file
+    val pw = new PrintWriter(new File(path))
+    for (i <- 0 until inDataVec.length) {
+      //      for (i <- 0 until outDataVec.length) {
+      val data = MemReadBlocking(inAddrVec(i))
+      pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
+    }
+    pw.close
+
+  }
+
+  def dumpMemoryFinal(path: String) = {
     //Writing mem states back to the file
     val pw = new PrintWriter(new File(path))
     for (i <- 0 until outDataVec.length) {
-      val data = MemRead(outAddrVec(i))
+      //      for (i <- 0 until outDataVec.length) {
+      val data = MemReadBlocking(outAddrVec(i))
       pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
     }
     pw.close
 
   }
+
 
 
   val inAddrVec = List.range(0, (4 * 5), 4)
@@ -146,11 +173,11 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
 
   // Write initial contents to the memory model.
   for (i <- 0 until 5) {
-    MemWrite(inAddrVec(i), inDataVec(i))
+    MemWriteNonBlocking(inAddrVec(i), inDataVec(i), i)
   }
 
   step(10)
-  dumpMemory("Init.mem")
+  dumpMemoryInit("init.mem")
   step(1)
 
   // Initializing the signals
@@ -205,11 +232,9 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
 
   step(100)
 
-  //  Peek into the CopyMem to see if the expected data is written back to the Cache
-
   var valid_data = true
   for (i <- 0 until outDataVec.length) {
-    val data = MemRead(outAddrVec(i))
+    val data = MemReadBlocking(outAddrVec(i))
     if (data != outDataVec(i)) {
       println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
       fail
@@ -221,13 +246,13 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
   }
   if (valid_data) {
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-    dumpMemory("memory.txt")
+    dumpMemoryFinal("final.mem")
   }
 
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
-    dumpMemory("memory.txt")
+    dumpMemoryFinal("final.txt")
     fail
   }
 }
@@ -247,7 +272,7 @@ class cilk_for_test01Tester1 extends FlatSpec with Matchers {
         "-td", "test_run_dir/cilk_for_test01",
         "-tts", "0001"),
       () => new cilk_for_test01Main1(tiles = 1)(p.alterPartial({ case TLEN => 6 }))) {
-      c => new cilk_for_test01Test01(c, 5, 1)
+      c => new cilk_for_test01Test01(c, 5, 22)
     } should be(true)
   }
 }

@@ -243,12 +243,12 @@ class stencilTest01[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
   for (i <- 0 until inDataVec.length) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
-  for (i <- 0 until inDataVec.length) {
-    MemWrite(outAddrVec(i),0)
-  }
-  step(10)
-
-  dumpMemoryInit("init.mem")
+//  for (i <- 0 until inDataVec.length) {
+//    MemWrite(outAddrVec(i),0)
+//  }
+//  step(10)
+//
+//  dumpMemoryInit("init.mem")
 
   step(1)
 
@@ -477,7 +477,7 @@ class stencilTest02[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
 
   var time = 0
   var result = false
-  while (time < 20000000) {
+  while (time < 10000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1) {
@@ -518,7 +518,7 @@ class stencilTester2 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case TLEN => 8
-    case TRACE => false
+    case TRACE => true
   })
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
