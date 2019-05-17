@@ -112,6 +112,7 @@ class FPComputeNode(NumOuts: Int, ID: Int, opCode: String)
       when(enable_valid_R) {
         when(left_valid_R && right_valid_R) {
           ValidOut()
+          io.Out.map(_.valid) foreach(_ := true.B)
           when(enable_R.control) {
             out_data_R.data := FU.io.out
             out_data_R.predicate := predicate

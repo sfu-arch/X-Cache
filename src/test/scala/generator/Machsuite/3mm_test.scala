@@ -12,21 +12,21 @@ import memory._
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class ellpackMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+class k3mmMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List()))
   })
 
-  def cloneType = new ellpackMainIO().asInstanceOf[this.type]
+  def cloneType = new k3mmMainIO().asInstanceOf[this.type]
 }
 
-class ellpackMain(implicit p: Parameters) extends ellpackMainIO {
+class k3mmMain(implicit p: Parameters) extends k3mmMainIO {
 
   val cache = Module(new Cache) // Simple Nasti Cache
-  val memModel = Module(new NastiInitMemSlave()()) // Model of DRAM to connect to Cache
+  val memModel = Module(new NastiInitMemSlave(latency=10)()) // Model of DRAM to connect to Cache
 //  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
 
@@ -39,14 +39,14 @@ class ellpackMain(implicit p: Parameters) extends ellpackMainIO {
   cache.io.cpu.abort := false.B
 
   // Wire up the cache and modules under test.
-  val ellpack = Module(new ellpackDF())
+  val k3mm = Module(new k3mmDF())
 
   //Put an arbiter infront of cache
   val CacheArbiter = Module(new MemArbiter(2))
 
   // Connect input signals to cache
-  CacheArbiter.io.cpu.MemReq(0) <> ellpack.io.MemReq
-  ellpack.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+  CacheArbiter.io.cpu.MemReq(0) <> k3mm.io.MemReq
+  k3mm.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
 
   //Connect main module to cache arbiter
   CacheArbiter.io.cpu.MemReq(1) <> io.req
@@ -57,52 +57,14 @@ class ellpackMain(implicit p: Parameters) extends ellpackMainIO {
   CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
 
   //Connect in/out ports
-  ellpack.io.in <> io.in
-  io.out <> ellpack.io.out
+  k3mm.io.in <> io.in
+  io.out <> k3mm.io.out
 
 }
 
 
-class ellpackTest01[T <: ellpackMainIO](c: T) extends PeekPokeTester(c) {
+class k3mmTest01[T <: k3mmMainIO](c: T) extends PeekPokeTester(c) {
 
-
-  def MemRead(addr: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    while (peek(c.io.resp.valid) == 0) {
-      step(1)
-    }
-    val result = peek(c.io.resp.bits.data)
-    result
-  }
-
-  def MemWrite(addr: Int, data: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    poke(c.io.req.valid, 0)
-    1
-  }
-
-  val addr_range = 0x0
-
-  step(1)
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
@@ -121,18 +83,33 @@ class ellpackTest01[T <: ellpackMainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field3").data, 0)
   poke(c.io.in.bits.data("field3").taskID, 0)
   poke(c.io.in.bits.data("field3").predicate, false)
+  poke(c.io.in.bits.data("field4").data, 0)
+  poke(c.io.in.bits.data("field4").taskID, 0)
+  poke(c.io.in.bits.data("field4").predicate, false)
+  poke(c.io.in.bits.data("field5").data, 0)
+  poke(c.io.in.bits.data("field5").taskID, 0)
+  poke(c.io.in.bits.data("field5").predicate, false)
+  poke(c.io.in.bits.data("field6").data, 0)
+  poke(c.io.in.bits.data("field6").taskID, 0)
+  poke(c.io.in.bits.data("field6").predicate, false)
   poke(c.io.out.ready, false)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
   poke(c.io.in.bits.data("field0").data, 0) //
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 0x9a60) //
+  poke(c.io.in.bits.data("field1").data, 0x100) //
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 0xe790) //
+  poke(c.io.in.bits.data("field2").data, 0x200) //
   poke(c.io.in.bits.data("field2").predicate, true.B)
-  poke(c.io.in.bits.data("field3").data, 0xf700) //
+  poke(c.io.in.bits.data("field3").data, 0x300) //
   poke(c.io.in.bits.data("field3").predicate, true.B)
+  poke(c.io.in.bits.data("field4").data, 0x400) //
+  poke(c.io.in.bits.data("field4").predicate, true.B)
+  poke(c.io.in.bits.data("field5").data, 0x500) //
+  poke(c.io.in.bits.data("field5").predicate, true.B)
+  poke(c.io.in.bits.data("field6").data, 0x700) //
+  poke(c.io.in.bits.data("field6").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
@@ -145,6 +122,12 @@ class ellpackTest01[T <: ellpackMainIO](c: T) extends PeekPokeTester(c) {
   poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.in.bits.data("field3").data, 0)
   poke(c.io.in.bits.data("field3").predicate, false.B)
+  poke(c.io.in.bits.data("field4").data, 0)
+  poke(c.io.in.bits.data("field4").predicate, false.B)
+  poke(c.io.in.bits.data("field5").data, 0)
+  poke(c.io.in.bits.data("field5").predicate, false.B)
+  poke(c.io.in.bits.data("field6").data, 0)
+  poke(c.io.in.bits.data("field6").predicate, false.B)
 
   step(1)
 
@@ -191,13 +174,13 @@ class ellpackTest01[T <: ellpackMainIO](c: T) extends PeekPokeTester(c) {
 }
 
 
-class ellpackTester1 extends FlatSpec with Matchers {
+class k3mmTester1 extends FlatSpec with Matchers {
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case XLEN => 32
     case TRACE => true
   })
-  it should "Check that ellpack works correctly." in {
+  it should "Check that k3mm works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
     // -tbn = backend <firrtl|verilator|vcs>
@@ -206,12 +189,12 @@ class ellpackTester1 extends FlatSpec with Matchers {
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",
-        "-tn", "ellpackMain",
+        "-tn", "k3mmMain",
         "-tbn", "verilator",
-        "-td", "test_run_dir/ellpack",
+        "-td", "test_run_dir/k3mm",
         "-tts", "0001"),
-      () => new ellpackMain()(testParams)) {
-      c => new ellpackTest01(c)
+      () => new k3mmMain()(testParams)) {
+      c => new k3mmTest01(c)
     } should be(true)
   }
 }

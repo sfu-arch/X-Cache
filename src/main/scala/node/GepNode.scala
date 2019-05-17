@@ -957,6 +957,7 @@ class GepNode(NumIns: Int, NumOuts: Int, ID: Int)
         when(enable_R.control) {
           when(idx_valid_R.reduce(_ & _) && base_addr_valid_R) {
             ValidOut()
+            io.Out.map(_.valid) foreach (_ := true.B)
             state := s_COMPUTE
           }
         }.otherwise {
