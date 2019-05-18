@@ -23,20 +23,11 @@ import arbiters._
 import loop._
 import accel._
 import node._
+import helpers._
 
 
-class cilk_for_test05MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val req = Flipped(Decoupled(new MemReq))
-    val resp = Output(Valid(new MemResp))
-    val out = Decoupled(new Call(List(32)))
-  })
-
-  def cloneType = new cilk_for_test05MainIO().asInstanceOf[this.type]
-}
-
-class cilk_for_test05MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for_test05MainIO()(p) {
+class cilk_for_test05MainTM(tiles: Int)(implicit p: Parameters)
+  extends AccelIO(List(32, 32, 32), List(32))(p) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -101,83 +92,14 @@ class cilk_for_test05MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for
 
 }
 
-class cilk_for_test05Test01[T <: cilk_for_test05MainIO](c: T, tiles: Int) extends PeekPokeTester(c) {
-
-  def MemRead(addr: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    while (peek(c.io.resp.valid) == 0) {
-      step(1)
-    }
-    val result = peek(c.io.resp.bits.data)
-    result
-  }
-
-  def MemWrite(addr: Int, data: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    poke(c.io.req.valid, 0)
-    1
-  }
-
-
-  def dumpMemory(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until outDataVec.length) {
-      val data = MemRead(outAddrVec(i))
-      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
-
-
-  def dumpMemoryInit(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until inDataVec.length) {
-      val data = MemRead(inAddrVec(i))
-      pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
-
-
-  val inAddrVec = List.range(0, (4 * 50), 4) // byte addresses
-  val inA = List.range(1, 6) ::: List.range(11, 16) ::: List.range(21, 26) ::: List.range(31, 36) ::: List.range(41, 46) // 5x5 array of uint32
-  val inB = List.range(1, 6) ::: List.range(11, 16) ::: List.range(21, 26) ::: List.range(31, 36) ::: List.range(41, 46) // 5x5 array of uint32
-  val inDataVec = inA ++ inB
-  val outAddrVec = List.range(256, 256 + 100, 4)
-  val outDataVec = inA.zip(inB).map { case (x, y) => x + y }
+class cilk_for_test05Test01[T <: AccelIO](c: T, tiles: Int)
+                                         (inAddrVec: List[Int], inDataVec: List[Int],
+                                          outAddrVec: List[Int], outDataVec: List[Int])
+  extends AccelTesterLocal(c)(inAddrVec, inDataVec, outAddrVec, outDataVec) {
 
   // Write initial contents to the memory model.
-  for (i <- 0 until inDataVec.length) {
-    MemWrite(inAddrVec(i), inDataVec(i))
-  }
+  initMemory()
 
-  step(10)
-  dumpMemoryInit("memory.txt")
-
-  step(1)
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
@@ -234,25 +156,7 @@ class cilk_for_test05Test01[T <: cilk_for_test05MainIO](c: T, tiles: Int) extend
     }
   }
 
-  // Pause to make sure all writes have made it through arbiter to memory
-  step(100)
-
-  //  Read back expected results
-  var valid_data = true
-  for (i <- 0 until outDataVec.length) {
-    val data = MemRead(outAddrVec(i))
-    if (data != outDataVec(i).toInt) {
-      println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
-      fail
-      valid_data = false
-    }
-    else {
-      println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
-    }
-  }
-  if (valid_data) {
-    println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-  }
+  checkMemory()
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
@@ -262,6 +166,15 @@ class cilk_for_test05Test01[T <: cilk_for_test05MainIO](c: T, tiles: Int) extend
 
 
 class cilk_for_test05Tester1 extends FlatSpec with Matchers {
+
+  val inAddrVec = List.range(0, (4 * 50), 4) // byte addresses
+  val inA = List.range(1, 6) ::: List.range(11, 16) ::: List.range(21, 26) ::: List.range(31, 36) ::: List.range(41, 46) // 5x5 array of uint32
+  val inB = List.range(1, 6) ::: List.range(11, 16) ::: List.range(21, 26) ::: List.range(31, 36) ::: List.range(41, 46) // 5x5 array of uint32
+  val inDataVec = inA ++ inB
+  val outAddrVec = List.range(256, 256 + 100, 4)
+  val outDataVec = inA.zip(inB).map { case (x, y) => x + y }
+
+
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -279,7 +192,7 @@ class cilk_for_test05Tester1 extends FlatSpec with Matchers {
           "-td", s"test_run_dir/cilk_for_test05_${tile}",
           "-tts", "0001"),
         () => new cilk_for_test05MainTM(tile)(p.alterPartial({ case TLEN => 6 }))) {
-        c => new cilk_for_test05Test01(c, tile)
+        c => new cilk_for_test05Test01(c, tile)(inAddrVec, inDataVec, outAddrVec, outDataVec)
       } should be(true)
     }
   }
