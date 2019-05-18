@@ -1,40 +1,17 @@
 package dataflow
 
 
-import java.io.PrintWriter
-import java.io.File
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
 import config._
-import control._
-import util._
-import interfaces._
-import regfile._
 import memory._
-import stack._
-import arbiters._
-import loop._
 import accel._
-import node._
+import helpers._
 
 
-class cilk_for_test06MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val req = Flipped(Decoupled(new MemReq))
-    val resp = Output(Valid(new MemResp))
-    val out = Decoupled(new Call(List(32)))
-  })
-
-  def cloneType = new cilk_for_test06MainIO().asInstanceOf[this.type]
-}
-
-class cilk_for_test06MainDirect(implicit p: Parameters) extends cilk_for_test06MainIO {
+class cilk_for_test06MainDirect(implicit p: Parameters)
+  extends AccelIO(List(32, 32, 32), List(32)) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -75,7 +52,8 @@ class cilk_for_test06MainDirect(implicit p: Parameters) extends cilk_for_test06M
 
 }
 
-class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for_test06MainIO {
+class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters)
+  extends AccelIO(List(32, 32, 32), List(32)) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -132,82 +110,13 @@ class cilk_for_test06MainTM(tiles: Int)(implicit p: Parameters) extends cilk_for
 }
 
 
-class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTester(c) {
-  def MemRead(addr: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    while (peek(c.io.resp.valid) == 0) {
-      step(1)
-    }
-    val result = peek(c.io.resp.bits.data)
-    result
-  }
-
-  def MemWrite(addr: Int, data: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    poke(c.io.req.valid, 0)
-    1
-  }
+class cilk_for_test06Test01[T <: AccelIO](c: T, tiles: Int)
+                                         (inAddrVec: List[Int], inDataVec: List[Int],
+                                          outAddrVec: List[Int], outDataVec: List[Int])
+  extends AccelTesterLocal(c)(inAddrVec, inDataVec, outAddrVec, outDataVec) {
 
 
-  def dumpMemory(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until outDataVec.length) {
-      val data = MemRead(outAddrVec(i))
-      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
-
-
-  def dumpMemoryInit(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until inDataVec.length) {
-      val data = MemRead(inAddrVec(i))
-      pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
-
-
-  val inAddrVec = List.range(0, (2*18)*4, 4)
-  val inDataVec = List(0, 0, 0, 1, 0, 2, 1, 0, 1, 1, 1, 2, 2, 0, 2, 1, 2, 2,
-    7, 5, 1, 1, 3, 5, 2, 1, 9, 2, 4, 3, 3, 3, 0, 0, 6, 2)
-  val outAddrVec = List.range(0x100, 0x100 + 0x24, 4)
-  val outDataVec = List(74, 1, 18, 2, 65, 10, 10, 5, 16)
-
-  // Write initial contents to the memory model.
-  for (i <- 0 until inDataVec.length) {
-    MemWrite(inAddrVec(i), inDataVec(i))
-  }
-
-  step(10)
-  dumpMemoryInit("memory.init")
-
-  step(1)
-
+  initMemory()
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
@@ -267,22 +176,8 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
     }
   }
 
-  //  Peek into the CopyMem to see if the expected data is written back to the Cache
-  var valid_data = true
-  for (i <- 0 until outDataVec.length) {
-    val data = MemRead(outAddrVec(i))
-    if (data != outDataVec(i).toInt) {
-      println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
-      fail
-      valid_data = false
-    }
-    else {
-      println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
-    }
-  }
-  if (valid_data) {
-    println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-  }
+  checkMemory()
+
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
     fail
@@ -290,6 +185,13 @@ class cilk_for_test06Test01[T <: cilk_for_test06MainIO](c: T) extends PeekPokeTe
 }
 
 class cilk_for_test06Tester1 extends FlatSpec with Matchers {
+
+  val inAddrVec = List.range(0, (2 * 18) * 4, 4)
+  val inDataVec = List(0, 0, 0, 1, 0, 2, 1, 0, 1, 1, 1, 2, 2, 0, 2, 1, 2, 2,
+    7, 5, 1, 1, 3, 5, 2, 1, 9, 2, 4, 3, 3, 3, 0, 0, 6, 2)
+  val outAddrVec = List.range(0x100, 0x100 + 0x24, 4)
+  val outDataVec = List(74, 1, 18, 2, 65, 10, 10, 5, 16)
+
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that cilk_for_test06 works correctly." in {
     // iotester flags:
@@ -297,34 +199,49 @@ class cilk_for_test06Tester1 extends FlatSpec with Matchers {
     // -tbn = backend <firrtl|verilator|vcs>
     // -td  = target directory
     // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir/cilk_for_test06/test2/",
-        "-tts", "0001"),
-      () => new cilk_for_test06MainDirect()) {
-      c => new cilk_for_test06Test01(c)
-    } should be(true)
+
+    val tile_list = List(2)
+    for (tile <- tile_list) {
+      chisel3.iotesters.Driver.execute(
+        Array(
+          // "-ll", "Info",
+          "-tbn", "verilator",
+          "-td", "test_run_dir/cilk_for_test06/test2/",
+          "-tts", "0001"),
+        () => new cilk_for_test06MainDirect()) {
+        c => new cilk_for_test06Test01(c, tile)(inAddrVec, inDataVec, outAddrVec, outDataVec)
+      } should be(true)
+    }
   }
 }
 
 class cilk_for_test06Tester2 extends FlatSpec with Matchers {
+
+  val inAddrVec = List.range(0, (2 * 18) * 4, 4)
+  val inDataVec = List(0, 0, 0, 1, 0, 2, 1, 0, 1, 1, 1, 2, 2, 0, 2, 1, 2, 2,
+    7, 5, 1, 1, 3, 5, 2, 1, 9, 2, 4, 3, 3, 3, 0, 0, 6, 2)
+  val outAddrVec = List.range(0x100, 0x100 + 0x24, 4)
+  val outDataVec = List(74, 1, 18, 2, 65, 10, 10, 5, 16)
+
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
   // -td  = target directory
   // -tts = seed for RNG
-  it should "Check that cilk_for_test02 works when called via task manager." in {
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir/cilk_for_test06/test2/",
-        "-tts", "0001"),
-      () => new cilk_for_test06MainTM(1)) {
-      c => new cilk_for_test06Test01(c)
-    } should be(true)
+
+  val tile_list = List(2)
+  for (tile <- tile_list) {
+    it should "Check that cilk_for_test02 works when called via task manager." in {
+      chisel3.iotesters.Driver.execute(
+        Array(
+          // "-ll", "Info",
+          "-tbn", "verilator",
+          "-td", s"test_run_dir/cilk_for_test06_${tile}/test2/",
+          "-tts", "0001"),
+        () => new cilk_for_test06MainTM(1)) {
+        c => new cilk_for_test06Test01(c, tile)(inAddrVec, inDataVec, outAddrVec, outDataVec)
+      } should be(true)
+    }
   }
 }

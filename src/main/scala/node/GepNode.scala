@@ -954,14 +954,9 @@ class GepNode(NumIns: Int, NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when(enable_R.control) {
-          ValidOut()
-          state := s_COMPUTE
-          //          when(idx_valid_R.reduce(_ & _) && base_addr_valid_R) {
-          //          }
-        }
+        ValidOut()
+        state := s_COMPUTE
       }
-
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {

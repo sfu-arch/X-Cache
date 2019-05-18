@@ -1,28 +1,12 @@
 package dataflow
 
 
-import java.io.PrintWriter
-import java.io.File
-import java.io.BufferedWriter
-import java.io.FileWriter
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
 import config._
-import control._
-import util._
-import interfaces._
-import regfile._
 import memory._
-import stack._
-import arbiters._
-import loop._
 import accel._
-import node._
 import helpers._
 
 
@@ -182,7 +166,7 @@ class cilk_for_test05Tester1 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
   //  val tile_list = List(1,2,4,8)
-  val tile_list = List(1)
+  val tile_list = List(2)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
