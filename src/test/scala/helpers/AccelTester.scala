@@ -106,7 +106,9 @@ class AccelTesterLocal[T <: AccelIO](c: T)
     for (i <- 0 until outDataVec.length) {
       val data = MemRead(outAddrVec(i))
       if (data != outDataVec(i)) {
-        println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+        println(Console.RED +
+          s"*** Incorrect data received. Got MEM[${outAddrVec(i).toInt}] = " +
+          s"$data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
         fail
         valid_data = false
       }

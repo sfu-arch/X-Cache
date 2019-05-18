@@ -68,19 +68,20 @@ class cilk_for_test04Test01[T <: AccelIO](c: T, n: Int, tiles: Int)
                                          (inAddrVec: List[Int], inDataVec: List[Int],
                                           outAddrVec: List[Int], outDataVec: List[Int])
   extends AccelTesterLocal(c)(inAddrVec, inDataVec, outAddrVec, outDataVec) {
+
   initMemory()
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").taskID, 5.U)
+  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").taskID, 0)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 5.U)
+  poke(c.io.in.bits.data("field1").data, 0)
+  poke(c.io.in.bits.data("field1").taskID, 0)
   poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field2").taskID, 5.U)
+  poke(c.io.in.bits.data("field2").data, 0)
+  poke(c.io.in.bits.data("field2").taskID, 0)
   poke(c.io.in.bits.data("field2").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)

@@ -283,7 +283,7 @@ class GepTwoNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        if(log){
+        if (log) {
           printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
         }
       }
@@ -365,7 +365,7 @@ class GepNodeStack(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        if(log){
+        if (log) {
           printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
         }
       }
@@ -479,7 +479,7 @@ class GepStructOneNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        if(log){
+        if (log) {
           printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
         }
       }
@@ -602,7 +602,7 @@ class GepStructTwoNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        if(log){
+        if (log) {
           printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
         }
       }
@@ -712,7 +712,7 @@ class GepArrayOneNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        if(log){
+        if (log) {
           printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
         }
       }
@@ -836,7 +836,7 @@ class GepArrayTwoNode(NumOuts: Int, ID: Int)
 
         // Reset output
         Reset()
-        if(log){
+        if (log) {
           printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d, Value: %d\n", enable_R.taskID, cycleCount, data_W)
         }
       }
@@ -955,14 +955,10 @@ class GepNode(NumIns: Int, NumOuts: Int, ID: Int)
     is(s_IDLE) {
       when(enable_valid_R) {
         when(enable_R.control) {
-          when(idx_valid_R.reduce(_ & _) && base_addr_valid_R) {
-            ValidOut()
-            io.Out.map(_.valid) foreach (_ := true.B)
-            state := s_COMPUTE
-          }
-        }.otherwise {
           ValidOut()
           state := s_COMPUTE
+          //          when(idx_valid_R.reduce(_ & _) && base_addr_valid_R) {
+          //          }
         }
       }
 
@@ -1000,10 +996,10 @@ class GepNode(NumIns: Int, NumOuts: Int, ID: Int)
   */
 
 class GepFastNode(NumIns: Int, NumOuts: Int, ID: Int)
-             (ElementSize: Int, ArraySize: List[Int])
-             (implicit p: Parameters,
-              name: sourcecode.Name,
-              file: sourcecode.File)
+                 (ElementSize: Int, ArraySize: List[Int])
+                 (implicit p: Parameters,
+                  name: sourcecode.Name,
+                  file: sourcecode.File)
   extends HandShakingNPS(NumOuts, ID)(new DataBundle)(p) {
   override lazy val io = IO(new GepNodeIO(NumIns, NumOuts))
   // Printf debugging
@@ -1084,7 +1080,7 @@ class GepFastNode(NumIns: Int, NumOuts: Int, ID: Int)
         when(enable_R.control) {
           when(idx_valid_R.reduce(_ & _) && base_addr_valid_R) {
             ValidOut()
-            io.Out.map(_.valid)foreach (_ := true.B)
+            io.Out.map(_.valid) foreach (_ := true.B)
             state := s_COMPUTE
           }
         }.otherwise {
