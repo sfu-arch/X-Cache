@@ -477,7 +477,7 @@ class stencilTest02[T <: stencilMainIO](c: T, tiles: Int) extends PeekPokeTester
 
   var time = 0
   var result = false
-  while (time < 10000) {
+  while (time < 50000) {
     time += 1
     step(1)
     if (peek(c.io.out.valid) == 1) {

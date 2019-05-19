@@ -1,93 +1,15 @@
 package dataflow
 
-import java.io.PrintWriter
-import java.io.File
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
 import config._
-import control._
-import util._
-import interfaces._
-import regfile._
 import memory._
-import stack._
-import arbiters._
-import loop._
 import accel._
-import node._
+import helpers._
 
-import scala.util.Random
-
-
-class cilk_saxpyMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
-    val req = Flipped(Decoupled(new MemReq))
-    val resp = Output(Valid(new MemResp))
-    val out = Decoupled(new Call(List(32)))
-  })
-
-  def cloneType = new cilk_saxpyMainIO().asInstanceOf[this.type]
-}
-
-//class cilk_saxpyMainTMCache(children: Int)(implicit p: Parameters) extends cilk_saxpyMainIO {
-//
-//  val cache = Module(new Cache) // Simple Nasti Cache
-//  val memModel = Module(new NastiMemSlave(latency = 5)) // Model of DRAM to connect to Cache
-//
-//  // Connect the wrapper I/O to the memory model initialization interface so the
-//  // test bench can write contents at start.
-//  memModel.io.nasti <> cache.io.nasti
-//  memModel.io.init.bits.addr := 0.U
-//  memModel.io.init.bits.data := 0.U
-//  memModel.io.init.valid := false.B
-//  cache.io.cpu.abort := false.B
-//
-//
-//  // Wire up the cache, TM, and modules under test.
-//
-//  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))
-//  val saxpy = Module(new cilk_saxpyDF())
-//
-//  val saxpy_detach = for (i <- 0 until children) yield {
-//    val detach1 = Module(new cilk_saxpy_detach1DF())
-//    detach1
-//  }
-//
-//  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
-//  // requests ports of any type.  Read or write is irrelevant.
-//  val CacheArbiter = Module(new MemArbiter(children + 1))
-//  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
-//  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
-//
-//
-//  // tester to saxpy
-//  saxpy.io.in <> io.in
-//
-//  // saxpy to task controller
-//  TaskControllerModule.io.parentIn(0) <> saxpy.io.call_9_out
-//
-//  // task controller to sub-task saxpy_detach
-//  for (i <- 0 until children) {
-//    saxpy_detach(i).io.in <> TaskControllerModule.io.childOut(i)
-//    TaskControllerModule.io.childIn(i) <> saxpy_detach(i).io.out
-//  }
-//
-//  // Task controller to saxpy
-//  saxpy.io.call_9_in <> TaskControllerModule.io.parentOut(0)
-//
-//  // saxpy to tester
-//  io.out <> saxpy.io.out
-//
-//}
-//
-
-class cilk_saxpyMainTM(children: Int)(implicit p: Parameters) extends cilk_saxpyMainIO {
+class cilk_saxpyMainTM(children: Int)(implicit p: Parameters)
+  extends AccelIO(List(32, 32, 32, 32), List(32)) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave(latency = 10)) // Model of DRAM to connect to Cache
@@ -143,124 +65,56 @@ class cilk_saxpyMainTM(children: Int)(implicit p: Parameters) extends cilk_saxpy
 
 }
 
-class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends PeekPokeTester(c) {
-
-  /**
-    * cacheDF interface:
-    *
-    * in = Flipped(Decoupled(new Call(List(...))))
-    * out = Decoupled(new Call(List(32)))
-    */
-
-  def MemRead(addr: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    poke(c.io.req.valid, 0)
-    while (peek(c.io.resp.valid) == 0) {
-      step(1)
-    }
-    val result = peek(c.io.resp.bits.data)
-    result
-  }
-
-  def MemWrite(addr: Int, data: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    poke(c.io.req.valid, 0)
-    1
-  }
-
-  def dumpMemory(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until outDataVec.length) {
-      val data = MemRead(outAddrVec(i))
-      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
+class cilk_saxpyTest01[T <: AccelIO](c: T, n: Int, ch: Int)
+                                    (inAddrVec: List[Int], inDataVec: List[Int],
+                                     outAddrVec: List[Int], outDataVec: List[Int])
+  extends AccelTesterLocal(c)(inAddrVec, inDataVec, outAddrVec, outDataVec) {
 
 
   val dataLen = n;
   val a = 5 // 'a' of a*x[i]+y[i]
-  val inAddrVec = List.range(0, 8 * dataLen, 4)
-  val inX = List.range(1, dataLen + 1) // array of uint32
-  val inY = List.range(1, dataLen + 1) // array of uint32
-  val inDataVec = inX ++ inY
-  val outAddrVec = List.range(4 * dataLen, 8 * dataLen, 4)
-  val outDataVec = inX.zip(inY).map { case (x, y) => a * x + y }
 
-  var i = 0
+  initMemory()
 
-  // Write initial contents to the memory model.
-  for (i <- 0 until inDataVec.length) {
-    MemWrite(inAddrVec(i), inDataVec(i))
-  }
-  step(40)
-  //  dumpMemory_init("init.mem")
-  /*
-    // Flush cache
-    for(i <- 0 until inDataVec.length) {
-      MemWrite(inAddrVec(i)+4096, 0)
-    }
-    step(1)
-  */
   // Initializing the signals
-  poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").taskID, 5.U)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 5.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field2").taskID, 5.U)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
-  poke(c.io.in.bits.data("field3").data, 0.U)
-  poke(c.io.in.bits.data("field3").taskID, 5.U)
-  poke(c.io.in.bits.data("field3").predicate, false.B)
-  poke(c.io.out.ready, false.B)
+  poke(c.io.in.bits.enable.control, false)
+  poke(c.io.in.valid, false)
+  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").taskID, 1)
+  poke(c.io.in.bits.data("field0").predicate, false)
+  poke(c.io.in.bits.data("field1").data, 0)
+  poke(c.io.in.bits.data("field1").taskID, 1)
+  poke(c.io.in.bits.data("field1").predicate, false)
+  poke(c.io.in.bits.data("field2").data, 0)
+  poke(c.io.in.bits.data("field2").taskID, 1)
+  poke(c.io.in.bits.data("field2").predicate, false)
+  poke(c.io.in.bits.data("field3").data, 0)
+  poke(c.io.in.bits.data("field3").taskID, 1)
+  poke(c.io.in.bits.data("field3").predicate, false)
+  poke(c.io.out.ready, false)
   step(1)
-  poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.valid, true.B)
+  poke(c.io.in.bits.enable.control, true)
+  poke(c.io.in.valid, true)
   poke(c.io.in.bits.data("field0").data, n) // Number of iterations
-  poke(c.io.in.bits.data("field0").predicate, true.B)
+  poke(c.io.in.bits.data("field0").predicate, true)
   poke(c.io.in.bits.data("field1").data, a) // Scale value
-  poke(c.io.in.bits.data("field1").predicate, true.B)
+  poke(c.io.in.bits.data("field1").predicate, true)
   poke(c.io.in.bits.data("field2").data, 0) // X[]
-  poke(c.io.in.bits.data("field2").predicate, true.B)
+  poke(c.io.in.bits.data("field2").predicate, true)
   poke(c.io.in.bits.data("field3").data, 4 * dataLen) // Y[]
   poke(c.io.in.bits.data("field3").predicate, true.B)
-  poke(c.io.out.ready, true.B)
+  poke(c.io.out.ready, true)
   step(1)
-  poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.enable.control, false)
+  poke(c.io.in.valid, false)
   poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field0").predicate, false)
+  poke(c.io.in.bits.data("field1").data, 0)
+  poke(c.io.in.bits.data("field1").predicate, false)
   poke(c.io.in.bits.data("field2").data, 0)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
-  poke(c.io.in.bits.data("field3").data, 0.U)
-  poke(c.io.in.bits.data("field3").predicate, false.B)
+  poke(c.io.in.bits.data("field2").predicate, false)
+  poke(c.io.in.bits.data("field3").data, 0)
+  poke(c.io.in.bits.data("field3").predicate, false)
 
   step(1)
 
@@ -286,39 +140,25 @@ class cilk_saxpyTest01[T <: cilk_saxpyMainIO](c: T, n: Int, ch: Int) extends Pee
     }
   }
 
-  // Wait a bit to make sure all data is written back
-  step(2)
-
-  //  Peek into the CopyMem to see if the expected data is written back to the Cache
-//  var valid_data = true
-//  for (i <- 0 until outDataVec.length) {
-//    val data = MemRead(outAddrVec(i))
-//    if (data != outDataVec(i).toInt) {
-//      if(c.log){
-//        println(Console.RED + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data -- Hoping for ${outDataVec(i).toInt}" + Console.RESET)
-//      }
-//      fail
-//      valid_data = false
-//    }
-//    else {
-//      if(c.log){
-//        println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
-//      }
-//    }
-//  }
-//  if (valid_data) {
-//    println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-//    dumpMemory("memory.txt")
-//  }
+  checkMemory()
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
-    dumpMemory("memory.txt")
     fail
   }
 }
 
 class cilk_saxpyTester1 extends FlatSpec with Matchers {
+
+  val dataLen = 500 // 500 for intel FPGA test
+  val cof_a = 5 // 'a' of a*x[i]+y[i]
+  val inAddrVec = List.range(0, 2 * (4 * dataLen), 4)
+  val inX = List.range(1, dataLen + 1) // array of int 32
+  val inY = List.range(1, dataLen + 1) // array of int 32
+  val inDataVec = inX ++ inY
+  val outAddrVec = List.range(4 * dataLen, 8 * dataLen, 4)
+  val outDataVec = inX.zip(inY).map { case (x, y) => cof_a * x + y }
+
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case TLEN => 5
@@ -330,7 +170,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
   // -td  = target directory
   // -tts = seed for RNG
   //  val tile_list = List(1,2,4,8)
-  val tile_list = List(4)
+  val tile_list = List(2)
   for (tile <- tile_list) {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
@@ -340,7 +180,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
           "-td", s"test_run_dir/cilk_saxpy_${tile}",
           "-tts", "0001"),
         () => new cilk_saxpyMainTM(tile)(testParams)) {
-        c => new cilk_saxpyTest01(c, 500, tile) // 500 for intel FPGA test
+        c => new cilk_saxpyTest01(c, dataLen, tile)(inAddrVec, inDataVec, outAddrVec, outDataVec)
       } should be(true)
     }
   }

@@ -74,25 +74,25 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
    * ================================================================== */
 
   //  %0 = getelementptr inbounds i32, i32* %x.in, i32 %__begin.018.in, !UID !21
-  val Gep_0 = Module(new GepFastNode(NumIns = 1, NumOuts = 1, ID = 0)(ElementSize = 4, ArraySize = List()))
+  val Gep_0 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 0)(ElementSize = 4, ArraySize = List()))
 
   //  %1 = load i32, i32* %0, align 4, !tbaa !22, !UID !26
-  val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 1, RouteID = 0))
+  val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 1, RouteID = 0))
 
   //  %2 = mul nsw i32 %1, %a.in, !UID !27
-  val binaryOp_2 = Module(new ComputeFastNode(NumOuts = 1, ID = 2, opCode = "mul")(sign = false))
+  val binaryOp_2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "mul")(sign = false))
 
   //  %3 = getelementptr inbounds i32, i32* %y.in, i32 %__begin.018.in, !UID !28
-  val Gep_3 = Module(new GepFastNode(NumIns = 1, NumOuts = 2, ID = 3)(ElementSize = 4, ArraySize = List()))
+  val Gep_3 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 3)(ElementSize = 4, ArraySize = List()))
 
   //  %4 = load i32, i32* %3, align 4, !tbaa !22, !UID !29
-  val ld_4 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 4, RouteID = 1))
+  val ld_4 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 4, RouteID = 1))
 
   //  %5 = add nsw i32 %2, %4, !UID !30
-  val binaryOp_5 = Module(new ComputeFastNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
+  val binaryOp_5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
 
   //  store i32 %5, i32* %3, align 4, !tbaa !22, !UID !31
-  val st_6 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 6, RouteID = 0))
+  val st_6 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 0, ID = 6, RouteID = 0))
 
   //  ret void, !UID !32, !BB_UID !33
   val ret_7 = Module(new RetNode2(retTypes = List(), ID = 7))
@@ -247,11 +247,7 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
 
   binaryOp_2.io.LeftIO <> ld_1.io.Out(0)
 
-  //binaryOp_5.io.LeftIO <> binaryOp_2.io.Out(0)
-  binaryOp_2.io.Out(0).ready := true.B
-
-  //binaryOp_5.io.LeftIO <> binaryOp_2.io.Out(0)
-  binaryOp_5.io.LeftIO <> ld_1.io.Out(1)
+  binaryOp_5.io.LeftIO <> binaryOp_2.io.Out(0)
 
   ld_4.io.GepAddr <> Gep_3.io.Out(0)
 
@@ -272,6 +268,8 @@ class cilk_saxpy_detach1DF(implicit p: Parameters) extends cilk_saxpy_detach1DFI
   Gep_3.io.baseAddress <> InputSplitter.io.Out.data.elements("field3")(0)
 
   st_6.io.Out(0).ready := true.B
+
+  st_6.io.PredOp(0) <> ld_4.io.SuccOp(0)
 
 
 

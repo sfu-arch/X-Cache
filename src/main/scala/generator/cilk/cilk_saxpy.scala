@@ -52,13 +52,11 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   InputSplitter.io.In <> io.in
 
 
-
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
   val Loop_0 = Module(new LoopBlockNode(NumIns = List(1, 1, 1, 1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
-
 
 
   /* ================================================================== *
@@ -73,7 +71,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   val bb_pfor_cond_cleanup3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 1, BID = 3))
 
-  val bb_pfor_detach4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 5, NumPhi = 1, BID = 4))
+  val bb_pfor_detach4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 4))
 
   val bb_pfor_inc5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 5))
 
@@ -82,22 +80,21 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   val bb_offload_pfor_body7 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 7))
 
 
-
   /* ================================================================== *
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
   //  %cmp17 = icmp sgt i32 %n, 0, !UID !21
-  val icmp_cmp170 = Module(new IcmpFastNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
+  val icmp_cmp170 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
 
   //  br i1 %cmp17, label %pfor.detach.preheader, label %pfor.cond.cleanup, !UID !22, !BB_UID !23
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
 
   //  br label %pfor.detach, !UID !24, !BB_UID !25
-  val br_2 = Module(new UBranchFastNode(ID = 2))
+  val br_2 = Module(new UBranchNode(ID = 2))
 
   //  br label %pfor.cond.cleanup, !UID !26, !BB_UID !27
-  val br_3 = Module(new UBranchFastNode(ID = 3))
+  val br_3 = Module(new UBranchNode(ID = 3))
 
   //  sync within %syncreg, label %sync.continue, !UID !28, !BB_UID !29
   val sync_4 = Module(new SyncTC(ID = 4, NumInc=1, NumDec=1, NumOuts=1))
@@ -106,13 +103,13 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   val phi__begin_0185 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 5, Res = false))
 
   //  detach within %syncreg, label %offload.pfor.body, label %pfor.inc, !UID !31, !BB_UID !32
-  //val detach_6 = Module(new Detach(ID = 6))
+  val detach_6 = Module(new Detach(ID = 6))
 
   //  %inc = add nuw nsw i32 %__begin.018, 1, !UID !33
-  val binaryOp_inc7 = Module(new ComputeFastNode(NumOuts = 2, ID = 7, opCode = "add")(sign = false))
+  val binaryOp_inc7 = Module(new ComputeNode(NumOuts = 2, ID = 7, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, %n, !UID !34
-  val icmp_exitcond8 = Module(new IcmpFastNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
+  val icmp_exitcond8 = Module(new IcmpNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %pfor.cond.cleanup.loopexit, label %pfor.detach, !llvm.loop !35, !UID !37, !BB_UID !38
   val br_9 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 9))
@@ -120,14 +117,13 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   //  ret i32 1, !UID !39, !BB_UID !40
   val ret_10 = Module(new RetNode2(retTypes = List(32), ID = 10))
 
-  //  call void @cilk_saxpy_detach1(i32* %x, i32 %__begin.018, i32 %a, i32* %y), !UID !41
+  //  call void @saxpy_detach1(i32* %x, i32 %__begin.018, i32 %a, i32* %y), !UID !41
   val call_11_out = Module(new CallOutNode(ID = 11, NumSuccOps = 0, argTypes = List(32,32,32,32)))
 
   val call_11_in = Module(new CallInNode(ID = 11, argTypes = List()))
 
   //  reattach within %syncreg, label %pfor.inc, !UID !42, !BB_UID !43
   val reattach_12 = Module(new Reattach(NumPredOps= 1, ID = 12))
-
 
 
   /* ================================================================== *
@@ -147,7 +143,6 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   val const3 = Module(new ConstFastNode(value = 1, ID = 3))
 
 
-
   /* ================================================================== *
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
@@ -160,13 +155,11 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
   bb_pfor_cond_cleanup3.io.predicateIn(0) <> br_3.io.Out(0)
 
-  //bb_pfor_inc5.io.predicateIn(0) <> detach_6.io.Out(0)
-  bb_pfor_inc5.io.predicateIn(0) <> bb_pfor_detach4.io.Out(2)
+  bb_pfor_inc5.io.predicateIn(0) <> detach_6.io.Out(0)
 
   bb_sync_continue6.io.predicateIn(0) <> sync_4.io.Out(0)
 
-  bb_offload_pfor_body7.io.predicateIn(0) <> bb_pfor_detach4.io.Out(3)
-
+  bb_offload_pfor_body7.io.predicateIn(0) <> detach_6.io.Out(1)
 
 
   /* ================================================================== *
@@ -180,15 +173,13 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   bb_pfor_detach4.io.predicateIn(0) <> Loop_0.io.activate_loop_back
 
 
-
   /* ================================================================== *
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
 
-  sync_4.io.incIn(0) <> bb_pfor_detach4.io.Out(4)
+  sync_4.io.incIn(0) <> detach_6.io.Out(2)
 
   sync_4.io.decIn(0) <> reattach_12.io.Out(0)
-
 
 
   /* ================================================================== *
@@ -202,11 +193,9 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   Loop_0.io.loopFinish(0) <> br_9.io.TrueOutput(0)
 
 
-
   /* ================================================================== *
    *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -222,7 +211,6 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   Loop_0.io.InLiveIn(3) <> InputSplitter.io.Out.data.elements("field0")(0)
 
 
-
   /* ================================================================== *
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
@@ -236,17 +224,14 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   icmp_exitcond8.io.RightIO <> Loop_0.io.OutLiveIn.elements("field3")(0)
 
 
-
   /* ================================================================== *
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   LOOP LIVE OUT DEPENDENCIES                       *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -256,13 +241,11 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   Loop_0.io.CarryDepenIn(0) <> binaryOp_inc7.io.Out(0)
 
 
-
   /* ================================================================== *
    *                   LOOP DATA CARRY DEPENDENCIES                     *
    * ================================================================== */
 
   phi__begin_0185.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
-
 
 
   /* ================================================================== *
@@ -291,7 +274,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   phi__begin_0185.io.enable <> bb_pfor_detach4.io.Out(1)
 
 
-  //detach_6.io.enable <> bb_pfor_detach4.io.Out(2)
+  detach_6.io.enable <> bb_pfor_detach4.io.Out(2)
 
 
   const2.io.enable <> bb_pfor_inc5.io.Out(0)
@@ -315,8 +298,6 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   call_11_out.io.enable <> bb_offload_pfor_body7.io.Out(0)
 
 
-
-
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
@@ -324,11 +305,9 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   phi__begin_0185.io.Mask <> bb_pfor_detach4.io.MaskBB(0)
 
 
-
   /* ================================================================== *
    *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -336,11 +315,9 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -370,7 +347,6 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   reattach_12.io.predicateIn(0).enq(DataBundle.active(1.U))
 
 
-
   /* ================================================================== *
    *                   PRINTING CALLIN AND CALLOUT INTERFACE            *
    * ================================================================== */
@@ -380,7 +356,6 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
   io.call_11_out <> call_11_out.io.Out(0)
 
   reattach_12.io.enable <> call_11_in.io.Out.enable
-
 
 
   /* ================================================================== *

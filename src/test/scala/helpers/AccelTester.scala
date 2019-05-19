@@ -64,7 +64,7 @@ class AccelTesterLocal[T <: AccelIO](c: T)
   def dumpMemoryInit(path: String) = {
     //Writing mem states back to the file
     val pw = new PrintWriter(new File(path))
-    for (i <- 0 until inDataVec.length) {
+    for (i <- 0 until inAddrVec.length) {
       val data = MemRead(inAddrVec(i))
       pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
     }
@@ -88,10 +88,6 @@ class AccelTesterLocal[T <: AccelIO](c: T)
     // Write initial contents to the memory model.
     for (i <- 0 until inAddrVec.length) {
       MemWrite(inAddrVec(i), inDataVec(i))
-    }
-
-    for (i <- 0 until outAddrVec.length) {
-      MemWrite(outAddrVec(i), 0)
     }
 
     dumpMemoryInit("init.mem")

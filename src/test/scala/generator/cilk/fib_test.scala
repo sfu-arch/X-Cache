@@ -18,20 +18,11 @@ import arbiters._
 import loop._
 import accel._
 import node._
+import helpers._
 
 
-class fibMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32))))
-    val req = Flipped(Decoupled(new MemReq))
-    val resp = Output(Valid(new MemResp))
-    val out = Decoupled(new Call(List(32)))
-  })
-
-  def cloneType = new fibMainIO().asInstanceOf[this.type]
-}
-
-class fibMain(tiles: Int)(implicit p: Parameters) extends fibMainIO {
+class fibMain(tiles: Int)(implicit p: Parameters)
+  extends AccelIO(List(32, 32), List(32)) {
 
 
   //  val fib = Module(new fibDF())
@@ -82,44 +73,12 @@ class fibMain(tiles: Int)(implicit p: Parameters) extends fibMainIO {
 }
 
 
-class fibTest01[T <: fibMainIO](c: T, n: Int, tiles: Int) extends PeekPokeTester(c) {
+class fibTest01[T <: AccelIO](c: T, n: Int, tiles: Int)
+  extends AccelTesterLocal(c)(List(), List(), List(), List()) {
+
   def fib(n: Int): Int = n match {
     case 0 | 1 => n
     case _ => fib(n - 1) + fib(n - 2)
-  }
-
-  def MemRead(addr: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    while (peek(c.io.resp.valid) == 0) {
-      step(1)
-    }
-    val result = peek(c.io.resp.bits.data)
-    result
-  }
-
-  def MemWrite(addr: Int, data: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
-    step(1)
-    poke(c.io.req.valid, 0)
-    1
   }
 
   val taskID = 0
