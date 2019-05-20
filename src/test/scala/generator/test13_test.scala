@@ -1,41 +1,14 @@
 package dataflow
 
-
-import java.io.PrintWriter
-import java.io.File
-
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
 import config._
-import control._
-import util._
-import interfaces._
-import regfile._
 import memory._
-import stack._
-import arbiters._
-import loop._
 import accel._
-import node._
-import junctions._
+import helpers._
 
-class test13MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val req = Flipped(Decoupled(new MemReq))
-    val resp = Output(Valid(new MemResp))
-    val out = Decoupled(new Call(List(32)))
-  })
-
-  def cloneType = new test13MainIO().asInstanceOf[this.type]
-}
-
-class test13MainDirect(implicit p: Parameters) extends test13MainIO {
+class test13MainDirect(implicit p: Parameters) extends AccelIO(List(32, 32, 32), List(32)) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -83,93 +56,15 @@ class test13MainDirect(implicit p: Parameters) extends test13MainIO {
 }
 
 
-class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
-
-  def MemRead(addr: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
-    step(1)
-
-    poke(c.io.req.valid, 0)
-    while (peek(c.io.resp.valid) == 0) {
-      step(1)
-    }
-    val result = peek(c.io.resp.bits.data)
-    result
-  }
-
-  def MemWrite(addr: Int, data: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
-    step(1)
-    poke(c.io.req.valid, 0)
-    1
-  }
-
-  def dumpMemoryInit(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until inDataVec.length) {
-      val data = MemRead(inAddrVec(i))
-      pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
-
-
-  def dumpMemoryFinal(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until outDataVec.length) {
-      val data = MemRead(outAddrVec(i))
-      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
-
+class test13Test01[T <: AccelIO](c: T)
+                                (inAddrVec: List[Int], inDataVec: List[Int],
+                                 outAddrVec: List[Int], outDataVec: List[Int])
+  extends AccelTesterLocal(c)(inAddrVec, inDataVec, outAddrVec, outDataVec) {
 
   val addr_range = 0x0
-  val inAddrVec = List.range(addr_range, addr_range + (4 * 24), 4)
-
-  val inDataVec = List(0x0, 0x3f800000, 0x40000000, 0x40400000, 0x40800000,
-    0x40a00000, 0x40c00000, 0x40e00000, 0x41000000, 0x41100000, 0x41200000,
-    0x41300000, 0x41400000, 0x41500000, 0x41600000, 0x41700000, 0x41800000,
-    0x41880000, 0x41900000, 0x41980000, 0x41a00000, 0x41a80000, 0x41b00000,
-    0x41b80000)
-
-  val outAddrVec = List.range(addr_range, addr_range + (4 * 24), 4)
-  val outDataVec = List(0x0, 0x3db21643, 0x3e321643, 0x3e8590b2,
-    0x3eb21643, 0x3ede9bd3, 0x3f0590b2, 0x3f1bd37a, 0x3f321643, 0x3f48590b,
-    0x3f5e9bd3, 0x3f74de9c, 0x3f8590b2, 0x3f90b216, 0x3f9bd37a, 0x3fa6f4df,
-    0x3fb21643, 0x3fbd37a7, 0x3fc8590b, 0x3fd37a6f, 0x3fde9bd3, 0x3fe9bd38,
-    0x3ff4de9c, 0x40000000)
 
 
-  //Write initial contents to the memory model.
-  for (i <- 0 until inDataVec.length) {
-    MemWrite(inAddrVec(i), inDataVec(i))
-  }
-
-  step(10)
-  dumpMemoryInit("init.mem")
-
-  step(1)
-
+  initMemory()
 
   /**
     * test11DF interface:
@@ -227,7 +122,7 @@ class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
         println(Console.RED + s"[LOG] *** Incorrect result received. Got $data. Hoping for 40000000" + Console.RESET)
         fail
       } else {
-        println(Console.BLUE + s"[LOG] *** Correct result received." + Console.RESET)
+        println(Console.BLUE + s"*** Correct return result received. Run time: $time cycles." + Console.RESET)
       }
     }
   }
@@ -237,36 +132,34 @@ class test13Test01[T <: test13MainDirect](c: T) extends PeekPokeTester(c) {
     fail
   }
 
-  step(100)
-
-  //  Peek into the CopyMem to see if the expected data is written back to the Cache
-  var valid_data = true
-  for (i <- 0 until outAddrVec.length) {
-    val data = MemRead(outAddrVec(i))
-    if (!(outDataVec(i).toInt - 2 < data) && (data < outDataVec(i).toInt + 2)) {
-      println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
-      fail
-      valid_data = false
-    }
-    else {
-      println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
-    }
-  }
-  if (valid_data) {
-    println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-    dumpMemoryFinal("final.mem")
-  }
-
+  checkMemory()
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
-    dumpMemoryFinal("final.mem")
     fail
   }
 
 }
 
 class test13Tester extends FlatSpec with Matchers {
+
+  val addr_range = 0x0
+  val inAddrVec = List.range(addr_range, addr_range + (4 * 24), 4)
+
+  val inDataVec = List(0x0, 0x3f800000, 0x40000000, 0x40400000, 0x40800000,
+    0x40a00000, 0x40c00000, 0x40e00000, 0x41000000, 0x41100000, 0x41200000,
+    0x41300000, 0x41400000, 0x41500000, 0x41600000, 0x41700000, 0x41800000,
+    0x41880000, 0x41900000, 0x41980000, 0x41a00000, 0x41a80000, 0x41b00000,
+    0x41b80000)
+
+  val outAddrVec = List.range(addr_range, addr_range + (4 * 24), 4)
+  val outDataVec = List(0x0, 0x3db21643, 0x3e321643, 0x3e8590b2,
+    0x3eb21643, 0x3ede9bd3, 0x3f0590b2, 0x3f1bd37a, 0x3f321643, 0x3f48590b,
+    0x3f5e9bd3, 0x3f74de9c, 0x3f8590b2, 0x3f90b216, 0x3f9bd37a, 0x3fa6f4df,
+    0x3fb21643, 0x3fbd37a7, 0x3fc8590b, 0x3fd37a6f, 0x3fde9bd3, 0x3fe9bd38,
+    0x3ff4de9c, 0x40000000)
+
+
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that test11 works correctly." in {
     // iotester flags:
@@ -276,12 +169,13 @@ class test13Tester extends FlatSpec with Matchers {
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
       Array(
-        //       "-ll", "Info",
+        "-ll", "Info",
+        "-tn", "test13Main",
         "-tbn", "verilator",
-        "-td", "test_run_dir",
+        "-td", "test_run_dir/test13",
         "-tts", "0001"),
       () => new test13MainDirect()) {
-      c => new test13Test01(c)
+      c => new test13Test01(c)(inAddrVec, inDataVec, outAddrVec, outDataVec)
     } should be(true)
   }
 }

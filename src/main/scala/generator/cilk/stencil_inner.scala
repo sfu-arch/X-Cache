@@ -92,10 +92,10 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   //  %add1 = add i32 %j, -1, !UID !46
   val binaryOp_add12 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "add")(sign = false))
 
-  //  %mul = shl i32 %sub, 5, !UID !47
+  //  %mul = shl i32 %sub, 2, !UID !47
   val binaryOp_mul3 = Module(new ComputeNode(NumOuts = 1, ID = 3, opCode = "shl")(sign = false))
 
-  //  %mul7 = shl i32 %i, 5, !UID !48
+  //  %mul7 = shl i32 %i, 2, !UID !48
   val binaryOp_mul74 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "shl")(sign = false))
 
   //  %add8 = add i32 %mul7, %j, !UID !49
@@ -119,7 +119,7 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   //  %0 = or i32 %sub2, %sub, !dbg !62, !UID !63
   val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "or")(sign = false))
 
-  //  %1 = icmp ult i32 %0, 32, !dbg !62, !UID !64
+  //  %1 = icmp ult i32 %0, 4, !dbg !62, !UID !64
   val icmp_12 = Module(new IcmpNode(NumOuts = 1, ID = 12, opCode = "ult")(sign = false))
 
   //  br i1 %1, label %if.then5, label %if.end11, !dbg !62, !UID !65, !BB_UID !66
@@ -141,10 +141,10 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   val binaryOp_add1018 = Module(new ComputeNode(NumOuts = 1, ID = 18, opCode = "add")(sign = false))
 
   //  store i32 %add10, i32* %arrayidx9, align 4, !dbg !80, !tbaa !75, !UID !83
-  val st_19 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 19, RouteID = 0))
+  val st_19 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 19, RouteID = 0))
 
   //  br label %if.end11, !dbg !84, !UID !85, !BB_UID !86
-  val br_20 = Module(new UBranchNode(ID = 20))
+  val br_20 = Module(new UBranchNode(ID = 20, NumPredOps = 1))
 
   //  %inc = add nuw nsw i32 %nc.021, 1, !dbg !87, !UID !88
   val binaryOp_inc21 = Module(new ComputeNode(NumOuts = 2, ID = 21, opCode = "add")(sign = false))
@@ -167,17 +167,17 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   //i32 -1
   val const1 = Module(new ConstFastNode(value = -1, ID = 1))
 
-  //i32 5
-  val const2 = Module(new ConstFastNode(value = 5, ID = 2))
+  //i32 2
+  val const2 = Module(new ConstFastNode(value = 2, ID = 2))
 
-  //i32 5
-  val const3 = Module(new ConstFastNode(value = 5, ID = 3))
+  //i32 2
+  val const3 = Module(new ConstFastNode(value = 2, ID = 3))
 
   //i32 0
   val const4 = Module(new ConstFastNode(value = 0, ID = 4))
 
-  //i32 32
-  val const5 = Module(new ConstFastNode(value = 32, ID = 5))
+  //i32 4
+  val const5 = Module(new ConstFastNode(value = 4, ID = 5))
 
   //i32 1
   val const6 = Module(new ConstFastNode(value = 1, ID = 6))
@@ -422,6 +422,8 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   MemCtrl.io.WriteIn(0) <> st_19.io.memReq
 
   st_19.io.memResp <> MemCtrl.io.WriteOut(0)
+
+  br_20.io.PredOp(0) <> st_19.io.SuccOp(0)
 
 
 

@@ -81,10 +81,10 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
 
-  //  %0 = lshr i32 %__begin.031.in, 5, !UID !21
+  //  %0 = lshr i32 %__begin.031.in, 2, !UID !21
   val binaryOp_0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "lshr")(sign = false))
 
-  //  %1 = and i32 %__begin.031.in, 31, !UID !22
+  //  %1 = and i32 %__begin.031.in, 3, !UID !22
   val binaryOp_1 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "and")(sign = false))
 
   //  br label %my_for.body, !UID !23, !BB_UID !24
@@ -131,11 +131,11 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
    *                   PRINTING CONSTANTS NODES                         *
    * ================================================================== */
 
-  //i32 5
-  val const0 = Module(new ConstFastNode(value = 5, ID = 0))
+  //i32 2
+  val const0 = Module(new ConstFastNode(value = 2, ID = 0))
 
-  //i32 31
-  val const1 = Module(new ConstFastNode(value = 31, ID = 1))
+  //i32 3
+  val const1 = Module(new ConstFastNode(value = 3, ID = 1))
 
   //i32 0
   val const2 = Module(new ConstFastNode(value = 0, ID = 2))

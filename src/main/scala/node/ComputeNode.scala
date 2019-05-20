@@ -130,6 +130,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         state := s_IDLE
         //Reset output
         out_data_R.predicate := false.B
+
         Reset()
         if (log) {
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [COMPUTE] " +

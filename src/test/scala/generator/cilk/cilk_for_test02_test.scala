@@ -87,23 +87,23 @@ class cilk_for_test02Test02[T <: AccelIO](c: T, n: Int, tiles: Int)
   initMemory()
 
   // Initializing the signals
-  poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").taskID, 0.U)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.out.ready, false.B)
-  step(1)
-  poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 100.U) // Array a[] base address
-  poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.out.ready, true.B)
-  step(1)
-  poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.enable.control, false)
+  poke(c.io.in.valid, false)
   poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
+  poke(c.io.in.bits.data("field0").taskID, 0)
+  poke(c.io.in.bits.data("field0").predicate, false)
+  poke(c.io.out.ready, false)
+  step(1)
+  poke(c.io.in.bits.enable.control, true)
+  poke(c.io.in.valid, true)
+  poke(c.io.in.bits.data("field0").data, 100) //unsigned j = 100. Initial value
+  poke(c.io.in.bits.data("field0").predicate, true)
+  poke(c.io.out.ready, true)
+  step(1)
+  poke(c.io.in.bits.enable.control, false)
+  poke(c.io.in.valid, false)
+  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").predicate, false)
 
   step(1)
 
@@ -129,38 +129,46 @@ class cilk_for_test02Test02[T <: AccelIO](c: T, n: Int, tiles: Int)
     }
   }
 
-  checkMemory()
+  //The kernel is a computation only kernel
+  //checkMemory()
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
-    dumpMemoryFinal("final.mem")
     fail
   }
 }
 
 class cilk_for_test02Tester1 extends FlatSpec with Matchers {
+
+  val inAddrVec = List(0)
+  val inDataVec = List(0)
+  val outAddrVec = List(0)
+  val outDataVec = List(0)
+
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  it should "Check that cilk_for_test02 works correctly." in {
 
-    val inAddrVec = List.range(0, (4 * 5), 4)
-    val inDataVec = List(1, 2, 3, 4, 5)
-    val outAddrVec = List.range(20, 20 + (4 * 5), 4)
-    val outDataVec = List(2, 4, 6, 8, 10)
 
-    // iotester flags:
-    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
-    // -td  = target directory
-    // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tbn", "verilator",
-        "-td", "test_run_dir/cilk_for_test02",
-        "-tts", "0002"),
-      () => new cilk_for_test02Main(tiles = 2)(p.alterPartial({ case TLEN => 6 }))) {
-      c => new cilk_for_test02Test02(c, 5, 1)(inAddrVec, inDataVec, outAddrVec, outDataVec)
-    } should be(true)
+  val tile_list = List(1)
+  for (tile <- tile_list) {
+    it should "Check that cilk_for_test02 works correctly." in {
+
+
+      // iotester flags:
+      // -ll  = log level <Error|Warn|Info|Debug|Trace>
+      // -tbn = backend <firrtl|verilator|vcs>
+      // -td  = target directory
+      // -tts = seed for RNG
+      chisel3.iotesters.Driver.execute(
+        Array(
+          "-ll", "Error",
+          "-tn", "cilk_for_test02Main",
+          "-tbn", "verilator",
+          "-td", "test_run_dir/cilk_for_test02",
+          "-tts", "0002"),
+        () => new cilk_for_test02Main(tiles = tile)(p.alterPartial({ case TLEN => 6 }))) {
+        c => new cilk_for_test02Test02(c, 5, tile)(inAddrVec, inDataVec, outAddrVec, outDataVec)
+      } should be(true)
+    }
   }
 }
