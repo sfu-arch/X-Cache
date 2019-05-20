@@ -1,41 +1,17 @@
 package dataflow
 
-import java.io.PrintWriter
-import java.io.File
 
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
 import config._
-import control._
-import util._
-import interfaces._
-import regfile._
 import memory._
-import stack._
-import arbiters._
-import loop._
 import accel._
-import node._
+import helpers._
 
 
-class cilk_for_test01MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new Bundle {
-    val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
-    val req = Flipped(Decoupled(new MemReq))
-    val resp = Output(Valid(new MemResp))
-    val out = Decoupled(new Call(List(32)))
-  })
-
-  def cloneType = new cilk_for_test01MainIO().asInstanceOf[this.type]
-}
-
-
-class cilk_for_test01Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_test01MainIO {
+class cilk_for_test01Main1(tiles: Int)(implicit p: Parameters)
+  extends AccelIO(List(32, 32, 32), List(32)) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -92,93 +68,13 @@ class cilk_for_test01Main1(tiles: Int)(implicit p: Parameters) extends cilk_for_
 }
 
 
-class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int) extends PeekPokeTester(c) {
-
-  var writesync = 0
-  def MemReadBlocking(addr: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
-    step(1)
-    poke(c.io.req.valid, 0)
-    while (peek(c.io.resp.valid) == 0) {
-      step(1)
-    }
-    val result = peek(c.io.resp.bits.data)
-    result
-  }
-
-  def MemWriteNonBlocking(addr: Int, data: Int, tag: Int) = {
-    while (peek(c.io.req.ready) == 0) {
-      step(1)
-      MemWriteSyncCount()
-    }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 20 + tag)
-    //    [HACK]. Chisel and/or Verilator has a bug where it does not model 8 bit values correctly.
-    // If you set this to a value exceeding the bitwidth; it will overwrite the neighboring fields in the msg.
-    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
-    //poke(c.io.req.bits.mask, -1)
-    step(1)
-    MemWriteSyncCount()
-    poke(c.io.req.valid, 0)
-  }
+class cilk_for_test01Test01[T <: AccelIO](c: T, n: Int, tiles: Int)
+                                         (inAddrVec: List[Int], inDataVec: List[Int],
+                                          outAddrVec: List[Int], outDataVec: List[Int])
+  extends AccelTesterLocal(c)(inAddrVec, inDataVec, outAddrVec, outDataVec) {
 
 
-  def MemWriteSyncCount() = {
-    if (peek(c.io.resp.valid) == 1) {
-      writesync += 1
-    }
-  }
-
-
-  def dumpMemoryInit(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until inDataVec.length) {
-      //      for (i <- 0 until outDataVec.length) {
-      val data = MemReadBlocking(inAddrVec(i))
-      pw.write("0X" + inAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
-
-  def dumpMemoryFinal(path: String) = {
-    //Writing mem states back to the file
-    val pw = new PrintWriter(new File(path))
-    for (i <- 0 until outDataVec.length) {
-      //      for (i <- 0 until outDataVec.length) {
-      val data = MemReadBlocking(outAddrVec(i))
-      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
-    }
-    pw.close
-
-  }
-
-
-
-  val inAddrVec = List.range(0, (4 * 5), 4)
-  val inDataVec = List(1, 2, 3, 4, 5)
-  val outAddrVec = List.range(20, 20 + (4 * 5), 4)
-  val outDataVec = List(2, 4, 6, 8, 10)
-
-  // Write initial contents to the memory model.
-  for (i <- 0 until 5) {
-    MemWriteNonBlocking(inAddrVec(i), inDataVec(i), i)
-  }
-
-  step(10)
-  dumpMemoryInit("init.mem")
-  step(1)
+  initMemory()
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
@@ -230,34 +126,21 @@ class cilk_for_test01Test01[T <: cilk_for_test01MainIO](c: T, n: Int, tiles: Int
     }
   }
 
-  step(100)
-
-  var valid_data = true
-  for (i <- 0 until outDataVec.length) {
-    val data = MemReadBlocking(outAddrVec(i))
-    if (data != outDataVec(i)) {
-      println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
-      fail
-      valid_data = false
-    }
-    else {
-      println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
-    }
-  }
-  if (valid_data) {
-    println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-    dumpMemoryFinal("final.mem")
-  }
-
+  checkMemory()
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
-    dumpMemoryFinal("final.txt")
     fail
   }
 }
 
 class cilk_for_test01Tester1 extends FlatSpec with Matchers {
+
+  val inAddrVec = List.range(0, (4 * 5), 4)
+  val inDataVec = List(1, 2, 3, 4, 5)
+  val outAddrVec = List.range(20, 20 + (4 * 5), 4)
+  val outDataVec = List(2, 4, 6, 8, 10)
+
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
   it should "Check that cilk_for_test01 works correctly." in {
     // iotester flags:
@@ -268,11 +151,12 @@ class cilk_for_test01Tester1 extends FlatSpec with Matchers {
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",
+        "-tn", "cilkTest01Main",
         "-tbn", "verilator",
         "-td", "test_run_dir/cilk_for_test01",
         "-tts", "0001"),
       () => new cilk_for_test01Main1(tiles = 1)(p.alterPartial({ case TLEN => 6 }))) {
-      c => new cilk_for_test01Test01(c, 5, 22)
+      c => new cilk_for_test01Test01(c, 5, 22)(inAddrVec, inDataVec, outAddrVec, outDataVec)
     } should be(true)
   }
 }

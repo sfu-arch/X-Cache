@@ -1,10 +1,7 @@
 package dataflow
 
-import java.io.PrintWriter
-import java.io.File
 import chisel3._
 import chisel3.Module
-import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import config._
 import memory._
@@ -288,6 +285,7 @@ class cilk_for_test03Tester1 extends FlatSpec with Matchers {
       chisel3.iotesters.Driver.execute(
         Array(
           // "-ll", "Info",
+          "-tn", "cilkTest03Main",
           "-tbn", "verilator",
           "-td", "test_run_dir/cilk_for_test03",
           "-tts", "0001"),
