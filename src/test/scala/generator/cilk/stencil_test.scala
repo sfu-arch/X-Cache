@@ -321,7 +321,7 @@ class stencilTester2 extends FlatSpec with Matchers {
     it should s"Test: $tile tiles" in {
       chisel3.iotesters.Driver.execute(
         Array(
-          "-ll", "Error",
+          "-ll", "Warn",
           "-tn", "cilkStencilTM",
           "-tbn", "verilator",
           "-td", s"test_run_dir/stencil_${tile}",

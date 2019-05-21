@@ -153,11 +153,11 @@ class test13Tester extends FlatSpec with Matchers {
     0x41b80000)
 
   val outAddrVec = List.range(addr_range, addr_range + (4 * 24), 4)
-  val outDataVec = List(0x0, 0x3db21643, 0x3e321643, 0x3e8590b2,
-    0x3eb21643, 0x3ede9bd3, 0x3f0590b2, 0x3f1bd37a, 0x3f321643, 0x3f48590b,
-    0x3f5e9bd3, 0x3f74de9c, 0x3f8590b2, 0x3f90b216, 0x3f9bd37a, 0x3fa6f4df,
-    0x3fb21643, 0x3fbd37a7, 0x3fc8590b, 0x3fd37a6f, 0x3fde9bd3, 0x3fe9bd38,
-    0x3ff4de9c, 0x40000000)
+  val outDataVec = List(0x0, 0x3db21643, 0x3e321643, 0x3e8590b3,
+    0x3eb21643, 0x3ede9bd3, 0x3f0590b3, 0x3f1bd37b, 0x3f321643, 0x3f48590b,
+    0x3f5e9bd3, 0x3f74de9b, 0x3f8590b3, 0x3f90b217, 0x3f9bd37b, 0x3fa6f4df,
+    0x3fb21643, 0x3fbd37a7, 0x3fc8590b, 0x3fd37a6f, 0x3fde9bd3, 0x3fe9bd37,
+    0x3ff4de9b, 0x40000000)
 
 
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
@@ -169,7 +169,7 @@ class test13Tester extends FlatSpec with Matchers {
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
       Array(
-        "-ll", "Info",
+        "-ll", "Warn",
         "-tn", "test13Main",
         "-tbn", "verilator",
         "-td", "test_run_dir/test13",
