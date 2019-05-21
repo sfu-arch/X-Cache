@@ -304,7 +304,7 @@ class bgemmTester1 extends FlatSpec with Matchers {
         // "-ll", "Info",
         "-tn", "bgemmDirect",
         "-tbn", "verilator",
-        "-td", "test_run_dir",
+        "-td", "test_run_dir/bgemmDirect",
         "-tts", "0001"),
       () => new bgemmMainDirect()) {
       c => new bgemmTest01(c)(inAddrVec, inDataVec, outAddrVec, outDataVec)
@@ -341,7 +341,7 @@ class bgemmTester2 extends FlatSpec with Matchers {
         // "-ll", "Info",
         "-tn", "bgemmTM",
         "-tbn", "verilator",
-        "-td", "test_run_dir",
+        "-td", "test_run_dir/bgemmTM",
         "-tts", "0001"),
       () => new bgemmMainTM(Tile = 1)) {
       c => new bgemmTest02(c)(inAddrVec, inDataVec.toList, outAddrVec, outDataVec)

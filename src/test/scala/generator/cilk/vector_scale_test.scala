@@ -229,6 +229,7 @@ class vector_scaleTester1 extends FlatSpec with Matchers {
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",
+        "-tn", "vector_scale_Direct",
         "-tbn", "verilator",
         "-td", s"test_run_dir/vector_scale_direct",
         "-tts", "0001"),
@@ -271,6 +272,7 @@ class vector_scaleTester2 extends FlatSpec with Matchers {
       chisel3.iotesters.Driver.execute(
         Array(
           // "-ll", "Info",
+          "-tn", "vector_scale_TM",
           "-tbn", "verilator",
           "-td", s"test_run_dir/vector_scale_${tile}",
           "-tts", "0001"),

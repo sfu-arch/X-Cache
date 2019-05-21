@@ -296,25 +296,3 @@ class cilk_for_test03Tester1 extends FlatSpec with Matchers {
   }
 }
 
-//class cilk_for_test03Tester2 extends FlatSpec with Matchers {
-//  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-//  it should "Check that cilk_for_test03 works correctly." in {
-//    // iotester flags:
-//    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-//    // -tbn = backend <firrtl|verilator|vcs>
-//    // -td  = target directory
-//    // -tts = seed for RNG
-//    val Tiles = List(2)
-//    for (tile <- Tiles) {
-//      chisel3.iotesters.Driver.execute(
-//        Array(
-//          // "-ll", "Info",
-//          "-tbn", "verilator",
-//          "-td", "test_run_dir/cilk_for_test03",
-//          "-tts", "0001"),
-//        () => new cilk_for_test03SuperCache(tile)(p.alterPartial({ case TLEN => 6 }))) {
-//        c => new cilk_for_test03Test02Cache(c, tile)
-//      } should be(true)
-//    }
-//  }
-//}
