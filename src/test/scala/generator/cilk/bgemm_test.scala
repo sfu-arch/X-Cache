@@ -302,6 +302,7 @@ class bgemmTester1 extends FlatSpec with Matchers {
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",
+        "-tn", "bgemmDirect",
         "-tbn", "verilator",
         "-td", "test_run_dir",
         "-tts", "0001"),
@@ -338,6 +339,7 @@ class bgemmTester2 extends FlatSpec with Matchers {
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",
+        "-tn", "bgemmTM",
         "-tbn", "verilator",
         "-td", "test_run_dir",
         "-tts", "0001"),
