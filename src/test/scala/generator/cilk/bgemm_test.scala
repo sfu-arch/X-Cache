@@ -315,9 +315,10 @@ class bgemmTester1 extends FlatSpec with Matchers {
 class bgemmTester2 extends FlatSpec with Matchers {
   val DataSize = 4
   val inAddrVec = List.range(0, 4 * 2 * (DataSize * DataSize), 4) // byte addresses
-  val inA = Seq.fill(DataSize * DataSize)(Random.nextInt) // 4x4 array of uint32
-  val inB = Seq.fill(DataSize * DataSize)(Random.nextInt) // 4x4 array of uint32
-
+  //val inA = Seq.fill(DataSize * DataSize)(Random.nextInt) // 4x4 array of uint32
+  //val inB = Seq.fill(DataSize * DataSize)(Random.nextInt) // 4x4 array of uint32
+  val inA = List.range(0, 16) // 4x4 array of uint32
+  val inB = List.range(0, 16) // 4x4 array of uint32
 
   val inDataVec = inA ++ inB
   val outAddrVec = List.range(256, 256 + (4 * 16), 4)

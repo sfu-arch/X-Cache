@@ -149,8 +149,9 @@ class test03Tester extends FlatSpec with Matchers {
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",
+        "-tn", "test03",
         "-tbn", "verilator",
-        "-td", "test_run_dir/test04",
+        "-td", "test_run_dir/test03",
         "-tts", "0001"),
       () => new test03Main()) {
       c => new test03Test01(c)
