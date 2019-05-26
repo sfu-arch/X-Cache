@@ -210,73 +210,6 @@ class bgemmTest01[T <: AccelIO](c: T)
   }
 }
 
-
-class bgemmTest02[T <: AccelIO](c: T)
-                               (inAddrVec: List[Int], inDataVec: List[Int],
-                                outAddrVec: List[Int], outDataVec: List[Int])
-  extends AccelTesterLocal(c)(inAddrVec, inDataVec, outAddrVec, outDataVec) {
-
-
-  val DataSize = 4
-
-  initMemory()
-
-  // Initializing the signals
-  poke(c.io.in.bits.enable.control, false)
-  poke(c.io.in.bits.enable.taskID, 0)
-  poke(c.io.in.valid, false)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, false)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").predicate, false)
-  poke(c.io.in.bits.data("field2").data, 0)
-  poke(c.io.in.bits.data("field2").predicate, false)
-  poke(c.io.out.ready, false)
-  step(1)
-  poke(c.io.in.bits.enable.control, true)
-  poke(c.io.in.valid, true)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, true)
-  poke(c.io.in.bits.data("field1").data, (DataSize * DataSize))
-  poke(c.io.in.bits.data("field1").predicate, true)
-  poke(c.io.in.bits.data("field2").data, 2 * 8 * 8)
-  poke(c.io.in.bits.data("field2").predicate, true)
-  poke(c.io.out.ready, true)
-  step(1)
-  poke(c.io.in.bits.enable.control, false)
-  poke(c.io.in.valid, false)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, false)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").predicate, false)
-  poke(c.io.in.bits.data("field2").data, 0)
-  poke(c.io.in.bits.data("field2").predicate, false)
-
-  step(1)
-
-  // NOTE: Don't use assert().  It seems to terminate the writing of VCD files
-  // early (before the error) which makes debugging very difficult. Check results
-  // using if() and fail command.
-  var time = 0 //Cycle counter
-  var result = false
-  while (time < 8000) {
-    time += 1
-    step(1)
-    if (peek(c.io.out.valid) == 1) {
-      result = true
-      println(Console.BLUE + s"*** Bgemm finished. Run time: $time cycles." + Console.RESET)
-    }
-  }
-
-  checkMemory()
-
-  if (!result) {
-    println(Console.RED + "*** Timeout." + Console.RESET)
-    fail
-  }
-}
-
-
 class bgemmTester1 extends FlatSpec with Matchers {
 
   val inAddrVec = List.range(0, 4 * 32, 4) // byte addresses
@@ -342,7 +275,7 @@ class bgemmTester2 extends FlatSpec with Matchers {
         "-td", "test_run_dir/bgemmTM",
         "-tts", "0001"),
       () => new bgemmMainTM(Tile = 1)) {
-      c => new bgemmTest02(c)(inAddrVec, inDataVec, outAddrVec, outDataVec)
+      c => new bgemmTest01(c)(inAddrVec, inDataVec, outAddrVec, outDataVec)
     } should be(true)
   }
 }
