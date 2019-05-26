@@ -47,7 +47,7 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
 
   /* Tests */
   val nopCmd :: rdCmd :: wrCmd :: pollCmd :: Nil = Enum(4) // OpCodes
-  val testVec = Seq(
+  val testVec = VecInit(Seq(
     //       Op,       Address,         Data,          Data Mask
     Command(rdCmd, "h_C000_0800".U, "h_0000_0002".U, "h_0000_0003".U),   // Check Init/Done status reg
     Command(rdCmd, "h_C000_0804".U, "h_0000_0000".U, "h_FFFF_FFFF".U),   // Read 'Unused' space
@@ -71,7 +71,7 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
     Command(pollCmd, "h_C000_0800".U, "h_0000_0001".U, "h_0000_0001".U), // Poll until done bit set
     Command(rdCmd, "h_C000_080C".U, "h_0000_0005".U, "h_0000_000F".U),   // Check Core status reg
     Command(nopCmd)
-  )
+  ))
 
   val sIdle :: sNastiReadReq :: sNastiReadResp :: sNastiWriteReq :: sDone :: Nil = Enum(5)
   val testState = RegInit(sIdle)
@@ -82,10 +82,10 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
 
   switch(testState) {
     is(sIdle) {
-      switch(Vec(testVec)(testCnt).opCode) {
+      switch(testVec(testCnt).opCode) {
         is(rdCmd) {
           req.read := true.B
-          req.addr := Vec(testVec)(testCnt).op0
+          req.addr := testVec(testCnt).op0
           req.tag := testCnt % 16.U
           reqValid := true.B
           testState := sNastiReadReq
@@ -93,16 +93,16 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
         }
         is(wrCmd) {
           req.read := false.B
-          req.addr := Vec(testVec)(testCnt).op0
-          req.data := Vec(testVec)(testCnt).op1
-          req.mask := Vec(testVec)(testCnt).op2
+          req.addr := testVec(testCnt).op0
+          req.data := testVec(testCnt).op1
+          req.mask := testVec(testCnt).op2
           req.tag := testCnt % 16.U
           reqValid := true.B
           testState := sNastiWriteReq
         }
         is(pollCmd) {
           req.read := true.B
-          req.addr := Vec(testVec)(testCnt).op0
+          req.addr := testVec(testCnt).op0
           req.tag := testCnt % 16.U
           reqValid := true.B
           testState := sNastiReadReq
@@ -121,8 +121,8 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
     }
     is(sNastiReadResp) {
       when(hps.io.resp.valid && (hps.io.resp.bits.tag === testCnt % 16.U)) {
-        val expected = Vec(testVec)(testCnt).op1
-        val mask     = Vec(testVec)(testCnt).op2
+        val expected = testVec(testCnt).op1
+        val mask     = testVec(testCnt).op2
         when((hps.io.resp.bits.data & mask) =/= (expected & mask)) {
           when(!pollingRead) {
             printf("Read fail. Expected: 0x%x. Received: 0x%x.", expected, hps.io.resp.bits.data)
