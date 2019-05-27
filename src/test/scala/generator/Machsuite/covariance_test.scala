@@ -197,21 +197,21 @@ class covarianceTester1 extends FlatSpec with Matchers {
     case XLEN => 32
     case TRACE => true
   })
-  it should "Check that covariance works correctly." in {
-    // iotester flags:
-    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
-    // -td  = target directory
-    // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tn", "covarianceMain",
-        "-tbn", "verilator",
-        "-td", "test_run_dir/covariance",
-        "-tts", "0001"),
-      () => new covarianceMain()(testParams)) {
-      c => new covarianceTest01(c)
-    } should be(true)
-  }
+  //it should "Check that covariance works correctly." in {
+    //// iotester flags:
+    //// -ll  = log level <Error|Warn|Info|Debug|Trace>
+    //// -tbn = backend <firrtl|verilator|vcs>
+    //// -td  = target directory
+    //// -tts = seed for RNG
+    //chisel3.iotesters.Driver.execute(
+      //Array(
+        //// "-ll", "Info",
+        //"-tn", "covarianceMain",
+        //"-tbn", "verilator",
+        //"-td", "test_run_dir/covariance",
+        //"-tts", "0001"),
+      //() => new covarianceMain()(testParams)) {
+      //c => new covarianceTest01(c)
+    //} should be(true)
+  //}
 }
