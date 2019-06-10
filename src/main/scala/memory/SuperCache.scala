@@ -2,7 +2,7 @@ package memory
 
 
 import Chisel.experimental.chiselName
-import accel.Cache
+import dandelion.accel.Cache
 import chisel3._
 import chisel3.Module
 import chisel3.util._

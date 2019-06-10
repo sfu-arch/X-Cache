@@ -8,7 +8,7 @@ import chisel3.iotesters._
 import dandelion.config._
 import util._
 import dandelion.interfaces._
-import accel._
+import dandelion.accel._
 
 
 class AccelIO(Args: List[Int], Returns: List[Int])(implicit val p: Parameters) extends Module with CoreParams with CacheParams {

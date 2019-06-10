@@ -1,7 +1,7 @@
 package dandelion.generator.machsuite
 
 import dandelion.fpu._
-import accel._
+import dandelion.accel._
 import arbiters._
 import chisel3._
 import chisel3.util._
@@ -18,7 +18,7 @@ import muxes._
 import dandelion.node._
 import org.scalatest._
 import regfile._
-import stack._
+import dandelion.memory.stack._
 import util._
 
 

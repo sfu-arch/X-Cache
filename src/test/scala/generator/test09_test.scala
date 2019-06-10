@@ -15,10 +15,10 @@ import util._
 import dandelion.interfaces._
 import regfile._
 import memory._
-import stack._
+import dandelion.memory.stack._
 import arbiters._
 import dandelion.loop._
-import accel._
+import dandelion.accel._
 
 
 class test09MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {

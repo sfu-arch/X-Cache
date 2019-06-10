@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package accel
+package dandelion.accel
 
 import chisel3.Module
 import dandelion.config._

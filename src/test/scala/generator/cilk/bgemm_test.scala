@@ -7,7 +7,8 @@ import org.scalatest.{FlatSpec, Matchers}
 import dandelion.concurrent.{TaskController,TaskControllerIO}
 import dandelion.config._
 import memory._
-import accel._
+import dandelion.accel._
+import dandelion.interfaces.NastiMemSlave
 import scala.util.Random
 import helpers._
 

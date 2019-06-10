@@ -2,7 +2,7 @@ package dandelion.generator.pollybench
 
 import java.io.{File, PrintWriter}
 
-import accel._
+import dandelion.accel._
 import chisel3.iotesters._
 import chisel3.util._
 import chisel3.{Module, _}

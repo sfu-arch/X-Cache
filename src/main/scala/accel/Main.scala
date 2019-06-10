@@ -1,14 +1,10 @@
 // See LICENSE for license details.
-
-package accel
+package dandelion.accel
 
 import java.io.{File, FileWriter}
 
-import accel.CoreMain.{chirrtl, dir}
-import accel.FilterDFMain.{chirrtl, dir}
-import accel.coredf._
+import dandelion.accel.coredf.{TestCacheDF, FilterDFCore, VecFilterDFCore, VecFilterNoKernDFCore}
 import dandelion.config._
-import dataflow._
 
 object CoreMain extends App {
   val dir = new File("RTL/accel_rtl") ; dir.mkdirs

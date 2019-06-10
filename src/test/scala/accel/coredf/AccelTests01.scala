@@ -1,15 +1,11 @@
-package accel.coredf
-
-/**
-  * Created by vnaveen0 on 29/6/17.
-  */
-
 // See LICENSE for license details.
+package dandelion.accel.coredf
 
-import accel._
+import dandelion.accel._
 import chisel3._
 import chisel3.util._
 import chisel3.testers._
+import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.config._
 
@@ -56,7 +52,7 @@ class AccelTester01(accel: => Accelerator)(implicit val p: Parameters) extends B
   val len = (dataBeats - 1).U
 
   /* Main Memory */
-  val mem = Mem(1 << 20, UInt(nastiXDataBits.W))
+  val mem_internal = Mem(1 << 20, UInt(nastiXDataBits.W))
   val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: Nil = Enum(4)
   val memState = RegInit(sMemIdle)
   val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, dataBeats)
@@ -68,7 +64,7 @@ class AccelTester01(accel: => Accelerator)(implicit val p: Parameters) extends B
   dutMem.b.valid := memState === sMemWrAck
   dutMem.b.bits := NastiWriteResponseChannel(0.U)
   dutMem.r.valid := memState === sMemRead
-  dutMem.r.bits := NastiReadDataChannel(0.U, mem((dutMem.ar.bits.addr >> size) + rCnt), rDone)
+  dutMem.r.bits := NastiReadDataChannel(0.U, mem_internal((dutMem.ar.bits.addr >> size) + rCnt), rDone)
 
   switch(memState) {
     is(sMemIdle) {
@@ -82,7 +78,7 @@ class AccelTester01(accel: => Accelerator)(implicit val p: Parameters) extends B
       assert(dutMem.aw.bits.size === size)
       assert(dutMem.aw.bits.len === len)
       when(dutMem.w.valid) {
-        mem((dutMem.aw.bits.addr >> size) + wCnt) := dutMem.w.bits.data
+        mem_internal((dutMem.aw.bits.addr >> size) + wCnt) := dutMem.w.bits.data
         printf("[write] mem[%x] <= %x\n", (dutMem.aw.bits.addr >> size) + wCnt, dutMem.w.bits.data)
         dutMem.w.ready := true.B
       }

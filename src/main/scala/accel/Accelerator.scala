@@ -1,12 +1,10 @@
 // See LICENSE for license details.
-
-package accel
+package dandelion.accel
 
 import chisel3._
-import chisel3.util._
-import accel.coredf._
 import dandelion.config._
 import dandelion.junctions._
+import dandelion.interfaces._
 
 abstract class AcceleratorIO(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(

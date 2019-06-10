@@ -1,18 +1,11 @@
 package dandelion.accel.coredf
 
-/**
-  * Created by nvedula on 28/6/17.
-  */
-
 import chisel3._
-import chisel3.util._
-import utility.UniformPrintfs
 import dandelion.interfaces._
 import util._
 import dandelion.config._
-import accel._
 import dataflow.tests._
-import dandelion.interfaces.HandShaking
+import dandelion.accel.CoreT
 
 /**
   * The Core class creates contains the dataflow logic for the accelerator.

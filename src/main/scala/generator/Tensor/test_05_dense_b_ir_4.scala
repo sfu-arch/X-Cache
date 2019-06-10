@@ -1,24 +1,15 @@
 package dandelion.generator.Tensor
 
-import dandelion.fpu._
-import accel._
-import arbiters._
 import chisel3._
-import chisel3.util._
-import chisel3.Module._
-import chisel3.testers._
-import chisel3.iotesters._
 import dandelion.config._
+import dandelion.fpu._
 import control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
+import dandelion.memory.stack._
 import memory._
-import muxes._
 import dandelion.node._
-import org.scalatest._
-import regfile._
-import stack._
 import util._
 
 

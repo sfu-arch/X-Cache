@@ -17,7 +17,7 @@ import dandelion.interfaces._
 import dandelion.node._
 
 // Cache requests
-import accel._
+import dandelion.accel._
 
 // Memory constants
 import Constants._

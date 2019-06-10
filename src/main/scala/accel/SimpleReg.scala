@@ -1,4 +1,4 @@
-package accel
+package dandelion.accel
 
 import chisel3._
 import chisel3.util._

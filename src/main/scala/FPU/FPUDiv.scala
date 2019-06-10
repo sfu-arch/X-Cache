@@ -1,16 +1,9 @@
 package dandelion.fpu
 
-import chisel3.{RegInit, _}
-import chisel3.util._
-import org.scalatest.{FlatSpec, Matchers}
+import chisel3._
 import dandelion.config._
 import util._
-import dandelion.node._
 import dandelion.interfaces._
-import FType._
-import org.scalacheck.Prop.False
-import utility.Constants._
-import utility.UniformPrintfs
 
 // Design Doc
 //////////

@@ -2,7 +2,7 @@ package dandelion.interfaces
 
 
 import chisel3._
-import chisel3.util.{Decoupled, _}
+import chisel3.util.{Decoupled}
 import dandelion.config._
 import utility.Constants._
 

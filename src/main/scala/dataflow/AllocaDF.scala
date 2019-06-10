@@ -11,7 +11,7 @@ import control.{BasicBlockNoMaskNode, BasicBlockNode}
 import util._
 import dandelion.interfaces._
 import dandelion.node._
-import stack._
+import dandelion.memory.stack._
 
 
 

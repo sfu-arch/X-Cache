@@ -1,8 +1,7 @@
-package accel
+package dandelion.accel
 
 import chisel3._
 import chisel3.util._
-import dataflow._
 import dandelion.junctions._
 import dandelion.config._
 import dandelion.interfaces._

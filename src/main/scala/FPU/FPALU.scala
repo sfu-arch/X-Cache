@@ -4,8 +4,6 @@ import hardfloat._
 import chisel3.Module
 import chisel3._
 import chisel3.util._
-import dandelion.interfaces._
-import FType._
 
 case class FType(exp: Int, sig: Int) {
   def ieeeWidth = exp + sig

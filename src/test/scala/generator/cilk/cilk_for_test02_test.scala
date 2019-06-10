@@ -6,7 +6,8 @@ import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
 import dandelion.concurrent.{TaskController,TaskControllerIO}
 import memory._
-import accel._
+import dandelion.accel._
+import dandelion.interfaces.NastiMemSlave
 import helpers.AccelTesterLocal
 import helpers.AccelIO
 

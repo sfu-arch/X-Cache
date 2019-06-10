@@ -3,11 +3,10 @@ package dataflow.filter
 import chisel3._
 import chisel3.util._
 
-import accel._
 import dandelion.node._
 import dandelion.config._
 import dandelion.interfaces._
-import arbiters._
+import dandelion.accel.{CacheIO}
 import memory._
 
 class CacheLoader(FilterSize : Int)(implicit val p: Parameters) extends Module with CoreParams {

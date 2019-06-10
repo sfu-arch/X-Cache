@@ -13,7 +13,7 @@ import dandelion.config._
 import util._
 import dandelion.interfaces._
 import muxes._
-import accel._
+import dandelion.accel._
 import memory._
 import utility.Constants._
 import utility.UniformPrintfs

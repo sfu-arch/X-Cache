@@ -1,6 +1,5 @@
 // See LICENSE for license details.
-
-package accel
+package dandelion.accel
 
 import chisel3._
 import chisel3.util._
@@ -15,43 +14,6 @@ case object NWays extends Field[Int]
 case object NSets extends Field[Int]
 
 case object CacheBlockBytes extends Field[Int]
-
-/*class MemReq(implicit p: Parameters) extends CoreBundle()(p) {
-  val addr    = UInt(xlen.W)
-  val data    = UInt(xlen.W)
-  val mask    = UInt((xlen/8).W)
-  val tag     = UInt((List(1,mshrlen).max).W)
-  val iswrite = Bool()
-}
-
-object MemReq {
-  def default(implicit p: Parameters): MemReq = {
-    val wire = Wire(new MemReq())
-    wire.addr := 0.U
-    wire.data := 0.U
-    wire.mask := 0.U
-    wire.tag  := 0.U
-    wire.iswrite  := false.B
-    wire
-  }
-}
-
-class MemResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
-  val data    = UInt(xlen.W)
-  val tag     = UInt((List(1,mshrlen).max).W)
-  val iswrite = Bool()
-}
-
-object MemResp {
-  def default(implicit p: Parameters): MemResp = {
-    val wire = Wire(new MemResp())
-    wire.valid := false.B
-    wire.data := 0.U
-    wire.tag  := 0.U
-    wire.iswrite  := false.B
-    wire
-  }
-}*/
 
 class CacheIO(implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())

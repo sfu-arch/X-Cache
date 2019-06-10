@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package accel
+package dandelion.memory.stack
 
 import chisel3._
 import chisel3.util._
@@ -9,7 +9,7 @@ import dandelion.junctions._
 import dandelion.config._
 import dandelion.interfaces._
 import NastiConstants._
-import accel._
+import dandelion.accel._
 
 class StackMemIO(implicit p: Parameters) extends CoreBundle()(p) with CoreParams {
   val req   = Flipped(Decoupled(new MemReq))

@@ -1,15 +1,11 @@
+// See LICENSE for license details.
 package accel.coredf
 
-/**
-  * Created by vnaveen0 on 29/6/17.
-  */
-
-// See LICENSE for license details.
-
-import accel._
+import dandelion.accel._
 import chisel3._
 import chisel3.util._
 import chisel3.testers._
+import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.config._
 

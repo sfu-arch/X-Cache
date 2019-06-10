@@ -2,13 +2,11 @@
 
 package dandelion.accel
 
-import accel._
 import chisel3._
 import chisel3.util._
 import chisel3.testers._
-import dandelion.junctions._
+import dandelion.interfaces._
 import dandelion.config._
-import accel.coredf._
 
 class Command extends Bundle {
   val opCode = UInt()

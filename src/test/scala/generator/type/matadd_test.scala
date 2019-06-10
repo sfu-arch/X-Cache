@@ -1,22 +1,14 @@
 package dandelion.generator.dftype
 
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
 import dandelion.config._
-import control._
 import util._
 import dandelion.interfaces._
-import regfile._
 import memory._
-import stack._
-import arbiters._
-import dandelion.loop._
-import accel._
+import dandelion.accel._
 
 
 class mataddMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {

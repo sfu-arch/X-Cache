@@ -5,7 +5,8 @@ import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
 import memory._
-import accel._
+import dandelion.accel._
+import dandelion.interfaces.NastiMemSlave
 import helpers._
 
 class test13MainDirect(implicit p: Parameters) extends AccelIO(List(32, 32, 32), List(32)) {

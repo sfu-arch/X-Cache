@@ -1,4 +1,4 @@
-package stack
+package dandelion.memory.stack
 
 import chisel3._
 import chisel3.util._

@@ -1,10 +1,9 @@
-package accel
+package dandelion.accel
 
 import chisel3._
 import chisel3.util._
 import utility.UniformPrintfs
 import dandelion.config._
-import dataflow._
 import dandelion.interfaces._
 
 /**
