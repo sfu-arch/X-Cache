@@ -1,10 +1,10 @@
-package node
+package dandelion.loop
 
 import chisel3._
 import chisel3.util._
 
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import util._
 
 class LiveInNodeIO(NumOuts: Int)

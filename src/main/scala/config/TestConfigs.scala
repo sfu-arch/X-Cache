@@ -2,7 +2,6 @@ package dandelion.config
 
 import chisel3._
 import chisel3.util._
-import dandelion.config._
 import util._
 import regfile._
 import dandelion.junctions._

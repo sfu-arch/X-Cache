@@ -1,23 +1,15 @@
 // // See LICENSE for license details.
 
-package verilogmain
+package dandelion.verilogmain
 
 
-import dataflow._
-import node._
 import chisel3._
-import chisel3.util._
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
+import dandelion.node._
 import dandelion.config._
-import util._
-import interfaces._
-
-
-
-
 
 class ChainPeekPoker(df: Chain)(implicit p: Parameters) extends PeekPokeTester(df)  {
 	for(t <- 0 until 10){

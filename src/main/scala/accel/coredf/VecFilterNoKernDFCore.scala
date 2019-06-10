@@ -10,7 +10,7 @@ import chisel3.util.Decoupled
 import dandelion.config._
 import chisel3.util._
 import dataflow.filter._
-import interfaces.{DataBundle, TypBundle}
+import dandelion.interfaces.{DataBundle, TypBundle}
 
 /**
   * The Core class creates contains the dataflow logic for the accelerator.

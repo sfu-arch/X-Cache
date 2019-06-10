@@ -1,21 +1,15 @@
 // See LICENSE for license details.
 
-package FPU
+package dandelion.fpu
 
 import chisel3._
 import chisel3.util._
-import FPU._
-import FType._
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import node._
-import dataflow._
-import muxes._
 import dandelion.config._
 import util._
-import interfaces._
 
 
 // Tester.
@@ -59,7 +53,7 @@ class FPResizeTester(df: FNtoFNNode)
 class FPResizeTests extends FlatSpec with Matchers {
   implicit val p = Parameters.root((new SinglePrecisionFPConfig).toInstance)
   it should "Dataflow tester" in {
-    chisel3.iotesters.Driver(() => new FNtoFNNode(S, H, NumOuts = 1, ID = 0)) {
+    chisel3.iotesters.Driver(() => new FNtoFNNode(FType.S, FType.H, NumOuts = 1, ID = 0)) {
       c => new FPResizeTester(c)
     } should be(true)
   }

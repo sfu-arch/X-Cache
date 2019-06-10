@@ -14,9 +14,9 @@ import muxes._
 import dandelion.config._
 import control.{BasicBlockNoMaskNode, BasicBlockNode}
 import util._
-import interfaces._
+import dandelion.interfaces._
 import regfile._
-import node._
+import dandelion.node._
 
 
 

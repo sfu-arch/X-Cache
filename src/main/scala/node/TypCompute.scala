@@ -1,6 +1,6 @@
-package node
+package dandelion.node
 
-import FPU.{FPUALU, FType}
+import dandelion.fpu.{FPUALU, FType}
 import chisel3._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import chisel3.Module
@@ -8,7 +8,7 @@ import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import muxes._
 import util._
 

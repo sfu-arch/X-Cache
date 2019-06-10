@@ -3,10 +3,10 @@ package dandelion.loop
 import chisel3.{Flipped, Module, _}
 import chisel3.util.{Decoupled, _}
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import utility.Constants._
 import dandelion.junctions._
-import node._
+import dandelion.node._
 import utility.UniformPrintfs
 
 /**

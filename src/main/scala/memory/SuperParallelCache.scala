@@ -15,7 +15,7 @@ import scala.collection.immutable
 // Config
 import dandelion.config._
 import utility._
-import interfaces._
+import dandelion.interfaces._
 import scala.math._
 
 class cacheserving(val NumTileBits: Int, val NumSlotBits: Int) extends Bundle {

@@ -9,12 +9,12 @@ import chisel3.testers._
 import chisel3.iotesters._
 import dandelion.config._
 import control._
-import interfaces._
+import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
 import memory._
 import muxes._
-import node._
+import dandelion.node._
 import org.scalatest._
 import regfile._
 import stack._

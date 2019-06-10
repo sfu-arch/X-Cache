@@ -12,8 +12,8 @@ import muxes._
 // Config
 import dandelion.config._
 import utility._
-import interfaces._
-import node._
+import dandelion.interfaces._
+import dandelion.node._
 
 // Cache requests
 import accel._

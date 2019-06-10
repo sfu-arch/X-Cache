@@ -7,12 +7,12 @@ import chisel3.testers._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import arbiters._
 import util._
 import utility.UniformPrintfs
 import muxes._
-import node._
+import dandelion.node._
 
 class StackIO(NumOps: Int)
              (implicit p: Parameters) extends CoreBundle()(p) {

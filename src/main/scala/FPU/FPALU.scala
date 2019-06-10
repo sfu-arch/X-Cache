@@ -1,9 +1,10 @@
-package FPU
+package dandelion.fpu
 
 import hardfloat._
 import chisel3.Module
 import chisel3._
 import chisel3.util._
+import dandelion.interfaces._
 import FType._
 
 case class FType(exp: Int, sig: Int) {
@@ -92,12 +93,11 @@ object FPAluOpCode {
 }
 
 
-/** @param key     a key to search for
-  * @param default a default value if nothing is found
-  * @param mapping a sequence to search of keys and values
-  * @return the value found or the default if not
-  */
 object FPAluGenerator {
+  /** @param key     a key to search for
+    * @param mapping a sequence to search of keys and values
+    * @return the value found or the default if not
+    */
   def apply[S <: Int, T <: Data](key: S, mapping: Seq[(S, T)]): T = {
 
     //Assign default to first element

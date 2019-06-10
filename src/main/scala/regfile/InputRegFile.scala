@@ -11,7 +11,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import muxes._
 import dandelion.config._
 import util._
-import interfaces._
+import dandelion.interfaces._
 
 
 abstract class InRegFile(implicit val p: Parameters) extends Module with CoreParams {

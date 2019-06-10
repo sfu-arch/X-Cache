@@ -1,9 +1,4 @@
-package node
-
-/**
-  * Created by nvedula on 15/5/17.
-  */
-
+package dandelion.node
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}

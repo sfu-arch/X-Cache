@@ -2,16 +2,12 @@ package dandelion.config
 
 
 import chisel3._
-import dandelion.config.cde._
 import chisel3.util._
-import dandelion.config._
 import util._
-//import examples._
 import regfile._
 import dandelion.junctions._
+import dandelion.fpu._
 import accel._
-import FPU._
-import FType._
 
 case object XLEN extends Field[Int]
 
@@ -83,10 +79,10 @@ class MiniConfig extends Config((site, here, up) => {
       addrBits = 32)
 
        case FTYP => site(XLEN) match {
-        case 32 => S
-        case 64 => D
-        case 16 => H
-        case _ => S
+        case 32 => FType.S
+        case 64 => FType.D
+        case 16 => FType.H
+        case _ => FType.S
     }
 
   //-------------------------
@@ -101,10 +97,10 @@ class MiniConfig extends Config((site, here, up) => {
     addrBits = 32)
 
   case FTYP => site(XLEN) match {
-    case 32 => S
-    case 64 => D
-    case 16 => H
-    case _ => S
+    case 32 => FType.S
+    case 64 => FType.D
+    case 16 => FType.H
+    case _ => FType.S
   }
 
 }

@@ -1,4 +1,4 @@
-  package node
+  package dandelion.node
 
 /**
   * Created by nvedula on 15/5/17.
@@ -10,7 +10,7 @@ import org.scalacheck.Prop.False
 import scala.util.control.Breaks._
 import arbiters._
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import muxes._
 import utility._
 import memory._

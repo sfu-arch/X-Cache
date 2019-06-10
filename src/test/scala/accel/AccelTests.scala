@@ -1,8 +1,8 @@
 // See LICENSE for license details.
 
-package accel
+package dandelion.accel
 
-import accel.coredf.TestCore
+import accel._
 import chisel3._
 import chisel3.util._
 import chisel3.testers._

@@ -10,14 +10,13 @@ import muxes._
 import dandelion.config._
 import control._
 import util._
-import interfaces._
+import dandelion.interfaces._
 import regfile._
 import memory._
 import stack._
 import arbiters._
-import loop._
+import dandelion.loop._
 import accel._
-import node._
 
 class test04MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new Bundle {

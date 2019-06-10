@@ -4,15 +4,15 @@ package verilogmain
 //liveIn_R(i).predicate := io.latchEnable.bits.control
 import java.io.{File, FileWriter}
 
-import node._
+import dandelion.node._
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import arbiters._
 import memory._
 import dataflow._
 import dandelion.config._
 import util._
-import interfaces._
+import dandelion.interfaces._
 
 
 object Main extends App {

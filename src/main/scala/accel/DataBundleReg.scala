@@ -5,7 +5,7 @@ import chisel3.util._
 import dataflow._
 import dandelion.junctions._
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 
 /**
   * The SimpleReg class creates a set of memory mapped configuration and status

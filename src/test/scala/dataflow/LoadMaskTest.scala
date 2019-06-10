@@ -1,12 +1,8 @@
-package dataflow
-
-/**
-  * Created by nvedula on 15/5/17.
-  */
+package dandelion.dataflow
 
 import chisel3._
 import chisel3.util._
-import node._
+import dandelion.node._
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}

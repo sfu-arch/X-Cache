@@ -10,7 +10,7 @@ import chisel3.util._
 import dandelion.config._
 import dataflow._
 import dataflow.filter._
-import interfaces._
+import dandelion.interfaces._
 
 /**
   * The Core class creates contains the dataflow logic for the accelerator.

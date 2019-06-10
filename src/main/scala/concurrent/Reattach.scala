@@ -4,8 +4,8 @@ import chisel3._
 import chisel3.util._
 import chisel3.Module
 import dandelion.config._
-import interfaces._
-import node._
+import dandelion.interfaces._
+import dandelion.node._
 import utility.UniformPrintfs
 
 class ReattachIO(val NumPredOps: Int)(implicit p: Parameters)

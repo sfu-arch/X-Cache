@@ -4,7 +4,7 @@
 ===================================================*/
 
 
-package node
+package dandelion.node
 
 import chisel3._
 import chisel3.util._

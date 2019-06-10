@@ -1,19 +1,14 @@
 package dataflow.fuse
 
-/**
-  * Created by vnaveen0 on 26/6/17.
-  */
-
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, FreeSpec, Matchers}
-import node._
 import dataflow._
 import muxes._
 import dandelion.config._
 import util._
-import interfaces._
+import dandelion.interfaces._
 import dataflow._
 import firrtl_interpreter.InterpreterOptions
 

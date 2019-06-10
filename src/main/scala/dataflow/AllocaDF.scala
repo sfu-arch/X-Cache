@@ -9,8 +9,8 @@ import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
 import control.{BasicBlockNoMaskNode, BasicBlockNode}
 import util._
-import interfaces._
-import node._
+import dandelion.interfaces._
+import dandelion.node._
 import stack._
 
 

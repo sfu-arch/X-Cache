@@ -1,12 +1,12 @@
-package FPU
+package dandelion.fpu
 
 import chisel3.{RegInit, _}
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
-import interfaces._
 import util._
-import node._
+import dandelion.node._
+import dandelion.interfaces._
 import FType._
 import org.scalacheck.Prop.False
 import utility.Constants._

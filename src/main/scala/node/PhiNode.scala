@@ -1,4 +1,4 @@
-package node
+package dandelion.node
 
 import chisel3._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
@@ -7,7 +7,7 @@ import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import muxes._
 import util._
 import utility.UniformPrintfs

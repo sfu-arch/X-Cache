@@ -6,7 +6,7 @@ import chisel3._
 import chisel3.util._
 import dandelion.junctions._
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import memory._
 import utility._
 

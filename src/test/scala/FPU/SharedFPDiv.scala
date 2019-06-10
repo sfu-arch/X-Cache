@@ -1,21 +1,16 @@
-package FPU
+package dandelion.fpu
 
-/**
-  * Created by vnaveen0 on 8/7/17.
-  */
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
 import dandelion.config._
-import FType._
 
 
 class SharedFPUTests(c: SharedFPU)
 	(implicit p: Parameters)
 	extends PeekPokeTester(c) {
 
-// 	var readidx = 0
 	poke(c.io.InData(0).bits.RouteID, 0)
 	poke(c.io.InData(1).bits.RouteID, 1)
 	poke(c.io.InData(0).bits.data("field0").data, 0x6C00)

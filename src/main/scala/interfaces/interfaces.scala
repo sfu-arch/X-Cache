@@ -1,4 +1,4 @@
-package interfaces
+package dandelion.interfaces
 
 
 import chisel3._

@@ -7,7 +7,7 @@ import chisel3.Module
 import chisel3.iotesters._
 import dandelion.config._
 import util._
-import interfaces._
+import dandelion.interfaces._
 import accel._
 
 

@@ -9,7 +9,7 @@ import chisel3.util._
 // Config
 import dandelion.config._
 import utility._
-import interfaces._
+import dandelion.interfaces._
 
 
 class MemArbiterIO(NumPorts:Int)(implicit val p: Parameters)

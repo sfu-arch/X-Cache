@@ -6,7 +6,7 @@ import chisel3.iotesters._
 import chisel3.util._
 import chisel3.{Module, _}
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import memory._
 import org.scalatest.{FlatSpec, Matchers}
 

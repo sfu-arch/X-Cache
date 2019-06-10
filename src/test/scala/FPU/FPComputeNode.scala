@@ -1,22 +1,13 @@
 // See LICENSE for license details.
 
-package FPU
+package dandelion.fpu
 
 import chisel3._
-import chisel3.util._
-import FPU._
-import FType._
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import node._
-import dataflow._
-import muxes._
 import dandelion.config._
-import util._
-import interfaces._
-
 
 
 
@@ -70,7 +61,7 @@ class FPComputeTests extends  FlatSpec with Matchers {
    implicit val p = Parameters.root((new SinglePrecisionFPConfig).toInstance)
   it should "FP MAC tester" in {
      chisel3.iotesters.Driver(
-       () => new FPComputeNode(NumOuts = 1, ID = 0, opCode = "Mul")(t = S)) {
+       () => new FPComputeNode(NumOuts = 1, ID = 0, opCode = "Mul")(t = FType.S)) {
        c => new FPComputeNodeTester(c)
      } should be(true)
    }

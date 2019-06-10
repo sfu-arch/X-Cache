@@ -5,12 +5,12 @@ import chisel3._
 import chisel3.util._
 import chisel3.Module
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import dandelion.config._
-import interfaces._
+import dandelion.interfaces._
 import muxes._
 import util._
-import node._
+import dandelion.node._
 import utility.UniformPrintfs
 
 class DetachIO()(implicit p: Parameters)

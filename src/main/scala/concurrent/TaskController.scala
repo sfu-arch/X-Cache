@@ -4,8 +4,8 @@ import chisel3.{Flipped, Module, _}
 import chisel3.util._
 import dandelion.config._
 //import dandelion.Parameters
-import interfaces._
-import node._
+import dandelion.interfaces._
+import dandelion.node._
 import util._
 import utility.UniformPrintfs
 

@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package node
+package dandelion.node
 
 import chisel3._
 import chisel3.util._
@@ -8,12 +8,8 @@ import chisel3.util._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import node._
-import dataflow._
-import muxes._
 import dandelion.config._
-import util._
-import interfaces._
+import dandelion.interfaces._
 
 
 
