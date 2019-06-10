@@ -68,7 +68,7 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO( )(p
   val DataValid  = RegInit(false.B)
   // Can optimize to be a shift bit.
   val ptr        = RegInit(0.U(log2Ceil(2).W))
-  val linebuffer = RegInit(Vec(Seq.fill(2)(0.U(xlen.W))))
+  val linebuffer = RegInit(VecInit(Seq.fill(2)(0.U(xlen.W))))
   val xlen_bytes = xlen / 8
 
   // State machine

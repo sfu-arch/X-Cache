@@ -66,12 +66,12 @@ abstract class DataBundleRegIO(cNum : Int, sNum: Int)(implicit val p: Parameters
 class DataBundleReg(cNum : Int, sNum: Int)(implicit p: Parameters) extends DataBundleRegIO(cNum,sNum)(p) {
 
   val numCfg = if (xlen == 32) 2 else 1;
-  val ctrlBank = RegInit(Vec(Seq.fill(cNum+numCfg)(Vec(Seq.fill(xlen/8)(0.asUInt(8.W))))))
-  val statBank = RegInit(Vec(Seq.fill(sNum+numCfg)(0.asUInt(xlen.W))))
+  val ctrlBank = RegInit(VecInit(Seq.fill(cNum+numCfg)(VecInit(Seq.fill(xlen/8)(0.asUInt(8.W))))))
+  val statBank = RegInit(VecInit(Seq.fill(sNum+numCfg)(0.asUInt(xlen.W))))
   val wordSelBits = log2Ceil(xlen/8)
   val regSelBits = log2Ceil(math.max(cNum+numCfg, sNum+numCfg))
   val bankSelBit = 11
-  val valid = RegInit(Vec(Seq.fill(cNum)(false.B)))
+  val valid = RegInit(VecInit(Seq.fill(cNum)(false.B)))
   //val valid = RegInit(init=0.U(cNum.W))
 
 

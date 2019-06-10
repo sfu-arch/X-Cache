@@ -960,11 +960,12 @@ class HandShakingAlias[T <: Data](NumPredOps: Int,
     val alias_equals = (0 until NumAliasPredOps).map(i => IsAlias(alias_in_bundle_R(i).data, address, xlen, MT_W))
 
     if (NumAliasPredOps != 0) {
-      val hits = VecInit(alias_equals).asUInt // % Turn into a bit vector
-      val pred_valid = VecInit(alias_pred_valid_R).asUInt
-      val waitlist = (pred_valid | ~hits)
-      val result = waitlist.andR && AliasInfoAvail( )
-      printf(p"\n Alias_R (): ${Vec(alias_in_valid_R)} Alias addr: ${alias_in_bundle_R(0).data} hits: ${hits} pred_valid ${pred_valid} waitlist ${waitlist} result ${result}")
+      val hits = VecInit(alias_equals)// % Turn into a bit vector
+      val pred_valid = VecInit(alias_pred_valid_R)
+      //val waitlist = (pred_valid | ~hits)
+      val waitlist = (pred_valid zip hits) map { case(a,b) => a | (~b).toBool()}
+      val result = waitlist.reduceLeft(_ & _)  && AliasInfoAvail( )
+      printf(p"\n Alias_R (): ${VecInit(alias_in_valid_R)} Alias addr: ${alias_in_bundle_R(0).data} hits: ${hits} pred_valid ${pred_valid} waitlist ${waitlist} result ${result}")
       result
     } else {
       true.B

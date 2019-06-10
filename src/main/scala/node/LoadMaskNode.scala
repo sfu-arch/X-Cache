@@ -75,7 +75,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
   // Incoming data valid and daata operand.
   val DataValid    = RegInit(false.B)
   val ptr          = RegInit(0.U((2*xlen).W))
-  val linebuffer   = RegInit(Vec(Seq.fill(2)(0.U(xlen.W))))
+  val linebuffer   = RegInit(VecInit(Seq.fill(2)(0.U(xlen.W))))
  
 
   // Latch predecessor valid signals.

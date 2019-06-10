@@ -18,8 +18,8 @@ def scalacOptionsVersion(scalaVersion: String): Seq[String] = {
 }
 
 autoAPIMappings := true
-scalaVersion := "2.12.6"
-crossScalaVersions := Seq("2.12.6", "2.11.12")
+scalaVersion := "2.12.7"
+crossScalaVersions := Seq("2.12.7", "2.11.12")
 scalacOptions :=
   Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls") ++ scalacOptionsVersion(scalaVersion.value)
 

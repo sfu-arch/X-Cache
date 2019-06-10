@@ -43,7 +43,7 @@ class ReadTypTableEntry(id: Int)(implicit p: Parameters)
   val outptr     = RegInit(0.U(log2Ceil(Beats + 1).W))
   val sendptr    = RegInit(0.U(log2Ceil(Beats + 1).W))
   val recvptr    = RegInit(0.U(log2Ceil(Beats + 1).W))
-  val linebuffer = RegInit(Vec(Seq.fill(Beats + 1)(0.U(xlen.W))))
+  val linebuffer = RegInit(VecInit(Seq.fill(Beats + 1)(0.U(xlen.W))))
   val xlen_bytes = xlen / 8
 
   // State machine
