@@ -1,4 +1,4 @@
-package junctions
+package dandelion.junctions
 
 import chisel3._
 import chisel3.util._
@@ -6,7 +6,7 @@ import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FreeSpec, Matchers}
 import scala.collection.immutable.ListMap
 import interfaces._
-import dandelion.config.MiniConfig
+import dandelion.config._
 
 class SplitCustomTester(c: SplitCustom) extends PeekPokeTester(c) {
 

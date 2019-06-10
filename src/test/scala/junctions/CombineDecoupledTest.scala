@@ -6,7 +6,7 @@ import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FreeSpec, Matchers}
 import scala.collection.immutable.ListMap
 import interfaces._
-import dandelion.config.MiniConfig
+import dandelion.config._
 
 class CombineCustomTester(c: CombineCustom) extends PeekPokeTester(c) {
 
