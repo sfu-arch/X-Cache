@@ -197,21 +197,21 @@ class ellpackTester1 extends FlatSpec with Matchers {
     case XLEN => 32
     case TRACE => true
   })
-  it should "Check that ellpack works correctly." in {
-    // iotester flags:
-    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
-    // -td  = target directory
-    // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tn", "ellpackMain",
-        "-tbn", "verilator",
-        "-td", "test_run_dir/ellpack",
-        "-tts", "0001"),
-      () => new ellpackMain()(testParams)) {
-      c => new ellpackTest01(c)
-    } should be(true)
-  }
+  //it should "Check that ellpack works correctly." in {
+    //// iotester flags:
+    //// -ll  = log level <Error|Warn|Info|Debug|Trace>
+    //// -tbn = backend <firrtl|verilator|vcs>
+    //// -td  = target directory
+    //// -tts = seed for RNG
+    //chisel3.iotesters.Driver.execute(
+      //Array(
+        //// "-ll", "Info",
+        //"-tn", "ellpackMain",
+        //"-tbn", "verilator",
+        //"-td", "test_run_dir/ellpack",
+        //"-tts", "0001"),
+      //() => new ellpackMain()(testParams)) {
+      //c => new ellpackTest01(c)
+    //} should be(true)
+  //}
 }

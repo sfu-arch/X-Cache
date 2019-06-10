@@ -180,21 +180,21 @@ class k3mmTester1 extends FlatSpec with Matchers {
     case XLEN => 32
     case TRACE => true
   })
-  it should "Check that k3mm works correctly." in {
-    // iotester flags:
-    // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
-    // -td  = target directory
-    // -tts = seed for RNG
-    chisel3.iotesters.Driver.execute(
-      Array(
-        // "-ll", "Info",
-        "-tn", "k3mmMain",
-        "-tbn", "verilator",
-        "-td", "test_run_dir/k3mm",
-        "-tts", "0001"),
-      () => new k3mmMain()(testParams)) {
-      c => new k3mmTest01(c)
-    } should be(true)
-  }
+  //it should "Check that k3mm works correctly." in {
+    //// iotester flags:
+    //// -ll  = log level <Error|Warn|Info|Debug|Trace>
+    //// -tbn = backend <firrtl|verilator|vcs>
+    //// -td  = target directory
+    //// -tts = seed for RNG
+    //chisel3.iotesters.Driver.execute(
+      //Array(
+        //// "-ll", "Info",
+        //"-tn", "k3mmMain",
+        //"-tbn", "verilator",
+        //"-td", "test_run_dir/k3mm",
+        //"-tts", "0001"),
+      //() => new k3mmMain()(testParams)) {
+      //c => new k3mmTest01(c)
+    //} should be(true)
+  //}
 }
