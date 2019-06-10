@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.testers._
 import junctions._
-import config._
+import dandelion.config._
 import scala.math._
 import memory._
 import interfaces._
@@ -43,7 +43,7 @@ class SuperCacheUnitTests(c: NCache) extends PeekPokeTester(c) {
 }
 
 class SuperCacheUnitTester extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "SuperCache tester" in {
     chisel3.iotesters.Driver(() => new NCache(1, 1)) { c =>
       new SuperCacheUnitTests(c)

@@ -1,10 +1,10 @@
-package config
+package dandelion.config
 
 
 import chisel3._
-import config.cde._
+import dandelion.config.cde._
 import chisel3.util._
-import config._
+import dandelion.config._
 import util._
 //import examples._
 import regfile._

@@ -13,7 +13,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import node._
 import dataflow._
 import muxes._
-import config._
+import dandelion.config._
 import util._
 import interfaces._
 
@@ -23,7 +23,7 @@ import interfaces._
 
 // Tester.
 class FPComputeNodeTester(df: FPComputeNode)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
 
   poke(df.io.LeftIO.bits.data, 0x40800000.U)
@@ -67,7 +67,7 @@ class FPComputeNodeTester(df: FPComputeNode)
 }
 
 class FPComputeTests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new SinglePrecisionFPConfig).toInstance)
+   implicit val p = Parameters.root((new SinglePrecisionFPConfig).toInstance)
   it should "FP MAC tester" in {
      chisel3.iotesters.Driver(
        () => new FPComputeNode(NumOuts = 1, ID = 0, opCode = "Mul")(t = S)) {

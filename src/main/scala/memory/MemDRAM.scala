@@ -8,7 +8,7 @@ import chisel3.experimental._
 
 
 // Config
-import config._
+import dandelion.config._
 import utility._
 import interfaces._
 

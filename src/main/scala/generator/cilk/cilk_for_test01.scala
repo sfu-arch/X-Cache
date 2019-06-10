@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.dataflow
 
 import FPU._
 import accel._
@@ -8,11 +8,12 @@ import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
-import config._
+import dandelion.config._
+import dandelion.concurrent._
 import control._
 import interfaces._
 import junctions._
-import loop._
+import dandelion.loop._
 import memory._
 import muxes._
 import node._
@@ -355,7 +356,7 @@ import java.io.{File, FileWriter}
 object cilk_for_test01Top extends App {
   val dir = new File("RTL/cilk_for_test01Top");
   dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test01DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

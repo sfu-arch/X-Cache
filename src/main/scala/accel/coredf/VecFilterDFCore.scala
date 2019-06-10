@@ -6,7 +6,7 @@ package accel.coredf
 
 import accel._
 import chisel3._
-import config._
+import dandelion.config._
 import dataflow.filter._
 
 /**

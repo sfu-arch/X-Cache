@@ -3,7 +3,7 @@ package node
 import chisel3.{RegInit, _}
 import chisel3.util._
 import org.scalacheck.Prop.False
-import config._
+import dandelion.config._
 import interfaces._
 import utility.Constants._
 import utility.UniformPrintfs

@@ -5,7 +5,7 @@ package accel
 import chisel3._
 import chisel3.util._
 import junctions._
-import config._
+import dandelion.config._
 import interfaces._
 import memory._
 import utility._

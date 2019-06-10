@@ -11,7 +11,7 @@
 // import node._
 // import dataflow._
 // import muxes._
-// import config._
+// import dandelion.config._
 // import util._
 // import interfaces._
 
@@ -20,7 +20,7 @@
 
 
 // // Tester.
-// class AllocaTester(df: AllocaTest)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+// class AllocaTester(df: AllocaTest)(implicit p: Parameters) extends PeekPokeTester(df)  {
 
 //   poke(df.io.resultReady, false.B)
 //   println(s" ")
@@ -115,7 +115,7 @@
 
 
 // class allocaTests extends  FlatSpec with Matchers {
-//    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//    implicit val p = Parameters.root((new MiniConfig).toInstance)
 //   it should "Dataflow tester" in {
 //      chisel3.iotesters.Driver(() => new AllocaTest()(p)) { c =>
 //        new AllocaTester(c)

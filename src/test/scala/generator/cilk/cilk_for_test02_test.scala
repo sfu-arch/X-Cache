@@ -3,7 +3,7 @@ package dataflow
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
-import config._
+import dandelion.config._
 import memory._
 import accel._
 import helpers.AccelTesterLocal
@@ -146,7 +146,7 @@ class cilk_for_test02Tester1 extends FlatSpec with Matchers {
   val outAddrVec = List(0)
   val outDataVec = List(0)
 
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
 
 
   val tile_list = List(1)

@@ -5,7 +5,7 @@ import chisel3.util._
 import node._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
-import config._
+import dandelion.config._
 import junctions.NastiIO
 
 
@@ -62,7 +62,7 @@ class ReattachTest01(c: Reattach) extends PeekPokeTester(c) {
 
 
 class ReattachTester extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   var tbn = "verilator"
 //  var tbn = "firrtl"
 

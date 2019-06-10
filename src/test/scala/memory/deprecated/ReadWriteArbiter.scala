@@ -7,10 +7,10 @@ package memory.deprecated
 import chisel3._
 import chisel3.testers._
 import chisel3.util._
-import config._
+import dandelion.config._
 import memory.ReadWriteArbiter
 /*
-class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Parameters)
+class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: Parameters)
   extends BasicTester {
 
   val dut = Module(c)
@@ -221,7 +221,7 @@ class ReadWriteArbiterTests(c: => ReadWriteArbiter) (implicit p: config.Paramete
 
 
 class ReadWriteArbiterTester extends org.scalatest.FlatSpec {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   "ReadWriteArbiter" should "pass" in {
     assert(TesterDriver execute (() => new ReadWriteArbiterTests(new ReadWriteArbiter())))
   }

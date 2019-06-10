@@ -13,7 +13,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import node._
 import dataflow._
 import muxes._
-import config._
+import dandelion.config._
 import util._
 import interfaces._
 import dataflow._
@@ -23,7 +23,7 @@ import dataflow._
 
 // Tester.
 class computeFuse01Tester(df: ComputeFuse01DF)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.data0.bits.data, 4.U)
   poke(df.io.data0.valid, false.B)
@@ -68,7 +68,7 @@ class computeFuse01Tester(df: ComputeFuse01DF)
 
 
 class ComputeF01Tests extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val myargs = Array("--backend-name", "verilator", "--target-dir", "test_run_dir")
   chisel3.iotesters.Driver.execute(myargs, () => new ComputeFuse01DF()(p))
   { c => new computeFuse01Tester(c)  }

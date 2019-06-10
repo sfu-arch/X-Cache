@@ -3,7 +3,7 @@ package FPU
 import chisel3.{RegInit, _}
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
-import config._
+import dandelion.config._
 import interfaces._
 import util._
 import node._

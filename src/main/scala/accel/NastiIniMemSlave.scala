@@ -5,7 +5,7 @@ import chisel3.core.Data
 import chisel3.util.experimental.loadMemoryFromFile
 import chisel3.util._
 import junctions._
-import config.{CoreBundle, _}
+import dandelion.config.{CoreBundle, _}
 
 class InitParamsMem(implicit p: Parameters) extends CoreBundle( )(p) with CacheParams {
   val addr = UInt(nastiXAddrBits.W)

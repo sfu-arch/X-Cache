@@ -8,7 +8,7 @@ package node
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import config._
+import dandelion.config._
 import utility._
 
 class StoreNodeTests(c: UnTypStore) extends PeekPokeTester(c) {
@@ -65,7 +65,7 @@ class StoreNodeTests(c: UnTypStore) extends PeekPokeTester(c) {
 import Constants._
 
 class StoreNodeTester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Store Node tester" in {
     chisel3.iotesters.Driver(() => new UnTypStore(NumPredOps=1,NumSuccOps=1,NumOuts=1,Typ=MT_W,ID=1,RouteID=0)) { c =>
       new StoreNodeTests(c)

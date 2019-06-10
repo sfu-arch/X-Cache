@@ -7,11 +7,11 @@ import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
-import config._
+import dandelion.config._
 import control._
 import interfaces._
 import junctions._
-import loop._
+import dandelion.loop._
 import memory._
 import muxes._
 import node._
@@ -402,7 +402,7 @@ class test02_nonOptDF(implicit p: Parameters) extends test02_nonOptDFIO()(p) {
 import java.io.{File, FileWriter}
 object test02nonOptMain extends App {
   val dir = new File("RTL/test02") ; dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test02_nonOptDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

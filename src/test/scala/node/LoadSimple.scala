@@ -3,7 +3,7 @@ package node
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
-import config._
+import dandelion.config._
 import utility._
 
 class LoadNodeTests(c: UnTypLoad) extends PeekPokeTester(c) {
@@ -72,7 +72,7 @@ class LoadNodeTests(c: UnTypLoad) extends PeekPokeTester(c) {
 import Constants._
 
 class LoadNodeTester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Load Node tester" in {
     chisel3.iotesters.Driver(() => new UnTypLoad(NumPredOps=1,NumSuccOps=1,NumOuts=1,Typ=MT_W,ID=1,RouteID=0)) { c =>
       new LoadNodeTests(c)

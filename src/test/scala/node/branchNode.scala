@@ -11,7 +11,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import node._
 import dataflow._
 import muxes._
-import config._
+import dandelion.config._
 import util._
 import interfaces._
 
@@ -20,7 +20,7 @@ import interfaces._
 
 
 // Tester.
-class BranchTester(df: CBranchNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class BranchTester(df: CBranchNode)(implicit p: Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.CmpIO.bits.data, 9.U)
   poke(df.io.CmpIO.valid, false.B)
@@ -59,7 +59,7 @@ class BranchTester(df: CBranchNode)(implicit p: config.Parameters) extends PeekP
 
 
 class BrTests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new CBranchNode(ID = 0)) {
        c => new BranchTester(c)

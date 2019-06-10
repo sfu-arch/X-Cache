@@ -6,7 +6,7 @@ import chisel3.Module
 import chisel3.testers._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
-import config._
+import dandelion.config._
 import interfaces._
 import arbiters._
 import util._

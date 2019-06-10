@@ -7,7 +7,7 @@ import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{Matchers, FlatSpec} 
 
-import config._
+import dandelion.config._
 import interfaces._
 import muxes._
 import util._

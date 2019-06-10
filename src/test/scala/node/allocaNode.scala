@@ -11,7 +11,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import node._
 import dataflow._
 import muxes._
-import config._
+import dandelion.config._
 import util._
 import interfaces._
 
@@ -20,7 +20,7 @@ import interfaces._
 
 
 // Tester.
-class AllocaTester(df: AllocaNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class AllocaTester(df: AllocaNode)(implicit p: Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.allocaInputIO.bits.size, 3.U)
   poke(df.io.allocaInputIO.bits.numByte, 4.U)
@@ -75,7 +75,7 @@ class AllocaTester(df: AllocaNode)(implicit p: config.Parameters) extends PeekPo
 
 
 class AllocaTests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new AllocaNode(ID = 0, NumOuts = 1, RouteID = 0)) {
        c => new AllocaTester(c)

@@ -3,7 +3,7 @@ package dataflow
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
-import config._
+import dandelion.config._
 import memory._
 import accel._
 import helpers._
@@ -273,7 +273,7 @@ class cilk_for_test03Tester1 extends FlatSpec with Matchers {
   val outAddrVec = List.range(80, 80 + (4 * 10), 4)
   val outDataVec = List.range(1, 11, 1).map(_ * 2)
 
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that cilk_for_test03 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

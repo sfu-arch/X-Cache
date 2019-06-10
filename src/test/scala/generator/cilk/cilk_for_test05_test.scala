@@ -4,7 +4,7 @@ package dataflow
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
-import config._
+import dandelion.config._
 import memory._
 import accel._
 import helpers._
@@ -159,7 +159,7 @@ class cilk_for_test05Tester1 extends FlatSpec with Matchers {
   val outDataVec = inA.zip(inB).map { case (x, y) => x + y }
 
 
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

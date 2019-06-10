@@ -3,7 +3,7 @@ package accel
 import chisel3._
 import chisel3.util._
 import utility.UniformPrintfs
-import config._
+import dandelion.config._
 import dataflow._
 import interfaces._
 

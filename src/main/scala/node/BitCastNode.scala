@@ -2,7 +2,7 @@ package node
 
 import chisel3._
 import chisel3.Module
-import config._
+import dandelion.config._
 import interfaces.{ControlBundle, DataBundle}
 import util._
 import utility.UniformPrintfs

@@ -13,7 +13,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import node._
 import dataflow._
 import muxes._
-import config._
+import dandelion.config._
 import util._
 import interfaces._
 
@@ -23,7 +23,7 @@ import interfaces._
 
 // Tester.
 class Add01Tester(df: Add01DF)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
   println(s"t:-2 -------------------------")
   poke(df.io.Data0.bits.data, 5.U)
@@ -74,7 +74,7 @@ class Add01Tester(df: Add01DF)
 
 
 class Add01Tests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow sample 01 tester" in {
      chisel3.iotesters.Driver(() => new Add01DF()(p)) {
        c => new Add01Tester(c)

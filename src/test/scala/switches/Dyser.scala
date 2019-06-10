@@ -9,14 +9,14 @@ import interfaces._
 import chisel3._
 import chisel3.util._
 import accel._
-import config._
+import dandelion.config._
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FlatSpec, Matchers}
 
 /*
 // Tester.
 class DyserTests(c: Dyser)
-                          (implicit p: config.Parameters) extends PeekPokeTester(c)  {
+                          (implicit p: Parameters) extends PeekPokeTester(c)  {
 
   for (t <- 0 until 8) {
     if(t==2) {
@@ -116,7 +116,7 @@ class DyserTests(c: Dyser)
 
 
 class DyserTester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Mux tester" in {
     chisel3.iotesters.Driver(() => new Dyser(
       SelN = 1,

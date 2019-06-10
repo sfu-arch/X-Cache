@@ -6,7 +6,7 @@ import Chisel._
 import scala.math.max
 import scala.collection.mutable.ArraySeq
 import util._
-import config._
+import dandelion.config._
 
 case object NastiKey extends Field[NastiParameters]
 

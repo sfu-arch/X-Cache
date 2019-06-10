@@ -5,7 +5,7 @@ import chisel3.util._
 
 import accel._
 import node._
-import config._
+import dandelion.config._
 import interfaces._
 import arbiters._
 import memory._

@@ -1,9 +1,8 @@
-package loop
+package dandelion.loop
 
 import chisel3.{Flipped, Module, _}
 import chisel3.util.{Decoupled, _}
-import config._
-import config.Parameters
+import dandelion.config._
 import interfaces._
 import utility.Constants._
 import junctions._

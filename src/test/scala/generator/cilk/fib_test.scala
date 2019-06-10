@@ -7,7 +7,7 @@ import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
-import config._
+import dandelion.config._
 import control._
 import util._
 import interfaces._
@@ -155,7 +155,7 @@ object fibTesterParams {
 }
 
 class fibTester1 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that fib works correctly." in {
     for (tiles <- fibTesterParams.tile_list) {
       for (n <- fibTesterParams.n_list) {

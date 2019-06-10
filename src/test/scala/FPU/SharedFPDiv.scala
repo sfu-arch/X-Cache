@@ -7,12 +7,12 @@ package FPU
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import config._
+import dandelion.config._
 import FType._
 
 
 class SharedFPUTests(c: SharedFPU)
-	(implicit p: config.Parameters)
+	(implicit p: Parameters)
 	extends PeekPokeTester(c) {
 
 // 	var readidx = 0
@@ -34,7 +34,7 @@ class SharedFPUTests(c: SharedFPU)
 
 
 class SharedFPUTester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new HALFPrecisionFPConfig).toInstance)
+  implicit val p = Parameters.root((new HALFPrecisionFPConfig).toInstance)
   it should "Memory Controller tester" in {
     chisel3.iotesters.Driver(() => new SharedFPU(NumOps=2, PipeDepth=5)(t = p(FTYP))) {
       c => new SharedFPUTests(c)

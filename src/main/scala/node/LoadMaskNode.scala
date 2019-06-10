@@ -9,7 +9,7 @@ import chisel3.util._
 import org.scalacheck.Prop.False
 import scala.util.control.Breaks._
 import arbiters._
-import config._
+import dandelion.config._
 import interfaces._
 import muxes._
 import utility._

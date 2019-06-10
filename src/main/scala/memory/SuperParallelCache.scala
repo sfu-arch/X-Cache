@@ -13,7 +13,7 @@ import scala.collection.immutable
 
 
 // Config
-import config._
+import dandelion.config._
 import utility._
 import interfaces._
 import scala.math._
@@ -247,7 +247,7 @@ import java.io.{File, FileWriter}
 object NParallelCacheMain extends App {
   val dir = new File("RTL/NParallelCache");
   dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new NCache(1, 1)))
 
   val verilogFile   = new File(dir, s"${chirrtl.main}.v")

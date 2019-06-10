@@ -11,10 +11,10 @@ import node._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import config._
+import dandelion.config._
 
 
-class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends PeekPokeTester(c) {
+class LoadMaskTests (c: LoadMaskNode)(implicit p: Parameters) extends PeekPokeTester(c) {
   poke(c.io.MemReq.ready,false.B)
   poke(c.io.MemReq.valid,false.B)
   poke(c.io.MemResp.valid,false.B)
@@ -55,7 +55,7 @@ class LoadMaskTests (c: LoadMaskNode)(implicit p: config.Parameters) extends Pee
 //}
 
 class LoadMaskTester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
 /*
  it should "Load Node tester" in {
 

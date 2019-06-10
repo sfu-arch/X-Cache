@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.generator.cilk
 
 import chisel3._
 import chisel3.util._
@@ -7,15 +7,16 @@ import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
-import config._
+import dandelion.config._
 import control._
+import dandelion.concurrent._
 import util._
 import interfaces._
 import regfile._
 import memory._
 import stack._
 import arbiters._
-import loop._
+import dandelion.loop._
 import accel._
 import node._
 import junctions._
@@ -344,7 +345,7 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
 import java.io.{File, FileWriter}
 object fib_continueMain extends App {
   val dir = new File("RTL/fib_continue") ; dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fib_continueDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

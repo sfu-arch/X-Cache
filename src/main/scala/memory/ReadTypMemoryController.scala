@@ -12,7 +12,7 @@ import arbiters._
 import muxes._
 import arbiters._
 // Config
-import config._
+import dandelion.config._
 import utility._
 import interfaces._
 import node._

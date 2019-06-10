@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.core.Data
 import chisel3.util._
 import junctions._
-import config.{CoreBundle, _}
+import dandelion.config.{CoreBundle, _}
 
 class InitParams(implicit p: Parameters) extends CoreBundle( )(p) with CacheParams {
   val addr = UInt(nastiXAddrBits.W)

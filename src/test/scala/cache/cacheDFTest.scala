@@ -10,7 +10,7 @@ import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
-import config._
+import dandelion.config._
 import control._
 import util._
 import interfaces._
@@ -218,7 +218,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
 }
 
 class baseCacheTester extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that cacheTest works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

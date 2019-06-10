@@ -7,10 +7,10 @@ package memory
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import config._
+import dandelion.config._
 
 class ReadTypTableEntryTests(c: ReadTypTableEntry)
-                            (implicit p: config.Parameters)
+                            (implicit p: Parameters)
   extends PeekPokeTester(c) {
 
   // -- IO ---
@@ -107,7 +107,7 @@ class ReadTypTableEntryTests(c: ReadTypTableEntry)
 
 
 class ReadTypTableEntryTester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Memory Controller tester" in {
     chisel3.iotesters.Driver(() => new ReadTypTableEntry(0)(p)) {
       c => new ReadTypTableEntryTests(c)

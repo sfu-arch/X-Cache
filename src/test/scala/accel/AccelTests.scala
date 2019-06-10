@@ -7,7 +7,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.testers._
 import junctions._
-import config._
+import dandelion.config._
 import accel.coredf._
 
 class Command extends Bundle {
@@ -30,7 +30,7 @@ object Command {
   }
 }
 
-class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
+class AccelTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester with CacheParams {
 
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
@@ -154,7 +154,7 @@ class AccelTester(accel: => Accelerator)(implicit val p: config.Parameters) exte
 }
 
 class AccelTests extends org.scalatest.FlatSpec {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
 //  "Accel" should "pass" in {
 //    assert(TesterDriver execute (() => new AccelTester(new Accelerator(3,3,new Core(3,3)))))
 //  }

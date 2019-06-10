@@ -5,7 +5,7 @@ import interfaces._
 import chisel3._
 import chisel3.util._
 import chisel3.Module
-import config._
+import dandelion.config._
 import interfaces._
 
 class Demux[T <: ValidT](gen: T, Nops: Int) extends Module {

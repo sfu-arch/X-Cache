@@ -8,12 +8,12 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupl
 import org.scalatest.{Matchers, FlatSpec}
 
 import chisel3._
-import config._
+import dandelion.config._
 import arbiters._
 import memory._
 
 
-class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parameters)
+class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: Parameters)
   extends PeekPokeTester(c) {
   // -- IO ---
   //    val ReadMemReq = Decoupled(new MemReq)
@@ -114,7 +114,7 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: config.Parame
 
 
 class ReadWriteArbiterTester01 extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Memory Controller tester" in {
     chisel3.iotesters.Driver(() => new ReadWriteArbiter()(p)) {
       c => new ReadWriteArbiterTests01(c)

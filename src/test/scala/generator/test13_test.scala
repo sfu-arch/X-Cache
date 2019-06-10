@@ -3,7 +3,7 @@ package dataflow
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
-import config._
+import dandelion.config._
 import memory._
 import accel._
 import helpers._
@@ -160,7 +160,7 @@ class test13Tester extends FlatSpec with Matchers {
     0x3ff4de9b, 0x40000000)
 
 
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that test11 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

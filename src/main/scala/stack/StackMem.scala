@@ -6,7 +6,7 @@ import chisel3._
 import chisel3.util._
 
 import junctions._
-import config._
+import dandelion.config._
 import interfaces._
 import NastiConstants._
 import accel._

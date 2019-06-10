@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.generator.cilk
 
 import chisel3._
 import chisel3.util._
@@ -7,15 +7,16 @@ import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
-import config._
+import dandelion.config._
 import control._
+import dandelion.concurrent._
 import util._
 import interfaces._
 import regfile._
 import memory._
 import stack._
 import arbiters._
-import loop._
+import dandelion.loop._
 import accel._
 import node._
 import junctions._
@@ -1524,7 +1525,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 import java.io.{File, FileWriter}
 object mergesort_mergeMain extends App {
   val dir = new File("RTL/mergesort_merge") ; dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new mergesort_mergeDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

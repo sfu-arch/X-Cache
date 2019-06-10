@@ -7,7 +7,7 @@ import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
 import utility.UniformPrintfs
-import config._
+import dandelion.config._
 import interfaces.{VariableDecoupledData, _}
 import muxes._
 import util._

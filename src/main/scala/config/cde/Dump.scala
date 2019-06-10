@@ -1,4 +1,4 @@
-package config.cde
+package dandelion.config.cde
 
 import scala.collection.mutable
 

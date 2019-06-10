@@ -13,11 +13,11 @@ package memory
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import config._
+import dandelion.config._
 import arbiters._
 import memory._
 
-class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameters) extends PeekPokeTester(c) {
+class UnifiedControllerTests (c: UnifiedController)(implicit p: Parameters) extends PeekPokeTester(c) {
 
   //Note if you do not send aligned address -> it will send multiple requests of aligned addresses to memory
   poke(c.io.ReadIn(0).bits.address, 8)
@@ -140,7 +140,7 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: config.Parameter
 
 
 class UnifiedControllerTester extends  FlatSpec with Matchers {
-	implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+	implicit val p = Parameters.root((new MiniConfig).toInstance)
 	// iotester flags:
 	// -ll  = log level <Error|Warn|Info|Debug|Trace>
 	// -tbn = backend <firrtl|verilator|vcs>

@@ -3,7 +3,7 @@ package dataflow
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
-import config._
+import dandelion.config._
 import memory._
 import accel._
 import helpers._
@@ -122,7 +122,7 @@ class test05Tester1 extends FlatSpec with Matchers {
   val outDataVec = inDataVec.zipWithIndex.map { case (a, b) => if (b < 5) a else inDataVec(b - 5) * 2 }
 
 
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that test05 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

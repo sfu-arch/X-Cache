@@ -8,7 +8,7 @@ import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
-import config._
+import dandelion.config._
 import control._
 import interfaces._
 import junctions._
@@ -112,7 +112,7 @@ class prefetchDF(implicit p: Parameters) extends prefetchDFIO()(p) {
 import java.io.{File, FileWriter}
 object prefetchMain extends App {
   val dir = new File("RTL/prefetchTest") ; dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new prefetchDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

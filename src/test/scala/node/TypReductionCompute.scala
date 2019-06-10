@@ -11,14 +11,14 @@ import org.scalatest.{Matchers, FlatSpec}
 import node._
 import dataflow._
 import muxes._
-import config._
+import dandelion.config._
 import util._
 import interfaces._
 
 
 // Tester.
 class TypReduceCompTests(df: TypReduceCompute[matNxN])
-                        (implicit p: config.Parameters) extends PeekPokeTester(df) {
+                        (implicit p: Parameters) extends PeekPokeTester(df) {
 
 
   poke(df.io.enable.valid, true)
@@ -38,7 +38,7 @@ class TypReduceCompTests(df: TypReduceCompute[matNxN])
 
 
 class TypReduceCompTester extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Typ Compute Tester" in {
     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),
       () => new TypReduceCompute(NumOuts = 1, ID = 0, opCode = "Mul")(sign = false)(new matNxN(2))) {

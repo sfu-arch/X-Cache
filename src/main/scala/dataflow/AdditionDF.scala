@@ -7,7 +7,7 @@ import chisel3.testers._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
-import config._
+import dandelion.config._
 import control.{BasicBlockNoMaskNode, BasicBlockNode}
 import util._
 import interfaces._

@@ -4,7 +4,7 @@ package regfile
 import scala.math._
 import chisel3._
 import chisel3.util._
-import config._
+import dandelion.config._
 
 /**
  * @brief IO interface to register file

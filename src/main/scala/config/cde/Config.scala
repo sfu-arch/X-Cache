@@ -1,4 +1,4 @@
-package config.cde
+package dandelion.config.cde
 
 class Config(
   val topDefinitions: World.TopDefs = { (a,b,c) => throw new CDEMatchError(a) },

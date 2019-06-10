@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.generator.Tensor
 
 import FPU._
 import accel._
@@ -8,11 +8,11 @@ import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
-import config._
+import dandelion.config._
 import control._
 import interfaces._
 import junctions._
-import loop._
+import dandelion.loop._
 import memory._
 import muxes._
 import node._
@@ -843,7 +843,7 @@ class dense05bMain(implicit p: Parameters) extends dense05bTopIO {
 object test_05_dense_b_ir_4Top extends App {
   val dir = new File("RTL/test_05_dense_b_ir_4Top");
   dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new dense05bMain()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

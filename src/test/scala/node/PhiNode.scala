@@ -12,7 +12,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import node._
 import dataflow._
 import muxes._
-import config._
+import dandelion.config._
 import util._
 import interfaces._
 
@@ -21,7 +21,7 @@ import interfaces._
 
 
 // Tester.
-class PhiTester(df: PhiNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class PhiTester(df: PhiNode)(implicit p: Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.InData(0).valid, false.B)
 // //   poke(df.io.InData(0).bits.valid, true.B)
@@ -132,7 +132,7 @@ class PhiTester(df: PhiNode)(implicit p: config.Parameters) extends PeekPokeTest
 
 
 class PHITests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new PhiNode(NumInputs = 2, NumOuts = 1, ID = 0)) { c =>
        new PhiTester(c)

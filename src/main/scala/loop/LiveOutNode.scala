@@ -3,7 +3,7 @@ package node
 import chisel3._
 import chisel3.util._
 
-import config._
+import dandelion.config._
 import interfaces._
 import util._
 

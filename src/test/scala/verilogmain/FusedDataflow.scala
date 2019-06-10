@@ -11,7 +11,7 @@ import chisel3.util._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import config._
+import dandelion.config._
 import util._
 import interfaces._
 
@@ -19,7 +19,7 @@ import interfaces._
 
 
 
-class ChainPeekPoker(df: Chain)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+class ChainPeekPoker(df: Chain)(implicit p: Parameters) extends PeekPokeTester(df)  {
 	for(t <- 0 until 10){
 		step(1)
 	}
@@ -28,7 +28,7 @@ class ChainPeekPoker(df: Chain)(implicit p: config.Parameters) extends PeekPokeT
 
 
 object ChainVerilog extends App {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   chisel3.iotesters.Driver.execute(args, () => new Chain(NumOps = 3, ID = 0, OpCodes = Array("And","Xor","Add"))(sign = false))
   { c => new ChainPeekPoker(c)  }
 }

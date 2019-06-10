@@ -11,9 +11,9 @@ import chisel3._
 import chisel3.util._
 import chisel3.testers._
 import junctions._
-import config._
+import dandelion.config._
 
-class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
+class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester with CacheParams {
 
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
@@ -211,7 +211,7 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: config.Para
 }
 
 class VecFilterNoKernDFTests extends org.scalatest.FlatSpec {
-  implicit val p = config.Parameters.root((new VecFilterDFConfig).toInstance)
+  implicit val p = Parameters.root((new VecFilterDFConfig).toInstance)
 /*
   "Accel" should "pass" in {
     assert(TesterDriver execute (() => new VecFilterNoKernDFTester(new Accelerator(12,4,new VecFilterNoKernDFCore(12,4)))))

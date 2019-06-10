@@ -4,7 +4,7 @@ import interfaces._
 import chisel3._
 import chisel3.util._
 import chisel3.Module
-import config._
+import dandelion.config._
 import interfaces._
 
 abstract class AbstractArbiterTree[T <: Data](Nops: Int, gen: T)(implicit p: Parameters)

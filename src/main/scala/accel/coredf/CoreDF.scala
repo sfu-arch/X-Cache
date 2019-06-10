@@ -9,7 +9,7 @@ import chisel3.util._
 import utility.UniformPrintfs
 import interfaces._
 import util._
-import config._
+import dandelion.config._
 import accel._
 import dataflow.tests._
 import node.HandShaking

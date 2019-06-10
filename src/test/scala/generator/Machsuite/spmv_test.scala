@@ -6,7 +6,7 @@ import accel._
 import chisel3.iotesters._
 import chisel3.util._
 import chisel3.{Module, _}
-import config._
+import dandelion.config._
 import interfaces._
 import memory._
 import org.scalatest.{FlatSpec, Matchers}
@@ -192,7 +192,7 @@ class ellpackTest01[T <: ellpackMainIO](c: T) extends PeekPokeTester(c) {
 
 
 class ellpackTester1 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case XLEN => 32
     case TRACE => true

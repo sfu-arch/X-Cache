@@ -11,7 +11,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import node._
 import dataflow._
 import muxes._
-import config._
+import dandelion.config._
 import util._
 import interfaces._
 
@@ -21,7 +21,7 @@ import interfaces._
 
 // Tester.
 class computeTester(df: ComputeNode)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.LeftIO.bits.data, 2.U)
   poke(df.io.LeftIO.valid, false.B)
@@ -65,7 +65,7 @@ class computeTester(df: ComputeNode)
 
 
 class CompTests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)) {
        c => new computeTester(c)

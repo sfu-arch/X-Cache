@@ -11,7 +11,7 @@
 // import node._
 // import dataflow._
 // import muxes._
-// import config._
+// import dandelion.config._
 // import util._
 // import interfaces._
 // import control._
@@ -20,7 +20,7 @@
 
 
 // // Tester.
-// class simpleLoadTester(df: LoadNode)(implicit p: config.Parameters) extends PeekPokeTester(df)  {
+// class simpleLoadTester(df: LoadNode)(implicit p: Parameters) extends PeekPokeTester(df)  {
 
 //   poke(df.io.GepAddr.valid, false.B)
 //   poke(df.io.memResp.valid, false.B)
@@ -124,7 +124,7 @@
 
 
 // class simpleLoadTests extends  FlatSpec with Matchers {
-//    implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//    implicit val p = Parameters.root((new MiniConfig).toInstance)
 //   it should "Simple load tester" in {
 //      chisel3.iotesters.Driver(() => new LoadNode(1,1,1,ID=0,RouteID=0)(p)) { c =>
 //        new simpleLoadTester(c)
