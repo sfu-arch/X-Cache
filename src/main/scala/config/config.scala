@@ -8,7 +8,7 @@ import dandelion.config._
 import util._
 //import examples._
 import regfile._
-import junctions._
+import dandelion.junctions._
 import accel._
 import FPU._
 import FType._

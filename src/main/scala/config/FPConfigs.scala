@@ -5,7 +5,7 @@ import chisel3.util._
 import dandelion.config._
 import util._
 import regfile._
-import junctions._
+import dandelion.junctions._
 import accel._
 import FPU._
 import FType._

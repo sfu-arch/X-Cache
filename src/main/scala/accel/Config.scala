@@ -4,7 +4,7 @@ package accel
 
 import chisel3.Module
 import dandelion.config._
-import junctions._
+import dandelion.junctions._
 import regfile.RFile
 
 

@@ -5,7 +5,7 @@ import chisel3.util._
 import dandelion.config._
 import util._
 import regfile._
-import junctions._
+import dandelion.junctions._
 import accel._
 
 class TypeStackFileVerilog16bConfig extends Config((site, here, up) => {

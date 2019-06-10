@@ -10,7 +10,7 @@ import accel._
 import chisel3._
 import chisel3.util._
 import chisel3.testers._
-import junctions._
+import dandelion.junctions._
 import dandelion.config._
 
 class Command extends Bundle {

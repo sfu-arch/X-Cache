@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.concurrent
 
 import chisel3._
 import chisel3.util._
@@ -6,7 +6,7 @@ import node._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
-import junctions.NastiIO
+import dandelion.junctions.NastiIO
 
 
 class ReattachTest01(c: Reattach) extends PeekPokeTester(c) {

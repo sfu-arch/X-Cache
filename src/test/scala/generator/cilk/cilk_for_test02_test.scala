@@ -1,9 +1,10 @@
-package dataflow
+package dandelion.generator.cilk
 
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
+import dandelion.concurrent.{TaskController,TaskControllerIO}
 import memory._
 import accel._
 import helpers.AccelTesterLocal

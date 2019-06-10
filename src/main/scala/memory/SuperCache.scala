@@ -6,7 +6,7 @@ import accel.Cache
 import chisel3._
 import chisel3.Module
 import chisel3.util._
-import junctions._
+import dandelion.junctions._
 import muxes.{Demux, DemuxGen}
 
 import scala.collection.immutable

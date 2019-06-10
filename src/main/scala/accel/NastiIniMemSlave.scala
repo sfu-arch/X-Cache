@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.core.Data
 import chisel3.util.experimental.loadMemoryFromFile
 import chisel3.util._
-import junctions._
+import dandelion.junctions._
 import dandelion.config.{CoreBundle, _}
 
 class InitParamsMem(implicit p: Parameters) extends CoreBundle( )(p) with CacheParams {

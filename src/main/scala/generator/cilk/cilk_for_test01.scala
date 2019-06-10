@@ -1,4 +1,4 @@
-package dandelion.dataflow
+package dandelion.generator.cilk
 
 import FPU._
 import accel._
@@ -12,7 +12,7 @@ import dandelion.config._
 import dandelion.concurrent._
 import control._
 import interfaces._
-import junctions._
+import dandelion.junctions._
 import dandelion.loop._
 import memory._
 import muxes._

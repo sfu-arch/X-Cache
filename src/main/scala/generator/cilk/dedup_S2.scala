@@ -11,7 +11,7 @@ import dandelion.config._
 import control._
 import dandelion.concurrent._
 import interfaces._
-import junctions._
+import dandelion.junctions._
 import dandelion.loop._
 import memory._
 import muxes._

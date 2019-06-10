@@ -1,13 +1,11 @@
-package dataflow
+package dandelion.generator.machsuite
 
-import java.io.{File, PrintWriter}
 
 import accel._
 import chisel3.iotesters._
 import chisel3.util._
 import chisel3.{Module, _}
 import dandelion.config._
-import dataflow.fftDF
 import interfaces._
 import memory._
 import org.scalatest.{FlatSpec, Matchers}
@@ -212,6 +210,8 @@ class fftTest01[T <: fftMainIO](c: T) extends PeekPokeTester(c) {
   }
 }
 
+
+import java.io.{File, PrintWriter}
 
 class fftTester1 extends FlatSpec with Matchers {
   implicit val p = Parameters.root((new MiniConfig).toInstance)

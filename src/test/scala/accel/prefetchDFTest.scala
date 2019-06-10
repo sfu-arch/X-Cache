@@ -21,7 +21,7 @@ import arbiters._
 import loop._
 import accel._
 import node._
-import junctions._
+import dandelion.junctions._
 
 
 class prefetchDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {

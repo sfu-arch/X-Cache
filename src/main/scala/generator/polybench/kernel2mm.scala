@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.generator.pollybench
 
 import FPU._
 import accel._
@@ -11,7 +11,7 @@ import chisel3.iotesters._
 import dandelion.config._
 import control._
 import interfaces._
-import junctions._
+import dandelion.junctions._
 import dandelion.loop._
 import memory._
 import muxes._

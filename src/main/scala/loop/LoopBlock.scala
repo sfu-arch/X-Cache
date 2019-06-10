@@ -5,7 +5,7 @@ import chisel3.util.{Decoupled, _}
 import dandelion.config._
 import interfaces._
 import utility.Constants._
-import junctions._
+import dandelion.junctions._
 import node._
 import utility.UniformPrintfs
 

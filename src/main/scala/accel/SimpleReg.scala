@@ -3,7 +3,7 @@ package accel
 import chisel3._
 import chisel3.util._
 
-import junctions._
+import dandelion.junctions._
 import dandelion.config._
 
 /**
