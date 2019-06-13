@@ -4,7 +4,7 @@ import chisel3._
 import dandelion.interfaces._
 import util._
 import dandelion.config._
-import dataflow.tests._
+import dandelion.dataflow.tests._
 import dandelion.accel.CoreT
 
 /**

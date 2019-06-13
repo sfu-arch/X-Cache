@@ -9,7 +9,7 @@ import org.scalatest.{ Matchers, FlatSpec }
 import scala.util.control.Breaks._
 
 import dandelion.config._
-import arbiters._
+import dandelion.arbiters._
 import memory._
 import utility._
 import Constants._

@@ -7,7 +7,7 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupl
 import org.scalatest.{Matchers, FlatSpec}
 
 import dandelion.config._
-import control._
+import dandelion.control._
 import dandelion.interfaces._
 
 

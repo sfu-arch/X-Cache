@@ -1,4 +1,4 @@
-package memory
+package dandelion.memory
 
 
 import Chisel.experimental.chiselName

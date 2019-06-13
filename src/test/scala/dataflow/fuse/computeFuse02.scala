@@ -1,15 +1,15 @@
-package dataflow.fuse
+package dandelion.dataflow.fuse
 
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, FreeSpec, Matchers}
-import dataflow._
+import dandelion.dataflow._
 import muxes._
 import dandelion.config._
 import util._
 import dandelion.interfaces._
-import dataflow._
+import dandelion.dataflow._
 import firrtl_interpreter.InterpreterOptions
 
 

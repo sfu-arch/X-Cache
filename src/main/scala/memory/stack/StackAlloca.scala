@@ -8,7 +8,7 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, Pe
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
 import dandelion.interfaces._
-import arbiters._
+import dandelion.arbiters._
 import util._
 import utility.UniformPrintfs
 import muxes._

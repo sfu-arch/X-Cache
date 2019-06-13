@@ -3,7 +3,7 @@ package dandelion.accel.coredf
 
 import chisel3._
 import dandelion.config._
-import dataflow.filter._
+import dandelion.dataflow.filter._
 import dandelion.accel.CoreT
 
 /**

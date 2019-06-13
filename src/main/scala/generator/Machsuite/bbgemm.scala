@@ -2,14 +2,14 @@ package dandelion.generator.machsuite
 
 import dandelion.fpu._
 import dandelion.accel._
-import arbiters._
+import dandelion.arbiters._
 import chisel3._
 import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
 import dandelion.config._
-import control._
+import dandelion.control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._

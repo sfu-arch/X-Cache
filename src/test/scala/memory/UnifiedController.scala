@@ -14,7 +14,7 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupl
 import org.scalatest.{Matchers, FlatSpec}
 
 import dandelion.config._
-import arbiters._
+import dandelion.arbiters._
 import memory._
 
 class UnifiedControllerTests (c: UnifiedController)(implicit p: Parameters) extends PeekPokeTester(c) {

@@ -2,7 +2,7 @@ package dandelion.accel
 
 import chisel3._
 import dandelion.config._
-import control._
+import dandelion.control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import memory._

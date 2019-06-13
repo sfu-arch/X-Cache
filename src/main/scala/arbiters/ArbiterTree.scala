@@ -1,4 +1,4 @@
-package arbiters
+package dandelion.arbiters
 
 import dandelion.interfaces._
 import chisel3._

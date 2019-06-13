@@ -3,7 +3,7 @@ package dandelion.generator.Tensor
 import chisel3._
 import dandelion.fpu._
 import dandelion.config._
-import control._
+import dandelion.control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._

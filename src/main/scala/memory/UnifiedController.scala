@@ -1,4 +1,4 @@
-package memory
+package dandelion.memory
 
 import scala.math._
 import chisel3._

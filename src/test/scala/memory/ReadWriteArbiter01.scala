@@ -9,7 +9,7 @@ import org.scalatest.{Matchers, FlatSpec}
 
 import chisel3._
 import dandelion.config._
-import arbiters._
+import dandelion.arbiters._
 import memory._
 
 

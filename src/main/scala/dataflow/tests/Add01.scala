@@ -1,4 +1,4 @@
-package dataflow.tests
+package dandelion.dataflow.tests
 
 /**
   * Created by vnaveen0 on 26/6/17.
@@ -12,7 +12,7 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, Pe
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
 import dandelion.config._
-import control.{BasicBlockNoMaskNode, BasicBlockNode}
+import dandelion.control.{BasicBlockNoMaskNode, BasicBlockNode}
 import util._
 import dandelion.interfaces._
 import regfile._

@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.generator
 
 import java.io.PrintWriter
 import java.io.File
@@ -10,13 +10,13 @@ import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
 import dandelion.config._
-import control._
+import dandelion.control._
 import util._
 import dandelion.interfaces._
 import regfile._
 import memory._
 import dandelion.memory.stack._
-import arbiters._
+import dandelion.arbiters._
 import dandelion.loop._
 import dandelion.accel._
 

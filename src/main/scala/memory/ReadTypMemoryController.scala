@@ -1,16 +1,16 @@
-package memory
+package dandelion.memory
 
 // Generic Packages
-import arbiters.ArbiterTree
+import dandelion.arbiters.ArbiterTree
 import chisel3._
 import chisel3.Module
 import chisel3.util._
 import org.scalacheck.Prop.False
 
 // Modules needed
-import arbiters._
+import dandelion.arbiters._
 import muxes._
-import arbiters._
+import dandelion.arbiters._
 // Config
 import dandelion.config._
 import utility._

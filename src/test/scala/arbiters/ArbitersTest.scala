@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package arbiters 
+package dandelion.arbiters
 
 import chisel3._
 
@@ -39,15 +39,6 @@ class ArbiterTester (bus: WordRegFile)(implicit p: Parameters) extends PeekPokeT
               step(1)     
     }
 
-    // // dut.io.AllocaIn(0).valid := true.B
-    //      println(s"io.in.bits, io.out.bits: ${peek(stack.io.AllocaOut(0))}")
-    // step(1)
-    //      println(s"io.out.bits: ${peek(stack.io.AllocaOut(0))}")
-    // step(1)
-    //          println(s"io.out.bits: ${peek(stack.io.AllocaOut(0))}")
-    // step(1)
-    //  println(s"io.out.bits: ${peek(stack.io.AllocaOut(0))}")
- 
 }
 
 class ArbiterTests extends  FlatSpec with Matchers {

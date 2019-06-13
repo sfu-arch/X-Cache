@@ -1,4 +1,4 @@
-package dataflow.fuse
+package dandelion.dataflow.fuse
 
 import chisel3._
 import chisel3.util._

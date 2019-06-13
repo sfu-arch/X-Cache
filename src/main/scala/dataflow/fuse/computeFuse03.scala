@@ -1,4 +1,4 @@
-package dataflow.fuse
+package dandelion.dataflow.fuse
 
 import chisel3._
 import chisel3.util._
@@ -6,7 +6,7 @@ import chisel3.util._
 import dandelion.node._
 import dandelion.config._
 import dandelion.interfaces._
-import arbiters._
+import dandelion.arbiters._
 import memory._
 
 class ComputeFuse03SDF(implicit val p: Parameters) extends Module with CoreParams {

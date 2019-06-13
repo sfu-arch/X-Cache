@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.Module
 import dandelion.config._
 import dandelion.interfaces._
-import arbiters._
+import dandelion.arbiters._
 import util._
 import utility.UniformPrintfs
 import muxes._

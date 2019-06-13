@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package dataflow
+package dandelion.dataflow
 
 import chisel3._
 

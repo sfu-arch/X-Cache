@@ -1,9 +1,9 @@
 package dandelion.generator.dftype
 
-import arbiters._
+import dandelion.arbiters._
 import chisel3._
 import dandelion.config._
-import control._
+import dandelion.control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._

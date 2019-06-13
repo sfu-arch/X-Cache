@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.dataflow
 
 import chisel3._
 import chisel3.util._
@@ -7,7 +7,7 @@ import chisel3.testers._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
-import control.{BasicBlockNoMaskNode, BasicBlockNode}
+import dandelion.control.{BasicBlockNoMaskNode, BasicBlockNode}
 import util._
 import dandelion.interfaces._
 import dandelion.node._

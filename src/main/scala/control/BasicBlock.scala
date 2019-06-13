@@ -1,4 +1,4 @@
-package control
+package dandelion.control
 
 import java.util.ResourceBundle.Control
 
