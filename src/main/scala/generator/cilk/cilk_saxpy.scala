@@ -366,13 +366,89 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 
 }
 
+class cilk_saxpyMainTMTop(children: Int)(implicit val p: Parameters)
+  extends Module with CoreParams {
+
+  val Args = List(32, 32, 32, 32)
+  val Returns = List(32)
+
+    val io = IO(new Bundle {
+          val in = Flipped(Decoupled(new Call(Args)))
+          val MemResp = Flipped(Valid(new MemResp))
+          val MemReq = Decoupled(new MemReq)
+          val out = Decoupled(new Call(Returns))
+    })
+
+  //val cache = Module(new Cache) // Simple Nasti Cache
+  //val memModel = Module(new NastiMemSlave(latency = 10)) // Model of DRAM to connect to Cache
+
+  // Connect the wrapper I/O to the memory model initialization interface so the
+  // test bench can write contents at start.
+  //memModel.io.nasti <> cache.io.nasti
+  //memModel.io.init.bits.addr := 0.U
+  //memModel.io.init.bits.data := 0.U
+  //memModel.io.init.valid := false.B
+  //cache.io.cpu.abort := false.B
+
+  // Wire up the cache, TM, and modules under test.
+
+  val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))
+  val saxpy = Module(new cilk_saxpyDF())
+
+  val saxpy_detach = for (i <- 0 until children) yield {
+    val detach1 = Module(new cilk_saxpy_detach1DF())
+    detach1
+  }
+
+  // Ugly hack to merge requests from two children.  "ReadWriteArbiter" merges two
+  // requests ports of any type.  Read or write is irrelevant.
+  // saxpy to task controller
+  val CacheArbiter = Module(new MemArbiter(children + 1))
+
+  for (i <- 0 until children) {
+    saxpy_detach(i).io.in <> TaskControllerModule.io.childOut(i)
+    TaskControllerModule.io.childIn(i) <> saxpy_detach(i).io.out
+
+    CacheArbiter.io.cpu.MemReq(i) <> saxpy_detach(i).io.MemReq
+    saxpy_detach(i).io.MemResp <> CacheArbiter.io.cpu.MemResp(i)
+  }
+
+  //CacheArbiter.io.cpu.MemReq(children) <> io.req
+  //io.resp <> CacheArbiter.io.cpu.MemResp(children)
+
+  CacheArbiter.io.cpu.MemReq(children) <> saxpy.io.MemReq
+  saxpy.io.MemResp <> CacheArbiter.io.cpu.MemResp(children)
+
+  TaskControllerModule.io.parentIn(0) <> saxpy.io.call_11_out
+  saxpy.io.call_11_in <> TaskControllerModule.io.parentOut(0)
+
+
+  //cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+  //CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+
+  io.MemReq <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> io.MemResp
+
+  // tester to saxpy
+  saxpy.io.in <> io.in
+  io.out <> saxpy.io.out
+
+}
+
+
+
 import java.io.{File, FileWriter}
 
 object cilk_saxpyTop extends App {
-  val dir = new File("RTL/cilk_saxpyTop");
+  val dir = new File("RTL/cilk_saxpyTop4");
   dir.mkdirs
   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_saxpyDF()))
+  //val testParams = p.alterPartial({
+    //case TLEN => 5
+    //case TRACE => true
+  //})
+
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_saxpyMainTMTop(4)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)
