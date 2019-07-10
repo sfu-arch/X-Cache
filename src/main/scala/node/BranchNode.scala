@@ -242,7 +242,7 @@ class CBranchFastNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val I
 
   // Output for true and false sides
   val true_output = predicate & predicate_cmp
-  val false_output = predicate & (~predicate_cmp).toBool
+  val false_output = predicate & (~predicate_cmp).asBool
 
   // Defalut values for Trueoutput
   //
@@ -447,7 +447,7 @@ class CBranchNodeVariableLoop(val NumTrue: Int = 1, val NumFalse: Int = 1, val N
   // Output for true and false sides
   val predicate = enable_R.control & enable_valid_R
   val true_output = predicate & cmp_R
-  val false_output = predicate & (~cmp_R).toBool
+  val false_output = predicate & (~cmp_R).asBool
 
   // Defalut values for Trueoutput
   //
@@ -857,7 +857,7 @@ class CompareBranchNode(ID: Int, opCode: String)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when((~enable_R.control).toBool) {
+        when((~enable_R.control).asBool) {
 
           enable_R := ControlBundle.default
           enable_valid_R := false.B
@@ -1137,7 +1137,7 @@ class CBranchFastNodeVariable2(val NumTrue: Int = 1, val NumFalse: Int = 1, val 
   // Output for true and false sides
 
   val true_output = predicate & cmp_R
-  val false_output = predicate & (~cmp_R).toBool
+  val false_output = predicate & (~cmp_R).asBool
   //  val true_output = cmp_R
   //  val false_output = ~cmp_R
 
@@ -1350,7 +1350,7 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val NumPr
   // Output for true and false sides
   val predicate = enable_R.control & enable_valid_R
   val true_output = predicate & cmp_R.control
-  val false_output = predicate & (~cmp_R.control).toBool
+  val false_output = predicate & (~cmp_R.control).asBool
 
   // Defalut values for Trueoutput
   //

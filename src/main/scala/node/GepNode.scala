@@ -137,18 +137,6 @@ class GepOneNode(NumOuts: Int, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        /*
-                when((~enable_R.control).toBool) {
-                  idx1_R := DataBundle.default
-                  base_addr_R := DataBundle.default
-
-                  idx1_valid_R := false.B
-                  base_addr_valid_R := false.B
-
-                  Reset()
-                  printf("[LOG] " + "[" + module_name + "] [TID-> %d]" + node_name + ": Not predicated value -> reset\n", enable_R.taskID)
-                }.elsewhen((idx1_valid_R) && (base_addr_valid_R)) {
-        */
         when((idx1_valid_R) && (base_addr_valid_R)) {
           ValidOut()
           state := s_COMPUTE

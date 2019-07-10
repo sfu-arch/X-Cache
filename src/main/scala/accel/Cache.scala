@@ -152,7 +152,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
     }
     dataMem.zipWithIndex foreach { case (mem, i) =>
       val data = VecInit.tabulate(wBytes)(k => wdata(i * xlen + (k + 1) * 8 - 1, i * xlen + k * 8))
-      mem.write(idx_reg, data, (wmask((i + 1) * wBytes - 1, i * wBytes)).toBools)
+      mem.write(idx_reg, data, (wmask((i + 1) * wBytes - 1, i * wBytes)).asBools())
       mem suggestName s"dataMem_${i}"
     }
   }

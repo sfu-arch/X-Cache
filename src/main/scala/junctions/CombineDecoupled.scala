@@ -13,19 +13,19 @@ class CombineCustomIO(argTypes: Seq[Bits])(implicit p: Parameters) extends Bundl
 class CombineCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Module {
   val io = IO(new CombineCustomIO(argTypes))
   val inputReady = RegInit(VecInit(Seq.fill(argTypes.length){true.B}))
-  val outputReg    = RegInit(0.U.asTypeOf(io.Out))
+  val outputReg    = RegInit(0.U.asTypeOf(io.Out.bits))
 
   for (i <- argTypes.indices) {
     when(io.Out.valid && io.Out.ready){
       inputReady(i) := true.B
     }.elsewhen(io.In(s"field$i").valid) {
-      outputReg.bits(s"field$i") := io.In(s"field$i").bits
+      outputReg(s"field$i") := io.In(s"field$i").bits
       inputReady(i) := false.B
     }
     io.In(s"field$i").ready := inputReady(i)
   }
   io.Out.valid := ~inputReady.asUInt.orR
-  io.Out.bits := outputReg.bits
+  io.Out.bits := outputReg
 }
 
 class CombineDataIO(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle {
@@ -38,19 +38,19 @@ class CombineDataIO(val argTypes: Seq[Int])(implicit p: Parameters) extends Core
 class CombineData(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
   val io = IO(new CombineDataIO(argTypes))
   val inputReady = RegInit(VecInit(Seq.fill(argTypes.length){true.B}))
-  val outputReg  = RegInit(0.U.asTypeOf(io.Out))
+  val outputReg  = RegInit(0.U.asTypeOf(io.Out.bits))
 
   for (i <- argTypes.indices) {
     when(io.Out.fire()){
       inputReady(i) := true.B
     }.elsewhen(io.In(s"field$i").valid) {
-      outputReg.bits(s"field$i") := io.In(s"field$i").bits
+      outputReg(s"field$i") := io.In(s"field$i").bits
       inputReady(i) := false.B
     }
     io.In(s"field$i").ready := inputReady(i)
   }
   io.Out.valid := ~(inputReady.asUInt.orR)
-  io.Out.bits := outputReg.bits
+  io.Out.bits := outputReg
 
 }
 

@@ -240,7 +240,7 @@ class ReattachNodeSYNC(val NumPredIn: Int = 1, ID: Int)
   switch(state) {
     is(s_IDLE) {
       when(enable_valid_R) {
-        when((~enable_R.control).toBool) {
+        when((~enable_R.control).asBool) {
           //Reset()
           ValidOut()
           state := s_COMPUTE
