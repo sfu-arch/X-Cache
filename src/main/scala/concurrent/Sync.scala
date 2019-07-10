@@ -78,7 +78,9 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
           state := s_COMPUTE
         }.otherwise {
           //          Reset()
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Read value only @ %d, value: %d\n", cycleCount, syncCount)
+          if(log){
+            printf("[LOG] " + "[" + module_name + "] " + node_name + ": Read value only @ %d, value: %d\n", cycleCount, syncCount)
+          }
           ValidOut()
           state := s_DONE
         }
@@ -87,7 +89,9 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
     is(s_COMPUTE) {
       when(syncCount === 0.U) {
         ValidOut()
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+        }
         state := s_DONE
       }
     }
@@ -95,7 +99,9 @@ class Sync(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
       when(IsOutReady()) {
         Reset()
         syncCount := 0.U
-        printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output restarted @ %d\n", cycleCount)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output restarted @ %d\n", cycleCount)
+        }
         state := s_IDLE
       }
     }
@@ -204,8 +210,8 @@ class SyncNode(NumOuts: Int, ID: Int,
 
         enableID := inc_R.taskID
 
-      }.elsewhen((io.incIn.fire() && (~io.incIn.bits.control).toBool) ||
-        (inc_valid_R && (~inc_R.control).toBool)) {
+      }.elsewhen((io.incIn.fire() && (~io.incIn.bits.control).asBool) ||
+        (inc_valid_R && (~inc_R.control).asBool)) {
         state := s_COUNT
 
       }.elsewhen((io.decIn.fire() && io.decIn.bits.control) ||
@@ -217,8 +223,8 @@ class SyncNode(NumOuts: Int, ID: Int,
         dec_R := ControlBundle.default
         dec_valid_R := false.B
 
-      }.elsewhen(io.decIn.fire() && (~io.decIn.bits.control).toBool ||
-        (dec_valid_R && (~dec_R.control).toBool)) {
+      }.elsewhen(io.decIn.fire() && (~io.decIn.bits.control).asBool ||
+        (dec_valid_R && (~dec_R.control).asBool)) {
 
         //Valid the output
         //out_ready_R := VecInit(Seq.fill(NumOuts)(true.B))
@@ -262,7 +268,9 @@ class SyncNode(NumOuts: Int, ID: Int,
       when(out_ready_R.asUInt.andR | out_ready_W.asUInt.andR) {
         out_ready_R := VecInit(Seq.fill(NumOuts)(false.B))
         state := s_IDLE
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enableID, cycleCount)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enableID, cycleCount)
+        }
       }
     }
   }
@@ -335,7 +343,9 @@ class SyncTC(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
         when(predicate) {
           state := s_COMPUTE
         }.otherwise {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+          if(log){
+            printf("[LOG] " + "[" + module_name + "] " + node_name + ": Not predicated value -> reset\n")
+          }
           ValidOut()
           state := s_DONE
         }
@@ -351,7 +361,9 @@ class SyncTC(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
       when(IsOutReady()) {
         Reset()
         when(predicate) {
-          printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+          if(log){
+            printf("[LOG] " + "[" + module_name + "] " + node_name + ": Output fired @ %d\n", cycleCount)
+          }
         }
         state := s_IDLE
       }
@@ -390,7 +402,9 @@ class SyncTC2(NumOuts: Int, NumInc: Int, NumDec: Int, ID: Int)
 
   when(initDone) {
     when(initCounters) {
-      printfInfo("[LOG] " + "[" + module_name + "] " + node_name + ":RAM counters initialized @ %d\n", cycleCount)
+      if(log){
+        printfInfo("[LOG] " + "[" + module_name + "] " + node_name + ":RAM counters initialized @ %d\n", cycleCount)
+      }
     }
     initCounters := false.B
   }
