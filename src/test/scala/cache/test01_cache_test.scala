@@ -9,7 +9,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
 import util._
 import dandelion.interfaces._
-import memory._
+import dandelion.memory._
 import dandelion.accel._
 import dandelion.dataflow.cache.test_cache01DF
 
@@ -124,7 +124,7 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
     MemWrite(inAddrVec(i), inDataVec(i))
   }
   step(1)
-  dumpMemory("init.txt")
+  dumpMemory("init.mem")
   step(1)
 
   // Initializing the signals
@@ -201,13 +201,13 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
   }
   if (valid_data) {
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-    dumpMemory("final.txt")
+    dumpMemory("final.mem")
   }
 
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
-    dumpMemory("final.txt")
+    dumpMemory("final.mem")
     fail
   }
 }

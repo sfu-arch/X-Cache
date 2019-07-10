@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
 import util._
 import dandelion.interfaces._
-import memory._
+import dandelion.memory._
 import dandelion.accel._
 
 

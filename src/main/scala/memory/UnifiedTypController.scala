@@ -18,7 +18,7 @@ import util._
 import dandelion.interfaces._
 import muxes._
 import dandelion.accel._
-import memory._
+import dandelion.memory._
 import utility.Constants._
 import utility.UniformPrintfs
 

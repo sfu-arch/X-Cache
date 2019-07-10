@@ -1,15 +1,11 @@
-package memory
-
-// /**
-//   * Created by vnaveen0 on 2/6/17.
-//   */
+package dandelion.memory
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
 import dandelion.config._
 import dandelion.arbiters._
-import memory._
+import dandelion.memory._
 import  utility._
 import Constants._
 

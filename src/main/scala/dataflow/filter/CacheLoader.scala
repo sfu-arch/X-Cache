@@ -7,7 +7,7 @@ import dandelion.node._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.accel.{CacheIO}
-import memory._
+import dandelion.memory._
 
 class CacheLoader(FilterSize : Int)(implicit val p: Parameters) extends Module with CoreParams {
 

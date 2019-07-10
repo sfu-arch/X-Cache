@@ -1,8 +1,4 @@
-package memory
-
-/**
-  * Created by vnaveen0 on 9/7/17.
-  */
+package dandelion.memory
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
@@ -10,7 +6,7 @@ import org.scalatest.{Matchers, FlatSpec}
 import chisel3._
 import dandelion.config._
 import dandelion.arbiters._
-import memory._
+import dandelion.memory._
 
 
 class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: Parameters)

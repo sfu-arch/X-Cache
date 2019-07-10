@@ -8,7 +8,7 @@ import chisel3.util._
 import chisel3.{Module, _}
 import dandelion.config._
 import dandelion.interfaces._
-import memory._
+import dandelion.memory._
 import org.scalatest.{FlatSpec, Matchers}
 
 

@@ -9,7 +9,7 @@ import dandelion.config._
 import dandelion.interfaces._
 import muxes._
 import utility._
-import memory._
+import dandelion.memory._
 
 import Constants._
 

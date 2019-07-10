@@ -7,7 +7,7 @@ import dandelion.control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
-import memory._
+import dandelion.memory._
 import dandelion.node._
 import util._
 

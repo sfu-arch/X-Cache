@@ -13,7 +13,7 @@ import dandelion.concurrent._
 import util._
 import dandelion.interfaces._
 import regfile._
-import memory._
+import dandelion.memory._
 import dandelion.memory.stack._
 import dandelion.arbiters._
 import dandelion.loop._

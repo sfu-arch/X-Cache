@@ -10,7 +10,7 @@ import scala.util.control.Breaks._
 
 import dandelion.config._
 import dandelion.arbiters._
-import memory._
+import dandelion.memory._
 import utility._
 import Constants._
 

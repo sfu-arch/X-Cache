@@ -3,7 +3,7 @@ package dandelion.interfaces
 import chisel3._
 import chisel3.util._
 import dandelion.junctions._
-import memory._
+import dandelion.memory._
 import dandelion.config.{Parameters}
 import dandelion.accel.CacheParams
 

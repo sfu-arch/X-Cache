@@ -6,7 +6,7 @@ import dandelion.node._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.arbiters._
-import memory.{ReadWriteArbiter, _}
+import dandelion.memory.{ReadWriteArbiter, _}
 
 class TestCacheDataFlow(implicit val p: Parameters) extends Module with CoreParams {
 

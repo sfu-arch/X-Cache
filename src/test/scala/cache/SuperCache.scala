@@ -6,7 +6,7 @@ import chisel3.testers._
 import dandelion.junctions._
 import dandelion.config._
 import scala.math._
-import memory._
+import dandelion.memory._
 import dandelion.interfaces._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}

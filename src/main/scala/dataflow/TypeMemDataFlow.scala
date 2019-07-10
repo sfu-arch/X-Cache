@@ -7,7 +7,7 @@ import dandelion.node._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.arbiters._
-import memory._
+import dandelion.memory._
 import dandelion.fpu.FType._
 
 class TypeMemDataFlow(implicit val p: Parameters) extends Module with CoreParams {

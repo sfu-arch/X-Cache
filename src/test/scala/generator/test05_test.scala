@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
-import memory._
+import dandelion.memory._
 import dandelion.accel._
 import dandelion.interfaces.NastiMemSlave
 import helpers._

@@ -7,7 +7,7 @@ import chisel3.util._
 import dandelion.junctions._
 import dandelion.config._
 import dandelion.interfaces._
-import memory._
+import dandelion.memory._
 import utility._
 
 class InterleavedStackIO(NumPorts:Int)(implicit val p: Parameters) extends Module with CoreParams {

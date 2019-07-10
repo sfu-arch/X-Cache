@@ -7,7 +7,7 @@ import node._
 import config._
 import interfaces._
 import arbiters._
-import memory._
+import dandelion.memory._
 
 class TypeLoadDataFlow(implicit val p: Parameters) extends Module with CoreParams{
 

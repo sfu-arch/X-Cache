@@ -14,7 +14,7 @@ import dandelion.control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
-import memory._
+import dandelion.memory._
 import muxes._
 import dandelion.node._
 import org.scalatest._

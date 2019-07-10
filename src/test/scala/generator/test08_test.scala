@@ -14,7 +14,7 @@ import dandelion.control._
 import util._
 import dandelion.interfaces._
 import regfile._
-import memory._
+import dandelion.memory._
 import dandelion.memory.stack._
 import dandelion.arbiters._
 import dandelion.loop._
@@ -129,7 +129,7 @@ class test08Test01[T <: test08MainIO](c: T) extends PeekPokeTester(c) {
   }
 
 
-  dumpMemory("mem.init")
+  dumpMemory("init.mem")
 
 
   // Initializing the signals
