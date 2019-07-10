@@ -17,7 +17,7 @@ import dandelion.node._
 class StackIO(NumOps: Int)
              (implicit p: Parameters) extends CoreBundle()(p) {
   val InData = Vec(NumOps, Flipped(Decoupled(new AllocaReq)))
-  val OutData = Vec(NumOps, (new AllocaResp))
+  val OutData = Vec(NumOps, Output(new AllocaResp))
 
   override def cloneType = new StackIO(NumOps).asInstanceOf[this.type]
 }

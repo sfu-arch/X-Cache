@@ -65,9 +65,9 @@ sudo make install
 Dandelion depends on _Berkeley Hardware Floating-Point Units_ for floating nodes. Therefore, before building dandelion you need to clone hardfloat project, build it and then publish it locally on your system. Hardfloat repository has all the necessary information about how to build the project, here we only breifly mention how to build it and then publish it.
 
 ```
-git clone git@csil-git1.cs.surrey.sfu.ca:Dandelion/dandelion-hardfloat-chisel3.git
-cd dandelion-hardfloat-chisel3
-sbt "+publishLocal"
+git clone https://github.com/ucb-bar/berkeley-hardfloat.git
+cd berkeley-hardfloat
+sbt "publishLocal"
 ```
 
 ## Compiling Dandelion Accelerator
