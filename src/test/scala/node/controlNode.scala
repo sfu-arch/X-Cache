@@ -1,25 +1,19 @@
 // See LICENSE for license details.
 
-package node
+package dandelion.node
 
 import chisel3._
-import chisel3.util._
-
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import node._
-import control._
-import dataflow._
-import muxes._
-import config._
-import util._
-import interfaces._
+import dandelion.config._
+import dandelion.control._
+import dandelion.interfaces._
 
 
 // Tester.
 class controlTester(df: BasicBlockNode)
-                   (implicit p: config.Parameters) extends PeekPokeTester(df) {
+                   (implicit p: Parameters) extends PeekPokeTester(df) {
 
   poke(df.io.predicateIn(0).valid, false.B)
   poke(df.io.predicateIn(1).valid, false.B)
@@ -102,7 +96,7 @@ class controlTester(df: BasicBlockNode)
 
 
 class ControlTests extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "BasicBlock tester" in {
     chisel3.iotesters.Driver.execute(
      Array(

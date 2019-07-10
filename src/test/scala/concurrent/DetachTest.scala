@@ -1,13 +1,11 @@
-package dataflow
+package dandelion.concurrent
 
 
 import chisel3._
 import chisel3.util._
-import node._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
-import config._
-import junctions.NastiIO
+import dandelion.config._
 
 
 class DetachTests(c: Detach) extends PeekPokeTester(c) {
@@ -81,7 +79,7 @@ class DetachTests(c: Detach) extends PeekPokeTester(c) {
 }
 
 class DetachTester extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   var tbn = "verilator"
 //  var tbn = "firrtl"
 

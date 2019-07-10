@@ -1,4 +1,4 @@
-// package dataflow
+// package dandelion.dataflow
 
 // import chisel3._
 // import chisel3.util._
@@ -8,11 +8,11 @@
 // import org.scalatest.{Matchers, FlatSpec} 
 
 // import muxes._
-// import config._
+// import dandelion.config._
 // import util._
-// import interfaces._
+// import dandelion.interfaces._
 // import regfile._
-// import node._
+// import dandelion.node._
 // import alloca._
 
 

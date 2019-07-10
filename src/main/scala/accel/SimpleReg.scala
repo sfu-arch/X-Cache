@@ -1,10 +1,10 @@
-package accel
+package dandelion.accel
 
 import chisel3._
 import chisel3.util._
 
-import junctions._
-import config._
+import dandelion.junctions._
+import dandelion.config._
 
 /**
   * The SimpleReg class creates a set of memory mapped configuration and status

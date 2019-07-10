@@ -1,19 +1,15 @@
-  package node
-
-/**
-  * Created by nvedula on 15/5/17.
-  */
+  package dandelion.node
 
 import chisel3._
 import chisel3.util._
 import org.scalacheck.Prop.False
 import scala.util.control.Breaks._
-import arbiters._
-import config._
-import interfaces._
+import dandelion.arbiters._
+import dandelion.config._
+import dandelion.interfaces._
 import muxes._
 import utility._
-import memory._
+import dandelion.memory._
 
 import Constants._
 

@@ -1,16 +1,14 @@
-package accel.coredf
+// See LICENSE for license details.
+package dandelion.accel.coredf
 
-/**
-  * Created by nvedula on 28/6/17.
-  */
-
-import accel._
 import chisel3._
 import chisel3.util.Decoupled
-import config._
+import dandelion.config._
 import chisel3.util._
-import dataflow.filter._
-import interfaces.{DataBundle, TypBundle}
+import dandelion.dataflow.filter._
+import dandelion.interfaces.{DataBundle, TypBundle}
+import dandelion.accel.CoreT
+
 
 /**
   * The Core class creates contains the dataflow logic for the accelerator.

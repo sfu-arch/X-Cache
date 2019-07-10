@@ -1,19 +1,15 @@
+// See LICENSE for license details.
 package accel.coredf
 
-/**
-  * Created by vnaveen0 on 29/6/17.
-  */
-
-// See LICENSE for license details.
-
-import accel._
+import dandelion.accel._
 import chisel3._
 import chisel3.util._
 import chisel3.testers._
-import junctions._
-import config._
+import dandelion.interfaces._
+import dandelion.junctions._
+import dandelion.config._
 
-class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
+class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester with CacheParams {
 
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
@@ -139,10 +135,10 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: config.Para
 
   switch(testState) {
     is(sIdle) {
-      switch(Vec(testVec)(testCnt).opCode) {
+      switch(VecInit(testVec)(testCnt).opCode) {
         is(rdCmd) {
           req.read := true.B
-          req.addr := Vec(testVec)(testCnt).op0
+          req.addr := VecInit(testVec)(testCnt).op0
           req.tag := testCnt % 16.U
           reqValid := true.B
           testState := sNastiReadReq
@@ -150,16 +146,16 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: config.Para
         }
         is(wrCmd) {
           req.read := false.B
-          req.addr := Vec(testVec)(testCnt).op0
-          req.data := Vec(testVec)(testCnt).op1
-          req.mask := Vec(testVec)(testCnt).op2
+          req.addr := VecInit(testVec)(testCnt).op0
+          req.data := VecInit(testVec)(testCnt).op1
+          req.mask := VecInit(testVec)(testCnt).op2
           req.tag := testCnt % 16.U
           reqValid := true.B
           testState := sNastiWriteReq
         }
         is(pollCmd) {
           req.read := true.B
-          req.addr := Vec(testVec)(testCnt).op0
+          req.addr := VecInit(testVec)(testCnt).op0
           req.tag := testCnt % 16.U
           reqValid := true.B
           testState := sNastiReadReq
@@ -178,8 +174,8 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: config.Para
     }
     is(sNastiReadResp) {
       when(hps.io.resp.valid && (hps.io.resp.bits.tag === testCnt % 16.U)) {
-        val expected = Vec(testVec)(testCnt).op1
-        val mask     = Vec(testVec)(testCnt).op2
+        val expected = VecInit(testVec)(testCnt).op1
+        val mask     = VecInit(testVec)(testCnt).op2
         when((hps.io.resp.bits.data & mask) =/= (expected & mask)) {
           when(!pollingRead) {
             printf("Read fail. Expected: 0x%x. Received: 0x%x.", expected, hps.io.resp.bits.data)
@@ -211,7 +207,7 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: config.Para
 }
 
 class VecFilterNoKernDFTests extends org.scalatest.FlatSpec {
-  implicit val p = config.Parameters.root((new VecFilterDFConfig).toInstance)
+  implicit val p = Parameters.root((new VecFilterDFConfig).toInstance)
 /*
   "Accel" should "pass" in {
     assert(TesterDriver execute (() => new VecFilterNoKernDFTester(new Accelerator(12,4,new VecFilterNoKernDFCore(12,4)))))

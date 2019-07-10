@@ -1,4 +1,4 @@
-package control
+package dandelion.control
 
 import java.util.ResourceBundle.Control
 
@@ -9,9 +9,9 @@ import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
 import utility.UniformPrintfs
-import node._
-import config._
-import interfaces._
+import dandelion.node._
+import dandelion.config._
+import dandelion.interfaces._
 import muxes._
 import util._
 

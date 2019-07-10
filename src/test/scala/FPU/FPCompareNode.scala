@@ -1,21 +1,13 @@
 // See LICENSE for license details.
 
-package FPU
+package dandelion.fpu
 
 import chisel3._
-import chisel3.util._
-import FPU._
-import FType._
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import node._
-import dataflow._
-import muxes._
-import config._
-import util._
-import interfaces._
+import dandelion.config._
 
 
 
@@ -23,7 +15,7 @@ import interfaces._
 
 // Tester.
 class FPCompareNodeTester(df: FPCompareNode)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
 
   poke(df.io.LeftIO.bits.data, 0x40000000.U)
@@ -67,9 +59,9 @@ class FPCompareNodeTester(df: FPCompareNode)
 }
 
 class FPCompareTests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new SinglePrecisionFPConfig).toInstance)
+   implicit val p = Parameters.root((new SinglePrecisionFPConfig).toInstance)
   it should "FP MAC tester" in {
-     chisel3.iotesters.Driver(() => new FPCompareNode(NumOuts = 1, ID = 0, opCode = "<LT")(t = S)) {
+     chisel3.iotesters.Driver(() => new FPCompareNode(NumOuts = 1, ID = 0, opCode = "<LT")(t = FType.S)) {
        c => new FPCompareNodeTester(c)
      } should be(true)
    }

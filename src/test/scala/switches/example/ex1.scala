@@ -5,18 +5,18 @@ package switches.example
   */
 
 
-import interfaces._
+import dandelion.interfaces._
 import chisel3._
 import chisel3.util._
-import accel._
-import config._
+import dandelion.accel._
+import dandelion.config._
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FlatSpec, Matchers}
 
 /*
 // Tester.
 class ex1Tests(c: Dyser1X1)
-              (implicit p: config.Parameters) extends PeekPokeTester(c)  {
+              (implicit p: Parameters) extends PeekPokeTester(c)  {
 
   //  poke(c.io.Data0.bits.data, 2.U)
 // //   //  poke(c.io.Data0.bits.valid, true.B)
@@ -107,7 +107,7 @@ class ex1Tests(c: Dyser1X1)
 
 
 class ex1Tester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dyser1X1 tester" in {
     chisel3.iotesters.Driver(() => new Dyser1X1()(p)) { c => new ex1Tests(c)
     } should be(true)

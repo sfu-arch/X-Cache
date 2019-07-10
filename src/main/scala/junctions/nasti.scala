@@ -1,12 +1,12 @@
 // See LICENSE.Berkeley for license details.
 // See LICENSE.SiFive for license details.
 
-package junctions
+package dandelion.junctions
 import Chisel._
 import scala.math.max
 import scala.collection.mutable.ArraySeq
 import util._
-import config._
+import dandelion.config._
 
 case object NastiKey extends Field[NastiParameters]
 

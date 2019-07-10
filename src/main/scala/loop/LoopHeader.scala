@@ -6,11 +6,11 @@ import chisel3.Module
 import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
-import config._
-import interfaces._
+import dandelion.config._
+import dandelion.interfaces._
 import muxes._
 import util._
-import node._
+import dandelion.node._
 import utility.UniformPrintfs
 
 

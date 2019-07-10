@@ -1,4 +1,4 @@
-package memory
+package dandelion.memory
 
 // Generic Packages
 import chisel3._
@@ -7,17 +7,17 @@ import chisel3.util._
 import org.scalacheck.Prop.False
 
 // Modules needed
-import arbiters._
+import dandelion.arbiters._
 import muxes._
 
 // Config
-import config._
+import dandelion.config._
 import utility._
-import interfaces._
-import node._
+import dandelion.interfaces._
+import dandelion.node._
 
 // Cache requests
-import accel._
+import dandelion.accel._
 
 // Memory constants
 import Constants._

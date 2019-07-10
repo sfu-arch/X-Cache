@@ -1,10 +1,10 @@
 // See LICENSE for license details.
 
-package accel
+package dandelion.accel
 
 import chisel3.Module
-import config._
-import junctions._
+import dandelion.config._
+import dandelion.junctions._
 import regfile.RFile
 
 

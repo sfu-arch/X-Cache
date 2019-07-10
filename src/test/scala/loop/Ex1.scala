@@ -1,7 +1,4 @@
-/**
-  * @author Amirali Sharifian
-  */
-
+// See LICENSE for license details.
 package loop
 
 import chisel3._
@@ -9,12 +6,8 @@ import chisel3.util._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import node._
-import dataflow._
-import muxes._
-import config._
-import util._
-import interfaces._
+import dandelion.config._
+import dandelion.interfaces._
 
 
 class LoopEx1(c: LoopExample) extends PeekPokeTester(c) {
@@ -78,7 +71,7 @@ class LoopEx1(c: LoopExample) extends PeekPokeTester(c) {
 
 
 class LoopEx1Tester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "not do something stupid" in {
     // iotestester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

@@ -1,4 +1,4 @@
-package config
+package dandelion.config
 
 
 import Chisel._

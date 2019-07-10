@@ -1,11 +1,13 @@
-package dataflow
+package dandelion.generator.cilk
 
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
-import config._
-import memory._
-import accel._
+import dandelion.config._
+import dandelion.concurrent.{TaskController,TaskControllerIO}
+import dandelion.memory._
+import dandelion.accel._
+import dandelion.interfaces.NastiMemSlave
 import helpers._
 
 class cilk_saxpyMainTM(children: Int)(implicit p: Parameters)
@@ -159,7 +161,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
   val outAddrVec = List.range(4 * dataLen, 8 * dataLen, 4)
   val outDataVec = inX.zip(inY).map { case (x, y) => cof_a * x + y }
 
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case TLEN => 5
     case TRACE => true

@@ -1,14 +1,14 @@
-package dataflow
+package dandelion.generator.pollybench
 
 import java.io.{File, PrintWriter}
 
-import accel._
+import dandelion.accel._
 import chisel3.iotesters._
 import chisel3.util._
 import chisel3.{Module, _}
-import config._
-import interfaces._
-import memory._
+import dandelion.config._
+import dandelion.interfaces._
+import dandelion.memory._
 import org.scalatest.{FlatSpec, Matchers}
 
 
@@ -192,7 +192,7 @@ class covarianceTest01[T <: covarianceMainIO](c: T) extends PeekPokeTester(c) {
 
 
 class covarianceTester1 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
     case XLEN => 32
     case TRACE => true

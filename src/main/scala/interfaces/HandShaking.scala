@@ -1,10 +1,9 @@
-package node
+package dandelion.interfaces
 
 import chisel3._
 import chisel3.util._
-import org.scalacheck.Prop.False
-import config._
-import interfaces._
+import dandelion.config._
+import dandelion.node.{IsAlias}
 import utility._
 import Constants._
 import utility.UniformPrintfs

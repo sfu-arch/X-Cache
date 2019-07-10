@@ -1,4 +1,4 @@
-package memory
+package dandelion.memory
 
 
 import chisel3._
@@ -7,9 +7,9 @@ import chisel3.util._
 
 
 // Config
-import config._
+import dandelion.config._
 import utility._
-import interfaces._
+import dandelion.interfaces._
 
 
 class MemArbiterIO(NumPorts:Int)(implicit val p: Parameters)

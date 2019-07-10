@@ -1,9 +1,9 @@
-package node
+package dandelion.node
 
 import chisel3._
 import chisel3.Module
-import config._
-import interfaces.{ControlBundle, DataBundle}
+import dandelion.config._
+import dandelion.interfaces._
 import util._
 import utility.UniformPrintfs
 

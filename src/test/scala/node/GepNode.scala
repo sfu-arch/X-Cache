@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 
-package node
+package dandelion.node
 
 import chisel3._
 import chisel3.util._
@@ -8,12 +8,7 @@ import chisel3.util._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import node._
-import dataflow._
-import muxes._
-import config._
-import util._
-import interfaces._
+import dandelion.config._
 
 
 
@@ -21,7 +16,7 @@ import interfaces._
 
 // Tester.
 class GepTester(df: GepOneNode)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.idx1.bits.data, 2.U)
   poke(df.io.idx1.valid, false.B)
@@ -84,7 +79,7 @@ class GepTester(df: GepOneNode)
 
 
 class GepTests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 2)) {
        c => new GepTester(c)

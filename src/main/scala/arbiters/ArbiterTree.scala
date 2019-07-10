@@ -1,11 +1,11 @@
-package arbiters
+package dandelion.arbiters
 
-import interfaces._
+import dandelion.interfaces._
 import chisel3._
 import chisel3.util._
 import chisel3.Module
-import config._
-import interfaces._
+import dandelion.config._
+import dandelion.interfaces._
 
 abstract class AbstractArbiterTree[T <: Data](Nops: Int, gen: T)(implicit p: Parameters)
   extends Module with CoreParams {

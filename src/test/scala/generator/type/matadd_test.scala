@@ -1,23 +1,14 @@
-package dataflow
+package dandelion.generator.dftype
 
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
-import config._
-import control._
+import dandelion.config._
 import util._
-import interfaces._
-import regfile._
-import memory._
-import stack._
-import arbiters._
-import loop._
-import accel._
-import node._
+import dandelion.interfaces._
+import dandelion.memory._
+import dandelion.accel._
 
 
 class mataddMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
@@ -196,7 +187,7 @@ class matadd_Test01[T <: mataddMainIO](c: T) extends PeekPokeTester(c) {
 }
 
 class mataddTester1 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that matadd works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

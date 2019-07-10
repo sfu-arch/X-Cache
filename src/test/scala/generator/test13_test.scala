@@ -1,11 +1,12 @@
-package dataflow
+package dandelion.generator
 
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
-import config._
-import memory._
-import accel._
+import dandelion.config._
+import dandelion.memory._
+import dandelion.accel._
+import dandelion.interfaces.NastiMemSlave
 import helpers._
 
 class test13MainDirect(implicit p: Parameters) extends AccelIO(List(32, 32, 32), List(32)) {
@@ -160,7 +161,7 @@ class test13Tester extends FlatSpec with Matchers {
     0x3ff4de9b, 0x40000000)
 
 
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that test11 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

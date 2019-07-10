@@ -1,19 +1,15 @@
+// See LICENSE for license details.
 package accel.coredf
 
-/**
-  * Created by vnaveen0 on 29/6/17.
-  */
-
-// See LICENSE for license details.
-
-import accel._
+import dandelion.accel._
 import chisel3._
 import chisel3.util._
 import chisel3.testers._
-import junctions._
-import config._
+import dandelion.interfaces._
+import dandelion.junctions._
+import dandelion.config._
 
-class FilterDFTester(accel: => Accelerator)(implicit val p: config.Parameters) extends BasicTester with CacheParams {
+class FilterDFTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester with CacheParams {
 
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
@@ -245,7 +241,7 @@ class FilterDFTester(accel: => Accelerator)(implicit val p: config.Parameters) e
 }
 
 class FilterDFTests extends org.scalatest.FlatSpec {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
 /*
   "Accel" should "pass" in {
       assert(TesterDriver execute (() => new FilterDFTester(new Accelerator(18,3,new FilterDFCore(18,3)))))

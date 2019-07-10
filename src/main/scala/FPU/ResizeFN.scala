@@ -1,18 +1,11 @@
-package FPU
+package dandelion.fpu
 
 import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import chisel3.Module
-import chisel3.testers._
-import chisel3.util._
-import org.scalatest.{FlatSpec, Matchers}
-import config._
+import dandelion.config._
+import dandelion.interfaces._
 import hardfloat._
-import interfaces._
-import muxes._
 import util._
-import node._
-import FType._
 
 class FNtoFNNodeIO(Src: FType, Des: FType,NumOuts: Int)
                    (implicit p: Parameters)

@@ -1,10 +1,10 @@
-package node
+package dandelion.node
 
 
 import chisel3.iotesters._
 import org.scalatest.{Matchers, FlatSpec}
 import chisel3.experimental.MultiIOModule
-import config._
+import dandelion.config._
 import chisel3._
 import chisel3.iotesters._
 import utility._
@@ -104,7 +104,7 @@ class LoadAliasSuccTests(c: UnTypLoadAlias) extends PeekPokeTester(c) {
 import Constants._
 
 class LoadAliasSuccTester extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Load Node tester" in {
     chisel3.iotesters.Driver(() => new UnTypLoadAlias(NumPredOps = 0, NumSuccOps = 0, NumAliasPredOps = 2, NumAliasSuccOps = 1, NumOuts = 1, Typ = MT_W, ID = 1, RouteID = 0)) { c =>
       new LoadAliasSuccTests(c)

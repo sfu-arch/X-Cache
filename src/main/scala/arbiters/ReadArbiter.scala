@@ -1,4 +1,4 @@
-package arbiters
+package dandelion.arbiters
 import scala.math._
 import chisel3._
 import chisel3.util._
@@ -8,9 +8,9 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupl
 import org.scalatest.{Matchers, FlatSpec}
 
 import regfile._
-import config._
+import dandelion.config._
 import util._
-import interfaces._
+import dandelion.interfaces._
 import muxes._
 
 //XXX

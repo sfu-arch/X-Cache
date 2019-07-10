@@ -1,4 +1,4 @@
-package memory
+package dandelion.memory
 
 import scala.math._
 import chisel3._
@@ -9,12 +9,12 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupl
 import org.scalatest.{Matchers, FlatSpec}
 
 import regfile._
-import config._
+import dandelion.config._
 import util._
-import interfaces._
+import dandelion.interfaces._
 import muxes._
-import accel._
-import memory._
+import dandelion.accel._
+import dandelion.memory._
 import utility.Constants._
 import utility.UniformPrintfs
 

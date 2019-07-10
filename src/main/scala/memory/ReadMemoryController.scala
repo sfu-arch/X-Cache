@@ -1,4 +1,4 @@
-package memory
+package dandelion.memory
 
 // Generic Packages
 import chisel3._
@@ -6,17 +6,17 @@ import chisel3.Module
 import chisel3.util._
 
 // Modules needed
-import arbiters._
+import dandelion.arbiters._
 import muxes._
 
 // Config
-import config._
+import dandelion.config._
 import utility._
-import interfaces._
-import node._
+import dandelion.interfaces._
+import dandelion.node._
 
 // Cache requests
-import accel._
+import dandelion.accel._
 
 abstract class ReadEntryIO()(implicit val p: Parameters)
   extends Module

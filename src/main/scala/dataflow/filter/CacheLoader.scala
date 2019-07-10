@@ -1,14 +1,13 @@
-package dataflow.filter
+package dandelion.dataflow.filter
 
 import chisel3._
 import chisel3.util._
 
-import accel._
-import node._
-import config._
-import interfaces._
-import arbiters._
-import memory._
+import dandelion.node._
+import dandelion.config._
+import dandelion.interfaces._
+import dandelion.accel.{CacheIO}
+import dandelion.memory._
 
 class CacheLoader(FilterSize : Int)(implicit val p: Parameters) extends Module with CoreParams {
 

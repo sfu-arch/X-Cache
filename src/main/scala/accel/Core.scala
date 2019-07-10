@@ -1,11 +1,10 @@
-package accel
+package dandelion.accel
 
 import chisel3._
 import chisel3.util._
 import utility.UniformPrintfs
-import config._
-import dataflow._
-import interfaces._
+import dandelion.config._
+import dandelion.interfaces._
 
 /**
   * The Core class contains the dataflow logic for the accelerator.

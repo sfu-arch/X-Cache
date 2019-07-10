@@ -1,11 +1,11 @@
-package dataflow
+package dandelion.concurrent
 
 import chisel3._
 import chisel3.util._
 import chisel3.Module
-import config.{CoreParams, Parameters}
-import interfaces.{ControlBundle, DataBundle}
-import node._
+import dandelion.config.{CoreParams, Parameters}
+import dandelion.interfaces._
+import dandelion.node._
 import utility.UniformPrintfs
 
 class SyncIO(NumOuts: Int, NumInc: Int, NumDec: Int)(implicit p: Parameters)

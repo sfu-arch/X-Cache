@@ -1,9 +1,9 @@
-package junctions
+package dandelion.junctions
 
 import chisel3._
 import chisel3.util._
-import interfaces._
-import config._
+import dandelion.interfaces._
+import dandelion.config._
 
 class CombineCustomIO(argTypes: Seq[Bits])(implicit p: Parameters) extends Bundle {
   val In =  Flipped(new VariableDecoupledCustom(argTypes))

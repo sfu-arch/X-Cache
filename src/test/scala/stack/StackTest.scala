@@ -7,15 +7,15 @@ import chisel3._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import config._
-import stack._
+import dandelion.config._
+import dandelion.memory.stack._
 
 
 
 
 // Tester.
 class StackTester(df: Stack)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
   for( i <- 0 until 10){
     poke(df.io.InData(i).bits.RouteID, i)
@@ -69,7 +69,7 @@ class StackTester(df: Stack)
 
 
 class StackTests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new Stack(NumOps = 10)) {
        c => new StackTester(c)

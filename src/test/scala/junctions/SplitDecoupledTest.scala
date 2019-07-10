@@ -1,12 +1,12 @@
-package junctions
+package dandelion.junctions
 
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FreeSpec, Matchers}
 import scala.collection.immutable.ListMap
-import interfaces._
-import config.MiniConfig
+import dandelion.interfaces._
+import dandelion.config._
 
 class SplitCustomTester(c: SplitCustom) extends PeekPokeTester(c) {
 
@@ -101,7 +101,7 @@ class SplitDataTester(c: SplitData) extends PeekPokeTester(c) {
 }
 
 class SplitDecoupledTests extends FreeSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   "Split discrete CustomDataBundle I/O into single Decoupled IO bundle" in {
     chisel3.iotesters.Driver.execute(
       Array(//"-ll", "Info",

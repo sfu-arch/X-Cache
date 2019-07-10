@@ -1,13 +1,13 @@
 // See LICENSE for license details.
 
-package accel
+package dandelion.memory.stack
 
 import chisel3._
 import chisel3.util._
-import junctions._
-import config._
-import interfaces._
-import memory._
+import dandelion.junctions._
+import dandelion.config._
+import dandelion.interfaces._
+import dandelion.memory._
 import utility._
 
 class InterleavedStackIO(NumPorts:Int)(implicit val p: Parameters) extends Module with CoreParams {

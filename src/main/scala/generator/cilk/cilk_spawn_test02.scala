@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.generator.cilk
 
 import chisel3._
 import chisel3.util._
@@ -7,18 +7,19 @@ import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
-import config._
-import control._
+import dandelion.config._
+import dandelion.control._
+import dandelion.concurrent._
 import util._
-import interfaces._
+import dandelion.interfaces._
 import regfile._
-import memory._
-import stack._
-import arbiters._
-import loop._
-import accel._
-import node._
-import junctions._
+import dandelion.memory._
+import dandelion.memory.stack._
+import dandelion.arbiters._
+import dandelion.loop._
+import dandelion.accel._
+import dandelion.node._
+import dandelion.junctions._
 
 
 /**
@@ -612,7 +613,7 @@ class cilk_spawn_test02DF(implicit p: Parameters) extends cilk_spawn_test02DFIO(
 import java.io.{File, FileWriter}
 object cilk_spawn_test02Main extends App {
   val dir = new File("RTL/cilk_spawn_test02") ; dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_spawn_test02DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

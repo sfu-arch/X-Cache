@@ -1,27 +1,17 @@
-package accel
+package dandelion.accel
 
 
 import java.io.PrintWriter
 import java.io.File
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
-import config._
-import control._
+import dandelion.config._
 import util._
-import interfaces._
-import regfile._
-import memory._
-import stack._
-import arbiters._
-import loop._
-import accel._
-import node._
-import junctions._
+import dandelion.interfaces._
+import dandelion.memory._
+import dandelion.dataflow.prefetchDF
 
 
 class prefetchDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
@@ -209,7 +199,7 @@ class basePrefetchTest01[T <: prefetchDFMainIO](c: T) extends PeekPokeTester(c) 
 }
 
 class basePrefetchTester extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that prefetchTest works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

@@ -3,18 +3,18 @@ package muxes
 /**
   * Created by vnaveen0 on 1/9/17.
   */
-import interfaces._
+import dandelion.interfaces._
 import chisel3._
 import chisel3.util._
-import accel._
-import config._
+import dandelion.accel._
+import dandelion.config._
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FlatSpec, Matchers}
 
 
 // Tester.
 class TestMuxTests(df: TestMux)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
 
   poke(df.io.EN, true.B)
@@ -50,7 +50,7 @@ class TestMuxTests(df: TestMux)
 
 
 class TestMuxTester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Mux tester" in {
     chisel3.iotesters.Driver(() => new TestMux(4)(p)) {
       c => new TestMuxTests(c)

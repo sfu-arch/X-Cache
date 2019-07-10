@@ -4,18 +4,18 @@ package switches
   * Created by vnaveen0 on 9/9/17.
   */
 
-import interfaces._
+import dandelion.interfaces._
 import chisel3._
 import chisel3.util._
-import accel._
-import config._
+import dandelion.accel._
+import dandelion.config._
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FlatSpec, Matchers}
 
 /*
 // Tester.
 class DyserMuxTests(c: DyserMux)
-                          (implicit p: config.Parameters) extends PeekPokeTester(c)  {
+                          (implicit p: Parameters) extends PeekPokeTester(c)  {
 
   for (t <- 0 until 8) {
 
@@ -103,7 +103,7 @@ class DyserMuxTests(c: DyserMux)
 
 
 class DyserMuxTester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Mux tester" in {
     chisel3.iotesters.Driver(() => new DyserMux(NInputs = 4, Sel = 1, En = true.B)(p)) {
       c => new DyserMuxTests(c)

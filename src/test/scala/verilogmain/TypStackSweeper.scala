@@ -8,13 +8,13 @@ import chisel3.iotesters.{ ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoup
 import org.scalatest.{ Matchers, FlatSpec }
 import scala.util.control.Breaks._
 
-import config._
-import arbiters._
-import memory._
+import dandelion.config._
+import dandelion.arbiters._
+import dandelion.memory._
 import utility._
 import Constants._
 
-class TypeStackPeekPoker(c: TypeStackFile, Writes: Int, Reads: Int, Activity: String)(implicit p: config.Parameters) extends PeekPokeTester(c) {
+class TypeStackPeekPoker(c: TypeStackFile, Writes: Int, Reads: Int, Activity: String)(implicit p: Parameters) extends PeekPokeTester(c) {
 
   var count = 0
   val J = Activity match {
@@ -107,7 +107,7 @@ object TypeStackFileVerilog extends App {
 
   val (testargs, designargs) = args.splitAt(6)
   // println(testargs.deep.mkString("\n"))
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
 
   val optionslist = Array('OpSize, 'BaseSize, 'EntrySize, 'AF)
 

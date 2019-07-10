@@ -3,23 +3,15 @@ package cache
 import java.io.PrintWriter
 import java.io.File
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
-import config._
-import control._
+import dandelion.config._
 import util._
-import interfaces._
-import regfile._
-import memory._
-import stack._
-import arbiters._
-import loop._
-import accel._
-import node._
+import dandelion.interfaces._
+import dandelion.memory._
+import dandelion.accel._
+import dandelion.dataflow.cache.test_cache01DF
 
 
 class test_cache01MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
@@ -132,7 +124,7 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
     MemWrite(inAddrVec(i), inDataVec(i))
   }
   step(1)
-  dumpMemory("init.txt")
+  dumpMemory("init.mem")
   step(1)
 
   // Initializing the signals
@@ -209,20 +201,20 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
   }
   if (valid_data) {
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-    dumpMemory("final.txt")
+    dumpMemory("final.mem")
   }
 
 
   if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
-    dumpMemory("final.txt")
+    dumpMemory("final.mem")
     fail
   }
 }
 
 
 class test_cache01Tester1 extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that test_cache01 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

@@ -1,10 +1,10 @@
-package accel
+package dandelion.interfaces
 
 import chisel3._
 import chisel3.util._
 
-import junctions._
-import config._
+import dandelion.junctions._
+import dandelion.config._
 
 class NastiMasterReq(implicit p: Parameters) extends CoreBundle()(p) {
   val addr = UInt(xlen.W)

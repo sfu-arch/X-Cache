@@ -5,10 +5,10 @@ import java.io.File
 import chisel3._
 import chisel3.Module
 import chisel3.iotesters._
-import config._
+import dandelion.config._
 import util._
-import interfaces._
-import accel._
+import dandelion.interfaces._
+import dandelion.accel._
 
 
 class AccelIO(Args: List[Int], Returns: List[Int])(implicit val p: Parameters) extends Module with CoreParams with CacheParams {

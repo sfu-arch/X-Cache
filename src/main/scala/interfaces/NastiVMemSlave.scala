@@ -1,21 +1,11 @@
-package accel
+package dandelion.interfaces
 
 import chisel3._
-import chisel3.core.Data
 import chisel3.util._
-import junctions._
-import memory._
-import config.{CoreBundle, _}
-
-//class InitParams(implicit p: Parameters) extends CoreBundle()(p) with CacheParams {
-//  val addr = UInt(nastiXAddrBits.W)
-//  val data = UInt(nastiXDataBits.W)
-//}
-
-//class NastiCMemSlaveIO(implicit p: Parameters) extends CoreBundle()(p) with CacheParams {
-//  val init  = Flipped(Valid(new InitParams()(p)))
-//  val nasti = Flipped(new NastiIO)
-//}
+import dandelion.junctions._
+import dandelion.memory._
+import dandelion.config.{Parameters}
+import dandelion.accel.CacheParams
 
 
 class NastiVMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p: Parameters) extends Module with CacheParams {

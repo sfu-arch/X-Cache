@@ -1,12 +1,14 @@
-package dataflow
+package dandelion.generator.cilk
 
 
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
-import config._
-import memory._
-import accel._
+import dandelion.concurrent.{TaskController,TaskControllerIO}
+import dandelion.config._
+import dandelion.memory._
+import dandelion.accel._
+import dandelion.interfaces.NastiMemSlave
 import scala.util.Random
 import helpers._
 
@@ -225,7 +227,7 @@ class bgemmTester1 extends FlatSpec with Matchers {
   )
 
 
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that bgemm works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -260,7 +262,7 @@ class bgemmTester2 extends FlatSpec with Matchers {
   )
 
 
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that bgemm works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

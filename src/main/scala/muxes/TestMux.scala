@@ -3,9 +3,9 @@ package muxes
 import scala.math._
 import chisel3._
 import chisel3.Module
-import config._
+import dandelion.config._
 import util._
-import interfaces._
+import dandelion.interfaces._
 
 /**
   * Created by vnaveen0 on 7/9/17.

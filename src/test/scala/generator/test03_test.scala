@@ -1,4 +1,4 @@
-package dataflow
+package dandelion.generator
 
 import chisel3._
 import chisel3.util._
@@ -7,18 +7,17 @@ import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
-import config._
-import control._
+import dandelion.config._
+import dandelion.control._
 import util._
-import interfaces._
+import dandelion.interfaces._
 import regfile._
-import memory._
-import stack._
-import arbiters._
-import loop._
-import accel._
-import node._
-import junctions._
+import dandelion.memory._
+import dandelion.memory.stack._
+import dandelion.arbiters._
+import dandelion.loop._
+import dandelion.accel._
+import dandelion.junctions._
 
 class test03MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
   val io = IO(new Bundle {
@@ -139,7 +138,7 @@ class test03Test01[T <: test03MainIO](c: T) extends PeekPokeTester(c) {
 }
 
 class test03Tester extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Check that test04 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

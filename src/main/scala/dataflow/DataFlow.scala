@@ -1,13 +1,13 @@
-package dataflow
+package dandelion.dataflow
 
 import chisel3._
 import chisel3.util._
 
-import node._
-import config._
-import interfaces._
-import arbiters._
-import memory._
+import dandelion.node._
+import dandelion.config._
+import dandelion.interfaces._
+import dandelion.arbiters._
+import dandelion.memory._
 
 class TypeLoadDataFlow(implicit val p: Parameters) extends Module with CoreParams {
 

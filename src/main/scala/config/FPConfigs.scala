@@ -1,13 +1,10 @@
-package config
+package dandelion.config
 
 import chisel3._
-import chisel3.util._
-import config._
-import util._
 import regfile._
-import junctions._
-import accel._
-import FPU._
+import dandelion.junctions._
+import dandelion.fpu._
+import dandelion.accel._
 import FType._
 
 

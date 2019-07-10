@@ -1,5 +1,5 @@
 
-package node
+package dandelion.node
 
 /**
   * Created by nvedula on 15/5/17.
@@ -9,8 +9,8 @@ import chisel3._
 import chisel3.util._
 import org.scalacheck.Prop.False
 
-import config._
-import interfaces._
+import dandelion.config._
+import dandelion.interfaces._
 import utility.Constants._
 import utility.UniformPrintfs
 

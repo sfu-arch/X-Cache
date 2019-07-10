@@ -4,20 +4,20 @@ package verilogmain
 //liveIn_R(i).predicate := io.latchEnable.bits.control
 import java.io.{File, FileWriter}
 
-import node._
-import config._
-import interfaces._
-import arbiters._
-import memory._
-import dataflow._
-import config._
+import dandelion.node._
+import dandelion.config._
+import dandelion.interfaces._
+import dandelion.arbiters._
+import dandelion.memory._
+import dandelion.dataflow._
+import dandelion.config._
 import util._
-import interfaces._
+import dandelion.interfaces._
 
 
 object Main extends App {
   val dir = new File(args(0)) ; dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new TypeMemDataFlow()))
 
   val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))

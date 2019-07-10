@@ -1,24 +1,24 @@
-package dataflow
+package dandelion.generator.cilk
 
 import chisel3._
 import chisel3.util._
 import chisel3.Module
 import chisel3.testers._
+import dandelion.concurrent.{TaskController,TaskControllerIO}
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import scala.util.control.Breaks._
 import muxes._
-import config._
-import control._
+import dandelion.config._
+import dandelion.control._
 import util._
-import interfaces._
+import dandelion.interfaces._
 import regfile._
-import memory._
-import stack._
-import arbiters._
-import loop._
-import accel._
-import node._
+import dandelion.memory._
+import dandelion.memory.stack._
+import dandelion.arbiters._
+import dandelion.loop._
+import dandelion.accel._
 
 
 
@@ -386,7 +386,7 @@ object mergesortTesterParams {
 }
 
 //class mergesortTester1 extends FlatSpec with Matchers {
-//  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//  implicit val p = Parameters.root((new MiniConfig).toInstance)
 //  val testParams = p.alterPartial({
 //    case TLEN => 11
 //    case TRACE => false

@@ -1,20 +1,15 @@
-package dataflow.fuse
-
-/**
-  * Created by vnaveen0 on 26/6/17.
-  */
+package dandelion.dataflow.fuse
 
 import chisel3._
 import chisel3.util._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, FreeSpec, Matchers}
-import node._
-import dataflow._
+import dandelion.dataflow._
 import muxes._
-import config._
+import dandelion.config._
 import util._
-import interfaces._
-import dataflow._
+import dandelion.interfaces._
+import dandelion.dataflow._
 import firrtl_interpreter.InterpreterOptions
 
 
@@ -22,7 +17,7 @@ import firrtl_interpreter.InterpreterOptions
 
 // Tester.
 class computeF02STester(df: ComputeFuse02SDF)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.data0.bits.taskID, 1.U)
   poke(df.io.data1.bits.taskID, 1.U)
@@ -103,7 +98,7 @@ class computeF02STester(df: ComputeFuse02SDF)
 }
 
 class ComputeF02STests extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Not fuse tester" in {
     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),
       () => new ComputeFuse02SDF()) {
@@ -118,7 +113,7 @@ class ComputeF02STests extends  FlatSpec with Matchers {
   * @note different example of test cases
   */
 //class VerilogTests extends  FlatSpec with Matchers {
-//   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//   implicit val p = Parameters.root((new MiniConfig).toInstance)
 //   it should "Dataflow tester" in {
 //      chisel3.iotesters.Driver.execute(Array("--backend-name", "firrtl", "--target-dir", "test_run_dir"), () => new Compute01DF()){
 //       c => new compute01Tester(c)
@@ -139,7 +134,7 @@ class ComputeF02STests extends  FlatSpec with Matchers {
 // }
 
 //object Compute01DFVerilog extends App {
-  //implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  //implicit val p = Parameters.root((new MiniConfig).toInstance)
   //chisel3.iotesters.Driver.execute(args, () => new Compute01DF()(p))
   //{ c => new compute01Tester(c)  }
 //}

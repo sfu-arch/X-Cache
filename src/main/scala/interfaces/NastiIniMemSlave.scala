@@ -1,24 +1,27 @@
-package accel
+package dandelion.interfaces
 
 import chisel3._
-import chisel3.core.Data
+import chisel3.util.experimental.loadMemoryFromFile
 import chisel3.util._
-import junctions._
-import config.{CoreBundle, _}
+import dandelion.junctions._
+import dandelion.config.{CoreBundle, Parameters}
+import dandelion.accel.CacheParams
 
-class InitParams(implicit p: Parameters) extends CoreBundle( )(p) with CacheParams {
+class InitParamsMem(implicit p: Parameters) extends CoreBundle( )(p) with CacheParams {
   val addr = UInt(nastiXAddrBits.W)
   val data = UInt(nastiXDataBits.W)
 }
 
-class NastiMemSlaveIO(implicit p: Parameters) extends CoreBundle( )(p) with CacheParams {
-  val init  = Flipped(Valid(new InitParams( )(p)))
+class NastiInitMemSlaveIO(implicit p: Parameters) extends CoreBundle( )(p) with CacheParams {
+  val init  = Flipped(Valid(new InitParamsMem( )(p)))
   val nasti = Flipped(new NastiIO)
 }
 
-class NastiMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p: Parameters) extends Module with CacheParams {
+class NastiInitMemSlave(val depth: Int = 1 << 28, latency: Int = 20)
+                       (val targetDirName : String = "/Users/amirali/git/dandelion-lib/src/main/resources/verilog")
+                       (implicit val p: Parameters) extends Module with CacheParams {
 
-  val io = IO(new NastiMemSlaveIO( )(p))
+  val io = IO(new NastiInitMemSlaveIO( )(p))
 
   /* Memory model interface */
   val dutMem = Wire(new NastiIO)
@@ -35,6 +38,7 @@ class NastiMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p:
 
   /* Main Memory */
   val mem                                                               = Mem(depth, UInt(nastiXDataBits.W))
+  loadMemoryFromFile(mem, targetDirName + "/memory_trace.mem")
   val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: sMemWait :: Nil = Enum(5)
   val memState                                                          = RegInit(sMemIdle)
   val (wCnt, wDone)                                                     = Counter(memState === sMemWrite && dutMem.w.valid, dataBeats)
@@ -70,7 +74,7 @@ class NastiMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p:
       when(dutMem.w.valid) {
         val wrAddr = (dutMem.aw.bits.addr >> size).asUInt( ) + wCnt.asUInt( )
         mem.write(wrAddr, dutMem.w.bits.data)
-        if(log){printf("[write] mem[%x] <= %x\n", wrAddr, dutMem.w.bits.data)}
+        printf("[write] mem[%x] <= %x\n", wrAddr, dutMem.w.bits.data)
         dutMem.w.ready := true.B
       }
       when(wDone) {
@@ -92,7 +96,7 @@ class NastiMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p:
     is(sMemRead) {
       waitCnt := 0.U;
       when(dutMem.r.ready) {
-        if(log){printf("[read] mem[%x] => %x\n", (dutMem.ar.bits.addr >> size) + rCnt, dutMem.r.bits.data)}
+        printf("[read] mem[%x] => %x\n", (dutMem.ar.bits.addr >> size) + rCnt, dutMem.r.bits.data)
       }
       when(rDone) {
         dutMem.ar.ready := true.B

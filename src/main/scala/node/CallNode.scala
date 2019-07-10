@@ -1,11 +1,12 @@
-package node
+package dandelion.node
 
 import chisel3._
 import chisel3.Module
-import junctions._
 
-import config._
-import interfaces._
+import dandelion.junctions._
+
+import dandelion.config._
+import dandelion.interfaces._
 import util._
 import utility.UniformPrintfs
 

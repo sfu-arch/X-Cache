@@ -1,23 +1,16 @@
 // See LICENSE for license details.
 
-package arbiters 
+package dandelion.arbiters
 
 import chisel3._
-import chisel3.util._
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import node._
-import dataflow._
-import muxes._
-import config._
-import util._
-import interfaces._
-import arbiters._
+import dandelion.config._
 
 
-class ArbiterTester (bus: WordRegFile)(implicit p: config.Parameters) extends PeekPokeTester(bus)  {
+class ArbiterTester (bus: WordRegFile)(implicit p: Parameters) extends PeekPokeTester(bus)  {
     // val dut = Module(AbstractBus)
 
 
@@ -46,19 +39,10 @@ class ArbiterTester (bus: WordRegFile)(implicit p: config.Parameters) extends Pe
               step(1)     
     }
 
-    // // dut.io.AllocaIn(0).valid := true.B
-    //      println(s"io.in.bits, io.out.bits: ${peek(stack.io.AllocaOut(0))}")
-    // step(1)
-    //      println(s"io.out.bits: ${peek(stack.io.AllocaOut(0))}")
-    // step(1)
-    //          println(s"io.out.bits: ${peek(stack.io.AllocaOut(0))}")
-    // step(1)
-    //  println(s"io.out.bits: ${peek(stack.io.AllocaOut(0))}")
- 
 }
 
 class ArbiterTests extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "compute gcd excellently" in {
     chisel3.iotesters.Driver(() => new WordRegFile(Size=32, NReads=10, NWrites=10)) { c =>
       new ArbiterTester(c)

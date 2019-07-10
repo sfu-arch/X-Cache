@@ -1,4 +1,4 @@
-package memory
+package dandelion.memory
 
 
 import chisel3._
@@ -8,9 +8,9 @@ import chisel3.experimental._
 
 
 // Config
-import config._
+import dandelion.config._
 import utility._
-import interfaces._
+import dandelion.interfaces._
 
 
 class SinglePortDRAM(DATA: Int = 32, ADDR: Int = 32) extends BlackBox with HasBlackBoxResource {

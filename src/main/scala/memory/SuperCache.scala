@@ -1,21 +1,21 @@
-package memory
+package dandelion.memory
 
 
 import Chisel.experimental.chiselName
-import accel.Cache
+import dandelion.accel.Cache
 import chisel3._
 import chisel3.Module
 import chisel3.util._
-import junctions._
+import dandelion.junctions._
 import muxes.{Demux, DemuxGen}
 
 import scala.collection.immutable
 
 
 // Config
-import config._
+import dandelion.config._
 import utility._
-import interfaces._
+import dandelion.interfaces._
 import scala.math._
 
 
@@ -339,7 +339,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
 //object NCacheMain extends App {
 //  val dir = new File("RTL/NCache");
 //  dir.mkdirs
-//  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+//  implicit val p = Parameters.root((new MiniConfig).toInstance)
 //  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new NCache(1, 1)))
 //
 //  val verilogFile   = new File(dir, s"${chirrtl.main}.v")

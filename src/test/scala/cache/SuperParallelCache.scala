@@ -3,11 +3,11 @@ package cache
 import chisel3._
 import chisel3.util._
 import chisel3.testers._
-import junctions._
-import config._
+import dandelion.junctions._
+import dandelion.config._
 import scala.math._
-import memory._
-import interfaces._
+import dandelion.memory._
+import dandelion.interfaces._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
@@ -54,7 +54,7 @@ class SuperParallelCacheUnitTests(c: NParallelCache) extends PeekPokeTester(c) {
 }
 
 class SuperParallelCacheUnitTester extends FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "SuperCache tester" in {
     chisel3.iotesters.Driver(() => new NParallelCache(2, 2)) { c =>
       new SuperParallelCacheUnitTests(c)

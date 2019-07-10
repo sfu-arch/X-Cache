@@ -1,6 +1,5 @@
 // See LICENSE for license details.
-
-package dataflow
+package dandelion.dataflow
 
 import chisel3._
 import chisel3.util._
@@ -8,20 +7,12 @@ import chisel3.util._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import node._
-import dataflow._
-import muxes._
-import config._
-import util._
-import interfaces._
-
-
-
+import dandelion.config._
 
 
 // Tester.
 class Sample02Tester(df: StackDF)
-                  (implicit p: config.Parameters) extends PeekPokeTester(df)  {
+                  (implicit p: Parameters) extends PeekPokeTester(df)  {
 
   poke(df.io.Data0.bits.size, 3.U)
   poke(df.io.Data0.bits.numByte, 4.U)
@@ -104,7 +95,7 @@ class Sample02Tester(df: StackDF)
 
 
 class Sample02Tests extends  FlatSpec with Matchers {
-   implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow sample 01 tester" in {
      chisel3.iotesters.Driver(() => new StackDF()(p)) {
        c => new Sample02Tester(c)

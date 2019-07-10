@@ -1,14 +1,9 @@
-package node
-
-/**
-  * Created by nvedula on 15/5/17.
-  */
-
+package dandelion.node
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import config._
+import dandelion.config._
 import utility._
 
 class TypLoadTests(c: TypLoad) extends PeekPokeTester(c) {
@@ -51,7 +46,7 @@ class TypLoadTests(c: TypLoad) extends PeekPokeTester(c) {
 import Constants._
 
 class TypLoadTester extends  FlatSpec with Matchers {
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Load Node tester" in {
     chisel3.iotesters.Driver(() => new TypLoad(NumPredOps=0,NumSuccOps=0,NumOuts=1,ID=1,RouteID=0)) { c =>
       new TypLoadTests(c)
