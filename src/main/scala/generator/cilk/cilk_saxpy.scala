@@ -443,7 +443,7 @@ import java.io.{File, FileWriter}
 object cilk_saxpyTop extends App {
   val dir = new File("RTL/cilk_saxpyTop4");
   dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   //val testParams = p.alterPartial({
     //case TLEN => 5
     //case TRACE => true
