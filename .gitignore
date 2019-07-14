@@ -11,4 +11,5 @@ build-stuff/*
 .history
 .ensime_cache/*
 .ensime
+*.mem
 RTL/*
