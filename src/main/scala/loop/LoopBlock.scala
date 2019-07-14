@@ -85,7 +85,7 @@ class LoopBlock(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
   val exit_R = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
   val exitFire_R = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
 
-  val endEnable_R = RegInit(0.U.asTypeOf(io.endEnable.bits))
+  val endEnable_R = RegInit(ControlBundle.default)
   val endEnable_valid_R = RegInit(false.B)
   val endEnableFire_R = RegNext(init = false.B, next = io.endEnable.fire())
 

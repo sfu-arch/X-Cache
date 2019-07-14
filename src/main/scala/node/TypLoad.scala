@@ -162,8 +162,9 @@ class TypLoad(NumPredOps: Int,
         Reset( )
         // Reset state.
         state := s_idle
-        printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
-        //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output fired @ %d\n", enable_R.taskID, cycleCount)
+        }
       }
     }
   }

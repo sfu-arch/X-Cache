@@ -175,13 +175,7 @@ class LoadMaskNode(NumPredOps: Int = 1, NumSuccOps: Int = 1)(implicit p: Paramet
  Tree.io.in(3).valid := true.B
  Tree.io.out.ready := (state =/= s_init)
  printf(p"Tree Out: ${Tree.io.out} \n")
- // printf(p"\n MuxTree Out: ${MuxTree.io.outputs} \n")
 
-  // val y = PriorityEncoder(0x4.U.toBools)
-  //  printf("Priority: %x",y)
-
-
-  // printf(p"State: $state, ${io.MemResp.valid}")
 }
 
 

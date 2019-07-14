@@ -66,7 +66,7 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
   in_arbiter.io.out.ready := ds.io.inReady && RouteQ.io.enq.ready
   // Wire up arbiter to function unit. Direct params to function unit
   ds.io.inValid := in_arbiter.io.out.valid
-  ds.io.sqrtOp := in_arbiter.io.out.bits.data("field2").data.toBool
+  ds.io.sqrtOp := in_arbiter.io.out.bits.data("field2").data.asBool
   ds.io.a := t.recode(in_arbiter.io.out.bits.data("field0").data)
   ds.io.b := t.recode(in_arbiter.io.out.bits.data("field1").data)
   //  ds.io.a := in_arbiter.io.out.bits.data("field0").data

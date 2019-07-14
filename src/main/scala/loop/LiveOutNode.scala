@@ -94,61 +94,6 @@ class LiveOutNode(NumOuts: Int, ID: Int)
     }
   }
 
-  /*switch(state) {
-    is(s_IDLE) {
-      when(io.enable.fire() || enable_valid_R) {
-        when(io.enable.bits.control || enable_R) {
-          when(io.InData.fire() || indata_valid_R) {
-
-            printf("[LOG] " + "[" + module_name + "] " + node_name + ": Latch fired @ %d, Value:%d\n"
-              , cycleCount, io.InData.bits.data.asUInt())
-
-            ValidOut()
-            state := s_LATCH
-
-            enable_R := false.B
-            enable_valid_R := false.B
-
-          }.otherwise {
-            state := s_IDLE
-          }
-        }.elsewhen((~io.enable.bits.control).toBool || (~enable_R).toBool) {
-          when(io.InData.fire() || indata_valid_R) {
-            indata_R := DataBundle.default
-            indata_valid_R := false.B
-
-            enable_R := false.B
-            Reset()
-
-            state := s_LATCH
-          }.otherwise {
-            state := s_IDLE
-          }
-        }
-      }
-    }
-
-    is(s_LATCH) {
-      when(IsOutReady()) {
-        when(io.enable.fire() || enable_valid_R) {
-          when(io.enable.bits.control || enable_R) {
-            enable_R := false.B
-            Reset()
-            ValidOut()
-            state := s_LATCH
-          }
-        }.elsewhen((~io.enable.bits.control).toBool || (~enable_R).toBool) {
-          enable_R := false.B
-          Reset()
-          state := s_IDLE
-        }
-      }.otherwise {
-        state := s_LATCH
-      }
-    }
-  }*/
-
-
   /*==========================================*
    *             WIRING OUTPUT                *
    *==========================================*/
