@@ -295,10 +295,19 @@ object DataBundle {
   def apply(data: UInt = 0.U, taskID: UInt = 0.U)(implicit p: Parameters): DataBundle = {
     val wire = Wire(new DataBundle)
     wire.data := data
-    wire.predicate := false.B
-    wire.taskID := 0.U
+    wire.predicate := true.B
+    wire.taskID := taskID
     wire
   }
+
+  def apply(data: UInt, taskID: UInt, predicate: UInt)(implicit p: Parameters): DataBundle = {
+    val wire = Wire(new DataBundle)
+    wire.data := data
+    wire.predicate := predicate
+    wire.taskID := taskID
+    wire
+  }
+
 
   def default(implicit p: Parameters): DataBundle = {
     val wire = Wire(new DataBundle)

@@ -61,7 +61,7 @@ class MiniConfig extends Config((site, here, up) => {
     //    case COMPONENTS => "TYPLOAD;TYPOP;TYPSTORE"
     case COMPONENTS => ""
     // Max size of type memory system may see
-    case TRACE => false
+    case TRACE => true
     case CTRACE => false
     case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))
 

@@ -85,7 +85,8 @@ class LoopBlock(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
   val exit_R = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
   val exitFire_R = RegInit(VecInit(Seq.fill(NumExits)(false.B)))
 
-  val endEnable_R = RegInit(0.U.asTypeOf(io.endEnable))
+  val endEnable_R = RegInit(0.U.asTypeOf(io.endEnable.bits))
+  val endEnable_valid_R = RegInit(false.B)
   val endEnableFire_R = RegNext(init = false.B, next = io.endEnable.fire())
 
   def IsInputLatched(): Bool = {
@@ -144,7 +145,7 @@ class LoopBlock(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
     when(io.loopExit(i).fire()) {
       exit_R(i) <> io.loopExit(i).bits.control
       exitFire_R(i) := true.B
-      endEnable_R.bits.taskID := io.loopExit(i).bits.taskID
+      endEnable_R.taskID := io.loopExit(i).bits.taskID
     }
   }
 
@@ -161,9 +162,9 @@ class LoopBlock(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
           // Jump to end skipping loop
           state := s_end
           // Ensure downstream isn't predicated
-          endEnable_R.bits.control := false.B
-          endEnable_R.bits.taskID := enable_R.taskID
-          endEnable_R.valid := true.B
+          endEnable_R.control := false.B
+          endEnable_R.taskID := enable_R.taskID
+          endEnable_valid_R := true.B
           liveOut_R.foreach(_.predicate := false.B)
           liveOut_R.foreach(_.taskID := enable_R.taskID)
           ValidOut()
@@ -194,8 +195,8 @@ class LoopBlock(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
         liveOutFire_R.foreach(_ := false.B)
         // Only exit on final (control=true) exit pulse
         when(exit_R.asUInt().orR) {
-          endEnable_R.bits.control := exit_R.asUInt().orR
-          endEnable_R.valid := true.B
+          endEnable_R.control := exit_R.asUInt().orR
+          endEnable_valid_R := true.B
           ValidOut() // Set Out() valid
           state := s_end
         }
@@ -203,7 +204,7 @@ class LoopBlock(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
     }
     is(s_end) {
       when(endEnableFire_R) {
-        endEnable_R.valid := false.B
+        endEnable_valid_R := false.B
       }
       when(endEnableFire_R && IsOutReady()) {
         Reset()
@@ -216,8 +217,8 @@ class LoopBlock(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
   }
 
   // Connect up endEnable control bundle
-  io.endEnable.bits := endEnable_R.bits
-  io.endEnable.valid := endEnable_R.valid
+  io.endEnable.bits := endEnable_R
+  io.endEnable.valid := endEnable_valid_R
 
   io.activate.valid := activate_R_valid
   io.activate.bits := enable_R
