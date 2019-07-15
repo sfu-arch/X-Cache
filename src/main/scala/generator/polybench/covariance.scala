@@ -118,7 +118,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
    * ================================================================== */
 
   //  br label %5, !dbg !57, !UID !59, !BB_UID !60
-  val br_0 = Module(new UBranchFastNode(ID = 0))
+  val br_0 = Module(new UBranchNode(ID = 0))
 
   //  %6 = phi i64 [ 0, %4 ], [ %18, %15 ], !UID !61
   val phi1 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 1, Res = true))
@@ -130,7 +130,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val st_3 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 3, RouteID = 0))
 
   //  br label %8, !dbg !73, !UID !75, !BB_UID !76
-  val br_4 = Module(new UBranchFastNode(ID = 4))
+  val br_4 = Module(new UBranchNode(ID = 4))
 
   //  %9 = phi i64 [ 0, %5 ], [ %13, %8 ], !UID !77
   val phi5 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 5, Res = true))
@@ -175,7 +175,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_18 = Module(new ComputeNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))
 
   //  %19 = icmp eq i64 %18, 28, !dbg !101, !UID !102
-  val icmp_19 = Module(new IcmpFastNode(NumOuts = 1, ID = 19, opCode = "eq")(sign = false))
+  val icmp_19 = Module(new IcmpNode(NumOuts = 1, ID = 19, opCode = "eq")(sign = false))
 
   //  br i1 %19, label %20, label %5, !dbg !57, !llvm.loop !103, !UID !105, !BB_UID !106
   val br_20 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 20))
@@ -187,7 +187,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val phi22 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 22, Res = true))
 
   //  br label %23, !dbg !107, !UID !114, !BB_UID !115
-  val br_23 = Module(new UBranchFastNode(ID = 23))
+  val br_23 = Module(new UBranchNode(ID = 23))
 
   //  %24 = phi i64 [ 0, %21 ], [ %29, %23 ], !UID !116
   val phi24 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 24, Res = true))
@@ -217,7 +217,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_32 = Module(new ComputeNode(NumOuts = 2, ID = 32, opCode = "add")(sign = false))
 
   //  %30 = icmp eq i64 %29, 28, !dbg !129, !UID !130
-  val icmp_33 = Module(new IcmpFastNode(NumOuts = 1, ID = 33, opCode = "eq")(sign = false))
+  val icmp_33 = Module(new IcmpNode(NumOuts = 1, ID = 33, opCode = "eq")(sign = false))
 
   //  br i1 %30, label %31, label %23, !dbg !107, !llvm.loop !131, !UID !133, !BB_UID !134
   val br_34 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 34))
@@ -226,7 +226,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_35 = Module(new ComputeNode(NumOuts = 2, ID = 35, opCode = "add")(sign = false))
 
   //  %33 = icmp eq i64 %32, 32, !dbg !137, !UID !138
-  val icmp_36 = Module(new IcmpFastNode(NumOuts = 1, ID = 36, opCode = "eq")(sign = false))
+  val icmp_36 = Module(new IcmpNode(NumOuts = 1, ID = 36, opCode = "eq")(sign = false))
 
   //  br i1 %33, label %34, label %21, !dbg !139, !llvm.loop !140, !UID !142, !BB_UID !143
   val br_37 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 37))
@@ -235,13 +235,13 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val FP_38 = Module(new FPComputeNode(NumOuts = 1, ID = 38, opCode = "fadd")(t = p(FTYP)))
 
   //  br label %36, !dbg !145, !UID !147, !BB_UID !148
-  val br_39 = Module(new UBranchFastNode(ID = 39))
+  val br_39 = Module(new UBranchNode(ID = 39))
 
   //  %37 = phi i64 [ 0, %34 ], [ %55, %54 ], !UID !149
   val phi40 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 40, Res = false))
 
   //  br label %38, !dbg !150, !UID !153, !BB_UID !154
-  val br_41 = Module(new UBranchFastNode(ID = 41))
+  val br_41 = Module(new UBranchNode(ID = 41))
 
   //  %39 = phi i64 [ %37, %36 ], [ %52, %49 ], !UID !155
   val phi42 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 4, ID = 42, Res = true))
@@ -256,7 +256,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val st_45 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 45, RouteID = 4))
 
   //  br label %40, !dbg !163, !UID !165, !BB_UID !166
-  val br_46 = Module(new UBranchFastNode(ID = 46))
+  val br_46 = Module(new UBranchNode(ID = 46))
 
   //  %41 = phi i64 [ 0, %38 ], [ %47, %40 ], !UID !167
   val phi47 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 47, Res = true))
@@ -322,7 +322,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_67 = Module(new ComputeNode(NumOuts = 2, ID = 67, opCode = "add")(sign = false))
 
   //  %53 = icmp eq i64 %52, 28, !dbg !201, !UID !202
-  val icmp_68 = Module(new IcmpFastNode(NumOuts = 1, ID = 68, opCode = "eq")(sign = false))
+  val icmp_68 = Module(new IcmpNode(NumOuts = 1, ID = 68, opCode = "eq")(sign = false))
 
   //  br i1 %53, label %54, label %38, !dbg !150, !llvm.loop !203, !UID !205, !BB_UID !206
   val br_69 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 69))
@@ -331,7 +331,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_70 = Module(new ComputeNode(NumOuts = 2, ID = 70, opCode = "add")(sign = false))
 
   //  %56 = icmp eq i64 %55, 28, !dbg !209, !UID !210
-  val icmp_71 = Module(new IcmpFastNode(NumOuts = 1, ID = 71, opCode = "eq")(sign = false))
+  val icmp_71 = Module(new IcmpNode(NumOuts = 1, ID = 71, opCode = "eq")(sign = false))
 
   //  br i1 %56, label %57, label %36, !dbg !145, !llvm.loop !211, !UID !213, !BB_UID !214
   val br_72 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 72))

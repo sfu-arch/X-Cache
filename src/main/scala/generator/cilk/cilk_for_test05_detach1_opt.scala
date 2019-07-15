@@ -91,7 +91,7 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
   val ld_3 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 3, RouteID = 1))
 
   //  %4 = icmp ugt i32 %1, %3, !UID !5
-  val icmp_4 = Module(new IcmpFastNode(NumOuts = 1, ID = 4, opCode = "ugt")(sign = false))
+  val icmp_4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "ugt")(sign = false))
 
   //  br i1 %4, label %my_if.then, label %my_if.else, !UID !6, !BB_UID !7
   //  val br_5 = Module(new CBranchNode(ID = 5))
@@ -119,10 +119,10 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
   val st_12 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 12, RouteID = 0))
 
   //  br label %my_if.end, !UID !15, !BB_UID !16
-  val br_13 = Module(new UBranchFastNode(ID = 13))
+  val br_13 = Module(new UBranchNode(ID = 13))
 
   //  br label %my_pfor.preattach, !UID !17, !BB_UID !18
-  val br_14 = Module(new UBranchFastNode(ID = 14))
+  val br_14 = Module(new UBranchNode(ID = 14))
 
   //  ret void
   val ret_15 = Module(new RetNode2(retTypes = List(), ID = 15))
@@ -149,7 +149,7 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
   val st_22 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 22, RouteID = 1))
 
   //  br label %my_if.end, !UID !26, !BB_UID !27
-  val br_23 = Module(new UBranchFastNode(ID = 23))
+  val br_23 = Module(new UBranchNode(ID = 23))
 
 
   /* ================================================================== *

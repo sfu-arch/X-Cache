@@ -649,7 +649,8 @@ class HandShaking[T <: Data](val NumPredOps: Int,
   }
 
   def ValidOut(): Unit = {
-    out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
+    (out_valid_R zip io.Out.map(_.fire)).foreach{ case (a,b) => a := b ^ true.B}
+    //out_valid_R := VecInit(Seq.fill(NumOuts)(true.B))
   }
 
   def InvalidOut(): Unit = {
