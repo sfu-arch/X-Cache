@@ -127,7 +127,7 @@ class test_07_softmax_b_ir_4DF(implicit p: Parameters) extends test_07_softmax_b
   val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "or")(sign = false))
 
   //  %6 = select i1 %5, float %1, float %2, !UID !16
-  val select_12 = Module(new SelectNode(NumOuts = 2, ID = 12))
+  val select_12 = Module(new SelectNode(NumOuts = 2, ID = 12)(fast = false))
 
   //  %invar.inc1 = add nuw nsw i64 %reduce.inner.indvar.reduction_dim.112, 1, !UID !17
   val binaryOp_invar_inc113 = Module(new ComputeNode(NumOuts = 2, ID = 13, opCode = "add")(sign = false))

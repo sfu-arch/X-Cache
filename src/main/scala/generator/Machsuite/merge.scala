@@ -136,7 +136,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
   val icmp_9 = Module(new IcmpNode(NumOuts = 1, ID = 9, opCode = "ugt")(sign = false))
 
   //  %15 = select i1 %14, i32 %2, i32 %1, !dbg !91, !UID !100
-  val select_10 = Module(new SelectNode(NumOuts = 1, ID = 10))
+  val select_10 = Module(new SelectNode(NumOuts = 1, ID = 10)(fast = false))
 
   //  %16 = sub i32 %15, %1, !dbg !91, !UID !101
   val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "sub")(sign = false))

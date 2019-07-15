@@ -98,7 +98,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
   val phi5 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 5, Res = true))
 
   //  %7 = mul nsw i32 %6, %5, !UID !8
-  val binaryOp_6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign = false))
+  val binaryOp_6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "mul")(sign = false, fast = false))
 
   //  ret i32 %7, !UID !9, !BB_UID !10
   val ret_7 = Module(new RetNode2(retTypes = List(32), ID = 7))
@@ -116,13 +116,13 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
   val icmp_11 = Module(new IcmpNode(NumOuts = 2, ID = 11, opCode = "ult")(sign = false))
 
   //  %13 = select i1 %12, i32 %10, i32 0, !UID !15
-  val select_12 = Module(new SelectNode(NumOuts = 1, ID = 12))
+  val select_12 = Module(new SelectNode(NumOuts = 1, ID = 12)(fast = true))
 
   //  %14 = sub nsw i32 %11, %13, !UID !16
-  val binaryOp_13 = Module(new ComputeNode(NumOuts = 3, ID = 13, opCode = "sub")(sign = false))
+  val binaryOp_13 = Module(new ComputeNode(NumOuts = 3, ID = 13, opCode = "sub")(sign = false, fast = true))
 
   //  %15 = select i1 %12, i32 0, i32 %11, !UID !17
-  val select_14 = Module(new SelectNode(NumOuts = 1, ID = 14))
+  val select_14 = Module(new SelectNode(NumOuts = 1, ID = 14)(fast = true))
 
   //  %16 = sub nsw i32 %10, %15, !UID !18
   val binaryOp_15 = Module(new ComputeNode(NumOuts = 2, ID = 15, opCode = "sub")(sign = false))

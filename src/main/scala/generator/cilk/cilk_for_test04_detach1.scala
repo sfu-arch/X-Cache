@@ -101,7 +101,7 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
   val binaryOp_7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "sub")(sign = false))
 
   //  %7 = select i1 %4, i32 %5, i32 %6, !UID !23
-  val select_8 = Module(new SelectNode(NumOuts = 1, ID = 8))
+  val select_8 = Module(new SelectNode(NumOuts = 1, ID = 8)(fast = false))
 
   //  %8 = getelementptr inbounds i32, i32* %c.in, i32 %__begin.029.in, !UID !24
   val Gep_9 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 9)(ElementSize = 4, ArraySize = List()))

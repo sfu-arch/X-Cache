@@ -30,6 +30,7 @@ class SelectNodeIO(NumOuts: Int)
 }
 
 class SelectNode(NumOuts: Int, ID: Int)
+                (fast: Boolean)
                 (implicit p: Parameters,
                  name: sourcecode.Name,
                  file: sourcecode.File)
@@ -115,7 +116,9 @@ class SelectNode(NumOuts: Int, ID: Int)
           state := s_COMPUTE
 
           // Activate output data
-          io.Out.foreach( _.valid := true.B)
+          if(fast){
+            io.Out.foreach( _.valid := true.B)
+          }
 
           if(log){
             printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [SELECT]" +
