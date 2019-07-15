@@ -170,7 +170,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val st_19 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 19, RouteID = 1))
 
   //  %20 = add nuw nsw i64 %13, 1, !dbg !126, !UID !127
-  val binaryOp_20 = Module(new ComputeFastNode(NumOuts = 2, ID = 20, opCode = "add")(sign = false))
+  val binaryOp_20 = Module(new ComputeNode(NumOuts = 2, ID = 20, opCode = "add")(sign = false))
 
   //  %21 = icmp eq i64 %20, 22, !dbg !128, !UID !129
   val icmp_21 = Module(new IcmpFastNode(NumOuts = 1, ID = 21, opCode = "eq")(sign = false))
@@ -179,7 +179,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val br_22 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 22))
 
   //  %23 = add nuw nsw i64 %11, 1, !dbg !134, !UID !135
-  val binaryOp_23 = Module(new ComputeFastNode(NumOuts = 2, ID = 23, opCode = "add")(sign = false))
+  val binaryOp_23 = Module(new ComputeNode(NumOuts = 2, ID = 23, opCode = "add")(sign = false))
 
   //  %24 = icmp eq i64 %23, 18, !dbg !136, !UID !137
   val icmp_24 = Module(new IcmpFastNode(NumOuts = 1, ID = 24, opCode = "eq")(sign = false))
@@ -188,7 +188,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val br_25 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 25))
 
   //  %26 = add nuw nsw i64 %9, 1, !dbg !142, !UID !143
-  val binaryOp_26 = Module(new ComputeFastNode(NumOuts = 2, ID = 26, opCode = "add")(sign = false))
+  val binaryOp_26 = Module(new ComputeNode(NumOuts = 2, ID = 26, opCode = "add")(sign = false))
 
   //  %27 = icmp eq i64 %26, 16, !dbg !144, !UID !145
   val icmp_27 = Module(new IcmpFastNode(NumOuts = 1, ID = 27, opCode = "eq")(sign = false))
@@ -278,7 +278,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val br_55 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 55))
 
   //  %48 = add nuw nsw i64 %30, 1, !dbg !204, !UID !205
-  val binaryOp_56 = Module(new ComputeFastNode(NumOuts = 2, ID = 56, opCode = "add")(sign = false))
+  val binaryOp_56 = Module(new ComputeNode(NumOuts = 2, ID = 56, opCode = "add")(sign = false))
 
   //  %49 = icmp eq i64 %48, 16, !dbg !206, !UID !207
   val icmp_57 = Module(new IcmpFastNode(NumOuts = 1, ID = 57, opCode = "eq")(sign = false))

@@ -81,7 +81,7 @@ class cilk_for_test01_detach1DF(implicit p: Parameters) extends cilk_for_test01_
   val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 1, RouteID = 0))
 
   //  %2 = shl i32 %1, 1, !UID !16
-  val binaryOp_2 = Module(new ComputeFastNode(NumOuts = 1, ID = 2, opCode = "shl")(sign = false))
+  val binaryOp_2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "shl")(sign = false))
 
   //  %3 = getelementptr inbounds i32, i32* %b.in, i32 %__begin.011.in, !UID !17
   val Gep_3 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 3)(ElementSize = 4, ArraySize = List()))

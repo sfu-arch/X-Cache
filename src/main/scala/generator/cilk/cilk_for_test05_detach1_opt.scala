@@ -110,7 +110,7 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
   val ld_9 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 9, RouteID = 3))
 
   //  %9 = sub i32 %6, %8, !UID !12
-  val binaryOp_10 = Module(new ComputeFastNode(NumOuts = 1, ID = 10, opCode = "sub")(sign = false))
+  val binaryOp_10 = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "sub")(sign = false))
 
   //  %10 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !13
   val Gep_11 = Module(new GepArrayOneNode(NumOuts = 1, ID = 11)(numByte = 4)(size = 1))
@@ -140,7 +140,7 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
   val ld_19 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 19, RouteID = 5))
 
   //  %15 = sub i32 %12, %14, !UID !23
-  val binaryOp_20 = Module(new ComputeFastNode(NumOuts = 1, ID = 20, opCode = "sub")(sign = false))
+  val binaryOp_20 = Module(new ComputeNode(NumOuts = 1, ID = 20, opCode = "sub")(sign = false))
 
   //  %16 = getelementptr inbounds i32, i32* %c.in, i32 %i.0.in, !UID !24
   val Gep_21 = Module(new GepArrayOneNode(NumOuts = 1, ID = 21)(numByte = 4)(size = 1))

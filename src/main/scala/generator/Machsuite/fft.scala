@@ -112,10 +112,10 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val phiodd_01126 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 6, Res = true))
 
   //  %or = or i32 %odd.0112, %span.0113, !dbg !103, !UID !108
-  val binaryOp_or7 = Module(new ComputeFastNode(NumOuts = 4, ID = 7, opCode = "or")(sign = false))
+  val binaryOp_or7 = Module(new ComputeNode(NumOuts = 4, ID = 7, opCode = "or")(sign = false))
 
   //  %xor = xor i32 %or, %span.0113, !dbg !109, !UID !110
-  val binaryOp_xor8 = Module(new ComputeFastNode(NumOuts = 2, ID = 8, opCode = "xor")(sign = false))
+  val binaryOp_xor8 = Module(new ComputeNode(NumOuts = 2, ID = 8, opCode = "xor")(sign = false))
 
   //  %idxprom = sext i32 %xor to i64, !dbg !112, !UID !113
   val sextidxprom9 = Module(new SextNode())
@@ -176,10 +176,10 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val st_26 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 26, RouteID = 3))
 
   //  %shl = shl i32 %xor, %log.0115, !dbg !147, !UID !148
-  val binaryOp_shl27 = Module(new ComputeFastNode(NumOuts = 1, ID = 27, opCode = "shl")(sign = false))
+  val binaryOp_shl27 = Module(new ComputeNode(NumOuts = 1, ID = 27, opCode = "shl")(sign = false))
 
   //  %and = and i32 %shl, 63, !dbg !149, !UID !150
-  val binaryOp_and28 = Module(new ComputeFastNode(NumOuts = 2, ID = 28, opCode = "and")(sign = false))
+  val binaryOp_and28 = Module(new ComputeNode(NumOuts = 2, ID = 28, opCode = "and")(sign = false))
 
   //  %tobool27 = icmp eq i32 %and, 0, !dbg !152, !UID !154
   val icmp_tobool2729 = Module(new IcmpFastNode(NumOuts = 1, ID = 29, opCode = "eq")(sign = false))
@@ -254,10 +254,10 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val br_50 = Module(new UBranchFastNode(ID = 50))
 
   //  %shr = ashr i32 %span.0113, 1, !dbg !196, !UID !197
-  val binaryOp_shr51 = Module(new ComputeFastNode(NumOuts = 1, ID = 51, opCode = "ashr")(sign = false))
+  val binaryOp_shr51 = Module(new ComputeNode(NumOuts = 1, ID = 51, opCode = "ashr")(sign = false))
 
   //  %inc54 = add nuw nsw i32 %log.0115, 1, !dbg !198, !UID !199
-  val binaryOp_inc5452 = Module(new ComputeFastNode(NumOuts = 2, ID = 52, opCode = "add")(sign = false))
+  val binaryOp_inc5452 = Module(new ComputeNode(NumOuts = 2, ID = 52, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc54, 6, !dbg !87, !UID !200
   val icmp_exitcond53 = Module(new IcmpFastNode(NumOuts = 1, ID = 53, opCode = "eq")(sign = false))

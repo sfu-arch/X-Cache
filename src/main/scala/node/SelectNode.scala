@@ -42,7 +42,6 @@ class SelectNode(NumOuts: Int, ID: Int)
   val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
 
   override val printfSigil = "[" + module_name + "] " + node_name + ": " + ID + " "
-  //  override val printfSigil = "Node (COMP - " + opCode + ") ID: " + ID + " "
   val (cycleCount, _) = Counter(true.B, 32 * 1024)
 
   /*===========================================*
@@ -59,9 +58,6 @@ class SelectNode(NumOuts: Int, ID: Int)
   // Select Input
   val select_R = RegInit(DataBundle.default)
   val select_valid_R = RegInit(false.B)
-
-  //Output register
-  val out_data_R = RegInit(DataBundle.default)
 
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
@@ -95,37 +91,27 @@ class SelectNode(NumOuts: Int, ID: Int)
   // Wire up Outputs
   val output_data = Mux(select_R.data.orR, indata1_R.data, indata2_R.data)
 
-  for (i <- 0 until NumOuts) {
     // The taskID's should be identical except in the case
     // when one input is tied to a constant.  In that case
     // the taskID will be zero.  Logical OR'ing the IDs
     // Should produce a valid ID in either case regardless of
     // which input is constant.
-    io.Out(i).bits := DataBundle(output_data, taskID, predicate)
-  }
+    io.Out.foreach(_.bits := DataBundle(output_data, taskID, predicate))
 
   /*============================================*
    *            State Machine                   *
    *============================================*/
   switch(state) {
     is(s_IDLE) {
-      when(enable_valid_R) {
-        when(indata1_valid_R && indata2_valid_R && select_valid_R) {
-
+        when(enable_valid_R && indata1_valid_R && indata2_valid_R && select_valid_R) {
+          io.Out.foreach( _.valid := true.B)
           ValidOut()
           state := s_COMPUTE
-
-          // Activate output data
-          if(fast){
-            io.Out.foreach( _.valid := true.B)
-          }
-
           if(log){
             printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [SELECT]" +
               node_name + ": Output fired @ %d, Value: %d\n", enable_R.control, cycleCount, output_data)
           }
         }
-      }
     }
     is(s_COMPUTE) {
       when(IsOutReady()) {
@@ -133,10 +119,12 @@ class SelectNode(NumOuts: Int, ID: Int)
         indata1_valid_R := false.B
         indata2_valid_R := false.B
         select_valid_R := false.B
+
+        indata1_R := DataBundle.default
+        indata2_R := DataBundle.default
         //Reset state
         state := s_IDLE
         //Reset output
-        out_data_R := DataBundle.default
         Reset()
       }
     }

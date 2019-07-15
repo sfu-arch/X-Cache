@@ -97,7 +97,7 @@ class cilk_for_test01DF(implicit p: Parameters) extends cilk_for_test01DFIO()(p)
   val detach_3 = Module(new Detach(ID = 3))
 
   //  %inc = add nuw nsw i32 %__begin.011, 1, !UID !17
-  val binaryOp_inc4 = Module(new ComputeFastNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
+  val binaryOp_inc4 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, 5, !UID !18
   val icmp_exitcond5 = Module(new IcmpFastNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))

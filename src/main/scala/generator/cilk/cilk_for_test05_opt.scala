@@ -102,7 +102,7 @@ class cilk_for_test05_optDF(implicit p: Parameters) extends cilk_for_test05_optD
   val detach_4 = Module(new Detach(ID = 4))
 
   //  %inc = add i32 %i.0, 1, !UID !10
-  val binaryOp_inc5 = Module(new ComputeFastNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
+  val binaryOp_inc5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false))
 
   //  br label %pfor.cond, !llvm.loop !11, !UID !13, !BB_UID !14
   val br_6 = Module(new UBranchFastNodeVariable(NumOutputs = 2, ID = 6))

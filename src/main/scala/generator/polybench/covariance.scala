@@ -154,7 +154,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val st_11 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 11, RouteID = 1))
 
   //  %13 = add nuw nsw i64 %9, 1, !dbg !87, !UID !88
-  val binaryOp_12 = Module(new ComputeFastNode(NumOuts = 2, ID = 12, opCode = "add")(sign = false))
+  val binaryOp_12 = Module(new ComputeNode(NumOuts = 2, ID = 12, opCode = "add")(sign = false))
 
   //  %14 = icmp eq i64 %13, 32, !dbg !89, !UID !90
   val icmp_13 = Module(new IcmpNode(NumOuts = 1, ID = 13, opCode = "eq")(sign = false))
@@ -172,7 +172,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val st_17 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 17, RouteID = 2))
 
   //  %18 = add nuw nsw i64 %6, 1, !dbg !99, !UID !100
-  val binaryOp_18 = Module(new ComputeFastNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))
+  val binaryOp_18 = Module(new ComputeNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))
 
   //  %19 = icmp eq i64 %18, 28, !dbg !101, !UID !102
   val icmp_19 = Module(new IcmpFastNode(NumOuts = 1, ID = 19, opCode = "eq")(sign = false))
@@ -214,7 +214,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val st_31 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 31, RouteID = 3))
 
   //  %29 = add nuw nsw i64 %24, 1, !dbg !127, !UID !128
-  val binaryOp_32 = Module(new ComputeFastNode(NumOuts = 2, ID = 32, opCode = "add")(sign = false))
+  val binaryOp_32 = Module(new ComputeNode(NumOuts = 2, ID = 32, opCode = "add")(sign = false))
 
   //  %30 = icmp eq i64 %29, 28, !dbg !129, !UID !130
   val icmp_33 = Module(new IcmpFastNode(NumOuts = 1, ID = 33, opCode = "eq")(sign = false))
@@ -223,7 +223,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val br_34 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 34))
 
   //  %32 = add nuw nsw i64 %22, 1, !dbg !135, !UID !136
-  val binaryOp_35 = Module(new ComputeFastNode(NumOuts = 2, ID = 35, opCode = "add")(sign = false))
+  val binaryOp_35 = Module(new ComputeNode(NumOuts = 2, ID = 35, opCode = "add")(sign = false))
 
   //  %33 = icmp eq i64 %32, 32, !dbg !137, !UID !138
   val icmp_36 = Module(new IcmpFastNode(NumOuts = 1, ID = 36, opCode = "eq")(sign = false))
@@ -292,7 +292,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val st_57 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 57, RouteID = 5))
 
   //  %47 = add nuw nsw i64 %41, 1, !dbg !183, !UID !184
-  val binaryOp_58 = Module(new ComputeFastNode(NumOuts = 2, ID = 58, opCode = "add")(sign = false))
+  val binaryOp_58 = Module(new ComputeNode(NumOuts = 2, ID = 58, opCode = "add")(sign = false))
 
   //  %48 = icmp eq i64 %47, 32, !dbg !185, !UID !186
   val icmp_59 = Module(new IcmpNode(NumOuts = 1, ID = 59, opCode = "eq")(sign = false))
@@ -319,7 +319,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val st_66 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 66, RouteID = 7))
 
   //  %52 = add nuw nsw i64 %39, 1, !dbg !199, !UID !200
-  val binaryOp_67 = Module(new ComputeFastNode(NumOuts = 2, ID = 67, opCode = "add")(sign = false))
+  val binaryOp_67 = Module(new ComputeNode(NumOuts = 2, ID = 67, opCode = "add")(sign = false))
 
   //  %53 = icmp eq i64 %52, 28, !dbg !201, !UID !202
   val icmp_68 = Module(new IcmpFastNode(NumOuts = 1, ID = 68, opCode = "eq")(sign = false))
@@ -328,7 +328,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val br_69 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 69))
 
   //  %55 = add nuw nsw i64 %37, 1, !dbg !207, !UID !208
-  val binaryOp_70 = Module(new ComputeFastNode(NumOuts = 2, ID = 70, opCode = "add")(sign = false))
+  val binaryOp_70 = Module(new ComputeNode(NumOuts = 2, ID = 70, opCode = "add")(sign = false))
 
   //  %56 = icmp eq i64 %55, 28, !dbg !209, !UID !210
   val icmp_71 = Module(new IcmpFastNode(NumOuts = 1, ID = 71, opCode = "eq")(sign = false))
