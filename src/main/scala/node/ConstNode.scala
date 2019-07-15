@@ -85,10 +85,11 @@ class ConstNode(value: Int, NumOuts: Int = 1, ID: Int)
   }
 }
 
+
 class ConstFastNode(value: Int, ID: Int)
-                   (implicit val p: Parameters,
-                    name: sourcecode.Name,
-                    file: sourcecode.File)
+                    (implicit val p: Parameters,
+                     name: sourcecode.Name,
+                     file: sourcecode.File)
   extends Module with CoreParams with UniformPrintfs {
 
   val io = IO(new Bundle {
@@ -109,7 +110,8 @@ class ConstFastNode(value: Int, ID: Int)
   val enable_R = RegInit(ControlBundle.default)
   val enable_valid_R = RegInit(false.B)
 
-  val task_input = (io.enable.bits.taskID | enable_R.taskID)
+  val taskID = Mux(enable_valid_R, enable_R.taskID, io.enable.bits.taskID)
+  val predicate = Mux(enable_valid_R, enable_R.control, io.enable.bits.control)
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -119,12 +121,10 @@ class ConstFastNode(value: Int, ID: Int)
   //  io.Out.bits.data := value.asSInt(xlen.W).asUInt()
   val output_value = value.asSInt(xlen.W).asUInt()
 
-  io.enable.ready := false.B
+  io.enable.ready := ~enable_valid_R
+  io.Out.valid := enable_valid_R
 
-  io.Out.bits.data := output_value
-  io.Out.bits.predicate := enable_R.control
-  io.Out.bits.taskID := task_input
-  io.Out.valid := false.B
+  io.Out.bits := DataBundle(output_value, taskID, predicate)
 
   /*============================================*
    *            ACTIONS (possibly dangerous)    *
@@ -134,34 +134,27 @@ class ConstFastNode(value: Int, ID: Int)
 
   switch(state) {
     is(s_idle) {
-      io.enable.ready := true.B
-      io.Out.valid := false.B
-
       when(io.enable.fire()) {
-
         io.Out.valid := true.B
-        io.Out.bits.predicate := io.enable.bits.control
-        io.Out.bits.taskID := io.enable.bits.taskID
-
-        enable_R <> io.enable.bits
-        state := s_fire
-
+        when(io.Out.fire) {
+          state := s_idle
+        }.otherwise {
+          state := s_fire
+          enable_valid_R := true.B
+          enable_R <> io.enable.bits
+        }
         if (log) {
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [CONST] "
             + node_name + ": Output fired @ %d, Value: %d\n",
-            task_input, cycleCount, output_value.asSInt())
+            taskID, cycleCount, output_value.asSInt())
         }
       }
     }
-
     is(s_fire) {
-      io.Out.valid := true.B
-
       when(io.Out.fire) {
-
+        //Restart the registers
         enable_R := ControlBundle.default
         enable_valid_R := false.B
-
         state := s_idle
       }
     }

@@ -82,7 +82,7 @@ object operation {
 
       def multiplication(l: FPmatNxN, r: FPmatNxN)(implicit p: Parameters): FPmatNxN = {
         val x = Wire(new FPmatNxN(l.N, l.t))
-        printf(p"Left: ${l.data}")
+        printf(p"Left: ${l.data}\n")
         val products = for (i <- 0 until l.N) yield {
           for (j <- 0 until l.N) yield {
             for (k <- 0 until l.N) yield {

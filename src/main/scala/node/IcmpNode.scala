@@ -61,8 +61,8 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
 
   //Output register
   val out_data_R = RegNext(Mux(enable_R.control, FU.io.out, 0.U), init = 0.U)
-  val predicate = enable_R.control | io.enable.bits.control
-  val taskID = enable_R.taskID | io.enable.bits.taskID
+  val predicate = Mux(enable_valid_R, enable_R.control ,io.enable.bits.control)
+  val taskID = Mux(enable_valid_R, enable_R.taskID ,io.enable.bits.taskID)
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -104,7 +104,7 @@ class IcmpNode(NumOuts: Int, ID: Int, opCode: String)
         state := s_COMPUTE
         if (log) {
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [CMP] " +
-            node_name + ": Output fired @ %d, Value: %d (%d +?%d)\n", taskID, cycleCount, FU.io.out, left_R.data, right_R.data)
+            node_name + ": Output fired @ %d, Value: %d (%d ? %d)\n", taskID, cycleCount, FU.io.out, left_R.data, right_R.data)
         }
       }
     }

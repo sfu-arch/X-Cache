@@ -64,7 +64,7 @@ class SelectNode(NumOuts: Int, ID: Int)
 
 
   val predicate = enable_R.control | io.enable.bits.control
-  val taskID = enable_R.taskID | io.enable.bits.taskID
+  val taskID = Mux(enable_valid_R, enable_R.taskID ,io.enable.bits.taskID)
 
   /*===============================================*
    *            Latch inputs. Wire up output       *
@@ -108,8 +108,8 @@ class SelectNode(NumOuts: Int, ID: Int)
           ValidOut()
           state := s_COMPUTE
           if(log){
-            printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [SELECT]" +
-              node_name + ": Output fired @ %d, Value: %d\n", enable_R.control, cycleCount, output_data)
+            printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [SELECT] " +
+              node_name + ": Output fired @ %d, Value: %d\n", taskID, cycleCount, output_data)
           }
         }
     }
