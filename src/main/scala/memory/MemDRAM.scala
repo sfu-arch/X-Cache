@@ -22,7 +22,7 @@ class SinglePortDRAM(DATA: Int = 32, ADDR: Int = 32) extends BlackBox with HasBl
     val dout = Output(UInt(DATA.W))
   })
 
-  setResource("/verilog/SinglePortDRAM.v")
+  addResource("/verilog/SinglePortDRAM.v")
 
 }
 

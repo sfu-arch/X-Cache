@@ -148,7 +148,7 @@ class altfp_adder_13(DATA: Int = 32, ADDR: Int = 32) extends BlackBox with HasBl
     val result = Output(UInt(DATA.W))
   })
 
-  setResource("/verilog/altfp_adder_13.v")
+  addResource("/verilog/altfp_adder_13.v")
 
 }
 
@@ -161,7 +161,7 @@ class altfp_subtractor_14(DATA: Int = 32, ADDR: Int = 32) extends BlackBox with 
     val result = Output(UInt(DATA.W))
   })
 
-  setResource("/verilog/altfp_subtractor_14.v")
+  addResource("/verilog/altfp_subtractor_14.v")
 
 }
 
@@ -174,7 +174,7 @@ class altfp_multiplier_11(DATA: Int = 32, ADDR: Int = 32) extends BlackBox with 
     val result = Output(UInt(DATA.W))
   })
 
-  setResource("/verilog/altfp_multiplier_11.v")
+  addResource("/verilog/altfp_multiplier_11.v")
 
 }
 
@@ -187,7 +187,7 @@ class altfp_divider_33(DATA: Int = 32, ADDR: Int = 32) extends BlackBox with Has
     val result = Output(UInt(DATA.W))
   })
 
-  setResource("/verilog/altfp_divider_33.v")
+  addResource("/verilog/altfp_divider_33.v")
 
 }
 

@@ -75,7 +75,7 @@ class UCMP(val xlen: Int, val opCode: String) extends Module {
     )
 
   assert(!CmpOpCode.CompMap.get(opCode.toUpperCase).isEmpty, "Wrong CMP OP!")
-  io.out := CMPGenerator(CmpOpCode.CompMap(opCode), cmpOp)
+  io.out := CMPGenerator(CmpOpCode.CompMap(opCode.toUpperCase), cmpOp)
 
 }
 
