@@ -169,10 +169,10 @@ class UALU(val xlen: Int, val opCode: String, val issign: Boolean = false) exten
       AluOpCode.Or -> (io.in1 | io.in2),
       AluOpCode.Xor -> (io.in1 ^ io.in2),
       AluOpCode.Xnor -> (~(io.in1 ^ io.in2)),
-      AluOpCode.ShiftLeft -> (io.in1 << io.in2(math.max(in2S.getWidth, 19) - 1, 0)),
-      AluOpCode.ShiftRight -> (io.in1 >> io.in2(math.max(in2S.getWidth, 19) - 1, 0)),
-      AluOpCode.ShiftRightLogical -> (io.in1.asUInt >> io.in2(math.max(in2S.getWidth, 19) - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
-      AluOpCode.ShiftRightArithmetic -> (io.in1.asSInt >> io.in2(math.max(in2S.getWidth, 19) - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+      AluOpCode.ShiftLeft -> (io.in1 << io.in2(math.min(in2S.getWidth, 19) - 1, 0)),
+      AluOpCode.ShiftRight -> (io.in1 >> io.in2(math.min(in2S.getWidth, 19) - 1, 0)),
+      AluOpCode.ShiftRightLogical -> (io.in1.asUInt >> io.in2(math.min(in2S.getWidth, 19) - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+      AluOpCode.ShiftRightArithmetic -> (io.in1.asSInt >> io.in2(math.min(in2S.getWidth, 19) - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
       AluOpCode.LT -> (io.in1.asUInt < io.in2.asUInt),
       AluOpCode.GT -> (io.in1.asUInt < io.in2.asUInt),
       AluOpCode.EQ -> (io.in1.asUInt === io.in2.asUInt),
@@ -194,10 +194,10 @@ class UALU(val xlen: Int, val opCode: String, val issign: Boolean = false) exten
       AluOpCode.Or -> (in1S | in2S),
       AluOpCode.Xor -> (in1S ^ in2S),
       AluOpCode.Xnor -> (~(in1S ^ in2S)),
-      AluOpCode.ShiftLeft -> (in1S << in2S(math.max(in2S.getWidth, 19), 0)),
-      AluOpCode.ShiftRight -> (in1S >> in2S(math.max(in2S.getWidth, 19), 0)),
-      AluOpCode.ShiftRightLogical -> (in1S.asUInt >> in2S(math.max(in2S.getWidth, 19),0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
-      AluOpCode.ShiftRightArithmetic -> (in1S.asSInt >> in2S(math.max(in2S.getWidth, 19), 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+      AluOpCode.ShiftLeft -> (in1S << in2S(math.min(in2S.getWidth, 19), 0)),
+      AluOpCode.ShiftRight -> (in1S >> in2S(math.min(in2S.getWidth, 19), 0)),
+      AluOpCode.ShiftRightLogical -> (in1S.asUInt >> in2S(math.min(in2S.getWidth, 19),0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+      AluOpCode.ShiftRightArithmetic -> (in1S.asSInt >> in2S(math.min(in2S.getWidth, 19), 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
       AluOpCode.LT -> (io.in1.asSInt < io.in2.asSInt),
       AluOpCode.GT -> (io.in1.asSInt < io.in2.asSInt),
       AluOpCode.EQ -> (io.in1.asSInt === io.in2.asSInt),
