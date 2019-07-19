@@ -115,7 +115,7 @@ class cilk_for_test02DF(implicit p: Parameters) extends cilk_for_test02DFIO()(p)
   val binaryOp_inc187 = Module(new ComputeNode(NumOuts = 2, ID = 7, opCode = "add")(sign = false))
 
   //  %exitcond41 = icmp eq i32 %inc18, 5, !UID !21
-  val icmp_exitcond418 = Module(new IcmpNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
+  val icmp_exitcond418 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond41, label %pfor.cond.cleanup, label %pfor.detach, !llvm.loop !22, !UID !24, !BB_UID !25
   val br_9 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 9))

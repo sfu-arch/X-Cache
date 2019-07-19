@@ -156,7 +156,7 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
   val binaryOp_22 = Module(new ComputeNode(NumOuts = 2, ID = 22, opCode = "add")(sign = false))
 
   //  %20 = icmp eq i32 %19, 2, !UID !39
-  val icmp_23 = Module(new IcmpNode(NumOuts = 1, ID = 23, opCode = "eq")(sign = false))
+  val icmp_23 = Module(new ComputeNode(NumOuts = 1, ID = 23, opCode = "eq")(sign = false))
 
   //  br i1 %20, label %my_for.cond.cleanup37, label %my_for.body38, !UID !40, !BB_UID !41
   val br_24 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 24))
@@ -165,7 +165,7 @@ class bgemm_detach3DF(implicit p: Parameters) extends bgemm_detach3DFIO()(p) {
   val binaryOp_25 = Module(new ComputeNode(NumOuts = 2, ID = 25, opCode = "add")(sign = false))
 
   //  %22 = icmp eq i32 %21, 2, !UID !43
-  val icmp_26 = Module(new IcmpNode(NumOuts = 1, ID = 26, opCode = "eq")(sign = false))
+  val icmp_26 = Module(new ComputeNode(NumOuts = 1, ID = 26, opCode = "eq")(sign = false))
 
   //  br i1 %22, label %my_for.cond.cleanup, label %my_for.body, !UID !44, !BB_UID !45
   val br_27 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 27))

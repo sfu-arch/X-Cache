@@ -97,7 +97,7 @@ class cilk_for_test02_detach1DF(implicit p: Parameters) extends cilk_for_test02_
   val binaryOp_3 = Module(new ComputeNode(NumOuts = 2, ID = 3, opCode = "add")(sign = false))
 
   //  %3 = icmp eq i32 %2, 5, !UID !16
-  val icmp_4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "eq")(sign = false))
+  val icmp_4 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "eq")(sign = false))
 
   //  br i1 %3, label %my_pfor.cond.cleanup7, label %my_pfor.detach9, !llvm.loop !17, !UID !19, !BB_UID !20
   val br_5 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 5))

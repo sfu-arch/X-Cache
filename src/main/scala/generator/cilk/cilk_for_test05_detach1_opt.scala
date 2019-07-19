@@ -91,7 +91,7 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
   val ld_3 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 3, RouteID = 1))
 
   //  %4 = icmp ugt i32 %1, %3, !UID !5
-  val icmp_4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "ugt")(sign = false))
+  val icmp_4 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "gt")(sign = false))
 
   //  br i1 %4, label %my_if.then, label %my_if.else, !UID !6, !BB_UID !7
   //  val br_5 = Module(new CBranchNode(ID = 5))

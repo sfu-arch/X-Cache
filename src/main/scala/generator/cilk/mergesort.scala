@@ -478,7 +478,7 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
 
 
   //  %cmp = icmp ult i32 %sub, 2, !UID !22, !ScalaLabel !23
-  val icmp10 = Module (new IcmpNode(NumOuts = 1, ID = 10, opCode = "ULT")(sign=false))
+  val icmp10 = Module (new ComputeNode(NumOuts = 1, ID = 10, opCode = "LT")(sign=false))
 
 
   //  br i1 %cmp, label %if.then, label %if.end, !UID !24, !BB_UID !25, !ScalaLabel !26

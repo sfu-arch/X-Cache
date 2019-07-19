@@ -86,7 +86,7 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
    * ================================================================== */
 
   //  %cmp11 = icmp sgt i32 %n, 0, !dbg !31, !UID !33
-  val icmp_cmp110 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
+  val icmp_cmp110 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "gt")(sign = false))
 
   //  br i1 %cmp11, label %for.body.preheader, label %for.cond.cleanup, !dbg !34, !UID !35, !BB_UID !36
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
@@ -128,7 +128,7 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
   val binaryOp_inc13 = Module(new ComputeNode(NumOuts = 2, ID = 13, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, %n, !dbg !31, !UID !62
-  val icmp_exitcond14 = Module(new IcmpNode(NumOuts = 1, ID = 14, opCode = "eq")(sign = false))
+  val icmp_exitcond14 = Module(new ComputeNode(NumOuts = 1, ID = 14, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.cond.cleanup.loopexit, label %for.body, !dbg !34, !llvm.loop !63, !UID !65, !BB_UID !66
   val br_15 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 15))

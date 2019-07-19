@@ -100,7 +100,7 @@ class bgemm_detach1DF(implicit p: Parameters) extends bgemm_detach1DFIO()(p) {
   val binaryOp_4 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
 
   //  %4 = icmp eq i32 %3, 2, !UID !17
-  val icmp_5 = Module(new IcmpNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
+  val icmp_5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
 
   //  br i1 %4, label %my_pfor.cond.cleanup8, label %my_pfor.detach10, !llvm.loop !18, !UID !20, !BB_UID !21
   val br_6 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 6))

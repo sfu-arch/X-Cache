@@ -103,7 +103,7 @@ class bgemmDF(implicit p: Parameters) extends bgemmDFIO()(p) {
   val binaryOp_inc605 = Module(new ComputeNode(NumOuts = 2, ID = 5, opCode = "add")(sign = false))
 
   //  %exitcond105 = icmp eq i32 %inc60, 2, !UID !19
-  val icmp_exitcond1056 = Module(new IcmpNode(NumOuts = 1, ID = 6, opCode = "eq")(sign = false))
+  val icmp_exitcond1056 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond105, label %pfor.cond.cleanup, label %pfor.detach, !llvm.loop !20, !UID !22, !BB_UID !23
   val br_7 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 7))

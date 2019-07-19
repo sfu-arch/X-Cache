@@ -121,7 +121,7 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "or")(sign = false))
 
   //  %1 = icmp ult i32 %0, 4, !dbg !62, !UID !64
-  val icmp_12 = Module(new IcmpNode(NumOuts = 1, ID = 12, opCode = "ult")(sign = false))
+  val icmp_12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "lt")(sign = false))
 
   //  br i1 %1, label %if.then5, label %if.end11, !dbg !62, !UID !65, !BB_UID !66
   val br_13 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 13))
@@ -151,7 +151,7 @@ class stencil_innerDF(implicit p: Parameters) extends stencil_innerDFIO()(p) {
   val binaryOp_inc21 = Module(new ComputeNode(NumOuts = 2, ID = 21, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, 3, !dbg !89, !UID !90
-  val icmp_exitcond22 = Module(new IcmpNode(NumOuts = 1, ID = 22, opCode = "eq")(sign = false))
+  val icmp_exitcond22 = Module(new ComputeNode(NumOuts = 1, ID = 22, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.cond.cleanup, label %for.body, !dbg !51, !llvm.loop !91, !UID !93, !BB_UID !94
   val br_23 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 23))

@@ -173,7 +173,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val binaryOp_20 = Module(new ComputeNode(NumOuts = 2, ID = 20, opCode = "add")(sign = false))
 
   //  %21 = icmp eq i64 %20, 22, !dbg !128, !UID !129
-  val icmp_21 = Module(new IcmpNode(NumOuts = 1, ID = 21, opCode = "eq")(sign = false))
+  val icmp_21 = Module(new ComputeNode(NumOuts = 1, ID = 21, opCode = "eq")(sign = false))
 
   //  br i1 %21, label %22, label %12, !dbg !104, !llvm.loop !130, !UID !132, !BB_UID !133
   val br_22 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 22))
@@ -182,7 +182,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val binaryOp_23 = Module(new ComputeNode(NumOuts = 2, ID = 23, opCode = "add")(sign = false))
 
   //  %24 = icmp eq i64 %23, 18, !dbg !136, !UID !137
-  val icmp_24 = Module(new IcmpNode(NumOuts = 1, ID = 24, opCode = "eq")(sign = false))
+  val icmp_24 = Module(new ComputeNode(NumOuts = 1, ID = 24, opCode = "eq")(sign = false))
 
   //  br i1 %24, label %25, label %10, !dbg !87, !llvm.loop !138, !UID !140, !BB_UID !141
   val br_25 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 25))
@@ -191,7 +191,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val binaryOp_26 = Module(new ComputeNode(NumOuts = 2, ID = 26, opCode = "add")(sign = false))
 
   //  %27 = icmp eq i64 %26, 16, !dbg !144, !UID !145
-  val icmp_27 = Module(new IcmpNode(NumOuts = 1, ID = 27, opCode = "eq")(sign = false))
+  val icmp_27 = Module(new ComputeNode(NumOuts = 1, ID = 27, opCode = "eq")(sign = false))
 
   //  br i1 %27, label %28, label %8, !dbg !81, !llvm.loop !146, !UID !148, !BB_UID !149
   val br_28 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 28))
@@ -263,7 +263,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val binaryOp_50 = Module(new ComputeNode(NumOuts = 2, ID = 50, opCode = "add")(sign = false))
 
   //  %43 = icmp eq i64 %42, 18, !dbg !190, !UID !191
-  val icmp_51 = Module(new IcmpNode(NumOuts = 1, ID = 51, opCode = "eq")(sign = false))
+  val icmp_51 = Module(new ComputeNode(NumOuts = 1, ID = 51, opCode = "eq")(sign = false))
 
   //  br i1 %43, label %44, label %35, !dbg !168, !llvm.loop !192, !UID !194, !BB_UID !195
   val br_52 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 52))
@@ -272,7 +272,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val binaryOp_53 = Module(new ComputeNode(NumOuts = 2, ID = 53, opCode = "add")(sign = false))
 
   //  %46 = icmp eq i64 %45, 24, !dbg !198, !UID !199
-  val icmp_54 = Module(new IcmpNode(NumOuts = 1, ID = 54, opCode = "eq")(sign = false))
+  val icmp_54 = Module(new ComputeNode(NumOuts = 1, ID = 54, opCode = "eq")(sign = false))
 
   //  br i1 %46, label %47, label %31, !dbg !150, !llvm.loop !200, !UID !202, !BB_UID !203
   val br_55 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 55))
@@ -281,7 +281,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val binaryOp_56 = Module(new ComputeNode(NumOuts = 2, ID = 56, opCode = "add")(sign = false))
 
   //  %49 = icmp eq i64 %48, 16, !dbg !206, !UID !207
-  val icmp_57 = Module(new IcmpNode(NumOuts = 1, ID = 57, opCode = "eq")(sign = false))
+  val icmp_57 = Module(new ComputeNode(NumOuts = 1, ID = 57, opCode = "eq")(sign = false))
 
   //  br i1 %49, label %50, label %29, !dbg !208, !llvm.loop !209, !UID !211, !BB_UID !212
   val br_58 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 58))

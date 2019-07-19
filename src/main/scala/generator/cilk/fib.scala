@@ -393,7 +393,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 
   //  %cmp = icmp slt i32 %n, 2, !UID !10, !ScalaLabel !11
-  val icmp4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "ULT")(sign = false))
+  val icmp4 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "LT")(sign = false))
 
 
   //  br i1 %cmp, label %if.then, label %if.end, !UID !12, !BB_UID !13, !ScalaLabel !14

@@ -715,7 +715,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %cmp = icmp ult i32 %k.0, %4, !UID !39, !ScalaLabel !40
-  val icmp18 = Module (new IcmpNode(NumOuts = 1, ID = 18, opCode = "ULT")(sign=false))
+  val icmp18 = Module (new ComputeNode(NumOuts = 1, ID = 18, opCode = "LT")(sign=false))
 
 
   //  br i1 %cmp, label %for.body, label %for.end, !UID !41, !BB_UID !42, !ScalaLabel !43
@@ -724,7 +724,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   // [BasicBlock]  for.body:
 
   //  %cmp8 = icmp ult i32 %i.0, %3, !UID !44, !ScalaLabel !45
-  val icmp20 = Module (new IcmpNode(NumOuts = 1, ID = 20, opCode = "ULT")(sign=false))
+  val icmp20 = Module (new ComputeNode(NumOuts = 1, ID = 20, opCode = "LT")(sign=false))
 
 
   //  br i1 %cmp8, label %land.lhs.true, label %if.else, !UID !46, !BB_UID !47, !ScalaLabel !48
@@ -733,7 +733,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
   // [BasicBlock]  land.lhs.true:
 
   //  %cmp9 = icmp uge i32 %j.0, %4, !UID !49, !ScalaLabel !50
-  val icmp22 = Module (new IcmpNode(NumOuts = 1, ID = 22, opCode = "UGE")(sign=false))
+  val icmp22 = Module (new ComputeNode(NumOuts = 1, ID = 22, opCode = "UGE")(sign=false))
 
 
   //  br i1 %cmp9, label %if.then, label %lor.lhs.false, !UID !51, !BB_UID !52, !ScalaLabel !53
@@ -758,7 +758,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
 
   //  %cmp11 = icmp ule i32 %7, %8, !UID !62, !ScalaLabel !63
-  val icmp28 = Module (new IcmpNode(NumOuts = 1, ID = 28, opCode = "ULE")(sign=false))
+  val icmp28 = Module (new ComputeNode(NumOuts = 1, ID = 28, opCode = "ULE")(sign=false))
 
 
   //  br i1 %cmp11, label %if.then, label %if.else, !UID !64, !BB_UID !65, !ScalaLabel !66

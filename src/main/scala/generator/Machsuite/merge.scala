@@ -112,7 +112,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
   val bitcast_1 = Module(new BitCastNode(NumOuts = 1, ID = 1))
 
   //  %7 = icmp sgt i32 %1, %2, !dbg !87, !UID !90
-  val icmp_2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ugt")(sign = false))
+  val icmp_2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "gt")(sign = false))
 
   //  br i1 %7, label %20, label %8, !dbg !91, !UID !92, !BB_UID !93
   val br_3 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 3))
@@ -133,7 +133,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
   val bitcast_8 = Module(new BitCastNode(NumOuts = 0, ID = 8))
 
   //  %14 = icmp sgt i32 %2, %1, !dbg !91, !UID !99
-  val icmp_9 = Module(new IcmpNode(NumOuts = 1, ID = 9, opCode = "ugt")(sign = false))
+  val icmp_9 = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "gt")(sign = false))
 
   //  %15 = select i1 %14, i32 %2, i32 %1, !dbg !91, !UID !100
   val select_10 = Module(new SelectNode(NumOuts = 1, ID = 10)(fast = false))
@@ -154,7 +154,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
   val br_15 = Module(new UBranchNode(ID = 15))
 
   //  %21 = icmp slt i32 %2, %3, !dbg !112, !UID !114
-  val icmp_16 = Module(new IcmpNode(NumOuts = 1, ID = 16, opCode = "ult")(sign = false))
+  val icmp_16 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "lt")(sign = false))
 
   //  br i1 %21, label %22, label %.loopexit1, !dbg !115, !UID !116, !BB_UID !117
   val br_17 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 17))
@@ -202,7 +202,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
   val st_31 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 31, RouteID = 0))
 
   //  %36 = icmp slt i64 %29, %26, !dbg !112, !UID !142
-  val icmp_32 = Module(new IcmpNode(NumOuts = 1, ID = 32, opCode = "ult")(sign = false))
+  val icmp_32 = Module(new ComputeNode(NumOuts = 1, ID = 32, opCode = "lt")(sign = false))
 
   //  br i1 %36, label %27, label %.loopexit1.loopexit, !dbg !115, !llvm.loop !143, !UID !145, !BB_UID !146
   val br_33 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 33))
@@ -211,7 +211,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
   val br_34 = Module(new UBranchNode(ID = 34))
 
   //  %37 = icmp sgt i32 %1, %3, !dbg !147, !UID !149
-  val icmp_35 = Module(new IcmpNode(NumOuts = 1, ID = 35, opCode = "ugt")(sign = false))
+  val icmp_35 = Module(new ComputeNode(NumOuts = 1, ID = 35, opCode = "gt")(sign = false))
 
   //  br i1 %37, label %.loopexit, label %38, !dbg !150, !UID !151, !BB_UID !152
   val br_36 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 36))
@@ -253,7 +253,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
   val ld_48 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 48, RouteID = 2))
 
   //  %51 = icmp ult i64 %47, %50, !dbg !170, !UID !172
-  val icmp_49 = Module(new IcmpNode(NumOuts = 1, ID = 49, opCode = "ult")(sign = false))
+  val icmp_49 = Module(new ComputeNode(NumOuts = 1, ID = 49, opCode = "lt")(sign = false))
 
   //  %52 = getelementptr inbounds i64, i64* %0, i64 %42, !UID !173
   val Gep_50 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 50)(ElementSize = 8, ArraySize = List()))
@@ -289,7 +289,7 @@ class mergeDF(implicit p: Parameters) extends mergeDFIO()(p) {
   val binaryOp_60 = Module(new ComputeNode(NumOuts = 1, ID = 60, opCode = "add")(sign = false))
 
   //  %61 = icmp slt i64 %42, %40, !dbg !147, !UID !196
-  val icmp_61 = Module(new IcmpNode(NumOuts = 1, ID = 61, opCode = "ult")(sign = false))
+  val icmp_61 = Module(new ComputeNode(NumOuts = 1, ID = 61, opCode = "lt")(sign = false))
 
   //  br i1 %61, label %41, label %.loopexit.loopexit, !dbg !150, !llvm.loop !197, !UID !199, !BB_UID !200
   val br_62 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 62))

@@ -191,7 +191,7 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
   val binaryOp_28 = Module(new ComputeNode(NumOuts = 2, ID = 28, opCode = "add")(sign = false))
 
   //  %32 = icmp eq i64 %31, 8, !dbg !161, !UID !162
-  val icmp_29 = Module(new IcmpNode(NumOuts = 1, ID = 29, opCode = "eq")(sign = false))
+  val icmp_29 = Module(new ComputeNode(NumOuts = 1, ID = 29, opCode = "eq")(sign = false))
 
   //  br i1 %32, label %33, label %19, !dbg !132, !llvm.loop !163, !UID !165, !BB_UID !166
   val br_30 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 30))
@@ -200,7 +200,7 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
   val binaryOp_31 = Module(new ComputeNode(NumOuts = 2, ID = 31, opCode = "add")(sign = false))
 
   //  %35 = icmp eq i64 %34, 8, !dbg !169, !UID !170
-  val icmp_32 = Module(new IcmpNode(NumOuts = 1, ID = 32, opCode = "eq")(sign = false))
+  val icmp_32 = Module(new ComputeNode(NumOuts = 1, ID = 32, opCode = "eq")(sign = false))
 
   //  br i1 %35, label %36, label %11, !dbg !106, !llvm.loop !171, !UID !173, !BB_UID !174
   val br_33 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 33))
@@ -209,7 +209,7 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
   val binaryOp_34 = Module(new ComputeNode(NumOuts = 2, ID = 34, opCode = "add")(sign = false))
 
   //  %38 = icmp eq i64 %37, 64, !dbg !177, !UID !178
-  val icmp_35 = Module(new IcmpNode(NumOuts = 1, ID = 35, opCode = "eq")(sign = false))
+  val icmp_35 = Module(new ComputeNode(NumOuts = 1, ID = 35, opCode = "eq")(sign = false))
 
   //  br i1 %38, label %39, label %8, !dbg !97, !llvm.loop !179, !UID !181, !BB_UID !182
   val br_36 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 36))
@@ -218,7 +218,7 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
   val binaryOp_37 = Module(new ComputeNode(NumOuts = 2, ID = 37, opCode = "add")(sign = false))
 
   //  %41 = icmp ult i64 %40, 64, !dbg !185, !UID !186
-  val icmp_38 = Module(new IcmpNode(NumOuts = 1, ID = 38, opCode = "ult")(sign = false))
+  val icmp_38 = Module(new ComputeNode(NumOuts = 1, ID = 38, opCode = "lt")(sign = false))
 
   //  br i1 %41, label %6, label %42, !dbg !89, !llvm.loop !187, !UID !189, !BB_UID !190
   val br_39 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 39))
@@ -227,7 +227,7 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
   val binaryOp_40 = Module(new ComputeNode(NumOuts = 2, ID = 40, opCode = "add")(sign = false))
 
   //  %44 = icmp ult i64 %43, 64, !dbg !193, !UID !194
-  val icmp_41 = Module(new IcmpNode(NumOuts = 1, ID = 41, opCode = "ult")(sign = false))
+  val icmp_41 = Module(new ComputeNode(NumOuts = 1, ID = 41, opCode = "lt")(sign = false))
 
   //  br i1 %44, label %4, label %45, !dbg !83, !llvm.loop !195, !UID !197, !BB_UID !198
   val br_42 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 42))

@@ -90,7 +90,7 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
    * ================================================================== */
 
   //  %cmp24 = icmp eq i32 %n, 0, !UID !10
-  val icmp_cmp240 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
+  val icmp_cmp240 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
 
   //  br i1 %cmp24, label %for.cond.cleanup, label %for.body4.lr.ph.preheader, !UID !11, !BB_UID !12
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
@@ -117,7 +117,7 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
   val binaryOp_inc88 = Module(new ComputeNode(NumOuts = 2, ID = 8, opCode = "add")(sign = false))
 
   //  %exitcond26 = icmp eq i32 %inc8, %n, !UID !22
-  val icmp_exitcond269 = Module(new IcmpNode(NumOuts = 1, ID = 9, opCode = "eq")(sign = false))
+  val icmp_exitcond269 = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond26, label %for.cond.cleanup.loopexit, label %for.body4.lr.ph, !UID !23, !BB_UID !24
   val br_10 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 10))
@@ -144,7 +144,7 @@ class test07DF(implicit p: Parameters) extends test07DFIO()(p) {
   val binaryOp_inc17 = Module(new ComputeNode(NumOuts = 2, ID = 17, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, %n, !UID !36
-  val icmp_exitcond18 = Module(new IcmpNode(NumOuts = 1, ID = 18, opCode = "eq")(sign = false))
+  val icmp_exitcond18 = Module(new ComputeNode(NumOuts = 1, ID = 18, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.cond.cleanup3, label %for.body4, !UID !37, !BB_UID !38
   val br_19 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 19))

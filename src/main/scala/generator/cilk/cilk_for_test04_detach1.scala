@@ -92,7 +92,7 @@ class cilk_for_test04_detach1DF(implicit p: Parameters) extends cilk_for_test04_
   val br_4 = Module(new UBranchNode(ID = 4))
 
   //  %4 = icmp ugt i32 %1, %3, !UID !20
-  val icmp_5 = Module(new IcmpNode(NumOuts = 1, ID = 5, opCode = "ugt")(sign = false))
+  val icmp_5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "gt")(sign = false))
 
   //  %5 = sub i32 %1, %3, !UID !21
   val binaryOp_6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "sub")(sign = false))

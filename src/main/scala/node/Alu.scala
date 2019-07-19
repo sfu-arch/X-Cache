@@ -63,11 +63,17 @@ object AluOpCode {
 
     // Comparision opCodes
     "EQ" -> EQ,
+    "eq" -> EQ,
     "NE" -> NE,
+    "ne" -> NE,
     "LT" -> LT,
+    "lt" -> LT,
     "GT" -> GT,
+    "gt" -> GT,
     "LTE" -> LTE,
+    "lte" -> LTE,
     "GTE" -> GTE,
+    "gte" -> GTE,
 
     //DSP opCodes
     "PassA" -> PassA,
@@ -93,11 +99,17 @@ object AluOpCode {
     "Sub" -> Sub,
     "sub" -> Sub,
     "LT" -> LT,
+    "lt" -> LT,
     "GT" -> GT,
+    "gt" -> GT,
     "EQ" -> EQ,
+    "eq" -> EQ,
     "NE" -> NE,
+    "ne" -> NE,
     "LTE" -> LTE,
+    "lte" -> LTE,
     "GTE" -> GTE,
+    "gte" -> GTE,
     "PassA" -> PassA,
     "PassB" -> PassB,
     "Mul" -> Mul,
@@ -174,7 +186,7 @@ class UALU(val xlen: Int, val opCode: String, val issign: Boolean = false) exten
       AluOpCode.ShiftRightLogical -> (io.in1.asUInt >> io.in2(math.min(in2S.getWidth, 19) - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
       AluOpCode.ShiftRightArithmetic -> (io.in1.asSInt >> io.in2(math.min(in2S.getWidth, 19) - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
       AluOpCode.LT -> (io.in1.asUInt < io.in2.asUInt),
-      AluOpCode.GT -> (io.in1.asUInt < io.in2.asUInt),
+      AluOpCode.GT -> (io.in1.asUInt > io.in2.asUInt),
       AluOpCode.EQ -> (io.in1.asUInt === io.in2.asUInt),
       AluOpCode.LTE -> (io.in1.asUInt <= io.in2.asUInt),
       AluOpCode.GTE -> (io.in1.asUInt >= io.in2.asUInt),

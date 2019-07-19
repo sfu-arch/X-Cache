@@ -111,7 +111,7 @@ class spmvDF(implicit p: Parameters) extends spmvDFIO()(p) {
   val ld_6 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 6, RouteID = 1))
 
   //  %cmp433 = icmp slt i32 %0, %1, !dbg !118, !UID !121
-  val icmp_cmp4337 = Module(new IcmpNode(NumOuts = 1, ID = 7, opCode = "ult")(sign = false))
+  val icmp_cmp4337 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "lt")(sign = false))
 
   //  br i1 %cmp433, label %for.body5.lr.ph, label %for.end, !dbg !122, !UID !123, !BB_UID !124
   val br_8 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 8))
@@ -162,7 +162,7 @@ class spmvDF(implicit p: Parameters) extends spmvDFIO()(p) {
   val binaryOp_indvars_iv_next23 = Module(new ComputeNode(NumOuts = 2, ID = 23, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i64 %indvars.iv.next, %wide.trip.count, !dbg !118, !UID !150
-  val icmp_exitcond24 = Module(new IcmpNode(NumOuts = 1, ID = 24, opCode = "eq")(sign = false))
+  val icmp_exitcond24 = Module(new ComputeNode(NumOuts = 1, ID = 24, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.end.loopexit, label %for.body5, !dbg !122, !llvm.loop !151, !UID !153, !BB_UID !154
   val br_25 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 25))
@@ -180,7 +180,7 @@ class spmvDF(implicit p: Parameters) extends spmvDFIO()(p) {
   val st_29 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 29, RouteID = 0))
 
   //  %exitcond39 = icmp eq i64 %indvars.iv.next38, 494, !dbg !160, !UID !161
-  val icmp_exitcond3930 = Module(new IcmpNode(NumOuts = 1, ID = 30, opCode = "eq")(sign = false))
+  val icmp_exitcond3930 = Module(new ComputeNode(NumOuts = 1, ID = 30, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond39, label %for.end17, label %for.body, !dbg !97, !llvm.loop !162, !UID !164, !BB_UID !165
   val br_31 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 31))

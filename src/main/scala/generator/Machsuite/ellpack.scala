@@ -143,7 +143,7 @@ class ellpackDF(implicit p: Parameters) extends ellpackDFIO()(p) {
   val binaryOp_18 = Module(new ComputeNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))
 
   //  %24 = icmp eq i64 %23, 10, !dbg !132, !UID !133
-  val icmp_19 = Module(new IcmpNode(NumOuts = 1, ID = 19, opCode = "eq")(sign = false))
+  val icmp_19 = Module(new ComputeNode(NumOuts = 1, ID = 19, opCode = "eq")(sign = false))
 
   //  br i1 %24, label %25, label %10, !dbg !103, !llvm.loop !134, !UID !136, !BB_UID !137
   val br_20 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 20))
@@ -158,7 +158,7 @@ class ellpackDF(implicit p: Parameters) extends ellpackDFIO()(p) {
   val binaryOp_23 = Module(new ComputeNode(NumOuts = 2, ID = 23, opCode = "add")(sign = false))
 
   //  %27 = icmp eq i64 %26, 494, !dbg !143, !UID !144
-  val icmp_24 = Module(new IcmpNode(NumOuts = 1, ID = 24, opCode = "eq")(sign = false))
+  val icmp_24 = Module(new ComputeNode(NumOuts = 1, ID = 24, opCode = "eq")(sign = false))
 
   //  br i1 %27, label %28, label %5, !dbg !89, !llvm.loop !145, !UID !147, !BB_UID !148
   val br_25 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 25))

@@ -116,7 +116,7 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
   val phi_011 = Module(new PhiNode(NumInputs = 2, NumOuts = 3, ID = 1))
 
   //  %5 = icmp slt i32 %.01, 8
-  val icmp_2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
+  val icmp_2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "lt")(sign = false))
 
   //  br i1 %5, label %6, label %22
   val br_3 = Module(new CBranchNode(ID = 3))
@@ -128,7 +128,7 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
   val phi_05 = Module(new PhiNode(NumInputs = 2, NumOuts = 5, ID = 5))
 
   //  %8 = icmp slt i32 %.0, 8
-  val icmp_6 = Module(new IcmpNode(NumOuts = 1, ID = 6, opCode = "ult")(sign = false))
+  val icmp_6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "lt")(sign = false))
 
   //  br i1 %8, label %9, label %19
   val br_7 = Module(new CBranchNode(ID = 7))

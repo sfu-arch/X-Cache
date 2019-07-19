@@ -116,7 +116,7 @@ class ms_mergesortDF(implicit p: Parameters) extends ms_mergesortDFIO()(p) {
   val binaryOp_7 = Module(new ComputeNode(NumOuts = 2, ID = 7, opCode = "add")(sign = false))
 
   //  %10 = icmp slt i32 %9, 2049, !dbg !102, !UID !104
-  val icmp_8 = Module(new IcmpNode(NumOuts = 1, ID = 8, opCode = "ult")(sign = false))
+  val icmp_8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "lt")(sign = false))
 
   //  br i1 %10, label %11, label %13, !dbg !105, !UID !106, !BB_UID !107
   val br_9 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 9))
@@ -144,7 +144,7 @@ class ms_mergesortDF(implicit p: Parameters) extends ms_mergesortDFIO()(p) {
   val binaryOp_15 = Module(new ComputeNode(NumOuts = 2, ID = 15, opCode = "add")(sign = false))
 
   //  %16 = icmp slt i32 %15, 2048, !dbg !123, !UID !124
-  val icmp_16 = Module(new IcmpNode(NumOuts = 1, ID = 16, opCode = "ult")(sign = false))
+  val icmp_16 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "lt")(sign = false))
 
   //  br i1 %16, label %5, label %17, !dbg !84, !llvm.loop !125, !UID !127, !BB_UID !128
   val br_17 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 17))
@@ -153,7 +153,7 @@ class ms_mergesortDF(implicit p: Parameters) extends ms_mergesortDFIO()(p) {
   val binaryOp_18 = Module(new ComputeNode(NumOuts = 1, ID = 18, opCode = "shl")(sign = false))
 
   //  %19 = icmp slt i32 %3, 1024, !dbg !131, !UID !132
-  val icmp_19 = Module(new IcmpNode(NumOuts = 1, ID = 19, opCode = "ult")(sign = false))
+  val icmp_19 = Module(new ComputeNode(NumOuts = 1, ID = 19, opCode = "lt")(sign = false))
 
   //  br i1 %19, label %2, label %20, !dbg !77, !llvm.loop !133, !UID !135, !BB_UID !136
   val br_20 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 20))

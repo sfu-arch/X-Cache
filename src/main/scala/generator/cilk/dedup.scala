@@ -127,7 +127,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   val ld_7 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=7, RouteID=0))
 
   //  %cmp = icmp ne i32 %0, 0
-  val icmp_cmp8 = Module(new IcmpNode(NumOuts = 1, ID = 8, opCode = "ne")(sign=false))
+  val icmp_cmp8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "ne")(sign=false))
 
   //  br i1 %cmp, label %while.body, label %while.end
   val br_9 = Module(new CBranchNode(ID = 9))
@@ -139,7 +139,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
   val ld_11 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=11, RouteID=1))
 
   //  %cmp2 = icmp eq i32 %1, 999
-  val icmp_cmp212 = Module(new IcmpNode(NumOuts = 1, ID = 12, opCode = "eq")(sign=false))
+  val icmp_cmp212 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "eq")(sign=false))
 
   //  br i1 %cmp2, label %if.then, label %if.end
   val br_13 = Module(new CBranchNode(ID = 13))

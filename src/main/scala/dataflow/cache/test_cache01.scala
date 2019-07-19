@@ -80,7 +80,7 @@ class test_cache01DF(implicit p: Parameters) extends test_cache01DFIO()(p) {
    * ================================================================== */
 
   //  %tobool = icmp eq i32 %read, 0, !UID !10
-  val icmp_tobool0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
+  val icmp_tobool0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
 
   //  br i1 %tobool, label %if.else, label %if.then, !UID !11, !BB_UID !12
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))

@@ -100,10 +100,10 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
    * ================================================================== */
 
   //  %cmp240 = icmp eq i32 %n, 0, !UID !34
-  val icmp_cmp2400 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
+  val icmp_cmp2400 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "eq")(sign = false))
 
   //  %cmp638 = icmp eq i32 %n, 0, !UID !35
-  val icmp_cmp6381 = Module(new IcmpNode(NumOuts = 1, ID = 1, opCode = "eq")(sign = false))
+  val icmp_cmp6381 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "eq")(sign = false))
 
   //  %sub = add i32 %n, -1, !UID !36
   val binaryOp_sub2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "add")(sign = false))
@@ -160,7 +160,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val binaryOp_inc1919 = Module(new ComputeNode(NumOuts = 2, ID = 19, opCode = "add")(sign = false))
 
   //  %exitcond45 = icmp eq i32 %inc19, 3, !dbg !70, !UID !71
-  val icmp_exitcond4520 = Module(new IcmpNode(NumOuts = 1, ID = 20, opCode = "eq")(sign = false))
+  val icmp_exitcond4520 = Module(new ComputeNode(NumOuts = 1, ID = 20, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond45, label %for.cond.cleanup, label %for.body, !dbg !40, !llvm.loop !72, !UID !74, !BB_UID !75
   val br_21 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 21))
@@ -190,7 +190,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val binaryOp_inc1329 = Module(new ComputeNode(NumOuts = 2, ID = 29, opCode = "add")(sign = false))
 
   //  %exitcond44 = icmp eq i32 %inc13, %n, !dbg !91, !UID !92
-  val icmp_exitcond4430 = Module(new IcmpNode(NumOuts = 1, ID = 30, opCode = "eq")(sign = false))
+  val icmp_exitcond4430 = Module(new ComputeNode(NumOuts = 1, ID = 30, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond44, label %for.cond.cleanup3.loopexit, label %for.body4, !dbg !52, !llvm.loop !93, !UID !95, !BB_UID !96
   val br_31 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 31))
@@ -214,7 +214,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val binaryOp_inc37 = Module(new ComputeNode(NumOuts = 2, ID = 37, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, %n, !dbg !106, !UID !107
-  val icmp_exitcond38 = Module(new IcmpNode(NumOuts = 1, ID = 38, opCode = "eq")(sign = false))
+  val icmp_exitcond38 = Module(new ComputeNode(NumOuts = 1, ID = 38, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.cond.cleanup7.loopexit, label %for.body8, !dbg !55, !llvm.loop !108, !UID !110, !BB_UID !111
   val br_39 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 39))

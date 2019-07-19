@@ -100,7 +100,7 @@ class stencilDF(implicit p: Parameters) extends stencilDFIO()(p) {
   val binaryOp_inc104 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "add")(sign = false))
 
   //  %exitcond33 = icmp eq i32 %inc10, 16, !UID !29
-  val icmp_exitcond335 = Module(new IcmpNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
+  val icmp_exitcond335 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond33, label %pfor.cond.cleanup, label %pfor.detach, !llvm.loop !30, !UID !32, !BB_UID !33
   val br_6 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 6))

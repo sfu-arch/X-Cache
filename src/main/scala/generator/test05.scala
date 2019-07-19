@@ -116,7 +116,7 @@ class test05DF(implicit p: Parameters) extends test05DFIO()(p) {
   val binaryOp_inc11 = Module(new ComputeNode(NumOuts = 2, ID = 11, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, 5, !UID !23
-  val icmp_exitcond12 = Module(new IcmpNode(NumOuts = 1, ID = 12, opCode = "eq")(sign = false))
+  val icmp_exitcond12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.cond.cleanup, label %for.body, !UID !24, !BB_UID !25
   val br_13 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 13))

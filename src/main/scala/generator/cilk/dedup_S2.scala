@@ -104,7 +104,7 @@ class dedup_S2DF(implicit p: Parameters) extends dedup_S2DFIO()(p) {
   val ld_4 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=1, ID=4, RouteID=1))
 
   //  %cmp = icmp eq i32 %0, %1
-  val icmp_cmp5 = Module(new IcmpNode(NumOuts = 1, ID = 5, opCode = "eq")(sign=false))
+  val icmp_cmp5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "eq")(sign=false))
 
   //  br i1 %cmp, label %if.then, label %if.else
   val br_6 = Module(new CBranchNode(ID = 6))

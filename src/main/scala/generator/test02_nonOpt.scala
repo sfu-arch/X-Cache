@@ -103,7 +103,7 @@ class test02_nonOptDF(implicit p: Parameters) extends test02_nonOptDFIO()(p) {
   val binaryOp_div7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "udiv")(sign=false))
 
   //  %cmp = icmp eq i32 %div, 4
-  val icmp_cmp8 = Module(new IcmpNode(NumOuts = 1, ID = 8, opCode = "eq")(sign=false))
+  val icmp_cmp8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "eq")(sign=false))
 
   //  br i1 %cmp, label %if.then, label %if.end
   val br_9 = Module(new CBranchNode(ID = 9))

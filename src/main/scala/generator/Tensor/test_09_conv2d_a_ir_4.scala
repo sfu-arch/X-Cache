@@ -177,7 +177,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   val binaryOp_21 = Module(new ComputeNode(NumOuts = 2, ID = 21, opCode = "add")(sign = false))
 
   //  %8 = icmp ult i64 %7, 8, !UID !29
-  val icmp_22 = Module(new IcmpNode(NumOuts = 1, ID = 22, opCode = "ult")(sign = false))
+  val icmp_22 = Module(new ComputeNode(NumOuts = 1, ID = 22, opCode = "lt")(sign = false))
 
   //  %9 = add i64 %convolution.indvar.dim.223, -1, !UID !30
   val binaryOp_23 = Module(new ComputeNode(NumOuts = 1, ID = 23, opCode = "add")(sign = false))
@@ -201,7 +201,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   val binaryOp_invar_inc5_us29 = Module(new ComputeNode(NumOuts = 2, ID = 29, opCode = "add")(sign = false))
 
   //  %12 = icmp ugt i64 %invar.inc5.us, 2, !UID !36
-  val icmp_30 = Module(new IcmpNode(NumOuts = 1, ID = 30, opCode = "ugt")(sign = false))
+  val icmp_30 = Module(new ComputeNode(NumOuts = 1, ID = 30, opCode = "gt")(sign = false))
 
   //  br i1 %12, label %convolution.inner.loop_exit.k1.loopexit, label %convolution.inner.loop_body.iz.lr.ph.us, !UID !37, !BB_UID !38
   val br_31 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 31))
@@ -219,7 +219,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   val binaryOp_35 = Module(new ComputeNode(NumOuts = 2, ID = 35, opCode = "add")(sign = false))
 
   //  %16 = icmp ult i64 %15, 8, !UID !43
-  val icmp_36 = Module(new IcmpNode(NumOuts = 1, ID = 36, opCode = "ult")(sign = false))
+  val icmp_36 = Module(new ComputeNode(NumOuts = 1, ID = 36, opCode = "lt")(sign = false))
 
   //  br i1 %16, label %convolution.inner.loop_header.iz.convolution.inner.loop_exit.iz_crit_edge.us-lcssa.us.us, label %convolution.inner.loop_exit.iz.us, !UID !44, !BB_UID !45
   val br_37 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 37))
@@ -272,7 +272,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   val binaryOp_invar_inc552 = Module(new ComputeNode(NumOuts = 2, ID = 52, opCode = "add")(sign = false))
 
   //  %21 = icmp ugt i64 %invar.inc5, 2, !UID !62
-  val icmp_53 = Module(new IcmpNode(NumOuts = 1, ID = 53, opCode = "ugt")(sign = false))
+  val icmp_53 = Module(new ComputeNode(NumOuts = 1, ID = 53, opCode = "gt")(sign = false))
 
   //  br i1 %21, label %convolution.inner.loop_exit.k1.loopexit12, label %convolution.inner.loop_exit.iz, !UID !63, !BB_UID !64
   val br_54 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 54))
@@ -293,7 +293,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   val binaryOp_invar_inc459 = Module(new ComputeNode(NumOuts = 2, ID = 59, opCode = "add")(sign = false))
 
   //  %24 = icmp ugt i64 %invar.inc4, 2, !UID !68
-  val icmp_60 = Module(new IcmpNode(NumOuts = 1, ID = 60, opCode = "ugt")(sign = false))
+  val icmp_60 = Module(new ComputeNode(NumOuts = 1, ID = 60, opCode = "gt")(sign = false))
 
   //  br i1 %24, label %convolution.inner.loop_exit.k0, label %convolution.inner.loop_body.k1.lr.ph, !UID !69, !BB_UID !70
   val br_61 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 61))
@@ -308,7 +308,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   val binaryOp_invar_inc364 = Module(new ComputeNode(NumOuts = 1, ID = 64, opCode = "add")(sign = false))
 
   //  %25 = icmp eq i64 %convolution.indvar.dim.320, 0, !UID !74
-  val icmp_65 = Module(new IcmpNode(NumOuts = 1, ID = 65, opCode = "eq")(sign = false))
+  val icmp_65 = Module(new ComputeNode(NumOuts = 1, ID = 65, opCode = "eq")(sign = false))
 
   //  br i1 %25, label %convolution.inner.loop_body.k0.lr.ph, label %convolution.loop_exit.dim.3, !UID !75, !BB_UID !76
   val br_66 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 66))
@@ -317,7 +317,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   val binaryOp_invar_inc267 = Module(new ComputeNode(NumOuts = 2, ID = 67, opCode = "add")(sign = false))
 
   //  %26 = icmp ugt i64 %invar.inc2, 7, !UID !78
-  val icmp_68 = Module(new IcmpNode(NumOuts = 1, ID = 68, opCode = "ugt")(sign = false))
+  val icmp_68 = Module(new ComputeNode(NumOuts = 1, ID = 68, opCode = "gt")(sign = false))
 
   //  br i1 %26, label %convolution.loop_exit.dim.2, label %convolution.loop_body.dim.3.lr.ph, !UID !79, !BB_UID !80
   val br_69 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 69))
@@ -326,7 +326,7 @@ class test_09_conv2d_a_ir_4DF(implicit p: Parameters) extends test_09_conv2d_a_i
   val binaryOp_invar_inc170 = Module(new ComputeNode(NumOuts = 2, ID = 70, opCode = "add")(sign = false))
 
   //  %27 = icmp ugt i64 %invar.inc1, 7, !UID !82
-  val icmp_71 = Module(new IcmpNode(NumOuts = 1, ID = 71, opCode = "ugt")(sign = false))
+  val icmp_71 = Module(new ComputeNode(NumOuts = 1, ID = 71, opCode = "gt")(sign = false))
 
   //  br i1 %27, label %convolution.loop_exit.dim.0, label %convolution.loop_body.dim.2.lr.ph, !UID !83, !BB_UID !84
   val br_72 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 72))

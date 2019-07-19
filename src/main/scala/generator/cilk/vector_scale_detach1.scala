@@ -87,7 +87,7 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
   val ld_1 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 1, RouteID = 0))
 
   //  %2 = icmp slt i32 %1, 0, !UID !27
-  val icmp_2 = Module(new IcmpNode(NumOuts = 1, ID = 2, opCode = "ult")(sign = false))
+  val icmp_2 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "lt")(sign = false))
 
   //  br i1 %2, label %my_if.then, label %my_if.else, !UID !28, !BB_UID !29
   val br_3 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 3))
@@ -114,7 +114,7 @@ class vector_scale_detach1DF(implicit p: Parameters) extends vector_scale_detach
   val Gep_10 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 10)(ElementSize = 4, ArraySize = List()))
 
   //  %7 = icmp sgt i32 %4, 65535, !UID !39
-  val icmp_11 = Module(new IcmpNode(NumOuts = 1, ID = 11, opCode = "ugt")(sign = false))
+  val icmp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "gt")(sign = false))
 
   //  %8 = select i1 %7, i32 255, i32 %5, !UID !40
   val select_12 = Module(new SelectNode(NumOuts = 1, ID = 12)(fast = false))

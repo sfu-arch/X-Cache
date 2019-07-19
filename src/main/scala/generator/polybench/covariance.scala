@@ -157,7 +157,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_12 = Module(new ComputeNode(NumOuts = 2, ID = 12, opCode = "add")(sign = false))
 
   //  %14 = icmp eq i64 %13, 32, !dbg !89, !UID !90
-  val icmp_13 = Module(new IcmpNode(NumOuts = 1, ID = 13, opCode = "eq")(sign = false))
+  val icmp_13 = Module(new ComputeNode(NumOuts = 1, ID = 13, opCode = "eq")(sign = false))
 
   //  br i1 %14, label %15, label %8, !dbg !73, !llvm.loop !91, !UID !93, !BB_UID !94
   val br_14 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 14))
@@ -175,7 +175,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_18 = Module(new ComputeNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))
 
   //  %19 = icmp eq i64 %18, 28, !dbg !101, !UID !102
-  val icmp_19 = Module(new IcmpNode(NumOuts = 1, ID = 19, opCode = "eq")(sign = false))
+  val icmp_19 = Module(new ComputeNode(NumOuts = 1, ID = 19, opCode = "eq")(sign = false))
 
   //  br i1 %19, label %20, label %5, !dbg !57, !llvm.loop !103, !UID !105, !BB_UID !106
   val br_20 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 20))
@@ -217,7 +217,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_32 = Module(new ComputeNode(NumOuts = 2, ID = 32, opCode = "add")(sign = false))
 
   //  %30 = icmp eq i64 %29, 28, !dbg !129, !UID !130
-  val icmp_33 = Module(new IcmpNode(NumOuts = 1, ID = 33, opCode = "eq")(sign = false))
+  val icmp_33 = Module(new ComputeNode(NumOuts = 1, ID = 33, opCode = "eq")(sign = false))
 
   //  br i1 %30, label %31, label %23, !dbg !107, !llvm.loop !131, !UID !133, !BB_UID !134
   val br_34 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 34))
@@ -226,7 +226,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_35 = Module(new ComputeNode(NumOuts = 2, ID = 35, opCode = "add")(sign = false))
 
   //  %33 = icmp eq i64 %32, 32, !dbg !137, !UID !138
-  val icmp_36 = Module(new IcmpNode(NumOuts = 1, ID = 36, opCode = "eq")(sign = false))
+  val icmp_36 = Module(new ComputeNode(NumOuts = 1, ID = 36, opCode = "eq")(sign = false))
 
   //  br i1 %33, label %34, label %21, !dbg !139, !llvm.loop !140, !UID !142, !BB_UID !143
   val br_37 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 37))
@@ -295,7 +295,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_58 = Module(new ComputeNode(NumOuts = 2, ID = 58, opCode = "add")(sign = false))
 
   //  %48 = icmp eq i64 %47, 32, !dbg !185, !UID !186
-  val icmp_59 = Module(new IcmpNode(NumOuts = 1, ID = 59, opCode = "eq")(sign = false))
+  val icmp_59 = Module(new ComputeNode(NumOuts = 1, ID = 59, opCode = "eq")(sign = false))
 
   //  br i1 %48, label %49, label %40, !dbg !163, !llvm.loop !187, !UID !189, !BB_UID !190
   val br_60 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 60))
@@ -322,7 +322,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_67 = Module(new ComputeNode(NumOuts = 2, ID = 67, opCode = "add")(sign = false))
 
   //  %53 = icmp eq i64 %52, 28, !dbg !201, !UID !202
-  val icmp_68 = Module(new IcmpNode(NumOuts = 1, ID = 68, opCode = "eq")(sign = false))
+  val icmp_68 = Module(new ComputeNode(NumOuts = 1, ID = 68, opCode = "eq")(sign = false))
 
   //  br i1 %53, label %54, label %38, !dbg !150, !llvm.loop !203, !UID !205, !BB_UID !206
   val br_69 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 69))
@@ -331,7 +331,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val binaryOp_70 = Module(new ComputeNode(NumOuts = 2, ID = 70, opCode = "add")(sign = false))
 
   //  %56 = icmp eq i64 %55, 28, !dbg !209, !UID !210
-  val icmp_71 = Module(new IcmpNode(NumOuts = 1, ID = 71, opCode = "eq")(sign = false))
+  val icmp_71 = Module(new ComputeNode(NumOuts = 1, ID = 71, opCode = "eq")(sign = false))
 
   //  br i1 %56, label %57, label %36, !dbg !145, !llvm.loop !211, !UID !213, !BB_UID !214
   val br_72 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 72))

@@ -99,13 +99,13 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
   val ld_3 = Module(new UnTypLoad(NumPredOps=0, NumSuccOps=0, NumOuts=6, ID=3, RouteID=0))
 
   //  %cmp = icmp ne i32 %0, 9999
-  val icmp_cmp4 = Module(new IcmpNode(NumOuts = 1, ID = 4, opCode = "ne")(sign=false))
+  val icmp_cmp4 = Module(new ComputeNode(NumOuts = 1, ID = 4, opCode = "ne")(sign=false))
 
   //  br i1 %cmp, label %while.body, label %while.end
   val br_5 = Module(new CBranchNode(ID = 5))
 
   //  %cmp1 = icmp ne i32 %0, 999
-  val icmp_cmp16 = Module(new IcmpNode(NumOuts = 1, ID = 6, opCode = "ne")(sign=false))
+  val icmp_cmp16 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "ne")(sign=false))
 
   //  br i1 %cmp1, label %if.then, label %if.end
   val br_7 = Module(new CBranchNode(ID = 7))

@@ -89,7 +89,7 @@ class vector_scaleDF(implicit p: Parameters) extends vector_scaleDFIO()(p) {
    * ================================================================== */
 
   //  %cmp29 = icmp sgt i32 %N, 0, !UID !21
-  val icmp_cmp290 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
+  val icmp_cmp290 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "gt")(sign = false))
 
   //  br i1 %cmp29, label %pfor.detach.preheader, label %pfor.cond.cleanup, !UID !22, !BB_UID !23
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
@@ -113,7 +113,7 @@ class vector_scaleDF(implicit p: Parameters) extends vector_scaleDFIO()(p) {
   val binaryOp_inc7 = Module(new ComputeNode(NumOuts = 2, ID = 7, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc, %N, !UID !34
-  val icmp_exitcond8 = Module(new IcmpNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
+  val icmp_exitcond8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %pfor.cond.cleanup.loopexit, label %pfor.detach, !llvm.loop !35, !UID !37, !BB_UID !38
   val br_9 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 9))

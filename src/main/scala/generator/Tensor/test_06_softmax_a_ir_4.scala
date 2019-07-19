@@ -133,7 +133,7 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
   val binaryOp_invar_inc113 = Module(new ComputeNode(NumOuts = 2, ID = 13, opCode = "add")(sign = false))
 
   //  %7 = icmp ugt i64 %invar.inc1, 7, !UID !18
-  val icmp_14 = Module(new IcmpNode(NumOuts = 1, ID = 14, opCode = "ugt")(sign = false))
+  val icmp_14 = Module(new ComputeNode(NumOuts = 1, ID = 14, opCode = "gt")(sign = false))
 
   //  br i1 %7, label %fusion.1.loop_body.dim.1.lr.ph, label %reduce.inner.loop_body.reduction_dim.1, !UID !19, !BB_UID !20
   val br_15 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 15))
@@ -188,7 +188,7 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
   val binaryOp_invar_inc331 = Module(new ComputeNode(NumOuts = 2, ID = 31, opCode = "add")(sign = false))
 
   //  %15 = icmp ugt i64 %invar.inc3, 7, !UID !39
-  val icmp_32 = Module(new IcmpNode(NumOuts = 1, ID = 32, opCode = "ugt")(sign = false))
+  val icmp_32 = Module(new ComputeNode(NumOuts = 1, ID = 32, opCode = "gt")(sign = false))
 
   //  br i1 %15, label %reduce.1.inner.loop_body.reduction_dim.1.lr.ph, label %fusion.1.loop_body.dim.1, !UID !40, !BB_UID !41
   val br_33 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 33))
@@ -222,7 +222,7 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
   val binaryOp_invar_inc642 = Module(new ComputeNode(NumOuts = 2, ID = 42, opCode = "add")(sign = false))
 
   //  %20 = icmp ugt i64 %invar.inc6, 7, !UID !52
-  val icmp_43 = Module(new IcmpNode(NumOuts = 1, ID = 43, opCode = "ugt")(sign = false))
+  val icmp_43 = Module(new ComputeNode(NumOuts = 1, ID = 43, opCode = "gt")(sign = false))
 
   //  br i1 %20, label %fusion.loop_body.dim.0.lr.ph, label %reduce.1.inner.loop_body.reduction_dim.1, !UID !53, !BB_UID !54
   val br_44 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 44))
@@ -268,7 +268,7 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
   val binaryOp_invar_inc1257 = Module(new ComputeNode(NumOuts = 2, ID = 57, opCode = "add")(sign = false))
 
   //  %26 = icmp ugt i64 %invar.inc12, 7, !UID !69
-  val icmp_58 = Module(new IcmpNode(NumOuts = 1, ID = 58, opCode = "ugt")(sign = false))
+  val icmp_58 = Module(new ComputeNode(NumOuts = 1, ID = 58, opCode = "gt")(sign = false))
 
   //  br i1 %26, label %fusion.loop_exit.dim.0, label %fusion.loop_body.dim.0, !UID !70, !BB_UID !71
   val br_59 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 59))

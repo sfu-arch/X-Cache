@@ -100,7 +100,7 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val phispan_01132 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 2, Res = false))
 
   //  %cmp111 = icmp slt i32 %span.0113, 64, !dbg !94, !UID !99
-  val icmp_cmp1113 = Module(new IcmpNode(NumOuts = 1, ID = 3, opCode = "ult")(sign = false))
+  val icmp_cmp1113 = Module(new ComputeNode(NumOuts = 1, ID = 3, opCode = "lt")(sign = false))
 
   //  br i1 %cmp111, label %for.body2.preheader, label %for.inc53, !dbg !100, !UID !101, !BB_UID !102
   val br_4 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 4))
@@ -182,7 +182,7 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val binaryOp_and28 = Module(new ComputeNode(NumOuts = 2, ID = 28, opCode = "and")(sign = false))
 
   //  %tobool27 = icmp eq i32 %and, 0, !dbg !152, !UID !154
-  val icmp_tobool2729 = Module(new IcmpNode(NumOuts = 1, ID = 29, opCode = "eq")(sign = false))
+  val icmp_tobool2729 = Module(new ComputeNode(NumOuts = 1, ID = 29, opCode = "eq")(sign = false))
 
   //  br i1 %tobool27, label %for.inc, label %if.then, !dbg !155, !UID !156, !BB_UID !157
   val br_30 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 30))
@@ -245,7 +245,7 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val binaryOp_inc47 = Module(new ComputeNode(NumOuts = 1, ID = 47, opCode = "add")(sign = false))
 
   //  %cmp = icmp slt i32 %or, 63, !dbg !94, !UID !191
-  val icmp_cmp48 = Module(new IcmpNode(NumOuts = 1, ID = 48, opCode = "ult")(sign = false))
+  val icmp_cmp48 = Module(new ComputeNode(NumOuts = 1, ID = 48, opCode = "lt")(sign = false))
 
   //  br i1 %cmp, label %for.body2, label %for.inc53.loopexit, !dbg !100, !llvm.loop !192, !UID !194, !BB_UID !195
   val br_49 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 49))
@@ -260,7 +260,7 @@ class fftDF(implicit p: Parameters) extends fftDFIO()(p) {
   val binaryOp_inc5452 = Module(new ComputeNode(NumOuts = 2, ID = 52, opCode = "add")(sign = false))
 
   //  %exitcond = icmp eq i32 %inc54, 6, !dbg !87, !UID !200
-  val icmp_exitcond53 = Module(new IcmpNode(NumOuts = 1, ID = 53, opCode = "eq")(sign = false))
+  val icmp_exitcond53 = Module(new ComputeNode(NumOuts = 1, ID = 53, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.end55, label %inner, !dbg !87, !llvm.loop !201, !UID !203, !BB_UID !204
   val br_54 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 54))

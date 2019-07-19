@@ -691,7 +691,7 @@ class CompareBranchNode(ID: Int, opCode: String)
   val out_valid_R = RegInit(VecInit(Seq.fill(2)(false.B)))
 
 
-  val FU = Module(new UCMP(xlen, opCode))
+  val FU = Module(new UALU(xlen, opCode))
   FU.io.in1 := left_R.data
   FU.io.in2 := right_R.data
 

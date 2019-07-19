@@ -103,7 +103,7 @@ class stencil_detach1DF(implicit p: Parameters) extends stencil_detach1DFIO()(p)
   val binaryOp_5 = Module(new ComputeNode(NumOuts = 2, ID = 5, opCode = "add")(sign = false))
 
   //  %4 = icmp eq i32 %3, 3, !UID !28
-  val icmp_6 = Module(new IcmpNode(NumOuts = 1, ID = 6, opCode = "eq")(sign = false))
+  val icmp_6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "eq")(sign = false))
 
   //  br i1 %4, label %my_for.cond.cleanup, label %my_for.body, !UID !29, !BB_UID !30
   val br_7 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 1, ID = 7))

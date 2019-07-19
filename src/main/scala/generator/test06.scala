@@ -80,7 +80,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
    * ================================================================== */
 
   //  %3 = icmp sgt i32 %0, 0, !UID !3
-  val icmp_0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
+  val icmp_0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "gt")(sign = false))
 
   //  br i1 %3, label %.preheader, label %4, !UID !4, !BB_UID !5
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
@@ -113,7 +113,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
   val phi10 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 10, Res = true))
 
   //  %12 = icmp slt i32 %10, %11, !UID !14
-  val icmp_11 = Module(new IcmpNode(NumOuts = 2, ID = 11, opCode = "ult")(sign = false))
+  val icmp_11 = Module(new ComputeNode(NumOuts = 2, ID = 11, opCode = "lt")(sign = false))
 
   //  %13 = select i1 %12, i32 %10, i32 0, !UID !15
   val select_12 = Module(new SelectNode(NumOuts = 1, ID = 12)(fast = true))
@@ -131,7 +131,7 @@ class test06DF(implicit p: Parameters) extends test06DFIO()(p) {
   val binaryOp_16 = Module(new ComputeNode(NumOuts = 2, ID = 16, opCode = "add")(sign = false))
 
   //  %18 = icmp slt i32 %17, %14, !UID !20
-  val icmp_17 = Module(new IcmpNode(NumOuts = 1, ID = 17, opCode = "ult")(sign = false))
+  val icmp_17 = Module(new ComputeNode(NumOuts = 1, ID = 17, opCode = "lt")(sign = false))
 
   //  br i1 %18, label %8, label %.loopexit, !UID !21, !BB_UID !22
   val br_18 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 18))

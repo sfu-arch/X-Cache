@@ -80,7 +80,7 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
    * ================================================================== */
 
   //  %4 = icmp sgt i32 %2, 0, !UID !3
-  val icmp_0 = Module(new IcmpNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false))
+  val icmp_0 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "gt")(sign = false))
 
   //  br i1 %4, label %.preheader, label %12, !UID !4, !BB_UID !5
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
@@ -104,7 +104,7 @@ class test04DF(implicit p: Parameters) extends test04DFIO()(p) {
   val binaryOp_7 = Module(new ComputeNode(NumOuts = 2, ID = 7, opCode = "add")(sign = false))
 
   //  %11 = icmp eq i32 %10, %2, !UID !11
-  val icmp_8 = Module(new IcmpNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
+  val icmp_8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "eq")(sign = false))
 
   //  br i1 %11, label %.loopexit, label %5, !UID !12, !BB_UID !13
   val br_9 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 9))

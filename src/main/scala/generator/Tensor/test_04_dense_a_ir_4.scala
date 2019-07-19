@@ -149,7 +149,7 @@ class test_04_dense_a_ir_4DF(implicit p: Parameters) extends test_04_dense_a_ir_
   val binaryOp_invar_inc122 = Module(new ComputeNode(NumOuts = 2, ID = 22, opCode = "add")(sign = false))
 
   //  %8 = icmp ugt i64 %invar.inc1, 7, !UID !28
-  val icmp_23 = Module(new IcmpNode(NumOuts = 1, ID = 23, opCode = "ugt")(sign = false))
+  val icmp_23 = Module(new ComputeNode(NumOuts = 1, ID = 23, opCode = "gt")(sign = false))
 
   //  br i1 %8, label %fusion.loop_body.dim.0.lr.ph, label %dot.loop_exit.reduction, !UID !29, !BB_UID !30
   val br_24 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 24))
@@ -195,7 +195,7 @@ class test_04_dense_a_ir_4DF(implicit p: Parameters) extends test_04_dense_a_ir_
   val binaryOp_invar_inc337 = Module(new ComputeNode(NumOuts = 2, ID = 37, opCode = "add")(sign = false))
 
   //  %15 = icmp ugt i64 %invar.inc3, 7, !UID !45
-  val icmp_38 = Module(new IcmpNode(NumOuts = 1, ID = 38, opCode = "ugt")(sign = false))
+  val icmp_38 = Module(new ComputeNode(NumOuts = 1, ID = 38, opCode = "gt")(sign = false))
 
   //  br i1 %15, label %fusion.loop_exit.dim.0, label %fusion.loop_body.dim.0, !UID !46, !BB_UID !47
   val br_39 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 39))
