@@ -25,19 +25,20 @@ object AluOpCode {
   val ShiftRight           = 8
   val ShiftRightLogical    = 9
   val ShiftRightArithmetic = 10
-  val LT                   = 11
-  val GT                   = 12
-  val EQ                   = 13
-  val LTE                  = 14
-  val GTE                  = 15
-  val PassA                = 16
-  val PassB                = 17
-  val Mul                  = 18
-  val Div                  = 19
-  val Mod                  = 20
-  val Max                  = 21
-  val Min                  = 22
-  val Mac                  = 23
+  val EQ                   = 11
+  val NE                   = 12
+  val LT                   = 13
+  val GT                   = 14
+  val LTE                  = 15
+  val GTE                  = 16
+  val PassA                = 17
+  val PassB                = 18
+  val Mul                  = 19
+  val Div                  = 20
+  val Mod                  = 21
+  val Max                  = 22
+  val Min                  = 23
+  val Mac                  = 24
 
   val opMap = Map(
     "Add" -> Add,
@@ -59,11 +60,16 @@ object AluOpCode {
     "ashr" -> ShiftRightArithmetic,
     "ShiftRightArithmetic" -> ShiftRightArithmetic,
     "lshr" -> ShiftRightLogical,
+
+    // Comparision opCodes
+    "EQ" -> EQ,
+    "NE" -> NE,
     "LT" -> LT,
     "GT" -> GT,
-    "EQ" -> EQ,
     "LTE" -> LTE,
     "GTE" -> GTE,
+
+    //DSP opCodes
     "PassA" -> PassA,
     "PassB" -> PassB,
     "Mul" -> Mul,
@@ -89,6 +95,7 @@ object AluOpCode {
     "LT" -> LT,
     "GT" -> GT,
     "EQ" -> EQ,
+    "NE" -> NE,
     "LTE" -> LTE,
     "GTE" -> GTE,
     "PassA" -> PassA,
@@ -104,7 +111,7 @@ object AluOpCode {
   )
 
 
-  val length = 23
+  val length = 24
 }
 
 
@@ -162,10 +169,10 @@ class UALU(val xlen: Int, val opCode: String, val issign: Boolean = false) exten
       AluOpCode.Or -> (io.in1 | io.in2),
       AluOpCode.Xor -> (io.in1 ^ io.in2),
       AluOpCode.Xnor -> (~(io.in1 ^ io.in2)),
-      AluOpCode.ShiftLeft -> (io.in1 << io.in2(in2S.getWidth - 1, 0)),
-      AluOpCode.ShiftRight -> (io.in1 >> io.in2(in2S.getWidth - 1, 0)),
-      AluOpCode.ShiftRightLogical -> (io.in1.asUInt >> io.in2(in2S.getWidth - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
-      AluOpCode.ShiftRightArithmetic -> (io.in1.asSInt >> io.in2(in2S.getWidth - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+      AluOpCode.ShiftLeft -> (io.in1 << io.in2(math.max(in2S.getWidth, 19) - 1, 0)),
+      AluOpCode.ShiftRight -> (io.in1 >> io.in2(math.max(in2S.getWidth, 19) - 1, 0)),
+      AluOpCode.ShiftRightLogical -> (io.in1.asUInt >> io.in2(math.max(in2S.getWidth, 19) - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+      AluOpCode.ShiftRightArithmetic -> (io.in1.asSInt >> io.in2(math.max(in2S.getWidth, 19) - 1, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
       AluOpCode.LT -> (io.in1.asUInt < io.in2.asUInt),
       AluOpCode.GT -> (io.in1.asUInt < io.in2.asUInt),
       AluOpCode.EQ -> (io.in1.asUInt === io.in2.asUInt),
@@ -187,10 +194,10 @@ class UALU(val xlen: Int, val opCode: String, val issign: Boolean = false) exten
       AluOpCode.Or -> (in1S | in2S),
       AluOpCode.Xor -> (in1S ^ in2S),
       AluOpCode.Xnor -> (~(in1S ^ in2S)),
-      AluOpCode.ShiftLeft -> (in1S << in2S(8, 0)),
-      AluOpCode.ShiftRight -> (in1S >> in2S(8, 0)),
-      AluOpCode.ShiftRightLogical -> (in1S.asUInt >> in2S(8, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
-      AluOpCode.ShiftRightArithmetic -> (in1S.asSInt >> in2S(8, 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+      AluOpCode.ShiftLeft -> (in1S << in2S(math.max(in2S.getWidth, 19), 0)),
+      AluOpCode.ShiftRight -> (in1S >> in2S(math.max(in2S.getWidth, 19), 0)),
+      AluOpCode.ShiftRightLogical -> (in1S.asUInt >> in2S(math.max(in2S.getWidth, 19),0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
+      AluOpCode.ShiftRightArithmetic -> (in1S.asSInt >> in2S(math.max(in2S.getWidth, 19), 0)).asUInt, // Chisel only performs arithmetic right-shift on SInt
       AluOpCode.LT -> (io.in1.asSInt < io.in2.asSInt),
       AluOpCode.GT -> (io.in1.asSInt < io.in2.asSInt),
       AluOpCode.EQ -> (io.in1.asSInt === io.in2.asSInt),
@@ -251,6 +258,7 @@ class DSPALU[T <: Data : RealBits](gen: T, val opCode: String) extends Module {
       AluOpCode.LT -> (io.in1 < io.in2),
       AluOpCode.GT -> (io.in1 < io.in2),
       AluOpCode.EQ -> (io.in1 === io.in2),
+      AluOpCode.NE -> (io.in1 =/= io.in2),
       AluOpCode.LTE -> (io.in1 <= io.in2),
       AluOpCode.GTE -> (io.in1 >= io.in2),
       AluOpCode.PassA -> io.in1,

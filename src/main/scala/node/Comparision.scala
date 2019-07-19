@@ -21,25 +21,15 @@ object CmpOpCode {
 
   val CompMap = Map(
   "EQ" -> EQ,
-  "eq" -> EQ,
   "NE" -> NE,
-  "ne" -> NE,
   "UGT" -> UGT,
-  "ugt" -> UGT,
   "UGE" -> UGE,
-  "uge" -> UGE,
   "ULT" -> ULT,
-  "ult" -> ULT,
   "ULE" -> ULE,
-  "ule" -> ULE,
   "SGT" -> SGT,
-  "sgt" -> SGT,
   "SGE" -> SGE,
-  "sge" -> SGE,
   "SLT" -> SLT,
-  "slt" -> SLT,
   "SLE" -> SLE,
-  "sle" -> SLE
   )
 }
 
@@ -75,8 +65,6 @@ class UCMP(val xlen: Int, val opCode: String) extends Module {
     val out = Output(UInt(xlen.W))
   })
 
-  //printf(p"OPCODE: ${opCode}\n")
-
   val cmpOp = Array(
       CmpOpCode.EQ  -> (io.in1 === io.in2),
       CmpOpCode.NE  -> (io.in1 =/= io.in2),
@@ -86,7 +74,7 @@ class UCMP(val xlen: Int, val opCode: String) extends Module {
       CmpOpCode.ULE -> (io.in1  <= io.in2)
     )
 
-  assert(!CmpOpCode.CompMap.get(opCode).isEmpty, "Wrong CMP OP!")
+  assert(!CmpOpCode.CompMap.get(opCode.toUpperCase).isEmpty, "Wrong CMP OP!")
   io.out := CMPGenerator(CmpOpCode.CompMap(opCode), cmpOp)
 
 }
