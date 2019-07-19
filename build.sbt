@@ -18,8 +18,8 @@ def scalacOptionsVersion(scalaVersion: String): Seq[String] = {
 }
 
 autoAPIMappings := true
-scalaVersion := "2.12.7"
-crossScalaVersions := Seq("2.12.7", "2.11.12")
+scalaVersion := "2.12.8"
+crossScalaVersions := Seq("2.12.8", "2.11.12")
 scalacOptions :=
   Seq("-deprecation", "-feature", "-unchecked", "-language:reflectiveCalls") ++ scalacOptionsVersion(scalaVersion.value)
 
@@ -39,12 +39,13 @@ resolvers ++= Seq(
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 val defaultVersions = Map(
   "chisel3" -> "3.2-SNAPSHOT",
-  "chisel-iotesters" -> "1.3-SNAPSHOT"
+  "chisel-iotesters" -> "1.3-SNAPSHOT",
+  "dsptools" -> "1.2-SNAPSHOT"
 )
 
-libraryDependencies ++= (Seq("chisel3", "chisel-iotesters").map {
+libraryDependencies ++= Seq("chisel3", "chisel-iotesters","dsptools").map {
   dep: String => "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep))
-})
+}
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1",
