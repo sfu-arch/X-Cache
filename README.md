@@ -30,38 +30,43 @@ sudo apt-get update
 sudo apt-get install sbt
 ```
 
-Install Verilator. We currently recommend Verilator version 3.922. Follow these instructions to compile it from source.
+## Install Verilator.
 
-Install prerequisites (if not installed already):
+We currently recommend Verilator version 4.016.
 
-```
-sudo apt-get install git make autoconf g++ flex bison
-```
+Follow these instructions to compile it from source.
 
-Clone the Verilator repository:
+1. Install prerequisites (if not installed already):
 
-```
-git clone http://git.veripool.org/git/verilator
-```
-In the Verilator repository directory, check out a known good version:
+    ```bash
+    sudo apt-get install git make autoconf g++ flex bison
+    ```
 
-```
-git pull
-git checkout verilator_3_922
-```
+2. Clone the Verilator repository:
 
-In the Verilator repository directory, build and install:
+    ```bash
+    git clone http://git.veripool.org/git/verilator
+    ```
 
-unset VERILATOR_ROOT # For bash, unsetenv for csh
-```
-autoconf # Create ./configure script
-./configure
-make
-sudo make install
-```
+3. In the Verilator repository directory, check out a known good version:
 
+    ```bash
+    git pull
+    git checkout verilator_4_016
+    ```
+
+4. In the Verilator repository directory, build and install:
+
+    ```bash
+    unset VERILATOR_ROOT # For bash, unsetenv for csh
+    autoconf # Create ./configure script
+    ./configure
+    make
+    sudo make install
+    ```
 
 ## Dandelion's dependencies
+
 Dandelion depends on _Berkeley Hardware Floating-Point Units_ for floating nodes. Therefore, before building dandelion you need to clone hardfloat project, build it and then publish it locally on your system. Hardfloat repository has all the necessary information about how to build the project, here we only breifly mention how to build it and then publish it.
 
 ```
@@ -78,7 +83,7 @@ Here we explain how to build dandelion-lib project, so you can use it in another
 ```shell
 git clone git@csil-git1.cs.surrey.sfu.ca:Dandelion/dandelion-lib.git
 cd dandelion-lib
-sbt "+publishLocal"
+sbt "publishLocal"
 ```
 
 The following commands will build dandelion-lib, and then push the compiled version of dandelion-lib to `.ivy2/local` directory. Since, we are still developing dandelion our dandelion versioning finishes with SNAPSHOT keyword.
