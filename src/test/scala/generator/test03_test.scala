@@ -115,9 +115,7 @@ class test03Test01[T <: test03MainIO](c: T) extends PeekPokeTester(c) {
   while (time < 1500) {
     time += 1
     step(1)
-    if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1
-    ) {
+    if (peek(c.io.out.valid) == 1 ) {
       result = true
       val data = peek(c.io.out.bits.data("field0").data)
       val expected = 225
@@ -142,14 +140,14 @@ class test03Tester extends FlatSpec with Matchers {
   it should "Check that test04 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
-    // -tbn = backend <firrtl|verilator|vcs>
+    // -tbn = backend <firrtl|treadle|verilator|vcs>
     // -td  = target directory
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
       Array(
         // "-ll", "Info",
         "-tn", "test03",
-        "-tbn", "verilator",
+        "-tbn", "treadle",
         "-td", "test_run_dir/test03",
         "-tts", "0001"),
       () => new test03Main()) {

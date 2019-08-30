@@ -88,7 +88,8 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val binaryOp_5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "mul")(sign = false))
 
   //  ret i32 %8, !UID !9, !BB_UID !10
-  val ret_6 = Module(new RetNode2(retTypes = List(32), ID = 6))
+//  val ret_6 = Module(new RetNode2(retTypes = List(32), ID = 6))
+  val ret_6 = Module(new RetNodeMultiIO(retTypes = List(32), ID = 6))
 
 
 
@@ -192,7 +193,8 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   binaryOp_5.io.enable <> bb_0.io.Out(7)
 
-  ret_6.io.In.enable <> bb_0.io.Out(8)
+//  ret_6.io.In.enable <> bb_0.io.Out(8)
+  ret_6.In.enable <> bb_0.io.Out(8)
 
 
 
@@ -241,7 +243,8 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
 
   binaryOp_5.io.RightIO <> binaryOp_4.io.Out(0)
 
-  ret_6.io.In.data("field0") <> binaryOp_5.io.Out(0)
+  //ret_6.io.In.data("field0") <> binaryOp_5.io.Out(0)
+  ret_6.In.data.get(0) <> binaryOp_5.io.Out(0)
 
   icmp_0.io.RightIO <> InputSplitter.io.Out.data.elements("field0")(0)
 
@@ -261,7 +264,10 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out <> ret_6.io.Out
+  io.out.bits.enable := ret_6.Out.bits.enable
+  io.out.bits.data := ret_6.Out.bits.ret.get
+  io.out.valid := ret_6.Out.valid
+  ret_6.Out.ready := io.out.ready
 
 }
 
