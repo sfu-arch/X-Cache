@@ -264,10 +264,8 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
-  io.out.bits.enable := ret_6.Out.bits.enable
   io.out.bits.data := ret_6.Out.bits.ret.get
-  io.out.valid := ret_6.Out.valid
-  ret_6.Out.ready := io.out.ready
+  io.out <> ret_6.Out
 
 }
 
