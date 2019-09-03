@@ -210,7 +210,7 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
      */
 
 
-  bb_entry.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_entry.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
   /**
     * Connecting basic blocks to predicate instructions

@@ -217,27 +217,27 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_0.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
   bb_1.io.activate <> Loop_1.io.activate
 
   bb_1.io.loopBack <> br_21.io.Out(0)
 
-  bb_2.io.predicateIn <> br_3.io.Out(0)
+  bb_2.io.predicateIn(0) <> br_3.io.Out(0)
 
   bb_3.io.activate <> Loop_0.io.activate
 
   bb_3.io.loopBack <> br_18.io.Out(0)
 
-  bb_4.io.predicateIn <> br_7.io.Out(0)
+  bb_4.io.predicateIn(0) <> br_7.io.Out(0)
 
-  bb_5.io.predicateIn <> br_16.io.Out(0)
+  bb_5.io.predicateIn(0) <> br_16.io.Out(0)
 
-  bb_6.io.predicateIn <> Loop_0.io.endEnable
+  bb_6.io.predicateIn(0) <> Loop_0.io.endEnable
 
-  bb_7.io.predicateIn <> br_19.io.Out(0)
+  bb_7.io.predicateIn(0) <> br_19.io.Out(0)
 
-  bb_8.io.predicateIn <> Loop_1.io.endEnable
+  bb_8.io.predicateIn(0) <> Loop_1.io.endEnable
 
 
   /* ================================================================== *
@@ -354,7 +354,7 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
 
   Gep_11.io.enable <> bb_4.io.Out(6)
 
-  mat_bb.io.predicateIn <> bb_4.io.Out(7)
+  mat_bb.io.predicateIn(0) <> bb_4.io.Out(7)
 
   Gep_13.io.enable <> bb_4.io.Out(8)
 
