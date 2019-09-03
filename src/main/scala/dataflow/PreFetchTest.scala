@@ -83,7 +83,7 @@ class prefetchDF(implicit p: Parameters) extends prefetchDFIO()(p) {
   //  ret i32 %value.0
   val ret_7 = Module(new RetNode2(retTypes=List(32), ID = 7))
 
-  bb_entry0.io.predicateIn <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
   io.PreReq <> pf_ld_2.io.memReq
   pf_ld_2.io.Out(0).ready := true.B

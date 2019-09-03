@@ -53,7 +53,7 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
   val StoreType = Module(new TypStore(NumPredOps = 2, NumSuccOps = 0, NumOuts = 1, ID = 0, RouteID = 0))
   val typadd = Module(new TypCompute(NumOuts = 1, ID = 0, "Add")(true)(new matNxN(N = 2)))
 
-  mat_bb.io.predicateIn <> InputSplitter.io.Out.enable
+  mat_bb.io.predicateIn(0) <> InputSplitter.io.Out.enable
 
   LoadA.io.enable <> mat_bb.io.Out(0)
   LoadB.io.enable <> mat_bb.io.Out(1)

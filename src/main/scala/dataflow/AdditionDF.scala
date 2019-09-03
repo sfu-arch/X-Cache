@@ -115,7 +115,7 @@ class AddDF(implicit p: Parameters) extends AddDFIO() {
     * Connecting basic blocks to predicate instructions
     */
   //Connecting m1 to b1_then
-  b1_then.io.predicateIn <> m1.io.Out(param.m1_brn_bb("b1_then"))
+  b1_then.io.predicateIn(0) <> m1.io.Out(param.m1_brn_bb("b1_then"))
 
   //Connecting m1 to b2_end
   b2_end.io.predicateIn(param.b2_end_pred("m1")) <> m1.io.Out(param.m1_brn_bb("b2_end"))
@@ -151,7 +151,6 @@ class AddDF(implicit p: Parameters) extends AddDFIO() {
 
 
   m4.io.Mask <> b2_end.io.MaskBB(0)
-  //  m4.io.Mask <> b1_then.io.MaskBB(0)
 
 
   /**
