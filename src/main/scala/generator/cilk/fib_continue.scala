@@ -145,7 +145,7 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 0))
+  val bb_entry = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 6, BID = 0))
 
 
 

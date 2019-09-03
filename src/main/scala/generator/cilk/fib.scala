@@ -346,23 +346,23 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 0))
+  val bb_entry = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 0))
 
-  val bb_if_then = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 1))
+  val bb_if_then = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 1))
 
-  val bb_if_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
+  val bb_if_end = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 2))
 
-  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
+  val bb_det_achd = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_det_cont = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 3, BID = 4))
+  val bb_det_cont = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 3, BID = 4))
 
-  val bb_det_achd2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 5))
+  val bb_det_achd2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
-  val bb_det_cont3 = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 1, BID = 6))
+  val bb_det_cont3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 1, BID = 6))
 
-  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 7))
+  val bb_sync_continue = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 7))
 
-  val bb_return = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 8))
+  val bb_return = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 8))
 
 
   /* ================================================================== *

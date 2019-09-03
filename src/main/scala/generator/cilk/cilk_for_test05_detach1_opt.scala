@@ -71,7 +71,7 @@ class cilk_for_test05_detach1_optDF(implicit p: Parameters) extends cilk_for_tes
 
   val bb_my_pfor_preattach3 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 1, BID = 3))
 
-  val bb_my_if_else4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 8, BID = 4))
+  val bb_my_if_else4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 8, BID = 4))
 
 
   /* ================================================================== *

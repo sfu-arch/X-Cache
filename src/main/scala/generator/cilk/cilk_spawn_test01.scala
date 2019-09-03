@@ -209,13 +209,13 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 0))
+  val bb_entry = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 0))
 
-  val bb_det_achd = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 1))
+  val bb_det_achd = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 1))
 
-  val bb_det_cont = Module(new BasicBlockNoMaskNode(NumInputs = 2, NumOuts = 2, BID = 2))
+  val bb_det_cont = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 2, BID = 2))
 
-  val bb_sync_continue = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 3))
+  val bb_sync_continue = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 3))
 
 
 

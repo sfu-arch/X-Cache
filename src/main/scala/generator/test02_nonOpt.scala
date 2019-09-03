@@ -66,9 +66,9 @@ class test02_nonOptDF(implicit p: Parameters) extends test02_nonOptDFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 13, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 13, BID = 0))
 
-  val bb_if_then1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 1))
+  val bb_if_then1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 1))
 
   val bb_if_end2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi=0, BID = 2))
 

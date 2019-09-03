@@ -77,9 +77,9 @@ class cilk_for_test05_optDF(implicit p: Parameters) extends cilk_for_test05_optD
 
   val bb_pfor_end4 = Module(new BasicBlockNoMaskFastNode3(NumOuts = 1, BID = 4))
 
-  val bb_pfor_end_continue5 = Module(new BasicBlockNoMaskNode(NumOuts = 2, BID = 5))
+  val bb_pfor_end_continue5 = Module(new BasicBlockNoMaskFastNode(NumOuts = 2, BID = 5))
 
-  val bb_offload_pfor_body6 = Module(new BasicBlockNoMaskNode(NumOuts = 1, BID = 6))
+  val bb_offload_pfor_body6 = Module(new BasicBlockNoMaskFastNode(NumOuts = 1, BID = 6))
 
 
   /* ================================================================== *

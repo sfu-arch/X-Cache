@@ -72,27 +72,27 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
-  val bb_det_achd1 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 1))
+  val bb_det_achd1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 1))
 
-  val bb_det_cont2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_det_cont2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
   val bb_while_cond3 = Module(new LoopHead(NumOuts = 9, NumPhi=2, BID = 3))
 
-  val bb_while_body4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 5, BID = 4))
+  val bb_while_body4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 5, BID = 4))
 
-  val bb_if_then5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
+  val bb_if_then5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
-  val bb_det_achd36 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
+  val bb_det_achd36 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_det_cont47 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 7, BID = 7))
+  val bb_det_cont47 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 7, BID = 7))
 
   val bb_if_end8 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi=2, BID = 8))
 
-  val bb_while_end9 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 9))
+  val bb_while_end9 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 9))
 
-  val bb_sync_continue10 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 10))
+  val bb_sync_continue10 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 10))
 
 
 

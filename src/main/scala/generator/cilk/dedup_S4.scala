@@ -68,17 +68,17 @@ class dedup_S4DF(implicit p: Parameters) extends dedup_S4DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
   val bb_while_cond1 = Module(new LoopHead(NumOuts = 7, NumPhi=1, BID = 1))
 
-  val bb_while_body2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 2))
+  val bb_while_body2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 2))
 
-  val bb_if_then3 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 20, BID = 3))
+  val bb_if_then3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 20, BID = 3))
 
   val bb_if_end4 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 2, NumPhi=1, BID = 4))
 
-  val bb_while_end5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 5))
+  val bb_while_end5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 5))
 
 
 

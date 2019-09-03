@@ -176,76 +176,76 @@ class BasicBlockNoMaskDepIO(NumOuts: Int)
   * @param BID       BasicBlock ID
   */
 
-@deprecated("Start using BasicBlockNoMaskNodeFast", "dataflow-lib 1.0")
-class BasicBlockNoMaskNode(NumInputs: Int = 1,
-                           NumOuts: Int,
-                           BID: Int)
-                          (implicit p: Parameters,
-                           name: sourcecode.Name,
-                           file: sourcecode.File)
-  extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
-
-  override lazy val io = IO(new BasicBlockNoMaskDepIO(NumOuts))
-  // Printf debugging
-  val node_name = name.value
-  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
-  val (cycleCount, _) = Counter(true.B, 32 * 1024)
-  override val printfSigil = node_name + BID + " "
-
-  /*===========================================*
-   *            Registers                      *
-   *===========================================*/
-  val predicate_in_R = RegInit(ControlBundle.default)
-  val predicate_valid_R = RegInit(false.B)
-
-  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
-  val state = RegInit(s_IDLE)
-
-  /*===============================================*
-   *            Latch inputs. Wire up output       *
-   *===============================================*/
-
-  io.predicateIn.ready := ~predicate_valid_R
-  when(io.predicateIn.fire()) {
-    predicate_in_R <> io.predicateIn.bits
-    predicate_valid_R := true.B
-  }
-
-  // Wire up Outputs
-  for (i <- 0 until NumOuts) {
-    io.Out(i).bits <> predicate_in_R
-  }
-
-
-  /*============================================*
-   *            ACTIONS (possibly dangerous)    *
-   *============================================*/
-
-  switch(state) {
-    is(s_IDLE) {
-      when(io.predicateIn.fire()) {
-        ValidOut()
-        state := s_COMPUTE
-      }
-    }
-    is(s_COMPUTE) {
-      when(IsOutReady()) {
-        predicate_in_R <> ControlBundle.default
-        predicate_valid_R := false.B
-        state := s_IDLE
-
-        Reset()
-
-        if (log) {
-          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output [T] fired @ %d\n",
-            predicate_in_R.taskID, cycleCount)
-        }
-      }
-    }
-
-  }
-
-}
+//@deprecated("Start using BasicBlockNoMaskFastNodeFast", "dataflow-lib 1.0")
+//class BasicBlockNoMaskFastNode(NumInputs: Int = 1,
+//                           NumOuts: Int,
+//                           BID: Int)
+//                          (implicit p: Parameters,
+//                           name: sourcecode.Name,
+//                           file: sourcecode.File)
+//  extends HandShakingCtrlNoMask(NumInputs, NumOuts, BID)(p) {
+//
+//  override lazy val io = IO(new BasicBlockNoMaskDepIO(NumOuts))
+//  // Printf debugging
+//  val node_name = name.value
+//  val module_name = file.value.split("/").tail.last.split("\\.").head.capitalize
+//  val (cycleCount, _) = Counter(true.B, 32 * 1024)
+//  override val printfSigil = node_name + BID + " "
+//
+//  /*===========================================*
+//   *            Registers                      *
+//   *===========================================*/
+//  val predicate_in_R = RegInit(ControlBundle.default)
+//  val predicate_valid_R = RegInit(false.B)
+//
+//  val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
+//  val state = RegInit(s_IDLE)
+//
+//  /*===============================================*
+//   *            Latch inputs. Wire up output       *
+//   *===============================================*/
+//
+//  io.predicateIn.ready := ~predicate_valid_R
+//  when(io.predicateIn.fire()) {
+//    predicate_in_R <> io.predicateIn.bits
+//    predicate_valid_R := true.B
+//  }
+//
+//  // Wire up Outputs
+//  for (i <- 0 until NumOuts) {
+//    io.Out(i).bits <> predicate_in_R
+//  }
+//
+//
+//  /*============================================*
+//   *            ACTIONS (possibly dangerous)    *
+//   *============================================*/
+//
+//  switch(state) {
+//    is(s_IDLE) {
+//      when(io.predicateIn.fire()) {
+//        ValidOut()
+//        state := s_COMPUTE
+//      }
+//    }
+//    is(s_COMPUTE) {
+//      when(IsOutReady()) {
+//        predicate_in_R <> ControlBundle.default
+//        predicate_valid_R := false.B
+//        state := s_IDLE
+//
+//        Reset()
+//
+//        if (log) {
+//          printf("[LOG] " + "[" + module_name + "] [TID->%d] " + node_name + ": Output [T] fired @ %d\n",
+//            predicate_in_R.taskID, cycleCount)
+//        }
+//      }
+//    }
+//
+//  }
+//
+//}
 
 /**
   * BasicBlockNoMaskFastNode

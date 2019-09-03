@@ -46,7 +46,7 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
 
   //    val matadd = Module(new mataddDF()(p))
 
-  val mat_bb = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 4, BID = 0))
+  val mat_bb = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 0))
 
   val LoadA = Module(new TypLoad(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 0, RouteID = 0))
   val LoadB = Module(new TypLoad(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 0, RouteID = 1))
@@ -86,23 +86,23 @@ class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_0 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val bb_0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
   val bb_1 = Module(new LoopHead(NumOuts = 5, NumPhi = 1, BID = 1))
 
-  val bb_2 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 2))
+  val bb_2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 2))
 
   val bb_3 = Module(new LoopHead(NumOuts = 5, NumPhi = 1, BID = 3))
 
-  val bb_4 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 11, BID = 4))
+  val bb_4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 11, BID = 4))
 
-  val bb_5 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 5))
+  val bb_5 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 5))
 
-  val bb_6 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 6))
+  val bb_6 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
-  val bb_7 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 3, BID = 7))
+  val bb_7 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 7))
 
-  val bb_8 = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 8))
+  val bb_8 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 8))
 
 
   /* ================================================================== *

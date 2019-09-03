@@ -607,15 +607,15 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
   //Initializing BasicBlocks: 
 
-  val bb_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 15, BID = 0))
+  val bb_entry = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 15, BID = 0))
 
   val bb_for_cond = Module(new LoopHead(NumOuts = 5, NumPhi = 3, BID = 1))
 
-  val bb_for_body = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 2))
+  val bb_for_body = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 2))
 
-  val bb_land_lhs_true = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 3))
+  val bb_land_lhs_true = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_lor_lhs_false = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 6, BID = 4))
+  val bb_lor_lhs_false = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 6, BID = 4))
 
   val bb_if_then = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 0, BID = 5))
 
@@ -623,9 +623,9 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 
   val bb_if_end = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 2, BID = 7))
 
-  val bb_for_inc = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 2, BID = 8))
+  val bb_for_inc = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 8))
 
-  val bb_for_end = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 9))
+  val bb_for_end = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 9))
 
 
 

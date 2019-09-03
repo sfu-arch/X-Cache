@@ -7,7 +7,7 @@ import chisel3.testers._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.config._
-import dandelion.control.{BasicBlockNoMaskNode, BasicBlockNode}
+import dandelion.control.{BasicBlockNoMaskFastNode, BasicBlockNode}
 import util._
 import dandelion.interfaces._
 import dandelion.node._
@@ -32,7 +32,7 @@ class StackDF(implicit p: Parameters) extends StackDFIO() {
     * @note Module's variables they should set during initialization
     */
   //BasicBlock
-  val b0_entry = Module(new BasicBlockNoMaskNode(NumInputs = 1, NumOuts = 1, BID = 0))
+  val b0_entry = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 0))
 
   //Compute
   val m0 = Module(new AllocaNode(NumOuts = 1,ID = 0,RouteID=0))
@@ -47,9 +47,9 @@ class StackDF(implicit p: Parameters) extends StackDFIO() {
     */
 
   //Grounding entry BasicBlock
-  b0_entry.io.predicateIn.bits.control := true.B
-  b0_entry.io.predicateIn.bits.taskID := 0.U
-  b0_entry.io.predicateIn.valid := true.B
+  b0_entry.io.predicateIn(0).bits.control := true.B
+  b0_entry.io.predicateIn(0).bits.taskID := 0.U
+  b0_entry.io.predicateIn(0).valid := true.B
 
   /**
     * Wireing enable signals to the instructions
