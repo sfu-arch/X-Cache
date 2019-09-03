@@ -171,16 +171,11 @@ class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
   val predicateIn = Flipped(Decoupled(new ControlBundle()))
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
 
-  //  3.1 spec
   override def cloneType = new BasicBlockNoMaskFastIO(NumOuts).asInstanceOf[this.type]
 }
 
 
 
-/** =============================
-  * Clean nodes
-  * =============================
-  */
 class BasicBlockNoMaskFastVecIO(val NumInputs: Int, val NumOuts: Int)(implicit p: Parameters)
   extends CoreBundle()(p) {
   // Output IO
@@ -282,8 +277,8 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
 
   switch(state) {
     is(s_idle) {
-      //when(select_valid) {
-      when(in_data_valid_R.reduce(_ & _)) {
+      when(select_valid) {
+      //when(in_data_valid_R.reduce(_ & _)) {
         output_valid_R.foreach(_ := true.B)
         state := s_fire
 
