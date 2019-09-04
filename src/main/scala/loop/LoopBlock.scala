@@ -946,6 +946,14 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
           loop_exit_valid_R.foreach(_ := true.B)
 
           //Change state
+          if (log) {
+            printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOOP]   "
+              + node_name + ": Output fired @ %d ", io.activate_loop_start.bits.taskID, cycleCount)
+            for(i <- 0 until NumOuts.size){
+              printf(" Out[%d]: %d", i.U, in_live_out_R(i).data)
+            }
+            printf("\n")
+          }
           state := s_end
         }
 
