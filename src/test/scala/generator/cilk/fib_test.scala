@@ -154,26 +154,26 @@ object fibTesterParams {
   val n_list = List(15)
 }
 
-class fibTester1 extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  it should "Check that fib works correctly." in {
-    for (tiles <- fibTesterParams.tile_list) {
-      for (n <- fibTesterParams.n_list) {
-        // iotester flags:
-        // -ll  = log level <Error|Warn|Info|Debug|Trace>
-        // -tbn = backend <firrtl|verilator|vcs>
-        // -td  = target directory
-        // -tts = seed for RNG
-        chisel3.iotesters.Driver.execute(
-          Array(
-            // "-ll", "Info",
-            "-tbn", "verilator",
-            "-td", s"test_run_dir/fib_${tiles}_n${n}",
-            "-tts", "0001"),
-          () => new fibMain(tiles)(p.alterPartial({ case TLEN => 11 case TRACE => false }))) {
-          c => new fibTest01(c, n, tiles)
-        } should be(true)
-      }
-    }
-  }
-}
+//class fibTester1 extends FlatSpec with Matchers {
+//  implicit val p = Parameters.root((new MiniConfig).toInstance)
+//  it should "Check that fib works correctly." in {
+//    for (tiles <- fibTesterParams.tile_list) {
+//      for (n <- fibTesterParams.n_list) {
+//        // iotester flags:
+//        // -ll  = log level <Error|Warn|Info|Debug|Trace>
+//        // -tbn = backend <firrtl|verilator|vcs>
+//        // -td  = target directory
+//        // -tts = seed for RNG
+//        chisel3.iotesters.Driver.execute(
+//          Array(
+//            // "-ll", "Info",
+//            "-tbn", "verilator",
+//            "-td", s"test_run_dir/fib_${tiles}_n${n}",
+//            "-tts", "0001"),
+//          () => new fibMain(tiles)(p.alterPartial({ case TLEN => 11 case TRACE => false }))) {
+//          c => new fibTest01(c, n, tiles)
+//        } should be(true)
+//      }
+//    }
+//  }
+//}

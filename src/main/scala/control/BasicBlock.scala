@@ -175,7 +175,6 @@ class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
 }
 
 
-
 class BasicBlockNoMaskFastVecIO(val NumInputs: Int, val NumOuts: Int)(implicit p: Parameters)
   extends CoreBundle()(p) {
   // Output IO
@@ -203,7 +202,7 @@ class BasicBlockNoMaskFastVecIO(val NumInputs: Int, val NumOuts: Int)(implicit p
   * @param file
   */
 
-class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: Int)
+class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: Int, val fast: Boolean = false)
                               (implicit val p: Parameters,
                                name: sourcecode.Name,
                                file: sourcecode.File)
@@ -248,11 +247,6 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
     }
   }
 
-  //Connecting output signals
-  for (i <- 0 until NumOuts) {
-    io.Out(i).bits <> output_R
-    io.Out(i).valid <> output_valid_R(i)
-  }
 
   val select_valid = (in_data_valid_R zip io.predicateIn.map(_.fire)) map {
     case (a, b) => a | b
@@ -263,13 +257,36 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
 
 
   //Masking output value
-  val output_value = (io.predicateIn.map(_.bits.control) zip in_data_R.map(_.control)) map {
-    case (a, b) => a | b
-  } reduce (_ | _)
+  //  val output_value = (io.predicateIn.map(_.bits.control) zip in_data_R.map(_.control)) map {
+  //    case (a, b) => a | b
+  //  } reduce (_ | _)
 
   val predicate_val = in_data_R.map(_.control).reduce(_ | _)
 
   output_R := ControlBundle.default(predicate_val, in_task_ID)
+
+
+  val output_valid_map = for (i <- 0 until NumInputs) yield {
+    val ret = Mux(io.predicateIn(i).fire, true.B, in_data_valid_R(i))
+    ret
+  }
+
+  val output_data_map = for (i <- 0 until NumInputs) yield {
+    val ret = Mux(io.predicateIn(i).fire, io.predicateIn(i).bits.control, in_data_R(i).control)
+    ret
+  }
+
+  //Connecting output signals
+  for (i <- 0 until NumOuts) {
+    if (fast) {
+      io.Out(i).bits := ControlBundle.default(output_data_map.reduceLeft(_ | _), in_task_ID)
+    }
+    else {
+      io.Out(i).bits <> output_R
+    }
+    io.Out(i).valid <> output_valid_R(i)
+  }
+
 
   val s_idle :: s_fire :: Nil = Enum(2)
   val state = RegInit(s_idle)
@@ -277,9 +294,20 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
 
   switch(state) {
     is(s_idle) {
-      when(select_valid) {
-      //when(in_data_valid_R.reduce(_ & _)) {
-        output_valid_R.foreach(_ := true.B)
+      when(
+        if (fast) {
+          output_valid_map.reduceLeft(_ & _)
+        }
+        else {
+          in_data_valid_R.reduceLeft(_ & _)
+        }
+      ){
+        if (fast) {
+          io.Out.foreach(_.valid := true.B)
+        }
+
+        (output_valid_R zip io.Out.map(_.fire)).foreach { case (a, b) => a := b ^ true.B }
+
         state := s_fire
 
         when(predicate_val) {

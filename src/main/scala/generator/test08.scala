@@ -71,25 +71,25 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
    *                   PRINTING BASICBLOCK NODES                        *
    * ================================================================== */
 
-  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 11, BID = 0))
+  val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 11, BID = 0, fast = true))
 
   val bb_for_cond_cleanup1 = Module(new BasicBlockNode(NumInputs = 1, NumOuts = 4, NumPhi = 1, BID = 1))
 
   val bb_for_body2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 5, NumPhi = 2, BID = 2))
 
-  val bb_for_body4_preheader3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 3))
+  val bb_for_body4_preheader3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 3, fast = true))
 
-  val bb_for_cond_cleanup3_loopexit4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 4))
+  val bb_for_cond_cleanup3_loopexit4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 4, fast = true))
 
-  val bb_for_cond_cleanup35 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 10, BID = 5))
+  val bb_for_cond_cleanup35 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 10, BID = 5, fast = false))
 
   val bb_for_body46 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 6))
 
-  val bb_for_body8_preheader7 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 7))
+  val bb_for_body8_preheader7 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 7, fast = true))
 
-  val bb_for_cond_cleanup7_loopexit8 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 8))
+  val bb_for_cond_cleanup7_loopexit8 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 8, fast = true))
 
-  val bb_for_cond_cleanup79 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 8, BID = 9))
+  val bb_for_cond_cleanup79 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 8, BID = 9, fast = false))
 
   val bb_for_body810 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 11, NumPhi = 1, BID = 10))
 

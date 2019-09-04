@@ -354,11 +354,11 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
   val bb_det_achd = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 3))
 
-  val bb_det_cont = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 3, BID = 4))
+  val bb_det_cont = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 4))
 
   val bb_det_achd2 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 5))
 
-  val bb_det_cont3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 1, BID = 6))
+  val bb_det_cont3 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 6))
 
   val bb_sync_continue = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 7))
 
