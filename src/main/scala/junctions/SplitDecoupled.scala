@@ -143,6 +143,8 @@ class SplitCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
 class SplitCallNewIO(val argTypes: Seq[Int])(implicit p: Parameters) extends Bundle {
   val In = Flipped(Decoupled(new Call(Seq.fill(argTypes.length)(32))))
   val Out = new CallDecoupledVec(argTypes)
+
+  override def cloneType = new SplitCallNewIO(argTypes).asInstanceOf[this.type]
 }
 
 class SplitCallNew(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
