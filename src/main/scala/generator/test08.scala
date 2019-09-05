@@ -81,7 +81,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   val bb_for_cond_cleanup3_loopexit4 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 4, fast = true))
 
-  val bb_for_cond_cleanup35 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 10, BID = 5, fast = false))
+  val bb_for_cond_cleanup35 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 10, BID = 5, fast = true))
 
   val bb_for_body46 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 3, NumPhi = 1, BID = 6))
 
@@ -89,7 +89,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   val bb_for_cond_cleanup7_loopexit8 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 1, BID = 8, fast = true))
 
-  val bb_for_cond_cleanup79 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 8, BID = 9, fast = false))
+  val bb_for_cond_cleanup79 = Module(new BasicBlockNoMaskFastNode(NumInputs = 2, NumOuts = 8, BID = 9, fast = true))
 
   val bb_for_body810 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 11, NumPhi = 1, BID = 10))
 
@@ -145,13 +145,13 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val br_14 = Module(new UBranchNode(ID = 14))
 
   //  %0 = load i32, i32* %arrayidx16, align 4, !dbg !58, !tbaa !59, !UID !63
-  val ld_15 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 15, RouteID = 0))
+  val ld_15 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 1, NumOuts = 2, ID = 15, RouteID = 0))
 
   //  %inc17 = add i32 %0, 1, !dbg !58, !UID !64
   val binaryOp_inc1716 = Module(new ComputeNode(NumOuts = 1, ID = 16, opCode = "add")(sign = false))
 
   //  store i32 %inc17, i32* %arrayidx16, align 4, !dbg !58, !tbaa !59, !UID !65
-  val st_17 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 17, RouteID = 0))
+  val st_17 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 1, ID = 17, RouteID = 0))
 
   //  %add = add i32 %0, %result.042, !dbg !66, !UID !67
   val binaryOp_add18 = Module(new ComputeNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))
@@ -163,7 +163,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val icmp_exitcond4520 = Module(new ComputeNode(NumOuts = 1, ID = 20, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond45, label %for.cond.cleanup, label %for.body, !dbg !40, !llvm.loop !72, !UID !74, !BB_UID !75
-  val br_21 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 21))
+  val br_21 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 1, ID = 21))
 
   //  %j.041 = phi i32 [ %inc13, %for.cond.cleanup7 ], [ 0, %for.body4.preheader ], !UID !76
   val phij_04122 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 22, Res = false))
@@ -178,13 +178,13 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val br_25 = Module(new UBranchNode(ID = 25))
 
   //  %1 = load i32, i32* %arrayidx10, align 4, !dbg !85, !tbaa !59, !UID !86
-  val ld_26 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 26, RouteID = 1))
+  val ld_26 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 26, RouteID = 1))
 
   //  %inc11 = add i32 %1, 1, !dbg !85, !UID !87
   val binaryOp_inc1127 = Module(new ComputeNode(NumOuts = 1, ID = 27, opCode = "add")(sign = false))
 
   //  store i32 %inc11, i32* %arrayidx10, align 4, !dbg !85, !tbaa !59, !UID !88
-  val st_28 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 28, RouteID = 1))
+  val st_28 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 1, ID = 28, RouteID = 1))
 
   //  %inc13 = add nuw i32 %j.041, 1, !dbg !89, !UID !90
   val binaryOp_inc1329 = Module(new ComputeNode(NumOuts = 2, ID = 29, opCode = "add")(sign = false))
@@ -193,7 +193,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val icmp_exitcond4430 = Module(new ComputeNode(NumOuts = 1, ID = 30, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond44, label %for.cond.cleanup3.loopexit, label %for.body4, !dbg !52, !llvm.loop !93, !UID !95, !BB_UID !96
-  val br_31 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 31))
+  val br_31 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 1, ID = 31))
 
   //  %k.039 = phi i32 [ %inc, %for.body8 ], [ 0, %for.body8.preheader ], !UID !97
   val phik_03932 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 32, Res = false))
@@ -202,13 +202,13 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val Gep_arrayidx33 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 33)(ElementSize = 4, ArraySize = List()))
 
   //  %2 = load i32, i32* %arrayidx, align 4, !dbg !80, !tbaa !59, !UID !99
-  val ld_34 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 34, RouteID = 2))
+  val ld_34 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 34, RouteID = 2))
 
   //  %mul = shl i32 %2, 1, !dbg !100, !UID !101
   val binaryOp_mul35 = Module(new ComputeNode(NumOuts = 1, ID = 35, opCode = "shl")(sign = false))
 
   //  store i32 %mul, i32* %arrayidx, align 4, !dbg !102, !tbaa !59, !UID !103
-  val st_36 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 36, RouteID = 2))
+  val st_36 = Module(new UnTypStore(NumPredOps = 1, NumSuccOps = 1, ID = 36, RouteID = 2))
 
   //  %inc = add nuw i32 %k.039, 1, !dbg !104, !UID !105
   val binaryOp_inc37 = Module(new ComputeNode(NumOuts = 2, ID = 37, opCode = "add")(sign = false))
@@ -217,7 +217,7 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
   val icmp_exitcond38 = Module(new ComputeNode(NumOuts = 1, ID = 38, opCode = "eq")(sign = false))
 
   //  br i1 %exitcond, label %for.cond.cleanup7.loopexit, label %for.body8, !dbg !55, !llvm.loop !108, !UID !110, !BB_UID !111
-  val br_39 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 39))
+  val br_39 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 1, ID = 39))
 
 
 
@@ -771,7 +771,15 @@ class test08DF(implicit p: Parameters) extends test08DFIO()(p) {
 
   st_36.io.Out(0).ready := true.B
 
+  st_17.io.PredOp(0) <> ld_15.io.SuccOp(0)
+  br_21.io.PredOp(0) <> st_17.io.SuccOp(0)
 
+  st_28.io.PredOp(0) <> ld_26.io.SuccOp(0)
+  br_31.io.PredOp(0) <> st_28.io.SuccOp(0)
+
+
+  st_36.io.PredOp(0) <> ld_34.io.SuccOp(0)
+  br_39.io.PredOp(0) <> st_36.io.SuccOp(0)
 
   /* ================================================================== *
    *                   PRINTING OUTPUT INTERFACE                        *

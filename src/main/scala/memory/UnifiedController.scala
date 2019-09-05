@@ -97,6 +97,23 @@ class UnifiedController(ID: Int,
   //--------------------------
 
   //------------------------------------------------------------------------------------
+  if(log){
+    when(io.MemReq.fire){
+      when(io.MemReq.bits.iswrite){
+        printf("[LOG] [MemController] [MemReq]: Addr: %d, Data: %d, IsWrite: ST\n", io.MemReq.bits.addr, io.MemReq.bits.data)
+      }.otherwise{
+        printf("[LOG] [MemController] [MemReq]: Addr: %d, Data: %d, IsWrite: LD\n", io.MemReq.bits.addr, io.MemReq.bits.data)
+      }
+    }
+
+    when(io.MemResp.fire()){
+      when(io.MemResp.bits.iswrite){
+        printf("[LOG] [MemController] [MemResp]: Data: %d, IsWrite: ST\n", io.MemResp.bits.data)
+      }.otherwise{
+        printf("[LOG] [MemController] [MemResp]: Data: %d, IsWrite: LD\n", io.MemReq.bits.data)
+      }
+    }
+  }
   /// Printf debugging
   override val printfSigil = "Unified: " + ID + " Type " + (Typ_SZ)
 

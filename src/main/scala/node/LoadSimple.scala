@@ -119,8 +119,12 @@ class UnTypLoad(NumPredOps: Int,
       when(enable_valid_R && mem_req_fire) {
         when(enable_R.control && predicate) {
           io.memReq.valid := true.B
-          when(io.memReq.ready) {
+          when(io.memReq.fire) {
             state := s_RECEIVING
+            if(log){
+              printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOAD] " + node_name + ": Memreq fired @ %d, Addr:%d\n",
+                enable_R.taskID, cycleCount, io.memReq.bits.address)
+            }
           }
         }.otherwise {
           data_R.predicate := false.B
@@ -143,6 +147,12 @@ class UnTypLoad(NumPredOps: Int,
         // Completion state.
         state := s_Done
 
+        if(log){
+          printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOAD] "
+            + node_name + ": Memresp fired @ %d, Value: %d\n",
+            enable_R.taskID, cycleCount, io.memResp.data)
+        }
+
       }
     }
     is(s_Done) {
@@ -161,7 +171,6 @@ class UnTypLoad(NumPredOps: Int,
         if (log) {
           printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOAD] " + node_name + ": Output fired @ %d, Address:%d, Value: %d\n",
             enable_R.taskID, cycleCount, addr_R.data, data_R.data)
-          //printf("DEBUG " + node_name + ": $%d = %d\n", addr_R.data, data_R.data)
         }
       }
     }

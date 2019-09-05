@@ -202,7 +202,7 @@ class BasicBlockNoMaskFastVecIO(val NumInputs: Int, val NumOuts: Int)(implicit p
   * @param file
   */
 
-class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: Int, val fast: Boolean = false)
+class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: Int, val fast: Boolean = true)
                               (implicit val p: Parameters,
                                name: sourcecode.Name,
                                file: sourcecode.File)
