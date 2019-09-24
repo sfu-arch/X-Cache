@@ -3,7 +3,7 @@ package dandelion.node
 
 import chisel3.iotesters._
 import org.scalatest.{Matchers, FlatSpec}
-import chisel3.experimental.MultiIOModule
+import chisel3.MultiIOModule
 import dandelion.config._
 import chisel3._
 import chisel3.iotesters._
