@@ -79,6 +79,12 @@ cmake ../
 make -jN
 ```
 
+## Publishing TVM Chisel
+```bash
+cd tvm/hardware/chisel
+sbt publishLocal
+```
+
 After building TVM you need to update your `PYTHONPATH` so we can simulate our `Dandelion accelerators`.
 You can add these two line to your `bashrc`.
 
