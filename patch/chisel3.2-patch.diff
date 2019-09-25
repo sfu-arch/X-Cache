@@ -1,0 +1,196 @@
+diff --git a/vta/hardware/chisel/build.sbt b/vta/hardware/chisel/build.sbt
+index 45fbf00d..f6f962ed 100644
+--- a/vta/hardware/chisel/build.sbt
++++ b/vta/hardware/chisel/build.sbt
+@@ -54,15 +54,16 @@ def javacOptionsVersion(scalaVersion: String): Seq[String] = {
+   }
+ }
+ 
+-scalaVersion := "2.11.12"
++scalaVersion := "2.12.8"
++crossScalaVersions := Seq("2.12.8", "2.11.12")
+ 
+ resolvers ++= Seq(
+   Resolver.sonatypeRepo("snapshots"),
+   Resolver.sonatypeRepo("releases"))
+ 
+ val defaultVersions = Map(
+-  "chisel3" -> "3.1.7",
+-  "chisel-iotesters" -> "[1.2.5,1.3-SNAPSHOT["
++  "chisel3" -> "3.2-SNAPSHOT",
++  "chisel-iotesters" -> "1.3-SNAPSHOT"
+   )
+ 
+ libraryDependencies ++= Seq("chisel3","chisel-iotesters").map {
+diff --git a/vta/hardware/chisel/src/main/scala/core/TensorGemm.scala b/vta/hardware/chisel/src/main/scala/core/TensorGemm.scala
+index 3f5f3876..39f98afd 100644
+--- a/vta/hardware/chisel/src/main/scala/core/TensorGemm.scala
++++ b/vta/hardware/chisel/src/main/scala/core/TensorGemm.scala
+@@ -117,7 +117,7 @@ class MatrixVectorMultiplication(implicit p: Parameters) extends Module {
+   val wgtBits = p(CoreKey).wgtBits
+   val outBits = p(CoreKey).outBits
+   val io = IO(new Bundle {
+-    val reset = Input(Bool()) // FIXME: reset should be replaced by a load-acc instr
++    val reset = Input(Reset()) // FIXME: reset should be replaced by a load-acc instr
+     val inp = new TensorMasterData(tensorType = "inp")
+     val wgt = new TensorMasterData(tensorType = "wgt")
+     val acc_i = new TensorMasterData(tensorType = "acc")
+@@ -132,18 +132,18 @@ class MatrixVectorMultiplication(implicit p: Parameters) extends Module {
+   val vld = Wire(Vec(size, Bool()))
+ 
+   for (i <- 0 until size) {
+-    acc(i).io.enq.valid := io.inp.data.valid & io.wgt.data.valid & io.acc_i.data.valid & ~io.reset
++    acc(i).io.enq.valid := io.inp.data.valid & io.wgt.data.valid & io.acc_i.data.valid & ~(io.reset.asBool())
+     acc(i).io.enq.bits := io.acc_i.data.bits(0)(i)
+     for (j <- 0 until size) {
+       dot(i).io.a(j) := io.inp.data.bits(0)(j).asSInt
+       dot(i).io.b(j) := io.wgt.data.bits(i)(j).asSInt
+     }
+     add(i) := acc(i).io.deq.bits.asSInt + dot(i).io.y
+-    io.acc_o.data.bits(0)(i) := Mux(io.reset, 0.U, add(i).asUInt)
++    io.acc_o.data.bits(0)(i) := Mux(io.reset.asBool(), 0.U, add(i).asUInt)
+     io.out.data.bits(0)(i) := add(i).asUInt
+     vld(i) := acc(i).io.deq.valid
+   }
+-  io.acc_o.data.valid := vld.asUInt.andR | io.reset
++  io.acc_o.data.valid := vld.asUInt.andR | io.reset.asBool()
+   io.out.data.valid := vld.asUInt.andR
+ }
+ 
+@@ -335,11 +335,11 @@ class TensorGemm(debug: Boolean = false)(implicit p: Parameters)
+   io.done := done
+ 
+   if (debug) {
+-    when(state === sReadUop && ~dec.reset) {
++    when(state === sReadUop && ~dec.reset.asBool()) {
+       printf("[TensorGemm] [uop] idx:%x\n", uop_idx)
+     }
+ 
+-    when(state === sReadTensor && ~dec.reset) {
++    when(state === sReadTensor && ~dec.reset.asBool()) {
+       printf("[TensorGemm] [uop] acc:%x inp:%x wgt:%x\n",
+              uop_acc,
+              uop_inp,
+@@ -348,14 +348,14 @@ class TensorGemm(debug: Boolean = false)(implicit p: Parameters)
+ 
+     io.inp.rd.data.bits.zipWithIndex.foreach {
+       case (r, i) =>
+-        when(io.inp.rd.data.valid && ~dec.reset) {
++        when(io.inp.rd.data.valid && ~dec.reset.asBool()) {
+           printf("[TensorGemm] [inp] i:%x val:%x\n", i.U, r.asUInt)
+         }
+     }
+ 
+     io.wgt.rd.data.bits.zipWithIndex.foreach {
+       case (r, i) =>
+-        when(io.wgt.rd.data.valid && ~dec.reset) {
++        when(io.wgt.rd.data.valid && ~dec.reset.asBool()) {
+           printf("[TensorGemm] [wgt] i:%x val:%x\n", i.U, r.asUInt)
+         }
+     }
+@@ -363,7 +363,7 @@ class TensorGemm(debug: Boolean = false)(implicit p: Parameters)
+     io.acc.rd.data.bits.foreach { tensor =>
+       tensor.zipWithIndex.foreach {
+         case (elem, i) =>
+-          when(io.acc.rd.data.valid && ~dec.reset) {
++          when(io.acc.rd.data.valid && ~dec.reset.asBool()) {
+             printf("[TensorGemm] [acc_i] i:%x val:%x\n", i.U, elem)
+           }
+       }
+@@ -372,7 +372,7 @@ class TensorGemm(debug: Boolean = false)(implicit p: Parameters)
+     mvc.io.acc_o.data.bits.foreach { tensor =>
+       tensor.zipWithIndex.foreach {
+         case (elem, i) =>
+-          when(mvc.io.acc_o.data.valid && ~dec.reset) {
++          when(mvc.io.acc_o.data.valid && ~dec.reset.asBool()) {
+             printf("[TensorGemm] [acc_o] i:%x val:%x\n", i.U, elem)
+           }
+       }
+@@ -381,7 +381,7 @@ class TensorGemm(debug: Boolean = false)(implicit p: Parameters)
+     mvc.io.out.data.bits.foreach { tensor =>
+       tensor.zipWithIndex.foreach {
+         case (elem, i) =>
+-          when(mvc.io.out.data.valid && ~dec.reset) {
++          when(mvc.io.out.data.valid && ~dec.reset.asBool()) {
+             printf("[TensorGemm] [out] i:%x val:%x\n", i.U, elem)
+           }
+       }
+diff --git a/vta/hardware/chisel/src/main/scala/dpi/VTAHostDPI.scala b/vta/hardware/chisel/src/main/scala/dpi/VTAHostDPI.scala
+index 3318251f..65c90810 100644
+--- a/vta/hardware/chisel/src/main/scala/dpi/VTAHostDPI.scala
++++ b/vta/hardware/chisel/src/main/scala/dpi/VTAHostDPI.scala
+@@ -68,7 +68,7 @@ class VTAHostDPIClient extends Bundle with VTAHostDPIParams {
+ class VTAHostDPI extends BlackBox with HasBlackBoxResource {
+   val io = IO(new Bundle {
+     val clock = Input(Clock())
+-    val reset = Input(Bool())
++    val reset = Input(Reset())
+     val dpi = new VTAHostDPIMaster
+   })
+   setResource("/verilog/VTAHostDPI.v")
+diff --git a/vta/hardware/chisel/src/main/scala/dpi/VTAMemDPI.scala b/vta/hardware/chisel/src/main/scala/dpi/VTAMemDPI.scala
+index f46b7789..d26c7e5b 100644
+--- a/vta/hardware/chisel/src/main/scala/dpi/VTAMemDPI.scala
++++ b/vta/hardware/chisel/src/main/scala/dpi/VTAMemDPI.scala
+@@ -69,7 +69,7 @@ class VTAMemDPIClient extends Bundle with VTAMemDPIParams {
+ class VTAMemDPI extends BlackBox with HasBlackBoxResource {
+   val io = IO(new Bundle {
+     val clock = Input(Clock())
+-    val reset = Input(Bool())
++    val reset = Input(Reset())
+     val dpi = new VTAMemDPIClient
+   })
+   setResource("/verilog/VTAMemDPI.v")
+diff --git a/vta/hardware/chisel/src/main/scala/dpi/VTASimDPI.scala b/vta/hardware/chisel/src/main/scala/dpi/VTASimDPI.scala
+index 33b1101e..539566fd 100644
+--- a/vta/hardware/chisel/src/main/scala/dpi/VTASimDPI.scala
++++ b/vta/hardware/chisel/src/main/scala/dpi/VTASimDPI.scala
+@@ -32,7 +32,7 @@ import vta.shell._
+ class VTASimDPI extends BlackBox with HasBlackBoxResource {
+   val io = IO(new Bundle {
+     val clock = Input(Clock())
+-    val reset = Input(Bool())
++    val reset = Input(Reset())
+     val dpi_wait = Output(Bool())
+   })
+   setResource("/verilog/VTASimDPI.v")
+diff --git a/vta/hardware/chisel/src/main/scala/shell/SimShell.scala b/vta/hardware/chisel/src/main/scala/shell/SimShell.scala
+index 30b84d63..9eb6e6bd 100644
+--- a/vta/hardware/chisel/src/main/scala/shell/SimShell.scala
++++ b/vta/hardware/chisel/src/main/scala/shell/SimShell.scala
+@@ -20,7 +20,7 @@
+ package vta.shell
+ 
+ import chisel3._
+-import chisel3.experimental.MultiIOModule
++import chisel3.MultiIOModule
+ import vta.util.config._
+ import vta.interface.axi._
+ import vta.shell._
+diff --git a/vta/hardware/chisel/src/main/scala/shell/XilinxShell.scala b/vta/hardware/chisel/src/main/scala/shell/XilinxShell.scala
+index ec7bffb8..94328c94 100644
+--- a/vta/hardware/chisel/src/main/scala/shell/XilinxShell.scala
++++ b/vta/hardware/chisel/src/main/scala/shell/XilinxShell.scala
+@@ -20,7 +20,8 @@
+ package vta.shell
+ 
+ import chisel3._
+-import chisel3.experimental.{withClockAndReset, RawModule}
++import chisel3.experimental.withClockAndReset
++import chisel3.RawModule
+ import vta.util.config._
+ import vta.interface.axi._
+ 
+diff --git a/vta/hardware/chisel/src/main/scala/test/Test.scala b/vta/hardware/chisel/src/main/scala/test/Test.scala
+index 7749d953..7f62ef97 100644
+--- a/vta/hardware/chisel/src/main/scala/test/Test.scala
++++ b/vta/hardware/chisel/src/main/scala/test/Test.scala
+@@ -20,7 +20,7 @@
+ package vta.test
+ 
+ import chisel3._
+-import chisel3.experimental.MultiIOModule
++import chisel3.MultiIOModule
+ import vta.util.config._
+ import vta.shell._
+ 

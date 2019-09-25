@@ -54,7 +54,8 @@ def javacOptionsVersion(scalaVersion: String): Seq[String] = {
   }
 }
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.12.8"
+crossScalaVersions := Seq("2.12.8", "2.11.12")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),

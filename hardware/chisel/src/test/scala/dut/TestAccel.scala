@@ -20,7 +20,7 @@
 package test
 
 import chisel3._
-import chisel3.experimental.MultiIOModule
+import chisel3.MultiIOModule
 import vta.dpi._
 import accel._
 

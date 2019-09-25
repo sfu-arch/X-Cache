@@ -80,8 +80,13 @@ make -jN
 ```
 
 ## Publishing TVM Chisel
+
+Before publishing chisel library make sure that you have apply the patch to TVM repo. Currently TVM uses chisel-3.1 but dandelion uses chisel-3.2, the patch upgrades TVM chisel version.
+
 ```bash
-cd tvm/hardware/chisel
+cd tvm
+git apply <path-to-dandelion-sim>/patch/chisel3.2-patch.diff
+cd hardware/chisel
 sbt publishLocal
 ```
 
