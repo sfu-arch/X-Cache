@@ -31,7 +31,7 @@ class FPDivSqrtIO(NumOuts: Int,
 
 /**
   * @brief FP Node. Implements store operations
-  * @details [long description]
+  * @note [long description]
   * @param NumOuts [Number of FU operations]
   */
 class FPDivSqrtNode(NumOuts: Int,

@@ -36,7 +36,7 @@ class TypStoreIO(NumPredOps: Int,
 
 /**
  * @brief TYPE Store Node. Implements store operations
- * @details [long description]
+ * @note [long description]
  *
  * @param NumPredOps [Number of predicate memory operations]
  */

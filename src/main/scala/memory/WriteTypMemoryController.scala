@@ -24,7 +24,7 @@ import Constants._
 
 /**
   * @brief Read Table Entry
-  * @details [long description]
+  * @note [long description]
   * @param ID [Read table IDs]
   * @return [description]
   */

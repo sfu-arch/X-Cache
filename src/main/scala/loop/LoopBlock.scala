@@ -11,7 +11,7 @@ import utility.UniformPrintfs
 
 /**
   * @brief LoopBlockIO class definition
-  * @details Implimentation of BasickBlockIO
+  * @note Implimentation of BasickBlockIO
   * @param NumIns   Number of liveIn DataBundles
   * @param NumOuts  Number of liveOut DataBundles
   * @param NumExits Number exit control bundles for loop (e.g. number of exit points)
@@ -444,7 +444,7 @@ class LoopBlockO1(ID: Int, NumIns: Seq[Int], NumOuts: Int, NumExits: Int)
 
 /**
   * @brief LoopBlockIO class definition
-  * @details Implimentation of BasickBlockIO
+  * @note Implimentation of BasickBlockIO
   * @param NumIns   Number of liveIn DataBundles
   * @param NumOuts  Number of liveOut DataBundles
   * @param NumExits Number exit control bundles for loop (e.g. number of exit points)

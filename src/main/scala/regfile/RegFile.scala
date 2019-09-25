@@ -8,7 +8,7 @@ import dandelion.config._
 
 /**
  * @brief IO interface to register file
- * @details
+ * @note
  * raddr1: Read address (word aligned)
  * rdata1: Read data (word granularity)
  * wen   : Write enable
@@ -38,7 +38,7 @@ abstract class AbstractRFile(size: Int)(implicit val p: Parameters) extends Modu
 }
 /**
  * @brief Scratchpad registerfile
- * @details [long description]
+ * @note [long description]
  *
  * @param size : Number of registers.
  * @return [description]

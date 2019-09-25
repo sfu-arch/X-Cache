@@ -52,7 +52,7 @@ class StoreNodeIO()(implicit p: Parameters) extends CoreBundle()(p) {
 
 /**
   * @brief Store Node. Implements store operations
-  * @details [long description]
+  * @note [long description]
   */
 class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Parameters)
   extends Module with CoreParams with UniformPrintfs {

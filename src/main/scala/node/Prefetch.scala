@@ -30,7 +30,7 @@ class PrefetchIO(NumOuts: Int)(implicit p: Parameters)
 
 /**
   * @brief Prefetch Node. Implements Prefetch operations
-  * @details [Prefetch operations can either reference values in a scratchpad or cache]
+  * @note [Prefetch operations can either reference values in a scratchpad or cache]
   * @param NumOuts [always 1 output. To ensure circuit is not ripped out]
   */
 class PrefetchLoad(NumOuts: Int,

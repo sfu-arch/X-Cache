@@ -45,7 +45,7 @@ abstract class WriteEntryIO()(implicit val p: Parameters)
 
 /**
   * @brief Read Table Entry
-  * @details [long description]
+  * @note [long description]
   * @param ID [Read table IDs]
   * @return [description]
   */

@@ -10,7 +10,7 @@ import util._
 
 /**
   * @brief BasicBlockIO class definition
-  * @details Implimentation of BasickBlockIO
+  * @note Implimentation of BasickBlockIO
   * @param NumInputs Number of predecessors
   * @param NumOuts   Number of successor instructions
   * @param NumPhi    Number existing phi nodes
@@ -29,7 +29,7 @@ class BasicBlockIO(NumInputs: Int,
 
 /**
   * @brief BasicBlockIO class definition
-  * @details Implimentation of BasickBlockIO
+  * @note Implimentation of BasickBlockIO
   * @param NumInputs Number of predecessors
   * @param NumOuts   Number of successor instructions
   * @param NumPhi    Number existing phi nodes
@@ -141,7 +141,7 @@ class BasicBlockNode(NumInputs: Int,
 
 /**
   * @brief BasicBlockIO class definition
-  * @details Implimentation of BasickBlockIO
+  * @note Implimentation of BasickBlockIO
   * @param NumOuts Number of successor instructions
   */
 

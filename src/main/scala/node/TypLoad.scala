@@ -31,7 +31,7 @@ class TypLoadIO(NumPredOps: Int, NumSuccOps: Int, NumOuts: Int)(implicit p: Para
 
 /**
   * @brief Type Load Node. Implements store operations
-  * @details [long description]
+  * @note [long description]
   * @param NumPredOps [Number of predicate memory operations]
   */
 class TypLoad(NumPredOps: Int,

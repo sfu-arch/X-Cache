@@ -35,7 +35,7 @@ class StoreIO(NumPredOps: Int,
 
 /**
   * @brief Store Node. Implements store operations
-  * @details [long description]
+  * @note [long description]
   * @param NumPredOps [Number of predicate memory operations]
   */
 class UnTypStore(NumPredOps: Int,
