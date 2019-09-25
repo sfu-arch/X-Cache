@@ -21,9 +21,9 @@ project(tsim C CXX)
 set(TVM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../)
 set(VTA_DIR ${TVM_DIR}/vta)
 
-include_directories("${TVM_DIR}/include")
-include_directories("${TVM_DIR}/3rdparty/dlpack/include")
-include_directories("${TVM_DIR}/3rdparty/dmlc-core/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dlpack/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dmlc-core/include")
 include_directories("${TVM_DIR}/vta/src/dpi")
 
 set(CMAKE_C_FLAGS "-O2 -Wall -fPIC -fvisibility=hidden")
@@ -35,8 +35,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND
 endif()
 
 file(GLOB TSIM_SW_SRC src/driver.cc)
-list(APPEND TSIM_SW_SRC ${VTA_DIR}/src/vmem/virtual_memory.cc)
-list(APPEND TSIM_SW_SRC ${VTA_DIR}/src/dpi/module.cc)
+list(APPEND TSIM_SW_SRC src/vmem/virtual_memory.cc)
+list(APPEND TSIM_SW_SRC src/dpi/module.cc)
 
 add_library(sw SHARED ${TSIM_SW_SRC})
 target_include_directories(sw PRIVATE ${VTA_DIR}/include ${VTA_DIR}/src)

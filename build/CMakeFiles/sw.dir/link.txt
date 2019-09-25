@@ -1,0 +1,1 @@
+/opt/rh/devtoolset-8/root/usr/bin/c++ -fPIC -faligned-new -O2 -Wall -fPIC -fvisibility=hidden -std=c++11  -shared -Wl,-soname,libsw.so -o libsw.so CMakeFiles/sw.dir/src/driver.cc.o CMakeFiles/sw.dir/src/vmem/virtual_memory.cc.o CMakeFiles/sw.dir/src/dpi/module.cc.o 

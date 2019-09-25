@@ -17,9 +17,9 @@
  * under the License.
  */
 
-#include <tvm/runtime/module.h>
-#include <tvm/runtime/registry.h>
-#include <vta/dpi/module.h>
+#include <runtime/module.h>
+#include <runtime/registry.h>
+#include <dpi/module.h>
 
 #include "vmem/virtual_memory.h"
 
