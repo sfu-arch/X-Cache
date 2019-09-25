@@ -105,11 +105,8 @@ $(verilator_build_dir)/V$(TOP).cpp: $(chisel_build_dir)/$(TOP).v
 	verilator $(verilator_opt) $<
 
 verilog: $(chisel_build_dir)/$(TOP).v
-$(chisel_build_dir)/$(TOP).v: install_vta_package
+$(chisel_build_dir)/$(TOP).v: 
 	sbt 'test:runMain test.Elaborate --target-dir $(chisel_build_dir) --top-name $(TOP)'
-
-install_vta_package:
-	cd $(vta_dir)/hardware/chisel && sbt publishLocal
 
 clean:
 	-rm -rf $(build_dir) target project/target project/project
