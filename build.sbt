@@ -49,7 +49,7 @@ libraryDependencies ++= Seq("chisel3", "chisel-iotesters","dsptools").map {
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1",
-  "org.scalacheck" %% "scalacheck" % "1.13.4",
+  "org.scalacheck" %% "scalacheck" % "1.14.0",
   "com.lihaoyi" %% "sourcecode" % "0.1.4" // Scala-JVM
 )
 
