@@ -1,0 +1,17 @@
+[0m[[0m[0minfo[0m] [0m[0mPackaging /home/amirali/git/dandelion-sim/hardware/chisel/target/scala-2.11/accel_2.11-0.1.0-SNAPSHOT-sources.jar ...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInput file mappings:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	accel/Accel.scala[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/amirali/git/dandelion-sim/hardware/chisel/src/main/scala/accel/Accel.scala[0m
+[0m[[0m[0mdebug[0m] [0m[0m	verilog/VTAMemDPI.v[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/amirali/git/dandelion-sim/hardware/chisel/src/main/resources/verilog/VTAMemDPI.v[0m
+[0m[[0m[0mdebug[0m] [0m[0m	accel/RegFile.scala[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/amirali/git/dandelion-sim/hardware/chisel/src/main/scala/accel/RegFile.scala[0m
+[0m[[0m[0mdebug[0m] [0m[0m	accel/Compute.scala[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/amirali/git/dandelion-sim/hardware/chisel/src/main/scala/accel/Compute.scala[0m
+[0m[[0m[0mdebug[0m] [0m[0m	verilog/VTASimDPI.v[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/amirali/git/dandelion-sim/hardware/chisel/src/main/resources/verilog/VTASimDPI.v[0m
+[0m[[0m[0mdebug[0m] [0m[0m	verilog/VTAHostDPI.v[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/amirali/git/dandelion-sim/hardware/chisel/src/main/resources/verilog/VTAHostDPI.v[0m
+[0m[[0m[0mdebug[0m] [0m[0m	verilog[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/amirali/git/dandelion-sim/hardware/chisel/src/main/resources/verilog[0m
+[0m[[0m[0minfo[0m] [0m[0mDone packaging.[0m

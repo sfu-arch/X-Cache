@@ -37,8 +37,8 @@ BUILD_NAME = build
 USE_TRACE = 0
 LIBNAME = libhw
 
-vta_dir = $(abspath ../../../../)
-tvm_dir = $(abspath ../../../../../)
+vta_dir = $(abspath ../../)
+tvm_dir = $(abspath ../../)
 build_dir = $(abspath .)/$(BUILD_NAME)
 verilator_build_dir = $(build_dir)/verilator
 chisel_build_dir = $(build_dir)/chisel

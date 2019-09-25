@@ -1,0 +1,5 @@
+[0m[[0m[0mdebug[0m] [0m[0mCopy resource mappings: [0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/home/amirali/git/dandelion-sim/hardware/chisel/src/main/resources/verilog,/home/amirali/git/dandelion-sim/hardware/chisel/target/scala-2.11/classes/verilog)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/home/amirali/git/dandelion-sim/hardware/chisel/src/main/resources/verilog/VTAHostDPI.v,/home/amirali/git/dandelion-sim/hardware/chisel/target/scala-2.11/classes/verilog/VTAHostDPI.v)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/home/amirali/git/dandelion-sim/hardware/chisel/src/main/resources/verilog/VTAMemDPI.v,/home/amirali/git/dandelion-sim/hardware/chisel/target/scala-2.11/classes/verilog/VTAMemDPI.v)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/home/amirali/git/dandelion-sim/hardware/chisel/src/main/resources/verilog/VTASimDPI.v,/home/amirali/git/dandelion-sim/hardware/chisel/target/scala-2.11/classes/verilog/VTASimDPI.v)[0m
