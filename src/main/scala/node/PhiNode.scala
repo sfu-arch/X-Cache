@@ -298,7 +298,8 @@ class PhiFastNode(NumInputs: Int = 2, NumOutputs: Int = 1, ID: Int, Res: Boolean
     is(s_fire) {
       when(fire_mask.reduce(_ & _)) {
 
-        /** @note: In this case whenever all the GEP is fired we
+        /** 
+          * @note: In this case whenever all the GEP is fired we
           *        restart all the latched values. But it may be cases
           *        that because of pipelining we have latched an interation ahead
           *        and if we may reset the latches values we lost the value.

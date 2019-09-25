@@ -1,6 +1,6 @@
 name := "dandelion-lib"
 
-organization := "edu.sfu.arch"
+organization := "edu.sfu.cs"
 
 version := "0.1-SNAPSHOT"
 
