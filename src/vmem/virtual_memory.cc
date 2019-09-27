@@ -30,12 +30,12 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <list>
-#include <utility>
 #include <iterator>
-#include <unordered_map>
+#include <list>
 #include <map>
 #include <mutex>
+#include <unordered_map>
+#include <utility>
 
 namespace vta {
 namespace vmem {
@@ -46,17 +46,15 @@ namespace vmem {
  * \return The true virtual address;
  */
 void* VirtualMemoryManager::GetAddr(uint64_t phy_addr) {
-  CHECK_NE(phy_addr, 0)
-      << "trying to get address that is nullptr";
-  std::lock_guard<std::mutex> lock(mutex_);
-  uint64_t loc = (phy_addr >> kPageBits) - 1;
-  CHECK_LT(loc, ptable_.size())
-      << "phy_addr=" << phy_addr;
-  Page* p = ptable_[loc];
-  CHECK(p != nullptr);
-  size_t offset = (loc - p->ptable_begin) << kPageBits;
-  offset += phy_addr & (kPageSize - 1);
-  return reinterpret_cast<char*>(p->data) + offset;
+    CHECK_NE(phy_addr, 0) << "trying to get address that is nullptr";
+    std::lock_guard<std::mutex> lock(mutex_);
+    uint64_t loc = (phy_addr >> kPageBits) - 1;
+    CHECK_LT(loc, ptable_.size()) << "phy_addr=" << phy_addr;
+    Page* p = ptable_[loc];
+    CHECK(p != nullptr);
+    size_t offset = (loc - p->ptable_begin) << kPageBits;
+    offset += phy_addr & (kPageSize - 1);
+    return reinterpret_cast<char*>(p->data) + offset;
 }
 
 /*!
@@ -65,11 +63,11 @@ void* VirtualMemoryManager::GetAddr(uint64_t phy_addr) {
  * \return The true physical address;
  */
 vta_phy_addr_t VirtualMemoryManager::GetPhyAddr(void* buf) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  auto it = pmap_.find(buf);
-  CHECK(it != pmap_.end());
-  Page* p = it->second.get();
-  return (p->ptable_begin + 1) << kPageBits;
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = pmap_.find(buf);
+    CHECK(it != pmap_.end());
+    Page* p = it->second.get();
+    return (p->ptable_begin + 1) << kPageBits;
 }
 
 /*!
@@ -78,21 +76,21 @@ vta_phy_addr_t VirtualMemoryManager::GetPhyAddr(void* buf) {
  * \return The virtual address
  */
 void* VirtualMemoryManager::Alloc(size_t size) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  size_t npage = (size + kPageSize - 1) / kPageSize;
-  auto it = free_map_.lower_bound(npage);
-  if (it != free_map_.end()) {
-    Page* p = it->second;
-    free_map_.erase(it);
-    return p->data;
-  }
-  size_t start = ptable_.size();
-  std::unique_ptr<Page> p(new Page(start, npage));
-  // insert page entry
-  ptable_.resize(start + npage, p.get());
-  void* data = p->data;
-  pmap_[data] = std::move(p);
-  return data;
+    std::lock_guard<std::mutex> lock(mutex_);
+    size_t npage = (size + kPageSize - 1) / kPageSize;
+    auto it = free_map_.lower_bound(npage);
+    if (it != free_map_.end()) {
+        Page* p = it->second;
+        free_map_.erase(it);
+        return p->data;
+    }
+    size_t start = ptable_.size();
+    std::unique_ptr<Page> p(new Page(start, npage));
+    // insert page entry
+    ptable_.resize(start + npage, p.get());
+    void* data = p->data;
+    pmap_[data] = std::move(p);
+    return data;
 }
 
 /*!
@@ -101,12 +99,12 @@ void* VirtualMemoryManager::Alloc(size_t size) {
  * \return The virtual address
  */
 void VirtualMemoryManager::Free(void* data) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  if (pmap_.size() == 0) return;
-  auto it = pmap_.find(data);
-  CHECK(it != pmap_.end());
-  Page* p = it->second.get();
-  free_map_.insert(std::make_pair(p->num_pages, p));
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (pmap_.size() == 0) return;
+    auto it = pmap_.find(data);
+    CHECK(it != pmap_.end());
+    Page* p = it->second.get();
+    free_map_.insert(std::make_pair(p->num_pages, p));
 }
 
 /*!
@@ -115,9 +113,10 @@ void VirtualMemoryManager::Free(void* data) {
  * \param src The host memory address
  * \param size The size of memory
  */
-void VirtualMemoryManager::MemCopyFromHost(void* dst, const void * src, size_t size) {
-  void * addr = this->GetAddr(reinterpret_cast<uint64_t>(dst));
-  memcpy(addr, src, size);
+void VirtualMemoryManager::MemCopyFromHost(void* dst, const void* src,
+                                           size_t size) {
+    void* addr = this->GetAddr(reinterpret_cast<uint64_t>(dst));
+    memcpy(addr, src, size);
 }
 
 /*!
@@ -126,14 +125,15 @@ void VirtualMemoryManager::MemCopyFromHost(void* dst, const void * src, size_t s
  * \param src The device memory address (virtual)
  * \param size The size of memory
  */
-void VirtualMemoryManager::MemCopyToHost(void* dst, const void * src, size_t size) {
-  void * addr = this->GetAddr(reinterpret_cast<uint64_t>(src));
-  memcpy(dst, addr, size);
+void VirtualMemoryManager::MemCopyToHost(void* dst, const void* src,
+                                         size_t size) {
+    void* addr = this->GetAddr(reinterpret_cast<uint64_t>(src));
+    memcpy(dst, addr, size);
 }
 
 VirtualMemoryManager* VirtualMemoryManager::Global() {
-  static VirtualMemoryManager inst;
-  return &inst;
+    static VirtualMemoryManager inst;
+    return &inst;
 }
 
 }  // namespace vmem

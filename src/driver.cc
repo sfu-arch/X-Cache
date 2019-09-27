@@ -156,6 +156,7 @@ TVM_REGISTER_GLOBAL("tvm.vta.driver")
     DLTensor* A = args[0];
     DLTensor* B = args[1];
     uint32_t c = static_cast<int>(args[2]);
+    //uint32_t len = static_cast<int>(args[3]);
     uint32_t cycles = dev_.Run(c, A, B);
     *rv = static_cast<int>(cycles);
   });
