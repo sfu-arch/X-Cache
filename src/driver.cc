@@ -64,9 +64,9 @@ class Device {
     loader_ = DPILoader::Global();
   }
 
-  uint32_t Run(uint32_t c, DLTensor* a, DLTensor* b) {
+  uint32_t Run(uint32_t c, uint32_t len, DLTensor* a, DLTensor* b) {
     uint32_t cycles;
-    uint32_t len = a->shape[0];
+    //uint32_t len = a->shape[0];
     size_t size = (a->dtype.bits >> 3) * len;
     a_ = this->MemAlloc(size);
     b_ = this->MemAlloc(size);
@@ -156,8 +156,8 @@ TVM_REGISTER_GLOBAL("tvm.vta.driver")
     DLTensor* A = args[0];
     DLTensor* B = args[1];
     uint32_t c = static_cast<int>(args[2]);
-    //uint32_t len = static_cast<int>(args[3]);
-    uint32_t cycles = dev_.Run(c, A, B);
+    uint32_t len = static_cast<int>(args[3]);
+    uint32_t cycles = dev_.Run(c, len, A, B);
     *rv = static_cast<int>(cycles);
   });
 

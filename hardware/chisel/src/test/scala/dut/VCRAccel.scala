@@ -24,8 +24,10 @@ import chisel3.MultiIOModule
 import vta.dpi._
 import dandelion.shell._
 import vta.shell._
-import vta.util.config._
+import vta.util.config.{Parameters => VTAParameters, Config}
+import dandelion.config.{MiniConfig, Parameters => DandelionParameters}
 import accel._
+import vta.TestDefaultDe10Config
 
   /*
               +---------------------------+
@@ -49,11 +51,12 @@ driver_main.cc| +-------------+Master Client    |                 |
 */
 
 /** Test. This generates a testbench file for simulation */
-class TestAccel2(implicit p: Parameters) extends MultiIOModule {
+class TestAccel2(implicit val pvta: VTAParameters, pdandelion : DandelionParameters ) extends MultiIOModule {
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
-  val vta_shell = Module(new DandelionVTAShell)
+//  val vta_shell = Module(new DandelionVTAShell)
+  val vta_shell = Module(new DandelionCacheShell())
   sim_shell.mem <> DontCare
   sim_shell.host <> DontCare
   sim_shell.sim_clock := sim_clock
@@ -66,7 +69,9 @@ class TestAccel2(implicit p: Parameters) extends MultiIOModule {
 class SimDefaultConfig extends Config(new DandelionConfig)
 
 object TestAccel2Main extends App {
-  implicit val p: Parameters = new SimDefaultConfig
+//  implicit val p: Parameters = new SimDefaultConfig
+  implicit val pdandelion : DandelionParameters = DandelionParameters.root((new MiniConfig).toInstance)
+  implicit val pvta : VTAParameters = new SimDefaultConfig
   chisel3.Driver.execute(args, () => new TestAccel2)
 }
 
