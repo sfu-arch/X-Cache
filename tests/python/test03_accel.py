@@ -15,29 +15,33 @@
 # specific language governing permissions and limitations
 # under the License.
 
-export PYTHONPATH:=$(PWD)/python:$(PYTHONPATH)
+import tvm
+import numpy as np
+import tsim
 
-BUILD_NAME = build
-build_dir = $(abspath .)/$(BUILD_NAME)
+def evaluate_accel(a, b):
+    if a > b:
+        a -= b
+    else:
+        b -= a
+    return a * b
 
-default: verilog driver
-	python3 tests/python/verilog_accel.py
 
-run_chisel: chisel driver
-	python3 tests/python/test14_accel.py
+def test_accel():
+    rmax = 64
+    dtype = "uint64"
+    n = 5
+    c = 50
+    ctx = tvm.cpu(0)
+    a = tvm.nd.array(np.random.randint(rmax, size=n).astype(dtype), ctx)
+    b = tvm.nd.array(np.zeros(n).astype(dtype), ctx)
+    f = tsim.load_module()
+    cycles = f(a, b, c, n)
+    msg = "cycles:{0:4} a:{1:2} b:{2:2}".format(cycles, n, c)
+    np.testing.assert_equal(b.asnumpy()[0], evaluate_accel(50, 5), err_msg = "[FAIL] " + msg)
+    print("[PASS] " + msg)
 
-driver: | $(build_dir)
-	cd $(build_dir) && cmake .. && make
-
-$(build_dir):
-	mkdir -p $@
-
-verilog:
-	make -C hardware/verilog
-
-chisel:
-	make -C hardware/chisel
-
-clean:
-	-rm -rf $(build_dir)
-	make -C hardware/chisel clean
+if __name__ == "__main__":
+    tsim.init("chisel")
+    # for i in range(10):
+    test_accel()

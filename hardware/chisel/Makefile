@@ -32,13 +32,13 @@ ifeq (, $(VERILATOR_INC_DIR))
   endif
 endif
 
-TOP = TestAccel
+TOP = TestAccel2
 BUILD_NAME = build
 USE_TRACE = 0
 LIBNAME = libhw
 
 vta_dir = $(abspath ../../)
-tvm_dir = $(abspath ../../)
+tvm_dir = $(abspath ../../include/)
 build_dir = $(abspath .)/$(BUILD_NAME)
 verilator_build_dir = $(build_dir)/verilator
 chisel_build_dir = $(build_dir)/chisel
@@ -91,10 +91,7 @@ else
   lib_path = $(build_dir)/$(LIBNAME).so
 endif
 
-default: lint lib
-
-lint:
-	sbt scalafmt
+default: lib
 
 lib: $(lib_path)
 $(lib_path): $(verilator_build_dir)/V$(TOP).cpp
@@ -105,8 +102,11 @@ $(verilator_build_dir)/V$(TOP).cpp: $(chisel_build_dir)/$(TOP).v
 	verilator $(verilator_opt) $<
 
 verilog: $(chisel_build_dir)/$(TOP).v
-$(chisel_build_dir)/$(TOP).v: 
-	sbt 'test:runMain test.Elaborate --target-dir $(chisel_build_dir) --top-name $(TOP)'
+$(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')#install_vta_package
+	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP)'
+
+#install_vta_package:
+#	cd $(vta_dir)/hardware/chisel && sbt publishLocal
 
 clean:
 	-rm -rf $(build_dir) target project/target project/project
