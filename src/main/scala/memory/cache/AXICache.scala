@@ -197,7 +197,6 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
 //  io.cpu.flush.ready := state === s_IDLE
   io.cpu.flush_done := false.B
 
-
   /**
     * Dumping cache state should add for debugging purpose
     */
@@ -256,6 +255,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
     is(s_WRITE_CACHE) {
       when(hit || is_alloc_reg || io.cpu.abort) {
         state := s_IDLE
+        io.cpu.resp.valid := true.B
         if (debug) {
           printf("\nSTORE END: %d\n", counterValue)
         }
@@ -277,6 +277,15 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
       when(write_wrap_out) {
         state := s_WRITE_ACK
       }
+
+      if (debug) {
+        printf("\nFlushing the cache: %d\n", counterValue)
+        printf(p"Cache Block Add: ${io.mem.aw}\n")
+        printf(p"Cache Block Data: ${io.mem.w}\n")
+        printf(p"Cache Block val: ${cache_block}\n")
+        printf(p"Cache Read: ${read}\n")
+        printf(p"Cache Read data: ${rdata}\n")
+      }
     }
     is(s_WRITE_ACK) {
       io.mem.b.ready := true.B
@@ -292,7 +301,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
       }
     }
     is(s_REFILL) {
-      printf(p"state; Refill\n")
+      printf(p"state: Refill\n")
       when(read_wrap_out) {
         state := Mux(cpu_iswrite.asBool(), s_WRITE_CACHE, s_IDLE)
         when(!cpu_iswrite) {
@@ -305,9 +314,16 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
     is(s_WRITE_FLUSH) {
       if (debug) {
         printf("\nFlushing the cache: %d\n", counterValue)
+        printf(p"Cache Block Add: ${io.mem.aw}\n")
+        printf(p"Cache Block Data: ${io.mem.w}\n")
+        printf(p"Cache Block val: ${cache_block}\n")
       }
       io.mem.aw.valid := true.B
       io.mem.ar.valid := false.B
+
+      //It's a hack to latch the latest cache data
+      //it needs to be rethinked
+      ren_reg := true.B
       when(io.mem.aw.fire()) {
         state := s_WRITE_BACK
       }
