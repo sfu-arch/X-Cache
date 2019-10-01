@@ -53,8 +53,8 @@ class TestAccel2(implicit p: Parameters) extends MultiIOModule {
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
-  val vta_shell = Module(new DandelionVTAShell)
-  //  val vta_shell = Module(new DandelionCacheShell())
+//  val vta_shell = Module(new DandelionVTAShell)
+    val vta_shell = Module(new DandelionCacheShell())
   sim_shell.mem <> DontCare
   sim_shell.host <> DontCare
   sim_shell.sim_clock := sim_clock

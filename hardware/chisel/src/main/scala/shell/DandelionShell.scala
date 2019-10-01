@@ -11,6 +11,7 @@ import dandelion.config._
 import dandelion.generator.test14DF
 import dandelion.interfaces.{ControlBundle, DataBundle}
 import dandelion.interfaces.axi._
+import dandelion.memory.cache._
 
 /** Register File.
  *
@@ -154,7 +155,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
 
   val vcr = Module(new VCR)
   //val cache = Module(new Cache(0, pvta(ShellKey).memParams, new CacheParams(pvta(ShellKey).memParams)))
-  val cache = Module(new Cache)
+  val cache = Module(new SimpleCache()(debug = true))
 
   //  cache.io.axi <> DontCare
   //  cache.io.cpu <> DontCare
@@ -216,7 +217,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   vcr.io.vcr.finish := last
 
 
-  io.mem <> cache.io.nasti
+  io.mem <> cache.io.mem
   vcr.io.host <> io.host
 
 }
