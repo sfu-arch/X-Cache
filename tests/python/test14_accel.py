@@ -31,7 +31,7 @@ def test_accel():
     f = tsim.load_module()
     cycles = f(a, b, c, n)
     msg = "cycles:{0:4} a:{1:2} b:{2:2}".format(cycles, n, c)
-    np.testing.assert_equal(b.asnumpy()[0], a.asnumpy() + c, err_msg = "[FAIL] " + msg)
+    np.testing.assert_equal(b.asnumpy()[0], a.asnumpy()[0] + c + n, err_msg = "[FAIL] " + msg)
     print("[PASS] " + msg)
 
 if __name__ == "__main__":
