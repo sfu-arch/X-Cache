@@ -54,29 +54,29 @@ case class AXIParams(
   val regionConst = 0
 }
 
-abstract class AXIBase(params: AXIParams)(implicit p: Parameters) extends ParameterizedBundle()(p)
+abstract class AXIBase(params: AXIParams) extends GenericParameterizedBundle(params)
 
 // AXILite
 
-class AXILiteAddress(params: AXIParams)(implicit p: Parameters) extends AXIBase(params)(p) {
+class AXILiteAddress(params: AXIParams) extends AXIBase(params) {
   val addr = UInt(params.addrBits.W)
 }
 
-class AXILiteWriteData(params: AXIParams)(implicit p: Parameters) extends AXIBase(params)(p) {
+class AXILiteWriteData(params: AXIParams) extends AXIBase(params) {
   val data = UInt(params.dataBits.W)
   val strb = UInt(params.strbBits.W)
 }
 
-class AXILiteWriteResponse(params: AXIParams)(implicit p: Parameters) extends AXIBase(params)(p) {
+class AXILiteWriteResponse(params: AXIParams) extends AXIBase(params) {
   val resp = UInt(params.respBits.W)
 }
 
-class AXILiteReadData(params: AXIParams)(implicit p: Parameters) extends AXIBase(params)(p) {
+class AXILiteReadData(params: AXIParams) extends AXIBase(params) {
   val data = UInt(params.dataBits.W)
   val resp = UInt(params.respBits.W)
 }
 
-class AXILiteMaster(params: AXIParams)(implicit p: Parameters) extends AXIBase(params)(p) {
+class AXILiteMaster(params: AXIParams) extends AXIBase(params) {
   val aw = Decoupled(new AXILiteAddress(params))
   val w = Decoupled(new AXILiteWriteData(params))
   val b = Flipped(Decoupled(new AXILiteWriteResponse(params)))
@@ -96,7 +96,7 @@ class AXILiteMaster(params: AXIParams)(implicit p: Parameters) extends AXIBase(p
   }
 }
 
-class AXILiteClient(params: AXIParams)(implicit p: Parameters) extends AXIBase(params) {
+class AXILiteClient(params: AXIParams) extends AXIBase(params) {
   val aw = Flipped(Decoupled(new AXILiteAddress(params)))
   val w = Flipped(Decoupled(new AXILiteWriteData(params)))
   val b = Decoupled(new AXILiteWriteResponse(params))
@@ -117,7 +117,7 @@ class AXILiteClient(params: AXIParams)(implicit p: Parameters) extends AXIBase(p
 
 // AXI extends AXILite
 
-class AXIAddress(params: AXIParams)(implicit p : Parameters) extends AXILiteAddress(params) {
+class AXIAddress(params: AXIParams) extends AXILiteAddress(params) {
   val id = UInt(params.idBits.W)
   val user = UInt(params.userBits.W)
   val len = UInt(params.lenBits.W)
@@ -130,24 +130,24 @@ class AXIAddress(params: AXIParams)(implicit p : Parameters) extends AXILiteAddr
   val region = UInt(params.regionBits.W)
 }
 
-class AXIWriteData(params: AXIParams)(implicit p : Parameters) extends AXILiteWriteData(params) {
+class AXIWriteData(params: AXIParams) extends AXILiteWriteData(params) {
   val last = Bool()
   val id = UInt(params.idBits.W)
   val user = UInt(params.userBits.W)
 }
 
-class AXIWriteResponse(params: AXIParams)(implicit p : Parameters) extends AXILiteWriteResponse(params) {
+class AXIWriteResponse(params: AXIParams) extends AXILiteWriteResponse(params) {
   val id = UInt(params.idBits.W)
   val user = UInt(params.userBits.W)
 }
 
-class AXIReadData(params: AXIParams)(implicit p : Parameters) extends AXILiteReadData(params) {
+class AXIReadData(params: AXIParams) extends AXILiteReadData(params) {
   val last = Bool()
   val id = UInt(params.idBits.W)
   val user = UInt(params.userBits.W)
 }
 
-class AXIMaster(params: AXIParams)(implicit p : Parameters) extends AXIBase(params) {
+class AXIMaster(params: AXIParams) extends AXIBase(params) {
   val aw = Decoupled(new AXIAddress(params))
   val w = Decoupled(new AXIWriteData(params))
   val b = Flipped(Decoupled(new AXIWriteResponse(params)))
@@ -214,7 +214,7 @@ class AXIMaster(params: AXIParams)(implicit p : Parameters) extends AXIBase(para
   }
 }
 
-class AXIClient(params: AXIParams)(implicit p : Parameters) extends AXIBase(params) {
+class AXIClient(params: AXIParams) extends AXIBase(params) {
   val aw = Flipped(Decoupled(new AXIAddress(params)))
   val w = Flipped(Decoupled(new AXIWriteData(params)))
   val b = Decoupled(new AXIWriteResponse(params))
@@ -242,7 +242,7 @@ class AXIClient(params: AXIParams)(implicit p : Parameters) extends AXIBase(para
 // for wrapper purposes, because the package RTL tool in Xilinx Vivado
 // only allows certain name formats
 
-class XilinxAXILiteClient(params: AXIParams)(implicit p : Parameters) extends AXIBase(params) {
+class XilinxAXILiteClient(params: AXIParams) extends AXIBase(params) {
   val AWVALID = Input(Bool())
   val AWREADY = Output(Bool())
   val AWADDR = Input(UInt(params.addrBits.W))
@@ -262,7 +262,7 @@ class XilinxAXILiteClient(params: AXIParams)(implicit p : Parameters) extends AX
   val RRESP = Output(UInt(params.respBits.W))
 }
 
-class XilinxAXIMaster(params: AXIParams)(implicit p : Parameters) extends AXIBase(params) {
+class XilinxAXIMaster(params: AXIParams) extends AXIBase(params) {
   val AWVALID = Output(Bool())
   val AWREADY = Input(Bool())
   val AWADDR = Output(UInt(params.addrBits.W))
