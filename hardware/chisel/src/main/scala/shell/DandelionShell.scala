@@ -6,7 +6,6 @@ package dandelion.shell
 
 import chisel3._
 import chisel3.util._
-import dandelion.accel.Cache
 import dandelion.config._
 import dandelion.generator.test14DF
 import dandelion.interfaces.{ControlBundle, DataBundle}
@@ -154,11 +153,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   val ptrBits = regBits * 2
 
   val vcr = Module(new VCR)
-  //val cache = Module(new Cache(0, pvta(ShellKey).memParams, new CacheParams(pvta(ShellKey).memParams)))
-  val cache = Module(new SimpleCache()(debug = true))
-
-  //  cache.io.axi <> DontCare
-  //  cache.io.cpu <> DontCare
+  val cache = Module(new SimpleCache())
 
   val test14 = Module(new test14DF())
 
@@ -168,7 +163,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   val sIdle :: sBusy :: sDone :: Nil = Enum(3)
 
   val state = RegInit(sIdle)
-  val constValue = vcr.io.vcr.vals(0)
+  val constValue  = vcr.io.vcr.vals(0)
   val lengthValue = vcr.io.vcr.vals(1)
   val ptr_a = RegInit(0.U(ptrBits.W))
   val ptr_b = RegInit(0.U(ptrBits.W))
@@ -181,19 +176,29 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   test14.io.in.bits.data("field3") := DataBundle(lengthValue)
   test14.io.in.bits.enable := ControlBundle.active()
 
-  test14.io.in.valid := vcr.io.vcr.launch
+
+  test14.io.in.valid := false.B
   test14.io.out.ready := state === sBusy
 
   cache.io.cpu.abort := false.B
 
-
   switch(state) {
     is(sIdle) {
       when(vcr.io.vcr.launch) {
-        state := sBusy
+        printf(p"Input: a = ${ptr_a}, b = ${ptr_b}, const = ${constValue}, len = ${lengthValue}\n")
+        test14.io.in.valid := true.B
+        when(test14.io.in.fire){
+          state := sBusy
+        }
       }
     }
     is(sBusy) {
+      when(test14.io.out.fire){
+        state := sDone
+      }
+    }
+    is(sDone){
+      state := sIdle
     }
   }
 
@@ -211,7 +216,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
 
   when(state === sIdle) {
     ptr_a := vcr.io.vcr.ptrs(0)
-    ptr_b := vcr.io.vcr.ptrs(1)
+    ptr_b := vcr.io.vcr.ptrs(2)
   }
 
   vcr.io.vcr.finish := last
