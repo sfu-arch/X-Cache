@@ -214,7 +214,6 @@ class VME(implicit p: Parameters) extends Module {
   }
 
   // registers storing read/write cmds
-
   val rd_len = RegInit(0.U(lenBits.W))
   val wr_len = RegInit(0.U(lenBits.W))
   val rd_addr = RegInit(0.U(addrBits.W))

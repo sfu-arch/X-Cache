@@ -2,8 +2,9 @@ package dandelion.interfaces
 
 
 import chisel3._
-import chisel3.util.{Decoupled}
+import chisel3.util.Decoupled
 import dandelion.config._
+import dandelion.shell.ShellKey
 import utility.Constants._
 
 import scala.collection.immutable.ListMap

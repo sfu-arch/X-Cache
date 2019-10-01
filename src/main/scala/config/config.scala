@@ -29,6 +29,13 @@ case object BuildRFile extends Field[Parameters => AbstractRFile]
 
 case object FTYP extends Field[FType]
 
+case object NWays extends Field[Int]
+
+case object NSets extends Field[Int]
+
+case object CacheBlockBytes extends Field[Int]
+
+
 abstract trait CoreParams {
   implicit val p: Parameters
   val xlen = p(XLEN)
@@ -51,7 +58,7 @@ abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundl
 
 class MiniConfig extends Config((site, here, up) => {
   // Core
-  case XLEN => 64
+  case XLEN => 32
   case TLEN => 5
   case GLEN => 16
   // # Max bits of cache request tag.
@@ -70,6 +77,7 @@ class MiniConfig extends Config((site, here, up) => {
   case NWays => 1 // TODO: set-associative
   case NSets => 256
   case CacheBlockBytes => 4 * (here(XLEN) >> 3) // 4 x 32 bits = 16B
+
   // NastiIO
   case NastiKey => new NastiParameters(
     idBits = 12,
