@@ -21,10 +21,10 @@ package test
 
 import chisel3._
 import chisel3.MultiIOModule
-import vta.dpi._
+import dandelion.dpi._
 import dandelion.shell._
 import accel._
-import vta.TestDefaultDe10Config
+//import vta.TestDefaultDe10Config
 
 /** VTA simulation shell.
   *

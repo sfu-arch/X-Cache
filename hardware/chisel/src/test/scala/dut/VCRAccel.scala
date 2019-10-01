@@ -21,57 +21,67 @@ package test
 
 import chisel3._
 import chisel3.MultiIOModule
-import vta.dpi._
+import dandelion.dpi._
 import dandelion.shell._
-import vta.shell._
-import vta.util.config.{Parameters => VTAParameters, Config}
-import dandelion.config.{MiniConfig, Parameters => DandelionParameters}
+import dandelion.config._
 import accel._
-import vta.TestDefaultDe10Config
+//import vta.TestDefaultDe10Config
 
-  /*
-              +---------------------------+
-              |   AXISimShell (DPI<->AXI) |
-              |                           |
-              | +-------------+           |
-              | |  VTASim     |           |
-              | |             |           |
-              | +-------------+           |        TestAccel2
-              |                           |     +-----------------+
+/*
+            +---------------------------+
+            |   AXISimShell (DPI<->AXI) |
+            |                           |
+            | +-------------+           |
+            | |  VTASim     |           |
+            | |             |           |
+            | +-------------+           |        TestAccel2
+            |                           |     +-----------------+
 driver_main.cc| +-------------+Master Client    |                 |
-         +--->+ |  VTAHost    +-----------------------------------X
-              | |             |   AXI-Lite|     || VCR Control RegX
-              | +-------------+           |     +-----------------|
-              |                           |     |                 |
-              | +--------------+          |     |                 |
-              | |   VTAMem     ^Client Master   |                 |
-              | |              <----------+-----------------------+
-              | +--------------+  AXI     |     ||  VMem Interface|
-              +---------------------------+     +-----------------+
+       +--->+ |  VTAHost    +-----------------------------------X
+            | |             |   AXI-Lite|     || VCR Control RegX
+            | +-------------+           |     +-----------------|
+            |                           |     |                 |
+            | +--------------+          |     |                 |
+            | |   VTAMem     ^Client Master   |                 |
+            | |              <----------+-----------------------+
+            | +--------------+  AXI     |     ||  VMem Interface|
+            +---------------------------+     +-----------------+
 */
 
 /** Test. This generates a testbench file for simulation */
-class TestAccel2(implicit val pvta: VTAParameters, pdandelion : DandelionParameters ) extends MultiIOModule {
+class TestAccel2(implicit p: Parameters) extends MultiIOModule {
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
-//  val vta_shell = Module(new DandelionVTAShell)
-  val vta_shell = Module(new DandelionCacheShell())
+  val vta_shell = Module(new DandelionVTAShell)
+  //  val vta_shell = Module(new DandelionCacheShell())
   sim_shell.mem <> DontCare
   sim_shell.host <> DontCare
   sim_shell.sim_clock := sim_clock
   sim_wait := sim_shell.sim_wait
-  sim_shell.mem <> vta_shell.io.mem
- vta_shell.io.host <> sim_shell.host
+
+  /**
+   * @TODO: This is a bug from chisel otherwise, bulk connection should work here
+   */
+  //  sim_shell.mem <> vta_shell.io.mem
+  sim_shell.mem.ar <> vta_shell.io.mem.ar
+  sim_shell.mem.aw <> vta_shell.io.mem.aw
+  sim_shell.mem.w <> vta_shell.io.mem.w
+  vta_shell.io.mem.b <> sim_shell.mem.b
+  vta_shell.io.mem.r <> sim_shell.mem.r
+
+  sim_shell.host.b <> vta_shell.io.host.b
+  sim_shell.host.r <> vta_shell.io.host.r
+  vta_shell.io.host.ar <> sim_shell.host.ar
+  vta_shell.io.host.aw <> sim_shell.host.aw
+  vta_shell.io.host.w <> sim_shell.host.w
 }
 
 //class DefaultDe10Config extends Config(new De10Config)
-class SimDefaultConfig extends Config(new DandelionConfig)
+//class SimDefaultConfig extends Config(new DandelionConfig)
 
 object TestAccel2Main extends App {
-//  implicit val p: Parameters = new SimDefaultConfig
-  implicit val pdandelion : DandelionParameters = DandelionParameters.root((new MiniConfig).toInstance)
-  implicit val pvta : VTAParameters = new SimDefaultConfig
+  implicit val p: Parameters = Parameters.root((new MiniConfig).toInstance) ++ new DandelionConfig
   chisel3.Driver.execute(args, () => new TestAccel2)
 }
 

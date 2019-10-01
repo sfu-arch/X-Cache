@@ -21,7 +21,7 @@ package accel
 
 import chisel3._
 import chisel3.util._
-import vta.dpi._
+import dandelion.dpi._
 
 /** Compute
   *
