@@ -54,6 +54,7 @@ abstract trait CoreParams {
 }
 
 abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundle()(p) with CoreParams
+abstract class AXICoreBundle(implicit val p: Parameters) extends GenericParameterizedBundle(p) with CoreParams
 
 
 class MiniConfig extends Config((site, here, up) => {

@@ -31,7 +31,7 @@ abstract class test14DFIO(implicit val p: Parameters) extends Module with CorePa
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
-    val out = Decoupled(new Call(List(32)))
+    val out = Decoupled(new Call(List(32, 32)))
   })
 }
 
@@ -86,7 +86,7 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
   val st_3 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 3, RouteID = 0))
 
   //  ret i32 %add1, !dbg !35, !UID !36, !BB_UID !37
-  val ret_4 = Module(new RetNode2(retTypes = List(32), ID = 4))
+  val ret_4 = Module(new RetNode2(retTypes = List(32, 32), ID = 4))
 
 
 
@@ -237,7 +237,10 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
 
   binaryOp_add1.io.LeftIO <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  st_3.io.Out(0).ready := true.B
+//  st_3.io.Out(0).ready := true.B
+
+
+  ret_4.io.In.data("field1") <> st_3.io.Out(0)
 
 
 
