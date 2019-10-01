@@ -27,6 +27,8 @@ trait CacheParams extends CoreParams {
 
 class CacheCPUIO(implicit p: Parameters) extends GenericParameterizedBundle(p) {
   val abort = Input(Bool())
+  val flush = Input(Bool())
+  val flush_done = Output(Bool())
   val req = Flipped(Decoupled(new MemReq))
   val resp = Output(Valid(new MemResp))
 }
@@ -67,7 +69,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
   val Axi_param = p(ShellKey).memParams
 
   // cache states
-  val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
+  val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: s_WRITE_FLUSH :: Nil) = Enum(8)
   val state = RegInit(s_IDLE)
 
   // memory
@@ -158,7 +160,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
     }
     dataMem.zipWithIndex foreach { case (mem, i) =>
       val data = VecInit.tabulate(wBytes)(k => wdata(i * xlen + (k + 1) * 8 - 1, i * xlen + k * 8))
-      mem.write(idx_reg, data, (wmask((i + 1) * wBytes - 1, i * wBytes)).toBools)
+      mem.write(idx_reg, data, (wmask((i + 1) * wBytes - 1, i * wBytes)).asBools)
       mem suggestName s"dataMem_${i}"
     }
   }
@@ -192,6 +194,9 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
   io.mem.w.valid := false.B
   io.mem.b.ready := false.B
 
+//  io.cpu.flush.ready := state === s_IDLE
+  io.cpu.flush_done := false.B
+
 
   /**
     * Dumping cache state should add for debugging purpose
@@ -209,15 +214,18 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
         //state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
         when(io.cpu.req.bits.iswrite) {
           state := s_WRITE_CACHE
-          if(debug){
+          if (debug) {
             printf("\nSTORE START: %d\n", counterValue)
           }
         }.otherwise {
           state := s_READ_CACHE
-          if(debug){
+          if (debug) {
             printf("\nLOAD START:  %d\n", counterValue)
           }
         }
+      }.elsewhen(io.cpu.flush) {
+        printf(p"FLUSHING CACHE")
+        state := s_WRITE_FLUSH
       }
     }
     is(s_READ_CACHE) {
@@ -231,7 +239,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
           }
         }.otherwise {
           state := s_IDLE
-          if(debug){
+          if (debug) {
             printf("\nLOAD END: %d\n", counterValue)
           }
         }
@@ -248,11 +256,11 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
     is(s_WRITE_CACHE) {
       when(hit || is_alloc_reg || io.cpu.abort) {
         state := s_IDLE
-        if(debug){
+        if (debug) {
           printf("\nSTORE END: %d\n", counterValue)
         }
       }.otherwise {
-        if(debug){
+        if (debug) {
           printf("\nSTORE MISS: %d\n", counterValue)
         }
         io.mem.aw.valid := is_dirty
@@ -272,6 +280,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
     }
     is(s_WRITE_ACK) {
       io.mem.b.ready := true.B
+      io.cpu.flush_done := true.B
       when(io.mem.b.fire()) {
         state := s_REFILL_READY
       }
@@ -287,10 +296,20 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
       when(read_wrap_out) {
         state := Mux(cpu_iswrite.asBool(), s_WRITE_CACHE, s_IDLE)
         when(!cpu_iswrite) {
-          if(debug){
+          if (debug) {
             printf("\nLOAD END: %d\n", counterValue)
           }
         }
+      }
+    }
+    is(s_WRITE_FLUSH) {
+      if (debug) {
+        printf("\nFlushing the cache: %d\n", counterValue)
+      }
+      io.mem.aw.valid := true.B
+      io.mem.ar.valid := false.B
+      when(io.mem.aw.fire()) {
+        state := s_WRITE_BACK
       }
     }
   }

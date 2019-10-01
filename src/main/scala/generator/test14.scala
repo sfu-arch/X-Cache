@@ -80,7 +80,7 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
   val binaryOp_add1 = Module(new ComputeNode(NumOuts = 1, ID = 1, opCode = "add")(sign = false))
 
   //  %add1 = add i32 %add, %0, !dbg !31, !UID !32
-  val binaryOp_add12 = Module(new ComputeNode(NumOuts = 2, ID = 2, opCode = "add")(sign = false))
+  val binaryOp_add12 = Module(new ComputeNode(NumOuts = 1, ID = 2, opCode = "add")(sign = false))
 
   //  store i32 %add1, i32* %b, align 4, !dbg !33, !tbaa !24, !UID !34
   val st_3 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 3, RouteID = 0))
@@ -227,7 +227,8 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
 
   st_3.io.inData <> binaryOp_add12.io.Out(0)
 
-  ret_4.io.In.data("field0") <> binaryOp_add12.io.Out(1)
+  //ret_4.io.In.data("field0") <> binaryOp_add12.io.Out(1)
+  ret_4.io.In.data("field0") <> st_3.io.Out(0)
 
   ld_0.io.GepAddr <> InputSplitter.io.Out.data.elements("field0")(0)
 
@@ -237,7 +238,7 @@ class test14DF(implicit p: Parameters) extends test14DFIO()(p) {
 
   binaryOp_add1.io.LeftIO <> InputSplitter.io.Out.data.elements("field3")(0)
 
-  st_3.io.Out(0).ready := true.B
+//  st_3.io.Out(0).ready := true.B
 
 
 

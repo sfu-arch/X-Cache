@@ -128,7 +128,7 @@ class UnTypStore(NumPredOps: Int,
         when(data_valid_R && addr_valid_R) {
           when(enable_R.control && mem_req_fire) {
             io.memReq.valid := true.B
-            when(io.memReq.ready) {
+            when(io.memReq.fire) {
               state := s_RECEIVING
             }
           }.otherwise {
@@ -145,6 +145,9 @@ class UnTypStore(NumPredOps: Int,
         ValidSucc()
         ValidOut()
         state := s_Done
+        if(log){
+          printf(p"Store state switch to DONE")
+        }
       }
     }
     is(s_Done) {
