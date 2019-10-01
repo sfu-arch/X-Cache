@@ -160,7 +160,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   cache.io.cpu.req <> test14.io.MemReq
   test14.io.MemResp <> cache.io.cpu.resp
 
-  val sIdle :: sBusy :: sDone :: Nil = Enum(3)
+  val sIdle :: sBusy :: sFlush :: sDone :: Nil = Enum(4)
 
   val state = RegInit(sIdle)
   val constValue  = vcr.io.vcr.vals(0)
@@ -181,6 +181,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   test14.io.out.ready := state === sBusy
 
   cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   switch(state) {
     is(sIdle) {
@@ -194,6 +195,12 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
     }
     is(sBusy) {
       when(test14.io.out.fire){
+        state := sFlush
+      }
+    }
+    is(sFlush){
+      cache.io.cpu.flush := true.B
+      when(cache.io.cpu.flush_done){
         state := sDone
       }
     }
