@@ -58,7 +58,7 @@ object MetaData {
 }
 
 
-class SimpleCache(val ID: Int = 0)(val debug: Boolean = false)(implicit val p: Parameters) extends Module with CacheParams {
+class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module with CacheParams {
   val io = IO(new Bundle {
     val cpu = new CacheCPUIO
     val mem = new AXIMaster(p(ShellKey).memParams)
@@ -211,8 +211,6 @@ class SimpleCache(val ID: Int = 0)(val debug: Boolean = false)(implicit val p: P
           state := s_WRITE_CACHE
           if(debug){
             printf("\nSTORE START: %d\n", counterValue)
-            printf(p"Store command: ${io.mem.aw}\n")
-            printf(p"Store command: ${io.mem.w}\n")
           }
         }.otherwise {
           state := s_READ_CACHE
@@ -256,17 +254,13 @@ class SimpleCache(val ID: Int = 0)(val debug: Boolean = false)(implicit val p: P
       }.otherwise {
         if(debug){
           printf("\nSTORE MISS: %d\n", counterValue)
-          printf(p"Store command: ${io.mem.aw}\n")
-          printf(p"Store command: ${io.mem.w}\n")
         }
         io.mem.aw.valid := is_dirty
         io.mem.ar.valid := !is_dirty
         when(io.mem.aw.fire()) {
           state := s_WRITE_BACK
-          printf(p"state: Write back\n")
         }.elsewhen(io.mem.ar.fire()) {
           state := s_REFILL
-          printf(p"state: Write refill\n")
         }
       }
     }
