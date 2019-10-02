@@ -74,7 +74,13 @@ import Constants._
 class LoadNodeTester extends  FlatSpec with Matchers {
   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Load Node tester" in {
-    chisel3.iotesters.Driver(() => new UnTypLoad(NumPredOps=1,NumSuccOps=1,NumOuts=1,Typ=MT_W,ID=1,RouteID=0)) { c =>
+    chisel3.iotesters.Driver.execute(
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir/LoadNodeTester",
+        "-tts", "0001"),
+      () => new UnTypLoad(NumPredOps=1,NumSuccOps=1,NumOuts=1,Typ=MT_W,ID=1,RouteID=0)) { c =>
       new LoadNodeTests(c)
     } should be(true)
   }

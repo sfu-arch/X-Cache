@@ -72,7 +72,13 @@ class ChainTester(df: Chain)
 	class FusedCompTests extends  FlatSpec with Matchers {
    implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new Chain(NumOps = 2, ID = 0, OpCodes = Array("add","add"))(sign = false)) {
+     chisel3.iotesters.Driver.execute(
+       Array(
+         // "-ll", "Info",
+         "-tbn", "verilator",
+         "-td", "test_run_dir/FusedComputeNodeTester",
+         "-tts", "0001"),
+       () => new Chain(NumOps = 2, ID = 0, OpCodes = Array("add","add"))(sign = false)) {
        c => new ChainTester(c)
      } should be(true)
    }

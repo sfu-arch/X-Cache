@@ -36,7 +36,13 @@ class sextTester(df: SextNode)
 class sextTests extends  FlatSpec with Matchers {
   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-    chisel3.iotesters.Driver(() => new SextNode()) {
+    chisel3.iotesters.Driver.execute(
+      Array(
+        // "-ll", "Info",
+        "-tbn", "verilator",
+        "-td", "test_run_dir/sextNodeTester",
+        "-tts", "0001"),
+      () => new SextNode()) {
        c => new sextTester(c)
      } should be(true)
    }

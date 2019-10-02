@@ -81,7 +81,13 @@ class GepTester(df: GepOneNode)
 class GepTests extends  FlatSpec with Matchers {
    implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "Dataflow tester" in {
-     chisel3.iotesters.Driver(() => new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 2)) {
+     chisel3.iotesters.Driver.execute(
+       Array(
+         // "-ll", "Info",
+         "-tbn", "verilator",
+         "-td", "test_run_dir/GepNodeTester",
+         "-tts", "0001"),
+       () => new GepOneNode(NumOuts = 1, ID = 0)(numByte1 = 2)) {
        c => new GepTester(c)
      } should be(true)
    }
