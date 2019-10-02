@@ -163,13 +163,32 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   val sIdle :: sBusy :: sFlush :: sDone :: Nil = Enum(4)
 
   val state = RegInit(sIdle)
-  val constValue  = vcr.io.vcr.vals(0)
-  val lengthValue = vcr.io.vcr.vals(1)
   val ptr_a = RegInit(0.U(ptrBits.W))
   val ptr_b = RegInit(0.U(ptrBits.W))
+  val constValue  = vcr.io.vcr.vals(0)
+  val lengthValue = vcr.io.vcr.vals(1)
   val cycles = RegInit(0.U(regBits.W))
   val cnt = RegInit(0.U(regBits.W))
+  val last = state === sDone
 
+
+  when(state === sIdle) {
+    cycles := 0.U
+  }.otherwise {
+    cycles := cycles + 1.U
+  }
+
+  vcr.io.vcr.ecnt(0).valid := last
+  vcr.io.vcr.ecnt(0).bits := cycles
+
+  when(state === sIdle) {
+    ptr_a := vcr.io.vcr.ptrs(0)
+    ptr_b := vcr.io.vcr.ptrs(2)
+  }
+
+  /**
+   * @todo make this part parameterized
+   */
   test14.io.in.bits.data("field0") := DataBundle(ptr_a)
   test14.io.in.bits.data("field1") := DataBundle(ptr_b)
   test14.io.in.bits.data("field2") := DataBundle(constValue)
@@ -209,22 +228,6 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
     }
   }
 
-  val last = state === sDone
-
-
-  when(state === sIdle) {
-    cycles := 0.U
-  }.otherwise {
-    cycles := cycles + 1.U
-  }
-
-  vcr.io.vcr.ecnt(0).valid := last
-  vcr.io.vcr.ecnt(0).bits := cycles
-
-  when(state === sIdle) {
-    ptr_a := vcr.io.vcr.ptrs(0)
-    ptr_b := vcr.io.vcr.ptrs(2)
-  }
 
   vcr.io.vcr.finish := last
 
