@@ -55,6 +55,12 @@ brew install verilator sbt
 
 ## Linux Dependencies
 
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-dev python3-setuptools gcc libtinfo-dev zlib1g-dev build-essential cmake
+
+```
+
 Add `sbt` to package manager (Ubuntu).
 
 ```bash
