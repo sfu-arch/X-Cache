@@ -25,9 +25,8 @@ chisel:
 	make -C hardware/chisel
 
 tvm:
-	tar xvf packages/tvm.tar.gz -C .
-	cp $(build_dir)/tvm_runtime-prefix/src/tvm_runtime-build/libtvm_runtime.dylib python
-	cd python && python3 setup.py install
+	cp $(build_dir)/tvm/src/tvm_runtime/libtvm_runtime.dylib $(build_dir)
+	cd $(build_dir)/tvm/src/tvm_runtime/python && python3 setup.py install
 
 clean:
 	-rm -rf $(build_dir)

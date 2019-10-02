@@ -7,8 +7,10 @@ message(STATUS "CMAKE_ROOT=${CMAKE_ROOT}")
 set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
 
 ExternalProject_Add(tvm_runtime
-    GIT_REPOSITORY git@github.com:sfu-arch/tvm_runtime.git
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION}
+    GIT_REPOSITORY https://github.com/dmlc/tvm.git
+    PREFIX tvm
+    BUILD_COMMAND make runtime
+    BUILD_IN_SOURCE ON
     STEP_TARGETS build
     EXCLUDE_FROM_ALL TRUE
 )
