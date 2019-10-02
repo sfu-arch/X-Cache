@@ -56,7 +56,14 @@ class SuperParallelCacheUnitTests(c: NParallelCache) extends PeekPokeTester(c) {
 class SuperParallelCacheUnitTester extends FlatSpec with Matchers {
   implicit val p = Parameters.root((new MiniConfig).toInstance)
   it should "SuperCache tester" in {
-    chisel3.iotesters.Driver(() => new NParallelCache(2, 2)) { c =>
+    chisel3.iotesters.Driver.execute(
+      Array(
+        // "-ll", "Info",
+        "-tn", "test03",
+        "-tbn", "verilator",
+        "-td", "test_run_dir/SuperParallelCache",
+        "-tts", "0001"),
+      () => new NParallelCache(2, 2)) { c =>
       new SuperParallelCacheUnitTests(c)
     } should be(true)
   }
