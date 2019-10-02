@@ -1,16 +1,11 @@
 package dandelion.node
 
 import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import chisel3.MultiIOModule
 import chisel3.Module
-import chisel3.testers._
-import chisel3.util._
-import org.scalatest.{FlatSpec, Matchers}
 import utility.UniformPrintfs
 import dandelion.config._
 import dandelion.interfaces.{VariableDecoupledData, _}
-import muxes._
 import util._
 
 class RetNodeIO(val retTypes: Seq[Int])(implicit p: Parameters)

@@ -3,11 +3,10 @@ package dandelion.memory.cache
 
 import chisel3._
 import chisel3.util._
-import dandelion.junctions._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.interfaces.axi._
-import dandelion.shell.{ShellKey, VMECmd}
+import dandelion.shell.{ShellKey}
 
 
 trait CacheParams extends CoreParams {

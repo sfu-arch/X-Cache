@@ -1,21 +1,10 @@
 package dandelion.memory
 
-import scala.math._
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
-import org.scalatest.{Matchers, FlatSpec}
-
-import regfile._
 import dandelion.config._
 import util._
 import dandelion.interfaces._
-import muxes._
-import dandelion.accel._
-import dandelion.memory._
-import utility.Constants._
 import utility.UniformPrintfs
 
 //XXX
@@ -97,7 +86,7 @@ class UnifiedController(ID: Int,
   //--------------------------
 
   //------------------------------------------------------------------------------------
-  if(log){
+  if(artrace){
     when(io.MemReq.fire){
       when(io.MemReq.bits.iswrite){
         printf("[LOG] [MemController] [MemReq]: Addr: %d, Data: %d, IsWrite: ST\n", io.MemReq.bits.addr, io.MemReq.bits.data)
@@ -114,6 +103,8 @@ class UnifiedController(ID: Int,
       }
     }
   }
+
+
   /// Printf debugging
   override val printfSigil = "Unified: " + ID + " Type " + (Typ_SZ)
 

@@ -2,11 +2,9 @@ package dandelion.node
 
 import chisel3.{RegInit, _}
 import chisel3.util._
-import org.scalacheck.Prop.False
 import dandelion.config._
 import dandelion.interfaces._
 import utility.Constants._
-import utility.UniformPrintfs
 
 // Design Doc
 //////////
@@ -130,9 +128,6 @@ class UnTypStore(NumPredOps: Int,
             io.memReq.valid := true.B
             when(io.memReq.fire) {
               state := s_RECEIVING
-              if(log){
-                printf(p"Store switch to receiving state\n")
-              }
             }
           }.otherwise {
             ValidSucc()
@@ -148,9 +143,6 @@ class UnTypStore(NumPredOps: Int,
         ValidSucc()
         ValidOut()
         state := s_Done
-        if(log){
-          printf(p"Store state switch to DONE\n")
-        }
       }
     }
     is(s_Done) {

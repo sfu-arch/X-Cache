@@ -23,6 +23,8 @@ case object COMPONENTS extends Field[String]
 
 case object TRACE extends Field[Boolean]
 
+case object ARTRACE extends Field[Boolean]
+
 case object CTRACE extends Field[Boolean]
 
 case object BuildRFile extends Field[Parameters => AbstractRFile]
@@ -47,6 +49,7 @@ abstract trait CoreParams {
   val Ftyp = p(FTYP)
   // Debugging dumps
   val log = p(TRACE)
+  val artrace = p(ARTRACE)
   val clog = p(CTRACE)
   val verb = p(VERBOSITY)
   val comp = p(COMPONENTS)
@@ -71,6 +74,7 @@ class MiniConfig extends Config((site, here, up) => {
   // Max size of type memory system may see
   case TRACE => true
   case CTRACE => false
+  case ARTRACE => false
   case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))
 
   //-------------------------
