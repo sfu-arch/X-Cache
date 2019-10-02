@@ -163,14 +163,10 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   val sIdle :: sBusy :: sFlush :: sDone :: Nil = Enum(4)
 
   val state = RegInit(sIdle)
-  val ptr_a = RegInit(0.U(ptrBits.W))
-  val ptr_b = RegInit(0.U(ptrBits.W))
-  val constValue  = vcr.io.vcr.vals(0)
-  val lengthValue = vcr.io.vcr.vals(1)
   val cycles = RegInit(0.U(regBits.W))
   val cnt = RegInit(0.U(regBits.W))
   val last = state === sDone
-
+  val is_busy = state === sBusy
 
   when(state === sIdle) {
     cycles := 0.U
@@ -181,14 +177,15 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   vcr.io.vcr.ecnt(0).valid := last
   vcr.io.vcr.ecnt(0).bits := cycles
 
-  when(state === sIdle) {
-    ptr_a := vcr.io.vcr.ptrs(0)
-    ptr_b := vcr.io.vcr.ptrs(2)
-  }
 
   /**
-   * @todo make this part parameterized
+   * @note This part needs to be changes for each function
    */
+  val ptr_a = RegEnable(next = vcr.io.vcr.ptrs(0), init = 0.U(ptrBits.W), enable = (state === sIdle))
+  val ptr_b = RegEnable(next = vcr.io.vcr.ptrs(2), init = 0.U(ptrBits.W), enable = (state === sIdle))
+  val constValue  = vcr.io.vcr.vals(0)
+  val lengthValue = vcr.io.vcr.vals(1)
+
   test14.io.in.bits.data("field0") := DataBundle(ptr_a)
   test14.io.in.bits.data("field1") := DataBundle(ptr_b)
   test14.io.in.bits.data("field2") := DataBundle(constValue)
@@ -197,7 +194,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
 
 
   test14.io.in.valid := false.B
-  test14.io.out.ready := state === sBusy
+  test14.io.out.ready := is_busy
 
   cache.io.cpu.abort := false.B
   cache.io.cpu.flush := false.B
@@ -230,7 +227,6 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
 
 
   vcr.io.vcr.finish := last
-
 
   io.mem <> cache.io.mem
   vcr.io.host <> io.host
