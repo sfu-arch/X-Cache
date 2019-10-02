@@ -1,5 +1,15 @@
 export PYTHONPATH:=$(PWD)/python:$(PYTHONPATH)
 
+OSNAME := $(shell uname)
+
+RUNTIME_LIB = libtvm_runtime.so
+ifeq ($(OSNAME), Linux)
+	RUNTIME_LIB := libtvm_runtime.so
+endif
+ifeq ($(OSNAME), Darwin)
+	RUNTIME_LIB := libtvm_runtime.dylib
+endif
+
 NPROCS:=1
 BUILD_NAME = build
 build_dir = $(abspath .)/$(BUILD_NAME)
@@ -25,8 +35,9 @@ chisel:
 	make -C hardware/chisel
 
 tvm:
-	cp $(build_dir)/tvm/src/tvm_runtime/libtvm_runtime.dylib $(build_dir)
-	cd $(build_dir)/tvm/src/tvm_runtime/python && python3 setup.py install
+	cp $(build_dir)/tvm/src/tvm_runtime/$(RUNTIME_LIB) $(build_dir)
+	cp $(build_dir)/tvm/src/tvm_runtime/$(RUNTIME_LIB) $(build_dir)/tvm/src
+	cd $(build_dir)/tvm/src/tvm_runtime/python && python3 setup.py install --user
 
 clean:
 	-rm -rf $(build_dir)
