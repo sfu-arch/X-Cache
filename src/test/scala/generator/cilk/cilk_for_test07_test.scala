@@ -13,7 +13,7 @@ import helpers._
 
 
 class cilk_for_test07MainDirect(implicit p: Parameters)
-  extends AccelIO(List(32, 32, 32), List(32)) {
+  extends AccelIO(List(32, 32), List(32)) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -55,7 +55,7 @@ class cilk_for_test07MainDirect(implicit p: Parameters)
 }
 
 class cilk_for_test07MainTM(tiles: Int)(implicit p: Parameters)
-  extends AccelIO(List(32, 32, 32), List(32)) {
+  extends AccelIO(List(32, 32), List(32)) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache

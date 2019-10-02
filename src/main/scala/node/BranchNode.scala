@@ -1333,7 +1333,7 @@ class CBranchNodeVariable(val NumTrue: Int = 1, val NumFalse: Int = 1, val NumPr
       //Now we can restart the states
       when(fire_true_mask && fire_false_mask) {
         //Latching input comparision result
-        cmp_R <> ControlBundle.default
+        cmp_R := ControlBundle.default
         cmp_valid := false.B
 
         //Latching control signal

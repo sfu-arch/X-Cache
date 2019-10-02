@@ -147,7 +147,7 @@ class test03Tester extends FlatSpec with Matchers {
       Array(
         // "-ll", "Info",
         "-tn", "test03",
-        "-tbn", "treadle",
+        "-tbn", "verilator",
         "-td", "test_run_dir/test03",
         "-tts", "0001"),
       () => new test03Main()) {

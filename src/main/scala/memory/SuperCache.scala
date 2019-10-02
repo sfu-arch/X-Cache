@@ -130,6 +130,9 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
   val cache_resp_io = VecInit(caches.map(_.io.cpu.resp))
   val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(0.U(max(1, log2Ceil(NumSlots)).W))))
 
+  cache_req_io.foreach(_.bits  := DontCare)
+  cache_req_io.foreach(_.valid := false.B)
+
 
   //  Per-tile Structures
 

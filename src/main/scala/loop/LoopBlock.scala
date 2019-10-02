@@ -964,7 +964,7 @@ class LoopBlockNode(ID: Int, NumIns: Seq[Int], NumCarry: Seq[Int], NumOuts: Seq[
 
         //Restart to initial state
 
-        enable_R <> ControlBundle.default
+        enable_R := ControlBundle.default
         enable_valid_R := false.B
 
         loop_back_R foreach (_ := ControlBundle.default)

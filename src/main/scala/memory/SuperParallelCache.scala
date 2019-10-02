@@ -104,6 +104,8 @@ class NParallelCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameter
   val cache_resp_io = VecInit(caches.map(_.io.cpu.resp))
   val cache_serving = RegInit(VecInit(Seq.fill(NumBanks)(cacheserving.default(NumTileBits, NumBankBits))))
 
+  cache_req_io.foreach(_.bits := DontCare)
+  cache_req_io.foreach(_.valid := false.B)
 
   var bankidxseq = for (i <- 0 until NumTiles) yield {
     if (NumBanks == 1) {

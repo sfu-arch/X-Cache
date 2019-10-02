@@ -9,11 +9,11 @@ import dandelion.config._
 import dandelion.interfaces._
 import NastiConstants._
 
-case object NWays extends Field[Int]
+//case object NWays extends Field[Int]
 
-case object NSets extends Field[Int]
+//case object NSets extends Field[Int]
 
-case object CacheBlockBytes extends Field[Int]
+//case object CacheBlockBytes extends Field[Int]
 
 class CacheIO(implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())

@@ -50,7 +50,7 @@ class TypLoadTester extends FlatSpec with Matchers {
       Array(
         // "-ll", "Info",
         "-tn", "test03",
-        "-tbn", "treadle",
+        "-tbn", "verilator",
         "-td", "test_run_dir/test03",
         "-tts", "0001"),
       () => new TypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 1, RouteID = 0)) { c =>

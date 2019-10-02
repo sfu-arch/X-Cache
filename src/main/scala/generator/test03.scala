@@ -88,7 +88,7 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
   val binaryOp_5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "mul")(sign = false))
 
   //  ret i32 %8, !UID !9, !BB_UID !10
-//  val ret_6 = Module(new RetNode2(retTypes = List(32), ID = 6))
+  //val ret_6 = Module(new RetNode2(retTypes = List(32), ID = 6))
   val ret_6 = Module(new RetNodeMultiIO(retTypes = List(32), ID = 6))
 
 
@@ -265,7 +265,9 @@ class test03DF(implicit p: Parameters) extends test03DFIO()(p) {
    * ================================================================== */
 
   io.out.bits.data := ret_6.Out.bits.ret.get
-  io.out <> ret_6.Out
+  io.out.bits.enable := ret_6.Out.bits.enable
+  io.out.valid := ret_6.Out.valid
+  ret_6.Out.ready := io.out.ready
 
 }
 

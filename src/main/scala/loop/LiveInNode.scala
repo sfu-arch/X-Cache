@@ -74,7 +74,7 @@ class LiveInNode(NumOuts: Int, ID: Int)
         when(enable_R.control) {
           printf("[LOG] " + "[" + module_name + "] " + node_name + ": Latch invalidate @ %d\n", cycleCount)
           state := s_IDLE
-          indata_R <> DataBundle.default
+          indata_R := DataBundle.default
           indata_valid_R := false.B
           Reset()
         }.otherwise {
