@@ -60,7 +60,7 @@ object MetaData {
 }
 
 
-class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Parameters) extends Module with CacheParams {
+class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module with CacheParams {
   val io = IO(new Bundle {
     val cpu = new CacheCPUIO
     val mem = new AXIMaster(p(ShellKey).memParams)
@@ -223,7 +223,9 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
           }
         }
       }.elsewhen(io.cpu.flush) {
-        printf(p"FLUSHING CACHE")
+        if(debug){
+          printf(p"FLUSHING CACHE")
+        }
         state := s_WRITE_FLUSH
       }
     }
@@ -301,7 +303,9 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = true)(implicit val p: Pa
       }
     }
     is(s_REFILL) {
-      printf(p"state: Refill\n")
+      if(debug){
+        printf(p"state: Refill\n")
+      }
       when(read_wrap_out) {
         state := Mux(cpu_iswrite.asBool(), s_WRITE_CACHE, s_IDLE)
         when(!cpu_iswrite) {
