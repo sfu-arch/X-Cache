@@ -14,7 +14,7 @@ NPROCS:=1
 BUILD_NAME = build
 build_dir = $(abspath .)/$(BUILD_NAME)
 
-.PHONY: clean tvm
+.PHONY: clean tvm run_chisel
 
 default: verilog driver
 	python3 tests/python/verilog_accel.py

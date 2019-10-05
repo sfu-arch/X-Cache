@@ -34,7 +34,7 @@ endif
 
 TOP = TestAccel2
 BUILD_NAME = build
-USE_TRACE = 0
+USE_TRACE = 1
 LIBNAME = libhw
 
 vta_dir = $(abspath ../../)
@@ -90,6 +90,8 @@ ifeq ($(shell uname), Darwin)
 else
   lib_path = $(build_dir)/$(LIBNAME).so
 endif
+
+.PHONY: default lib
 
 default: lib
 
