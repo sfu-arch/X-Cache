@@ -113,7 +113,7 @@ sbt publishLocal
     * Chisel3 accelerator backend `hardware/chisel`
     * Software C++ driver (backend) that handles the accelerator `src/driver.cc`
     * Software Python driver (frontend) that handles the accelerator `python/accel`
-    * 
+
 
 Authors:
 ========
