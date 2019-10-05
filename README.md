@@ -34,7 +34,7 @@ Also, we provide cmake scripts for building everything automatically and a confi
 
 Finally, the following snippet shows how a python wrapper design simulation, based on the toy example, can invoke the simulation:
 
-```
+```python
 ctx = cpu(0)
 a = nd.array(...) # input
 b = nd.array(...) # output
@@ -113,3 +113,8 @@ sbt publishLocal
     * Chisel3 accelerator backend `hardware/chisel`
     * Software C++ driver (backend) that handles the accelerator `src/driver.cc`
     * Software Python driver (frontend) that handles the accelerator `python/accel`
+    * 
+
+Authors:
+========
+* Amirali Sharifian (amiralis@sfu.ca)
