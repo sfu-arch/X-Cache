@@ -241,3 +241,11 @@ In this document, we explain how someone can build an accelerator using IR-Lib a
 * [**Test Fitting**](./doc/test-fit.md)
 
 
+Authors:
+========
+* Amirali Sharifian  (amiralis@sfu.ca)
+* Arrvindh Shriraman (ashriram@sfu.ca)
+* Steve Margerm      (smargerm@sfu.ca)
+* Reza Hojabr        (rshojabro@sfu.ca)
+* Naveen Vedula      (nvedula@sfu.ca)
+
