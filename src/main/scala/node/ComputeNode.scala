@@ -100,6 +100,8 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
         io.Out.foreach(_.bits := DataBundle(FU.io.out, taskID, predicate))
         io.Out.foreach(_.valid := true.B)
         ValidOut()
+        left_valid_R := false.B
+        right_valid_R := false.B
         state := s_COMPUTE
         if (log) {
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] [COMPUTE] " +
@@ -110,8 +112,6 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
     is(s_COMPUTE) {
       when(IsOutReady()) {
         // Reset data
-        left_valid_R := false.B
-        right_valid_R := false.B
 
         out_data_R := 0.U
 
