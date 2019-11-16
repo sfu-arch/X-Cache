@@ -26,7 +26,7 @@ class ComputeNodeIO(NumOuts: Int)
 }
 
 class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
-                 (sign: Boolean)
+                 (sign: Boolean, Debug: Boolean = false)
                  (implicit p: Parameters,
                   name: sourcecode.Name,
                   file: sourcecode.File)

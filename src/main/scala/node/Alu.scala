@@ -70,6 +70,7 @@ object AluOpCode {
     "lt" -> LT,
     "GT" -> GT,
     "gt" -> GT,
+    "ugt" -> GT,
     "LTE" -> LTE,
     "lte" -> LTE,
     "GTE" -> GTE,

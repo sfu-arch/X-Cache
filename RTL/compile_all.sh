@@ -14,21 +14,15 @@ USE_VCD=ON
 
 APPS=( \
     #'addTop'
-    #'andTop'
-    #'shiftTop'
-    #'xorTop'
     #'stencilTop'\
     #'bbgemmTop'\
-    'test_09_conv2d_a_ir_4Top'
-    #'covarianceTop'\
-    #'test18Top'\
-    #'testf02Top'\
     #'kernel_2mmTop'\
     #'kernel_3mmTop'\
-    #'saxpy'\
-    #'saxpyTop'\
-    #'mergesortTop'\
     #'fibTop'
+    'extracted_convolutionTop'\
+    'extracted_function_convTop'\
+    'extracted_function_reductionTop'
+    
 )
 
 for app in ${APPS[@]}; do
