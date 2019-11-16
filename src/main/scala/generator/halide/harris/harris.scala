@@ -1,0 +1,164 @@
+package dandelion.generator
+
+import chisel3._
+import chisel3.util._
+import chisel3.Module
+import chisel3.testers._
+import chisel3.iotesters._
+import org.scalatest.{FlatSpec, Matchers}
+import muxes._
+import dandelion.config._
+import dandelion.control._
+import util._
+import dandelion.interfaces._
+import regfile._
+import dandelion.memory._
+import dandelion.memory.stack._
+import dandelion.arbiters._
+import dandelion.loop._
+import dandelion.accel._
+import dandelion.junctions._
+
+class harrisMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32))))
+
+    //    val req = Flipped(Decoupled(new MemReq))
+    //    val resp = Output(Valid(new MemResp))
+
+    val MemResp = Flipped(Valid(new MemResp))
+    val MemReq = Decoupled(new MemReq)
+
+    val out = Decoupled(new Call(List()))
+  })
+
+  def cloneType = new harrisMainIO().asInstanceOf[this.type]
+}
+
+class harrisMain(implicit p: Parameters) extends harrisMainIO {
+
+  //  val cache = Module(new Cache) // Simple Nasti Cache
+  //  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  //
+  //  // Connect the wrapper I/O to the memory model initialization interface so the
+  //  // test bench can write contents at start.
+  //  memModel.io.nasti <> cache.io.nasti
+  //  memModel.io.init.bits.addr := 0.U
+  //  memModel.io.init.bits.data := 0.U
+  //  memModel.io.init.valid := false.B
+  //  cache.io.cpu.abort := false.B
+
+
+  // Wire up the cache and modules under test.
+  //  val test04 = Module(new test04DF())
+  val harris_f1 = Module(new extract_function_harris_f1DF())
+  val harris_f2 = Module(new extract_function_harris_f2DF())
+  val harris_f3 = Module(new extract_function_harris_f3DF())
+
+  val max_f1 = Module(new maxDF())
+  val max_f2 = Module(new maxDF())
+  val max_f22 = Module(new maxDF())
+  val max_f3 = Module(new maxDF())
+
+  val min_f1 = Module(new minDF())
+  val min_f2 = Module(new minDF())
+  val min_f22 = Module(new minDF())
+  val min_f3 = Module(new minDF())
+
+  //Put an arbiter infront of cache
+  val CacheArbiter = Module(new MemArbiter(11))
+
+  // Connect input signals to cache
+  CacheArbiter.io.cpu.MemReq(0) <> harris_f1.io.MemReq
+  harris_f1.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+
+  CacheArbiter.io.cpu.MemReq(1) <> harris_f2.io.MemReq
+  harris_f2.io.MemResp <> CacheArbiter.io.cpu.MemResp(1)
+
+  CacheArbiter.io.cpu.MemReq(2) <> harris_f3.io.MemReq
+  harris_f3.io.MemResp <> CacheArbiter.io.cpu.MemResp(2)
+
+  CacheArbiter.io.cpu.MemReq(3) <> max_f1.io.MemReq
+  max_f1.io.MemResp <> CacheArbiter.io.cpu.MemResp(3)
+
+  CacheArbiter.io.cpu.MemReq(4) <> max_f2.io.MemReq
+  max_f2.io.MemResp <> CacheArbiter.io.cpu.MemResp(4)
+
+  CacheArbiter.io.cpu.MemReq(5) <> max_f22.io.MemReq
+  max_f22.io.MemResp <> CacheArbiter.io.cpu.MemResp(5)
+
+  CacheArbiter.io.cpu.MemReq(6) <> max_f3.io.MemReq
+  max_f3.io.MemResp <> CacheArbiter.io.cpu.MemResp(6)
+
+  CacheArbiter.io.cpu.MemReq(7) <> min_f1.io.MemReq
+  min_f1.io.MemResp <> CacheArbiter.io.cpu.MemResp(7)
+
+  CacheArbiter.io.cpu.MemReq(8) <> min_f2.io.MemReq
+  min_f2.io.MemResp <> CacheArbiter.io.cpu.MemResp(8)
+
+  CacheArbiter.io.cpu.MemReq(9) <> min_f22.io.MemReq
+  min_f22.io.MemResp <> CacheArbiter.io.cpu.MemResp(9)
+
+  CacheArbiter.io.cpu.MemReq(10) <> min_f3.io.MemReq
+  min_f3.io.MemResp <> CacheArbiter.io.cpu.MemResp(10)
+
+  //Connect main module to cache arbiter
+  //  CacheArbiter.io.cpu.MemReq(3) <> io.req
+  //  io.resp <> CacheArbiter.io.cpu.MemResp(3)
+
+  //Connect cache to the arbiter
+
+  io.MemReq <> CacheArbiter.io.cache.MemReq
+  CacheArbiter.io.cache.MemResp <> io.MemResp
+
+  min_f1.io.in <> harris_f1.io.call_73_out
+  harris_f1.io.call_73_in <> min_f1.io.out
+
+  max_f1.io.in <> harris_f1.io.call_76_out
+  harris_f1.io.call_76_in <> max_f1.io.out
+
+  min_f2.io.in <> harris_f2.io.call_78_out
+  harris_f2.io.call_78_in <> min_f2.io.out
+
+  max_f2.io.in <> harris_f2.io.call_81_out
+  harris_f2.io.call_81_in <> max_f2.io.out
+
+  min_f22.io.in <> harris_f2.io.call_100_out
+  harris_f2.io.call_100_in <> min_f22.io.out
+
+  max_f22.io.in <> harris_f2.io.call_102_out
+  harris_f2.io.call_102_in <> max_f22.io.out
+
+  min_f3.io.in <> harris_f3.io.call_73_out
+  harris_f3.io.call_73_in <> min_f3.io.out
+
+  max_f3.io.in <> harris_f3.io.call_76_out
+  harris_f3.io.call_76_in <> max_f3.io.out
+
+
+  //Connect in/out ports
+  harris_f1.io.in <> io.in
+  harris_f2.io.in <> harris_f1.io.call_f2_out
+  harris_f1.io.call_f2_in <> harris_f2.io.out
+  harris_f3.io.in <> harris_f2.io.call_f3_out
+  harris_f2.io.call_f3_in <> harris_f3.io.out
+  io.out <> harris_f1.io.out
+
+}
+
+
+import java.io.{File, FileWriter}
+
+object harrisTop extends App {
+  val dir = new File("RTL/harrisTop");
+  dir.mkdirs
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new harrisMain()))
+
+  val verilogFile = new File(dir, s"${chirrtl.main}.v")
+  val verilogWriter = new FileWriter(verilogFile)
+  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
+  val compiledStuff = compileResult.getEmittedCircuit
+  verilogWriter.write(compiledStuff.value)
+  verilogWriter.close()
+}
