@@ -68,6 +68,7 @@ object AluOpCode {
     "ne" -> NE,
     "LT" -> LT,
     "lt" -> LT,
+    "ult" -> LT,
     "GT" -> GT,
     "gt" -> GT,
     "ugt" -> GT,
