@@ -58,7 +58,7 @@ class extract_function_harris_f1DF(implicit p: Parameters) extends extract_funct
 
   val StackPointer = Module(new Stack(NumOps = 4))
 
-  val InputSplitter = Module(new SplitCallNew(List(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 2)))
+  val InputSplitter = Module(new SplitCallNew(List(1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 4)))
   InputSplitter.io.In <> io.in
 
 
@@ -83,7 +83,7 @@ class extract_function_harris_f1DF(implicit p: Parameters) extends extract_funct
 
   val bb_entry0 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 15, BID = 0))
 
-  val bb_for_cond_cleanup1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 3, BID = 1))
+  val bb_for_cond_cleanup1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 2, BID = 1))
 
   val bb_for_body2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 6, NumPhi = 1, BID = 2))
 
@@ -511,7 +511,7 @@ class extract_function_harris_f1DF(implicit p: Parameters) extends extract_funct
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
- InputSplitter.io.Out.data.elements("field0")(0).ready := true.B
+ //InputSplitter.io.Out.data.elements("field0")(0).ready := true.B
 
   Loop_0.io.InLiveIn(0) <> binaryOp_add1832.io.Out(0)
 
@@ -718,6 +718,8 @@ class extract_function_harris_f1DF(implicit p: Parameters) extends extract_funct
 
   Gep_arrayidx40.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field15")(0)
 
+  Loop_0.io.OutLiveIn.elements("field14")(0).ready := true.B
+
   Gep_arrayidx3045.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field15")(1)
 
   Gep_arrayidx3750.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field15")(2)
@@ -842,9 +844,6 @@ class extract_function_harris_f1DF(implicit p: Parameters) extends extract_funct
 
 
   br_11.io.enable <> bb_entry0.io.Out(14)
-
-
-  ret_12.io.In.enable <> bb_for_cond_cleanup1.io.Out(0)
 
 
   const3.io.enable <> bb_for_body2.io.Out(0)
@@ -1393,7 +1392,7 @@ class extract_function_harris_f1DF(implicit p: Parameters) extends extract_funct
 
   binaryOp_mul7178.io.LeftIO <> sextconv7077.io.Out(0)
 
-  binaryOp_mul7178.io.LeftIO <> sextconv7077.io.Out(0)
+  binaryOp_mul7178.io.RightIO <> sextconv7077.io.Out(1)
 
   binaryOp_79.io.LeftIO <> binaryOp_mul7178.io.Out(0)
 
@@ -1443,7 +1442,7 @@ class extract_function_harris_f1DF(implicit p: Parameters) extends extract_funct
 
   io.call_76_out <> call_76_out.io.Out(0)
 
-  br_84.io.PredOp(0) <> call_76_in.io.Out.enable
+  br_84.io.PredOp(1) <> call_76_in.io.Out.enable
 
 
 
@@ -1451,8 +1450,28 @@ class extract_function_harris_f1DF(implicit p: Parameters) extends extract_funct
    *                   PRINTING OUTPUT INTERFACE                        *
    * ================================================================== */
 
+  call_f2_out.io.enable <> bb_for_cond_cleanup1.io.Out(0)
   call_f2_in.io.enable <> bb_for_cond_cleanup1.io.Out(1)
-  call_f2_out.io.enable <> bb_for_cond_cleanup1.io.Out(2)
+  ret_12.io.In.enable <> call_f2_in.io.Out.enable
+
+
+
+
+  call_f2_out.io.In.elements("field0") <> InputSplitter.io.Out.data.elements("field0")(0)
+  call_f2_out.io.In.elements("field1") <> InputSplitter.io.Out.data.elements("field1")(1)
+  call_f2_out.io.In.elements("field2") <> InputSplitter.io.Out.data.elements("field2")(1)
+  call_f2_out.io.In.elements("field3") <> InputSplitter.io.Out.data.elements("field3")(1)
+  call_f2_out.io.In.elements("field4") <> InputSplitter.io.Out.data.elements("field4")(1)
+  call_f2_out.io.In.elements("field5") <> InputSplitter.io.Out.data.elements("field5")(1)
+  call_f2_out.io.In.elements("field6") <> InputSplitter.io.Out.data.elements("field6")(1)
+  call_f2_out.io.In.elements("field7") <> InputSplitter.io.Out.data.elements("field7")(1)
+  call_f2_out.io.In.elements("field8") <> InputSplitter.io.Out.data.elements("field8")(1)
+  call_f2_out.io.In.elements("field9") <> InputSplitter.io.Out.data.elements("field9")(1)
+  call_f2_out.io.In.elements("field10") <> InputSplitter.io.Out.data.elements("field10")(1)
+  call_f2_out.io.In.elements("field11") <> InputSplitter.io.Out.data.elements("field11")(3)
+  call_f2_out.io.In.elements("field12") <> InputSplitter.io.Out.data.elements("field12")(2)
+  call_f2_out.io.In.elements("field13") <> InputSplitter.io.Out.data.elements("field11")(4)
+  call_f2_out.io.In.elements("field14") <> InputSplitter.io.Out.data.elements("field12")(3)
 
   io.call_f2_out <> call_f2_out.io.Out(0)
   call_f2_in.io.In <> io.call_f2_in
