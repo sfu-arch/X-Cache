@@ -1168,7 +1168,7 @@ import java.io.{File, FileWriter}
 object conv2dSerialTop extends App {
   val dir = new File("RTL/conv2dSerialTop");
   dir.mkdirs
-  implicit val p = config.Parameters.root((new MiniConfig).toInstance)
+  implicit val p = Parameters.root((new MiniConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new conv2dSerialDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
