@@ -1,4 +1,4 @@
-package dandelion.generator.cilk
+package dandelion.generator
 
 
 import chisel3._
@@ -12,7 +12,7 @@ import dandelion.interfaces.NastiMemSlave
 import scala.util.Random
 import helpers._
 
-class stencilDirect()(implicit p: Parameters) extends AccelIO(List(32, 32), List()) {
+class stencilSerialDirect()(implicit p: Parameters) extends AccelIO(List(32, 32), List()) {
 
   val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
@@ -26,23 +26,15 @@ class stencilDirect()(implicit p: Parameters) extends AccelIO(List(32, 32), List
   cache.io.cpu.abort := false.B
 
   // Wire up the cache, TM, and modules under test.
-  val stencil = Module(new stencilDF())
-  val stencil_detach1 = Module(new stencil_detach1DF())
-  val stencil_inner = Module(new stencil_innerDF())
+  val stencil = Module(new stencilSerialDF())
 
-  stencil.io.MemReq <> DontCare
-  stencil.io.MemResp <> DontCare
+  val MemArbiter = Module(new MemArbiter(2))
 
-  val MemArbiter = Module(new MemArbiter(3))
+  MemArbiter.io.cpu.MemReq(0) <> stencil.io.MemReq
+  stencil.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
 
-  MemArbiter.io.cpu.MemReq(0) <> stencil_inner.io.MemReq
-  stencil_inner.io.MemResp <> MemArbiter.io.cpu.MemResp(0)
-
-  MemArbiter.io.cpu.MemReq(1) <> stencil_detach1.io.MemReq
-  stencil_detach1.io.MemResp <> MemArbiter.io.cpu.MemResp(1)
-
-  MemArbiter.io.cpu.MemReq(2) <> io.req
-  io.resp <> MemArbiter.io.cpu.MemResp(2)
+  MemArbiter.io.cpu.MemReq(1) <> io.req
+  io.resp <> MemArbiter.io.cpu.MemResp(1)
 
   cache.io.cpu.req <> MemArbiter.io.cache.MemReq
   MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
@@ -51,86 +43,19 @@ class stencilDirect()(implicit p: Parameters) extends AccelIO(List(32, 32), List
   stencil.io.in <> io.in
 
   // cilk_for_test02 to task controller
-  stencil_detach1.io.in <> stencil.io.call_8_out
-  stencil.io.call_8_in <> stencil_detach1.io.out
+  //stencil_detach1.io.in <> stencil.io.call_8_out
+  //stencil.io.call_8_in <> stencil_detach1.io.out
 
-  stencil_inner.io.in <> stencil_detach1.io.call_4_out
-  stencil_detach1.io.call_4_in <> stencil_inner.io.out
-
-  // cilk_for_test02 to tester
-  io.out <> stencil.io.out
-
-}
-
-
-class stencilMainTM(tiles: Int)(implicit p: Parameters) extends AccelIO(List(32, 32), List()) {
-
-  val cache = Module(new Cache) // Simple Nasti Cache
-  val memModel = Module(new NastiMemSlave(latency = 80)) // Model of DRAM to connect to Cache
-
-  // Connect the wrapper I/O to the memory model initialization interface so the
-  // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
-  memModel.io.init.bits.addr := 0.U
-  memModel.io.init.bits.data := 0.U
-  memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
-
-  // Wire up the cache, TM, and modules under test.
-  val children = tiles
-  val TaskControllerModule = Module(new TaskController(List(32, 32, 32), List(), 1, children))
-  val stencil = Module(new stencilDF())
-
-  stencil.io.MemReq <> DontCare
-  stencil.io.MemResp <> DontCare
-
-  val stencil_detach1 = for (i <- 0 until children) yield {
-    val detach1 = Module(new stencil_detach1DF())
-    detach1
-  }
-  val stencil_inner = for (i <- 0 until children) yield {
-    val inner = Module(new stencil_innerDF())
-    inner
-  }
-
-  val MemArbiter = Module(new MemArbiter((2 * children) + 1))
-  for (i <- 0 until children) {
-    MemArbiter.io.cpu.MemReq(i) <> stencil_inner(i).io.MemReq
-    stencil_inner(i).io.MemResp <> MemArbiter.io.cpu.MemResp(i)
-
-    MemArbiter.io.cpu.MemReq(children + i) <> stencil_detach1(i).io.MemReq
-    stencil_detach1(i).io.MemResp <> MemArbiter.io.cpu.MemResp(children + i)
-  }
-
-  MemArbiter.io.cpu.MemReq(2 * children) <> io.req
-  io.resp <> MemArbiter.io.cpu.MemResp(2 * children)
-
-  cache.io.cpu.req <> MemArbiter.io.cache.MemReq
-  MemArbiter.io.cache.MemResp <> cache.io.cpu.resp
-
-  // tester to cilk_for_test02
-  stencil.io.in <> io.in
-
-  // cilk_for_test02 to task controller
-  TaskControllerModule.io.parentIn(0) <> stencil.io.call_8_out
-
-  // task controller to sub-task stencil_detach1
-  for (i <- 0 until children) {
-    stencil_detach1(i).io.in <> TaskControllerModule.io.childOut(i)
-    stencil_inner(i).io.in <> stencil_detach1(i).io.call_4_out
-    stencil_detach1(i).io.call_4_in <> stencil_inner(i).io.out
-    TaskControllerModule.io.childIn(i) <> stencil_detach1(i).io.out
-  }
-
-  // Task controller to cilk_for_test02
-  stencil.io.call_8_in <> TaskControllerModule.io.parentOut(0)
+  //stencil_inner.io.in <> stencil_detach1.io.call_4_out
+  //stencil_detach1.io.call_4_in <> stencil_inner.io.out
 
   // cilk_for_test02 to tester
   io.out <> stencil.io.out
 
 }
 
-class stencilTest01[T <: AccelIO](c: T, tiles: Int)
+
+class stencilSerialTest01[T <: AccelIO](c: T, tiles: Int)
                                  (inAddrVec: List[Int], inDataVec: List[Int],
                                   outAddrVec: List[Int], outDataVec: List[Int])
   extends AccelTesterLocal(c)(inAddrVec, inDataVec, outAddrVec, outDataVec) {
@@ -189,7 +114,7 @@ class stencilTest01[T <: AccelIO](c: T, tiles: Int)
 }
 
 
-class stencilTest02[T <: AccelIO](c: T, tiles: Int)
+class stencilSerialTest02[T <: AccelIO](c: T, tiles: Int)
                                  (inAddrVec: List[Int], inDataVec: List[Int],
                                   outAddrVec: List[Int], outDataVec: List[Int])
   extends AccelTesterLocal(c)(inAddrVec, inDataVec, outAddrVec, outDataVec) {
@@ -247,7 +172,7 @@ class stencilTest02[T <: AccelIO](c: T, tiles: Int)
 }
 
 
-class stencilTester1 extends FlatSpec with Matchers {
+class stencilSerialTester1 extends FlatSpec with Matchers {
 
   val inDataVec = List(
     7, 9, 3, 8,
@@ -279,58 +204,58 @@ class stencilTester1 extends FlatSpec with Matchers {
     chisel3.iotesters.Driver.execute(
       Array(
         "-ll", "Error",
-        "-tn", "stencilDirect",
+        "-tn", "stencilSerialDirect",
         "-tbn", "verilator",
-        "-td", s"test_run_dir/stencil_direct",
+        "-td", s"test_run_dir/stencilSerial_direct",
         "-tts", "0001"),
-      () => new stencilDirect()(testParams)) {
-      c => new stencilTest01(c, 1)(inAddrVec, inDataVec, outAddrVec, outDataVec)
+      () => new stencilSerialDirect()(testParams)) {
+      c => new stencilSerialTest01(c, 1)(inAddrVec, inDataVec, outAddrVec, outDataVec)
     } should be(true)
   }
 }
 
 
-class stencilTester2 extends FlatSpec with Matchers {
+//class stencilSerialTester2 extends FlatSpec with Matchers {
 
-  val inDataVec = List(
-    7, 9, 3, 8,
-    0, 2, 4, 8,
-    3, 9, 0, 5,
-    2, 2, 7, 3)
-  val inAddrVec = List.range(0, 4 * 16, 4)
+  //val inDataVec = List(
+    //7, 9, 3, 8,
+    //0, 2, 4, 8,
+    //3, 9, 0, 5,
+    //2, 2, 7, 3)
+  //val inAddrVec = List.range(0, 4 * 16, 4)
 
-  val outAddrVec = List.range(256, 256 + (4 * 16), 4)
-  val outDataVec = List(
-    3, 3, 4, 3,
-    4, 5, 6, 4,
-    3, 4, 5, 4,
-    2, 3, 3, 2
-  )
+  //val outAddrVec = List.range(256, 256 + (4 * 16), 4)
+  //val outDataVec = List(
+    //3, 3, 4, 3,
+    //4, 5, 6, 4,
+    //3, 4, 5, 4,
+    //2, 3, 3, 2
+  //)
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 8
-    case TRACE => true
-  })
-  // iotester flags:
-  // -ll  = log level <Error|Warn|Info|Debug|Trace>
-  // -tbn = backend <firrtl|verilator|vcs>
-  // -td  = target directory
-  // -tts = seed for RNG
-  //  val tile_list = List(1,2,4,8)
-  val tile_list = List(1)
-  for (tile <- tile_list) {
-    it should s"Test: $tile tiles" in {
-      chisel3.iotesters.Driver.execute(
-        Array(
-          "-ll", "Warn",
-          "-tn", "cilkStencilTM",
-          "-tbn", "verilator",
-          "-td", s"test_run_dir/stencil_${tile}",
-          "-tts", "0001"),
-        () => new stencilMainTM(tile)(testParams)) {
-        c => new stencilTest02(c, tile)(inAddrVec, inDataVec.toList, outAddrVec, outDataVec)
-      } should be(true)
-    }
-  }
-}
+  //implicit val p = Parameters.root((new MiniConfig).toInstance)
+  //val testParams = p.alterPartial({
+    //case TLEN => 8
+    //case TRACE => true
+  //})
+  //// iotester flags:
+  //// -ll  = log level <Error|Warn|Info|Debug|Trace>
+  //// -tbn = backend <firrtl|verilator|vcs>
+  //// -td  = target directory
+  //// -tts = seed for RNG
+  ////  val tile_list = List(1,2,4,8)
+  //val tile_list = List(1)
+  //for (tile <- tile_list) {
+    //it should s"Test: $tile tiles" in {
+      //chisel3.iotesters.Driver.execute(
+        //Array(
+          //"-ll", "Warn",
+          //"-tn", "cilkstencilSerialTM",
+          //"-tbn", "verilator",
+          //"-td", s"test_run_dir/stencilSerial_${tile}",
+          //"-tts", "0001"),
+        //() => new stencilSerialMainTM(tile)(testParams)) {
+        //c => new stencilSerialTest02(c, tile)(inAddrVec, inDataVec.toList, outAddrVec, outDataVec)
+      //} should be(true)
+    //}
+  //}
+//}

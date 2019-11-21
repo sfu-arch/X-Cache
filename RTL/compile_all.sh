@@ -19,9 +19,10 @@ APPS=( \
     #'kernel_2mmTop'\
     #'kernel_3mmTop'\
     #'fibTop'
-    'extracted_convolutionTop'\
-    'extracted_function_convTop'\
-    'extracted_function_reductionTop'
+    #'extracted_convolutionTop'\
+    #'extracted_function_convTop'\
+    #'extracted_function_reductionTop'
+    'harrisTop'
     
 )
 
