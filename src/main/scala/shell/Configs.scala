@@ -28,9 +28,10 @@ import dandelion.interfaces.axi._
 class VCRSimParams() extends VCRParams {
   override val nCtrl = 1
   override val nECnt = 1
-  override val nVals = 2
-  override val nPtrs = 4
+  override val nVals = 4
+  override val nPtrs = 6
   override val regBits = 32
+//  val ptrBits = regBits
   val ptrBits = 2 * regBits
 }
 
