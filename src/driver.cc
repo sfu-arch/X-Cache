@@ -166,10 +166,9 @@ class DArray {
     }
 
     py::array_t<int64_t> getData() {
-
         py::array_t<int64_t> ret_data(this->array.shape[0]);
         auto buff = ret_data.request();
-        int64_t* buff_ptr = (int64_t *)buff.ptr;
+        int64_t *buff_ptr = (int64_t *)buff.ptr;
         for (auto index = 0; index < this->array.shape[0]; index++) {
             int64_t k =
                 *(((uint8_t *)(this->array.data)) + index * sizeof(uint8_t));
@@ -328,19 +327,23 @@ class Device {
     std::vector<uint64_t> events_;
 };
 
-
 uint64_t RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
-        std::vector<int64_t> vars, std::string hw_lib) {
-
+                std::vector<int64_t> vars, std::string hw_lib) {
     std::cout << "Stating Dsim..." << std::endl;
 
     std::shared_ptr<vta::dpi::DPIModule> n =
         std::make_shared<vta::dpi::DPIModule>();
 
-    if(hw_lib.empty())
+    if (hw_lib.empty())
         throw std::runtime_error("Hardware library path can not be empty!");
-    else
+    else {
+        ifstream ifile(hw_lib);
+        if (!ifile)
+            throw std::runtime_error(
+                "Hardware library doesn't exist make sure the path is "
+                "correct!");
         n->Init(hw_lib);
+    }
 
     tvm::runtime::Module mod = tvm::runtime::Module(n);
 
@@ -369,6 +372,6 @@ PYBIND11_MODULE(dsim, m) {
                    a.print_array() + "]";
         });
 
-    m.def("sim", &driver::RunSim, "A function to run DSIM",
-            py::arg("ptrs"), py::arg("vars"), py::arg("hwlib"));
+    m.def("sim", &driver::RunSim, "A function to run DSIM", py::arg("ptrs"),
+          py::arg("vars"), py::arg("hwlib"));
 }

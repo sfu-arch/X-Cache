@@ -43,7 +43,9 @@ a_s = dsim.DArray(a)
 b_s = dsim.DArray(b)
 c_s = dsim.DArray(c)
 
-cycle = dsim.sim(ptrs = [a_s, b_s, c_s], args = [5, 5])
+hw_lib_path = "./hardware/chisel/build/libhw.so"
+
+cycle = dsim.sim(ptrs = [a_s, b_s, c_s], vars= [5, 5], hwlib = hw_lib_path)
 
 print("Cycle: " + str(cycle))
 ```
