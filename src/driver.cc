@@ -325,21 +325,30 @@ class Device {
 
     std::vector<void *> ptrs_;
     std::vector<uint64_t> args_;
+    std::vector<uint64_t> events_;
 };
 
+
 uint64_t RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
-        std::vector<int64_t> args) {
-    std::cout << "Stating Tsim..." << std::endl;
+        std::vector<int64_t> vars, std::string hw_lib) {
+
+    std::cout << "Stating Dsim..." << std::endl;
+
     std::shared_ptr<vta::dpi::DPIModule> n =
         std::make_shared<vta::dpi::DPIModule>();
-    n->Init("/home/amirali/git/dpi-playground/build/libhw.dylib");
+
+    if(hw_lib.empty())
+        throw std::runtime_error("Hardware library path can not be empty!");
+    else
+        n->Init(hw_lib);
+
     tvm::runtime::Module mod = tvm::runtime::Module(n);
 
     // Init the simulator
-    driver::Device dev(in_ptrs.size(), args.size());
+    driver::Device dev(in_ptrs.size(), vars.size());
     dev.loader_->Init(mod);
 
-    auto cycles = dev.Run(in_ptrs, args);
+    auto cycles = dev.Run(in_ptrs, vars);
 
     return cycles;
 }
@@ -361,5 +370,5 @@ PYBIND11_MODULE(dsim, m) {
         });
 
     m.def("sim", &driver::RunSim, "A function to run DSIM",
-            py::arg("ptrs"), py::arg("args"));
+            py::arg("ptrs"), py::arg("vars"), py::arg("hwlib"));
 }
