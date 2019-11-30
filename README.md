@@ -1,23 +1,23 @@
-Dandelion-Sim
+muIR-Sim
 ==========================
 
-Dandelion-sim is a new simulation environment that improves software and hardware integration and simulation accuracy compare to functional simulation. One of the goals of this framework is integration the hardware development process into the software stack from the beginning, allowing features to be incrementally implemented and evaluated as workloads evolve over time.
+µIR-sim is a new simulation environment that improves software and hardware integration and simulation accuracy compare to functional simulation. One of the goals of this framework is integration the hardware development process into the software stack from the beginning, allowing features to be incrementally implemented and evaluated as workloads evolve over time.
 Under this environment, the hardware description is the actual specification. This reduces the burden of maintaining consistency between the specification written usually in a higher language such as C/C++ and the actual hardware design described in a language such as Verilog.
-Moving to Dandelion-sim will allow us to have am ore fluid hardware-software specification, and invite more contributions to modify different layers of the stack.
+Moving to µIR-sim will allow us to have am ore fluid hardware-software specification, and invite more contributions to modify different layers of the stack.
 
 Moreover, this integration provides a more accurate performance feedback, i.e. clock cycles, compared to the traditional functional model of a hardware accelerator.
-This is because Dandelion-sim is based on an open-source hardware simulator called (Verilator)[https://www.veripool.org/wiki/verilator], which compiles Verilog designs down to C++ classes for cycle-accurate simulation.
+This is because µIR-sim is based on an open-source hardware simulator called (Verilator)[https://www.veripool.org/wiki/verilator], which compiles Verilog designs down to C++ classes for cycle-accurate simulation.
 
 Lastly, Verilator is already available in many Linux distributions, i.e. Ubuntu, and OSX via homebrew.
 
 **This project is influenced by Tsim from TVM project and we are thankful to TVM team to opensource their code**
 
-## Dandelion-sim Design
+## µIR-sim Design
 
-Dandelion-sim uses Verilator to integrate Dandelion generated accelerators into overall system design and provides flexibility in the hardware language used to implement these designs. For example, on could use OpenCL, C/C++ or Chisel3 -- we mainly rely on Chisel3 -- to describe an accelerator design that would eventually be compiled down to Verilog, since it is the standard input language for FPGA/ASIC tools.
+µIR-sim uses Verilator to integrate µIR generated accelerators into overall system design and provides flexibility in the hardware language used to implement these designs. For example, on could use OpenCL, C/C++ or Chisel3 -- we mainly rely on Chisel3 -- to describe an accelerator design that would eventually be compiled down to Verilog, since it is the standard input language for FPGA/ASIC tools.
 To manage runtime process we use Direct Programming Interface (DPI), supported by Verilator. DPI is part of the Verilog standard and a mechanism to support foreign programming languages.
 
-We leverage these features available in Verilator to interface hardware designs from upper layers in the Dandelion stack such as drivers, runtime, etc (Code is borrowed from Tsim). In fact, we have developed all the glue layers to make this happen, including:
+We leverage these features available in Verilator to interface hardware designs from upper layers in the µIR stack such as drivers, runtime, etc (Code is borrowed from Tsim). In fact, we have developed all the glue layers to make this happen, including:
 
 * **DPI module.** The dpi_module.cc is in charge of loading the shared library libHW.so that contains the hardware accelerator and the Verilator execution function.
 As stated earlier, Verilator is used to compile the hardware accelerator from Verilog to C++.
@@ -95,23 +95,23 @@ instruction of Verilator wiki.
 
 https://www.veripool.org/projects/verilator/wiki/Installing
 
-## Publishing Dandelion-Lib
+## Publishing muIR-Lib
 
-Dandelion-Sim uses Dandelion-lib as a hardware library to build new hardware accelerators. Hence, you need to have Dandelion-Lib published locally in your path.
+muIR-Sim uses muIR-lib as a hardware library to build new hardware accelerators. Hence, you need to have muIR-Lib published locally in your path. Make sure before publishing muIR-lib, you have published `berkeley-hardfloat`. Please read muIR-lib readme file for more details.
 
 ``` bash
-git clone git@csil-git1.cs.surrey.sfu.ca:Dandelion/dandelion-lib.git
-cd dandelion-lib
+git clone git@github.com:sfu-arch/muir-lib.git
+cd muir-lib
 sbt publishLocal
 ```
 
 
-## Running Dandelion-sim
+## Running muIR-sim
 
-* Publish Dandelion-sim
+* Publish muIR-lib
 
-        git clone git@csil-git1.cs.surrey.sfu.ca:Dandelion/dandelion-lib.git
-        cd dandelion-lib
+        git clone git@github.com:sfu-arch/muir-lib.git
+        cd muir-lib
         sbt publishLocal
 
 * Build hardware accelerator library
