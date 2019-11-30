@@ -116,15 +116,15 @@ sbt publishLocal
 
 * Build hardware accelerator library
 
-        `make run_chisel NPROCS=4`
+        make run_chisel NPROCS=4
 
 * Instal python binding:
 
-        `pip3.7 install --user .`
+        pip3.7 install --user .
 
 * Run python test:
 
-        `python3.7 python/test09.py`
+        python3.7 python/test09.py
 
 
 ## Notes
