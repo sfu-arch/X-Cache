@@ -37,8 +37,8 @@ BUILD_NAME = build
 USE_TRACE = 0
 LIBNAME = libhw
 
-NUM_PTRS = 2
-NUM_ARGS = 4
+NUM_PTRS = 4
+NUM_ARGS = 2
 
 vta_dir = $(abspath ../../)
 tvm_dir = $(abspath ../../include/)
