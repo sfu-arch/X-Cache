@@ -108,14 +108,23 @@ sbt publishLocal
 
 ## Running Dandelion-sim
 
-* Test Chisel3 backend
-    * Run     `make run_chisel NPROCS=4`
+* Publish Dandelion-sim
 
-* Installing python binding:
-    * Install `pip3.7 install --user .`
+        git clone git@csil-git1.cs.surrey.sfu.ca:Dandelion/dandelion-lib.git
+        cd dandelion-lib
+        sbt publishLocal
+
+* Build hardware accelerator library
+
+        `make run_chisel NPROCS=4`
+
+* Instal python binding:
+
+        `pip3.7 install --user .`
 
 * Run python test:
-    * Run `python3.7 python/test09.py`
+
+        `python3.7 python/test09.py`
 
 
 ## Notes
