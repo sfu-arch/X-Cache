@@ -25,7 +25,6 @@ import dandelion.dpi._
 import dandelion.shell._
 import dandelion.config._
 import accel._
-//import vta.TestDefaultDe10Config
 
 /*
             +---------------------------+
@@ -77,11 +76,15 @@ class TestAccel2(implicit p: Parameters) extends MultiIOModule {
   vta_shell.io.host.w <> sim_shell.host.w
 }
 
-//class DefaultDe10Config extends Config(new De10Config)
-//class SimDefaultConfig extends Config(new DandelionConfig)
-
 object TestAccel2Main extends App {
   implicit val p: Parameters = Parameters.root((new MiniConfig).toInstance) ++ new DandelionConfig
-  chisel3.Driver.execute(args, () => new TestAccel2)
+  var num_ptrs = 0
+  var num_args = 0
+  args.sliding(2, 2).toList.collect {
+    case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
+    case Array("--num-args", argArgs: String) => num_args = argArgs.toInt
+  }
+
+  chisel3.Driver.execute(args.take(4), () => new TestAccel2)
 }
 

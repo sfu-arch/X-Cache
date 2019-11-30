@@ -1,3 +1,4 @@
 build/*
 hardware/chisel/build/*
 hardware/verilog/build/*
+*.swp

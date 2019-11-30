@@ -37,6 +37,9 @@ BUILD_NAME = build
 USE_TRACE = 0
 LIBNAME = libhw
 
+NUM_PTRS = 2
+NUM_ARGS = 4
+
 vta_dir = $(abspath ../../)
 tvm_dir = $(abspath ../../include/)
 build_dir = $(abspath .)/$(BUILD_NAME)
@@ -105,7 +108,7 @@ $(verilator_build_dir)/V$(TOP).cpp: $(chisel_build_dir)/$(TOP).v
 
 verilog: $(chisel_build_dir)/$(TOP).v
 $(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')#install_vta_package
-	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP)'
+	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP) --num-ptrs $(NUM_PTRS) --num-args $(NUM_ARGS)'
 
 #install_vta_package:
 #	cd $(vta_dir)/hardware/chisel && sbt publishLocal
