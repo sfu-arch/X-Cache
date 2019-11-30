@@ -31,7 +31,7 @@ import dandelion.interfaces.axi._
 case class VCRParams() {
   val nCtrl = 1
   val nECnt = 1
-  val nVals = 4
+  val nVals = 7
   val nPtrs = 6
   val regBits = 32
 }

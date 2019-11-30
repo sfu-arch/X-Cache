@@ -22,7 +22,10 @@ APPS=( \
     #'extracted_convolutionTop'\
     #'extracted_function_convTop'\
     #'extracted_function_reductionTop'
-    'harrisTop'
+    #'harrisTop'
+    #'upSampleHalideTop'\
+    'downSampleHalideTop'
+    #'stridedConvHalideTop'
     
 )
 
