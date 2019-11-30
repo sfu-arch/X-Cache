@@ -108,7 +108,7 @@ $(verilator_build_dir)/V$(TOP).cpp: $(chisel_build_dir)/$(TOP).v
 
 verilog: $(chisel_build_dir)/$(TOP).v
 $(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')#install_vta_package
-	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP) --num-ptrs $(NUM_PTRS) --num-args $(NUM_ARGS)'
+	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP) --num-ptrs $(NUM_PTRS) --num-vals $(NUM_ARGS)'
 
 #install_vta_package:
 #	cd $(vta_dir)/hardware/chisel && sbt publishLocal

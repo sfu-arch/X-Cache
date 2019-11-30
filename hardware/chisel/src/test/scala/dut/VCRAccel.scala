@@ -77,14 +77,21 @@ class TestAccel2(implicit p: Parameters) extends MultiIOModule {
 }
 
 object TestAccel2Main extends App {
-  implicit val p: Parameters = Parameters.root((new MiniConfig).toInstance) ++ new DandelionConfig
-  var num_ptrs = 0
-  var num_args = 0
+  
+  //These are default values for VCR
+  var num_ptrs = 4
+  var num_vals = 2
+  var num_event = 1
+  var num_ctrl = 1
   args.sliding(2, 2).toList.collect {
     case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
-    case Array("--num-args", argArgs: String) => num_args = argArgs.toInt
+    case Array("--num-vals", argVals: String) => num_vals = argVals.toInt
+    case Array("--num-event", argEvent: String) => num_vals = argEvent.toInt
+    case Array("--num-ctrl", argCtrl: String) => num_vals = argCtrl.toInt
   }
 
+  implicit val p: Parameters = 
+    Parameters.root((new MiniConfig).toInstance) ++ new DandelionConfig(num_ptrs, num_vals, num_event, num_ctrl)
   chisel3.Driver.execute(args.take(4), () => new TestAccel2)
 }
 
