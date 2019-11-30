@@ -25,14 +25,15 @@ import dandelion.config._
 import dandelion.interfaces.axi._
 
 
-class VCRSimParams() extends VCRParams {
-  override val nCtrl = 1
-  override val nECnt = 1
-  override val nVals = 2
-  override val nPtrs = 4
+class VCRSimParams(val num_ptrs: Int = 4, val num_vals: Int = 2,
+                   val num_event: Int = 1, val num_ctrl: Int = 1) extends VCRParams {
+  override val nCtrl = num_ctrl
+  override val nECnt = num_event
+  override val nVals = num_vals
+  override val nPtrs = num_ptrs
   override val regBits = 32
   val ptrBits = regBits
-//  val ptrBits = 2 * regBits
+  //  val ptrBits = 2 * regBits
 }
 
 /** VME parameters.
@@ -50,7 +51,8 @@ class VMESimParams() extends VMEParams {
 }
 
 /** SimDefaultConfig. Shell configuration for simulation */
-class DandelionConfig extends Config((site, here, up) => {
+class DandelionConfig(val num_ptrs: Int = 4, val num_vals: Int = 2,
+                      val num_event: Int = 1, val num_ctrl: Int = 1) extends Config((site, here, up) => {
   case ShellKey => ShellParams(
     hostParams = AXIParams(
       addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
@@ -58,7 +60,7 @@ class DandelionConfig extends Config((site, here, up) => {
       addrBits = 32, dataBits = 64, userBits = 5,
       lenBits = 4, // limit to 16 beats, instead of 256 beats in AXI4
       coherent = true),
-    vcrParams = new VCRSimParams(),
+    vcrParams = new VCRSimParams(num_ptrs, num_vals, num_event, num_ctrl),
     vmeParams = new VMESimParams()
   )
 })
