@@ -35,13 +35,17 @@ Also, we provide cmake scripts for building everything automatically and a confi
 Finally, the following snippet shows how a python wrapper design simulation, based on the toy example, can invoke the simulation:
 
 ```python
-ctx = cpu(0)
-a = nd.array(...) # input
-b = nd.array(...) # output
-f = tsim.load_module()
-cycles = f(a, b, c, n)
+a = np.array([0, 1, 2, 3, 4])
+b = np.array([0, 1, 2, 3, 4])
+c = np.array([0, 0, 0, 0, 0])
 
-np.testing.assert_equal(evaluate(a,b), err_msg = "[FAIL] " + msg)
+a_s = dsim.DArray(a)
+b_s = dsim.DArray(b)
+c_s = dsim.DArray(c)
+
+cycle = dsim.sim(ptrs = [a_s, b_s, c_s], args = [5, 5])
+
+print("Cycle: " + str(cycle))
 ```
 
 
@@ -103,12 +107,18 @@ sbt publishLocal
 ## Running Dandelion-sim
 
 * Test Chisel3 backend
-    * Run `make run_chisel NPROCS=4`
+    * Run     `make run_chisel NPROCS=4`
+
+* Installing python binding:
+    * Install `pip3.7 install --user .`
+
+* Run python test:
+    * Run `python3.7 python/test09.py`
 
 
 ## Notes
 * Some pointers
-    * Verilog and Chisel3 tests in `tests/python`
+    * Verilog and Chisel3 tests in `python/`
     * Verilog accelerator backend `hardware/verilog`
     * Chisel3 accelerator backend `hardware/chisel`
     * Software C++ driver (backend) that handles the accelerator `src/driver.cc`
