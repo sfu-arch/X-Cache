@@ -150,6 +150,102 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   })
 
   val regBits = p(ShellKey).vcrParams.regBits
+  //val ptrBits = regBits * 2
+  val ptrBits = regBits
+
+  val vcr = Module(new VCR)
+  val cache = Module(new SimpleCache())
+
+  val test09 = Module(new test14DF())
+
+  cache.io.cpu.req <> test09.io.MemReq
+  test09.io.MemResp <> cache.io.cpu.resp
+
+  val sIdle :: sBusy :: sFlush :: sDone :: Nil = Enum(4)
+
+  val state = RegInit(sIdle)
+  val cycles = RegInit(0.U(regBits.W))
+  val cnt = RegInit(0.U(regBits.W))
+  val last = state === sDone
+  val is_busy = state === sBusy
+
+  when(state === sIdle) {
+    cycles := 0.U
+  }.otherwise {
+    cycles := cycles + 1.U
+  }
+
+  vcr.io.vcr.ecnt(0).valid := last
+  vcr.io.vcr.ecnt(0).bits := cycles
+
+
+  /**
+   * @note This part needs to be changes for each function
+   */
+  val ptr_a = RegEnable(next = vcr.io.vcr.ptrs(0), init = 0.U(ptrBits.W), enable = (state === sIdle))
+  val ptr_b = RegEnable(next = vcr.io.vcr.ptrs(1), init = 0.U(ptrBits.W), enable = (state === sIdle))
+  //val ptr_c = RegEnable(next = vcr.io.vcr.ptrs(2), init = 0.U(ptrBits.W), enable = (state === sIdle))
+
+  //val val_a = vcr.io.vcr.vals(0)
+  //val val_b = vcr.io.vcr.vals(1)
+
+  test09.io.in.bits.data("field0") := DataBundle(ptr_a)
+  test09.io.in.bits.data("field1") := DataBundle(ptr_b)
+  //test09.io.in.bits.data("field2") := DataBundle(ptr_c)
+
+  test09.io.in.bits.enable := ControlBundle.active()
+
+
+  test09.io.in.valid := false.B
+  test09.io.out.ready := is_busy
+
+  cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
+
+  switch(state) {
+    is(sIdle) {
+      when(vcr.io.vcr.launch) {
+        printf(p" Ptrs: ptr(0): ${ptr_a}, ptr(1): ${ptr_b}\n")
+        test09.io.in.valid := true.B
+        when(test09.io.in.fire){
+          state := sBusy
+        }
+      }
+    }
+    is(sBusy) {
+      when(test09.io.out.fire){
+        state := sFlush
+      }
+    }
+    is(sFlush){
+      cache.io.cpu.flush := true.B
+      when(cache.io.cpu.flush_done){
+        state := sDone
+      }
+    }
+    is(sDone){
+      state := sIdle
+    }
+  }
+
+
+  vcr.io.vcr.finish := last
+
+  io.mem <> cache.io.mem
+  vcr.io.host <> io.host
+
+}
+
+
+
+/* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
+class DandelionTest09CacheShell(implicit p: Parameters) extends Module {
+  val io = IO(new Bundle {
+    val host = new AXILiteClient(p(ShellKey).hostParams)
+    val mem = new AXIMaster(p(ShellKey).memParams)
+  })
+
+  val regBits = p(ShellKey).vcrParams.regBits
   val ptrBits = regBits * 2
 
   val vcr = Module(new VCR)
@@ -680,7 +776,7 @@ class DandelionCacheShellDownSample(implicit p: Parameters) extends Module {
    * @note This part needs to be changes for each function
    */
   val ptr_a = RegEnable(next = vcr.io.vcr.ptrs(0), init = 0.U(ptrBits.W), enable = (state === sIdle))
-  val ptr_b = RegEnable(next = vcr.io.vcr.ptrs(1), init = 0.U(ptrBits.W), enable = (state === sIdle))
+  //val ptr_b = RegEnable(next = vcr.io.vcr.ptrs(1), init = 0.U(ptrBits.W), enable = (state === sIdle))
 
   val args_num = 7
   val arguments = for (i <- 0 until args_num) yield{
@@ -689,7 +785,7 @@ class DandelionCacheShellDownSample(implicit p: Parameters) extends Module {
   }
 
   accel.io.in.bits.data("field0") := DataBundle(ptr_a)
-  accel.io.in.bits.data("field1") := DataBundle(ptr_b)
+  //accel.io.in.bits.data("field1") := DataBundle(ptr_b)
 
   for(i <- 0 until args_num) {
     val index = i + 2
@@ -708,7 +804,7 @@ class DandelionCacheShellDownSample(implicit p: Parameters) extends Module {
   switch(state) {
     is(sIdle) {
       when(vcr.io.vcr.launch) {
-        printf(p"Input: a = ${ptr_a}, b = ${ptr_b}, \n")
+        printf(p"Input: a = ${ptr_a}\n")
         for(i <- 0 until args_num){
           printf(p" val(${i}): ${arguments(i)}\n")
         }

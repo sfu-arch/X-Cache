@@ -37,17 +37,22 @@
 #include <string>
 #include <vector>
 
+#define EN_DEBUG 1
+
+#ifdef EN_DEBUG
 #define DEBUG(x)                                   \
     do {                                           \
         std::cerr << #x << ": " << x << std::endl; \
     } while (0)
+#else
+#define DEBUG(X)
+#endif
 
 using namespace std;
 namespace py = pybind11;
 
 /**
- * Tokenizing input data
- */
+ * Tokenizing input data */
 vector<string> split(const string &s, char delimiter) {
     vector<string> tokens;
     string token;
@@ -66,7 +71,7 @@ string print_vector(std::vector<int64_t> const &input, string const dl = " ") {
 }
 
 // DATA SIZES
-#define ELEMENT_SIZE_BITS 32
+#define ELEMENT_SIZE_BITS 64
 #define DLTensor_DATA_TYPE int64_t
 
 namespace driver {
@@ -81,7 +86,7 @@ class DArray {
 
    public:
     DArray(uint64_t shapes) {
-        array.shape = new DLTensor_DATA_TYPE[shapes];
+        array.shape = (int64_t *)malloc(sizeof(int64_t));
 
         array.shape[0] = shapes;
 
@@ -95,15 +100,16 @@ class DArray {
 
         array.strides = nullptr;
 
-        array.data = malloc(sizeof(void *) * array.shape[0]);
+        array.data = malloc(sizeof(uint64_t *) * array.shape[0]);
     }
     DArray(py::array_t<int64_t, py::array::c_style | py::array::forcecast>
                in_data) {
+
         std::vector<int64_t> shapes(in_data.size());
         std::memcpy(shapes.data(), in_data.data(),
                     in_data.size() * sizeof(int64_t));
 
-        array.shape = new DLTensor_DATA_TYPE[shapes.size()];
+        array.shape = (int64_t *)malloc(sizeof(int64_t));
 
         array.shape[0] = shapes.size();
 
@@ -112,15 +118,14 @@ class DArray {
         array.dtype.bits = ELEMENT_SIZE_BITS;
         array.dtype.lanes = 1;
 
-        array.ndim = shapes.size();
+        array.ndim = 1;
 
         array.strides = nullptr;
 
-        array.data = malloc(sizeof(void *) * shapes.size());
+        array.data = malloc(sizeof(uint64_t *) * shapes.size());
 
         for (auto i = 0; i < in_data.size(); ++i) {
-            *(((uint8_t *)(array.data)) + i * sizeof(DLTensor_DATA_TYPE)) =
-                shapes[i];
+            *(((uint64_t *)(array.data)) + i * sizeof(char)) = shapes[i];
         }
     }
 
@@ -147,9 +152,14 @@ class DArray {
                     in_data.size() * sizeof(int64_t));
 
         for (auto i = 0; i < in_data.size(); ++i) {
-            *(((uint8_t *)(array.data)) + i * sizeof(DLTensor_DATA_TYPE)) =
-                array_vec[i];
+            *(((uint64_t *)(array.data)) + i * sizeof(char)) = array_vec[i];
         }
+
+        for (auto index = 0; index < array.shape[0]; index++) {
+            uint64_t k = *(((uint64_t *)(array.data)) + index * sizeof(char));
+            std::cout << (int)k << " , ";
+        }
+        std::cout << "\n";
     }
 
     const DLTensor &getArray() { return array; }
@@ -158,7 +168,7 @@ class DArray {
         std::vector<int64_t> values;
         for (auto index = 0; index < this->array.shape[0]; index++) {
             int64_t k =
-                *(((uint8_t *)(this->array.data)) + index * sizeof(uint8_t));
+                *(((uint64_t *)(this->array.data)) + index * sizeof(char));
             values.push_back(k);
         }
 
@@ -171,7 +181,7 @@ class DArray {
         int64_t *buff_ptr = (int64_t *)buff.ptr;
         for (auto index = 0; index < this->array.shape[0]; index++) {
             int64_t k =
-                *(((uint8_t *)(this->array.data)) + index * sizeof(uint8_t));
+                *(((uint64_t *)(this->array.data)) + index * sizeof(uint8_t));
             buff_ptr[index] = k;
         }
 
@@ -219,6 +229,7 @@ class Device {
 
     uint32_t Run(std::vector<std::reference_wrapper<DArray>> &ptrs,
                  vector<int64_t> &arguments) {
+
         if (ptrs.size() != this->ptrs_.size())
             throw std::runtime_error("Number of PTRS must be one");
 
@@ -230,13 +241,23 @@ class Device {
         for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
             size_t a_size = (ptrs[ind].get().getArray().dtype.bits >> 3) *
                             ptrs[ind].get().getArray().shape[0];
+
             ptrs_[ind] = this->MemAlloc(a_size);
+
+            std::cerr << "Size: " << a_size << "\n";
             this->MemCopyFromHost(ptrs_[ind], ptrs[ind].get().getArray().data,
-                                  ptrs[ind].get().getArray().shape[0]);
+                                  a_size);
+
+            std::cerr << "Print input data:\n";
+            auto b = ptrs[ind].get().getArray();
+            for (auto index = 0; index < b.shape[0]; index++) {
+                uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
+                std::cout << (int)k << "\n";
+            }
+
         }
 
         this->Init();
-
         this->Launch(arguments);
 
         cycles = this->WaitForCompletion();
@@ -246,6 +267,12 @@ class Device {
                             ptrs[ind].get().getArray().shape[0];
             this->MemCopyToHost(ptrs[ind].get().getArray().data, ptrs_[ind],
                                 a_size);
+            auto b = ptrs[ind].get().getArray();
+            std::cerr << "Print output data:\n";
+            for (auto index = 0; index < b.shape[0]; index++) {
+                uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
+                std::cout << (int)k << "\n";
+            }
             this->MemFree(ptrs_[ind]);
         }
 
@@ -285,7 +312,7 @@ class Device {
     }
 
     void Launch(vector<int64_t> &arguments) {
-        int32_t address = 0x8;
+        int32_t address = 0x08;
         int32_t cnt = 0;
         for (auto arg : arguments) {
             dpi_->WriteReg(address + (cnt * 4), arg);  // arg
@@ -293,8 +320,7 @@ class Device {
         }
 
         for (auto ptr : ptrs_) {
-            DEBUG("ptr: " << this->MemGetPhyAddr(ptr));
-            dpi_->WriteReg(address + ((cnt + 0) * 4),
+            dpi_->WriteReg(address + ((cnt)*4),
                            this->MemGetPhyAddr(ptr));  // ptr(0)
 
             cnt++;
