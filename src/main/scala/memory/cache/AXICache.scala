@@ -68,8 +68,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   val Axi_param = p(ShellKey).memParams
 
   // cache states
-  val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL ::
-    s_WRITE_FLUSH :: s_WRITE_FLUSH_BACK :: s_WRITE_FLUSH_ACK :: Nil) = Enum(10)
+  val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
   val state = RegInit(s_IDLE)
 
   // memory
@@ -197,7 +196,6 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   io.mem.w.valid := false.B
   io.mem.b.ready := false.B
 
-//  io.cpu.flush.ready := state === s_IDLE
   io.cpu.flush_done := false.B
 
   /**
@@ -225,17 +223,11 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
             printf("\nLOAD START:  %d\n", counterValue)
           }
         }
-      }.elsewhen(io.cpu.flush) {
-        if(debug){
-          printf(p"FLUSHING CACHE")
-        }
-        state := s_WRITE_FLUSH
       }
     }
     is(s_READ_CACHE) {
       when(hit) {
         when(io.cpu.req.valid) {
-          // state := Mux(io.cpu.req.bits.iswrite, s_WRITE_CACHE, s_READ_CACHE)
           when(io.cpu.req.bits.iswrite) {
             state := s_WRITE_CACHE
           }.otherwise {
@@ -285,7 +277,6 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
     }
     is(s_WRITE_ACK) {
       io.mem.b.ready := true.B
-      io.cpu.flush_done := true.B
       when(io.mem.b.fire()) {
         state := s_REFILL_READY
       }
@@ -306,45 +297,6 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
           if (debug) {
             printf("\nLOAD END: %d\n", counterValue)
           }
-        }
-      }
-    }
-    is(s_WRITE_FLUSH) {
-
-      io.mem.aw.valid := true.B
-      io.mem.ar.valid := false.B
-
-      val flush_idx = flush_count.value
-      idx_reg := flush_idx
-
-     when(is_dirty) {
-       when(io.mem.aw.fire()) {
-         state := s_WRITE_FLUSH_BACK
-       }
-     }.otherwise{
-       val flush_wrap = flush_count.inc()
-       when(flush_wrap){
-         state := s_IDLE
-       }
-     }
-    }
-
-    is(s_WRITE_FLUSH_BACK){
-      io.mem.w.valid := true.B
-      when(write_wrap_out) {
-        state := s_WRITE_FLUSH_ACK
-      }
-    }
-
-    is(s_WRITE_FLUSH_ACK){
-      io.mem.b.ready := true.B
-      when(io.mem.b.fire()) {
-        val flush_finish = flush_count.inc()
-        when(flush_finish){
-          io.cpu.flush_done := true.B
-          state := s_IDLE
-        }.otherwise{
-          state := s_WRITE_FLUSH
         }
       }
     }
