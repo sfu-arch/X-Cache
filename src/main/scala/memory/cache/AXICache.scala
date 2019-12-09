@@ -68,7 +68,8 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   val Axi_param = p(ShellKey).memParams
 
   // cache states
-  val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: s_WRITE_FLUSH :: Nil) = Enum(8)
+  val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL ::
+    s_WRITE_FLUSH :: s_WRITE_FLUSH_BACK :: s_WRITE_FLUSH_ACK :: Nil) = Enum(10)
   val state = RegInit(s_IDLE)
 
   // memory
@@ -87,6 +88,8 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   require(dataBeats > 0)
   val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), dataBeats)
   val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), dataBeats)
+
+  val flush_count = Counter(nSets)
 
 
   val is_idle = state === s_IDLE
@@ -279,15 +282,6 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
       when(write_wrap_out) {
         state := s_WRITE_ACK
       }
-
-      if (debug) {
-        printf("\nFlushing the cache: %d\n", counterValue)
-        printf(p"Cache Block Add: ${io.mem.aw}\n")
-        printf(p"Cache Block Data: ${io.mem.w}\n")
-        printf(p"Cache Block val: ${cache_block}\n")
-        printf(p"Cache Read: ${read}\n")
-        printf(p"Cache Read data: ${rdata}\n")
-      }
     }
     is(s_WRITE_ACK) {
       io.mem.b.ready := true.B
@@ -316,20 +310,42 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
       }
     }
     is(s_WRITE_FLUSH) {
-      if (debug) {
-        printf("\nFlushing the cache: %d\n", counterValue)
-        printf(p"Cache Block Add: ${io.mem.aw}\n")
-        printf(p"Cache Block Data: ${io.mem.w}\n")
-        printf(p"Cache Block val: ${cache_block}\n")
-      }
+
       io.mem.aw.valid := true.B
       io.mem.ar.valid := false.B
 
-      //It's a hack to latch the latest cache data
-      //it needs to be rethinked
-      ren_reg := true.B
-      when(io.mem.aw.fire()) {
-        state := s_WRITE_BACK
+      val flush_idx = flush_count.value
+      idx_reg := flush_idx
+
+     when(is_dirty) {
+       when(io.mem.aw.fire()) {
+         state := s_WRITE_FLUSH_BACK
+       }
+     }.otherwise{
+       val flush_wrap = flush_count.inc()
+       when(flush_wrap){
+         state := s_IDLE
+       }
+     }
+    }
+
+    is(s_WRITE_FLUSH_BACK){
+      io.mem.w.valid := true.B
+      when(write_wrap_out) {
+        state := s_WRITE_FLUSH_ACK
+      }
+    }
+
+    is(s_WRITE_FLUSH_ACK){
+      io.mem.b.ready := true.B
+      when(io.mem.b.fire()) {
+        val flush_finish = flush_count.inc()
+        when(flush_finish){
+          io.cpu.flush_done := true.B
+          state := s_IDLE
+        }.otherwise{
+          state := s_WRITE_FLUSH
+        }
       }
     }
   }
