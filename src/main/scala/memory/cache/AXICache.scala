@@ -101,8 +101,8 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   val ren_reg = RegNext(ren)
 
   val addr = io.cpu.req.bits.addr
-  val idx = addr(slen + blen - 1, blen)
   val tag = addr(xlen - 1, slen + blen)
+  val idx = addr(slen + blen - 1, blen)
   val off = addr(blen - 1, byteOffsetBits)
 
   val tag_reg = addr_reg(xlen - 1, slen + blen)
@@ -127,6 +127,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
 
   //Extra input needs to be removed
   io.cpu.resp.bits.tile := 0.U
+
   // Can be: 1)Write hit, 2)Read hit, 3)Read miss
   io.cpu.resp.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.req.ready := is_idle || (state === s_READ_CACHE && hit)

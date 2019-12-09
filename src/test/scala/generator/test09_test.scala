@@ -75,10 +75,10 @@ class test09Main(implicit p: Parameters) extends test09MainIO {
 
 class test09Test01[T <: test09MainIO](c: T) extends PeekPokeTester(c) {
 
-  val inAddrVecA = List.range(0, 4 * 10, 4)
+  val inAddrVecA = List.range(0, 8 * 10, 8)
   val inDataVecA = List(1, 2, 3, 4, 5, 1, 2, 4, 5)
 
-  val outAddrVec = List.range(40, 4 * 5, 4)
+  val outAddrVec = List.range(80, 8 * 5, 4)
   val outDataVec = List.range(1, 6, 1).map(_ * 2)
 
   def MemRead(addr: Int): BigInt = {

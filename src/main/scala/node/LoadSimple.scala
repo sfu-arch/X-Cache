@@ -95,8 +95,6 @@ class UnTypLoad(NumPredOps: Int,
   // Wire up Outputs
   for (i <- 0 until NumOuts) {
     io.Out(i).bits := data_R
-    io.Out(i).bits.predicate := predicate
-    io.Out(i).bits.taskID := addr_R.taskID | enable_R.taskID
   }
 
   io.memReq.valid := false.B
@@ -118,16 +116,19 @@ class UnTypLoad(NumPredOps: Int,
     is(s_idle) {
       when(enable_valid_R && mem_req_fire) {
         when(enable_R.control && predicate) {
+
           io.memReq.valid := true.B
+
           when(io.memReq.fire) {
             state := s_RECEIVING
+
             if(log){
               printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOAD] " + node_name + ": Memreq fired @ %d, Addr:%d\n",
                 enable_R.taskID, cycleCount, io.memReq.bits.address)
             }
           }
         }.otherwise {
-          data_R.predicate := false.B
+          data_R := DataBundle.deactivate()
           ValidSucc()
           ValidOut()
           // Completion state.
@@ -139,13 +140,15 @@ class UnTypLoad(NumPredOps: Int,
       when(io.memResp.valid) {
 
         // Set data output registers
-        data_R.data := io.memResp.data
-        data_R.predicate := true.B
+        data_R := DataBundle.active(io.memResp.data)
 
         ValidSucc()
         ValidOut()
+
         // Completion state.
         state := s_Done
+
+        addr_valid_R := false.B
 
         if(log){
           printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOAD] "
@@ -157,38 +160,13 @@ class UnTypLoad(NumPredOps: Int,
     }
     is(s_Done) {
       when(complete) {
-        // Clear all the valid states.
-        // Reset address
-        // addr_R := DataBundle.default
-        addr_valid_R := false.B
-        // Reset data
-        // data_R := DataBundle.default
-        data_valid_R := false.B
-        // Reset state.
         Reset()
-        // Reset state.
         state := s_idle
         if (log) {
           printf("[LOG] " + "[" + module_name + "] [TID->%d] [LOAD] " + node_name + ": Output fired @ %d, Address:%d, Value: %d\n",
             enable_R.taskID, cycleCount, addr_R.data, data_R.data)
         }
       }
-    }
-  }
-  // Trace detail.
-  if (log == true && (comp contains "LOAD")) {
-    val x = RegInit(0.U(xlen.W))
-    x := x + 1.U
-    verb match {
-      case "high" => {}
-      case "med" => {}
-      case "low" => {
-        printfInfo("Cycle %d : { \"Inputs\": {\"GepAddr\": %x},", x, (addr_valid_R))
-        printf("\"State\": {\"State\": \"%x\", \"data_R(Valid,Data,Pred)\":\"%x,%x,%x\" },", state, data_valid_R, data_R.data, data_R.predicate)
-        printf("\"Outputs\": {\"Out\": %x}", io.Out(0).fire())
-        printf("}")
-      }
-      case everythingElse => {}
     }
   }
 }

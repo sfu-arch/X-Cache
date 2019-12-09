@@ -62,6 +62,7 @@ class MiniConfig extends Config((site, here, up) => {
   case XLEN => 32
   case TLEN => 5
   case GLEN => 16
+
   // # Max bits of cache request tag.
   case MSHRLEN => 8
   case TYPSZ => 64
@@ -82,7 +83,7 @@ class MiniConfig extends Config((site, here, up) => {
   // NastiIO
   case NastiKey => new NastiParameters(
     idBits = 12,
-    dataBits = 64,
+    dataBits = 32,
     addrBits = 32)
 
   case FTYP => site(XLEN) match {
