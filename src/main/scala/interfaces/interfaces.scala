@@ -103,7 +103,7 @@ object ReadReq {
     wire.address := 0.U
     wire.taskID := 0.U
     wire.RouteID := 0.U
-    wire.Typ := MT_W
+    wire.Typ := MT_D
     wire
   }
 }
@@ -160,7 +160,7 @@ object WriteReq {
     wire.mask := 0.U
     wire.taskID := 0.U
     wire.RouteID := 0.U
-    wire.Typ := MT_W
+    wire.Typ := MT_D
     wire
   }
 }

@@ -163,6 +163,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO( )(p) 
     is(s_Done) {
       io.output.valid := 1.U
       output := (linebuffer.asUInt & bitmask) >> Cat(request_R.address(log2Ceil(xlen_bytes) - 1, 0), 0.U(3.W))
+      io.output.bits.data := output
       // @error: To handle doubles this has to change.
       if (xlen == 32) {
         io.output.bits.data := Data2Sign(output, request_R.Typ, xlen)

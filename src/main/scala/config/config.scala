@@ -59,7 +59,7 @@ abstract class AXICoreBundle(implicit val p: Parameters) extends GenericParamete
 
 class MiniConfig extends Config((site, here, up) => {
   // Core
-  case XLEN => 32
+  case XLEN => 64
   case TLEN => 5
   case GLEN => 16
 
