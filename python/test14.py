@@ -10,7 +10,7 @@ b_s = dsim.DArray(b)
 
 hw_lib_path = "./hardware/chisel/build/libhw.so"
 
-cycle = dsim.sim(ptrs = [a_s, b_s], vars= [], hwlib = hw_lib_path)
+cycle = dsim.sim(ptrs = [a_s, b_s], vars= [5], hwlib = hw_lib_path)
 
 print("Cycle: " + str(cycle))
 print(a_s.getData())

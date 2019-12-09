@@ -15,4 +15,6 @@ hw_lib_path = "./hardware/chisel/build/libhw.so"
 cycle = dsim.sim(ptrs = [a_s,b_s,c_s], vars= [5, 5], hwlib = hw_lib_path)
 
 print("Cycle: " + str(cycle))
+print(a_s.getData())
+print(b_s.getData())
 print(c_s.getData())

@@ -186,11 +186,13 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   val ptr_b = RegEnable(next = vcr.io.vcr.ptrs(1), init = 0.U(ptrBits.W), enable = (state === sIdle))
   //val ptr_c = RegEnable(next = vcr.io.vcr.ptrs(2), init = 0.U(ptrBits.W), enable = (state === sIdle))
 
-  //val val_a = vcr.io.vcr.vals(0)
+  val val_a = vcr.io.vcr.vals(0)
   //val val_b = vcr.io.vcr.vals(1)
 
   test09.io.in.bits.data("field0") := DataBundle(ptr_a)
   test09.io.in.bits.data("field1") := DataBundle(ptr_b)
+
+  test09.io.in.bits.data("field2") := DataBundle(val_a)
   //test09.io.in.bits.data("field2") := DataBundle(ptr_c)
 
   test09.io.in.bits.enable := ControlBundle.active()
@@ -205,7 +207,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   switch(state) {
     is(sIdle) {
       when(vcr.io.vcr.launch) {
-        printf(p" Ptrs: ptr(0): ${ptr_a}, ptr(1): ${ptr_b}\n")
+        printf(p" Ptrs: ptr(0): ${ptr_a}, ptr(1): ${ptr_b}, val(0): ${val_a}\n")
         test09.io.in.valid := true.B
         when(test09.io.in.fire){
           state := sBusy
@@ -214,7 +216,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
     }
     is(sBusy) {
       when(test09.io.out.fire){
-        state := sFlush
+        state := sDone
       }
     }
     is(sFlush){

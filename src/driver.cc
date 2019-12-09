@@ -72,7 +72,6 @@ string print_vector(std::vector<int64_t> const &input, string const dl = " ") {
 
 // DATA SIZES
 #define ELEMENT_SIZE_BITS 64
-#define DLTensor_DATA_TYPE int64_t
 
 namespace driver {
 
@@ -244,7 +243,6 @@ class Device {
 
             ptrs_[ind] = this->MemAlloc(a_size);
 
-            std::cerr << "Size: " << a_size << "\n";
             this->MemCopyFromHost(ptrs_[ind], ptrs[ind].get().getArray().data,
                                   a_size);
 
@@ -258,6 +256,7 @@ class Device {
         }
 
         this->Init();
+
         this->Launch(arguments);
 
         cycles = this->WaitForCompletion();

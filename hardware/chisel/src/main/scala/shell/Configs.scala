@@ -55,9 +55,9 @@ class DandelionConfig(val num_ptrs: Int = 4, val num_vals: Int = 2,
                       val num_event: Int = 1, val num_ctrl: Int = 1) extends Config((site, here, up) => {
   case ShellKey => ShellParams(
     hostParams = AXIParams(
-      addrBits = 32, dataBits = 32, idBits = 13, lenBits = 4),
+      addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
     memParams = AXIParams(
-      addrBits = 32, dataBits = 64, userBits = 5,
+      addrBits = 32, dataBits = 32, userBits = 5,
       lenBits = 4, // limit to 16 beats, instead of 256 beats in AXI4
       coherent = true),
     vcrParams = new VCRSimParams(num_ptrs, num_vals, num_event, num_ctrl),
