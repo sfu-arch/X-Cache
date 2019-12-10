@@ -216,7 +216,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
     }
     is(sBusy) {
       when(test09.io.out.fire){
-        state := sDone
+        state := sFlush
       }
     }
     is(sFlush){
