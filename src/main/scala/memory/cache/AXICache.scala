@@ -71,14 +71,14 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
   val state = RegInit(s_IDLE)
 
-  val s_flush_IDLE :: s_flush_START :: s_flush_WRITE_BACK :: Nil = Enum(3)
+  val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_BLOCK :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(7)
   val flush_state = RegInit(s_flush_IDLE)
 
   //Flush Logic
   val dirty_offset_size = 16
   val dirty_block_size = nSets / dirty_offset_size
-  val dirty_mem = Vec(dirty_block_size, UInt(dirty_offset_size.W))
-  val dirty_valid = VecInit(dirty_mem.map(_.orR))
+  val dirty_mem = RegInit(VecInit(Seq.fill(dirty_block_size)(0.U(dirty_offset_size.W))))
+
 
   // memory
   val valid = RegInit(0.U(nSets.W))
@@ -98,7 +98,12 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), dataBeats)
 
   val (flush_count, flush_wrap) = Counter(flush_state === s_flush_START, dirty_block_size)
+  val (flush_block_count, flush_block_wrap) = Counter(flush_state === s_flush_BLOCK, dirty_offset_size)
 
+  val dirty_block_reg = RegInit(0.U(log2Ceil(dirty_block_size).W))
+  val dirty_block_offset_reg = RegInit(0.U(log2Ceil(dirty_offset_size).W))
+  val dirty_block_tag_reg = RegInit(0.U((xlen - (slen + blen)).W))
+  val dirty_block_addr = RegInit(0.U(xlen.W))
 
   val is_idle = state === s_IDLE
   val is_read = state === s_READ_CACHE
@@ -120,8 +125,8 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   val idx_reg = addr_reg(slen + blen - 1, blen)
   val off_reg = addr_reg(blen - 1, byteOffsetBits)
 
-  val dirty_block = idx(dirty_block_size, dirty_offset_size - 1)
-  val dirty_offset = idx(dirty_offset_size, 0)
+  val dirty_block = idx(log2Ceil(dirty_block_size) + log2Ceil(dirty_offset_size) - 1, log2Ceil(dirty_offset_size))
+  val dirty_offset = idx(log2Ceil(dirty_offset_size) - 1, 0)
 
   val cache_block = Cat((dataMem map (_.read(idx).asUInt)).reverse)
   val cache_block_size = p(CacheBlockBytes) * 8
@@ -170,7 +175,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
     valid := valid.bitSet(idx_reg, true.B)
     dirty := dirty.bitSet(idx_reg, !is_alloc)
 
-    dirty_mem(dirty_block).bitSet(dirty_offset, !is_alloc)
+    dirty_mem(dirty_block) := dirty_mem(dirty_block).bitSet(dirty_offset, !is_alloc)
 
     when(is_alloc) {
       metaMem.write(idx_reg, wmeta)
@@ -303,7 +308,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
       }
     }
     is(s_REFILL) {
-      if(debug){
+      if (debug) {
         printf(p"state: Refill\n")
       }
       when(read_wrap_out) {
@@ -317,19 +322,66 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
     }
   }
   // Info
-  
+
   //Flush state machine
-  switch(flush_state){
-    is(s_flush_IDLE){
-      when(io.cpu.flush){
+  switch(flush_state) {
+    is(s_flush_IDLE) {
+      when(io.cpu.flush) {
         flush_state := s_flush_START
       }
     }
-    is(s_flush_START){
-      printf("Flush count[%d] : %d\n" , flush_count, dirty_valid(flush_count))
-      when(flush_wrap){
+    is(s_flush_START) {
+      val dirty_valid = dirty_mem(flush_count).orR()
+      when(flush_wrap) {
         io.cpu.flush_done := true.B
         flush_state := s_flush_IDLE
+      }
+      when(dirty_valid) {
+        flush_state := s_flush_BLOCK
+        dirty_block_reg := flush_count
+      }
+    }
+    is(s_flush_BLOCK) {
+      val dirty_block_value = dirty_mem(dirty_block_reg)(flush_block_count)
+
+      //Need to create the dirty address
+      when(dirty_block_value) {
+        dirty_block_tag_reg := metaMem.read(idx).tag
+        dirty_block_offset_reg := flush_block_count
+        flush_state := s_flush_ADDR
+      }
+
+      when(flush_block_wrap) {
+        flush_state := s_flush_START
+      }
+    }
+    is(s_flush_ADDR) {
+      flush_state := s_flush_WRITE
+
+      // This is the address of dirty block
+      val dirty_addr = Cat(dirty_block_tag_reg, dirty_block_reg, dirty_block_offset_reg, 0.U(blen.W))
+      dirty_block_addr := Cat(dirty_block_tag_reg, dirty_block_reg, dirty_block_offset_reg) << blen.U
+    }
+    is(s_flush_WRITE){
+      io.mem.aw.bits.addr := dirty_block_addr
+
+      io.mem.aw.valid := true.B
+      io.mem.ar.valid := false.B
+
+      when(io.mem.aw.fire()) {
+        flush_state := s_flush_WRITE_BACK
+      }
+    }
+    is(s_flush_WRITE_BACK) {
+      io.mem.w.valid := true.B
+      when(write_wrap_out) {
+        flush_state := s_flush_WRITE_ACK
+      }
+    }
+    is(s_flush_WRITE_ACK) {
+      io.mem.b.ready := true.B
+      when(io.mem.b.fire()) {
+        flush_state := s_flush_START
       }
     }
   }
