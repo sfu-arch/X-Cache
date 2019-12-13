@@ -116,15 +116,16 @@ sbt publishLocal
 
 * Build hardware accelerator library
 
-        make run_chisel NPROCS=4
+        make chisel NPROCS=4 NUM_PTRS=2 NUM_ARGS=1
 
-* Instal python binding:
+* Instal python binding (make sure you have pull pybind11 as submodule):
 
+        git submodule update --init --recursive
         pip3.7 install --user .
 
 * Run python test:
 
-        python3.7 python/test09.py
+        python3.7 python/test14.py
 
 
 ## Notes
