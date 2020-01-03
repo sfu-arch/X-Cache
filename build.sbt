@@ -38,7 +38,7 @@ resolvers ++= Seq(
 
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 val defaultVersions = Map(
-  "chisel3" -> "3.2-SNAPSHOT",
+  "chisel3" -> "3.3-SNAPSHOT",
   "chisel-iotesters" -> "1.3-SNAPSHOT",
   "dsptools" -> "1.2-SNAPSHOT"
 )
@@ -55,7 +55,7 @@ libraryDependencies ++= Seq(
 
 // Berkley hardfloat. locally published (built with chisel2 scala 2.11)
 libraryDependencies ++= Seq("edu.berkeley.cs" %% "dsptools" % "1.2-SNAPSHOT")
-libraryDependencies ++= Seq("edu.berkeley.cs" %% "hardfloat" % "1.2-SNAPSHOT")
+libraryDependencies ++= Seq("edu.berkeley.cs" %% "hardfloat" % "1.3-SNAPSHOT")
 
 
 resolvers ++= Seq(
