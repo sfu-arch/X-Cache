@@ -359,10 +359,13 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
       flush_state := s_flush_WRITE
 
       // This is the address of dirty block
-      val dirty_addr = Cat(dirty_block_tag_reg, dirty_block_reg, dirty_block_offset_reg, 0.U(blen.W))
+      //val dirty_addr = Cat(dirty_block_tag_reg, dirty_block_reg, dirty_block_offset_reg, 0.U(blen.W))
       dirty_block_addr := Cat(dirty_block_tag_reg, dirty_block_reg, dirty_block_offset_reg) << blen.U
+      ren_reg := true.B
     }
     is(s_flush_WRITE){
+      printf("Dirty block address: %d\n", dirty_block_addr)
+
       io.mem.aw.bits.addr := dirty_block_addr
 
       io.mem.aw.valid := true.B

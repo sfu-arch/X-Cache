@@ -47,7 +47,7 @@ Follow these instructions to compile it from source.
 1. Install prerequisites (if not installed already):
 
     ```bash
-    sudo apt-get install git make autoconf g++ flex bison
+    sudo apt-get install git make autoconf g++ flex bison libfl2 libfl-dev zlibc zlib1g zlib1g-dev
     ```
 
 2. Clone the Verilator repository:
