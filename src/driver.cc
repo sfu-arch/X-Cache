@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#define EN_DEBUG 1
+#define EN_DEBUG 0
 
 #ifdef EN_DEBUG
 #define DEBUG(x)                                   \
@@ -95,11 +95,11 @@ class Device {
             this->MemCopyFromHost(ptrs_[ind], ptrs[ind].get().getArray().data,
                                   a_size);
 
-            std::cerr << "Print input data:\n";
+            DEBUG("Print input data:")
             auto b = ptrs[ind].get().getArray();
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
-                std::cout << (int)k << "\n";
+                DEBUG((int)k);
             }
         }
 
@@ -115,10 +115,10 @@ class Device {
             this->MemCopyToHost(ptrs[ind].get().getArray().data, ptrs_[ind],
                                 a_size);
             auto b = ptrs[ind].get().getArray();
-            std::cerr << "Print output data:\n";
+            DEBUG("Print output data:");
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
-                std::cout << (int)k << "\n";
+                DEBUG((int)k);
             }
             this->MemFree(ptrs_[ind]);
         }
