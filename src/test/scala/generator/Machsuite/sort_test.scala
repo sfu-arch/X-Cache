@@ -208,7 +208,7 @@ class sortTest01[T <: sortMainIO](c: T) extends PeekPokeTester(c) {
 class sortTester1 extends FlatSpec with Matchers {
   implicit val p = Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
-    case XLEN => 32
+    case DAXLEN => 32
     case TRACE => true
   })
   //it should "Check that sort works correctly." in {

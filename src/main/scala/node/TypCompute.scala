@@ -57,7 +57,7 @@ object operation {
         val x = Wire(new FPmatNxN(l.N, l.t))
         for (i <- 0 until l.N) {
           for (j <- 0 until l.N) {
-            val FPadd = Module(new FPUALU(p(XLEN), "Add", l.t))
+            val FPadd = Module(new FPUALU(p(DAXLEN), "Add", l.t))
             FPadd.io.in1 := l.data(i)(j)
             FPadd.io.in2 := r.data(i)(j)
             x.data(i)(j) := FPadd.io.out
@@ -70,7 +70,7 @@ object operation {
         val x = Wire(new FPmatNxN(l.N, l.t))
         for (i <- 0 until l.N) {
           for (j <- 0 until l.N) {
-            val FPadd = Module(new FPUALU(p(XLEN), "Sub", l.t))
+            val FPadd = Module(new FPUALU(p(DAXLEN), "Sub", l.t))
             FPadd.io.in1 := l.data(i)(j)
             FPadd.io.in2 := r.data(i)(j)
             x.data(i)(j) := FPadd.io.out
@@ -86,7 +86,7 @@ object operation {
         val products = for (i <- 0 until l.N) yield {
           for (j <- 0 until l.N) yield {
             for (k <- 0 until l.N) yield {
-              val FPadd = Module(new FPUALU(p(XLEN), "Mul", l.t))
+              val FPadd = Module(new FPUALU(p(DAXLEN), "Mul", l.t))
               FPadd.io.in1 := l.data(i)(k)
               FPadd.io.in2 := r.data(k)(j)
               FPadd.io.out
@@ -96,7 +96,7 @@ object operation {
         for (i <- 0 until l.N) {
           for (j <- 0 until l.N) {
             val FP_add_reduce = for (k <- 0 until l.N - 1) yield {
-              val FPadd = Module(new FPUALU(p(XLEN), "Add", l.t))
+              val FPadd = Module(new FPUALU(p(DAXLEN), "Add", l.t))
               FPadd
             }
 
@@ -192,7 +192,7 @@ object operation {
 
       def OpMagic(l: vecN, r: vecN, opcode: String)(implicit p: Parameters): vecN = {
         val x = Wire(new vecN(l.N))
-        val Op_FUs = Seq.fill(l.N)(Module(new UALU(p(XLEN), opcode)))
+        val Op_FUs = Seq.fill(l.N)(Module(new UALU(p(DAXLEN), opcode)))
         for (i <- 0 until l.N) {
           Op_FUs(i).io.in1 := l.data(i)
           Op_FUs(i).io.in2 := r.data(i)

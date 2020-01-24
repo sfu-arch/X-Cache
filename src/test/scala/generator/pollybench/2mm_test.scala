@@ -177,7 +177,7 @@ class k2mmTest01[T <: k2mmMainIO](c: T) extends PeekPokeTester(c) {
 class k2mmTester1 extends FlatSpec with Matchers {
   implicit val p = Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
-    case XLEN => 32
+    case DAXLEN => 32
     case TRACE => true
   })
   //it should "Check that k2mm works correctly." in {

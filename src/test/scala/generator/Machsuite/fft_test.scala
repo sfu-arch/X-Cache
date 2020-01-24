@@ -216,7 +216,7 @@ import java.io.{File, PrintWriter}
 class fftTester1 extends FlatSpec with Matchers {
   implicit val p = Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
-    case XLEN => 32
+    case DAXLEN => 32
     case TRACE => true
   })
   //it should "Check that fft works correctly." in {

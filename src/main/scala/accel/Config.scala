@@ -16,7 +16,7 @@ class AccelConfig extends MiniConfig() {
 
 class VecFilterDFConfig extends Config((site, here, up) => {
   // Core
-  case XLEN       => 32
+  case DAXLEN       => 32
   case TLEN       => 32
   case GLEN       => 16
   // # Max bits of cache request tag.
@@ -32,7 +32,7 @@ class VecFilterDFConfig extends Config((site, here, up) => {
   // Cache
   case NWays => 1 // TODO: set-associative
   case NSets => 256
-  case CacheBlockBytes => 4 * (here(XLEN) >> 3) // 4 x 32 bits = 16B
+  case CacheBlockBytes => 4 * (here(DAXLEN) >> 3) // 4 x 32 bits = 16B
   // NastiIO
   case NastiKey => new NastiParameters(
     idBits   = 12,

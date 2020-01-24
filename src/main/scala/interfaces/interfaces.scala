@@ -490,7 +490,7 @@ class VariableDecoupledCustom(val argTypes: Seq[Bits])(implicit p: Parameters) e
 // Bundle of DataBundles with data width specified by the argTypes parameter
 class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
-    i => s"field$i" -> new DataBundle()(p.alterPartial({ case XLEN => argTypes(i) }))
+    i => s"field$i" -> new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) }))
   }
   override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
 
@@ -502,7 +502,7 @@ class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Recor
 // Bundle of Decoupled DataBundles with data width specified by the argTypes parameter
 class VariableDecoupledData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
-    i => s"field$i" -> Decoupled(new DataBundle()(p.alterPartial({ case XLEN => argTypes(i) })))
+    i => s"field$i" -> Decoupled(new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) })))
   }
   override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
 

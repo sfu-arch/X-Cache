@@ -194,7 +194,7 @@ class covarianceTest01[T <: covarianceMainIO](c: T) extends PeekPokeTester(c) {
 class covarianceTester1 extends FlatSpec with Matchers {
   implicit val p = Parameters.root((new MiniConfig).toInstance)
   val testParams = p.alterPartial({
-    case XLEN => 32
+    case DAXLEN => 32
     case TRACE => true
   })
   //it should "Check that covariance works correctly." in {

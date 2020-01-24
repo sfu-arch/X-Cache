@@ -7,91 +7,60 @@ import dandelion.junctions._
 import dandelion.fpu._
 import dandelion.accel._
 
-case object XLEN extends Field[Int]
+case class AccelParams(
+                        dataLen: Int = 32,
+                        taskLen: Int = 5,
+                        groupLen: Int = 16,
+                        mshrLen: Int = 8,
+                        typeSize: Int = 64,
+                        verbosity: String = "low",
+                        components: String = "",
+                        printLog: Boolean = false,
+                        printCLog: Boolean = false
+                      ) {
+  val xlen: Int = dataLen
+  val tlen: Int = taskLen
+  val glen: Int = groupLen
+  val Typ_SZ: Int = typeSize
+  //  val Beats: Int
+  val mshrlen: Int = mshrLen
+  val Ftyp = dataLen match {
+    case 64 => FType.D
+    case 32 => FType.S
+    case 16 => FType.H
+  }
 
-case object TLEN extends Field[Int]
+  //Cache
+  val nways = 1 // TODO: set-associative
+  val nsets = 256
+  val CacheBlockBytes = 4 * (xlen >> 3) // 4 x 64 bits = 32B
 
-case object GLEN extends Field[Int]
-
-case object MSHRLEN extends Field[Int]
-
-case object TYPSZ extends Field[Int]
-
-case object VERBOSITY extends Field[String]
-
-case object COMPONENTS extends Field[String]
-
-case object TRACE extends Field[Boolean]
-
-case object CTRACE extends Field[Boolean]
-
-case object BuildRFile extends Field[Parameters => AbstractRFile]
-
-case object FTYP extends Field[FType]
-
-case object NWays extends Field[Int]
-
-case object NSets extends Field[Int]
-
-case object CacheBlockBytes extends Field[Int]
-
-
-abstract trait CoreParams {
-  implicit val p: Parameters
-  val xlen = p(XLEN)
-  val tlen = p(TLEN)
-  val glen = p(GLEN)
-  val Typ_SZ = p(TYPSZ)
-  val Beats = Typ_SZ / xlen
-  val mshrlen = p(MSHRLEN)
-  val Ftyp = p(FTYP)
   // Debugging dumps
-  val log = p(TRACE)
-  val clog = p(CTRACE)
-  val verb = p(VERBOSITY)
-  val comp = p(COMPONENTS)
+  val log = printLog
+  val clog = printCLog
+  val verb = verbosity
+  val comp = components
 
 }
 
-abstract class CoreBundle(implicit val p: Parameters) extends ParameterizedBundle()(p) with CoreParams
-abstract class AXICoreBundle(implicit val p: Parameters) extends GenericParameterizedBundle(p) with CoreParams
+abstract class AccelBundle(implicit val p: Parameters) extends ParameterizedBundle()(p) with AccelParams
+abstract class AXIAccelBundle(implicit val p: Parameters) extends GenericParameterizedBundle(p) with AccelParams
 
 
-class MiniConfig extends Config((site, here, up) => {
+case object DandelionAccelConfig extends Field[AccelParams]
+
+class WithAccelConfig extends Config((site, here, up) => {
   // Core
-  case XLEN => 64
-  case TLEN => 5
-  case GLEN => 16
-
-  // # Max bits of cache request tag.
-  case MSHRLEN => 8
-  case TYPSZ => 64
-  case VERBOSITY => "low"
-  //    case COMPONENTS => "TYPLOAD;TYPOP;TYPSTORE"
-  case COMPONENTS => ""
-  // Max size of type memory system may see
-  case TRACE => true
-  case CTRACE => false
-  case BuildRFile => (p: Parameters) => Module(new RFile(32)(p))
-
-  //-------------------------
-  // Cache
-  case NWays => 1 // TODO: set-associative
-  case NSets => 256
-  case CacheBlockBytes => 4 * (site(XLEN) >> 3) // 4 x 64 bits = 32B
+  case DandelionAccelConfig => AccelParams(
+    dataLen =  32
+  )
 
   // NastiIO
-  case NastiKey => new NastiParameters(
-    idBits = 12,
-    dataBits = 32,
-    addrBits = 32)
+  //  case NastiKey => new NastiParameters(
+  //    idBits = 12,
+  //    dataBits = 32,
+  //    addrBits = 32)
 
-  case FTYP => site(XLEN) match {
-    case 32 => FType.S
-    case 64 => FType.D
-    case 16 => FType.H
-    case _ => FType.S
-  }
 }
 
 )
