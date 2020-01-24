@@ -19,7 +19,7 @@ import dandelion.loop._
 import dandelion.accel._
 import dandelion.junctions._
 
-class harrisMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+class harrisMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32))))
 
@@ -152,7 +152,7 @@ import java.io.{File, FileWriter}
 object harrisTop extends App {
   val dir = new File("RTL/harrisTop");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new harrisMain()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

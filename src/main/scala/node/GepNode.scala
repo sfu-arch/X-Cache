@@ -843,7 +843,7 @@ class GepArrayTwoNode(NumOuts: Int, ID: Int)
 
 class GepIO(NumIns: Int, NumOuts: Int)
            (implicit p: Parameters)
-  extends CoreBundle {
+  extends AccelBundle {
 
   // Input indexes
   // Indexes can be either constant our coming from other nodes

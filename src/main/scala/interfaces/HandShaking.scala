@@ -42,7 +42,7 @@ import utility.UniformPrintfs
   *
   */
 class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)(implicit p: Parameters)
-  extends CoreBundle( )(p) {
+  extends AccelBundle( )(p) {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Output IO
@@ -68,7 +68,7 @@ class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)(implicit p: Paramete
 class HandShakingIOPS[T <: Data](val NumPredOps: Int,
                                  val NumSuccOps: Int,
                                  val NumOuts: Int)(gen: T)(implicit p: Parameters)
-  extends CoreBundle( )(p) {
+  extends AccelBundle( )(p) {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Predecessor Ordering
@@ -91,7 +91,7 @@ class HandShakingIOPS[T <: Data](val NumPredOps: Int,
   *
   */
 class HandShakingFusedIO[T <: Data](val NumIns: Int, val NumOuts: Int)(gen: T)(implicit p: Parameters)
-  extends CoreBundle( )(p) {
+  extends AccelBundle( )(p) {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Input IO
@@ -114,7 +114,7 @@ class HandShakingFusedIO[T <: Data](val NumIns: Int, val NumOuts: Int)(gen: T)(i
 class HandShakingCtrlMaskIO(val NumInputs: Int,
                             val NumOuts: Int,
                             val NumPhi: Int)(implicit p: Parameters)
-  extends CoreBundle( )(p) {
+  extends AccelBundle( )(p) {
 
   // Output IO
   val MaskBB = Vec(NumPhi, Decoupled(UInt(NumInputs.W)))
@@ -131,7 +131,7 @@ class HandShakingCtrlMaskIO(val NumInputs: Int,
   *
   */
 class HandShakingCtrlNoMaskIO(val NumOuts: Int)(implicit p: Parameters)
-  extends CoreBundle( )(p) {
+  extends AccelBundle( )(p) {
   // Output IO
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
 
@@ -152,7 +152,7 @@ class HandShakingCtrlNoMaskIO(val NumOuts: Int)(implicit p: Parameters)
 
 class HandShakingNPS[T <: Data](val NumOuts: Int,
                                 val ID: Int)(gen: T)(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   lazy val io = IO(new HandShakingIONPS(NumOuts)(gen))
 
@@ -244,7 +244,7 @@ class HandShakingNPS[T <: Data](val NumOuts: Int,
 
 class HandShakingFused[T <: PredicateT](val NumIns: Int, val NumOuts: Int,
                                         val ID: Int)(gen: T)(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   lazy val io = IO(new HandShakingFusedIO(NumIns, NumOuts)(new DataBundle))
 
@@ -401,7 +401,7 @@ class HandShakingFused[T <: PredicateT](val NumIns: Int, val NumOuts: Int,
 
 class HandShakingCtrlNPS(val NumOuts: Int,
                          val ID: Int)(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   lazy val io = IO(new HandShakingIONPS(NumOuts)(new ControlBundle))
 
@@ -502,7 +502,7 @@ class HandShaking[T <: Data](val NumPredOps: Int,
                              val NumSuccOps: Int,
                              val NumOuts: Int,
                              val ID: Int)(gen: T)(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   lazy val io = IO(new HandShakingIOPS(NumPredOps, NumSuccOps, NumOuts)(gen))
 
@@ -687,7 +687,7 @@ class HandShakingCtrlMask(val NumInputs: Int,
                           val NumOuts: Int,
                           val NumPhi: Int,
                           val BID: Int)(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   lazy val io = IO(new HandShakingCtrlMaskIO(NumInputs, NumOuts, NumPhi))
 
@@ -795,7 +795,7 @@ class HandShakingCtrlMask(val NumInputs: Int,
 class HandShakingCtrlNoMask(val NumInputs: Int,
                             val NumOuts: Int,
                             val BID: Int)(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   lazy val io = IO(new HandShakingCtrlNoMaskIO(NumOuts))
 

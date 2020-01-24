@@ -27,7 +27,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class cilk_saxpyDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class cilk_saxpyDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val call_11_out = Decoupled(new Call(List(32, 32, 32, 32)))
@@ -368,7 +368,7 @@ class cilk_saxpyDF(implicit p: Parameters) extends cilk_saxpyDFIO()(p) {
 }
 
 class cilk_saxpyMainTMTop(children: Int)(implicit val p: Parameters)
-  extends Module with CoreParams {
+  extends Module with HasAccelParams {
 
   val Args = List(32, 32, 32, 32)
   val Returns = List(32)
@@ -443,7 +443,7 @@ import java.io.{File, FileWriter}
 object cilk_saxpyTop extends App {
   val dir = new File("RTL/cilk_saxpyTop4");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   //val testParams = p.alterPartial({
     //case TLEN => 5
     //case TRACE => true

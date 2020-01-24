@@ -45,7 +45,7 @@ import dandelion.config._
   * @note io.stat  A vector of 'sNum' status registers
   */
 
-abstract class SimpleRegIO(cNum: Int, sNum: Int)(implicit val p: Parameters) extends Module with CoreParams {
+abstract class SimpleRegIO(cNum: Int, sNum: Int)(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(
     new Bundle {
       val nasti = Flipped(new NastiIO())

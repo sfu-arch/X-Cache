@@ -70,7 +70,7 @@ class ChainTester(df: Chain)
 }
 
 	class FusedCompTests extends  FlatSpec with Matchers {
-   implicit val p = Parameters.root((new MiniConfig).toInstance)
+   implicit val p = new WithAccelConfig
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver.execute(
        Array(

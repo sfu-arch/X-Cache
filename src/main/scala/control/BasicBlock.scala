@@ -166,7 +166,7 @@ class BasicBlockNoMaskDepIO(NumOuts: Int)
   */
 
 class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
-  extends CoreBundle()(p) {
+  extends AccelBundle()(p) {
   // Output IO
   val predicateIn = Flipped(Decoupled(new ControlBundle()))
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
@@ -176,7 +176,7 @@ class BasicBlockNoMaskFastIO(val NumOuts: Int)(implicit p: Parameters)
 
 
 class BasicBlockNoMaskFastVecIO(val NumInputs: Int, val NumOuts: Int)(implicit p: Parameters)
-  extends CoreBundle()(p) {
+  extends AccelBundle()(p) {
   // Output IO
   val predicateIn = Vec(NumInputs, Flipped(Decoupled(new ControlBundle())))
   val Out = Vec(NumOuts, Decoupled(new ControlBundle))
@@ -206,7 +206,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
                               (implicit val p: Parameters,
                                name: sourcecode.Name,
                                file: sourcecode.File)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   val io = IO(new BasicBlockNoMaskFastVecIO(NumInputs, NumOuts)(p))
 
@@ -338,7 +338,7 @@ class BasicBlockNoMaskFastNode(BID: Int, val NumInputs: Int = 1, val NumOuts: In
 }
 
 
-class LoopHeadNodeIO(val NumOuts: Int, val NumPhi: Int)(implicit p: Parameters) extends CoreBundle {
+class LoopHeadNodeIO(val NumOuts: Int, val NumPhi: Int)(implicit p: Parameters) extends AccelBundle {
 
   // Predicate enable
   val activate = Flipped(Decoupled(new ControlBundle))
@@ -355,7 +355,7 @@ class LoopHeadNodeIO(val NumOuts: Int, val NumPhi: Int)(implicit p: Parameters) 
 class LoopHead(val BID: Int, val NumOuts: Int, val NumPhi: Int)
               (implicit val p: Parameters,
                name: sourcecode.Name,
-               file: sourcecode.File) extends Module with CoreParams with UniformPrintfs {
+               file: sourcecode.File) extends Module with HasAccelParams with UniformPrintfs {
   // Defining IOs
   val io = IO(new LoopHeadNodeIO(NumOuts, NumPhi))
   // Printf debugging

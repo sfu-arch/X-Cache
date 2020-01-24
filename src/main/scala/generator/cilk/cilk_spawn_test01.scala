@@ -149,7 +149,7 @@ object Data_cilk_spawn_test01_FlowParam{
    * ================================================================== */
 
 
-abstract class cilk_spawn_test01DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class cilk_spawn_test01DFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -473,7 +473,7 @@ class cilk_spawn_test01DF(implicit p: Parameters) extends cilk_spawn_test01DFIO(
 import java.io.{File, FileWriter}
 object cilk_spawn_test01Main extends App {
   val dir = new File("RTL/cilk_spawn_test01") ; dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_spawn_test01DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

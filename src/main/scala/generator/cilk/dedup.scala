@@ -27,7 +27,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class dedupDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class dedupDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val call_1_out = Decoupled(new Call(List(32, 32, 32)))
@@ -590,8 +590,8 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
 }
 
-class dedupTopIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
+class dedupTopIO(implicit val p: Parameters)  extends Module with HasAccelParams with CacheParams {
+  val io = IO( new AccelBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
@@ -676,12 +676,9 @@ class dedupTop(tiles : Int)(implicit p: Parameters) extends dedupTopIO  {
 import java.io.{File, FileWriter}
 object dedupMain extends App {
   val dir = new File("RTL/dedupTop") ; dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 6
-    case TRACE => false
-  })
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new dedupTop(1)(testParams)))
+
+  implicit val p = new WithAccelConfig(AccelParams(taskLen = 6, printLog = false))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new dedupTop(1)(p)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

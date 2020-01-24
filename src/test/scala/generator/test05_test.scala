@@ -123,7 +123,7 @@ class test05Tester1 extends FlatSpec with Matchers {
   val outDataVec = inDataVec.zipWithIndex.map { case (a, b) => if (b < 5) a else inDataVec(b - 5) * 2 }
 
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Check that test05 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

@@ -47,7 +47,7 @@ class test13MainDirect(implicit p: Parameters) extends AccelIO(List(32, 32, 32),
   io.out <> test13.io.out
 
   // Check if trace option is on or off
-  if (p(TRACE) == false) {
+  if (log == false) {
     println(Console.RED + "****** Trace option is off. *********" + Console.RESET)
   }
   else
@@ -161,7 +161,7 @@ class test13Tester extends FlatSpec with Matchers {
     0x3ff4de9b, 0x40000000)
 
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Check that test11 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

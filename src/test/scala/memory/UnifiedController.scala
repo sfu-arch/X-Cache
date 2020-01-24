@@ -130,7 +130,7 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: Parameters) exte
 
 
 class UnifiedControllerTester extends  FlatSpec with Matchers {
-	implicit val p = Parameters.root((new MiniConfig).toInstance)
+	implicit val p = new WithAccelConfig
 	// iotester flags:
 	// -ll  = log level <Error|Warn|Info|Debug|Trace>
 	// -tbn = backend <firrtl|verilator|vcs>

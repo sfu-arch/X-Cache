@@ -18,7 +18,7 @@
 
 // //TODO uncomment if you remove StackCentral.scala file
 // //
-// abstract class AllocaTestIO(implicit val p: Parameters) extends Module with CoreParams {
+// abstract class AllocaTestIO(implicit val p: Parameters) extends Module with HasAccelParams {
 //   val io = IO(new Bundle {
 //     val result  = Output(xlen.U)
 //     val resultReady = Input(Bool())

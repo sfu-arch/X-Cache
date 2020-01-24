@@ -11,12 +11,12 @@ import dandelion.interfaces._
 import NastiConstants._
 import dandelion.accel._
 
-class StackMemIO(implicit p: Parameters) extends CoreBundle()(p) with CoreParams {
+class StackMemIO(implicit p: Parameters) extends AccelBundle()(p) with HasAccelParams {
   val req   = Flipped(Decoupled(new MemReq))
   val resp  = Output(Valid(new MemResp))
 }
 
-class StackMem(size : Int)(implicit val p: Parameters) extends Module with CoreParams {
+class StackMem(size : Int)(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new StackMemIO)
 
 //  val mem = Mem(size*(1<<tlen), UInt(xlen.W))

@@ -27,7 +27,7 @@ import muxes._
 * @param NWrites : Number of static writes to be connected. Controls size of arbiter and Demux
 */
 
-class  WordRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit val p: Parameters) extends Module with CoreParams {
+class  WordRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
   val ReadIn    = Vec(NReads,Flipped(Decoupled(new ReadReq())))
@@ -42,7 +42,7 @@ class  WordRegFile(Size: Int, NReads: Int, NWrites: Int)(implicit val p: Paramet
 
   // Read in parallel after shifting.
   // seq
-  // for (i <- 0 until Typ_SZ)
+  // for (i <- 0 until typesize)
   // {
 
 

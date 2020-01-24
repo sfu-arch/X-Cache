@@ -17,7 +17,7 @@ import dandelion.memory.stack._
 
 //TODO uncomment if you remove StackCentral.scala file
 //
-abstract class StackDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class StackDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val Data0 = Flipped(Decoupled(new AllocaIO))
     val pred = Decoupled(new Bool())

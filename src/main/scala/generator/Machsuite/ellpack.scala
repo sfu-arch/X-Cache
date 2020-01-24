@@ -26,7 +26,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class ellpackDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class ellpackDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -134,10 +134,10 @@ class ellpackDF(implicit p: Parameters) extends ellpackDFIO()(p) {
   val ld_15 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 15, RouteID = 3))
 
   //  %21 = fmul double %15, %20, !dbg !125, !UID !126
-  val FP_16 = Module(new FPComputeNode(NumOuts = 1, ID = 16, opCode = "fmul")(t = p(FTYP)))
+  val FP_16 = Module(new FPComputeNode(NumOuts = 1, ID = 16, opCode = "fmul")(t = ftyp))
 
   //  %22 = fadd double %12, %21, !dbg !128, !UID !129
-  val FP_17 = Module(new FPComputeNode(NumOuts = 2, ID = 17, opCode = "fadd")(t = p(FTYP)))
+  val FP_17 = Module(new FPComputeNode(NumOuts = 2, ID = 17, opCode = "fadd")(t = ftyp))
 
   //  %23 = add nuw nsw i64 %11, 1, !dbg !130, !UID !131
   val binaryOp_18 = Module(new ComputeNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))
@@ -567,7 +567,7 @@ import java.io.{File, FileWriter}
 object ellpackTop extends App {
   val dir = new File("RTL/ellpackTop");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new ellpackDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

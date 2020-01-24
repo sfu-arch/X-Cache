@@ -107,7 +107,7 @@ object TypeStackFileVerilog extends App {
 
   val (testargs, designargs) = args.splitAt(6)
   // println(testargs.deep.mkString("\n"))
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
 
   val optionslist = Array('OpSize, 'BaseSize, 'EntrySize, 'AF)
 

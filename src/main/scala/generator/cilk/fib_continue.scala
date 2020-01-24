@@ -92,7 +92,7 @@ object Data_fib_continue_FlowParam{
    * ================================================================== */
 
 
-abstract class fib_continueDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class fib_continueDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -345,7 +345,7 @@ class fib_continueDF(implicit p: Parameters) extends fib_continueDFIO()(p) {
 import java.io.{File, FileWriter}
 object fib_continueMain extends App {
   val dir = new File("RTL/fib_continue") ; dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fib_continueDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

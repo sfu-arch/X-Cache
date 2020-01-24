@@ -15,14 +15,14 @@ import util._
  *                   PRINTING PORTS DEFINITION                        *
  * ================================================================== */
 
-class mataddDFIO(implicit p: Parameters) extends CoreBundle {
+class mataddDFIO(implicit p: Parameters) extends AccelBundle {
   val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
   val MemResp = Flipped(Valid(new MemResp))
   val MemReq = Decoupled(new MemReq)
   val out = Decoupled(new Call(List()))
 }
 
-class mataddDF(implicit val p: Parameters) extends Module with CoreParams {
+class mataddDF(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new mataddDFIO())
 
@@ -488,7 +488,7 @@ import java.io.{File, FileWriter}
 object mataddMain extends App {
   val dir = new File("RTL/matadd");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new mataddDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

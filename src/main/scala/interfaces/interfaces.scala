@@ -15,26 +15,26 @@ import scala.collection.immutable.ListMap
            2.             =
 ==============================================================================*/
 
-trait ValidT extends CoreBundle {
+trait ValidT extends AccelBundle {
   val valid = Bool()
 }
 
 
-trait RouteID extends CoreBundle {
+trait RouteID extends AccelBundle {
   val RouteID = UInt(glen.W)
 }
 
-trait TaskID extends CoreBundle {
+trait TaskID extends AccelBundle {
   val taskID = UInt(tlen.W)
 }
 
-trait PredicateT extends CoreBundle {
+trait PredicateT extends AccelBundle {
   val predicate = Bool()
 }
 
 // Maximum of 16MB Stack Array.
 
-class AllocaIO(implicit p: Parameters) extends CoreBundle()(p) {
+class AllocaIO(implicit p: Parameters) extends AccelBundle()(p) {
   val size = UInt(xlen.W)
   val numByte = UInt(xlen.W)
   val predicate = Bool()
@@ -54,7 +54,7 @@ object AllocaIO {
 
 // alloca indicates id of stack object and returns address back.
 // Can be any of the 4MB regions. Size is over provisioned
-class AllocaReq(implicit p: Parameters) extends CoreBundle()(p) with RouteID {
+class AllocaReq(implicit p: Parameters) extends AccelBundle()(p) with RouteID {
   val size = UInt(xlen.W)
   val numByte = UInt(xlen.W)
 }
@@ -196,7 +196,7 @@ object FUResp {
   }
 }
 
-class MemReq(implicit p: Parameters) extends CoreBundle()(p) {
+class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
   val addr = UInt(xlen.W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen / 8).W)
@@ -232,7 +232,7 @@ object MemReq {
   }
 }
 
-class MemResp(implicit p: Parameters) extends CoreBundle()(p) with ValidT {
+class MemResp(implicit p: Parameters) extends AccelBundle()(p) with ValidT {
   val data = UInt(xlen.W)
   val tag = UInt((List(1, mshrlen).max).W)
   val iswrite = Bool()
@@ -261,7 +261,7 @@ object MemResp {
 }
 
 //class RelayNode output
-class RelayOutput(implicit p: Parameters) extends CoreBundle()(p) {
+class RelayOutput(implicit p: Parameters) extends AccelBundle()(p) {
   override def cloneType = new RelayOutput().asInstanceOf[this.type]
 
   val DataNode = Decoupled(UInt(xlen.W))
@@ -337,7 +337,7 @@ object DataBundle {
 
 class TypBundle(implicit p: Parameters) extends ValidT with PredicateT with TaskID {
   // Type Packet
-  val data = UInt(Typ_SZ.W)
+  val data = UInt(typesize.W)
 }
 
 
@@ -358,7 +358,7 @@ object TypBundle {
   *
   * control  : Bool
   */
-class ControlBundle(implicit p: Parameters) extends CoreBundle()(p) {
+class ControlBundle(implicit p: Parameters) extends AccelBundle()(p) {
   //Control packet
   val taskID = UInt(tlen.W)
   val control = Bool()
@@ -420,7 +420,7 @@ object ControlBundle {
   *       predicate : Bool
   * @return
   */
-class CustomDataBundle[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters) extends CoreBundle()(p) {
+class CustomDataBundle[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters) extends AccelBundle()(p) {
   // Data packet
   val data = gen.cloneType
   val predicate = Bool()
@@ -489,8 +489,13 @@ class VariableDecoupledCustom(val argTypes: Seq[Bits])(implicit p: Parameters) e
 
 // Bundle of DataBundles with data width specified by the argTypes parameter
 class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
+
   var elts = Seq.tabulate(argTypes.length) {
-    i => s"field$i" -> new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) }))
+    i =>
+      s"field$i" -> new DataBundle()(
+        p.alterPartial({ case AccelConfig => p(AccelConfig).copy(dataLen = argTypes(i)) })
+      )
+    //        i => s"field$i" -> new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) }))
   }
   override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
 
@@ -502,7 +507,12 @@ class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Recor
 // Bundle of Decoupled DataBundles with data width specified by the argTypes parameter
 class VariableDecoupledData(val argTypes: Seq[Int])(implicit p: Parameters) extends Record {
   var elts = Seq.tabulate(argTypes.length) {
-    i => s"field$i" -> Decoupled(new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) })))
+    i =>
+      s"field$i" -> Decoupled(new DataBundle()(
+        p.alterPartial({ case AccelConfig => p(AccelConfig).copy(dataLen = argTypes(i)) })
+      )
+      )
+    //      i => s"field$i" -> Decoupled(new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) })))
   }
   override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
 
@@ -525,7 +535,7 @@ class VariableDecoupledVec(val argTypes: Seq[Int])(implicit p: Parameters) exten
 }
 
 // Call type that wraps an enable and variable DataBundle together
-class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
+class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle() {
   val enable = new ControlBundle
   val data = new VariableData(argTypes)
 
@@ -533,7 +543,7 @@ class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() 
 }
 
 // Call type that wraps a decoupled enable and decoupled variable data bundle together
-class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
+class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle() {
   val enable = Decoupled(new ControlBundle)
   val data = new VariableDecoupledData(argTypes)
 
@@ -541,7 +551,7 @@ class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends Core
 }
 
 // Call type that wraps a decoupled enable and decoupled vector DataBundle together
-class CallDecoupledVec(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle() {
+class CallDecoupledVec(val argTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle() {
   val enable = Decoupled(new ControlBundle)
   val data = new VariableDecoupledVec(argTypes)
 

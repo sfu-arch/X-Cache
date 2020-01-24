@@ -14,7 +14,7 @@ import util._
 import dandelion.interfaces._
 
 
-abstract class InRegFile(implicit val p: Parameters) extends Module with CoreParams {
+abstract class InRegFile(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle{
     val Data = Decoupled(UInt(xlen.W))
   })
@@ -26,7 +26,7 @@ abstract class InRegFile(implicit val p: Parameters) extends Module with CorePar
  * @param maxN  Max number which counter sets to zero after that
  * @param indx  Counter output
  */
-class IndexCounter(implicit val p: Parameters) extends Module with CoreParams{
+class IndexCounter(implicit val p: Parameters) extends Module with HasAccelParams{
   val io = IO(new Bundle{
     val inc   = Input(Bool())
     val maxN  = Input(UInt(xlen.W))

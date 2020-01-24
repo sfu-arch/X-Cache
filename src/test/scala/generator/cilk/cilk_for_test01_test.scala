@@ -81,25 +81,25 @@ class cilk_for_test01Test01[T <: AccelIO](c: T, n: Int, tiles: Int)
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").taskID, 0)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").taskID, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").taskID, 0)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").taskID, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0.U) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 20) // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, 20.U) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
@@ -143,7 +143,7 @@ class cilk_for_test01Tester1 extends FlatSpec with Matchers {
   val outAddrVec = List.range(20, 20 + (4 * 5), 4)
   val outDataVec = List(2, 4, 6, 8, 10)
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Check that cilk_for_test01 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -157,7 +157,7 @@ class cilk_for_test01Tester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/cilk_for_test01",
         "-tts", "0001"),
-      () => new cilk_for_test01Main1(tiles = 1)(p.alterPartial({ case TLEN => 6 }))) {
+      () => new cilk_for_test01Main1(tiles = 1)(p)) {
       c => new cilk_for_test01Test01(c, 5, 22)(inAddrVec, inDataVec, outAddrVec, outDataVec)
     } should be(true)
   }

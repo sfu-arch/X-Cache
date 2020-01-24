@@ -20,7 +20,7 @@ import dandelion.accel._
 
 abstract class ReadEntryIO()(implicit val p: Parameters)
   extends Module
-    with CoreParams {
+    with HasAccelParams {
 
   val io = IO(new Bundle {
     // Read Request Type
@@ -200,7 +200,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO( )(p) 
 }
 
 abstract class RController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit val p: Parameters)
-  extends Module with CoreParams {
+  extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val ReadIn  = Vec(NumOps, Flipped(Decoupled(new ReadReq( ))))
     val ReadOut = Vec(NumOps, Output(new ReadResp( )))

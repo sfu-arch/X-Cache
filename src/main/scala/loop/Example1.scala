@@ -14,7 +14,7 @@ import dandelion.node._
 import utility.UniformPrintfs
 
 
-class LoopExampleIO[T <: Data](val ID: Int)(gen: T)(implicit p: Parameters) extends CoreBundle(){
+class LoopExampleIO[T <: Data](val ID: Int)(gen: T)(implicit p: Parameters) extends AccelBundle(){
 
   val Input1 = Flipped(Decoupled(gen))
   val Input2 = Flipped(Decoupled(gen))
@@ -32,7 +32,7 @@ class LoopExampleIO[T <: Data](val ID: Int)(gen: T)(implicit p: Parameters) exte
 
 
 class LoopExample(val NumInputs: Int, val ID: Int)
-                (implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs{
+                (implicit val p: Parameters) extends Module with HasAccelParams with UniformPrintfs{
 
   lazy val io = IO(new LoopExampleIO(ID)(new DataBundle()))
 

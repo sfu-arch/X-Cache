@@ -3,7 +3,7 @@ package dandelion.concurrent
 import chisel3._
 import chisel3.util._
 import chisel3.Module
-import dandelion.config.{CoreParams, Parameters}
+import dandelion.config.{HasAccelParams, Parameters}
 import dandelion.interfaces._
 import dandelion.node._
 import utility.UniformPrintfs
@@ -123,7 +123,7 @@ class SyncNode(NumOuts: Int, ID: Int,
               (implicit val p: Parameters,
                name: sourcecode.Name,
                file: sourcecode.File)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
   override lazy val io = IO(new SyncNodeIO(NumOuts))
 
   // Printf debugging

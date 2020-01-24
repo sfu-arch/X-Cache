@@ -190,11 +190,7 @@ class conv2DSerialSerialTester1 extends FlatSpec with Matchers {
   val coeffsAddrBegin = 2 * BYTE_SIZE * (IMG_SIZE * IMG_SIZE)
   val coeffsAddr = List.range(coeffsAddrBegin, coeffsAddrBegin + (BYTE_SIZE * coeffsData.length), BYTE_SIZE)
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 6
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig(AccelParams(taskLen= 6))
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -208,7 +204,7 @@ class conv2DSerialSerialTester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", s"test_run_dir/conv2DSerialSerial_direct",
         "-tts", "0001"),
-      () => new conv2DSerialMainDirect()(testParams)) {
+      () => new conv2DSerialMainDirect()(p)) {
       c => new conv2DSerialTest01(c)(inAddrVec, inDataVec, outAddrVec, outDataVec, coeffsAddr, coeffsData,
         inAddrBegin, outAddrBegin, coeffsAddrBegin )
     } should be(true)

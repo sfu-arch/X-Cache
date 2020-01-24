@@ -11,8 +11,8 @@ import dandelion.memory._
 import dandelion.accel._
 
 
-class dedupMainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
+class dedupMainIO(implicit val p: Parameters)  extends Module with HasAccelParams with CacheParams {
+  val io = IO( new AccelBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val addr = Input(UInt(nastiXAddrBits.W))  // Initialization address
     val din  = Input(UInt(nastiXDataBits.W))  // Initialization data
@@ -224,7 +224,7 @@ class dedupTest01[T <: dedupMainIO](c: T, tiles : Int) extends PeekPokeTester(c)
 }
 
 //class dedupTester1 extends FlatSpec with Matchers {
-//  implicit val p = Parameters.root((new MiniConfig).toInstance)
+//  implicit val p = new WithAccelConfig
 //  // iotester flags:
 //  // -ll  = log level <Error|Warn|Info|Debug|Trace>
 //  // -tbn = backend <firrtl|verilator|vcs>

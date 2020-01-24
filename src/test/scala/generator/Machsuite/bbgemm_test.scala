@@ -10,7 +10,7 @@ import dandelion.memory._
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class bbgemmMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+class bbgemmMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -208,11 +208,8 @@ class bbgemmTest01[T <: bbgemmMainIO](c: T) extends PeekPokeTester(c) {
 import java.io.{File, PrintWriter}
 
 class bbgemmTester1 extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case DAXLEN => 32
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig(AccelParams(dataLen = 32, printLog = true))
+
   it should "Check that bbgemm works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -226,7 +223,7 @@ class bbgemmTester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/bbgemm",
         "-tts", "0001"),
-      () => new bbgemmMain()(testParams)) {
+      () => new bbgemmMain()(p)) {
       c => new bbgemmTest01(c)
     } should be(true)
   }

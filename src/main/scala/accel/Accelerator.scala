@@ -6,7 +6,7 @@ import dandelion.config._
 import dandelion.junctions._
 import dandelion.interfaces._
 
-abstract class AcceleratorIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class AcceleratorIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(
     new Bundle { 
       val h2f  = Flipped(new NastiIO)
@@ -15,7 +15,7 @@ abstract class AcceleratorIO(implicit val p: Parameters) extends Module with Cor
   )
 }
 
-class Accelerator(cNum : Int, sNum : Int, coreDF: => CoreT) (implicit p: Parameters)extends AcceleratorIO()(p) {
+class Accelerator(cNum : Int, sNum : Int, coreDF: => CoreT) (implicit p: Parameters) extends AcceleratorIO()(p) {
 
   val regs  = Module(new DataBundleReg(cNum, sNum))
   val core  = Module(coreDF)

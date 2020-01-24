@@ -26,7 +26,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class ms_mergesortDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class ms_mergesortDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
     val call_11_out = Decoupled(new Call(List(32, 32, 32, 32)))
@@ -548,7 +548,7 @@ import java.io.{File, FileWriter}
 object ms_mergesortTop extends App {
   val dir = new File("RTL/ms_mergesortTop");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new ms_mergesortDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

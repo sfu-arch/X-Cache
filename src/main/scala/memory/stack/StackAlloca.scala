@@ -15,7 +15,7 @@ import muxes._
 import dandelion.node._
 
 class StackIO(NumOps: Int)
-             (implicit p: Parameters) extends CoreBundle()(p) {
+             (implicit p: Parameters) extends AccelBundle()(p) {
   val InData = Vec(NumOps, Flipped(Decoupled(new AllocaReq)))
   val OutData = Vec(NumOps, Output(new AllocaResp))
 
@@ -23,7 +23,7 @@ class StackIO(NumOps: Int)
 }
 
 class Stack(NumOps: Int)
-           (implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs{
+           (implicit val p: Parameters) extends Module with HasAccelParams with UniformPrintfs{
   override lazy val io = IO(new StackIO(NumOps))
 
   /**

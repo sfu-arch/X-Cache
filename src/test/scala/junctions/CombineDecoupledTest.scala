@@ -100,7 +100,7 @@ class CombineDataTester(c: CombineData) extends PeekPokeTester(c) {
 }
 
 class CombineDecoupledTests extends FreeSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   "Combine discrete CustomDataBundle I/O into single Decoupled IO bundle" in {
     chisel3.iotesters.Driver.execute(
       Array(//"-ll", "Info",

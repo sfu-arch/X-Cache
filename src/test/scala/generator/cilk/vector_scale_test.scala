@@ -129,37 +129,37 @@ class vector_scaleTest01[T <: AccelIO](c: T, tiles: Int)
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false)
-  poke(c.io.in.bits.enable.taskID, 0)
+  poke(c.io.in.bits.enable.taskID, 0.U)
   poke(c.io.in.valid, false)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").taskID, 0)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").taskID, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").taskID, 0)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").taskID, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false)
-  poke(c.io.in.bits.data("field2").data, 0)
-  poke(c.io.in.bits.data("field2").taskID, 0)
+  poke(c.io.in.bits.data("field2").data, 0.U)
+  poke(c.io.in.bits.data("field2").taskID, 0.U)
   poke(c.io.in.bits.data("field2").predicate, false)
-  poke(c.io.in.bits.data("field3").data, 0)
-  poke(c.io.in.bits.data("field3").taskID, 0)
+  poke(c.io.in.bits.data("field3").data, 0.U)
+  poke(c.io.in.bits.data("field3").taskID, 0.U)
   poke(c.io.in.bits.data("field3").predicate, false)
   poke(c.io.out.ready, false)
   step(1)
   poke(c.io.in.bits.enable.control, true)
   poke(c.io.in.valid, true)
-  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0.U) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true)
-  poke(c.io.in.bits.data("field1").data, 1024) // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, 1024.U) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true)
-  poke(c.io.in.bits.data("field2").data, 800) // scale value
+  poke(c.io.in.bits.data("field2").data, 800.U) // scale value
   poke(c.io.in.bits.data("field2").predicate, true)
-  poke(c.io.in.bits.data("field3").data, 100)
+  poke(c.io.in.bits.data("field3").data, 100.U)
   poke(c.io.in.bits.data("field3").predicate, false)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false)
@@ -217,11 +217,7 @@ class vector_scaleTester1 extends FlatSpec with Matchers {
     255, 65, 255, 255, 255, 255)
 
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 6
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -235,7 +231,7 @@ class vector_scaleTester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", s"test_run_dir/vector_scale_direct",
         "-tts", "0001"),
-      () => new vector_scaleMainDirect(1)(testParams)) {
+      () => new vector_scaleMainDirect(1)(p)) {
       c => new vector_scaleTest01(c, 1)(inAddrVec, inDataVec, outAddrVec, outDataVec)
     } should be(true)
   }
@@ -257,11 +253,7 @@ class vector_scaleTester2 extends FlatSpec with Matchers {
     255, 65, 255, 255, 255, 255)
 
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 6
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -278,7 +270,7 @@ class vector_scaleTester2 extends FlatSpec with Matchers {
           "-tbn", "verilator",
           "-td", s"test_run_dir/vector_scale_${tile}",
           "-tts", "0001"),
-        () => new vector_scaleMainTM(tile)(testParams)) {
+        () => new vector_scaleMainTM(tile)(p)) {
         c => new vector_scaleTest01(c, tile)(inAddrVec, inDataVec, outAddrVec, outDataVec)
       } should be(true)
     }

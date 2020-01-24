@@ -14,7 +14,7 @@ import dandelion.interfaces._
 //class ReadReqT(implicit p: Parameters) extends ReadReq with ValidT {}
 
 
-class  TestMux(NReads: Int)(implicit val p: Parameters) extends Module with CoreParams {
+class  TestMux(NReads: Int)(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
     val ReadIn    = Input(Vec(NReads,new ReadResp()))

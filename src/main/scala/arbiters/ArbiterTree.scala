@@ -8,7 +8,7 @@ import dandelion.config._
 import dandelion.interfaces._
 
 abstract class AbstractArbiterTree[T <: Data](Nops: Int, gen: T)(implicit p: Parameters)
-  extends Module with CoreParams {
+  extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in  = Vec(Nops, Flipped(Decoupled(gen)))
     val out = Decoupled(Output(gen))

@@ -60,7 +60,7 @@ class ReattachTest01(c: Reattach) extends PeekPokeTester(c) {
 
 
 class ReattachTester extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   var tbn = "verilator"
 //  var tbn = "firrtl"
 

@@ -11,7 +11,7 @@ import dandelion.memory._
 import dandelion.fpu._
 import FType._
 
-class FPDivDataFlow(implicit val p: Parameters) extends Module with CoreParams {
+class FPDivDataFlow(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
     val dummy = Input(UInt {

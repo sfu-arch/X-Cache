@@ -18,7 +18,7 @@ import utility.UniformPrintfs
 /**
   * Contain each loop input argument works like register file
   */
-class LoopElementIO()(implicit p: Parameters) extends CoreBundle() {
+class LoopElementIO()(implicit p: Parameters) extends AccelBundle() {
 
   /**
     * Module input
@@ -37,7 +37,7 @@ class LoopElementIO()(implicit p: Parameters) extends CoreBundle() {
 
 
 class LoopElement(val ID: Int)(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   override lazy val io = IO(new LoopElementIO())
 

@@ -39,19 +39,19 @@ class WriteTypTableEntry
   val request_valid_R = RegInit(false.B)
   // Data buffers for misaligned accesses
   // Mask for final ANDing and output of data
-  val bitmask         = RegInit(0.U(((Beats) * xlen).W))
+  val bitmask         = RegInit(0.U(((beats) * xlen).W))
   // Send word mask for tracking how many words need to be written
-  val sendbytemask    = RegInit(0.U(((Beats) * xlen / 8).W))
+  val sendbytemask    = RegInit(0.U(((beats) * xlen / 8).W))
 
   // Is the request valid and request to memory
   val ReqAddress = RegInit(0.U(xlen.W))
 
   // Can optimize to be a shift bit.
-  val inptr      = RegInit(0.U((log2Ceil(Beats) + 20).W))
-  val sendptr    = RegInit(0.U((log2Ceil(Beats) + 1).W))
-  val recvptr    = RegInit(0.U((log2Ceil(Beats) + 1).W))
-  val linebuffer = RegInit(VecInit(Seq.fill(Beats)(0.U(xlen.W))))
-  val linemask   = RegInit(VecInit(Seq.fill(Beats)(0.U((xlen / 8).W))))
+  val inptr      = RegInit(0.U((log2Ceil(beats) + 20).W))
+  val sendptr    = RegInit(0.U((log2Ceil(beats) + 1).W))
+  val recvptr    = RegInit(0.U((log2Ceil(beats) + 1).W))
+  val linebuffer = RegInit(VecInit(Seq.fill(beats)(0.U(xlen.W))))
+  val linemask   = RegInit(VecInit(Seq.fill(beats)(0.U((xlen / 8).W))))
   val xlen_bytes = xlen / 8
 
   // State machine
@@ -65,9 +65,9 @@ class WriteTypTableEntry
 
 
   // Table entry indicates free to outside world
-  io.free := (inptr =/= (Beats).U)
+  io.free := (inptr =/= (beats).U)
   // Table entry ready to latch new requests
-  io.NodeReq.ready := (inptr =/= (Beats).U)
+  io.NodeReq.ready := (inptr =/= (beats).U)
   // Table entry to output demux
   io.done := (state === s_Done)
 
@@ -93,7 +93,7 @@ class WriteTypTableEntry
   /*=======================================================
   =            Latch Inputs. Calculate masks              =
   ========================================================*/
-  when(io.NodeReq.fire( ) && (inptr =/= (Beats).U)) {
+  when(io.NodeReq.fire( ) && (inptr =/= (beats).U)) {
     request_R := io.NodeReq.bits
     // Base word address
     ReqAddress := (io.NodeReq.bits.address >> log2Ceil(xlen_bytes)) << log2Ceil(xlen_bytes)
@@ -132,7 +132,7 @@ class WriteTypTableEntry
   when(io.MemResp.valid === true.B) {
     // Check if more data needs to be sent
     recvptr := recvptr + 1.U
-    val y = (recvptr === (Beats - 1).U)
+    val y = (recvptr === (beats - 1).U)
     state := Mux(y, s_Done, s_SENDING)
   }
 
@@ -159,7 +159,7 @@ class WriteTypTableEntry
     }
   }
 
-  override val printfSigil = "WR MSHR(" + ID + "," + Typ_SZ + ")"
+  override val printfSigil = "WR MSHR(" + ID + "," + typesize + ")"
   if ((log == true) && (comp contains "WRMSHR")) {
     val x = RegInit(0.U(xlen.W))
     x := x + 1.U
@@ -188,9 +188,9 @@ class WriteTypMemoryController
   // Number of MLP entries
   val MLPSize   = NumEntries
   // Input arbiter
-  val in_arb    = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new WriteReq( ), Locks = Beats))
+  val in_arb    = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new WriteReq( ), Locks = beats))
   // MSHR allocator
-  val alloc_arb = Module(new LockingRRArbiter(Bool( ), MLPSize, count = Beats))
+  val alloc_arb = Module(new LockingRRArbiter(Bool( ), MLPSize, count = beats))
 
   // Memory request
   val cachereq_arb    = Module(new RRArbiter(new MemReq, MLPSize))

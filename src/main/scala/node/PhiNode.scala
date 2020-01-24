@@ -27,7 +27,7 @@ class PhiNodeIO(NumInputs: Int, NumOuts: Int)
 
 abstract class PhiFastNodeIO(val NumInputs: Int = 2, val NumOutputs: Int = 1, val ID: Int)
                             (implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   val io = IO(new Bundle {
     //Control signal

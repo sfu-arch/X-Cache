@@ -47,7 +47,7 @@ import dandelion.interfaces._
   * @note io.stat  A vector of 'sNum' status registers
   */
 
-abstract class DataBundleRegIO(cNum : Int, sNum: Int)(implicit val p: Parameters) extends Module with CoreParams
+abstract class DataBundleRegIO(cNum : Int, sNum: Int)(implicit val p: Parameters) extends Module with HasAccelParams
 {
   val io = IO(
     new Bundle {

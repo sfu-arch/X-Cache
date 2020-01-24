@@ -35,7 +35,7 @@ class TypeStackFile(ID: Int,
   NReads: Int,
   NWrites: Int)(WControl: => WController)(RControl: => RController)(implicit val p: Parameters)
   extends Module
-  with CoreParams
+  with HasAccelParams
   with UniformPrintfs {
 
   val io = IO(new Bundle {
@@ -129,7 +129,7 @@ class TypeStackFile(ID: Int,
   ReadController.io.MemResp.bits.iswrite := false.B
 
   /// Printf debugging
-  override val printfSigil = "RFile: " + ID + " Type " + (Typ_SZ)
+  override val printfSigil = "RFile: " + ID + " Type " + (typesize)
 
 
   // printf(p"\n : ${ReadController.io.MemReq.fire()} Tag: ${ReadReq.tag} ")
@@ -137,6 +137,6 @@ class TypeStackFile(ID: Int,
    // printf(p"Demux out:  ${io.WriteOut(0)}")
   // Read in parallel after shifting.
   // seq
-  // for (i <- 0 until Typ_SZ)
+  // for (i <- 0 until typesize)
   // {
 }

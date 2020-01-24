@@ -17,7 +17,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class test_05_dense_b_ir_4DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class test_05_dense_b_ir_4DFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -128,12 +128,12 @@ class test_05_dense_b_ir_4DF(implicit p: Parameters) extends test_05_dense_b_ir_
   val ld_16 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 16, RouteID = 5))
 
   //  %6 = fmul float %.pre10, %.pre, !UID !22
-  //val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fmul")(t = p(FTYP)))
-  val FP_17 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 17, opCode = "fmul")(t = p(FTYP)))
+  //val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fmul")(t = ftyp))
+  val FP_17 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 17, opCode = "fmul")(t = ftyp))
 
   //  %7 = fadd float %6, 0.000000e+00, !UID !23
-  //val FP_18 = Module(new FPComputeNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = p(FTYP)))
-  val FP_18 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = p(FTYP)))
+  //val FP_18 = Module(new FPComputeNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = ftyp))
+  val FP_18 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = ftyp))
 
   //  %tmp2 = getelementptr [1 x [64 x float]], [1 x [64 x float]]* %dot, i64 0, i64 0, !UID !24
   val Gep_tmp219 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 19)(ElementSize = 256, ArraySize = List(256)))
@@ -181,8 +181,8 @@ class test_05_dense_b_ir_4DF(implicit p: Parameters) extends test_05_dense_b_ir_
   val ld_33 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 33, RouteID = 8))
 
   //  %13 = fadd float %11, %12, !UID !41
-  //val FP_34 = Module(new FPComputeNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = p(FTYP)))
-  val FP_34 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = p(FTYP)))
+  //val FP_34 = Module(new FPComputeNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = ftyp))
+  val FP_34 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = ftyp))
 
   //  %14 = getelementptr inbounds [64 x float], [64 x float]* %fusion, i64 0, i64 %fusion.indvar.dim.02, !UID !42
   val Gep_35 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 35)(ElementSize = 4, ArraySize = List(256)))
@@ -804,7 +804,7 @@ class test_05_dense_b_ir_4DF(implicit p: Parameters) extends test_05_dense_b_ir_
 
 import java.io.{File, FileWriter}
 
-abstract class dense05bTopIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class dense05bTopIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32))))
     val out = Decoupled(new Call(List()))
@@ -834,7 +834,7 @@ class dense05bMain(implicit p: Parameters) extends dense05bTopIO {
 object test_05_dense_b_ir_4Top extends App {
   val dir = new File("RTL/test_05_dense_b_ir_4Top");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new dense05bMain()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

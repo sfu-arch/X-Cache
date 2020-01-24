@@ -23,7 +23,7 @@ class CallInNode(ID: Int, argTypes: Seq[Int])
               (implicit val p: Parameters,
                name: sourcecode.Name,
                file: sourcecode.File) extends Module
-  with UniformPrintfs with CoreParams {
+  with UniformPrintfs with HasAccelParams {
   override lazy val io = IO(new CallInNodeIO(argTypes)(p))
 
   val node_name = name.value

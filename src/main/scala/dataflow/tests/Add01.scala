@@ -20,7 +20,7 @@ import dandelion.node._
 
 
 
-abstract class Add01DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class Add01DFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val Data0 = Flipped(Decoupled(new DataBundle))
     val Data1 = Flipped(Decoupled(new DataBundle))

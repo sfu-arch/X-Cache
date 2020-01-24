@@ -225,7 +225,7 @@ class SuperParallelCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTe
 }
 
 class SuperParallelCacheDFTester extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Check that cacheTest works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

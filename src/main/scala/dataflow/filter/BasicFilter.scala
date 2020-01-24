@@ -9,7 +9,7 @@ import dandelion.interfaces._
 import dandelion.arbiters._
 import dandelion.memory._
 
-class BasicFilter(implicit val p: Parameters) extends Module with CoreParams {
+class BasicFilter(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val FilterSize = 3*3
 

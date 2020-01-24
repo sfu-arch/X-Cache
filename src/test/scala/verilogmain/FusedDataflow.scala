@@ -20,7 +20,7 @@ class ChainPeekPoker(df: Chain)(implicit p: Parameters) extends PeekPokeTester(d
 
 
 object ChainVerilog extends App {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   chisel3.iotesters.Driver.execute(args, () => new Chain(NumOps = 3, ID = 0, OpCodes = Array("And","Xor","Add"))(sign = false))
   { c => new ChainPeekPoker(c)  }
 }

@@ -75,7 +75,7 @@ class ConstNode(value: Int, NumOuts: Int = 1, ID: Int)
         state := s_IDLE
         out_data_R.predicate := false.B
         Reset()
-        if (p(TRACE)) {
+        if (log) {
           printf("[LOG] " + "[" + module_name + "] " + "[TID->%d] " +
             node_name + ": Output fired @ %d, Value: %d\n",
             task_ID_W, cycleCount, value.asSInt(xlen.W))
@@ -90,7 +90,7 @@ class ConstFastNode(value: Int, ID: Int)
                     (implicit val p: Parameters,
                      name: sourcecode.Name,
                      file: sourcecode.File)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   val io = IO(new Bundle {
     val enable = Flipped(Decoupled(new ControlBundle))

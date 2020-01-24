@@ -1,37 +1,33 @@
 package dandelion.fpu
 
-
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
+import chisel3._
+import chisel3.iotesters._
 import org.scalatest.{Matchers, FlatSpec}
 
 import dandelion.config._
 
 
-class SharedFPUTests(c: SharedFPU)
-	(implicit p: Parameters)
-	extends PeekPokeTester(c) {
+class SharedFPUTests(c: SharedFPU)(implicit p: Parameters) extends PeekPokeTester(c) {
 
-	poke(c.io.InData(0).bits.RouteID, 0)
-	poke(c.io.InData(1).bits.RouteID, 1)
-	poke(c.io.InData(0).bits.data("field0").data, 0x6C00)
-	poke(c.io.InData(0).bits.data("field1").data, 0x4C00)
-	poke(c.io.InData(0).bits.data("field2").data, 0)
-	poke(c.io.InData(0).valid,1)
-	poke(c.io.InData(1).valid,1)
-	poke(c.io.InData(1).bits.data("field0").data, 0x6C00)
-	poke(c.io.InData(1).bits.data("field1").data, 0x4C00)
-	poke(c.io.InData(1).bits.data("field2").data, 1)
-	poke(c.io.InData(1).valid,0)
-        for( i <- 0 to 68) {
-    	step(1)
-    }
+  poke(c.io.InData(0).bits.RouteID, 0.U)
+  poke(c.io.InData(1).bits.RouteID, 1.U)
+  poke(c.io.InData(0).bits.data("field0").data, 0x6C00.U)
+  poke(c.io.InData(0).bits.data("field1").data, 0x4C00.U)
+  poke(c.io.InData(0).bits.data("field2").data, 0.U)
+  poke(c.io.InData(0).valid, 1.U)
+  poke(c.io.InData(1).valid, 1.U)
+  poke(c.io.InData(1).bits.data("field0").data, 0x6C00.U)
+  poke(c.io.InData(1).bits.data("field1").data, 0x4C00.U)
+  poke(c.io.InData(1).bits.data("field2").data, 1.U)
+  poke(c.io.InData(1).valid, 0.U)
+  step(100)
 }
 
 
-class SharedFPUTester extends  FlatSpec with Matchers {
-  implicit val p = Parameters.root((new HALFPrecisionFPConfig).toInstance)
+class SharedFPUTester extends FlatSpec with Matchers {
+  implicit val p = new WithAccelConfig(AccelParams(dataLen = 16))
   it should "Memory Controller tester" in {
-    chisel3.iotesters.Driver(() => new SharedFPU(NumOps=2, PipeDepth=5)(t = p(FTYP))) {
+    chisel3.iotesters.Driver(() => new SharedFPU(NumOps = 2, PipeDepth = 5)(t = p(AccelConfig).Ftyp)) {
       c => new SharedFPUTests(c)
     } should be(true)
   }

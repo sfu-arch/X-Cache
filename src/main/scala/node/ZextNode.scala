@@ -8,7 +8,7 @@ import util._
 import utility.UniformPrintfs
 
 class ZextNodeIO(val src: Int, val des: Int, val nout: Int)
-                (implicit p: Parameters) extends CoreBundle()(p) {
+                (implicit p: Parameters) extends AccelBundle()(p) {
 
   //Input for Zext
   val Input = Flipped(Decoupled(new DataBundle()))
@@ -29,7 +29,7 @@ class ZextNode(val SrcW: Int = 0, val DesW: Int = 0, val NumOuts: Int = 1, val I
               (implicit val p: Parameters,
                name: sourcecode.Name,
                file: sourcecode.File)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   lazy val io = IO(new ZextNodeIO(SrcW, DesW, NumOuts))
 

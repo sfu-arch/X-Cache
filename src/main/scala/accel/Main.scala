@@ -8,7 +8,8 @@ import dandelion.config._
 
 object CoreMain extends App {
   val dir = new File("RTL/accel_rtl") ; dir.mkdirs
-  implicit val p = Parameters.root((new AccelConfig).toInstance)
+  //implicit val p = Parameters.root((AccelConfig))
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(3,3,new Core(3,3))))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
@@ -22,7 +23,8 @@ object CoreMain extends App {
 
 object TestCacheMain extends App {
   val dir = new File("RTL/TestCacheDF") ; dir.mkdirs
-  implicit val p = Parameters.root((new AccelConfig).toInstance)
+  implicit val p = new WithAccelConfig
+//  implicit val p = Parameters.root((new AccelConfig).toInstance)
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(3,3,new TestCacheDF(3,3))))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
@@ -35,7 +37,7 @@ object TestCacheMain extends App {
 
 object FilterDFMain extends App {
   val dir = new File("RTL/FilterDF") ; dir.mkdirs
-  implicit val p = Parameters.root((new AccelConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(18,3,new FilterDFCore(18,3))))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
@@ -48,7 +50,7 @@ object FilterDFMain extends App {
 
 object VecFilterDFMain extends App {
   val dir = new File("RTL/VecFilterDF") ; dir.mkdirs
-  implicit val p = Parameters.root((new VecFilterDFConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(6,4,new VecFilterDFCore(6,4))))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
@@ -61,7 +63,7 @@ object VecFilterDFMain extends App {
 
 object VecFilterNoKernDFMain extends App {
   val dir = new File("RTL/VecFilterNoKernDF") ; dir.mkdirs
-  implicit val p = Parameters.root((new VecFilterDFConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Accelerator(12,4,new VecFilterNoKernDFCore(12,4))))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

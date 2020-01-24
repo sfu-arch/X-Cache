@@ -14,7 +14,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class cacheDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class cacheDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -253,7 +253,7 @@ class cacheDF(implicit p: Parameters) extends cacheDFIO()(p) {
 import java.io.{File, FileWriter}
 object cacheMain extends App {
   val dir = new File("RTL/cacheTest") ; dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cacheDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

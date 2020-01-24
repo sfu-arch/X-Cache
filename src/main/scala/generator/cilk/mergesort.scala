@@ -339,7 +339,7 @@ object Data_mergesort_FlowParam{
    * ================================================================== */
 
 
-abstract class mergesortDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class mergesortDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
     val call18_out = Decoupled(new Call(List(32,32,32,32)))
@@ -1016,8 +1016,8 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   io.out <> retArb.io.out
 
 }
-class mergesortTopIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
-  val io = IO( new CoreBundle {
+class mergesortTopIO(implicit val p: Parameters)  extends Module with HasAccelParams with CacheParams {
+  val io = IO( new AccelBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
@@ -1081,12 +1081,9 @@ class mergesortTop(tiles : Int)(implicit p: Parameters) extends mergesortTopIO {
 import java.io.{File, FileWriter}
 object mergesortMain extends App {
   val dir = new File("RTL/mergesortTop") ; dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 11
-    case TRACE => false
-  })
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new mergesortTop(4)(testParams)))
+
+  implicit val p = new WithAccelConfig(AccelParams(taskLen = 11, printLog = false))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new mergesortTop(4)(p)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

@@ -26,7 +26,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class test08DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class test08DFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -794,7 +794,7 @@ import java.io.{File, FileWriter}
 object test08Top extends App {
   val dir = new File("RTL/test08Top");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test08DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

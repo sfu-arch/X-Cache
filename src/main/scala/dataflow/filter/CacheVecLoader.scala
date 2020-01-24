@@ -10,7 +10,7 @@ import dandelion.interfaces._
 import dandelion.accel.{CacheIO}
 import dandelion.memory._
 
-class CacheVecLoader(FilterSize : Int)(implicit val p: Parameters) extends Module with CoreParams {
+class CacheVecLoader(FilterSize : Int)(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
     val enable = Flipped(Decoupled(new ControlBundle()))

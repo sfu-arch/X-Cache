@@ -28,7 +28,7 @@ class CombineCustom(val argTypes: Seq[Bits])(implicit p: Parameters) extends Mod
   io.Out.bits := outputReg
 }
 
-class CombineDataIO(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle {
+class CombineDataIO(val argTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle {
   val In =  Flipped(new VariableDecoupledData(argTypes))
   val Out = Decoupled(new VariableData(argTypes))
 
@@ -54,7 +54,7 @@ class CombineData(val argTypes: Seq[Int])(implicit p: Parameters) extends Module
 
 }
 
-class CombineCallIO(val argTypes: Seq[Int])(implicit p: Parameters) extends CoreBundle {
+class CombineCallIO(val argTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle {
   val In =  Flipped(new CallDecoupled(argTypes))
   val Out = Decoupled(new Call(argTypes))
   override def cloneType = new CombineCallIO(argTypes).asInstanceOf[this.type]

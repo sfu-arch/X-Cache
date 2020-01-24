@@ -83,7 +83,7 @@ class Detach(ID: Int)
 
 }
 
-class DetachFastIO()(implicit p: Parameters) extends CoreBundle {
+class DetachFastIO()(implicit p: Parameters) extends AccelBundle {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Output IO
@@ -95,7 +95,7 @@ class DetachFastIO()(implicit p: Parameters) extends CoreBundle {
 class DetachFast(ID: Int)(implicit val p: Parameters,
                           name: sourcecode.Name,
                           file: sourcecode.File)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   val io = IO(new DetachFastIO()(p))
   // Printf debugging

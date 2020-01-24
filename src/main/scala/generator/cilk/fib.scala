@@ -281,7 +281,7 @@ object Data_fib_FlowParam {
  * ================================================================== */
 
 
-abstract class fibDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class fibDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val call10_out = Decoupled(new Call(List(32, 32)))
@@ -823,7 +823,7 @@ class fibDF(implicit p: Parameters) extends fibDFIO()(p) {
 
 }
 
-abstract class fibTopIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class fibTopIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val out = Decoupled(new Call(List(32)))
@@ -877,12 +877,8 @@ import java.io.{File, FileWriter}
 object fibMain extends App {
   val dir = new File("RTL/fibTop");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 11
-    case TRACE => false
-  })
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibTop(4)(testParams)))
+  implicit val p = new WithAccelConfig(AccelParams(taskLen = 11, printLog = false))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibTop(4)(p)))
 
   val verilogFile = new File(dir, s"/${chirrtl.main}.v")
   val verilogWriter = new FileWriter(verilogFile)

@@ -25,13 +25,13 @@ import utility.UniformPrintfs
 //class HandShakingIOPS[T <: Data](val NumPredOps: Int,
 //  val NumSuccOps: Int,
 //  val NumOuts: Int)(gen: T)(implicit p: Parameters)
-//  extends CoreBundle()(p) {
+//  extends AccelBundle()(p) {
 //  // Output IO
 //  val Out = Vec(NumOuts, Decoupled(gen))
 //}
 
 
-class StoreNodeIO()(implicit p: Parameters) extends CoreBundle()(p) {
+class StoreNodeIO()(implicit p: Parameters) extends AccelBundle()(p) {
   // Node specific IO
   // GepAddr: The calculated address comming from GEP node
   val GepAddr = Flipped(Decoupled(new DataBundle))
@@ -55,7 +55,7 @@ class StoreNodeIO()(implicit p: Parameters) extends CoreBundle()(p) {
   * @note [long description]
   */
 class StoreNode(Typ: UInt = MT_W, ID: Int, RouteID: Int)(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   // Set up StoreIO
   override lazy val io = IO(new StoreNodeIO())

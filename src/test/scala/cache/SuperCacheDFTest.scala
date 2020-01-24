@@ -23,7 +23,7 @@ import dandelion.accel._
 import dandelion.junctions._
 
 
-class SuperCacheDFMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+class SuperCacheDFMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -230,7 +230,7 @@ class SuperCacheTest01[T <: SuperCacheDFMainIO](c: T) extends PeekPokeTester(c) 
 }
 
 class SuperCacheDFTester extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Check that cacheTest works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

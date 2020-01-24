@@ -11,7 +11,7 @@ import dandelion.interfaces._
 import dandelion.accel._
 
 
-class AccelIO(Args: List[Int], Returns: List[Int])(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+class AccelIO(Args: List[Int], Returns: List[Int])(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(Args)))
     val req = Flipped(Decoupled(new MemReq))

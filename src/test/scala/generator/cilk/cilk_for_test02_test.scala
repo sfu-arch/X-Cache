@@ -148,7 +148,7 @@ class cilk_for_test02Tester1 extends FlatSpec with Matchers {
   val outAddrVec = List(0)
   val outDataVec = List(0)
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
 
 
   val tile_list = List(1)
@@ -168,7 +168,7 @@ class cilk_for_test02Tester1 extends FlatSpec with Matchers {
           "-tbn", "verilator",
           "-td", "test_run_dir/cilk_for_test02",
           "-tts", "0002"),
-        () => new cilk_for_test02Main(tiles = tile)(p.alterPartial({ case TLEN => 6 }))) {
+        () => new cilk_for_test02Main(tiles = tile)(p)) {
         c => new cilk_for_test02Test02(c, 5, tile)(inAddrVec, inDataVec, outAddrVec, outDataVec)
       } should be(true)
     }

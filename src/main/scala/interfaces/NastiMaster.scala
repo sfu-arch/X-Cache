@@ -6,7 +6,7 @@ import chisel3.util._
 import dandelion.junctions._
 import dandelion.config._
 
-class NastiMasterReq(implicit p: Parameters) extends CoreBundle()(p) {
+class NastiMasterReq(implicit p: Parameters) extends AccelBundle()(p) {
   val addr = UInt(xlen.W)
   val data = UInt(xlen.W)
   val read = Bool()
@@ -28,7 +28,7 @@ object NastiMasterReq {
   }
 }
 
-class NastiMasterResp(implicit p: Parameters) extends CoreBundle()(p) {
+class NastiMasterResp(implicit p: Parameters) extends AccelBundle()(p) {
   val data = UInt(xlen.W)
   val tag  = UInt(4.W)
 }
@@ -43,7 +43,7 @@ object NastiMasterResp {
   }
 }
 
-abstract class NastiMasterIO()(implicit val p: Parameters) extends Module with CoreParams
+abstract class NastiMasterIO()(implicit val p: Parameters) extends Module with HasAccelParams
 {
   val io = IO(
     new Bundle {

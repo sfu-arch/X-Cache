@@ -54,7 +54,7 @@ class BranchTester(df: CBranchNode)(implicit p: Parameters) extends PeekPokeTest
 
 
 class BrTests extends  FlatSpec with Matchers {
-   implicit val p = Parameters.root((new MiniConfig).toInstance)
+   implicit val p = new WithAccelConfig
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new CBranchNode(ID = 0)) {
        c => new BranchTester(c)

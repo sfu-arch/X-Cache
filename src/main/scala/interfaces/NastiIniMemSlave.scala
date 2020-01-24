@@ -4,15 +4,15 @@ import chisel3._
 import chisel3.util.experimental.loadMemoryFromFile
 import chisel3.util._
 import dandelion.junctions._
-import dandelion.config.{CoreBundle, Parameters}
+import dandelion.config.{AccelBundle, Parameters}
 import dandelion.accel.CacheParams
 
-class InitParamsMem(implicit p: Parameters) extends CoreBundle( )(p) with CacheParams {
+class InitParamsMem(implicit p: Parameters) extends AccelBundle( )(p) with CacheParams {
   val addr = UInt(nastiXAddrBits.W)
   val data = UInt(nastiXDataBits.W)
 }
 
-class NastiInitMemSlaveIO(implicit p: Parameters) extends CoreBundle( )(p) with CacheParams {
+class NastiInitMemSlaveIO(implicit p: Parameters) extends AccelBundle( )(p) with CacheParams {
   val init  = Flipped(Valid(new InitParamsMem( )(p)))
   val nasti = Flipped(new NastiIO)
 }
@@ -34,15 +34,15 @@ class NastiInitMemSlave(val depth: Int = 1 << 28, latency: Int = 20)
   io.nasti.r <> Queue(dutMem.r, 32)
 
   val size = log2Ceil(nastiXDataBits / 8).U
-  val len  = (dataBeats - 1).U
+  val len  = (databeats - 1).U
 
   /* Main Memory */
   val mem                                                               = Mem(depth, UInt(nastiXDataBits.W))
   loadMemoryFromFile(mem, targetDirName + "/memory_trace.mem")
   val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: sMemWait :: Nil = Enum(5)
   val memState                                                          = RegInit(sMemIdle)
-  val (wCnt, wDone)                                                     = Counter(memState === sMemWrite && dutMem.w.valid, dataBeats)
-  val (rCnt, rDone)                                                     = Counter(memState === sMemRead && dutMem.r.ready, dataBeats)
+  val (wCnt, wDone)                                                     = Counter(memState === sMemWrite && dutMem.w.valid, databeats)
+  val (rCnt, rDone)                                                     = Counter(memState === sMemRead && dutMem.r.ready, databeats)
   //val (waitCnt, waitDone) = Counter(memState === sMemWait, latency)
   val waitCnt                                                           = RegInit(0.U(16.W))
 

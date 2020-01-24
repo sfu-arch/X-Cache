@@ -42,7 +42,7 @@ class InRegTester(regFile: InputRegFile)(implicit p: Parameters) extends PeekPok
 
 
 class regFileTests extends  FlatSpec with Matchers {
-   implicit val p = Parameters.root((new MiniConfig).toInstance)
+   implicit val p = new WithAccelConfig
   it should "InReg tester" in {
      chisel3.iotesters.Driver(() => new InputRegFile(Array(3.U, 4.U, 5.U))(p)) { c =>
        new InRegTester(c)

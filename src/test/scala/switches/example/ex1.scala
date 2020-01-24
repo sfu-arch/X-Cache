@@ -107,7 +107,7 @@ class ex1Tests(c: Dyser1X1)
 
 
 class ex1Tester extends  FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Dyser1X1 tester" in {
     chisel3.iotesters.Driver(() => new Dyser1X1()(p)) { c => new ex1Tests(c)
     } should be(true)

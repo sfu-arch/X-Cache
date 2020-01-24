@@ -15,7 +15,7 @@ import util._
 import scala.reflect.runtime.universe._
 
 
-class Numbers(implicit p: Parameters) extends CoreBundle( )(p) {
+class Numbers(implicit p: Parameters) extends AccelBundle()(p) with HasAccelParams {
 }
 
 class vecN(val N: Int)(implicit p: Parameters) extends Numbers {
@@ -52,12 +52,12 @@ object operation {
 
   object OperatorLike {
 
-    implicit object FPmatNxNlikeNumber extends OperatorLike[FPmatNxN] {
+    implicit object FPmatNxNlikeNumber extends OperatorLike[FPmatNxN]{
       def addition(l: FPmatNxN, r: FPmatNxN)(implicit p: Parameters): FPmatNxN = {
         val x = Wire(new FPmatNxN(l.N, l.t))
         for (i <- 0 until l.N) {
           for (j <- 0 until l.N) {
-            val FPadd = Module(new FPUALU(p(DAXLEN), "Add", l.t))
+            val FPadd = Module(new FPUALU(p(AccelConfig).xlen, "Add", l.t))
             FPadd.io.in1 := l.data(i)(j)
             FPadd.io.in2 := r.data(i)(j)
             x.data(i)(j) := FPadd.io.out
@@ -70,7 +70,7 @@ object operation {
         val x = Wire(new FPmatNxN(l.N, l.t))
         for (i <- 0 until l.N) {
           for (j <- 0 until l.N) {
-            val FPadd = Module(new FPUALU(p(DAXLEN), "Sub", l.t))
+            val FPadd = Module(new FPUALU(p(AccelConfig).xlen, "Sub", l.t))
             FPadd.io.in1 := l.data(i)(j)
             FPadd.io.in2 := r.data(i)(j)
             x.data(i)(j) := FPadd.io.out
@@ -86,7 +86,7 @@ object operation {
         val products = for (i <- 0 until l.N) yield {
           for (j <- 0 until l.N) yield {
             for (k <- 0 until l.N) yield {
-              val FPadd = Module(new FPUALU(p(DAXLEN), "Mul", l.t))
+              val FPadd = Module(new FPUALU(p(AccelConfig).xlen, "Mul", l.t))
               FPadd.io.in1 := l.data(i)(k)
               FPadd.io.in2 := r.data(k)(j)
               FPadd.io.out
@@ -96,7 +96,7 @@ object operation {
         for (i <- 0 until l.N) {
           for (j <- 0 until l.N) {
             val FP_add_reduce = for (k <- 0 until l.N - 1) yield {
-              val FPadd = Module(new FPUALU(p(DAXLEN), "Add", l.t))
+              val FPadd = Module(new FPUALU(p(AccelConfig).xlen, "Add", l.t))
               FPadd
             }
 
@@ -192,7 +192,7 @@ object operation {
 
       def OpMagic(l: vecN, r: vecN, opcode: String)(implicit p: Parameters): vecN = {
         val x = Wire(new vecN(l.N))
-        val Op_FUs = Seq.fill(l.N)(Module(new UALU(p(DAXLEN), opcode)))
+        val Op_FUs = Seq.fill(l.N)(Module(new UALU(p(AccelConfig).xlen, opcode)))
         for (i <- 0 until l.N) {
           Op_FUs(i).io.in1 := l.data(i)
           Op_FUs(i).io.in2 := r.data(i)
@@ -321,7 +321,7 @@ class TypCompute[T <: Numbers : OperatorLike](NumOuts: Int, ID: Int, opCode: Str
 
   FU.io.a.bits := (left_R.data).asTypeOf(gen)
   FU.io.b.bits := (right_R.data).asTypeOf(gen)
-  data_R.data := (FU.io.o.bits).asTypeOf(UInt(Typ_SZ.W))
+  data_R.data := (FU.io.o.bits).asTypeOf(UInt(typesize.W))
   pred_R := predicate
   FU.io.a.valid := left_R.valid
   FU.io.b.valid := right_R.valid

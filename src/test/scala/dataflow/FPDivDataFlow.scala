@@ -26,7 +26,7 @@ class FPDivDataFlowTester(df: FPDivDataFlow)(implicit p: Parameters) extends Pee
 
 class FPDivDataflowTests extends ChiselFlatSpec {
   behavior of "Accumulator"
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   backends foreach {backend =>
     it should s"correctly accumulate randomly generated numbers in $backend" in {
       Driver(() => new FPDivDataFlow()(p), backend)(c => new FPDivDataFlowTester(c)) should be (true)

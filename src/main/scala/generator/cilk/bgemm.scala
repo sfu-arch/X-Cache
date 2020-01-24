@@ -27,7 +27,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class bgemmDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class bgemmDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val call_9_out = Decoupled(new Call(List(32, 32, 32, 32)))
@@ -368,7 +368,7 @@ import java.io.{File, FileWriter}
 object bgemmTop extends App {
   val dir = new File("RTL/bgemmTop");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new bgemmDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

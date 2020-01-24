@@ -101,7 +101,7 @@ class SplitDataTester(c: SplitData) extends PeekPokeTester(c) {
 }
 
 class SplitDecoupledTests extends FreeSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   "Split discrete CustomDataBundle I/O into single Decoupled IO bundle" in {
     chisel3.iotesters.Driver.execute(
       Array(//"-ll", "Info",

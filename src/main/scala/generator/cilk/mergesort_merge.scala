@@ -535,7 +535,7 @@ object Data_mergesort_merge_FlowParam{
    * ================================================================== */
 
 
-abstract class mergesort_mergeDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class mergesort_mergeDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
     val StackResp = Flipped(Valid(new MemResp))
@@ -1525,7 +1525,7 @@ class mergesort_mergeDF(implicit p: Parameters) extends mergesort_mergeDFIO()(p)
 import java.io.{File, FileWriter}
 object mergesort_mergeMain extends App {
   val dir = new File("RTL/mergesort_merge") ; dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new mergesort_mergeDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

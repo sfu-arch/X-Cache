@@ -161,11 +161,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
   val outAddrVec = List.range(4 * dataLen, 8 * dataLen, 4)
   val outDataVec = inX.zip(inY).map { case (x, y) => cof_a * x + y }
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 5
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -181,7 +177,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
           "-tbn", "verilator",
           "-td", s"test_run_dir/cilk_saxpy_${tile}",
           "-tts", "0001"),
-        () => new cilk_saxpyMainTM(tile)(testParams)) {
+        () => new cilk_saxpyMainTM(tile)(p)) {
         c => new cilk_saxpyTest01(c, dataLen, tile)(inAddrVec, inDataVec, outAddrVec, outDataVec)
       } should be(true)
     }

@@ -26,7 +26,7 @@ import util._
  *                   PRINTING PORTS DEFINITION                        *
  * ================================================================== */
 
-abstract class cilk_for_test05_detach1_optDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class cilk_for_test05_detach1_optDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -401,7 +401,7 @@ import java.io.{File, FileWriter}
 object cilk_for_test05_detach1_optMain extends App {
   val dir = new File("RTL/cilk_for_test05_detach1_opt");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test05_detach1_optDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

@@ -12,7 +12,7 @@ import dandelion.memory._
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class sortMainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+class sortMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -206,11 +206,7 @@ class sortTest01[T <: sortMainIO](c: T) extends PeekPokeTester(c) {
 
 
 class sortTester1 extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case DAXLEN => 32
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig
   //it should "Check that sort works correctly." in {
     //// iotester flags:
     //// -ll  = log level <Error|Warn|Info|Debug|Trace>

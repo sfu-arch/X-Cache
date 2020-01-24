@@ -103,7 +103,7 @@ class DyserMuxTests(c: DyserMux)
 
 
 class DyserMuxTester extends  FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Mux tester" in {
     chisel3.iotesters.Driver(() => new DyserMux(NInputs = 4, Sel = 1, En = true.B)(p)) {
       c => new DyserMuxTests(c)

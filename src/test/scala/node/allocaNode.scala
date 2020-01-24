@@ -70,7 +70,7 @@ class AllocaTester(df: AllocaNode)(implicit p: Parameters) extends PeekPokeTeste
 
 
 class AllocaTests extends  FlatSpec with Matchers {
-   implicit val p = Parameters.root((new MiniConfig).toInstance)
+   implicit val p = new WithAccelConfig
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new AllocaNode(ID = 0, NumOuts = 1, RouteID = 0)) {
        c => new AllocaTester(c)

@@ -17,7 +17,7 @@ import dandelion.interfaces._
 
 object Main extends App {
   val dir = new File(args(0)) ; dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new TypeMemDataFlow()))
 
   val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))

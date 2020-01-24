@@ -9,7 +9,7 @@ import dandelion.interfaces._
 import dandelion.arbiters._
 import dandelion.memory._
 
-class ComputeFuse04SDF(implicit val p: Parameters) extends Module with CoreParams {
+class ComputeFuse04SDF(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
 
@@ -54,7 +54,7 @@ class ComputeFuse04SDF(implicit val p: Parameters) extends Module with CoreParam
 
 
 
-class ComputeFuse04PDF(implicit val p: Parameters) extends Module with CoreParams {
+class ComputeFuse04PDF(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
     val data0 = Flipped(Decoupled(new DataBundle()))

@@ -146,11 +146,7 @@ class vectorScaleSerialTester1 extends FlatSpec with Matchers {
     255, 65, 255, 255, 255, 255)
 
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 6
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig(AccelParams(dataLen = 6))
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -164,7 +160,7 @@ class vectorScaleSerialTester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", s"test_run_dir/vectorScaleSerial_direct",
         "-tts", "0001"),
-      () => new vectorScaleSerialMainDirect(1)(testParams)) {
+      () => new vectorScaleSerialMainDirect(1)(p)) {
       c => new vectorScaleSerialTest01(c, 1)(inAddrVec, inDataVec, outAddrVec, outDataVec)
     } should be(true)
   }

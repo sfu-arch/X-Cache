@@ -73,8 +73,8 @@ class TypStore(NumPredOps: Int,
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
   val state = RegInit(s_idle)
 
-  val sendptr = Counter(Beats)
-  val buffer = data_R.data.asTypeOf(Vec(Beats, UInt(xlen.W)))
+  val sendptr = Counter(beats)
+  val buffer = data_R.data.asTypeOf(Vec(beats, UInt(xlen.W)))
 
 /*================================================
 =            Latch inputs. Set output            =
@@ -141,7 +141,7 @@ class TypStore(NumPredOps: Int,
           when(io.memReq.fire()) {
             sendptr.inc()
             // If last word then move to next state.
-            when(sendptr.value === (Beats - 1).U) {
+            when(sendptr.value === (beats - 1).U) {
               state := s_RECEIVING
             }
           }

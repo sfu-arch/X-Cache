@@ -8,7 +8,7 @@ import dandelion.interfaces._
 import dandelion.arbiters._
 import dandelion.memory.{ReadWriteArbiter, _}
 
-class TestCacheDataFlow(implicit val p: Parameters) extends Module with CoreParams {
+class TestCacheDataFlow(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(
     new Bundle {

@@ -63,8 +63,8 @@ class TypLoad(NumPredOps: Int,
   // Memory Response
   val data_R       = RegInit(TypBundle.default)
   val data_valid_R = RegInit(false.B)
-  val recvptr      = RegInit(0.U(log2Ceil(Beats + 1).W))
-  val linebuffer   = RegInit(VecInit(Seq.fill(Beats)(0.U(xlen.W))))
+  val recvptr      = RegInit(0.U(log2Ceil(beats + 1).W))
+  val linebuffer   = RegInit(VecInit(Seq.fill(beats)(0.U(xlen.W))))
 
   // State machine
   val s_idle :: s_RECEIVING :: s_Done :: Nil = Enum(3)
@@ -133,11 +133,11 @@ class TypLoad(NumPredOps: Int,
       }
     }
     is(s_RECEIVING) {
-      when(io.memResp.valid && (recvptr =/= (Beats).U)) {
+      when(io.memResp.valid && (recvptr =/= (beats).U)) {
         linebuffer(recvptr) := io.memResp.data
         recvptr := recvptr + 1.U
       }
-      when(recvptr === (Beats).U) {
+      when(recvptr === (beats).U) {
         // Set data output registers
         data_R.data := linebuffer.asUInt
         data_R.predicate := true.B

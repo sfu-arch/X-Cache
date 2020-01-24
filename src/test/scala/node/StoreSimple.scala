@@ -57,7 +57,7 @@ class StoreNodeTests(c: UnTypStore) extends PeekPokeTester(c) {
 import Constants._
 
 class StoreNodeTester extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Store Node tester" in {
     chisel3.iotesters.Driver.execute(
       Array(

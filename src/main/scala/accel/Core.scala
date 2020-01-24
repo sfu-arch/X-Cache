@@ -22,27 +22,28 @@ import dandelion.interfaces._
   * @note io.cache A Read/Write request interface to a memory cache block
   */
 
-abstract class CoreDFIO(cNum : Int, sNum: Int)(implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs
-{
+abstract class CoreDFIO(cNum: Int, sNum: Int)(implicit val p: Parameters) extends Module
+  with HasAccelParams
+  with UniformPrintfs {
   val io = IO(
     new Bundle {
-      val start  = Input(Bool())
-      val init   = Input(Bool())
-      val ready  = Output(Bool())
-      val done   = Output(Bool())
-      val ctrl   = Vec(cNum,Flipped(Decoupled(new DataBundle())))
-      val stat   = Vec(sNum,Decoupled(new DataBundle()))
-//      val err   = Output(UInt(xlen.W)) TODO : Need to have a err signal with error codes
-      val cache  = Flipped(new CacheIO)
+      val start = Input(Bool())
+      val init = Input(Bool())
+      val ready = Output(Bool())
+      val done = Output(Bool())
+      val ctrl = Vec(cNum, Flipped(Decoupled(new DataBundle())))
+      val stat = Vec(sNum, Decoupled(new DataBundle()))
+      //      val err   = Output(UInt(xlen.W)) TODO : Need to have a err signal with error codes
+      val cache = Flipped(new CacheIO)
     }
   )
 }
 
 
-abstract class CoreT(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreDFIO(cNum,sNum)(p) {
+abstract class CoreT(cNum: Int, sNum: Int)(implicit p: Parameters) extends CoreDFIO(cNum, sNum)(p) {
 }
 
-class Core(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum,sNum)(p) {
+class Core(cNum: Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum, sNum)(p) {
 
   val dataBytes = xlen / 8
   val reqAddr = Reg(UInt(32.W))
@@ -62,7 +63,7 @@ class Core(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum,sNu
   io.ctrl(2).ready := true.B
 
   switch(state) {
-   // Idle
+    // Idle
     is(sIdle) {
       reqAddr := io.ctrl(1).bits.data(31, 0)
       wordCount := 0.U
@@ -130,9 +131,9 @@ class Core(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum,sNu
     io.cache.req.bits.mask := 0.U(dataBytes.W)
   }
 
-  when(state===sReadResp && io.cache.resp.valid && io.cache.resp.bits.data =/= expectedData) {
+  when(state === sReadResp && io.cache.resp.valid && io.cache.resp.bits.data =/= expectedData) {
     errorLatch := true.B
-  }.elsewhen(io.init){
+  }.elsewhen(io.init) {
     errorLatch := false.B
   }
 
@@ -142,17 +143,17 @@ class Core(cNum : Int, sNum: Int)(implicit p: Parameters) extends CoreT(cNum,sNu
 
   // Connect a revision number to the first status register
   io.stat(0).bits.data := 0x55AA0001.U
-// //  io.stat(0).bits.valid := true.B
+  // //  io.stat(0).bits.valid := true.B
   io.stat(0).valid := true.B
   io.stat(0).bits.predicate := true.B
 
   io.stat(1).bits.data := Cat(errorLatch, state.asUInt())
-// //  io.stat(1).bits.valid := true.B
+  // //  io.stat(1).bits.valid := true.B
   io.stat(1).valid := true.B
   io.stat(1).bits.predicate := true.B
 
   io.stat(2).bits.data := Cat(errorLatch, state.asUInt())
-// //  io.stat(2).bits.valid := true.B
+  // //  io.stat(2).bits.valid := true.B
   io.stat(2).valid := true.B
   io.stat(2).bits.predicate := true.B
 

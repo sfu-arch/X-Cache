@@ -26,7 +26,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class test13DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class test13DFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -50,7 +50,7 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val SharedFPU = Module(new SharedFPU(NumOps = 1, PipeDepth = 32)(t = p(FTYP)))
+  val SharedFPU = Module(new SharedFPU(NumOps = 1, PipeDepth = 32)(t = ftyp))
 
   val InputSplitter = Module(new SplitCallNew(List(2, 3, 1)))
   InputSplitter.io.In <> io.in
@@ -119,7 +119,7 @@ class test13DF(implicit p: Parameters) extends test13DFIO()(p) {
   val ld_10 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 10, RouteID = 1))
 
   //  %div = fdiv float %1, %mean, !dbg !56, !UID !57
-  val FP_div11 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 11, RouteID = 0, opCode = "fdiv")(t = p(FTYP)))
+  val FP_div11 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 11, RouteID = 0, opCode = "fdiv")(t = ftyp))
 
   //  store float %div, float* %arrayidx, align 4, !dbg !58, !tbaa !45, !UID !59
   val st_12 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 12, RouteID = 0))
@@ -417,7 +417,7 @@ import java.io.{File, FileWriter}
 object test13Top extends App {
   val dir = new File("RTL/test13Top");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test13DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

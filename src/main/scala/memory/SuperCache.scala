@@ -19,7 +19,7 @@ import dandelion.interfaces._
 import scala.math._
 
 
-class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters) extends Module with CoreParams {
+class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters) extends Module with HasAccelParams {
   /** The I/O for this queue */
   val genType = gen.cloneType
 
@@ -57,7 +57,7 @@ class PeekQueue[T <: Data](gen: T, val entries: Int)(implicit val p: Parameters)
 }
 
 class NCacheIO(val NumTiles: Int = 1, val NumBanks: Int = 1)(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
   val io = IO(new Bundle {
     val cpu   = new Bundle {
       val MemReq  = Vec(NumTiles, Flipped(Decoupled(new MemReq)))
@@ -342,7 +342,7 @@ class NCache(NumTiles: Int = 1, NumBanks: Int = 1)(implicit p: Parameters) exten
 //object NCacheMain extends App {
 //  val dir = new File("RTL/NCache");
 //  dir.mkdirs
-//  implicit val p = Parameters.root((new MiniConfig).toInstance)
+//  implicit val p = new WithAccelConfig
 //  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new NCache(1, 1)))
 //
 //  val verilogFile   = new File(dir, s"${chirrtl.main}.v")

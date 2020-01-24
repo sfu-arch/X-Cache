@@ -161,7 +161,7 @@ class cilk_for_test05Tester1 extends FlatSpec with Matchers {
   val outDataVec = inA.zip(inB).map { case (x, y) => x + y }
 
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -177,7 +177,7 @@ class cilk_for_test05Tester1 extends FlatSpec with Matchers {
           "-tbn", "verilator",
           "-td", s"test_run_dir/cilk_for_test05_${tile}",
           "-tts", "0001"),
-        () => new cilk_for_test05MainTM(tile)(p.alterPartial({ case TLEN => 6 }))) {
+        () => new cilk_for_test05MainTM(tile)(p)) {
         c => new cilk_for_test05Test01(c, tile)(inAddrVec, inDataVec, outAddrVec, outDataVec)
       } should be(true)
     }

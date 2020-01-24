@@ -24,7 +24,7 @@ import Constants._
 
 abstract class WriteEntryIO()(implicit val p: Parameters)
   extends Module
-    with CoreParams {
+    with HasAccelParams {
 
   val io = IO(new Bundle {
     // Read Request Type
@@ -177,7 +177,7 @@ class WriteTableEntry(id: Int)(implicit p: Parameters) extends WriteEntryIO( )(p
   }
 }
 
-abstract class WController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit val p: Parameters) extends Module with CoreParams {
+abstract class WController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val WriteIn  = Vec(NumOps, Flipped(Decoupled(new WriteReq( ))))
     val WriteOut = Vec(NumOps, Output(new WriteResp( )))

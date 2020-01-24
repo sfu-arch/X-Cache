@@ -9,7 +9,7 @@ import dandelion.interfaces._
 import dandelion.arbiters._
 import dandelion.memory._
 
-class TypeLoadDataFlow(implicit val p: Parameters) extends Module with CoreParams {
+class TypeLoadDataFlow(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
     val dummy = Input(UInt {

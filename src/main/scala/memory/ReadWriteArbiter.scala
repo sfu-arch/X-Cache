@@ -20,7 +20,7 @@ import dandelion.accel._
 
 
 abstract class RWController(implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
   val io = IO(new Bundle {
     val ReadMemReq  = Flipped(Decoupled(new MemReq))
     val WriteMemReq = Flipped(Decoupled(new MemReq))

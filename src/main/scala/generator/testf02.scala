@@ -26,7 +26,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class testf02DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class testf02DFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -70,7 +70,7 @@ class testf02DF(implicit p: Parameters) extends testf02DFIO()(p) {
    * ================================================================== */
 
   //  %3 = fadd float %0, %1
-  val FP_0 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 0, opCode = "fadd")(t = p(FTYP)))
+  val FP_0 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 0, opCode = "fadd")(t = ftyp))
 
   //  ret float %3
   val ret_1 = Module(new RetNode2(retTypes = List(32), ID = 1))
@@ -211,7 +211,7 @@ import java.io.{File, FileWriter}
 object testf02Main extends App {
   val dir = new File("RTL/testf02");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new testf02DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

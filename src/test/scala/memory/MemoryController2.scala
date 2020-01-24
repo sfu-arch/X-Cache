@@ -33,7 +33,7 @@ class TypeStackTests(c: TypeStackFile)(implicit p: Parameters) extends PeekPokeT
 
 
 class TypeStackFileTester extends  FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Memory Controller tester" in {
   	chisel3.iotesters.Driver(() => new TypeStackFile(ID=10,Size=32,NReads=1,NWrites=1)(WControl=new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=1))(RControl=new ReadMemoryController(NumOps=1,BaseSize=2,NumEntries=1))) {
       c => new TypeStackTests(c)

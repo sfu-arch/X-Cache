@@ -14,7 +14,7 @@ import utility.UniformPrintfs
   * @param NumInputs Number of inputs
   */
 class LoopStartIO(val NumInputs: Int, val NumOuts: Int)
-                             (implicit p: Parameters) extends CoreBundle()(p) {
+                             (implicit p: Parameters) extends AccelBundle()(p) {
 
   val inputArg  = Vec(NumInputs, Flipped(Decoupled(new DataBundle())))
   val outputArg = Vec(NumOuts, Decoupled(new DataBundle()))
@@ -33,7 +33,7 @@ class LoopStartIO(val NumInputs: Int, val NumOuts: Int)
 
 
 class LoopStart(val NumInputs: Int, val NumOuts: Int, val ID: Int)
-                (implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs {
+                (implicit val p: Parameters) extends Module with HasAccelParams with UniformPrintfs {
 
   override lazy val io = IO(new LoopStartIO(NumInputs, NumOuts))
 

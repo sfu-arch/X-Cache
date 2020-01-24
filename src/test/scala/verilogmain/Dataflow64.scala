@@ -33,7 +33,7 @@ class DataflowPeekPoker64(df: DataFlow64)(implicit p: Parameters) extends PeekPo
 //}
 
 class DataflowVerilog64 extends  FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Not fuse tester" in {
     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),
       () => new DataFlow64()(p)) {

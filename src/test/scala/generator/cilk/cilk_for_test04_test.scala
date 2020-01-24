@@ -146,7 +146,7 @@ class cilk_for_test04Tester1 extends FlatSpec with Matchers {
   val outAddrVec = List.range(160, 160 + (4 * 20), 4)
   val outDataVec = List.fill(20)(10)
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Check that cilk_for_test04 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -159,7 +159,7 @@ class cilk_for_test04Tester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/cilk_for_test04",
         "-tts", "0001"),
-      () => new cilk_for_test04Main1(tiles = 1)(p.alterPartial({ case TLEN => 6 }))) {
+      () => new cilk_for_test04Main1(tiles = 1)(p)) {
       c => new cilk_for_test04Test01(c, 5, 2)(inAddrVec, inDataVec, outAddrVec, outDataVec)
     } should be(true)
   }

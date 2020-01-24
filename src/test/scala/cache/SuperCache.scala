@@ -43,7 +43,7 @@ class SuperCacheUnitTests(c: NCache) extends PeekPokeTester(c) {
 }
 
 class SuperCacheUnitTester extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "SuperCache tester" in {
     chisel3.iotesters.Driver(() => new NCache(1, 1)) { c =>
       new SuperCacheUnitTests(c)

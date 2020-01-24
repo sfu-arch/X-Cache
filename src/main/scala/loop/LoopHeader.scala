@@ -34,7 +34,7 @@ object LoopOutputBundle{
   * @param NumInputs Number of inputs
   */
 class LoopHeaderIO[T <: Data](val NumInputs: Int, val NumOuts: Int)
-                             (gen: T)(implicit p: Parameters) extends CoreBundle()(p) {
+                             (gen: T)(implicit p: Parameters) extends AccelBundle()(p) {
 
   val inputArg  = Vec(NumInputs, Flipped(Decoupled(gen)))
   val outputArg = Vec(NumOuts, Decoupled(gen))
@@ -62,7 +62,7 @@ class LoopHeaderIO[T <: Data](val NumInputs: Int, val NumOuts: Int)
 
 
 class LoopHeader(val NumInputs: Int, val NumOuts: Int, val ID: Int)
-                (implicit val p: Parameters) extends Module with CoreParams with UniformPrintfs {
+                (implicit val p: Parameters) extends Module with HasAccelParams with UniformPrintfs {
 
   lazy val io = IO(new LoopHeaderIO(NumInputs, NumOuts)(new DataBundle()))
 

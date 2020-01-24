@@ -10,7 +10,7 @@ import dandelion.arbiters._
 import dandelion.memory._
 import dandelion.fpu.FType._
 
-class TypeMemDataFlow(implicit val p: Parameters) extends Module with CoreParams {
+class TypeMemDataFlow(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
     val dummy = Input(UInt {

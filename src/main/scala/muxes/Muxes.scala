@@ -64,7 +64,7 @@ class DemuxGen[T <: Data](gen: T, Nops: Int) extends Module {
 }
 
 abstract class AbstractDeMuxTree[T <: RouteID](Nops: Int, gen: T)(implicit p: Parameters)
-  extends Module with CoreParams {
+  extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val outputs = Vec(Nops, Output(gen))
     val input   = Input(gen)

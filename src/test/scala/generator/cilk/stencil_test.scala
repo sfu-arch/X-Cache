@@ -141,27 +141,27 @@ class stencilTest01[T <: AccelIO](c: T, tiles: Int)
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.bits.enable.taskID, 0)
+  poke(c.io.in.bits.enable.taskID, 0.U)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").taskID, 0)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").taskID, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").taskID, 0)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").taskID, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0.U) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 256) // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, 256.U) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
@@ -200,27 +200,27 @@ class stencilTest02[T <: AccelIO](c: T, tiles: Int)
 
   // Initializing the signals
   poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.bits.enable.taskID, 0)
+  poke(c.io.in.bits.enable.taskID, 0.U)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").taskID, 0)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").taskID, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").taskID, 0)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").taskID, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
   poke(c.io.out.ready, false.B)
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0.U) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, dataSize * dataSize) // Array b[] base address
+  poke(c.io.in.bits.data("field1").data, (dataSize * dataSize).U) // Array b[] base address
   poke(c.io.in.bits.data("field1").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
@@ -265,11 +265,7 @@ class stencilTester1 extends FlatSpec with Matchers {
   )
 
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 8
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -283,7 +279,7 @@ class stencilTester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", s"test_run_dir/stencil_direct",
         "-tts", "0001"),
-      () => new stencilDirect()(testParams)) {
+      () => new stencilDirect()(p)) {
       c => new stencilTest01(c, 1)(inAddrVec, inDataVec, outAddrVec, outDataVec)
     } should be(true)
   }
@@ -307,11 +303,7 @@ class stencilTester2 extends FlatSpec with Matchers {
     2, 3, 3, 2
   )
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 8
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -328,7 +320,7 @@ class stencilTester2 extends FlatSpec with Matchers {
           "-tbn", "verilator",
           "-td", s"test_run_dir/stencil_${tile}",
           "-tts", "0001"),
-        () => new stencilMainTM(tile)(testParams)) {
+        () => new stencilMainTM(tile)(p)) {
         c => new stencilTest02(c, tile)(inAddrVec, inDataVec.toList, outAddrVec, outDataVec)
       } should be(true)
     }

@@ -58,7 +58,7 @@ class FPComputeNodeTester(df: FPComputeNode)
 }
 
 class FPComputeTests extends  FlatSpec with Matchers {
-   implicit val p = Parameters.root((new SinglePrecisionFPConfig).toInstance)
+   implicit val p = new WithAccelConfig()
   it should "FP MAC tester" in {
      chisel3.iotesters.Driver(
        () => new FPComputeNode(NumOuts = 1, ID = 0, opCode = "Mul")(t = FType.S)) {

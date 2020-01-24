@@ -11,7 +11,7 @@ import muxes._
 import hardfloat._
 
 class SharedFPUIO(NumOps: Int, argTypes: Seq[Int])
-                 (implicit p: Parameters) extends CoreBundle( )(p) {
+                 (implicit p: Parameters) extends AccelBundle( )(p) {
   val InData = Vec(NumOps, Flipped(Decoupled(new FUReq(argTypes))))
 
   val OutData = Vec(NumOps, Output(new FUResp))
@@ -23,7 +23,7 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
                (implicit val p: Parameters,
                 name: sourcecode.Name,
                 file: sourcecode.File)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
   override lazy val io = IO(new SharedFPUIO(NumOps, argTypes = List(xlen, xlen, 1)))
 
   // Printf debugging

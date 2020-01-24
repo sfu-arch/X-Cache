@@ -14,7 +14,7 @@ import dandelion.memory._
 import Constants._
 
 abstract class LoadMaskIO(NumPredOps :Int = 1, NumSuccOps :Int = 1,
-  val ID :Int = 0)(implicit val p: Parameters) extends Module with CoreParams{
+  val ID :Int = 0)(implicit val p: Parameters) extends Module with HasAccelParams{
 
   val io = IO(new Bundle {
     // gepAddr: The calculated address comming from GEP node

@@ -50,7 +50,7 @@ object operationreduction {
         if (l.N == 1) return l.data(0)
 
         val ops = for (k <- 0 until l.N) yield {
-          val reduction_node = Module(new UALU(p(DAXLEN), opcode))
+          val reduction_node = Module(new UALU(p(AccelConfig).xlen, opcode))
           reduction_node.io.in1 <> DontCare
           reduction_node.io.in2 <> DontCare
           reduction_node
@@ -82,7 +82,7 @@ import operationreduction._
 class OperatorReductionModule[T <: Numbers : OperatorReductionLike](gen: => T, val opCode: String)(implicit val p: Parameters) extends Module {
   val io       = IO(new Bundle {
     val a = Flipped(Valid(gen))
-    val o = Output(Valid(UInt(p(DAXLEN).W)))
+    val o = Output(Valid(UInt(p(AccelConfig).xlen.W)))
   })
   val MatOrVec = (gen.className).toString
   io.o.valid := io.a.valid

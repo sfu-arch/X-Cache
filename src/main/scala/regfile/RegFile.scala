@@ -18,7 +18,7 @@ import dandelion.config._
  * @param size: Number of registers
  *
  */
-class RegFileBundle(size: Int)(implicit p: Parameters) extends CoreBundle()(p) {
+class RegFileBundle(size: Int)(implicit p: Parameters) extends AccelBundle()(p) {
   val raddr1 = Input(UInt(max(1,log2Ceil(size)).W))
   val rdata1 = Output(UInt(xlen.W))
   val raddr2 = Input(UInt(max(1,log2Ceil(size)).W))
@@ -33,7 +33,7 @@ class RegFileBundle(size: Int)(implicit p: Parameters) extends CoreBundle()(p) {
 }
 
 
-abstract class AbstractRFile(size: Int)(implicit val p: Parameters) extends Module with CoreParams {
+abstract class AbstractRFile(size: Int)(implicit val p: Parameters) extends Module with HasAccelParams {
    val io = IO(new RegFileBundle(size))
 }
 /**

@@ -57,7 +57,7 @@ class computeTester(df: ComputeNode)
 
 
 class CompTests extends  FlatSpec with Matchers {
-   implicit val p = Parameters.root((new MiniConfig).toInstance)
+   implicit val p = new WithAccelConfig
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new ComputeNode(NumOuts = 1, ID = 0, opCode = "Add")(sign = false)) {
        c => new computeTester(c)

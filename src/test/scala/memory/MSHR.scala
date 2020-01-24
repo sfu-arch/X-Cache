@@ -50,7 +50,7 @@ class ReadTableEntryTests(c: ReadTableEntry)
 
 
 class ReadTableEntryTester extends  FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Memory Controller tester" in {
     chisel3.iotesters.Driver(() => new ReadTableEntry(0)(p)) {
       c => new ReadTableEntryTests(c)

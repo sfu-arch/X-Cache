@@ -9,14 +9,14 @@ import dandelion.node._
 import util._
 import utility.UniformPrintfs
 
-class ParentBundle()(implicit p: Parameters) extends CoreBundle {
+class ParentBundle()(implicit p: Parameters) extends AccelBundle {
   val sid = UInt(tlen.W) // Static ID (e.g. parent identifier)
   val did = UInt(tlen.W) // Dynamic ID (e.g. parent's task #)
   //  override def cloneType: this.type = new ParentBundle(argTypes).asInstanceOf[this.type]
 }
 
 class TaskControllerIO(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int)(implicit p: Parameters)
-  extends CoreBundle {
+  extends AccelBundle {
   val parentIn = Vec(numParent, Flipped(Decoupled(new Call(argTypes)))) // Requests from calling block(s)
   val parentOut = Vec(numParent, Decoupled(new Call(retTypes))) // Returns to calling block(s)
   val childIn = Vec(numChild, Flipped(Decoupled(new Call(retTypes)))) // Returns from sub-block
@@ -28,7 +28,7 @@ class TaskControllerIO(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent
 
 class TaskController(val argTypes: Seq[Int], val retTypes: Seq[Int], numParent: Int, numChild: Int)
                     (implicit val p: Parameters)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
 
   // Instantiate TaskController I/O signals
   val io = IO(new TaskControllerIO(argTypes, retTypes, numParent, numChild))

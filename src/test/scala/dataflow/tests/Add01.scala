@@ -63,7 +63,7 @@ class Add01Tester(df: Add01DF)
 
 
 class Add01Tests extends  FlatSpec with Matchers {
-   implicit val p = Parameters.root((new MiniConfig).toInstance)
+   implicit val p = new WithAccelConfig
   it should "Dataflow sample 01 tester" in {
      chisel3.iotesters.Driver(() => new Add01DF()(p)) {
        c => new Add01Tester(c)

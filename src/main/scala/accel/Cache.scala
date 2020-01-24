@@ -9,28 +9,22 @@ import dandelion.config._
 import dandelion.interfaces._
 import NastiConstants._
 
-//case object NWays extends Field[Int]
-
-//case object NSets extends Field[Int]
-
-//case object CacheBlockBytes extends Field[Int]
-
 class CacheIO(implicit p: Parameters) extends ParameterizedBundle()(p) {
   val abort = Input(Bool())
   val req = Flipped(Decoupled(new MemReq))
   val resp = Output(Valid(new MemResp))
 }
 
-class CacheModuleIO(implicit p: Parameters) extends CoreBundle()(p) {
+class CacheModuleIO(implicit p: Parameters) extends AccelBundle()(p) {
   val cpu = new CacheIO
   val nasti = new NastiIO
   val stat = Output(UInt(xlen.W))
 }
 
-trait CacheParams extends CoreParams with HasNastiParameters {
-  val nWays = p(NWays) // Not used...
-  val nSets = p(NSets)
-  val bBytes = p(CacheBlockBytes)
+trait CacheParams extends HasAccelParams with HasNastiParameters {
+  val nWays = p(AccelConfig).nways // Not used...
+  val nSets = p(AccelConfig).nsets
+  val bBytes = p(AccelConfig).cacheBlockBytes
   val bBits = bBytes << 3
   val blen = log2Ceil(bBytes)
   val slen = log2Ceil(nSets)
@@ -38,7 +32,7 @@ trait CacheParams extends CoreParams with HasNastiParameters {
   val nWords = bBits / xlen
   val wBytes = xlen / 8
   val byteOffsetBits = log2Ceil(wBytes)
-  val dataBeats = bBits / nastiXDataBits
+  val databeats = bBits / nastiXDataBits
 }
 
 class MetaData(implicit val p: Parameters) extends ParameterizedBundle()(p) with CacheParams {
@@ -64,9 +58,9 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   val cpu_iswrite = Reg(io.cpu.req.bits.iswrite.cloneType)
 
   // Counters
-  require(dataBeats > 0)
-  val (read_count, read_wrap_out) = Counter(io.nasti.r.fire(), dataBeats)
-  val (write_count, write_wrap_out) = Counter(io.nasti.w.fire(), dataBeats)
+  require(databeats > 0)
+  val (read_count, read_wrap_out) = Counter(io.nasti.r.fire(), databeats)
+  val (write_count, write_wrap_out) = Counter(io.nasti.w.fire(), databeats)
 
   val is_idle = state === s_IDLE
   val is_read = state === s_READ_CACHE
@@ -109,7 +103,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   }
 
   val rdata_buf = RegEnable(rdata, ren_reg)
-  val refill_buf = Reg(Vec(dataBeats, UInt(nastiXDataBits.W)))
+  val refill_buf = Reg(Vec(databeats, UInt(nastiXDataBits.W)))
   val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
   hit := valid(idx_reg) && rmeta.tag === tag_reg
@@ -161,7 +155,7 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
   // ID : Is AXI request ID
   // @todo: Change @id value for each cache
   io.nasti.ar.bits := NastiReadAddressChannel(
-    id = ID.U, (Cat(tag_reg, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits / 8).U, (dataBeats - 1).U)
+    id = ID.U, (Cat(tag_reg, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits / 8).U, (databeats - 1).U)
   io.nasti.ar.valid := false.B
   io.nasti.ar.bits.prot := AXPROT(false, false, true)
   io.nasti.ar.bits.user := 0x1f.U
@@ -177,14 +171,14 @@ class Cache(val ID: Int = 0)(implicit val p: Parameters) extends Module with Cac
 
   // write addr
   io.nasti.aw.bits := NastiWriteAddressChannel(
-    id = ID.U, (Cat(rmeta.tag, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits / 8).U, (dataBeats - 1).U)
+    id = ID.U, (Cat(rmeta.tag, idx_reg) << blen.U).asUInt(), log2Ceil(nastiXDataBits / 8).U, (databeats - 1).U)
   io.nasti.aw.valid := false.B
   io.nasti.aw.bits.prot := AXPROT(false, false, true)
   io.nasti.aw.bits.user := 0x1f.U
   io.nasti.aw.bits.cache := 0xf.U
   // write data
   io.nasti.w.bits := NastiWriteDataChannel(
-    VecInit.tabulate(dataBeats)(i => read((i + 1) * nastiXDataBits - 1, i * nastiXDataBits))(write_count),
+    VecInit.tabulate(databeats)(i => read((i + 1) * nastiXDataBits - 1, i * nastiXDataBits))(write_count),
     None, write_wrap_out, id = ID.U)
   io.nasti.w.valid := false.B
   // write resp

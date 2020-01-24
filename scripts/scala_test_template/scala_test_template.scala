@@ -22,8 +22,8 @@ import accel._
 import node._
 
 
-class {{module_name}}MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
-  val io = IO(new CoreBundle {
+class {{module_name}}MainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
+  val io = IO(new AccelBundle {
     val in = Flipped(Decoupled(new Call(List({% for n in in_args -%} 
     {{32}} {{ "," if not loop.last}}
     {%- endfor %}))))
@@ -70,7 +70,7 @@ class {{module_name}}Main(implicit p: Parameters) extends {{module_name}}MainIO 
   io.out <> {{module_name}}.io.out
 
   // Check if trace option is on or off
-  if (p(TRACE) == false) {
+  if (log == false) {
     println(Console.RED + "****** Trace option is off. *********" + Console.RESET)
   }
   else

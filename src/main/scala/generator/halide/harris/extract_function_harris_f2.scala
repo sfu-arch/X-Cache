@@ -26,7 +26,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class extract_function_harris_f2DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class extract_function_harris_f2DFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32))))
     val call_78_out = Decoupled(new Call(List(32, 32)))
@@ -1854,7 +1854,7 @@ import java.io.{File, FileWriter}
 object extract_function_harris_f2Top extends App {
   val dir = new File("RTL/extract_function_harris_f2Top");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new extract_function_harris_f2DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

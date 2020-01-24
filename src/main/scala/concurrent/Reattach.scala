@@ -101,7 +101,7 @@ class ReattachNode(val NumOuts: Int = 1, ID: Int)
                     (implicit val p: Parameters,
                      name: sourcecode.Name,
                      file: sourcecode.File)
-  extends Module with CoreParams with UniformPrintfs {
+  extends Module with HasAccelParams with UniformPrintfs {
   override lazy val io = IO(new ReattachNodeIO(NumOuts))
 
   val node_name = name.value

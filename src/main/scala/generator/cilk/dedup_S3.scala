@@ -27,7 +27,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class dedup_S3DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class dedup_S3DFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -237,7 +237,7 @@ class dedup_S3DF(implicit p: Parameters) extends dedup_S3DFIO()(p) {
 import java.io.{File, FileWriter}
 object dedup_S3Main extends App {
   val dir = new File("RTL/dedup_S3") ; dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new dedup_S3DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

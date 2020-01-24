@@ -40,7 +40,7 @@ class UnifiedTypController (ID: Int,
   NReads: Int,
   NWrites: Int)(WControl: => WriteTypMemoryController)(RControl: => ReadTypMemoryController)(RWArbiter: => ReadWriteArbiter )(implicit val p: Parameters)
   extends Module
-  with CoreParams
+  with HasAccelParams
   with UniformPrintfs {
 
   val io = IO(new Bundle {
@@ -138,7 +138,7 @@ class UnifiedTypController (ID: Int,
 
   //------------------------------------------------------------------------------------
   /// Printf debugging
-  override val printfSigil = "Unified: " + ID + " Type " + (Typ_SZ)
+  override val printfSigil = "Unified: " + ID + " Type " + (typesize)
 
 //  verb match {
 //    case "high"  => {printf(p" MemReq_R.addr: $cacheReq_R.addr")}

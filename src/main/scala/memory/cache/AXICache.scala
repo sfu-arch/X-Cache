@@ -9,10 +9,10 @@ import dandelion.interfaces.axi._
 import dandelion.shell.{ShellKey}
 
 
-trait CacheParams extends CoreParams {
-  val nWays = p(NWays) // Not used...
-  val nSets = p(NSets)
-  val bBytes = p(CacheBlockBytes)
+trait CacheAccelParams extends HasAccelParams {
+  val nWays = nways
+  val nSets = nsets
+  val bBytes = cacheBlockBytes
   val bBits = bBytes << 3
   val blen = log2Ceil(bBytes)
   val slen = log2Ceil(nSets)
@@ -20,7 +20,7 @@ trait CacheParams extends CoreParams {
   val nWords = bBits / xlen
   val wBytes = xlen / 8
   val byteOffsetBits = log2Ceil(wBytes)
-  val dataBeats = bBits / p(ShellKey).memParams.dataBits
+  val databeats = bBits / p(ShellKey).memParams.dataBits
 }
 
 
@@ -33,7 +33,7 @@ class CacheCPUIO(implicit p: Parameters) extends GenericParameterizedBundle(p) {
 }
 
 
-class MetaData(implicit p: Parameters) extends AXICoreBundle with CacheParams {
+class MetaData(implicit p: Parameters) extends AXIAccelBundle with CacheAccelParams {
   val tag = UInt(taglen.W)
 }
 
@@ -59,7 +59,7 @@ object MetaData {
 }
 
 
-class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module with CacheParams {
+class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module with CacheAccelParams {
   val io = IO(new Bundle {
     val cpu = new CacheCPUIO
     val mem = new AXIMaster(p(ShellKey).memParams)
@@ -93,9 +93,9 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
 
   // Counters
-  require(dataBeats > 0)
-  val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), dataBeats)
-  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), dataBeats)
+  require(databeats > 0)
+  val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), databeats)
+  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), databeats)
 
   val (flush_count, flush_wrap) = Counter(flush_state === s_flush_START, dirty_block_size)
   val (flush_block_count, flush_block_wrap) = Counter(flush_state === s_flush_BLOCK, dirty_offset_size)
@@ -129,11 +129,11 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   val dirty_offset = idx(log2Ceil(dirty_offset_size) - 1, 0)
 
   val cache_block = Cat((dataMem map (_.read(idx).asUInt)).reverse)
-  val cache_block_size = p(CacheBlockBytes) * 8
+  val cache_block_size = cacheBlockBytes * 8
   val rmeta = RegNext(next = metaMem.read(idx), init = MetaData.default)
   val rdata = RegNext(next = cache_block, init = 0.U(cache_block_size.W))
   val rdata_buf = RegEnable(rdata, ren_reg)
-  val refill_buf = RegInit(VecInit(Seq.fill(dataBeats)(0.U(Axi_param.dataBits.W))))
+  val refill_buf = RegInit(VecInit(Seq.fill(databeats)(0.U(Axi_param.dataBits.W))))
   val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
   hit := valid(idx_reg) && rmeta.tag === tag_reg
@@ -196,7 +196,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
 
   // read request
   io.mem.ar.bits.addr := Cat(tag_reg, idx_reg) << blen.U
-  io.mem.ar.bits.len := (dataBeats - 1).U
+  io.mem.ar.bits.len := (databeats - 1).U
   io.mem.ar.valid := false.B
 
   // read data
@@ -207,11 +207,11 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
 
   // write addr
   io.mem.aw.bits.addr := Cat(rmeta.tag, idx_reg) << blen.U
-  io.mem.aw.bits.len := (dataBeats - 1).U
+  io.mem.aw.bits.len := (databeats - 1).U
   io.mem.aw.valid := false.B
 
   // Write resp
-  io.mem.w.bits.data := VecInit.tabulate(dataBeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)
+  io.mem.w.bits.data := VecInit.tabulate(databeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)
   io.mem.w.bits.last := write_wrap_out
   io.mem.w.valid := false.B
   io.mem.b.ready := false.B

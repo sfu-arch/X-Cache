@@ -71,7 +71,7 @@ class LoopEx1(c: LoopExample) extends PeekPokeTester(c) {
 
 
 class LoopEx1Tester extends  FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "not do something stupid" in {
     // iotestester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

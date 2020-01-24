@@ -26,7 +26,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class spmvDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class spmvDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -153,10 +153,10 @@ class spmvDF(implicit p: Parameters) extends spmvDFIO()(p) {
   val ld_20 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 20, RouteID = 4))
 
   //  %mul = fmul double %3, %5, !dbg !144, !UID !145
-  val FP_mul21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = p(FTYP)))
+  val FP_mul21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = ftyp))
 
   //  %add12 = fadd double %sum.034, %mul, !dbg !146, !UID !147
-  val FP_add1222 = Module(new FPComputeNode(NumOuts = 2, ID = 22, opCode = "fadd")(t = p(FTYP)))
+  val FP_add1222 = Module(new FPComputeNode(NumOuts = 2, ID = 22, opCode = "fadd")(t = ftyp))
 
   //  %indvars.iv.next = add nsw i64 %indvars.iv, 1, !dbg !148, !UID !149
   val binaryOp_indvars_iv_next23 = Module(new ComputeNode(NumOuts = 2, ID = 23, opCode = "add")(sign = false))
@@ -628,7 +628,7 @@ import java.io.{File, FileWriter}
 object spmvTop extends App {
   val dir = new File("RTL/spmvTop");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new spmvDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

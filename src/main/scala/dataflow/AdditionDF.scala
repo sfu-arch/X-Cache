@@ -67,7 +67,7 @@ object functionParam {
 
 //TODO uncomment if you remove StackCentral.scala file
 //
-abstract class AddDFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class AddDFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val Data0 = Flipped(Decoupled(new DataBundle))
     val pred = Decoupled(new ControlBundle)

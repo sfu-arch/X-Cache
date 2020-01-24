@@ -10,7 +10,7 @@ import dandelion.interfaces._
 import dandelion.memory._
 import utility._
 
-class InterleavedStackIO(NumPorts:Int)(implicit val p: Parameters) extends Module with CoreParams {
+class InterleavedStackIO(NumPorts:Int)(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
       val MemReq   = Vec(NumPorts, Flipped(Decoupled(new MemReq)))
       val MemResp  = Vec(NumPorts, Output(Valid(new MemResp)))

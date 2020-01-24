@@ -13,7 +13,7 @@ import dandelion.interfaces._
 import dandelion.memory._
 import dandelion.accel._
 
-class test11MainIO(implicit val p: Parameters)  extends Module with CoreParams with CacheParams {
+class test11MainIO(implicit val p: Parameters)  extends Module with HasAccelParams with CacheParams {
   val io = IO( new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -132,7 +132,7 @@ class test11Test01[T <: test11MainDirect](c: T) extends PeekPokeTester(c) {
 }
 
 class test11Tester1 extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Check that test11 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

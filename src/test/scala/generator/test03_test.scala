@@ -19,7 +19,7 @@ import dandelion.loop._
 import dandelion.accel._
 import dandelion.junctions._
 
-class test03MainIO(implicit val p: Parameters) extends Module with CoreParams with CacheParams {
+class test03MainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -68,7 +68,7 @@ class test03Main(implicit p: Parameters) extends test03MainIO {
   io.out <> test03.io.out
 
   // Check if trace option is on or off
-  if (p(TRACE) == false) {
+  if (log == false) {
     println(Console.RED + "****** Trace option is off. *********" + Console.RESET)
   }
   else
@@ -136,7 +136,7 @@ class test03Test01[T <: test03MainIO](c: T) extends PeekPokeTester(c) {
 }
 
 class test03Tester extends FlatSpec with Matchers {
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   it should "Check that test04 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

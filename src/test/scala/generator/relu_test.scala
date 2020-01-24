@@ -131,11 +131,7 @@ class reluTester1 extends FlatSpec with Matchers {
   val outDataVec = inDataVec.map((x) => if(x < 0) 0 else x)
 
 
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
-  val testParams = p.alterPartial({
-    case TLEN => 6
-    case TRACE => true
-  })
+  implicit val p = new WithAccelConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -149,7 +145,7 @@ class reluTester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", s"test_run_dir/relu_direct",
         "-tts", "0001"),
-      () => new reluMainDirect()(testParams)) {
+      () => new reluMainDirect()(p)) {
       c => new reluTest01(c)(inAddrVec, inDataVec, outAddrVec, outDataVec, inAddrBegin, outAddrBegin)
     } should be(true)
   }

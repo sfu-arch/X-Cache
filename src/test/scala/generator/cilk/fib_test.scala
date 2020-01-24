@@ -155,7 +155,7 @@ object fibTesterParams {
 }
 
 //class fibTester1 extends FlatSpec with Matchers {
-//  implicit val p = Parameters.root((new MiniConfig).toInstance)
+//  implicit val p = new WithAccelConfig
 //  it should "Check that fib works correctly." in {
 //    for (tiles <- fibTesterParams.tile_list) {
 //      for (n <- fibTesterParams.n_list) {
