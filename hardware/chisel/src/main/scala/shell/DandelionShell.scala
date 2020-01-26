@@ -150,8 +150,8 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   })
 
   val regBits = p(ShellKey).vcrParams.regBits
-  //val ptrBits = regBits * 2
-  val ptrBits = regBits
+  val ptrBits = regBits * 2
+//  val ptrBits = regBits
 
   val vcr = Module(new VCR)
   val cache = Module(new SimpleCache())
@@ -207,7 +207,7 @@ class DandelionCacheShell(implicit p: Parameters) extends Module {
   switch(state) {
     is(sIdle) {
       when(vcr.io.vcr.launch) {
-        printf(p" Ptrs: ptr(0): ${ptr_a}, ptr(1): ${ptr_b}, val(0): ${val_a}\n")
+        printf(p"Ptrs: ptr(0): ${ptr_a}, ptr(1): ${ptr_b}, val(0): ${val_a}\n")
         test09.io.in.valid := true.B
         when(test09.io.in.fire){
           state := sBusy

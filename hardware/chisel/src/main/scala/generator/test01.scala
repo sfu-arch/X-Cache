@@ -1,24 +1,11 @@
 package dandelion.generator
 
 import chisel3._
-import chisel3.util._
-import chisel3.Module._
-import chisel3.testers._
-import chisel3.iotesters._
-import dandelion.accel._
-import dandelion.arbiters._
 import dandelion.config._
 import dandelion.control._
-import dandelion.fpu._
 import dandelion.interfaces._
 import dandelion.junctions._
-import dandelion.loop._
-import dandelion.memory._
-import dandelion.memory.stack._
 import dandelion.node._
-import muxes._
-import org.scalatest._
-import regfile._
 import util._
 
 
@@ -26,7 +13,7 @@ import util._
    *                   PRINTING PORTS DEFINITION                        *
    * ================================================================== */
 
-abstract class test01DFIO(implicit val p: Parameters) extends Module with CoreParams {
+abstract class test01DFIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32))))
     val MemResp = Flipped(Valid(new MemResp))
@@ -212,7 +199,7 @@ import java.io.{File, FileWriter}
 object test01Top extends App {
   val dir = new File("RTL/test01Top");
   dir.mkdirs
-  implicit val p = Parameters.root((new MiniConfig).toInstance)
+  implicit val p = new WithAccelConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new test01DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

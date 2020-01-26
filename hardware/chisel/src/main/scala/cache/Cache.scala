@@ -17,7 +17,7 @@
 //
 //case object CacheBlockBytes extends Field[Int]
 //
-//class CacheIO(implicit p: Parameters) extends CoreBundle {
+//class CacheIO(implicit p: Parameters) extends AccelBundle {
 //  val abort = Input(Bool())
 //  val req = Flipped(Decoupled(new MemReq))
 //  val resp = Output(Valid(new MemResp))
@@ -25,7 +25,7 @@
 //  override def cloneType = new CacheIO().asInstanceOf[this.type]
 //}
 //
-//abstract class CacheModuleIO(axi_p: AXIParams)(implicit val p: Parameters) extends Module with CoreParams {
+//abstract class CacheModuleIO(axi_p: AXIParams)(implicit val p: Parameters) extends Module with HasAccelParams {
 //  val io = IO(new Bundle {
 //    val cpu = new CacheIO
 //    val axi = new AXIMaster(axi_p)
@@ -34,7 +34,7 @@
 //
 //}
 //
-//class CacheParams(axi_p: AXIParams)(implicit p: Parameters) extends CoreBundle {
+//class CacheParams(axi_p: AXIParams)(implicit p: Parameters) extends AccelBundle {
 //  val nWays = p(NWays) // Not used...
 //  val nSets = p(NSets)
 //  val bBytes = p(CacheBlockBytes)
@@ -48,7 +48,7 @@
 //  val dataBeats = bBits / axi_p.dataBits
 //}
 //
-//class MetaData(cache_params: CacheParams)(implicit p: Parameters) extends CoreBundle {
+//class MetaData(cache_params: CacheParams)(implicit p: Parameters) extends AccelBundle {
 //  val tag = UInt(cache_params.taglen.W)
 //
 //  override def cloneType = new MetaData(cache_params).asInstanceOf[this.type]

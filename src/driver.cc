@@ -95,7 +95,7 @@ class Device {
             this->MemCopyFromHost(ptrs_[ind], ptrs[ind].get().getArray().data,
                                   a_size);
 
-            std::cerr << "Print input data:\n";
+            std::cerr << "Print input data(" << ind << "):\n";
             auto b = ptrs[ind].get().getArray();
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
@@ -115,7 +115,7 @@ class Device {
             this->MemCopyToHost(ptrs[ind].get().getArray().data, ptrs_[ind],
                                 a_size);
             auto b = ptrs[ind].get().getArray();
-            std::cerr << "Print output data:\n";
+            std::cerr << "Print output data(" << ind << "):\n";
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
                 std::cout << (int)k << "\n";

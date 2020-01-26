@@ -21,9 +21,6 @@ package dandelion.dpi
 
 import chisel3._
 import chisel3.util._
-import dandelion.config._
-import dandelion.interfaces.axi._
-import dandelion.shell._
 
 /** Sim DPI module.
   *

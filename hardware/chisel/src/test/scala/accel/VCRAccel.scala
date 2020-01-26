@@ -91,8 +91,12 @@ object TestAccel2Main extends App {
     case Array("--num-ctrl", argCtrl: String) => num_vals = argCtrl.toInt
   }
 
-  implicit val p: Parameters = 
-    Parameters.root((new MiniConfig).toInstance) ++ new DandelionConfig(num_ptrs, num_vals, num_event, num_ctrl)
+  /**
+   * @note make sure for simulation dataLen is equal to 64
+   */
+  implicit val p =
+    new WithAccelConfig(AccelParams(dataLen = 64)) ++
+      new WithDandelionSimConfig(num_ptrs, num_vals, num_event, num_ctrl)
   chisel3.Driver.execute(args.take(4), () => new TestAccel2)
 }
 

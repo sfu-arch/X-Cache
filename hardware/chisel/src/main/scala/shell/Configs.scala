@@ -51,7 +51,7 @@ class VMESimParams() extends VMEParams {
 }
 
 /** SimDefaultConfig. Shell configuration for simulation */
-class DandelionConfig(val num_ptrs: Int = 4, val num_vals: Int = 2,
+class WithDandelionSimConfig(val num_ptrs: Int = 4, val num_vals: Int = 2,
                       val num_event: Int = 1, val num_ctrl: Int = 1) extends Config((site, here, up) => {
   case ShellKey => ShellParams(
     hostParams = AXIParams(
