@@ -10,7 +10,7 @@ enablePlugins(PackPlugin)
 lazy val commonSettings = Seq(
   organization := "edu.sfu.cs",
   version      := "1.0-SNAPSHOT",
-  scalaVersion := "2.12.8",
+  scalaVersion := "2.12.10",
   parallelExecution in Global := false,
   logBuffered in Test := false,
   testOptions in Test += Tests.Argument("-oDS"),
