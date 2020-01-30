@@ -1,23 +1,18 @@
 package dandelion.generator
 
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
-import dandelion.control._
 import util._
 import dandelion.interfaces._
-import regfile._
 import dandelion.memory._
-import dandelion.memory.stack._
-import dandelion.arbiters._
-import dandelion.loop._
 import dandelion.accel._
-import dandelion.junctions._
+import chipsalliance.rocketchip.config._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
 
 class test03MainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
   val io = IO(new Bundle {

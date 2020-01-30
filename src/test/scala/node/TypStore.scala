@@ -3,6 +3,7 @@ package dandelion.node
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import utility._
 

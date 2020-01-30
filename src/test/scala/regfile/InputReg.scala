@@ -3,15 +3,13 @@
 package regfile
 
 import chisel3._
-import chisel3.util._
 
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
-import muxes._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
-import util._
-import dandelion.interfaces._
+import chipsalliance.rocketchip.config._
 
 
 

@@ -7,6 +7,8 @@ import chisel3.util._
 import chisel3.testers._
 import dandelion.interfaces._
 import dandelion.junctions._
+import chipsalliance.rocketchip.config._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 
 class Command extends Bundle {

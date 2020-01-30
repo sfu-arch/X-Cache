@@ -5,6 +5,7 @@ import java.io.File
 import chisel3._
 import chisel3.Module
 import chisel3.iotesters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import util._
 import dandelion.interfaces._

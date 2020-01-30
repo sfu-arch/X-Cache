@@ -5,6 +5,7 @@ import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.concurrent.{TaskController,TaskControllerIO}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.memory._
 import dandelion.accel._

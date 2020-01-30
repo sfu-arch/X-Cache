@@ -8,6 +8,7 @@ import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.interfaces._
@@ -70,7 +71,7 @@ class testf02DF(implicit p: Parameters) extends testf02DFIO()(p) {
    * ================================================================== */
 
   //  %3 = fadd float %0, %1
-  val FP_0 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 0, opCode = "fadd")(t = ftyp))
+  val FP_0 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 0, opCode = "fadd")(t = fType))
 
   //  ret float %3
   val ret_1 = Module(new RetNode2(retTypes = List(32), ID = 1))

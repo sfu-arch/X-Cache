@@ -3,8 +3,11 @@ package dandelion.accel
 import chisel3._
 import chisel3.util._
 import dandelion.junctions._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
 
 /**
   * The SimpleReg class creates a set of memory mapped configuration and status

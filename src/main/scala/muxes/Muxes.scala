@@ -5,8 +5,10 @@ import dandelion.interfaces._
 import chisel3._
 import chisel3.util._
 import chisel3.Module
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
+import dandelion.config._
 
 class Demux[T <: ValidT](gen: T, Nops: Int) extends Module {
   val io = IO(new Bundle {

@@ -3,10 +3,12 @@ package dandelion.concurrent
 import chisel3._
 import chisel3.util._
 import chisel3.Module
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
-import dandelion.node._
+import dandelion.config._
 import utility.UniformPrintfs
+
 
 class ReattachIO(val NumPredOps: Int)(implicit p: Parameters)
   extends HandShakingIONPS(NumOuts = 1)(new ControlBundle)(p) {

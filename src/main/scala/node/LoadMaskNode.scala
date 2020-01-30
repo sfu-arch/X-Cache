@@ -5,6 +5,7 @@ import chisel3.util._
 import org.scalacheck.Prop.False
 import scala.util.control.Breaks._
 import dandelion.arbiters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import muxes._

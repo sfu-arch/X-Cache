@@ -6,6 +6,7 @@ import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FreeSpec, Matchers}
 import scala.collection.immutable.ListMap
 import dandelion.interfaces._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 
 class SplitCustomTester(c: SplitCustom) extends PeekPokeTester(c) {

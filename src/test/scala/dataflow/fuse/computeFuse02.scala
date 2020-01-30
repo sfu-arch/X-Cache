@@ -6,6 +6,7 @@ import chisel3.iotesters._
 import org.scalatest.{FlatSpec, FreeSpec, Matchers}
 import dandelion.dataflow._
 import muxes._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import util._
 import dandelion.interfaces._

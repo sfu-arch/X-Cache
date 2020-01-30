@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import dandelion.node._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.arbiters._

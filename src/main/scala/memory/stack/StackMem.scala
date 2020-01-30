@@ -6,10 +6,11 @@ import chisel3._
 import chisel3.util._
 
 import dandelion.junctions._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import NastiConstants._
-import dandelion.accel._
+import dandelion.config._
 
 class StackMemIO(implicit p: Parameters) extends AccelBundle()(p) with HasAccelParams {
   val req   = Flipped(Decoupled(new MemReq))

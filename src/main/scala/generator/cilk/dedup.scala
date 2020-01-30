@@ -7,6 +7,7 @@ import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.concurrent._
@@ -21,6 +22,7 @@ import org.scalatest.Matchers._
 import regfile._
 import dandelion.memory.stack._
 import util._
+import dandelion.config._
 
 
   /* ================================================================== *
@@ -677,7 +679,7 @@ import java.io.{File, FileWriter}
 object dedupMain extends App {
   val dir = new File("RTL/dedupTop") ; dir.mkdirs
 
-  implicit val p = new WithAccelConfig(AccelParams(taskLen = 6, printLog = false))
+  implicit val p = new WithAccelConfig(DandelionAccelParams(taskLen = 6, printLog = false))
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new dedupTop(1)(p)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

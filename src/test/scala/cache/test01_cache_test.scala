@@ -4,14 +4,18 @@ import java.io.PrintWriter
 import java.io.File
 import chisel3._
 import chisel3.Module
-import chisel3.iotesters._
-import org.scalatest.{FlatSpec, Matchers}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import util._
 import dandelion.interfaces._
 import dandelion.memory._
 import dandelion.accel._
 import dandelion.dataflow.cache.test_cache01DF
+import chipsalliance.rocketchip.config._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
+import chisel3.iotesters._
+import org.scalatest.{Matchers, FlatSpec}
 
 
 class test_cache01MainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
@@ -71,12 +75,12 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.valid, 1.U)
+    poke(c.io.req.bits.addr, addr.U)
+    poke(c.io.req.bits.iswrite, 0.U)
+    poke(c.io.req.bits.tag, 0.U)
+    poke(c.io.req.bits.mask, 0.U)
+    poke(c.io.req.bits.mask, -1.U)
     step(1)
     while (peek(c.io.resp.valid) == 0) {
       step(1)

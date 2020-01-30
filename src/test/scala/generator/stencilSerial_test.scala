@@ -5,6 +5,7 @@ import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.concurrent.{TaskController,TaskControllerIO}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.memory._
 import dandelion.accel._
@@ -190,7 +191,7 @@ class stencilSerialTester1 extends FlatSpec with Matchers {
   )
 
 
-  implicit val p = new WithAccelConfig(AccelParams(dataLen = 8))
+  implicit val p = new WithAccelConfig(DandelionAccelParams(dataLen = 8))
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

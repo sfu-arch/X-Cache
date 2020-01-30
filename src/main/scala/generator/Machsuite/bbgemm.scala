@@ -7,7 +7,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
-import chisel3.iotesters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.interfaces._
@@ -16,10 +16,10 @@ import dandelion.loop._
 import dandelion.memory._
 import muxes._
 import dandelion.node._
-import org.scalatest._
 import regfile._
 import dandelion.memory.stack._
 import util._
+import dandelion.config._
 
 
   /* ================================================================== *
@@ -167,7 +167,7 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
   val ld_20 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 20, RouteID = 1))
 
   //  %25 = fmul double %18, %24, !dbg !146, !UID !147
-  val FP_21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = ftyp))
+  val FP_21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = fType))
 
   //  %26 = add nuw nsw i64 %20, %5, !dbg !149, !UID !150
   val binaryOp_22 = Module(new ComputeNode(NumOuts = 1, ID = 22, opCode = "add")(sign = false))
@@ -182,7 +182,7 @@ class bbgemmDF(implicit p: Parameters) extends bbgemmDFIO()(p) {
   val ld_25 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 25, RouteID = 2))
 
   //  %30 = fadd double %29, %25, !dbg !155, !UID !157
-  val FP_26 = Module(new FPComputeNode(NumOuts = 1, ID = 26, opCode = "fadd")(t = ftyp))
+  val FP_26 = Module(new FPComputeNode(NumOuts = 1, ID = 26, opCode = "fadd")(t = fType))
 
   //  store double %30, double* %28, align 8, !dbg !155, !tbaa !125, !UID !158
   val st_27 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 27, RouteID = 0))

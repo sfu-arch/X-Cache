@@ -1,13 +1,8 @@
 package dandelion.generator.machsuite
 
 import dandelion.fpu._
-import dandelion.accel._
-import dandelion.arbiters._
 import chisel3._
-import chisel3.util._
-import chisel3.Module._
-import chisel3.testers._
-import chisel3.iotesters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.interfaces._
@@ -20,6 +15,7 @@ import org.scalatest._
 import regfile._
 import dandelion.memory.stack._
 import util._
+import dandelion.config._
 
 
   /* ================================================================== *
@@ -153,10 +149,10 @@ class spmvDF(implicit p: Parameters) extends spmvDFIO()(p) {
   val ld_20 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 20, RouteID = 4))
 
   //  %mul = fmul double %3, %5, !dbg !144, !UID !145
-  val FP_mul21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = ftyp))
+  val FP_mul21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = fType))
 
   //  %add12 = fadd double %sum.034, %mul, !dbg !146, !UID !147
-  val FP_add1222 = Module(new FPComputeNode(NumOuts = 2, ID = 22, opCode = "fadd")(t = ftyp))
+  val FP_add1222 = Module(new FPComputeNode(NumOuts = 2, ID = 22, opCode = "fadd")(t = fType))
 
   //  %indvars.iv.next = add nsw i64 %indvars.iv, 1, !dbg !148, !UID !149
   val binaryOp_indvars_iv_next23 = Module(new ComputeNode(NumOuts = 2, ID = 23, opCode = "add")(sign = false))

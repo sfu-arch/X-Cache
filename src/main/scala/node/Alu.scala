@@ -1,14 +1,10 @@
 package dandelion.node
 
 import chisel3._
-import chisel3.experimental.FixedPoint
-import chisel3.internal.firrtl.BinaryPoint
-import chisel3.util._
 import dsptools._
-import dsptools.numbers.{DspReal, RealBits}
+import dsptools.numbers.{RealBits}
 import dsptools.numbers.implicits._
 import dsptools.DspContext
-import dsptools.numbers.RealTrig
 
 
 /**
@@ -237,6 +233,7 @@ class UALU(val xlen: Int, val opCode: String, val issign: Boolean = false) exten
   assert(!AluOpCode.opMap.get(opCode).isEmpty, "Wrong ALU OP!")
   io.out := AluGenerator(AluOpCode.opMap(opCode), aluOp).asUInt
 }
+
 
 class DSPIO[T <: Data : RealBits](gen: T, val opCode: String) extends Bundle {
   val in1 = Input(gen)

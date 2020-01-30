@@ -3,12 +3,11 @@ import scala.math._
 import chisel3._
 import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters.{ ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester }
-import org.scalatest.{ Matchers, FlatSpec }
+import chipsalliance.rocketchip.config._
+import dandelion.config._
 
 import regfile._
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 import util._
 import dandelion.interfaces._
 import muxes._
@@ -129,7 +128,7 @@ class TypeStackFile(ID: Int,
   ReadController.io.MemResp.bits.iswrite := false.B
 
   /// Printf debugging
-  override val printfSigil = "RFile: " + ID + " Type " + (typesize)
+  override val printfSigil = "RFile: " + ID + " Type " + (typeSize)
 
 
   // printf(p"\n : ${ReadController.io.MemReq.fire()} Tag: ${ReadReq.tag} ")

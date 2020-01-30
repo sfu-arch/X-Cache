@@ -3,9 +3,10 @@ package dandelion.interfaces
 
 import chisel3._
 import chisel3.util.Decoupled
-import dandelion.config._
-import dandelion.shell.ShellKey
+import chipsalliance.rocketchip.config._
 import utility.Constants._
+import dandelion.config._
+import chipsalliance.rocketchip.config._
 
 import scala.collection.immutable.ListMap
 
@@ -200,7 +201,7 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
   val addr = UInt(xlen.W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen / 8).W)
-  val tag = UInt((List(1, mshrlen).max).W)
+  val tag = UInt((List(1, mshrLen).max).W)
   val taskID = UInt(tlen.W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
@@ -234,7 +235,7 @@ object MemReq {
 
 class MemResp(implicit p: Parameters) extends AccelBundle()(p) with ValidT {
   val data = UInt(xlen.W)
-  val tag = UInt((List(1, mshrlen).max).W)
+  val tag = UInt((List(1, mshrLen).max).W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
 
@@ -337,7 +338,7 @@ object DataBundle {
 
 class TypBundle(implicit p: Parameters) extends ValidT with PredicateT with TaskID {
   // Type Packet
-  val data = UInt(typesize.W)
+  val data = UInt(typeSize.W)
 }
 
 
@@ -493,7 +494,7 @@ class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Recor
   var elts = Seq.tabulate(argTypes.length) {
     i =>
       s"field$i" -> new DataBundle()(
-        p.alterPartial({ case AccelConfig => p(AccelConfig).copy(dataLen = argTypes(i)) })
+        p.alterPartial({ case DandelionConfigKey => p(DandelionConfigKey).copy(dataLen = argTypes(i)) })
       )
     //        i => s"field$i" -> new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) }))
   }
@@ -509,7 +510,7 @@ class VariableDecoupledData(val argTypes: Seq[Int])(implicit p: Parameters) exte
   var elts = Seq.tabulate(argTypes.length) {
     i =>
       s"field$i" -> Decoupled(new DataBundle()(
-        p.alterPartial({ case AccelConfig => p(AccelConfig).copy(dataLen = argTypes(i)) })
+        p.alterPartial({ case DandelionConfigKey => p(DandelionConfigKey).copy(dataLen = argTypes(i)) })
       )
       )
     //      i => s"field$i" -> Decoupled(new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) })))

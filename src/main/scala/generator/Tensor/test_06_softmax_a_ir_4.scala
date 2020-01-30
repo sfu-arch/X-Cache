@@ -2,6 +2,7 @@ package dandelion.generator.Tensor
 
 import chisel3._
 import dandelion.fpu._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.interfaces._
@@ -41,7 +42,7 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  //val SharedFPU = Module(new SharedFPU(NumOps = 1, PipeDepth = 32)(t = ftyp))
+  //val SharedFPU = Module(new SharedFPU(NumOps = 1, PipeDepth = 32)(t = fType))
 
   val InputSplitter = Module(new SplitCallNew(List(1, 1, 2)))
   InputSplitter.io.In <> io.in
@@ -118,10 +119,10 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
   val ld_8 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 2, ID = 8, RouteID = 2))
 
   //  %3 = fcmp oge float %1, %2, !UID !13
-  val FPCMP_9 = Module(new FPCompareNode(NumOuts = 1, ID = 9, opCode = ">GT")(t = ftyp))
+  val FPCMP_9 = Module(new FPCompareNode(NumOuts = 1, ID = 9, opCode = ">GT")(t = fType))
 
   //  %4 = fcmp uno float %1, 0.000000e+00, !UID !14
-  val FPCMP_10 = Module(new FPCompareNode(NumOuts = 1, ID = 10, opCode = "=EQ")(t = ftyp))
+  val FPCMP_10 = Module(new FPCompareNode(NumOuts = 1, ID = 10, opCode = "=EQ")(t = fType))
 
   //  %5 = or i1 %3, %4, !UID !15
   val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "or")(sign = false))
@@ -172,8 +173,8 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
   val ld_26 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 26, RouteID = 5))
 
   //  %13 = fsub float %11, %12, !UID !34
-  //val FP_27 = Module(new FPComputeNode(NumOuts = 0, ID = 27, opCode = "fsub")(t = ftyp))
-  val FP_27 = Module(new FPCustomSubtractorNode(NumOuts = 1, ID = 27, opCode = "fsub")(t = ftyp))
+  //val FP_27 = Module(new FPComputeNode(NumOuts = 0, ID = 27, opCode = "fsub")(t = fType))
+  val FP_27 = Module(new FPCustomSubtractorNode(NumOuts = 1, ID = 27, opCode = "fsub")(t = fType))
 
   //  %tmp4 = getelementptr [1 x [8 x float]], [1 x [8 x float]]* %fusion.1, i64 0, i64 0, !UID !35
   val Gep_tmp428 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 28)(ElementSize = 32, ArraySize = List(32)))
@@ -215,8 +216,8 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
   val ld_40 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 40, RouteID = 6))
 
   //  %19 = fadd float %17, %18, !UID !50
-  //val FP_41 = Module(new FPComputeNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = ftyp))
-  val FP_41 = Module(new FPCustomAdderNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = ftyp))
+  //val FP_41 = Module(new FPComputeNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = fType))
+  val FP_41 = Module(new FPCustomAdderNode(NumOuts = 2, ID = 41, opCode = "fadd")(t = fType))
 
   //  %invar.inc6 = add nuw nsw i64 %reduce.1.inner.indvar.reduction_dim.14, 1, !UID !51
   val binaryOp_invar_inc642 = Module(new ComputeNode(NumOuts = 2, ID = 42, opCode = "add")(sign = false))
@@ -255,8 +256,8 @@ class test_06_softmax_a_ir_4DF(implicit p: Parameters) extends test_06_softmax_a
   val ld_53 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 53, RouteID = 8))
 
   //  %24 = fdiv float %22, %23, !UID !65
-  //val FP_54 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 54, RouteID = 0, opCode = "fdiv")(t = ftyp))
-  val FP_54 = Module(new FPCustomDividerNode(NumOuts = 1, ID = 54, opCode = "fdiv")(t = ftyp))
+  //val FP_54 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 54, RouteID = 0, opCode = "fdiv")(t = fType))
+  val FP_54 = Module(new FPCustomDividerNode(NumOuts = 1, ID = 54, opCode = "fdiv")(t = fType))
 
   //  %25 = getelementptr inbounds [8 x float], [8 x float]* %fusion, i64 0, i64 %fusion.indvar.dim.02, !UID !66
   val Gep_55 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 55)(ElementSize = 4, ArraySize = List(32)))

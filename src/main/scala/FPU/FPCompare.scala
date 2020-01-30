@@ -2,11 +2,12 @@ package dandelion.fpu
 
 import chisel3._
 import chisel3.Module
-import dandelion.config._
 import dandelion.interfaces._
 import util._
 import dandelion.node._
 import hardfloat._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
 
 /**
  * [FPComputeNodeIO description]

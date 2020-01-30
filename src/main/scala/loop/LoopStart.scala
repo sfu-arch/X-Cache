@@ -3,6 +3,7 @@ package dandelion.loop
 import chisel3._
 import chisel3.Module
 import chisel3.util._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import util._

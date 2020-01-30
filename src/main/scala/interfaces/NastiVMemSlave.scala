@@ -4,7 +4,8 @@ import chisel3._
 import chisel3.util._
 import dandelion.junctions._
 import dandelion.memory._
-import dandelion.config.{Parameters}
+import dandelion.config._
+import chipsalliance.rocketchip.config._
 import dandelion.accel.CacheParams
 
 

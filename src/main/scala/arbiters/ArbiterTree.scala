@@ -4,8 +4,10 @@ import dandelion.interfaces._
 import chisel3._
 import chisel3.util._
 import chisel3.Module
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
+import dandelion.config._
 
 abstract class AbstractArbiterTree[T <: Data](Nops: Int, gen: T)(implicit p: Parameters)
   extends Module with HasAccelParams {

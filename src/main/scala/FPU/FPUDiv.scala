@@ -1,9 +1,10 @@
 package dandelion.fpu
 
 import chisel3._
-import dandelion.config._
 import util._
 import dandelion.interfaces._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
 
 // Design Doc
 //////////

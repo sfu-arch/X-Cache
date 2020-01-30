@@ -3,7 +3,9 @@ package dandelion.memory.cache
 
 import chisel3._
 import chisel3.util._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
+import dandelion.util._
 import dandelion.interfaces._
 import dandelion.interfaces.axi._
 import dandelion.shell.{ShellKey}
@@ -24,7 +26,7 @@ trait CacheAccelParams extends HasAccelParams {
 }
 
 
-class CacheCPUIO(implicit p: Parameters) extends GenericParameterizedBundle(p) {
+class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBundle(p) {
   val abort = Input(Bool())
   val flush = Input(Bool())
   val flush_done = Output(Bool())

@@ -12,6 +12,7 @@ import dandelion.arbiters._
 import muxes._
 import dandelion.arbiters._
 // Config
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import utility._
 import dandelion.interfaces._
@@ -139,7 +140,7 @@ class ReadTypTableEntry(id: Int)(implicit p: Parameters)
     }
   }
 
-  override val printfSigil = "RD MSHR(" + ID + "," + typesize + ")"
+  override val printfSigil = "RD MSHR(" + ID + "," + typeSize + ")"
   if ((log == true) && (comp contains "RDMSHR")) {
     val x = RegInit(0.U(xlen.W))
     x := x + 1.U

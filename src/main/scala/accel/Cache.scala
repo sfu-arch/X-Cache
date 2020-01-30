@@ -5,11 +5,15 @@ import chisel3._
 import chisel3.util._
 
 import dandelion.junctions._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import NastiConstants._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
+import dandelion.util._
 
-class CacheIO(implicit p: Parameters) extends ParameterizedBundle()(p) {
+class CacheIO(implicit p: Parameters) extends DandelionParameterizedBundle()(p) {
   val abort = Input(Bool())
   val req = Flipped(Decoupled(new MemReq))
   val resp = Output(Valid(new MemResp))
@@ -22,9 +26,9 @@ class CacheModuleIO(implicit p: Parameters) extends AccelBundle()(p) {
 }
 
 trait CacheParams extends HasAccelParams with HasNastiParameters {
-  val nWays = p(AccelConfig).nways // Not used...
-  val nSets = p(AccelConfig).nsets
-  val bBytes = p(AccelConfig).cacheBlockBytes
+  val nWays = p(DandelionConfigKey).nways // Not used...
+  val nSets = p(DandelionConfigKey).nsets
+  val bBytes = p(DandelionConfigKey).cacheBlockBytes
   val bBits = bBytes << 3
   val blen = log2Ceil(bBytes)
   val slen = log2Ceil(nSets)
@@ -35,7 +39,7 @@ trait CacheParams extends HasAccelParams with HasNastiParameters {
   val databeats = bBits / nastiXDataBits
 }
 
-class MetaData(implicit val p: Parameters) extends ParameterizedBundle()(p) with CacheParams {
+class MetaData(implicit val p: Parameters) extends DandelionParameterizedBundle()(p) with CacheParams {
   val tag = UInt(taglen.W)
 }
 

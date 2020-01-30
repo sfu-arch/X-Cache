@@ -1,22 +1,14 @@
 package dandelion.dataflow.tests
 
-/**
-  * Created by vnaveen0 on 26/6/17.
-  */
-
 import chisel3._
 import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
-import org.scalatest.{FlatSpec, Matchers}
-import muxes._
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 import dandelion.control.{BasicBlockNoMaskFastNode, BasicBlockNode}
 import util._
 import dandelion.interfaces._
-import regfile._
 import dandelion.node._
+import dandelion.config._
 
 
 

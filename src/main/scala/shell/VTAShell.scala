@@ -21,7 +21,7 @@ package dandelion.shell
 
 import chisel3._
 import dandelion.interfaces.axi._
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 
 /** Shell parameters. */
 case class ShellParams(

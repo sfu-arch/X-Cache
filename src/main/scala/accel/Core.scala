@@ -3,8 +3,12 @@ package dandelion.accel
 import chisel3._
 import chisel3.util._
 import utility.UniformPrintfs
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
+
 
 /**
   * The Core class contains the dataflow logic for the accelerator.

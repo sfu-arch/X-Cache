@@ -3,9 +3,11 @@ package dandelion.concurrent
 import chisel3._
 import chisel3.util._
 import chisel3.Module
-import dandelion.config.{HasAccelParams, Parameters}
 import dandelion.interfaces._
 import dandelion.node._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
+import dandelion.util._
 import utility.UniformPrintfs
 
 class SyncIO(NumOuts: Int, NumInc: Int, NumDec: Int)(implicit p: Parameters)

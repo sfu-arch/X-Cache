@@ -21,7 +21,9 @@ package dandelion.shell
 
 import chisel3._
 import chisel3.util._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
+import dandelion.util._
 import dandelion.interfaces.axi._
 
 /** VCR parameters.
@@ -37,7 +39,7 @@ case class VCRParams() {
 }
 
 /** VCRBase. Parametrize base class. */
-abstract class VCRBase(implicit p: Parameters) extends ParameterizedBundle()(p)
+abstract class VCRBase(implicit p: Parameters) extends DandelionParameterizedBundle()(p)
 
 /** VCRMaster.
   *

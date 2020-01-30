@@ -4,6 +4,7 @@ import dandelion.accel._
 import chisel3.iotesters._
 import chisel3.util._
 import chisel3.{Module, _}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.memory._
@@ -208,7 +209,7 @@ class bbgemmTest01[T <: bbgemmMainIO](c: T) extends PeekPokeTester(c) {
 import java.io.{File, PrintWriter}
 
 class bbgemmTester1 extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig(AccelParams(dataLen = 32, printLog = true))
+  implicit val p = new WithAccelConfig(DandelionAccelParams(dataLen = 32, printLog = true))
 
   it should "Check that bbgemm works correctly." in {
     // iotester flags:

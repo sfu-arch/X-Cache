@@ -4,9 +4,11 @@ import chisel3._
 import chisel3.MultiIOModule
 import chisel3.Module
 import utility.UniformPrintfs
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 import dandelion.interfaces.{VariableDecoupledData, _}
 import util._
+import dandelion.config._
+
 
 class RetNodeIO(val retTypes: Seq[Int])(implicit p: Parameters)
   extends Bundle {

@@ -1,25 +1,17 @@
 package dandelion.generator.pollybench
 
 import dandelion.fpu._
-import dandelion.accel._
-import dandelion.arbiters._
 import chisel3._
-import chisel3.util._
-import chisel3.Module._
-import chisel3.testers._
-import chisel3.iotesters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
 import dandelion.memory._
-import muxes._
 import dandelion.node._
-import org.scalatest._
-import regfile._
-import dandelion.memory.stack._
 import util._
+
 
 
   /* ================================================================== *
@@ -50,7 +42,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val SharedFPU = Module(new SharedFPU(NumOps = 2, PipeDepth = 32)(t = ftyp))
+  val SharedFPU = Module(new SharedFPU(NumOps = 2, PipeDepth = 32)(t = fType))
 
   val InputSplitter = Module(new SplitCallNew(List(2, 3, 1, 2)))
   InputSplitter.io.In <> io.in
@@ -148,7 +140,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val ld_9 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 9, RouteID = 1))
 
   //  %12 = fadd double %10, %11, !dbg !83, !UID !85
-  val FP_10 = Module(new FPComputeNode(NumOuts = 1, ID = 10, opCode = "fadd")(t = ftyp))
+  val FP_10 = Module(new FPComputeNode(NumOuts = 1, ID = 10, opCode = "fadd")(t = fType))
 
   //  store double %12, double* %7, align 8, !dbg !83, !tbaa !67, !UID !86
   val st_11 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 11, RouteID = 1))
@@ -166,7 +158,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val ld_15 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 15, RouteID = 2))
 
   //  %17 = fdiv double %16, %0, !dbg !95, !UID !97
-  val FP_16 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 16, RouteID = 0, opCode = "fdiv")(t = ftyp))
+  val FP_16 = Module(new FPDivSqrtNode(NumOuts = 1, ID = 16, RouteID = 0, opCode = "fdiv")(t = fType))
 
   //  store double %17, double* %7, align 8, !dbg !95, !tbaa !67, !UID !98
   val st_17 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 17, RouteID = 2))
@@ -208,7 +200,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val ld_29 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 29, RouteID = 4))
 
   //  %28 = fsub double %27, %26, !dbg !123, !UID !125
-  val FP_30 = Module(new FPComputeNode(NumOuts = 1, ID = 30, opCode = "fsub")(t = ftyp))
+  val FP_30 = Module(new FPComputeNode(NumOuts = 1, ID = 30, opCode = "fsub")(t = fType))
 
   //  store double %28, double* %tmp3, align 8, !dbg !123, !tbaa !67, !UID !126
   val st_31 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 31, RouteID = 3))
@@ -232,7 +224,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val br_37 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 37))
 
   //  %35 = fadd double %0, -1.000000e+00, !UID !144
-  val FP_38 = Module(new FPComputeNode(NumOuts = 1, ID = 38, opCode = "fadd")(t = ftyp))
+  val FP_38 = Module(new FPComputeNode(NumOuts = 1, ID = 38, opCode = "fadd")(t = fType))
 
   //  br label %36, !dbg !145, !UID !147, !BB_UID !148
   val br_39 = Module(new UBranchNode(ID = 39))
@@ -280,13 +272,13 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val ld_53 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 53, RouteID = 6))
 
   //  %44 = fmul double %42, %43, !dbg !177, !UID !178
-  val FP_54 = Module(new FPComputeNode(NumOuts = 1, ID = 54, opCode = "fmul")(t = ftyp))
+  val FP_54 = Module(new FPComputeNode(NumOuts = 1, ID = 54, opCode = "fmul")(t = fType))
 
   //  %45 = load double, double* %tmp5, align 8, !dbg !179, !tbaa !67, !UID !180
   val ld_55 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 55, RouteID = 7))
 
   //  %46 = fadd double %45, %44, !dbg !179, !UID !181
-  val FP_56 = Module(new FPComputeNode(NumOuts = 1, ID = 56, opCode = "fadd")(t = ftyp))
+  val FP_56 = Module(new FPComputeNode(NumOuts = 1, ID = 56, opCode = "fadd")(t = fType))
 
   //  store double %46, double* %tmp5, align 8, !dbg !179, !tbaa !67, !UID !182
   val st_57 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 57, RouteID = 5))
@@ -304,7 +296,7 @@ class covarianceDF(implicit p: Parameters) extends covarianceDFIO()(p) {
   val ld_61 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 61, RouteID = 8))
 
   //  %51 = fdiv double %50, %35, !dbg !191, !UID !193
-  val FP_62 = Module(new FPDivSqrtNode(NumOuts = 2, ID = 62, RouteID = 1, opCode = "fdiv")(t = ftyp))
+  val FP_62 = Module(new FPDivSqrtNode(NumOuts = 2, ID = 62, RouteID = 1, opCode = "fdiv")(t = fType))
 
   //  store double %51, double* %tmp5, align 8, !dbg !191, !tbaa !67, !UID !194
   val st_63 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 63, RouteID = 6))

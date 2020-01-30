@@ -2,9 +2,11 @@
 package dandelion.accel
 
 import chisel3._
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 import dandelion.junctions._
 import dandelion.interfaces._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
 
 abstract class AcceleratorIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(

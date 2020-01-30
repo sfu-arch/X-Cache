@@ -5,6 +5,7 @@ import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.concurrent.{TaskController, TaskControllerIO}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.memory._
 import dandelion.accel._
@@ -190,7 +191,7 @@ class conv2DSerialSerialTester1 extends FlatSpec with Matchers {
   val coeffsAddrBegin = 2 * BYTE_SIZE * (IMG_SIZE * IMG_SIZE)
   val coeffsAddr = List.range(coeffsAddrBegin, coeffsAddrBegin + (BYTE_SIZE * coeffsData.length), BYTE_SIZE)
 
-  implicit val p = new WithAccelConfig(AccelParams(taskLen= 6))
+  implicit val p = new WithAccelConfig(DandelionAccelParams(taskLen= 6))
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

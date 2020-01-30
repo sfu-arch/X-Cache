@@ -3,6 +3,7 @@ package dandelion.control
 import chisel3._
 import chisel3.Module
 import utility.UniformPrintfs
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import util._

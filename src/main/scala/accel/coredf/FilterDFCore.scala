@@ -2,6 +2,7 @@ package dandelion.accel.coredf
 
 import chisel3._
 import dandelion.accel.CoreT
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.dataflow.filter._
 

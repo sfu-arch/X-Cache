@@ -2,10 +2,12 @@ package dandelion.node
 
 import chisel3._
 import chisel3.Module
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces.{ControlBundle, DataBundle}
 import util._
 import utility.UniformPrintfs
+import dandelion.config._
 
 class ZextNodeIO(val src: Int, val des: Int, val nout: Int)
                 (implicit p: Parameters) extends AccelBundle()(p) {

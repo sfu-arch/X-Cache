@@ -3,10 +3,11 @@ package dandelion.dataflow
 import chisel3._
 import chisel3.util._
 import dandelion.node._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
-import dandelion.arbiters._
-import dandelion.memory.{ReadWriteArbiter, _}
+import dandelion.memory._
+import dandelion.config._
 
 class TestCacheDataFlow(implicit val p: Parameters) extends Module with HasAccelParams {
 

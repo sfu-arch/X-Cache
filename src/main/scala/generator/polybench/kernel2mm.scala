@@ -1,24 +1,15 @@
 package dandelion.generator.pollybench
 
-import dandelion.fpu._
-import dandelion.accel._
-import dandelion.arbiters._
 import chisel3._
-import chisel3.util._
-import chisel3.Module._
-import chisel3.testers._
-import chisel3.iotesters._
+import dandelion.fpu._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
 import dandelion.memory._
-import muxes._
 import dandelion.node._
-import org.scalatest._
-import regfile._
-import dandelion.memory.stack._
 import util._
 
 
@@ -146,7 +137,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val ld_11 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 11, RouteID = 0))
 
   //  %15 = fmul double %14, %0, !dbg !114, !UID !115
-  val FP_12 = Module(new FPComputeNode(NumOuts = 1, ID = 12, opCode = "fmul")(t = ftyp))
+  val FP_12 = Module(new FPComputeNode(NumOuts = 1, ID = 12, opCode = "fmul")(t = fType))
 
   //  %tmp4 = getelementptr [18 x double], [18 x double]* %4, i64 %13, !UID !116
   val Gep_tmp413 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 13)(ElementSize = 8, ArraySize = List()))
@@ -158,13 +149,13 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val ld_15 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 15, RouteID = 1))
 
   //  %17 = fmul double %15, %16, !dbg !120, !UID !121
-  val FP_16 = Module(new FPComputeNode(NumOuts = 1, ID = 16, opCode = "fmul")(t = ftyp))
+  val FP_16 = Module(new FPComputeNode(NumOuts = 1, ID = 16, opCode = "fmul")(t = fType))
 
   //  %18 = load double, double* %tmp1, align 8, !dbg !122, !tbaa !98, !UID !123
   val ld_17 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 17, RouteID = 2))
 
   //  %19 = fadd double %18, %17, !dbg !122, !UID !124
-  val FP_18 = Module(new FPComputeNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = ftyp))
+  val FP_18 = Module(new FPComputeNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = fType))
 
   //  store double %19, double* %tmp1, align 8, !dbg !122, !tbaa !98, !UID !125
   val st_19 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 19, RouteID = 1))
@@ -218,7 +209,7 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val ld_35 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 35, RouteID = 3))
 
   //  %34 = fmul double %33, %1, !dbg !162, !UID !166
-  val FP_36 = Module(new FPComputeNode(NumOuts = 1, ID = 36, opCode = "fmul")(t = ftyp))
+  val FP_36 = Module(new FPComputeNode(NumOuts = 1, ID = 36, opCode = "fmul")(t = fType))
 
   //  store double %34, double* %tmp7, align 8, !dbg !162, !tbaa !98, !UID !167
   val st_37 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 37, RouteID = 2))
@@ -248,13 +239,13 @@ class k2mmDF(implicit p: Parameters) extends k2mmDFIO()(p) {
   val ld_45 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 45, RouteID = 5))
 
   //  %39 = fmul double %37, %38, !dbg !182, !UID !183
-  val FP_46 = Module(new FPComputeNode(NumOuts = 1, ID = 46, opCode = "fmul")(t = ftyp))
+  val FP_46 = Module(new FPComputeNode(NumOuts = 1, ID = 46, opCode = "fmul")(t = fType))
 
   //  %40 = load double, double* %tmp7, align 8, !dbg !184, !tbaa !98, !UID !185
   val ld_47 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 47, RouteID = 6))
 
   //  %41 = fadd double %40, %39, !dbg !184, !UID !186
-  val FP_48 = Module(new FPComputeNode(NumOuts = 1, ID = 48, opCode = "fadd")(t = ftyp))
+  val FP_48 = Module(new FPComputeNode(NumOuts = 1, ID = 48, opCode = "fadd")(t = fType))
 
   //  store double %41, double* %tmp7, align 8, !dbg !184, !tbaa !98, !UID !187
   val st_49 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 49, RouteID = 3))

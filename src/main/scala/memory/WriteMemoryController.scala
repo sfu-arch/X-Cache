@@ -4,14 +4,14 @@ package dandelion.memory
 import chisel3._
 import chisel3.Module
 import chisel3.util._
-import org.scalacheck.Prop.False
+import dandelion.config._
 
 // Modules needed
 import dandelion.arbiters._
 import muxes._
 
 // Config
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 import utility._
 import dandelion.interfaces._
 import dandelion.node._

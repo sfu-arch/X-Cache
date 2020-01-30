@@ -9,6 +9,7 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupl
 import org.scalatest.{Matchers, FlatSpec}
 
 import dandelion.node._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 
 class ChainPeekPoker(df: Chain)(implicit p: Parameters) extends PeekPokeTester(df)  {

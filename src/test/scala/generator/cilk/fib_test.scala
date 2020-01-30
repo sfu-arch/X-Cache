@@ -8,6 +8,7 @@ import dandelion.concurrent.{TaskController,TaskControllerIO}
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import util._

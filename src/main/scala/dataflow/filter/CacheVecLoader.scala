@@ -5,10 +5,12 @@ import chisel3._
 import chisel3.util._
 
 import dandelion.node._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.accel.{CacheIO}
 import dandelion.memory._
+import dandelion.config._
 
 class CacheVecLoader(FilterSize : Int)(implicit val p: Parameters) extends Module with HasAccelParams {
 

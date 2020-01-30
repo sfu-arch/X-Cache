@@ -2,6 +2,7 @@ package dandelion.memory
 
 import chisel3._
 import chisel3.Module
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import util._
 import dandelion.interfaces._
@@ -106,7 +107,7 @@ class UnifiedController(ID: Int,
 
 
   /// Printf debugging
-  override val printfSigil = "Unified: " + ID + " Type " + (typesize)
+  override val printfSigil = "Unified: " + ID + " Type " + (typeSize)
 
   //  verb match {
   //    case "high"  => {printf(p" .addr: $cacheReq_R.addr")}

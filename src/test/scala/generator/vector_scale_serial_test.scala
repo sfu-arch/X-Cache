@@ -5,6 +5,7 @@ import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
 import dandelion.concurrent.{TaskController,TaskControllerIO}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.memory._
 import dandelion.accel._
@@ -146,7 +147,7 @@ class vectorScaleSerialTester1 extends FlatSpec with Matchers {
     255, 65, 255, 255, 255, 255)
 
 
-  implicit val p = new WithAccelConfig(AccelParams(dataLen = 6))
+  implicit val p = new WithAccelConfig(DandelionAccelParams(dataLen = 6))
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

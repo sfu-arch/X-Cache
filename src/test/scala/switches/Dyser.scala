@@ -9,6 +9,7 @@ import dandelion.interfaces._
 import chisel3._
 import chisel3.util._
 import dandelion.accel._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import chisel3.iotesters.PeekPokeTester
 import org.scalatest.{FlatSpec, Matchers}

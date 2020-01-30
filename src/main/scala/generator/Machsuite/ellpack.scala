@@ -8,6 +8,7 @@ import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.interfaces._
@@ -19,6 +20,7 @@ import dandelion.node._
 import org.scalatest._
 import regfile._
 import dandelion.memory.stack._
+import dandelion.config._
 import util._
 
 
@@ -134,10 +136,10 @@ class ellpackDF(implicit p: Parameters) extends ellpackDFIO()(p) {
   val ld_15 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 15, RouteID = 3))
 
   //  %21 = fmul double %15, %20, !dbg !125, !UID !126
-  val FP_16 = Module(new FPComputeNode(NumOuts = 1, ID = 16, opCode = "fmul")(t = ftyp))
+  val FP_16 = Module(new FPComputeNode(NumOuts = 1, ID = 16, opCode = "fmul")(t = fType))
 
   //  %22 = fadd double %12, %21, !dbg !128, !UID !129
-  val FP_17 = Module(new FPComputeNode(NumOuts = 2, ID = 17, opCode = "fadd")(t = ftyp))
+  val FP_17 = Module(new FPComputeNode(NumOuts = 2, ID = 17, opCode = "fadd")(t = fType))
 
   //  %23 = add nuw nsw i64 %11, 1, !dbg !130, !UID !131
   val binaryOp_18 = Module(new ComputeNode(NumOuts = 2, ID = 18, opCode = "add")(sign = false))

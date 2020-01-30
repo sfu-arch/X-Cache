@@ -2,12 +2,13 @@ package dandelion.interfaces
 
 import chisel3._
 import chisel3.util._
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 import dandelion.node.{IsAlias}
 import utility._
 import Constants._
 import utility.UniformPrintfs
-
+import chipsalliance.rocketchip.config._
+import dandelion.config._
 
 /*===========================================================
 =            Handshaking IO definitions                     =
@@ -42,7 +43,7 @@ import utility.UniformPrintfs
   *
   */
 class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)(implicit p: Parameters)
-  extends AccelBundle( )(p) {
+  extends AccelBundle with HasAccelParams {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Output IO

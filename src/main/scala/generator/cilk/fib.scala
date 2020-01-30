@@ -7,6 +7,7 @@ import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.concurrent._
@@ -20,6 +21,7 @@ import dandelion.loop._
 import dandelion.accel._
 import dandelion.node._
 import dandelion.junctions._
+import dandelion.config._
 
 
 /**
@@ -877,7 +879,7 @@ import java.io.{File, FileWriter}
 object fibMain extends App {
   val dir = new File("RTL/fibTop");
   dir.mkdirs
-  implicit val p = new WithAccelConfig(AccelParams(taskLen = 11, printLog = false))
+  implicit val p = new WithAccelConfig(DandelionAccelParams(taskLen = 11, printLog = false))
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new fibTop(4)(p)))
 
   val verilogFile = new File(dir, s"/${chirrtl.main}.v")

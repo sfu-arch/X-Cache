@@ -4,11 +4,13 @@ import chisel3._
 import chisel3.Module
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import util._
 import dandelion.interfaces._
 import dandelion.memory._
 import dandelion.accel._
+import dandelion.generator.dfTypee.mataddDF
 
 
 class mataddMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {

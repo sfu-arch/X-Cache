@@ -8,7 +8,7 @@
 // import org.scalatest.{Matchers, FlatSpec} 
 
 // import muxes._
-// import dandelion.config._
+// import chipsalliance.rocketchip.config._
 // import util._
 // import dandelion.interfaces._
 // import regfile._

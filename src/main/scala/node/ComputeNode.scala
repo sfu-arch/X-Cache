@@ -1,15 +1,12 @@
 package dandelion.node
 
 import chisel3._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
-import chisel3.Module
-import chisel3.testers._
 import chisel3.util._
-import org.scalatest.{FlatSpec, Matchers}
-import dandelion.config._
+import chisel3.Module
 import dandelion.interfaces._
 import util._
-import utility.UniformPrintfs
+import chipsalliance.rocketchip.config._
+import dandelion.config._
 
 
 class ComputeNodeIO(NumOuts: Int)

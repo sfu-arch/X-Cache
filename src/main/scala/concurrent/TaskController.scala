@@ -2,7 +2,9 @@ package dandelion.concurrent
 
 import chisel3.{Flipped, Module, _}
 import chisel3.util._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
+import dandelion.util._
 //import dandelion.Parameters
 import dandelion.interfaces._
 import dandelion.node._

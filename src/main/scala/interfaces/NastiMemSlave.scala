@@ -3,7 +3,8 @@ package dandelion.interfaces
 import chisel3._
 import chisel3.util._
 import dandelion.junctions._
-import dandelion.config.{AccelBundle, Parameters}
+import dandelion.config._
+import chipsalliance.rocketchip.config._
 import dandelion.accel.CacheParams
 
 class InitParams(implicit p: Parameters) extends AccelBundle( )(p) with CacheParams {

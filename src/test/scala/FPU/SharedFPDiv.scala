@@ -4,6 +4,8 @@ import chisel3._
 import chisel3.iotesters._
 import org.scalatest.{Matchers, FlatSpec}
 
+import chipsalliance.rocketchip.config._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 
 
@@ -25,9 +27,9 @@ class SharedFPUTests(c: SharedFPU)(implicit p: Parameters) extends PeekPokeTeste
 
 
 class SharedFPUTester extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig(AccelParams(dataLen = 16))
+  implicit val p = new WithAccelConfig(DandelionAccelParams(dataLen = 16))
   it should "Memory Controller tester" in {
-    chisel3.iotesters.Driver(() => new SharedFPU(NumOps = 2, PipeDepth = 5)(t = p(AccelConfig).Ftyp)) {
+    chisel3.iotesters.Driver(() => new SharedFPU(NumOps = 2, PipeDepth = 5)(t = p(DandelionConfigKey).fType)) {
       c => new SharedFPUTests(c)
     } should be(true)
   }

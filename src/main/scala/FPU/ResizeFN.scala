@@ -2,10 +2,11 @@ package dandelion.fpu
 
 import chisel3._
 import chisel3.Module
-import dandelion.config._
 import dandelion.interfaces._
 import hardfloat._
 import util._
+import chipsalliance.rocketchip.config._
+import dandelion.config._
 
 class FNtoFNNodeIO(Src: FType, Des: FType,NumOuts: Int)
                    (implicit p: Parameters)

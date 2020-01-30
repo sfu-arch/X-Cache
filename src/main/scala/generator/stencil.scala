@@ -7,6 +7,7 @@ import chisel3.testers._
 import chisel3.iotesters._
 import dandelion.accel._
 import dandelion.arbiters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.fpu._
@@ -20,6 +21,8 @@ import muxes._
 import org.scalatest._
 import regfile._
 import util._
+import dandelion.config._
+
 
 
   /* ================================================================== *

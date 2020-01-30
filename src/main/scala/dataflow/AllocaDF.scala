@@ -3,15 +3,13 @@ package dandelion.dataflow
 import chisel3._
 import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
-import org.scalatest.{FlatSpec, Matchers}
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 import dandelion.control.{BasicBlockNoMaskFastNode, BasicBlockNode}
 import util._
 import dandelion.interfaces._
 import dandelion.node._
 import dandelion.memory.stack._
+import dandelion.config._
 
 
 

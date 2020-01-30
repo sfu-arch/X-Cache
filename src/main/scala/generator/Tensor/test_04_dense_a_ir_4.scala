@@ -2,6 +2,7 @@ package dandelion.generator.Tensor
 
 import chisel3._
 import dandelion.fpu._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.interfaces._
@@ -11,6 +12,7 @@ import dandelion.memory._
 import dandelion.node._
 import dandelion.memory.stack._
 import util._
+import dandelion.config._
 
 
   /* ================================================================== *
@@ -128,13 +130,13 @@ class test_04_dense_a_ir_4DF(implicit p: Parameters) extends test_04_dense_a_ir_
   val ld_16 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 16, RouteID = 5))
 
   //  %6 = fmul float %.pre10, %.pre, !UID !22
-  //val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fmul")(t = ftyp))
-  //val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fmul")(t = ftyp))
-  val FP_17 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 15, opCode = "fmul")(t = ftyp))
+  //val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fmul")(t = fType))
+  //val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fmul")(t = fType))
+  val FP_17 = Module(new FPCustomMultiplierNode(NumOuts = 1, ID = 15, opCode = "fmul")(t = fType))
 
   //  %7 = fadd float %6, 0.000000e+00, !UID !23
-  //val FP_18 = Module(new FPComputeNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = ftyp))
-  val FP_18 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = ftyp))
+  //val FP_18 = Module(new FPComputeNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = fType))
+  val FP_18 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 18, opCode = "fadd")(t = fType))
 
   //  %tmp2 = getelementptr [1 x [8 x float]], [1 x [8 x float]]* %dot, i64 0, i64 0, !UID !24
   val Gep_tmp219 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 19)(ElementSize = 32, ArraySize = List(32)))
@@ -182,8 +184,8 @@ class test_04_dense_a_ir_4DF(implicit p: Parameters) extends test_04_dense_a_ir_
   val ld_33 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 33, RouteID = 8))
 
   //  %13 = fadd float %11, %12, !UID !41
-  //val FP_34 = Module(new FPComputeNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = ftyp))
-  val FP_34 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = ftyp))
+  //val FP_34 = Module(new FPComputeNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = fType))
+  val FP_34 = Module(new FPCustomAdderNode(NumOuts = 1, ID = 34, opCode = "fadd")(t = fType))
 
   //  %14 = getelementptr inbounds [8 x float], [8 x float]* %fusion, i64 0, i64 %fusion.indvar.dim.02, !UID !42
   val Gep_35 = Module(new GepNode(NumIns = 2, NumOuts = 1, ID = 35)(ElementSize = 4, ArraySize = List(32)))

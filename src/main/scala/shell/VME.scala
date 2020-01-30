@@ -21,7 +21,9 @@ package dandelion.shell
 
 import chisel3._
 import chisel3.util._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
+import dandelion.util._
 import dandelion.interfaces.axi._
 
 /** VME parameters.
@@ -39,7 +41,7 @@ case class VMEParams() {
 }
 
 /** VMEBase. Parametrize base class. */
-abstract class VMEBase(implicit p: Parameters) extends ParameterizedBundle()(p)
+abstract class VMEBase(implicit p: Parameters) extends DandelionParameterizedBundle()(p)
 
 /** VMECmd.
   *

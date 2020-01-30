@@ -3,16 +3,10 @@ package muxes
 import scala.math._
 import chisel3._
 import chisel3.Module
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import util._
 import dandelion.interfaces._
-
-/**
-  * Created by vnaveen0 on 7/9/17.
-  */
-
-//class ReadReqT(implicit p: Parameters) extends ReadReq with ValidT {}
-
 
 class  TestMux(NReads: Int)(implicit val p: Parameters) extends Module with HasAccelParams {
 

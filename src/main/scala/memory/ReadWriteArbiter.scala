@@ -10,6 +10,7 @@ import dandelion.arbiters._
 import muxes._
 
 // Config
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import utility._
 import dandelion.interfaces._

@@ -11,7 +11,7 @@ import dandelion.arbiters._
 import muxes._
 
 // Config
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 import utility._
 import dandelion.interfaces._
 import dandelion.node._
@@ -159,7 +159,7 @@ class WriteTypTableEntry
     }
   }
 
-  override val printfSigil = "WR MSHR(" + ID + "," + typesize + ")"
+  override val printfSigil = "WR MSHR(" + ID + "," + typeSize + ")"
   if ((log == true) && (comp contains "WRMSHR")) {
     val x = RegInit(0.U(xlen.W))
     x := x + 1.U

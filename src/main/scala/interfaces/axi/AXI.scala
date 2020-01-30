@@ -21,7 +21,9 @@ package dandelion.interfaces.axi
 
 import chisel3._
 import chisel3.util._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
+import dandelion.util.DandelionGenericParameterizedBundle
 
 case class AXIParams(
                       coherent: Boolean = false,
@@ -54,7 +56,7 @@ case class AXIParams(
   val regionConst = 0
 }
 
-abstract class AXIBase(params: AXIParams) extends GenericParameterizedBundle(params)
+abstract class AXIBase(params: AXIParams) extends DandelionGenericParameterizedBundle(params)
 
 // AXILite
 

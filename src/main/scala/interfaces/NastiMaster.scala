@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import dandelion.junctions._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 
 class NastiMasterReq(implicit p: Parameters) extends AccelBundle()(p) {

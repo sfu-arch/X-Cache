@@ -5,6 +5,8 @@ import chisel3.util._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
 import org.scalatest.{Matchers, FlatSpec}
 
+import chipsalliance.rocketchip.config._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 
 class FPDivNodeTester(c: FPDivSqrtNode) extends PeekPokeTester(c) {

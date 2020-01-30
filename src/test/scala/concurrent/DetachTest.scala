@@ -5,6 +5,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 
 

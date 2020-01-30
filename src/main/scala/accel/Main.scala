@@ -4,6 +4,7 @@ package dandelion.accel
 import java.io.{File, FileWriter}
 
 import dandelion.accel.coredf.{TestCacheDF, FilterDFCore, VecFilterDFCore, VecFilterNoKernDFCore}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 
 object CoreMain extends App {

@@ -8,6 +8,7 @@ import chisel3.util._
 import chisel3.Module._
 import chisel3.testers._
 import chisel3.iotesters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.interfaces._
@@ -173,13 +174,13 @@ class k3mmDF(implicit p: Parameters) extends k3mmDFIO()(p) {
   val ld_14 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 14, RouteID = 1))
 
   //  %16 = fmul double %14, %15, !dbg !130, !UID !131
-  val FP_15 = Module(new FPComputeNode(NumOuts = 1, ID = 15, opCode = "fmul")(t = ftyp))
+  val FP_15 = Module(new FPComputeNode(NumOuts = 1, ID = 15, opCode = "fmul")(t = fType))
 
   //  %17 = load double, double* %tmp1, align 8, !dbg !132, !tbaa !110, !UID !133
   val ld_16 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 16, RouteID = 2))
 
   //  %18 = fadd double %17, %16, !dbg !132, !UID !134
-  val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fadd")(t = ftyp))
+  val FP_17 = Module(new FPComputeNode(NumOuts = 1, ID = 17, opCode = "fadd")(t = fType))
 
   //  store double %18, double* %tmp1, align 8, !dbg !132, !tbaa !110, !UID !135
   val st_18 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 18, RouteID = 1))
@@ -257,13 +258,13 @@ class k3mmDF(implicit p: Parameters) extends k3mmDFIO()(p) {
   val ld_42 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 42, RouteID = 4))
 
   //  %36 = fmul double %34, %35, !dbg !190, !UID !191
-  val FP_43 = Module(new FPComputeNode(NumOuts = 1, ID = 43, opCode = "fmul")(t = ftyp))
+  val FP_43 = Module(new FPComputeNode(NumOuts = 1, ID = 43, opCode = "fmul")(t = fType))
 
   //  %37 = load double, double* %tmp7, align 8, !dbg !192, !tbaa !110, !UID !193
   val ld_44 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 44, RouteID = 5))
 
   //  %38 = fadd double %37, %36, !dbg !192, !UID !194
-  val FP_45 = Module(new FPComputeNode(NumOuts = 1, ID = 45, opCode = "fadd")(t = ftyp))
+  val FP_45 = Module(new FPComputeNode(NumOuts = 1, ID = 45, opCode = "fadd")(t = fType))
 
   //  store double %38, double* %tmp7, align 8, !dbg !192, !tbaa !110, !UID !195
   val st_46 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 46, RouteID = 3))
@@ -341,13 +342,13 @@ class k3mmDF(implicit p: Parameters) extends k3mmDFIO()(p) {
   val ld_70 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 70, RouteID = 7))
 
   //  %56 = fmul double %54, %55, !dbg !251, !UID !252
-  val FP_71 = Module(new FPComputeNode(NumOuts = 1, ID = 71, opCode = "fmul")(t = ftyp))
+  val FP_71 = Module(new FPComputeNode(NumOuts = 1, ID = 71, opCode = "fmul")(t = fType))
 
   //  %57 = load double, double* %tmp13, align 8, !dbg !253, !tbaa !110, !UID !254
   val ld_72 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 72, RouteID = 8))
 
   //  %58 = fadd double %57, %56, !dbg !253, !UID !255
-  val FP_73 = Module(new FPComputeNode(NumOuts = 1, ID = 73, opCode = "fadd")(t = ftyp))
+  val FP_73 = Module(new FPComputeNode(NumOuts = 1, ID = 73, opCode = "fadd")(t = fType))
 
   //  store double %58, double* %tmp13, align 8, !dbg !253, !tbaa !110, !UID !256
   val st_74 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 74, RouteID = 5))

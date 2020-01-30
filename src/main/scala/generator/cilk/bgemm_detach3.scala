@@ -1,25 +1,14 @@
 package dandelion.generator.cilk
 
-import dandelion.fpu._
-import dandelion.accel._
-import dandelion.arbiters._
 import chisel3._
-import chisel3.util._
-import chisel3.Module._
-import chisel3.testers._
-import chisel3.iotesters._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
-import dandelion.concurrent._
 import dandelion.control._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
 import dandelion.memory._
-import muxes._
 import dandelion.node._
-import org.scalatest._
-import regfile._
-import dandelion.memory.stack._
 import util._
 
 

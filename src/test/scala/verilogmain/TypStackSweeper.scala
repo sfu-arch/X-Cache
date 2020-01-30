@@ -8,6 +8,7 @@ import chisel3.iotesters.{ ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoup
 import org.scalatest.{ Matchers, FlatSpec }
 import scala.util.control.Breaks._
 
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.arbiters._
 import dandelion.memory._

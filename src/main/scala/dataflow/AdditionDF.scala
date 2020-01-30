@@ -7,12 +7,13 @@ import chisel3.testers._
 import chisel3.iotesters.{ChiselFlatSpec, Driver, OrderedDecoupledHWIOTester, PeekPokeTester}
 import org.scalatest.{FlatSpec, Matchers}
 import muxes._
-import dandelion.config._
+import chipsalliance.rocketchip.config._
 import dandelion.control.{BasicBlockNoMaskFastNode, BasicBlockNode}
 import util._
 import dandelion.interfaces._
 import regfile._
 import dandelion.node._
+import dandelion.config._
 
 
 /**

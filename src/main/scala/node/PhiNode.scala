@@ -6,11 +6,13 @@ import chisel3.Module
 import chisel3.testers._
 import chisel3.util._
 import org.scalatest.{FlatSpec, Matchers}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import muxes._
 import util._
 import utility.UniformPrintfs
+import dandelion.config._
 
 class PhiNodeIO(NumInputs: Int, NumOuts: Int)
                (implicit p: Parameters)

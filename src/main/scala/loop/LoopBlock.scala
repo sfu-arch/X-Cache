@@ -2,12 +2,15 @@ package dandelion.loop
 
 import chisel3.{Flipped, Module, _}
 import chisel3.util.{Decoupled, _}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import utility.Constants._
 import dandelion.junctions._
 import dandelion.node._
 import utility.UniformPrintfs
+import dandelion.config._
+
 
 /**
   * @brief LoopBlockIO class definition

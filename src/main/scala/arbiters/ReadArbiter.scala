@@ -1,24 +1,13 @@
 package dandelion.arbiters
 import scala.math._
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
-import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester, OrderedDecoupledHWIOTester}
-import org.scalatest.{Matchers, FlatSpec}
-
 import regfile._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import util._
 import dandelion.interfaces._
 import muxes._
-
-//XXX
-//TODO put VEC insid Outputs
-//OUTPUT(VECXXX)
-//
-//TODO Make readOut and readValid as a bundle
-//
 
 
 /**

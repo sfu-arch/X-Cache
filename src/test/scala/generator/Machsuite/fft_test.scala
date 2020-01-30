@@ -5,6 +5,7 @@ import dandelion.accel._
 import chisel3.iotesters._
 import chisel3.util._
 import chisel3.{Module, _}
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.memory._

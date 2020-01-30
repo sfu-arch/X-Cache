@@ -13,6 +13,7 @@ import scala.collection.immutable
 
 
 // Config
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import utility._
 import dandelion.interfaces._
