@@ -35,8 +35,8 @@ def javacOptionsVersion(scalaVersion: String): Seq[String] = {
   }
 }
 
-scalaVersion := "2.12.8"
-crossScalaVersions := Seq("2.12.8", "2.11.12")
+scalaVersion := "2.12.10"
+crossScalaVersions := Seq("2.12.10","2.12.8", "2.11.12")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
@@ -44,7 +44,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "edu.berkeley.cs" %% "chisel3" % "3.3-SNAPSHOT",
-  "edu.sfu.cs" %% "dandelion-lib" % "0.1-SNAPSHOT"
+  "edu.sfu.cs" %% "dandelion" % "1.0-SNAPSHOT"
 )
 
 scalacOptions ++= scalacOptionsVersion(scalaVersion.value)
