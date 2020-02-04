@@ -69,7 +69,7 @@ class HandShakingIONPS[T <: Data](val NumOuts: Int)(gen: T)(implicit p: Paramete
 class HandShakingIOPS[T <: Data](val NumPredOps: Int,
                                  val NumSuccOps: Int,
                                  val NumOuts: Int)(gen: T)(implicit p: Parameters)
-  extends AccelBundle( )(p) {
+  extends AccelBundle()(p) {
   // Predicate enable
   val enable = Flipped(Decoupled(new ControlBundle))
   // Predecessor Ordering
