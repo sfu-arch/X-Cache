@@ -1,30 +1,11 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 package test
 
 import chisel3._
 import chisel3.MultiIOModule
-import dandelion.dpi._
 import dandelion.shell._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
-import accel._
+import dandelion.config._
 
 /*
             +---------------------------+
@@ -48,7 +29,7 @@ driver_main.cc| +-------------+Master Client    |                 |
 */
 
 /** Test. This generates a testbench file for simulation */
-class TestAccel2(implicit p: Parameters) extends MultiIOModule {
+class TestAccel2(implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
@@ -77,6 +58,11 @@ class TestAccel2(implicit p: Parameters) extends MultiIOModule {
   vta_shell.io.host.w <> sim_shell.host.w
 }
 
+/**
+ * @todo Find the solution to define a new config here instead of dandelion library
+ */
+
+
 object TestAccel2Main extends App {
   
   //These are default values for VCR
@@ -95,8 +81,8 @@ object TestAccel2Main extends App {
    * @note make sure for simulation dataLen is equal to 64
    */
   implicit val p =
-    new WithAccelConfig(AccelParams(dataLen = 64)) ++
-      new WithDandelionSimConfig(num_ptrs, num_vals, num_event, num_ctrl)
+    new WithSimShellConfig(dLen = 64)(num_ctrl, num_event, num_ptrs, num_vals)
   chisel3.Driver.execute(args.take(4), () => new TestAccel2)
 }
 
+//new WithDandelionSimConfig(num_ptrs, num_vals, num_event, num_ctrl)

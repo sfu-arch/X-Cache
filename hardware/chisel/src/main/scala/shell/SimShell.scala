@@ -21,6 +21,7 @@ package dandelion.shell
 
 import chisel3._
 import chisel3.MultiIOModule
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces.axi._
 import dandelion.dpi._
@@ -31,9 +32,9 @@ import dandelion.dpi._
   * module and used to test host-to-VTA communication. This module should be updated
   * for testing hosts using a different bus protocol, other than AXI.
   */
-class VTAHost(implicit p: Parameters) extends Module {
+class VTAHost(implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
-    val axi = new AXILiteMaster(p(ShellKey).hostParams)
+    val axi = new AXILiteMaster(hostParams)
   })
   val host_dpi = Module(new VTAHostDPI)
   val host_axi = Module(new VTAHostDPIToAXI)
@@ -49,9 +50,9 @@ class VTAHost(implicit p: Parameters) extends Module {
   * module and used to test VTA-to-memory communication. This module should be updated
   * for testing memories using a different bus protocol, other than AXI.
   */
-class VTAMem(implicit p: Parameters) extends Module {
+class VTAMem(implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
-    val axi = new AXIClient(p(ShellKey).memParams)
+    val axi = new AXIClient(memParams)
   })
   val mem_dpi = Module(new VTAMemDPI)
   val mem_axi = Module(new VTAMemDPIToAXI)
@@ -68,7 +69,7 @@ class VTAMem(implicit p: Parameters) extends Module {
   * the simulation thread when it is asserted and resume it when it is
   * de-asserted.
   */
-class VTASim(implicit p: Parameters) extends MultiIOModule {
+class VTASim(implicit val p: Parameters) extends MultiIOModule {
   val sim_wait = IO(Output(Bool()))
   val sim = Module(new VTASimDPI)
   sim.io.reset := reset
@@ -82,9 +83,9 @@ class VTASim(implicit p: Parameters) extends MultiIOModule {
   * are connected to the VTAShell. An extra clock, sim_clock, is used to eval
   * the VTASim DPI function when the main simulation clock is on halt state.
   */
-class SimShell(implicit p: Parameters) extends MultiIOModule {
-  val mem = IO(new AXIClient(p(ShellKey).memParams))
-  val host = IO(new AXILiteMaster(p(ShellKey).hostParams))
+class SimShell(implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
+  val mem = IO(new AXIClient(memParams))
+  val host = IO(new AXILiteMaster(hostParams))
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val mod_sim = Module(new VTASim)
@@ -103,9 +104,9 @@ class SimShell(implicit p: Parameters) extends MultiIOModule {
   * are connected to the VTAShell. An extra clock, sim_clock, is used to eval
   * the VTASim DPI function when the main simulation clock is on halt state.
   */
-class AXISimShell(implicit p: Parameters) extends MultiIOModule {
-  val mem = IO(new AXIClient(p(ShellKey).memParams))
-  val host = IO(new AXILiteMaster(p(ShellKey).hostParams))
+class AXISimShell(implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
+  val mem = IO(new AXIClient(memParams))
+  val host = IO(new AXILiteMaster(hostParams))
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val mod_sim = Module(new VTASim)

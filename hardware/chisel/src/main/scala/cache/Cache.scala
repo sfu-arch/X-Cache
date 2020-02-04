@@ -6,7 +6,8 @@
 //import dandelion.junctions.{NastiReadAddressChannel, NastiWriteAddressChannel, NastiWriteDataChannel}
 //import vta.interface.axi.AXIMaster
 ////import dandelion.junctions._
-//import dandelion.config._
+//import chipsalliance.rocketchip.config._
+import dandelion.config._
 //import dandelion.interfaces._
 ////import NastiConstants._
 //import vta.interface.axi.{AXILiteMaster, AXIParams}

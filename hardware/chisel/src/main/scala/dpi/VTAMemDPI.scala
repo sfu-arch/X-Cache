@@ -21,6 +21,7 @@ package dandelion.dpi
 
 import chisel3._
 import chisel3.util._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces.axi._
 import dandelion.shell._
@@ -75,11 +76,11 @@ class VTAMemDPI extends BlackBox with HasBlackBoxResource {
   setResource("/verilog/VTAMemDPI.v")
 }
 
-class VTAMemDPIToAXI(debug: Boolean = false)(implicit p: Parameters)
-    extends Module {
+class VTAMemDPIToAXI(debug: Boolean = false)(implicit val p: Parameters)
+    extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
     val dpi = new VTAMemDPIMaster
-    val axi = new AXIClient(p(ShellKey).memParams)
+    val axi = new AXIClient(memParams)
   })
   val opcode = RegInit(false.B)
   val len = RegInit(0.U.asTypeOf(chiselTypeOf(io.dpi.req.len)))

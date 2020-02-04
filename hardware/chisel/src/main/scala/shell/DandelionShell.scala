@@ -6,8 +6,8 @@ package dandelion.shell
 
 import chisel3._
 import chisel3.util._
+import chipsalliance.rocketchip.config._
 import dandelion.config._
-import dandelion.generator._
 import dandelion.interfaces.{ControlBundle, DataBundle}
 import dandelion.interfaces.axi._
 import dandelion.memory.cache._
@@ -145,13 +145,13 @@ class DandelionVTAShell(implicit p: Parameters) extends MultiIOModule {
 
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
 class DandelionCacheShell[+T <: DandelionAccelModule](accel: T )
-                                                     (implicit val p: Parameters) extends Module {
+                                                     (implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
-    val host = new AXILiteClient(p(ShellKey).hostParams)
-    val mem = new AXIMaster(p(ShellKey).memParams)
+    val host = new AXILiteClient(hostParams)
+    val mem = new AXIMaster(memParams)
   })
 
-  val regBits = p(ShellKey).vcrParams.regBits
+  val regBits = vcrParams.regBits
   val ptrBits = regBits * 2
 
   val vcr = Module(new VCR)
