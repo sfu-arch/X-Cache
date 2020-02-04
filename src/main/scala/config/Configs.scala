@@ -156,24 +156,6 @@ class WithAccelConfig(inParams: DandelionAccelParams = DandelionAccelParams())
 
   )
 
-//class WithShellConfig(vcrParams: DandelionVCRParams = DandelionVCRParams(),
-//                      vmeParams: DandelionVMEParams = DandelionVMEParams())
-//  extends Config((site, here, up) => {
-//    // Core
-//    case VCRKey => vcrParams
-//    case VMEKey => vmeParams
-//    case HostParamKey => AXIParams
-//    case MemParamKey => AXIParams
-//  }
-//  )
-//
-//
-//class WithSimShellConfig(dLen: Int = 64)
-//                    (nCtrl: Int = 1, nEvent: Int = 1, nPtrs: Int = 2, nVals: Int = 1) extends Config(
-//  new WithAccelConfig(DandelionAccelParams(dataLen = dLen)) ++
-//    new WithShellConfig(DandelionVCRParams(numCtrl = nCtrl, numEvent = nEvent, numPtrs = nPtrs, numVals = nVals)))
-
-
 trait HasAccelParams {
   implicit val p: Parameters
 

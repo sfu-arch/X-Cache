@@ -18,7 +18,7 @@ import util._
  * ================================================================== */
 
 class test05DF(ArgsIn: Seq[Int] = List(32), Returns: Seq[Int] = List(32))
-              (implicit p: Parameters) extends DandelionAccelModule(List(32), List(32)) {
+              (implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns) {
 
   /* ================================================================== *
    *                   PRINTING MEMORY MODULES                          *
