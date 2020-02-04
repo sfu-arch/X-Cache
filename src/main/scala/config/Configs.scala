@@ -30,7 +30,6 @@ trait AccelParams {
   val comp: String
 }
 
-//case object AccelConfig extends Field[AccelParams]
 case object DandelionConfigKey extends Field[DandelionAccelParams]
 
 case class DandelionAccelParams(
@@ -69,9 +68,6 @@ case class DandelionAccelParams(
   val comp: String = components
 
 }
-
-
-//trait HasAccelParams extends DandelionAccelParams
 
 
 class WithAccelConfig(inParams: DandelionAccelParams = DandelionAccelParams()) extends Config((site, here, up) => {
