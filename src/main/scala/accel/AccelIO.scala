@@ -27,7 +27,7 @@ class DandelionAccelIO[T <: Data](val ArgsIn: Seq[Int],
 }
 
 
-abstract class AccelModule(val ArgsIn: Seq[Int],
+abstract class DandelionAccelModule(val ArgsIn: Seq[Int],
                        val Returns: Seq[Int])(implicit val p: Parameters) extends Module with HasAccelParams {
   override lazy val io = IO(new DandelionAccelIO(ArgsIn, Returns))
 }

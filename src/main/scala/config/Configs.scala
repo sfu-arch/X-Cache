@@ -3,6 +3,7 @@ package dandelion.config
 import chisel3._
 import chipsalliance.rocketchip.config._
 import dandelion.fpu.FType
+import dandelion.interfaces.axi.AXIParams
 import dandelion.junctions.{NastiKey, NastiParameters}
 import dandelion.util.{DandelionGenericParameterizedBundle, DandelionParameterizedBundle}
 
@@ -30,7 +31,27 @@ trait AccelParams {
   val comp: String
 }
 
-case object DandelionConfigKey extends Field[DandelionAccelParams]
+/**
+  * VCR parameters.
+  * These parameters are used on VCR interfaces and modules.
+  */
+trait VCRParams {
+  val nCtrl: Int
+  val nECnt: Int
+  val nVals: Int
+  val nPtrs: Int
+  val regBits: Int
+}
+
+/**
+  * VME parameters.
+  * These parameters are used on VME interfaces and modules.
+  */
+trait VMEParams {
+  val nReadClients: Int
+  val nWriteClients: Int
+}
+
 
 case class DandelionAccelParams(
                                  dataLen: Int = 32,
@@ -69,24 +90,89 @@ case class DandelionAccelParams(
 
 }
 
-
-class WithAccelConfig(inParams: DandelionAccelParams = DandelionAccelParams()) extends Config((site, here, up) => {
-  // Core
-  case DandelionConfigKey => inParams
-
-  // NastiIO
-  case NastiKey => new NastiParameters(
-    idBits = 12,
-    dataBits = 32,
-    addrBits = 33)
-
+/**
+  * VCR parameters.
+  * These parameters are used on VCR interfaces and modules.
+  */
+case class DandelionVCRParams(numCtrl: Int = 1,
+                              numEvent: Int = 1,
+                              numVals: Int = 2,
+                              numPtrs: Int = 2) {
+  val nCtrl = numCtrl
+  val nECnt = numEvent
+  val nVals = numVals
+  val nPtrs = numPtrs
+  val regBits = 32
 }
 
-)
+/**
+  * VME parameters.
+  * These parameters are used on VME interfaces and modules.
+  */
+case class DandelionVMEParams(numRead: Int = 5,
+                              numWrite: Int = 1) {
+  val nReadClients: Int = numRead
+  val nWriteClients: Int = numWrite
+  require(nReadClients > 0,
+    s"\n\n[VTA] [VMEParams] nReadClients must be larger than 0\n\n")
+  require(
+    nWriteClients == 1,
+    s"\n\n[VTA] [VMEParams] nWriteClients must be 1, only one-write-client support atm\n\n")
+}
+
+
+/** Shell parameters. */
+case class ShellParams(
+                        val hostParams: AXIParams,
+                        val memParams: AXIParams,
+                        val vcrParams: DandelionVCRParams,
+                        val vmeParams: DandelionVMEParams
+                      )
+
+
+case object DandelionConfigKey extends Field[DandelionAccelParams]
+
+case object VCRKey extends Field[DandelionVCRParams]
+
+case object VMEKey extends Field[DandelionVMEParams]
+
+case object HostParamKey extends Field[AXIParams]
+
+case object MemParamKey extends Field[AXIParams]
+
+
+class WithAccelConfig(inParams: DandelionAccelParams = DandelionAccelParams())
+  extends Config((site, here, up) => {
+    // Core
+    case DandelionConfigKey => inParams
+
+    // NastiIO
+    case NastiKey => new NastiParameters(
+      idBits = 12,
+      dataBits = 32,
+      addrBits = 33)
+
+  }
+
+  )
+
+class WithShellConfig(vcrParams: DandelionVCRParams = DandelionVCRParams(),
+                      vmeParams: DandelionVMEParams = DandelionVMEParams())
+  extends Config((site, here, up) => {
+    // Core
+    case VCRKey => vcrParams
+    case VMEKey => vmeParams
+    case HostParamKey => AXIParams
+    case MemParamKey => AXIParams
+  }
+  )
+
 
 trait HasAccelParams {
   implicit val p: Parameters
+
   def accelParams: DandelionAccelParams = p(DandelionConfigKey)
+
   val xlen = accelParams.xlen
   val tlen = accelParams.tlen
   val glen = accelParams.glen
@@ -102,6 +188,19 @@ trait HasAccelParams {
   val nways = accelParams.nways
   val nsets = accelParams.nsets
   val cacheBlockBytes = accelParams.cacheBlockBytes
+}
+
+trait HasAccelShellParams {
+  implicit val p: Parameters
+
+  def vcrParams: DandelionVCRParams = p(VCRKey)
+
+  def vmeParams: DandelionVMEParams = p(VMEKey)
+
+  def hostParams: AXIParams = p(HostParamKey)
+
+  def memParams: AXIParams = p(MemParamKey)
+
 }
 
 abstract class AccelBundle(implicit val p: Parameters) extends DandelionParameterizedBundle()(p)

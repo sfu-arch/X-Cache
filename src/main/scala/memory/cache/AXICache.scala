@@ -8,10 +8,10 @@ import dandelion.config._
 import dandelion.util._
 import dandelion.interfaces._
 import dandelion.interfaces.axi._
-import dandelion.shell.{ShellKey}
+import dandelion.shell._
 
 
-trait CacheAccelParams extends HasAccelParams {
+trait CacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nWays = nways
   val nSets = nsets
   val bBytes = cacheBlockBytes
@@ -22,7 +22,7 @@ trait CacheAccelParams extends HasAccelParams {
   val nWords = bBits / xlen
   val wBytes = xlen / 8
   val byteOffsetBits = log2Ceil(wBytes)
-  val databeats = bBits / p(ShellKey).memParams.dataBits
+  val databeats = bBits / memParams.dataBits
 }
 
 
@@ -61,13 +61,15 @@ object MetaData {
 }
 
 
-class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module with CacheAccelParams {
+class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
+  with CacheAccelParams
+  with HasAccelShellParams {
   val io = IO(new Bundle {
     val cpu = new CacheCPUIO
-    val mem = new AXIMaster(p(ShellKey).memParams)
+    val mem = new AXIMaster(memParams)
   })
 
-  val Axi_param = p(ShellKey).memParams
+  val Axi_param = memParams
 
   // cache states
   val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)

@@ -1,22 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 package dandelion.shell
 
 import chisel3._
@@ -26,17 +7,6 @@ import dandelion.config._
 import dandelion.util._
 import dandelion.interfaces.axi._
 
-/** VCR parameters.
-  *
-  * These parameters are used on VCR interfaces and modules.
-  */
-case class VCRParams() {
-  val nCtrl = 1
-  val nECnt = 1
-  val nVals = 7
-  val nPtrs = 6
-  val regBits = 32
-}
 
 /** VCRBase. Parametrize base class. */
 abstract class VCRBase(implicit p: Parameters) extends DandelionParameterizedBundle()(p)
@@ -46,9 +16,9 @@ abstract class VCRBase(implicit p: Parameters) extends DandelionParameterizedBun
   * This is the master interface used by VCR in the VTAShell to control
   * the Core unit.
   */
-class VCRMaster(implicit p: Parameters) extends VCRBase {
-  val vp = p(ShellKey).vcrParams
-  val mp = p(ShellKey).memParams
+class VCRMaster(implicit val p: Parameters) extends VCRBase with HasAccelShellParams {
+  val vp = vcrParams
+  val mp = memParams
   val launch = Output(Bool())
   val finish = Input(Bool())
   val ecnt = Vec(vp.nECnt, Flipped(ValidIO(UInt(vp.regBits.W))))
@@ -61,9 +31,9 @@ class VCRMaster(implicit p: Parameters) extends VCRBase {
   * This is the client interface used by the Core module to communicate
   * to the VCR in the VTAShell.
   */
-class VCRClient(implicit p: Parameters) extends VCRBase {
-  val vp = p(ShellKey).vcrParams
-  val mp = p(ShellKey).memParams
+class VCRClient(implicit val p: Parameters) extends VCRBase with HasAccelShellParams {
+  val vp = vcrParams
+  val mp = memParams
   val launch = Input(Bool())
   val finish = Output(Bool())
   val ecnt = Vec(vp.nECnt, ValidIO(UInt(vp.regBits.W)))
@@ -78,15 +48,15 @@ class VCRClient(implicit p: Parameters) extends VCRBase {
   * at the moment but this will likely change once we add support to general purpose
   * registers that could be used as event counters by the Core unit.
   */
-class VCR(implicit p: Parameters) extends Module {
+class VCR(implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
-    val host = new AXILiteClient(p(ShellKey).hostParams)
+    val host = new AXILiteClient(hostParams)
     val vcr = new VCRMaster
   })
 
-  val vp = p(ShellKey).vcrParams
-  val mp = p(ShellKey).memParams
-  val hp = p(ShellKey).hostParams
+  val vp = vcrParams
+  val mp = memParams
+  val hp = hostParams
 
   // Write control (AW, W, B)
   val waddr = RegInit("h_ffff".U(hp.addrBits.W)) // init with invalid address
