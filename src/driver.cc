@@ -69,22 +69,22 @@ class DPILoader {
 
 class Device {
    public:
-    Device(uint64_t npatrs, uint64_t nargs) {
+    Device(uint64_t npatrs, uint64_t nvals) {
         ptrs_ = std::vector<void *>(npatrs, nullptr);
-        args_ = std::vector<uint64_t>(nargs, 0);
+        vals_ = std::vector<uint64_t>(nvals, 0);
 
         loader_ = DPILoader::Global();
     }
 
-    uint32_t Run(std::vector<std::reference_wrapper<DArray>> &ptrs,
-                 vector<int64_t> &arguments) {
+    void Run(std::vector<std::reference_wrapper<DArray>> &ptrs,
+                 vector<int64_t> &values, vector<int64_t> &rets) {
         if (ptrs.size() != this->ptrs_.size())
             throw std::runtime_error("Number of PTRS must be one");
 
-        if (arguments.size() != this->args_.size())
-            throw std::runtime_error("Number of ARGS must be one");
+        if (values.size() != this->vals_.size())
+            throw std::runtime_error("Number of VLAS must be one");
 
-        uint32_t cycles;
+        //uint32_t cycles;
 
         for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
             size_t a_size = (ptrs[ind].get().getArray().dtype.bits >> 3) *
@@ -105,9 +105,9 @@ class Device {
 
         this->Init();
 
-        this->Launch(arguments);
+        this->Launch(values, rets);
 
-        cycles = this->WaitForCompletion();
+        this->WaitForCompletion(rets);
 
         for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
             size_t a_size = (ptrs[ind].get().getArray().dtype.bits >> 3) *
@@ -123,7 +123,7 @@ class Device {
             this->MemFree(ptrs_[ind]);
         }
 
-        return cycles;
+        //return cycles;
     }
 
    public:
@@ -158,11 +158,21 @@ class Device {
                                                                  size);
     }
 
-    void Launch(vector<int64_t> &arguments) {
-        int32_t address = 0x08;
+    void Launch(vector<int64_t> &values, vector<int64_t> &rets) {
+
+        /**
+         * Address 0x00 is for control
+         */
+        int32_t address = 0x04;
+
+        /**
+         * We have event counters after control addresses
+         */
+        address += rets.size() * 0x04;
+
         int32_t cnt = 0;
-        for (auto arg : arguments) {
-            dpi_->WriteReg(address + (cnt * 4), arg);  // arg
+        for (auto val : values) {
+            dpi_->WriteReg(address + (cnt * 4), val);  // arg
             cnt++;
         }
 
@@ -176,16 +186,18 @@ class Device {
         dpi_->WriteReg(0x00, 0x1);  // launch
     }
 
-    uint32_t WaitForCompletion() {
+    void WaitForCompletion(vector<int64_t> &rets) {
         uint32_t i, val;
         for (i = 0; i < wait_cycles_; i++) {
             val = dpi_->ReadReg(0x00);
             if (val == 2) break;  // finish
         }
         // Read event counter
-        val = dpi_->ReadReg(0x04);
+        for(int j = 0; j < rets.size(); j++){
+            uint32_t addr = 0x04 + (j * 0x04);
+            rets[j] = dpi_->ReadReg(addr);
+        }
         dpi_->SimWait();
-        return val;
     }
 
     // wait cycles
@@ -196,13 +208,14 @@ class Device {
     DPIModuleNode *dpi_{nullptr};
 
     std::vector<void *> ptrs_;
-    std::vector<uint64_t> args_;
+    std::vector<uint64_t> vals_;
     std::vector<uint64_t> events_;
 };
 
-uint64_t RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
-                std::vector<int64_t> vars, std::string hw_lib) {
-    std::cout << "Stating Dsim..." << std::endl;
+std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
+                std::vector<int64_t> vars, std::vector<int64_t> returns, std::string hw_lib) {
+
+    std::cout << "Stating MuIRSim..." << std::endl;
 
     std::shared_ptr<vta::dpi::DPIModule> n =
         std::make_shared<vta::dpi::DPIModule>();
@@ -224,9 +237,9 @@ uint64_t RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
     driver::Device dev(in_ptrs.size(), vars.size());
     dev.loader_->Init(mod);
 
-    auto cycles = dev.Run(in_ptrs, vars);
+    dev.Run(in_ptrs, vars, returns);
 
-    return cycles;
+    return returns;
 }
 
 }  // namespace driver
@@ -246,5 +259,5 @@ PYBIND11_MODULE(dsim, m) {
         });
 
     m.def("sim", &driver::RunSim, "A function to run DSIM", py::arg("ptrs"),
-          py::arg("vars"), py::arg("hwlib"));
+          py::arg("vars"), py::arg("rets"), py::arg("hwlib"));
 }

@@ -53,7 +53,6 @@ import dandelion.accel._
 /**
  *
  * @param p
- * @todo define your own ShellKey
  */
 class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val io = IO(new Bundle {
@@ -144,8 +143,8 @@ class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with H
 }
 
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
-class DandelionCacheShell[T <: DandelionAccelModule](accelModule: T)
-                                                    (numPtrs: Int, numVals: Int, numEvents: Int)
+class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
+                                                    (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
                                                     (implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
     val host = new AXILiteClient(hostParams)
@@ -158,7 +157,7 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: T)
   val vcr = Module(new VCR)
   val cache = Module(new SimpleCache())
 
-  lazy val accel = Module(accelModule)
+  val accel = Module(accelModule())
 
   cache.io.cpu.req <> accel.io.MemReq
   accel.io.MemResp <> cache.io.cpu.resp
@@ -177,25 +176,33 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: T)
     cycles := cycles + 1.U
   }
 
+  /**
+   * Connecting event controls and return values
+   * Event zero always contains the cycle count
+   */
   vcr.io.vcr.ecnt(0).valid := last
   vcr.io.vcr.ecnt(0).bits := cycles
 
+  for (i <- 1 until accel.Returns.length) {
+    vcr.io.vcr.ecnt(i).bits := accel.io.out.bits.data(s"field${i-1}")
+    vcr.io.vcr.ecnt(i).valid := accel.io.out.valid
+  }
 
   /**
    * @note This part needs to be changes for each function
    */
 
-  val ptrs = Seq.tabulate(numPtrs){i => RegEnable(next = vcr.io.vcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle))}
-  val vals = Seq.tabulate(numVals){i => RegEnable(next = vcr.io.vcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle))}
+  val ptrs = Seq.tabulate(numPtrs) { i => RegEnable(next = vcr.io.vcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
+  val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.vcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
 
   /**
    * For now the rule is to first assign the pointers and then assign the vals
    */
-  for(i <- 0 until numPtrs){
+  for (i <- 0 until numPtrs) {
     accel.io.in.bits.data(s"field${i}") := DataBundle(ptrs(i))
   }
 
-  for(i <- numPtrs until numPtrs + numVals){
+  for (i <- numPtrs until numPtrs + numVals) {
     accel.io.in.bits.data(s"field${i}") := DataBundle(vals(i - numPtrs))
   }
 
@@ -211,7 +218,6 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: T)
   switch(state) {
     is(sIdle) {
       when(vcr.io.vcr.launch) {
-        //printf(p"Ptrs: ptr(0): ${ptr_a}, ptr(1): ${ptr_b}, val(0): ${val_a}\n")
         printf(p"Ptrs: ")
         ptrs.zipWithIndex.foreach(t => printf(p"ptr(${t._1}): ${t._2}, "))
         printf(p"\nVals: ")
