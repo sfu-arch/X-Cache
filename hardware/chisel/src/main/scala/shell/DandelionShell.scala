@@ -1,7 +1,3 @@
-/**
- * Author: Amirali Sharifian
- */
-
 package dandelion.shell
 
 import chisel3._
@@ -143,6 +139,17 @@ class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with H
 }
 
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
+/**
+ *
+ * @param accelModule Testing module from dandelion-generator
+ * @param numPtrs Number of input ptrs for the accelerator
+ * @param numVals Number of input values to the accelerator
+ * @param numRets Number of return values to the accelerator
+ * @param numEvents Number of event values to the accelerator
+ * @param numCtrls Number of control registers of the accelerator
+ * @param p implicit parameters that contains all the accelerator configuration
+ * @tparam T
+ */
 class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
                                                     (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
                                                     (implicit val p: Parameters) extends Module with HasAccelShellParams {
@@ -219,9 +226,10 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
     is(sIdle) {
       when(vcr.io.vcr.launch) {
         printf(p"Ptrs: ")
-        ptrs.zipWithIndex.foreach(t => printf(p"ptr(${t._1}): ${t._2}, "))
+        ptrs.zipWithIndex.foreach(t => printf(p"ptr(${t._2}): ${t._1}, "))
         printf(p"\nVals: ")
-        vals.zipWithIndex.foreach(t => printf(p"val(${t._1}): ${t._2}, "))
+        vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): ${t._1}, "))
+        printf(p"\n")
         accel.io.in.valid := true.B
         when(accel.io.in.fire) {
           state := sBusy
@@ -248,7 +256,7 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
   vcr.io.vcr.finish := last
 
   io.mem <> cache.io.mem
-  vcr.io.host <> io.host
+  io.host <> vcr.io.host
 
 }
 

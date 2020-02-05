@@ -1,12 +1,3 @@
-#include "DPImodule.h"
-#include "dlpack/dlpack.h"
-#include "runtime/module.h"
-#include "runtime/registry.h"
-
-#include "virtual_memory.h"
-
-#include "darray.h"
-
 #include <algorithm>
 #include <experimental/iterator>
 #include <fstream>
@@ -16,7 +7,14 @@
 #include <string>
 #include <vector>
 
-#define EN_DEBUG 0
+#include "DPImodule.h"
+#include "darray.h"
+#include "dlpack/dlpack.h"
+#include "runtime/module.h"
+#include "runtime/registry.h"
+#include "virtual_memory.h"
+
+#define EN_DEBUG 1
 
 #ifdef EN_DEBUG
 #define DEBUG(x)                                   \
@@ -76,15 +74,15 @@ class Device {
         loader_ = DPILoader::Global();
     }
 
-    void Run(std::vector<std::reference_wrapper<DArray>> &ptrs,
-                 vector<int64_t> &values, vector<int64_t> &rets) {
+    vector<int64_t> Run(std::vector<std::reference_wrapper<DArray>> &ptrs,
+                        vector<int64_t> &values, int64_t nrets,
+                        int64_t nevents) {
+        vector<int64_t> rets(nrets + nevents, 0);
         if (ptrs.size() != this->ptrs_.size())
             throw std::runtime_error("Number of PTRS must be one");
 
         if (values.size() != this->vals_.size())
             throw std::runtime_error("Number of VLAS must be one");
-
-        //uint32_t cycles;
 
         for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
             size_t a_size = (ptrs[ind].get().getArray().dtype.bits >> 3) *
@@ -99,7 +97,7 @@ class Device {
             auto b = ptrs[ind].get().getArray();
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
-                DEBUG((int)k);
+                DEBUG(k);
             }
         }
 
@@ -118,12 +116,12 @@ class Device {
             DEBUG("Print output data:");
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
-                DEBUG((int)k);
+                DEBUG(k);
             }
             this->MemFree(ptrs_[ind]);
         }
 
-        //return cycles;
+         return rets;
     }
 
    public:
@@ -159,7 +157,6 @@ class Device {
     }
 
     void Launch(vector<int64_t> &values, vector<int64_t> &rets) {
-
         /**
          * Address 0x00 is for control
          */
@@ -193,7 +190,7 @@ class Device {
             if (val == 2) break;  // finish
         }
         // Read event counter
-        for(int j = 0; j < rets.size(); j++){
+        for (int j = 0; j < rets.size(); j++) {
             uint32_t addr = 0x04 + (j * 0x04);
             rets[j] = dpi_->ReadReg(addr);
         }
@@ -213,8 +210,8 @@ class Device {
 };
 
 std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
-                std::vector<int64_t> vars, std::vector<int64_t> returns, std::string hw_lib) {
-
+                            std::vector<int64_t> vars, int64_t nrets,
+                            int64_t nevents, std::string hw_lib) {
     std::cout << "Stating MuIRSim..." << std::endl;
 
     std::shared_ptr<vta::dpi::DPIModule> n =
@@ -237,7 +234,7 @@ std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
     driver::Device dev(in_ptrs.size(), vars.size());
     dev.loader_->Init(mod);
 
-    dev.Run(in_ptrs, vars, returns);
+    std::vector<int64_t> returns = dev.Run(in_ptrs, vars, nrets, nevents);
 
     return returns;
 }
@@ -259,5 +256,6 @@ PYBIND11_MODULE(dsim, m) {
         });
 
     m.def("sim", &driver::RunSim, "A function to run DSIM", py::arg("ptrs"),
-          py::arg("vars"), py::arg("rets"), py::arg("hwlib"));
+          py::arg("vars"), py::arg("numRets"), py::arg("numEvents"),
+          py::arg("hwlib"));
 }

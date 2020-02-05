@@ -59,7 +59,7 @@ class VTAMem(implicit val p: Parameters) extends Module with HasAccelShellParams
   mem_dpi.io.reset := reset
   mem_dpi.io.clock := clock
   mem_dpi.io.dpi <> mem_axi.io.dpi
-  mem_axi.io.axi <> io.axi
+  io.axi <> mem_axi.io.axi
 }
 
 /** VTASim.
