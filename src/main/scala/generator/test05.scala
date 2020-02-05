@@ -4,13 +4,11 @@ import chisel3._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
-import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
 import dandelion.memory._
 import dandelion.node._
 import dandelion.accel._
-import util._
 
 
 /* ================================================================== *
