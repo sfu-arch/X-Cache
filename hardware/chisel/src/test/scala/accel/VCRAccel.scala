@@ -5,36 +5,19 @@ import chisel3.MultiIOModule
 import dandelion.shell._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
-import dandelion.config._
-
-/*
-            +---------------------------+
-            |   AXISimShell (DPI<->AXI) |
-            |                           |
-            | +-------------+           |
-            | |  VTASim     |           |
-            | |             |           |
-            | +-------------+           |        TestAccel2
-            |                           |     +-----------------+
-driver_main.cc| +-------------+Master Client    |                 |
-       +--->+ |  VTAHost    +-----------------------------------X
-            | |             |   AXI-Lite|     || VCR Control RegX
-            | +-------------+           |     +-----------------|
-            |                           |     |                 |
-            | +--------------+          |     |                 |
-            | |   VTAMem     ^Client Master   |                 |
-            | |              <----------+-----------------------+
-            | +--------------+  AXI     |     ||  VMem Interface|
-            +---------------------------+     +-----------------+
-*/
+import dandelion.generator.test14DF
+import dandelion.accel.DandelionAccelModule
+import sim.shell._
 
 /** Test. This generates a testbench file for simulation */
-class TestAccel2(implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
+class TestAccel[T <: DandelionAccelModule](accelModule: T)
+                                           (numPtrs:Int, numVals:Int, numEvents: Int)
+                                           (implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
   //val vta_shell = Module(new DandelionVTAShell())
-  val vta_shell = Module(new DandelionCacheShell())
+  val vta_shell = Module(new DandelionCacheShell(accelModule)(numPtrs, numVals, numEvents))
 
   sim_shell.mem <> DontCare
   sim_shell.host <> DontCare
@@ -68,7 +51,7 @@ object TestAccel2Main extends App {
   //These are default values for VCR
   var num_ptrs = 4
   var num_vals = 2
-  var num_event = 1
+  var num_events = 1
   var num_ctrl = 1
   args.sliding(2, 2).toList.collect {
     case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
@@ -79,10 +62,11 @@ object TestAccel2Main extends App {
 
   /**
    * @note make sure for simulation dataLen is equal to 64
+   *       Pass generated accelerator to TestAccel
    */
   implicit val p =
-    new WithSimShellConfig(dLen = 64)(num_ctrl, num_event, num_ptrs, num_vals)
-  chisel3.Driver.execute(args.take(4), () => new TestAccel2)
+    new WithSimShellConfig(dLen = 64)(num_ctrl, num_events, num_ptrs, num_vals)
+  chisel3.Driver.execute(args.take(4),
+    () => new TestAccel(Module(new test14DF()))(num_ptrs, num_vals, num_events))
 }
 
-//new WithDandelionSimConfig(num_ptrs, num_vals, num_event, num_ctrl)

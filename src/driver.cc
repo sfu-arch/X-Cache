@@ -95,7 +95,7 @@ class Device {
             this->MemCopyFromHost(ptrs_[ind], ptrs[ind].get().getArray().data,
                                   a_size);
 
-            DEBUG("Print input data:")
+            DEBUG("Print input data:");
             auto b = ptrs[ind].get().getArray();
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));

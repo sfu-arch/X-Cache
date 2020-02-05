@@ -55,10 +55,10 @@ import dandelion.accel._
  * @param p
  * @todo define your own ShellKey
  */
-class DandelionVTAShell(implicit p: Parameters) extends MultiIOModule {
+class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val io = IO(new Bundle {
-    val host = new AXILiteClient(p(ShellKey).hostParams)
-    val mem = new AXIMaster(p(ShellKey).memParams)
+    val host = new AXILiteClient(hostParams)
+    val mem = new AXIMaster(memParams)
   })
 
   val vcr = Module(new VCR)
@@ -144,8 +144,9 @@ class DandelionVTAShell(implicit p: Parameters) extends MultiIOModule {
 }
 
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
-class DandelionCacheShell[+T <: DandelionAccelModule](accel: T )
-                                                     (implicit val p: Parameters) extends Module with HasAccelShellParams {
+class DandelionCacheShell[T <: DandelionAccelModule](accelModule: T)
+                                                    (numPtrs: Int, numVals: Int, numEvents: Int)
+                                                    (implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
     val host = new AXILiteClient(hostParams)
     val mem = new AXIMaster(memParams)
@@ -157,7 +158,7 @@ class DandelionCacheShell[+T <: DandelionAccelModule](accel: T )
   val vcr = Module(new VCR)
   val cache = Module(new SimpleCache())
 
-  val accel = Module(new accel())
+  lazy val accel = Module(accelModule)
 
   cache.io.cpu.req <> accel.io.MemReq
   accel.io.MemResp <> cache.io.cpu.resp
@@ -183,24 +184,26 @@ class DandelionCacheShell[+T <: DandelionAccelModule](accel: T )
   /**
    * @note This part needs to be changes for each function
    */
-  val ptr_a = RegEnable(next = vcr.io.vcr.ptrs(0), init = 0.U(ptrBits.W), enable = (state === sIdle))
-  val ptr_b = RegEnable(next = vcr.io.vcr.ptrs(1), init = 0.U(ptrBits.W), enable = (state === sIdle))
-  //val ptr_c = RegEnable(next = vcr.io.vcr.ptrs(2), init = 0.U(ptrBits.W), enable = (state === sIdle))
 
-  val val_a = vcr.io.vcr.vals(0)
-  //val val_b = vcr.io.vcr.vals(1)
+  val ptrs = Seq.tabulate(numPtrs){i => RegEnable(next = vcr.io.vcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle))}
+  val vals = Seq.tabulate(numVals){i => RegEnable(next = vcr.io.vcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle))}
 
-  test09.io.in.bits.data("field0") := DataBundle(ptr_a)
-  test09.io.in.bits.data("field1") := DataBundle(ptr_b)
+  /**
+   * For now the rule is to first assign the pointers and then assign the vals
+   */
+  for(i <- 0 until numPtrs){
+    accel.io.in.bits.data(s"field${i}") := DataBundle(ptrs(i))
+  }
 
-  test09.io.in.bits.data("field2") := DataBundle(val_a)
-  //test09.io.in.bits.data("field2") := DataBundle(ptr_c)
+  for(i <- numPtrs until numPtrs + numVals){
+    accel.io.in.bits.data(s"field${i}") := DataBundle(vals(i - numPtrs))
+  }
 
-  test09.io.in.bits.enable := ControlBundle.active()
+  accel.io.in.bits.enable := ControlBundle.active()
 
 
-  test09.io.in.valid := false.B
-  test09.io.out.ready := is_busy
+  accel.io.in.valid := false.B
+  accel.io.out.ready := is_busy
 
   cache.io.cpu.abort := false.B
   cache.io.cpu.flush := false.B
@@ -208,25 +211,29 @@ class DandelionCacheShell[+T <: DandelionAccelModule](accel: T )
   switch(state) {
     is(sIdle) {
       when(vcr.io.vcr.launch) {
-        printf(p"Ptrs: ptr(0): ${ptr_a}, ptr(1): ${ptr_b}, val(0): ${val_a}\n")
-        test09.io.in.valid := true.B
-        when(test09.io.in.fire){
+        //printf(p"Ptrs: ptr(0): ${ptr_a}, ptr(1): ${ptr_b}, val(0): ${val_a}\n")
+        printf(p"Ptrs: ")
+        ptrs.zipWithIndex.foreach(t => printf(p"ptr(${t._1}): ${t._2}, "))
+        printf(p"\nVals: ")
+        vals.zipWithIndex.foreach(t => printf(p"val(${t._1}): ${t._2}, "))
+        accel.io.in.valid := true.B
+        when(accel.io.in.fire) {
           state := sBusy
         }
       }
     }
     is(sBusy) {
-      when(test09.io.out.fire){
+      when(accel.io.out.fire) {
         state := sFlush
       }
     }
-    is(sFlush){
+    is(sFlush) {
       cache.io.cpu.flush := true.B
-      when(cache.io.cpu.flush_done){
+      when(cache.io.cpu.flush_done) {
         state := sDone
       }
     }
-    is(sDone){
+    is(sDone) {
       state := sIdle
     }
   }
