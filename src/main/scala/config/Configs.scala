@@ -100,10 +100,9 @@ case class DandelionVCRParams(numCtrl: Int = 1,
                               numPtrs: Int = 2,
                               numRets: Int = 0) {
   val nCtrl = numCtrl
-  val nECnt = numEvent
+  val nECnt = numEvent + numRets
   val nVals = numVals
   val nPtrs = numPtrs
-  val nRets = numRets
   val regBits = 32
 }
 

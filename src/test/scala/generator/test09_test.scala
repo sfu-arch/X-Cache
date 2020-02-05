@@ -149,17 +149,17 @@ class test09Test01[T <: test09MainIO](c: T) extends PeekPokeTester(c) {
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
+  poke(c.io.in.bits.data("field0").data, 0.U) // Array a[] base address
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 20) // Array b[]
+  poke(c.io.in.bits.data("field1").data, 20.U) // Array b[]
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 40) // Array c[]
+  poke(c.io.in.bits.data("field2").data, 40.U) // Array c[]
   poke(c.io.in.bits.data("field2").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
   poke(c.io.in.bits.enable.control, false.B)
   poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0)
+  poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
   poke(c.io.in.bits.data("field1").predicate, false.B)
