@@ -4,13 +4,11 @@ import chisel3._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
-import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
 import dandelion.memory._
 import dandelion.node._
 import dandelion.accel._
-import util._
 
 class test08DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
               (implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns) {

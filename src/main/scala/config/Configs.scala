@@ -97,11 +97,13 @@ case class DandelionAccelParams(
 case class DandelionVCRParams(numCtrl: Int = 1,
                               numEvent: Int = 1,
                               numVals: Int = 2,
-                              numPtrs: Int = 2) {
+                              numPtrs: Int = 2,
+                              numRets: Int = 0) {
   val nCtrl = numCtrl
   val nECnt = numEvent
   val nVals = numVals
   val nPtrs = numPtrs
+  val nRets = numRets
   val regBits = 32
 }
 
