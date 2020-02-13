@@ -67,23 +67,27 @@ class DPILoader {
 
 class Device {
    public:
-    Device(uint64_t npatrs, uint64_t nvals) {
+    Device(uint64_t npatrs, uint64_t ndebugs, uint64_t nvals) {
         ptrs_ = std::vector<void *>(npatrs, nullptr);
+        debugs_ = std::vector<void *>(ndebugs, nullptr);
         vals_ = std::vector<uint64_t>(nvals, 0);
 
         loader_ = DPILoader::Global();
     }
 
-    vector<int64_t> Run(std::vector<std::reference_wrapper<DArray>> &ptrs,
+    vector<int64_t> Run(
+        std::vector<std::reference_wrapper<DArray>> &ptrs,
+        std::vector<std::reference_wrapper<DArray>> &debugs,
                         vector<int64_t> &values, int64_t nrets,
                         int64_t nevents) {
         vector<int64_t> rets(nrets + nevents, 0);
-        if (ptrs.size() != this->ptrs_.size())
-            throw std::runtime_error("Number of PTRS must be one");
+        // if (ptrs.size() != this->ptrs_.size())
+        //     throw std::runtime_error("Number of PTRS must be one");
 
         if (values.size() != this->vals_.size())
             throw std::runtime_error("Number of VLAS must be one");
 
+        //Allocate memory for input data
         for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
             size_t a_size = (ptrs[ind].get().getArray().dtype.bits >> 3) *
                             ptrs[ind].get().getArray().shape[0];
@@ -101,12 +105,32 @@ class Device {
             }
         }
 
+        //Allocate memory for debug data
+        for (uint64_t ind = 0; ind < debugs.size(); ++ind) {
+            size_t a_size = (debugs[ind].get().getArray().dtype.bits >> 3) *
+                            debugs[ind].get().getArray().shape[0];
+
+            debugs_[ind] = this->MemAlloc(a_size);
+
+            this->MemCopyFromHost(debugs_[ind], debugs[ind].get().getArray().data,
+                                  a_size);
+
+            DEBUG("Print input data:");
+            auto b = debugs[ind].get().getArray();
+            for (auto index = 0; index < b.shape[0]; index++) {
+                uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
+                DEBUG(k);
+            }
+        }
+
+
         this->Init();
 
         this->Launch(values, rets);
 
         this->WaitForCompletion(rets);
 
+        //Reading data from device to host
         for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
             size_t a_size = (ptrs[ind].get().getArray().dtype.bits >> 3) *
                             ptrs[ind].get().getArray().shape[0];
@@ -119,6 +143,21 @@ class Device {
                 DEBUG(k);
             }
             this->MemFree(ptrs_[ind]);
+        }
+
+        //Reading debug data from device to host
+        for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
+            size_t a_size = (debugs[ind].get().getArray().dtype.bits >> 3) *
+                            debugs[ind].get().getArray().shape[0];
+            this->MemCopyToHost(debugs[ind].get().getArray().data, debugs_[ind],
+                                a_size);
+            auto b = debugs[ind].get().getArray();
+            DEBUG("Print output data:");
+            for (auto index = 0; index < b.shape[0]; index++) {
+                uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
+                DEBUG(k);
+            }
+            this->MemFree(debugs_[ind]);
         }
 
          return rets;
@@ -180,6 +219,15 @@ class Device {
             cnt++;
         }
 
+        for (auto dbg : debugs_) {
+            dpi_->WriteReg(address + ((cnt)*4),
+                           this->MemGetPhyAddr(dbg));  // ptr(0)
+
+            cnt++;
+        }
+
+
+
         dpi_->WriteReg(0x00, 0x1);  // launch
     }
 
@@ -205,11 +253,13 @@ class Device {
     DPIModuleNode *dpi_{nullptr};
 
     std::vector<void *> ptrs_;
+    std::vector<void *> debugs_;
     std::vector<uint64_t> vals_;
     std::vector<uint64_t> events_;
 };
 
 std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
+                            std::vector<std::reference_wrapper<DArray>> in_debugs,
                             std::vector<int64_t> vars, int64_t nrets,
                             int64_t nevents, std::string hw_lib) {
     std::cout << "Stating MuIRSim..." << std::endl;
@@ -231,10 +281,10 @@ std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
     tvm::runtime::Module mod = tvm::runtime::Module(n);
 
     // Init the simulator
-    driver::Device dev(in_ptrs.size(), vars.size());
+    driver::Device dev(in_ptrs.size(), in_debugs.size(), vars.size());
     dev.loader_->Init(mod);
 
-    std::vector<int64_t> returns = dev.Run(in_ptrs, vars, nrets, nevents);
+    std::vector<int64_t> returns = dev.Run(in_ptrs, in_debugs, vars, nrets, nevents);
 
     return returns;
 }
@@ -255,7 +305,7 @@ PYBIND11_MODULE(dsim, m) {
                    a.print_array() + "]";
         });
 
-    m.def("sim", &driver::RunSim, "A function to run DSIM", py::arg("ptrs"),
+    m.def("sim", &driver::RunSim, "A function to run DSIM", py::arg("ptrs"), py::arg("debugs"),
           py::arg("vars"), py::arg("numRets"), py::arg("numEvents"),
           py::arg("hwlib"));
 }

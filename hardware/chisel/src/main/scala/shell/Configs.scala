@@ -9,7 +9,7 @@ import dandelion.interfaces.axi._
 
 /** SimDefaultConfig. Shell configuration for simulation */
 class WithShellConfig(vcrParams: DandelionVCRParams = DandelionVCRParams(),
-                      vmeParams: DandelionVMEParams = DandelionVMEParams(),
+                      vmeParams: DandelionVMEParams = DandelionVMEParams(numRead = 1, numWrite = 1),
                       hostParams: AXIParams = AXIParams(
                         addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
                       memParams: AXIParams = AXIParams(
