@@ -121,11 +121,11 @@ sbt publishLocal
 * Instal python binding (make sure you have pull pybind11 as submodule):
 
         git submodule update --init --recursive
-        pip3.7 install --user .
+        pip3 install --user .
 
 * Run python test:
 
-        python3.7 python/test14.py
+        python3 python/test14.py
 
 
 ## Notes
