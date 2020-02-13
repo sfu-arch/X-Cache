@@ -80,9 +80,12 @@ class Device {
         std::vector<std::reference_wrapper<DArray>> &debugs,
                         vector<int64_t> &values, int64_t nrets,
                         int64_t nevents) {
+
         vector<int64_t> rets(nrets + nevents, 0);
         // if (ptrs.size() != this->ptrs_.size())
         //     throw std::runtime_error("Number of PTRS must be one");
+
+        cout << "DEBUG SIZE: " << debugs.size() << "\n";
 
         if (values.size() != this->vals_.size())
             throw std::runtime_error("Number of VLAS must be one");
@@ -115,7 +118,7 @@ class Device {
             this->MemCopyFromHost(debugs_[ind], debugs[ind].get().getArray().data,
                                   a_size);
 
-            DEBUG("Print input data:");
+            DEBUG("Print debug data:");
             auto b = debugs[ind].get().getArray();
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
@@ -152,7 +155,7 @@ class Device {
             this->MemCopyToHost(debugs[ind].get().getArray().data, debugs_[ind],
                                 a_size);
             auto b = debugs[ind].get().getArray();
-            DEBUG("Print output data:");
+            DEBUG("Print debug data:");
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
                 DEBUG(k);
@@ -204,7 +207,11 @@ class Device {
         /**
          * We have event counters after control addresses
          */
-        address += rets.size() * 0x04;
+        cout << "Address before event: " << std::hex << address << "\n";
+
+        address += rets.size() * 4 ;
+
+        cout << "Address after event: " << std::hex << address << "\n";
 
         int32_t cnt = 0;
         for (auto val : values) {
@@ -212,19 +219,25 @@ class Device {
             cnt++;
         }
 
+        cout << "Address after vals: " << std::hex << address + (cnt * 4) << "\n";
+
         for (auto ptr : ptrs_) {
-            dpi_->WriteReg(address + ((cnt)*4),
-                           this->MemGetPhyAddr(ptr));  // ptr(0)
+            dpi_->WriteReg(address + (( cnt )*4),
+                           this->MemGetPhyAddr(ptr));  // ptr
 
             cnt++;
         }
+
+        cout << "Address after ptrs: " << std::hex << address + (cnt * 4) << "\n";
 
         for (auto dbg : debugs_) {
             dpi_->WriteReg(address + ((cnt)*4),
-                           this->MemGetPhyAddr(dbg));  // ptr(0)
+                           this->MemGetPhyAddr(dbg));  // ptr
 
             cnt++;
         }
+
+        cout << "Address after debugs: " << std::hex << address + (cnt * 4) << "\n";
 
 
 
@@ -233,10 +246,19 @@ class Device {
 
     void WaitForCompletion(vector<int64_t> &rets) {
         uint32_t i, val;
+        bool flag = false;
         for (i = 0; i < wait_cycles_; i++) {
             val = dpi_->ReadReg(0x00);
-            if (val == 2) break;  // finish
+            if (val == 2){
+                flag = true;
+                break;  // finish
+            }
         }
+
+        if(!flag){
+            cout << "SIMULATION TIMEOUT\n";
+        }
+
         // Read event counter
         for (int j = 0; j < rets.size(); j++) {
             uint32_t addr = 0x04 + (j * 0x04);
@@ -246,7 +268,8 @@ class Device {
     }
 
     // wait cycles
-    uint32_t wait_cycles_{100000000};
+    // uint32_t wait_cycles_{100000000};
+    uint32_t wait_cycles_{400};
     // DPI loader
     DPILoader *loader_{nullptr};
     // DPI Module

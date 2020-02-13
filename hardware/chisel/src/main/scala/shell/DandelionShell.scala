@@ -329,8 +329,8 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
   vcr.io.vcr.ecnt(0).valid := last
   vcr.io.vcr.ecnt(0).bits := cycles
 
-  for (i <- 1 until accel.Returns.length) {
-    vcr.io.vcr.ecnt(i).bits := accel.io.out.bits.data(s"field${i - 1}")
+  for (i <- 1 to numRets) {
+    vcr.io.vcr.ecnt(i).bits := accel.io.out.bits.data(s"field${i - 1}").data
     vcr.io.vcr.ecnt(i).valid := accel.io.out.valid
   }
 
@@ -338,12 +338,13 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
    * @note This part needs to be changes for each function
    */
 
-  val ptrs = Seq.tabulate(numPtrs) { i => RegEnable(next = vcr.io.vcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
+  val ptrs = Seq.tabulate(numPtrs + numDebug) { i => RegEnable(next = vcr.io.vcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
   val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.vcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
 
   /**
    * For now the rule is to first assign the pointers and then assign the vals
    */
+
   for (i <- 0 until numPtrs) {
     accel.io.in.bits.data(s"field${i}") := DataBundle(ptrs(i))
   }
@@ -352,7 +353,10 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
     accel.io.in.bits.data(s"field${i}") := DataBundle(vals(i - numPtrs))
   }
 
-  debug_module.io.addrDebug := vcr.io.vcr.ptrs((numPtrs - 1) + numDebug)
+  /**
+   * Connecting debug ptrs
+   */
+  debug_module.io.addrDebug := vcr.io.vcr.ptrs(((numPtrs + numDebug)- 1))
 
   accel.io.in.bits.enable := ControlBundle.active()
 
