@@ -1,10 +1,9 @@
-# Dandelion-lib(uIR)
+# muIR - Library
 
-[![pipeline status](https://csil-git1.cs.surrey.sfu.ca/Dandelion/dandelion-lib/badges/master/pipeline.svg)](https://csil-git1.cs.surrey.sfu.ca/Dandelion/dandelion-lib/commits/master)
+[![CircleCI](https://circleci.com/gh/sfu-arch/muir-lib.svg?style=svg)](https://circleci.com/gh/sfu-arch/muir-lib)
 
-
-Dandelion-lib(uIR) is a library of hardware components for auto generating highly configurable parallel dataflow accelerator.
-Dandelion-lib provides the implementation of the following hardware units:
+muIR is a library of hardware components for auto generating highly configurable parallel dataflow accelerator.
+muIR provides the implementation of the following hardware units:
 
 1. A set of highly configurable and parameterizable computation nodes.
 2. A set of control units to support arbitrary control path.
@@ -74,9 +73,9 @@ Follow these instructions to compile it from source.
     ```
 **Please remember that verialtor should be installed in the default system path, otherwise, chisel-iotesters won't find Verilator and the simulation can not be executed**
 
-## Dandelion's dependencies
+## muIR's dependencies
 
-Dandelion depends on _Berkeley Hardware Floating-Point Units_ for floating nodes. Therefore, before building dandelion you need to clone hardfloat project, build it and then publish it locally on your system. Hardfloat repository has all the necessary information about how to build the project, here we only briefly mention how to build it and then publish it.
+muIR depends on _Berkeley Hardware Floating-Point Units_ for floating nodes. Therefore, before building muIR you need to clone hardfloat project, build it and then publish it locally on your system. Hardfloat repository has all the necessary information about how to build the project, here we only briefly mention how to build it and then publish it.
 
 ```
 git clone https://github.com/ucb-bar/berkeley-hardfloat.git
@@ -84,9 +83,9 @@ cd berkeley-hardfloat
 sbt "publishLocal"
 ```
 
-## Testing Dandelion-lib
+## Testing muIR
 
-Dandelion-lib is an active project that we students in our lab are actively working on it. Hence, we needed to have a solid testing framework to test any new changes in the repo. Under `src/test/main/scala` we have provided more than 90 test cases to test different pieces of the project after any changes.
+muIR is an active project that we students in our lab are actively working on it. Hence, we needed to have a solid testing framework to test any new changes in the repo. Under `src/test/main/scala` we have provided more than 90 test cases to test different pieces of the project after any changes.
 To run all the test cases you can run:
 
 ```
@@ -98,32 +97,10 @@ It is highly encouraged that if you add any new module to the design you have to
 1. If there is any new changes, we make sure that the new change doesn't affect your implementation
 2. The test case can be used as an example of how someone can use your new module in the rest of the design
 
-## Compiling Dandelion Accelerator
 
-We have separated our harness test cases with the actual dandelion library implementation. Therefore, for testing or adding your new HLS circuit you need to follow instructions within `dandelion-sim` project.
+# What's in the muIR repository?
 
-Here we explain how to build dandelion-lib project, so you can use it in another projects. For publishing dandelion-lib you run the following commands:
-
-```shell
-git clone git@csil-git1.cs.surrey.sfu.ca:Dandelion/dandelion-lib.git
-cd dandelion-lib
-sbt "publishLocal"
-```
-
-The following commands will build dandelion-lib, and then push the compiled version of dandelion-lib to `.ivy2/local` directory. Since, we are still developing dandelion our dandelion versioning finishes with SNAPSHOT keyword.
-The version number you select must end with **SNAPSHOT**, or you must change the version number each time you publish.
-Ivy maintains a cache, and it stores even local projects in that cache.
-If Ivy already has a version cached, it will not check the local repository for updates, unless the version number matches a changing pattern, and SNAPSHOT is one such pattern.
-
-To add dandelion-lib as a dependency to other projects you can add the following line to the build.sbt file:
-```scala
-libraryDependencies += "edu.sfu.arch" %% "dandelion-lib" % "0.1-SNAPSHOT"
-```
-
-
-# What's in the Dandelion-Lib repository?
-
-The Dandelion-Lib repository contains code that is used to implement library modular hardware components to build hardware accelerators. Hardware generation is done using Chisel, a hardware construction language embedded in Scala.
+The muIR library repository contains code that is used to implement library modular hardware components to build hardware accelerators. Hardware generation is done using Chisel, a hardware construction language embedded in Scala.
 The IR-Lib code base is itself factored into several Scala packages. These packages are all found within the src/main/scala directory. Some of these packages provide Scala utilities for generator configuration, while others contain the actual Chisel RTL generators themselves. Here is a brief description of what can be found in each package:
 
 **Please find each package under src/main/scala folder**
@@ -247,5 +224,4 @@ Authors:
 * Arrvindh Shriraman (ashriram@sfu.ca)
 * Steve Margerm      (smargerm@sfu.ca)
 * Reza Hojabr        (rshojabro@sfu.ca)
-* Naveen Vedula      (nvedula@sfu.ca)
 
