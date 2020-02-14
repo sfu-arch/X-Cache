@@ -149,13 +149,13 @@ class Device {
         }
 
         //Reading debug data from device to host
-        for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
+        for (uint64_t ind = 0; ind < debugs.size(); ++ind) {
             size_t a_size = (debugs[ind].get().getArray().dtype.bits >> 3) *
                             debugs[ind].get().getArray().shape[0];
             this->MemCopyToHost(debugs[ind].get().getArray().data, debugs_[ind],
                                 a_size);
             auto b = debugs[ind].get().getArray();
-            DEBUG("Print debug data:");
+            DEBUG("Print returned debug data:");
             for (auto index = 0; index < b.shape[0]; index++) {
                 uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
                 DEBUG(k);

@@ -358,7 +358,7 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
    */
   debug_module.io.addrDebug := vcr.io.vcr.ptrs(((numPtrs + numDebug)- 1))
 
-  accel.io.in.bits.enable := ControlBundle.active()
+  accel.io.in.bits.enable := ControlBundle.debug()
 
 
   accel.io.in.valid := false.B
