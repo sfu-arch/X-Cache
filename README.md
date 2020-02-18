@@ -151,38 +151,6 @@ instruction of Verilator wiki.
 
 https://www.veripool.org/projects/verilator/wiki/Installing
 
-## Publishing muIR-Lib
-
-muIR-Sim uses muIR-lib as a hardware library to build new hardware accelerators. Hence, you need to have muIR-Lib published locally in your path. Make sure before publishing muIR-lib, you have published `berkeley-hardfloat`. Please read muIR-lib readme file for more details.
-
-``` bash
-git clone git@github.com:sfu-arch/muir-lib.git
-cd muir-lib
-sbt publishLocal
-```
-
-
-## Running muIR-sim
-
-* Publish muIR-lib
-
-        git clone git@github.com:sfu-arch/muir-lib.git
-        cd muir-lib
-        sbt publishLocal
-
-* Build hardware accelerator library
-
-        make chisel NPROCS=4 NUM_PTRS=2 NUM_ARGS=1
-
-* Instal python binding (make sure you have pull pybind11 as submodule):
-
-        git submodule update --init --recursive
-        pip3 install --user .
-
-* Run python test:
-
-        python3 python/test14.py
-
 
 ## Notes
 * Some pointers
