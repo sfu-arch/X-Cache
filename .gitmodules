@@ -6,4 +6,4 @@
 	url = https://github.com/chipsalliance/api-config-chipsalliance.git
 [submodule "hardware/chisel/dandelion"]
 	path = hardware/chisel/dandelion
-	url = https://github.com/sfu-arch/muir.git
+	url = https://github.com/sfu-arch/muir-lib.git
