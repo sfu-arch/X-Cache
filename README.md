@@ -12,6 +12,17 @@ Lastly, Verilator is already available in many Linux distributions, i.e. Ubuntu,
 
 **This project is influenced by Tsim from TVM project and we are thankful to TVM team to opensource their code**
 
+## Quick Start
+
+```bash
+git clone https://github.com/sfu-arch/muir-sim.git
+cd muir-sim
+git submodule update --init --recursive
+make chisel NPROCS=4 NUM_PTRS=2 NUM_ARGS=1
+pip3 install --user .
+python3 python/test14.py
+```
+
 ## µIR-sim Design
 
 µIR-sim uses Verilator to integrate µIR generated accelerators into overall system design and provides flexibility in the hardware language used to implement these designs. For example, on could use OpenCL, C/C++ or Chisel3 -- we mainly rely on Chisel3 -- to describe an accelerator design that would eventually be compiled down to Verilog, since it is the standard input language for FPGA/ASIC tools.
