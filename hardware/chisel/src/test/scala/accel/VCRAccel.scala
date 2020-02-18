@@ -68,7 +68,7 @@ object DandelionSimAccelMain extends App {
    *       Pass generated accelerator to TestAccel
    */
   implicit val p =
-    new WithSimShellConfig(dLen = 64)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
+    new WithSimShellConfig(dLen = 64, pLog = false)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
   chisel3.Driver.execute(args.take(4),
     () => new DandelionSimAccel(() => new test14DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
 }

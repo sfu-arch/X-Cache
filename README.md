@@ -21,6 +21,51 @@ git submodule update --init --recursive
 make chisel NPROCS=4 NUM_PTRS=2 NUM_ARGS=1
 pip3 install --user .
 python3 python/test14.py
+
+
+Stating MuIRSim...
+"Print input data:": Print input data:
+k: 1
+k: 2
+k: 3
+k: 4
+k: 5
+"Print input data:": Print input data:
+k: 0
+k: 0
+k: 0
+k: 0
+k: 0
+Ptrs: ptr(0):                 4096, ptr(1):                 8192,
+Vals: val(0):                    5,
+Dirty block address:                 8192
+Dirty block address:                 8192
+"Print output data:": Print output data:
+k: 1
+k: 2
+k: 3
+k: 4
+k: 5
+"Print output data:": Print output data:
+k: 6
+k: 7
+k: 8
+k: 9
+k: 10
+Cycle: 165
+[1 2 3 4 5]
+[ 6  7  8  9 10]
+```
+
+To enable tracing of the output change `pLog` variable in *hardware/chisel/src/test/scala/accel/VCRAccel.scala* file to `true`:
+
+```scala
+  implicit val p =
+    new WithSimShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
+  chisel3.Driver.execute(args.take(4),
+    () => new DandelionSimAccel(() => new test14DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
+}
+
 ```
 
 ## µIR-sim Design
