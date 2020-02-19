@@ -1,18 +1,22 @@
 import numpy as np
+import platform
 import dsim
 
+def test01(a, b):
+    return a * b
 
-# a = np.array([0, 1, 2, 3, 4])
-# b = np.array([0, 1, 2, 3, 4])
-# c = np.array([0, 0, 0, 0, 0])
 
-# a_s = dsim.DArray(a)
-# b_s = dsim.DArray(b)
-# c_s = dsim.DArray(c)
+if platform.system() == 'Linux':
+    hw_lib_path = "./hardware/chisel/build/libhw.so"
+elif platform.system() == 'Darwin':
+    hw_lib_path = "./hardware/chisel/build/libhw.dylib"
 
-hw_lib_path = "./hardware/chisel/build/libhw.so"
 
-cycle = dsim.sim(ptrs = [ ], vars= [2, 5], hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [  ], vars= [5, 3], numRets=1, numEvents=1, hwlib = hw_lib_path)
 
-print("Cycle: " + str(cycle))
-print(c_s.getData())
+print("Cycle: " + str(events[0]))
+
+if events[1] == test01(5,3):
+    print("Success!\nRet: " + str(events[1]))
+else:
+    print("Failed!\nRet: " + str(events[1]))

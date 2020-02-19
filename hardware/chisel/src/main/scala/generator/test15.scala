@@ -8,6 +8,7 @@ import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.memory._
 import dandelion.node._
+import dandelion.accel._
 import util._
 
 
