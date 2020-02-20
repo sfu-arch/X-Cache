@@ -190,9 +190,11 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
   vcr.io.vcr.ecnt(0).valid := last
   vcr.io.vcr.ecnt(0).bits := cycles
 
-  for (i <- 1 to accel.Returns.length) {
-    vcr.io.vcr.ecnt(i).bits := accel.io.out.bits.data(s"field${i-1}").data
-    vcr.io.vcr.ecnt(i).valid := accel.io.out.valid
+  if(accel.Returns.length > 1){
+    for (i <- 1 to accel.Returns.length) {
+      vcr.io.vcr.ecnt(i).bits := accel.io.out.bits.data(s"field${i-1}").data
+      vcr.io.vcr.ecnt(i).valid := accel.io.out.valid
+    }
   }
 
   /**
