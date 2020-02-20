@@ -89,19 +89,28 @@ Also, we provide cmake scripts for building everything automatically and a confi
 Finally, the following snippet shows how a python wrapper design simulation, based on the toy example, can invoke the simulation:
 
 ```python
-a = np.array([0, 1, 2, 3, 4])
-b = np.array([0, 1, 2, 3, 4])
-c = np.array([0, 0, 0, 0, 0])
+import numpy as np
+import platform
+import dsim
 
-a_s = dsim.DArray(a)
-b_s = dsim.DArray(b)
-c_s = dsim.DArray(c)
+def test01(a, b):
+    return a * b
 
-hw_lib_path = "./hardware/chisel/build/libhw.so"
 
-cycle = dsim.sim(ptrs = [a_s, b_s, c_s], vars= [5, 5], hwlib = hw_lib_path)
+if platform.system() == 'Linux':
+    hw_lib_path = "./hardware/chisel/build/libhw.so"
+    elif platform.system() == 'Darwin':
+        hw_lib_path = "./hardware/chisel/build/libhw.dylib"
 
-print("Cycle: " + str(cycle))
+
+events = dsim.sim(ptrs = [  ], vars= [5, 3], numRets=1, numEvents=1, hwlib = hw_lib_path)
+
+print("Cycle: " + str(events[0]))
+
+if events[1] == test01(5,3):
+    print("Success!\nRet: " + str(events[1]))
+    else:
+        print("Failed!\nRet: " + str(events[1]))
 ```
 
 
