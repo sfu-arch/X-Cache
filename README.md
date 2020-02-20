@@ -34,7 +34,7 @@ make chisel NPROCS=4 NUM_PTRS=2 NUM_VALS=1 NUM_RETS=0
 
 ```bash
 pip3 install --user .
-python3 python/test14.py
+python3 python/test01.py
 ```
 
 
