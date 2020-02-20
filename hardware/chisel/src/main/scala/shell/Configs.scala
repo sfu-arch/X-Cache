@@ -11,9 +11,9 @@ import dandelion.interfaces.axi._
 class WithShellConfig(vcrParams: DandelionVCRParams = DandelionVCRParams(),
                       vmeParams: DandelionVMEParams = DandelionVMEParams(),
                       hostParams: AXIParams = AXIParams(
-                        addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
+                        addrBits = 16, dataBits = 64, idBits = 13, lenBits = 4),
                       memParams: AXIParams = AXIParams(
-                        addrBits = 32, dataBits = 32, userBits = 5,
+                        addrBits = 32, dataBits = 64, userBits = 5,
                         lenBits = 4, // limit to 16 beats, instead of 256 beats in AXI4
                         coherent = true))
   extends Config((site, here, up) => {
