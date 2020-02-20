@@ -14,15 +14,33 @@ Lastly, Verilator is already available in many Linux distributions, i.e. Ubuntu,
 
 ## Quick Start
 
+**Step one:** Installing dependencies: Official supported environment for building and running muIR-sim is ubuntu 18.04. To start using muIR-sim you have to first install muIR-sim dependencies:
+
+```bash
+sudo apt-get install build-essential cmake libjsoncpp-dev  libncurses5-dev graphviz binutils-dev
+sudo apt-get install gcc-8-multilib g++-8-multilib
+```
+
+**Step tow:** Is building hardware accelerator and get c++ simulation model so the python driver can run the simulation:
+
 ```bash
 git clone https://github.com/sfu-arch/muir-sim.git
 cd muir-sim
 git submodule update --init --recursive
 make chisel NPROCS=4 NUM_PTRS=2 NUM_VALS=1 NUM_RETS=0
+```
+
+**Step three:** Is building `src/driver.cc` using pip3 so our python script can start using our C++ driver for simulation:
+
+```bash
 pip3 install --user .
 python3 python/test14.py
+```
 
 
+**Step four:** I running the simulation:
+
+```bash
 Stating MuIRSim...
 "Print input data:": Print input data:
 k: 1
@@ -67,6 +85,9 @@ To enable tracing of the output change `pLog` variable in *hardware/chisel/src/t
 }
 
 ```
+
+
+**NOTE:** In [dandelion-tutorial](https://github.com/amsharifian/dandelion-tutorial) you can find depth explanation about every pieces of **Dandelion** project, muIR-Sim, is one of the subprojects, and how to modify the driver and scala file for different simulation scenarios.
 
 ## µIR-sim Design
 
