@@ -42,37 +42,14 @@ python3 python/test14.py
 
 ```bash
 Stating MuIRSim...
-"Print input data:": Print input data:
-k: 1
-k: 2
-k: 3
-k: 4
-k: 5
-"Print input data:": Print input data:
-k: 0
-k: 0
-k: 0
-k: 0
-k: 0
-Ptrs: ptr(0):                 4096, ptr(1):                 8192,
-Vals: val(0):                    5,
-Dirty block address:                 8192
-Dirty block address:                 8192
-"Print output data:": Print output data:
-k: 1
-k: 2
-k: 3
-k: 4
-k: 5
-"Print output data:": Print output data:
-k: 6
-k: 7
-k: 8
-k: 9
-k: 10
-Cycle: 165
-[1 2 3 4 5]
-[ 6  7  8  9 10]
+Ptrs:
+Vals: val(0):                    5, val(1):                    3,
+[LOG] [Test01] [TID-> 0] [BB]   bb_entry0: Output [F] fired @    14
+[LOG] [Test01] [TID-> 0] [COMPUTE] binaryOp_mul0: Output fired @    15, Value:                   15 (                   3 *                    5 )
+[LOG] [Test01] [TID-> 0] [RET] ret_1: Output fired @    18
+Cycle: 4
+Success!
+Ret: 15
 ```
 
 To enable tracing of the output change `pLog` variable in *hardware/chisel/src/test/scala/accel/VCRAccel.scala* file to `true`:
