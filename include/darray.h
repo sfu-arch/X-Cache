@@ -9,14 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "dlpack/dlpack.h"
+
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 namespace py = pybind11;
-
-// DATA SIZES
-#define ELEMENT_SIZE_BITS 64
 
 namespace driver {
 
@@ -47,16 +46,32 @@ class DArray {
     DLTensor array;
 
    public:
-    DArray(uint64_t shapes) {
+
+    enum DType{
+        Bit = 0,
+        Byte,
+        Word,
+        DWord
+    };
+    DArray(uint64_t shapes, DType type) {
         array.shape = (int64_t *)malloc(sizeof(int64_t));
 
         array.shape[0] = shapes;
 
         // Default values
-        // TODO: replace default values with defined datatypes
         array.dtype.code = 0;
-        array.dtype.bits = ELEMENT_SIZE_BITS;
         array.dtype.lanes = 1;
+        switch(type){
+            case DType::Bit:
+                array.dtype.bits = 1;
+            case DType::Byte:
+                array.dtype.bits = 8;
+            case DType::Word:
+                array.dtype.bits = 32;
+            case DType::DWord:
+                array.dtype.bits = 64;
+        };
+
 
         array.ndim = 1;
 
@@ -65,7 +80,7 @@ class DArray {
         array.data = malloc(sizeof(uint64_t *) * array.shape[0]);
     }
     DArray(py::array_t<int64_t, py::array::c_style | py::array::forcecast>
-               in_data) {
+               in_data, DType type) {
         std::vector<int64_t> shapes(in_data.size());
         std::memcpy(shapes.data(), in_data.data(),
                     in_data.size() * sizeof(int64_t));
@@ -76,7 +91,19 @@ class DArray {
 
         // Default values
         array.dtype.code = 0;
-        array.dtype.bits = ELEMENT_SIZE_BITS;
+
+        switch(type){
+            case DType::Bit:
+                array.dtype.bits = 1;
+            case DType::Byte:
+                array.dtype.bits = 8;
+            case DType::Word:
+                array.dtype.bits = 32;
+            case DType::DWord:
+                array.dtype.bits = 64;
+        };
+
+        //array.dtype.bits = ELEMENT_SIZE_BITS;
         array.dtype.lanes = 1;
 
         array.ndim = 1;

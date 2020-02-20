@@ -245,15 +245,33 @@ std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
  * Pybind11 wrappers for Dandelion-sim
  */
 PYBIND11_MODULE(dsim, m) {
-    py::class_<driver::DArray>(m, "DArray")
-        .def(py::init<
-             py::array_t<int64_t, py::array::c_style | py::array::forcecast>>())
+    py::class_<driver::DArray> darray(m, "DArray");
+    darray.def(py::init<
+             py::array_t<int64_t, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
         .def("initData", &driver::DArray::initData)
         .def("getData", &driver::DArray::getData)
         .def("__repr__", [](const driver::DArray &a) {
             return "<DArray ['" + std::to_string(a.getDimenssion()) + "']>: [" +
                    a.print_array() + "]";
         });
+
+    py::enum_<driver::DArray::DType>(darray, "DType")
+        .value("Bit", driver::DArray::DType::Bit)
+        .value("Byte", driver::DArray::DType::Byte)
+        .value("Word", driver::DArray::DType::Word)
+        .value("DWord", driver::DArray::DType::DWord)
+        .export_values();
+
+
+    //py::class_<driver::DArray>(m, "DArray")
+        //.def(py::init<
+             //py::array_t<int64_t, py::array::c_style | py::array::forcecast>>())
+        //.def("initData", &driver::DArray::initData)
+        //.def("getData", &driver::DArray::getData)
+        //.def("__repr__", [](const driver::DArray &a) {
+            //return "<DArray ['" + std::to_string(a.getDimenssion()) + "']>: [" +
+                   //a.print_array() + "]";
+        //});
 
     m.def("sim", &driver::RunSim, "A function to run DSIM", py::arg("ptrs"),
           py::arg("vars"), py::arg("numRets"), py::arg("numEvents"),

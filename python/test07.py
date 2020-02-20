@@ -2,10 +2,12 @@ import numpy as np
 import platform
 import dsim
 
-def test05(a):
-    a_len = 10
-    for i in range(0, a_len):
+def test07(a, n):
+    i = 0
+    while i < n:
         a[i] = 2 * a[i]
+        i += 1
+
     return a
 
 
@@ -15,13 +17,11 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     hw_lib_path = "./hardware/chisel/build/libhw.dylib"
 
-val_a = list(range(1, 11))
-print(val_a)
+val_a = list(range(0, 9))
 a_s = dsim.DArray(val_a, dsim.DArray.DType.DWord)
+val_n = 3
 
-events = dsim.sim(ptrs = [a_s], vars= [], numRets=1, numEvents=1, hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [a_s], vars= [val_n], numRets=1, numEvents=1, hwlib = hw_lib_path)
 
 print("Cycle: " + str(events[0]))
-print("Output array:\n\t")
 print(a_s.getData())
-print(test05(val_a))
