@@ -52,13 +52,13 @@ object DandelionSimAccelMain extends App {
   //These are default values for VCR
   var num_ptrs = 4
   var num_vals = 2
-  var num_returns = 0
+  var num_returns = 1
   var num_events = 1
   var num_ctrl = 1
   args.sliding(2, 2).toList.collect {
     case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
     case Array("--num-vals", argVals: String) => num_vals = argVals.toInt
-    case Array("--num-ret", argVals: String) => num_returns = argVals.toInt
+    case Array("--num-rets", argVals: String) => num_returns = argVals.toInt
     case Array("--num-event", argEvent: String) => num_vals = argEvent.toInt
     case Array("--num-ctrl", argCtrl: String) => num_vals = argCtrl.toInt
   }
@@ -70,6 +70,6 @@ object DandelionSimAccelMain extends App {
   implicit val p =
     new WithSimShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
   chisel3.Driver.execute(args.take(4),
-    () => new DandelionSimAccel(() => new test05DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
+    () => new DandelionSimAccel(() => new test06DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
 }
 

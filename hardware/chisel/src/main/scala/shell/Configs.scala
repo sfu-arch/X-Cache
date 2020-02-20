@@ -8,10 +8,19 @@ import dandelion.interfaces.axi._
 
 
 /** SimDefaultConfig. Shell configuration for simulation */
+
+/**
+  * Please note that the dLen from WithSimShellConfig should be the same value as
+  * AXI -- memParams:dataBits
+  * @param vcrParams
+  * @param vmeParams
+  * @param hostParams
+  * @param memParams
+  */
 class WithShellConfig(vcrParams: DandelionVCRParams = DandelionVCRParams(),
                       vmeParams: DandelionVMEParams = DandelionVMEParams(),
                       hostParams: AXIParams = AXIParams(
-                        addrBits = 16, dataBits = 64, idBits = 13, lenBits = 4),
+                        addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
                       memParams: AXIParams = AXIParams(
                         addrBits = 32, dataBits = 64, userBits = 5,
                         lenBits = 4, // limit to 16 beats, instead of 256 beats in AXI4

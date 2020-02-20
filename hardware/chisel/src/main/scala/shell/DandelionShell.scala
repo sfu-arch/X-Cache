@@ -179,7 +179,7 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
 
   when(state === sIdle) {
     cycles := 0.U
-  }.otherwise {
+  }.elsewhen(state =/= sFlush) {
     cycles := cycles + 1.U
   }
 
@@ -190,7 +190,7 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
   vcr.io.vcr.ecnt(0).valid := last
   vcr.io.vcr.ecnt(0).bits := cycles
 
-  if(accel.Returns.length > 1){
+  if(accel.Returns.length >= 1){
     for (i <- 1 to accel.Returns.length) {
       vcr.io.vcr.ecnt(i).bits := accel.io.out.bits.data(s"field${i-1}").data
       vcr.io.vcr.ecnt(i).valid := accel.io.out.valid

@@ -18,7 +18,7 @@ Lastly, Verilator is already available in many Linux distributions, i.e. Ubuntu,
 git clone https://github.com/sfu-arch/muir-sim.git
 cd muir-sim
 git submodule update --init --recursive
-make chisel NPROCS=4 NUM_PTRS=2 NUM_ARGS=1
+make chisel NPROCS=4 NUM_PTRS=2 NUM_VALS=1 NUM_RETS=0
 pip3 install --user .
 python3 python/test14.py
 
