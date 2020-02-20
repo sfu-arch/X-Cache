@@ -49,7 +49,7 @@ class ComputeNode(NumOuts: Int, ID: Int, opCode: String)
   val right_valid_R = RegInit(false.B)
 
   //Instantiate ALU with selected code
-  val FU = Module(new UALU(xlen, opCode))
+  val FU = Module(new UALU(xlen, opCode, issign = sign))
 
   val s_IDLE :: s_COMPUTE :: Nil = Enum(2)
   val state = RegInit(s_IDLE)
