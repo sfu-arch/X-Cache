@@ -11,6 +11,7 @@ import dandelion.util.{DandelionGenericParameterizedBundle, DandelionParameteriz
 trait AccelParams {
 
   var xlen: Int
+  var ylen: Int
   val tlen: Int
   val glen: Int
   val typeSize: Int
@@ -55,6 +56,7 @@ trait VMEParams {
 
 case class DandelionAccelParams(
                                  dataLen: Int = 32,
+                                 addrLen: Int = 32,
                                  taskLen: Int = 5,
                                  groupLen: Int = 16,
                                  mshrLen: Int = 8,
@@ -65,6 +67,7 @@ case class DandelionAccelParams(
                                  printCLog: Boolean = false
                                ) extends AccelParams {
   var xlen: Int = dataLen
+  var ylen: Int = addrLen
   val tlen: Int = taskLen
   val glen: Int = groupLen
   val typeSize: Int = tSize
@@ -163,6 +166,7 @@ trait HasAccelParams {
   def accelParams: DandelionAccelParams = p(DandelionConfigKey)
 
   val xlen = accelParams.xlen
+  val ylen = accelParams.ylen
   val tlen = accelParams.tlen
   val glen = accelParams.glen
   val mshrLen = accelParams.mshrLen
