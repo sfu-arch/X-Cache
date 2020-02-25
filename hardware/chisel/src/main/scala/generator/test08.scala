@@ -789,8 +789,15 @@ class test08DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
   st_39.io.Out(0).ready := true.B
 
 
+
+  /* ================================================================== *
+   *                   CONNECTING DATA DEPENDENCIES                     *
+   * ================================================================== */
+
   br_24.io.PredOp(0) <> st_21.io.SuccOp(0)
+
   br_34.io.PredOp(0) <> st_31.io.SuccOp(0)
+
   br_42.io.PredOp(0) <> st_39.io.SuccOp(0)
 
   /* ================================================================== *

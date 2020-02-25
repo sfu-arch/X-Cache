@@ -29,6 +29,9 @@ verilog:
 chisel:
 	make -C hardware/chisel
 
+f1:
+	make -C hardware/chisel verilog
+
 clean:
 	-rm -rf $(build_dir)
 	make -C hardware/chisel clean

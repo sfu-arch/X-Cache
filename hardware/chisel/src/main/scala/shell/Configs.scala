@@ -39,3 +39,34 @@ class WithSimShellConfig(dLen: Int = 64, pLog: Boolean = false)
   new WithAccelConfig(DandelionAccelParams(dataLen = dLen, printLog = pLog)) ++
     new WithShellConfig(DandelionVCRParams(numCtrl = nCtrl, numEvent = nEvent, numPtrs = nPtrs, numVals = nVals, numRets = nRets)))
 
+
+/**
+  * F1 Config
+  * AXI -- memParams:dataBits
+  * @param vcrParams
+  * @param vmeParams
+  * @param hostParams
+  * @param memParams
+  */
+class WithF1Config(vcrParams: DandelionVCRParams = DandelionVCRParams(),
+                      vmeParams: DandelionVMEParams = DandelionVMEParams(),
+                      hostParams: AXIParams = AXIParams(
+                        addrBits = 32, dataBits = 32, idBits = 13, lenBits = 8),
+                      memParams: AXIParams = AXIParams(
+                        addrBits = 64, dataBits = 64, userBits = 5,
+                        lenBits = 8, // limit to 16 beats, instead of 256 beats in AXI4
+                        coherent = false))
+  extends Config((site, here, up) => {
+    // Core
+    case VCRKey => vcrParams
+    case VMEKey => vmeParams
+    case HostParamKey => hostParams
+    case MemParamKey => memParams
+  }
+  )
+
+class WithF1ShellConfig(dLen: Int = 64, pLog: Boolean = false)
+                        (nPtrs: Int = 0, nVals: Int = 2, nRets: Int = 1, nCtrl: Int = 1, nEvent: Int = 1) extends Config(
+  new WithAccelConfig(DandelionAccelParams(dataLen = dLen, printLog = pLog)) ++
+    new WithF1Config(DandelionVCRParams(numCtrl = nCtrl, numEvent = nEvent, numPtrs = nPtrs, numVals = nVals, numRets = nRets)))
+

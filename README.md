@@ -38,7 +38,7 @@ python3 python/test01.py
 ```
 
 
-**Step four:** I running the simulation:
+**Step four:** Running the simulation:
 
 ```bash
 Stating MuIRSim...
@@ -65,6 +65,17 @@ To enable tracing of the output change `pLog` variable in *hardware/chisel/src/t
 
 
 **NOTE:** In [dandelion-tutorial](https://github.com/amsharifian/dandelion-tutorial) you can find depth explanation about every pieces of **Dandelion** project, muIR-Sim, is one of the subprojects, and how to modify the driver and scala file for different simulation scenarios.
+
+
+## Generating Custom Logic for real FPGAs
+
+muIR-Sim repo provides different shell for FPGA SoC boards and Amazon AWS F1 instances along with the software simulation framework. The idea behind these shell is that the designer first test their implementation using muIR sim and then take the tested logic and put it on either FPGA SoC boards or Amazon AWS instances.
+
+To generate verilog design of the accelerator for AWS for instance, you only need to run the following command:
+
+```bash
+make f1 TOP=DandelionF1Accel NPROCS=4 NUM_PTRS=0 NUM_VALS=2 NUM_RETS=1
+```
 
 ## µIR-sim Design
 
