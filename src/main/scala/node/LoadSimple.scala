@@ -41,7 +41,7 @@ class LoadIO(NumPredOps: Int,
 class UnTypLoad(NumPredOps: Int,
                 NumSuccOps: Int,
                 NumOuts: Int,
-                Typ: UInt = MT_W,
+                Typ: UInt = MT_D,
                 ID: Int,
                 RouteID: Int)
                (implicit p: Parameters,

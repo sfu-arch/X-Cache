@@ -1,26 +1,15 @@
 package dandelion.generator
 
 import chisel3._
-import chisel3.util._
-import chisel3.Module._
-import chisel3.testers._
-import chisel3.iotesters._
 import dandelion.accel._
-import dandelion.arbiters._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
-import dandelion.fpu._
 import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
 import dandelion.memory._
-import dandelion.memory.stack._
 import dandelion.node._
-import muxes._
-import org.scalatest._
-import regfile._
-import util._
 
 
 class test14DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32))
@@ -71,7 +60,7 @@ class test14DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
   val br_0 = Module(new UBranchNode(ID = 0))
 
   //  %arrayidx2 = getelementptr inbounds i32, i32* %a, i32 4, !dbg !27, !UID !28
-  val Gep_arrayidx21 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 1)(ElementSize = 4, ArraySize = List()))
+  val Gep_arrayidx21 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 1)(ElementSize = 8, ArraySize = List()))
 
   //  %0 = load i32, i32* %arrayidx2, align 4, !dbg !27, !tbaa !29, !UID !33
   val ld_2 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 2, RouteID = 0))
@@ -83,7 +72,7 @@ class test14DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
   val phii_084 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 4, Res = true))
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i32 %i.08, !dbg !38, !UID !41
-  val Gep_arrayidx5 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 5)(ElementSize = 4, ArraySize = List()))
+  val Gep_arrayidx5 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 5)(ElementSize = 8, ArraySize = List()))
 
   //  %1 = load i32, i32* %arrayidx, align 4, !dbg !38, !tbaa !29, !UID !42
   val ld_6 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1))
@@ -92,7 +81,7 @@ class test14DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
   val binaryOp_add7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "add")(sign = false, Debug = false))
 
   //  %arrayidx1 = getelementptr inbounds i32, i32* %b, i32 %i.08, !dbg !45, !UID !46
-  val Gep_arrayidx18 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 8)(ElementSize = 4, ArraySize = List()))
+  val Gep_arrayidx18 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 8)(ElementSize = 8, ArraySize = List()))
 
   //  store i32 %add, i32* %arrayidx1, align 4, !dbg !47, !tbaa !29, !UID !48
   val st_9 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 9, RouteID = 0))
