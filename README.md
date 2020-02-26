@@ -27,7 +27,7 @@ sudo apt-get install gcc-8-multilib g++-8-multilib
 git clone https://github.com/sfu-arch/muir-sim.git
 cd muir-sim
 git submodule update --init --recursive
-make chisel NPROCS=4 NUM_PTRS=2 NUM_VALS=1 NUM_RETS=0
+make chisel NPROCS=4 NUM_PTRS=0 NUM_VALS=2 NUM_RETS=1
 ```
 
 **Step three:** Is building `src/driver.cc` using pip3 so our python script can start using our C++ driver for simulation:
@@ -58,7 +58,7 @@ To enable tracing of the output change `pLog` variable in *hardware/chisel/src/t
   implicit val p =
     new WithSimShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
   chisel3.Driver.execute(args.take(4),
-    () => new DandelionSimAccel(() => new test14DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
+    () => new DandelionSimAccel(() => new test01DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
 }
 
 ```
