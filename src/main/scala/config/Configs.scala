@@ -100,7 +100,7 @@ case class DandelionAccelParams(
 case class DandelionVCRParams(numCtrl: Int = 1,
                               numEvent: Int = 1,
                               numVals: Int = 2,
-                              numPtrs: Int = 2,
+                              numPtrs: Int = 4,
                               numRets: Int = 0) {
   val nCtrl = numCtrl
   val nECnt = numEvent + numRets
@@ -113,7 +113,7 @@ case class DandelionVCRParams(numCtrl: Int = 1,
   * VME parameters.
   * These parameters are used on VME interfaces and modules.
   */
-case class DandelionVMEParams(numRead: Int = 5,
+case class DandelionVMEParams(numRead: Int = 1,
                               numWrite: Int = 1) {
   val nReadClients: Int = numRead
   val nWriteClients: Int = numWrite

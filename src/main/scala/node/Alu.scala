@@ -264,7 +264,7 @@ class DSPALU[T <: Data : RealBits](gen: T, val opCode: String) extends Module {
 
   val in2U = io.in2.asUInt
 
-  DspContext.alter(DspContext.current.copy(trimType = Floor, binaryPointGrowth = 0, numMulPipes = 0)) {
+  DspContext.alter(DspContext.current.copy(trimType = RoundDown, binaryPointGrowth = 0, numMulPipes = 0)) {
     var aluOp = Array(
       AluOpCode.Add -> (io.in1 context_+ io.in2),
       AluOpCode.Sub -> (io.in1 context_- io.in2),
@@ -304,7 +304,7 @@ class UALUcompatibleDSPALU[T <: Data : RealBits](gen: T, val opCode: String) ext
   val in1gen = io.in1.asTypeOf(gen)
   val in2gen = io.in2.asTypeOf(gen)
 
-  DspContext.alter(DspContext.current.copy(trimType = Floor, binaryPointGrowth = 0, numMulPipes = 0)) {
+  DspContext.alter(DspContext.current.copy(trimType = RoundDown, binaryPointGrowth = 0, numMulPipes = 0)) {
     var aluOp = Array(
       AluOpCode.Add -> (in1gen context_+ in2gen),
       AluOpCode.Sub -> (in1gen context_- in2gen),
