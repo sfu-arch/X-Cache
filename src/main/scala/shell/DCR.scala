@@ -113,6 +113,8 @@ class DCR(implicit val p: Parameters) extends Module with HasAccelShellParams {
   io.host.ack := false.B
   io.host.rdata := rdata
 
+  val isWriteData = wstate === sWriteStretch
+
 
   switch(wstate) {
     is(sWriteActive) {
@@ -147,7 +149,7 @@ class DCR(implicit val p: Parameters) extends Module with HasAccelShellParams {
 
   when(io.dcr.finish) {
     reg(0) := "b_10".U
-  }.elsewhen(io.host.wr && addr(0).U === waddr) {
+  }.elsewhen(io.host.wr && addr(0).U === waddr && isWriteData) {
     reg(0) := wdata
   }
 
@@ -160,7 +162,8 @@ class DCR(implicit val p: Parameters) extends Module with HasAccelShellParams {
   }
 
   for (i <- 0 until (dp.nVals + nPtrs)) {
-    when(io.host.wr && addr(vo + i).U === waddr) {
+    when(io.host.wr && addr(vo + i).U === waddr && isWriteData) {
+      printf(p"Write add: ${waddr} : ${wdata}\n")
       reg(vo + i) := wdata
     }
   }
@@ -181,6 +184,7 @@ class DCR(implicit val p: Parameters) extends Module with HasAccelShellParams {
     }
   } else { // 64-bits pointers
     for (i <- 0 until (nPtrs / 2)) {
+      //io.dcr.ptrs(i) := Cat(reg(po + 2 * i + 1), reg(po + 2 * i))
       io.dcr.ptrs(i) := Cat(reg(po + 2 * i + 1), reg(po + 2 * i))
     }
   }
