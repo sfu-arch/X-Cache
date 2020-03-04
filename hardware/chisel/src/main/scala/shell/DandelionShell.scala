@@ -138,6 +138,94 @@ class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with H
 
 }
 
+class DandelionF1DTAShell(implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
+  val io = IO(new Bundle {
+    val host = new ConfigBusMaster(hostParams)
+    val mem = new AXIMaster(memParams)
+  })
+
+  val dcr = Module(new DCR)
+  val vmem = Module(new VME)
+
+  val buffer = Module(new Queue(vmem.io.vme.rd(0).data.bits.cloneType, 40))
+
+  val sIdle :: sReq :: sBusy :: Nil = Enum(3)
+  val Rstate = RegInit(sIdle)
+  val Wstate = RegInit(sIdle)
+
+  val cycle_count = new Counter(200)
+
+  when(Rstate =/= sIdle) {
+    cycle_count.inc()
+  }
+
+
+  dcr.io.dcr.ecnt(0.U).bits := cycle_count.value
+
+  // Read state machine
+  switch(Rstate) {
+    is(sIdle) {
+      when(dcr.io.dcr.launch) {
+        cycle_count.value := 0.U
+        Rstate := sReq
+      }
+    }
+    is(sReq) {
+      when(vmem.io.vme.rd(0).cmd.fire()) {
+        Rstate := sBusy
+      }
+    }
+  }
+  // Write state machine
+  switch(Wstate) {
+    is(sIdle) {
+      when(dcr.io.dcr.launch) {
+        Wstate := sReq
+      }
+    }
+    is(sReq) {
+      when(vmem.io.vme.wr(0).cmd.fire()) {
+        Wstate := sBusy
+      }
+    }
+  }
+
+  vmem.io.vme.rd(0).cmd.bits.addr := dcr.io.dcr.ptrs(0)
+  vmem.io.vme.rd(0).cmd.bits.len := dcr.io.dcr.vals(1)
+  vmem.io.vme.rd(0).cmd.valid := false.B
+
+  vmem.io.vme.wr(0).cmd.bits.addr := dcr.io.dcr.ptrs(2)
+  vmem.io.vme.wr(0).cmd.bits.len := dcr.io.dcr.vals(1)
+  vmem.io.vme.wr(0).cmd.valid := false.B
+
+  when(Rstate === sReq) {
+    vmem.io.vme.rd(0).cmd.valid := true.B
+  }
+
+  when(Wstate === sReq) {
+    vmem.io.vme.wr(0).cmd.valid := true.B
+  }
+
+  // Final
+  val last = Wstate === sBusy && vmem.io.vme.wr(0).ack
+  dcr.io.dcr.finish := last
+  dcr.io.dcr.ecnt(0).valid := last
+
+  when(vmem.io.vme.wr(0).ack) {
+    Rstate := sIdle
+    Wstate := sIdle
+  }
+
+
+  buffer.io.enq <> vmem.io.vme.rd(0).data
+  buffer.io.enq.bits := vmem.io.vme.rd(0).data.bits + dcr.io.dcr.vals(0)
+  vmem.io.vme.wr(0).data <> buffer.io.deq
+
+  io.mem <> vmem.io.mem
+  io.host <> dcr.io.host
+
+}
+
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
 /**
  *

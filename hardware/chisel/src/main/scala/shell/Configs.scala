@@ -53,7 +53,7 @@ class WithF1Config(vcrParams: DandelionVCRParams = DandelionVCRParams(),
                       hostParams: AXIParams = AXIParams(
                         addrBits = 32, dataBits = 32, idBits = 13, lenBits = 8),
                       memParams: AXIParams = AXIParams(
-                        addrBits = 64, dataBits = 64, userBits = 5,
+                        addrBits = 64, dataBits = 512, userBits = 10,
                         lenBits = 8, // limit to 16 beats, instead of 256 beats in AXI4
                         coherent = false))
   extends Config((site, here, up) => {
@@ -66,7 +66,7 @@ class WithF1Config(vcrParams: DandelionVCRParams = DandelionVCRParams(),
   )
 
 class WithF1ShellConfig(dLen: Int = 64, pLog: Boolean = false)
-                        (nPtrs: Int = 0, nVals: Int = 2, nRets: Int = 1, nCtrl: Int = 1, nEvent: Int = 1) extends Config(
+                        (nPtrs: Int = 4, nVals: Int = 2, nRets: Int = 1, nCtrl: Int = 1, nEvent: Int = 1) extends Config(
   new WithAccelConfig(DandelionAccelParams(dataLen = dLen, printLog = pLog)) ++
     new WithF1Config(DandelionVCRParams(numCtrl = nCtrl, numEvent = nEvent, numPtrs = nPtrs, numVals = nVals, numRets = nRets)))
 

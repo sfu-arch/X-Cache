@@ -70,7 +70,7 @@ object DandelionSimAccelMain extends App {
   implicit val p =
     new WithSimShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
   chisel3.Driver.execute(args.take(4),
-    () => new DandelionSimAccel(() => new test01DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
+    () => new DandelionSimAccel(() => new test05DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
 }
 
 
@@ -97,6 +97,6 @@ object DandelionF1AccelMain extends App {
   implicit val p =
     new WithF1ShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
   chisel3.Driver.execute(args.take(4),
-    () => new DandelionF1Accel(() => new test01DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
+    () => new DandelionF1Accel(() => new test05DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
 }
 
