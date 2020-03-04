@@ -79,7 +79,7 @@ object DandelionF1AccelMain extends App {
   //These are default values for VCR
   var num_ptrs = 4
   var num_vals = 2
-  var num_returns = 1
+  var num_returns = 0
   var num_events = 1
   var num_ctrl = 1
   args.sliding(2, 2).toList.collect {

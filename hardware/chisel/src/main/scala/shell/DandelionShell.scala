@@ -194,7 +194,7 @@ class DandelionF1DTAShell(implicit val p: Parameters) extends MultiIOModule with
   vmem.io.vme.rd(0).cmd.bits.len := dcr.io.dcr.vals(1)
   vmem.io.vme.rd(0).cmd.valid := false.B
 
-  vmem.io.vme.wr(0).cmd.bits.addr := dcr.io.dcr.ptrs(2)
+  vmem.io.vme.wr(0).cmd.bits.addr := dcr.io.dcr.ptrs(1)
   vmem.io.vme.wr(0).cmd.bits.len := dcr.io.dcr.vals(1)
   vmem.io.vme.wr(0).cmd.valid := false.B
 
