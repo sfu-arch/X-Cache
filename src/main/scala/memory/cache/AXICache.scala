@@ -8,13 +8,15 @@ import dandelion.config._
 import dandelion.util._
 import dandelion.interfaces._
 import dandelion.interfaces.axi._
+import dandelion.junctions._
 import dandelion.shell._
 
 
 trait CacheAccelParams extends HasAccelParams with HasAccelShellParams {
-  val nWays = nways
-  val nSets = nsets
-  val bBytes = cacheBlockBytes
+
+  val nWays = accelParams.nways
+  val nSets = accelParams.nsets
+  val bBytes = accelParams.cacheBlockBytes
   val bBits = bBytes << 3
   val blen = log2Ceil(bBytes)
   val slen = log2Ceil(nSets)
@@ -22,7 +24,7 @@ trait CacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nWords = bBits / xlen
   val wBytes = xlen / 8
   val byteOffsetBits = log2Ceil(wBytes)
-  val databeats = bBits / memParams.dataBits
+  val dataBeats = bBits / memParams.dataBits
 }
 
 
@@ -60,7 +62,6 @@ object MetaData {
   }
 }
 
-
 class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
   with CacheAccelParams
   with HasAccelShellParams {
@@ -97,9 +98,9 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   val count_set = RegInit(false.B)
 
   // Counters
-  require(databeats > 0)
-  val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), databeats)
-  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), databeats)
+  require(dataBeats > 0)
+  val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), dataBeats)
+  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), dataBeats)
 
   //  val (block_count, block_wrap) = Counter(flush_state === s_flush_BLOCK, nWords)
   val (set_count, set_wrap) = Counter(flush_state === s_flush_START, nSets)
@@ -132,11 +133,11 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
 
 
   val cache_block = Cat((dataMem map (_.read(idx).asUInt)).reverse)
-  val cache_block_size = cacheBlockBytes * 8
+  val cache_block_size = bBytes * 8
   val rmeta = RegNext(next = metaMem.read(idx), init = MetaData.default)
   val rdata = RegNext(next = cache_block, init = 0.U(cache_block_size.W))
   val rdata_buf = RegEnable(rdata, ren_reg)
-  val refill_buf = RegInit(VecInit(Seq.fill(databeats)(0.U(Axi_param.dataBits.W))))
+  val refill_buf = RegInit(VecInit(Seq.fill(dataBeats)(0.U(Axi_param.dataBits.W))))
   val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
   hit := valid(idx_reg) && rmeta.tag === tag_reg
@@ -199,7 +200,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
 
   // read request
   io.mem.ar.bits.addr := Cat(tag_reg, idx_reg) << blen.U
-  io.mem.ar.bits.len := (databeats - 1).U
+  io.mem.ar.bits.len := (dataBeats - 1).U
   io.mem.ar.valid := false.B
 
   // read data
@@ -216,15 +217,15 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
   // write addr
   //io.mem.aw.bits.addr := Cat(rmeta.tag, idx_reg) << blen.U
   io.mem.aw.bits.addr := Mux(flush_mode, block_addr, Cat(rmeta.tag, idx_reg) << blen.U)
-  io.mem.aw.bits.len := (databeats - 1).U
+  io.mem.aw.bits.len := (dataBeats - 1).U
   io.mem.aw.valid := false.B
 
   // Write resp
-  //io.mem.w.bits.data := VecInit.tabulate(databeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)
+  //io.mem.w.bits.data := VecInit.tabulate(dataBeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)
   io.mem.w.bits.data :=
     Mux(flush_mode,
-      VecInit.tabulate(databeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count),
-      VecInit.tabulate(databeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count))
+      VecInit.tabulate(dataBeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count),
+      VecInit.tabulate(dataBeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count))
 
   io.mem.w.bits.last := write_wrap_out
   io.mem.w.valid := false.B
@@ -375,7 +376,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
     }
     is(s_flush_WRITE_BACK) {
       if(clog){
-        printf(p"Write data: ${VecInit.tabulate(databeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)}\n")
+        printf(p"Write data: ${VecInit.tabulate(dataBeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)}\n")
       }
       io.mem.w.valid := true.B
       when(write_wrap_out) {
@@ -393,3 +394,176 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
 
 }
 
+class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
+  with CacheAccelParams
+  with HasAccelShellParams {
+  //import Chisel._ // FIXME: read enable signals for memories are broken by new chisel
+
+  val io = IO(new Bundle {
+    val cpu = new CacheCPUIO
+    val mem = new AXIMaster(memParams)
+  })
+
+  val Axi_param = memParams
+
+  // cache states
+  val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK ::
+    s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
+  val state = RegInit(s_IDLE)
+  // memory
+  val v        = RegInit(0.U(nSets.W))
+  val d        = RegInit(0.U(nSets.W))
+  val metaMem  = SyncReadMem(nSets, new MetaData)
+  //val metaMem  = SeqMem(nSets, new MetaData) //Chisel2
+  val dataMem  = Seq.fill(nWords)(SyncReadMem(nSets, Vec(wBytes, UInt(8.W))))
+  //val dataMem  = Seq.fill(nWords)(SeqMem(nSets, Vec(wBytes, UInt(8.W)))) // Chisel2
+
+  val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
+  val cpu_data = Reg(io.cpu.req.bits.data.cloneType)
+  val cpu_mask = Reg(io.cpu.req.bits.mask.cloneType)
+
+  // Counters
+  require(dataBeats > 0)
+  val (read_count,  read_wrap_out)  = Counter(io.mem.r.fire(), dataBeats)
+  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), dataBeats)
+
+  val is_idle   = state === s_IDLE
+  val is_read   = state === s_READ_CACHE
+  val is_write  = state === s_WRITE_CACHE
+  val is_alloc  = state === s_REFILL && read_wrap_out
+  val is_alloc_reg = RegNext(is_alloc)
+
+  val hit = Wire(Bool())
+  val wen = is_write && (hit || is_alloc_reg) && !io.cpu.abort || is_alloc
+  val ren = !wen && (is_idle || is_read) && io.cpu.req.valid
+  val ren_reg = RegNext(ren)
+
+  val addr     = io.cpu.req.bits.addr
+  val idx      = addr(slen+blen-1, blen)
+  val tag_reg  = addr_reg(xlen-1, slen+blen)
+  val idx_reg  = addr_reg(slen+blen-1, blen)
+  val off_reg  = addr_reg(blen-1, byteOffsetBits)
+
+  val rmeta = metaMem.read(idx, ren)
+  val rdata = Cat((dataMem map (_.read(idx, ren).asUInt)).reverse)
+  val rdata_buf = RegEnable(rdata, ren_reg)
+  //val refill_buf = Reg(Vec(dataBeats, UInt(nastiXDataBits.W)))
+  val refill_buf = Reg(Vec(dataBeats, UInt(Axi_param.dataBits.W)))
+  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
+
+  hit := v(idx_reg) && rmeta.tag === tag_reg
+
+  io.cpu.req.ready := is_idle || (state === s_READ_CACHE && hit)
+
+  // Read Mux
+  io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
+  io.cpu.resp.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_mask.orR
+
+  when(io.cpu.resp.valid) {
+    addr_reg  := addr
+    cpu_data  := io.cpu.req.bits.data
+    cpu_mask  := io.cpu.req.bits.mask
+  }
+
+  val wmeta = Wire(new MetaData)
+  wmeta.tag := tag_reg
+
+  val wmask = Mux(!is_alloc, (cpu_mask << Cat(off_reg, 0.U(byteOffsetBits.W))).asUInt.zext(), (-1).S)
+  val wdata = Mux(!is_alloc, Fill(nWords, cpu_data),
+    if (refill_buf.size == 1) io.mem.r.bits.data
+    else Cat(io.mem.r.bits.data, Cat(refill_buf.init.reverse)))
+  when(wen) {
+    v := v.bitSet(idx_reg, true.B)
+    d := d.bitSet(idx_reg, !is_alloc)
+    when(is_alloc) {
+      metaMem.write(idx_reg, wmeta)
+    }
+    dataMem.zipWithIndex foreach { case (mem, i) =>
+      val data = VecInit.tabulate(wBytes)(k => wdata(i*xlen+(k+1)*8-1, i*xlen+k*8))
+      mem.write(idx_reg, data, wmask((i+1)*wBytes-1, i*wBytes).toBools)
+      mem suggestName s"dataMem_${i}"
+    }
+  }
+
+  io.mem.ar.bits := NastiReadAddressChannel(
+    0.U, (Cat(tag_reg, idx_reg) << blen.U).asUInt(), log2Up(Axi_param.dataBits/8).U, (dataBeats-1).U)
+  io.mem.ar.valid := false.B
+  // read data
+  io.mem.r.ready := state === s_REFILL
+  when(io.mem.r.fire()) { refill_buf(read_count) := io.mem.r.bits.data }
+
+  // write addr
+  io.mem.aw.bits := NastiWriteAddressChannel(
+    0.U, (Cat(rmeta.tag, idx_reg) << blen.U).asUInt(), log2Up(Axi_param.dataBits/8).U, (dataBeats-1).U)
+  io.mem.aw.valid := false.B
+  // write data
+  io.mem.w.bits := NastiWriteDataChannel(
+    VecInit.tabulate(dataBeats)(i => read((i+1)*Axi_param.dataBits-1, i*Axi_param.dataBits))(write_count),
+    None, write_wrap_out)
+  io.mem.w.valid := false.B
+  // write resp
+  io.mem.b.ready := false.B
+
+  // Cache FSM
+  val is_dirty = v(idx_reg) && d(idx_reg)
+  switch(state) {
+    is(s_IDLE) {
+      when(io.cpu.req.valid) {
+        state := Mux(io.cpu.req.bits.mask.orR, s_WRITE_CACHE, s_READ_CACHE)
+      }
+    }
+    is(s_READ_CACHE) {
+      when(hit) {
+        when(io.cpu.req.valid) {
+          state := Mux(io.cpu.req.bits.mask.orR, s_WRITE_CACHE, s_READ_CACHE)
+        }.otherwise {
+          state := s_IDLE
+        }
+      }.otherwise {
+        io.mem.aw.valid := is_dirty
+        io.mem.ar.valid := !is_dirty
+        when(io.mem.aw.fire()) {
+          state := s_WRITE_BACK
+        }.elsewhen(io.mem.ar.fire()) {
+          state := s_REFILL
+        }
+      }
+    }
+    is(s_WRITE_CACHE) {
+      when(hit || is_alloc_reg || io.cpu.abort) {
+        state := s_IDLE
+      }.otherwise {
+        io.mem.aw.valid := is_dirty
+        io.mem.ar.valid := !is_dirty
+        when(io.mem.aw.fire()) {
+          state := s_WRITE_BACK
+        }.elsewhen(io.mem.ar.fire()) {
+          state := s_REFILL
+        }
+      }
+    }
+    is(s_WRITE_BACK) {
+      io.mem.w.valid := true.B
+      when(write_wrap_out) {
+        state := s_WRITE_ACK
+      }
+    }
+    is(s_WRITE_ACK) {
+      io.mem.b.ready := true.B
+      when(io.mem.b.fire()) {
+        state := s_REFILL_READY
+      }
+    }
+    is(s_REFILL_READY) {
+      io.mem.ar.valid := true.B
+      when(io.mem.ar.fire()) {
+        state := s_REFILL
+      }
+    }
+    is(s_REFILL) {
+      when(read_wrap_out) {
+        state := Mux(cpu_mask.orR, s_WRITE_CACHE, s_IDLE)
+      }
+    }
+  }
+}

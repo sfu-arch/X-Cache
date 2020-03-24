@@ -5,9 +5,8 @@ package dandelion.junctions
 import Chisel._
 import scala.math.max
 import scala.collection.mutable.ArraySeq
-import util._
 import chipsalliance.rocketchip.config._
-import dandelion.util._
+import util._
 
 case object NastiKey extends Field[NastiParameters]
 
@@ -22,7 +21,7 @@ trait HasNastiParameters {
   val nastiWIdBits = nastiExternal.idBits
   val nastiRIdBits = nastiExternal.idBits
   val nastiXIdBits = max(nastiWIdBits, nastiRIdBits)
-  val nastiXUserBits = 5
+  val nastiXUserBits = 1
   val nastiAWUserBits = nastiXUserBits
   val nastiWUserBits = nastiXUserBits
   val nastiBUserBits = nastiXUserBits
@@ -50,7 +49,7 @@ trait HasNastiParameters {
 
 abstract class NastiModule(implicit val p: Parameters) extends Module
   with HasNastiParameters
-abstract class NastiBundle(implicit val p: Parameters) extends DandelionParameterizedBundle()(p)
+abstract class NastiBundle(implicit val p: Parameters) extends Bundle
   with HasNastiParameters
 
 abstract class NastiChannel(implicit p: Parameters) extends NastiBundle()(p)
@@ -74,18 +73,18 @@ trait HasNastiData extends HasNastiParameters {
   val last = Bool()
 }
 
-class NastiReadIO(implicit val p: Parameters) extends DandelionParameterizedBundle()(p) {
+class NastiReadIO(implicit val p: Parameters) extends Bundle {
   val ar = Decoupled(new NastiReadAddressChannel)
   val r  = Decoupled(new NastiReadDataChannel).flip
 }
 
-class NastiWriteIO(implicit val p: Parameters) extends DandelionParameterizedBundle()(p) {
+class NastiWriteIO(implicit val p: Parameters) extends Bundle {
   val aw = Decoupled(new NastiWriteAddressChannel)
   val w  = Decoupled(new NastiWriteDataChannel)
   val b  = Decoupled(new NastiWriteResponseChannel).flip
 }
 
-class NastiIO(implicit val p: Parameters) extends DandelionParameterizedBundle()(p) {
+class NastiIO(implicit val p: Parameters) extends Bundle {
   val aw = Decoupled(new NastiWriteAddressChannel)
   val w  = Decoupled(new NastiWriteDataChannel)
   val b  = Decoupled(new NastiWriteResponseChannel).flip

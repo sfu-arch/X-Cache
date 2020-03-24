@@ -33,9 +33,9 @@ trait AccelParams {
 }
 
 /**
-  * VCR parameters.
-  * These parameters are used on VCR interfaces and modules.
-  */
+ * VCR parameters.
+ * These parameters are used on VCR interfaces and modules.
+ */
 trait VCRParams {
   val nCtrl: Int
   val nECnt: Int
@@ -45,9 +45,9 @@ trait VCRParams {
 }
 
 /**
-  * VME parameters.
-  * These parameters are used on VME interfaces and modules.
-  */
+ * VME parameters.
+ * These parameters are used on VME interfaces and modules.
+ */
 trait VMEParams {
   val nReadClients: Int
   val nWriteClients: Int
@@ -64,7 +64,9 @@ case class DandelionAccelParams(
                                  verbosity: String = "low",
                                  components: String = "",
                                  printLog: Boolean = false,
-                                 printCLog: Boolean = false
+                                 printCLog: Boolean = false,
+                                 cacheNWays: Int = 1,
+                                 cacheNSets: Int = 256
                                ) extends AccelParams {
   var xlen: Int = dataLen
   var ylen: Int = addrLen
@@ -80,9 +82,8 @@ case class DandelionAccelParams(
   }
 
   //Cache
-  val nways = 1 // TODO: set-associative
-  val nsets = 256
-
+  val nways = cacheNWays // TODO: set-associative
+  val nsets = cacheNSets
   def cacheBlockBytes: Int = 4 * (xlen >> 3) // 4 x 64 bits = 32B
 
   // Debugging dumps
@@ -94,9 +95,9 @@ case class DandelionAccelParams(
 }
 
 /**
-  * VCR parameters.
-  * These parameters are used on VCR interfaces and modules.
-  */
+ * VCR parameters.
+ * These parameters are used on VCR interfaces and modules.
+ */
 case class DandelionVCRParams(numCtrl: Int = 1,
                               numEvent: Int = 1,
                               numVals: Int = 2,
@@ -110,9 +111,9 @@ case class DandelionVCRParams(numCtrl: Int = 1,
 }
 
 /**
-  * VME parameters.
-  * These parameters are used on VME interfaces and modules.
-  */
+ * VME parameters.
+ * These parameters are used on VME interfaces and modules.
+ */
 case class DandelionVMEParams(numRead: Int = 1,
                               numWrite: Int = 1) {
   val nReadClients: Int = numRead
@@ -151,11 +152,10 @@ class WithAccelConfig(inParams: DandelionAccelParams = DandelionAccelParams())
     case DandelionConfigKey => inParams
 
     // NastiIO
-    case NastiKey => new NastiParameters(
-      idBits = 12,
-      dataBits = 32,
-      addrBits = 33)
-
+    //    case NastiKey => new NastiParameters(
+    //      idBits = 12,
+    //      dataBits = 32,
+    //      addrBits = 32)
   }
 
   )
@@ -178,9 +178,6 @@ trait HasAccelParams {
   val verb = accelParams.verb
   val comp = accelParams.comp
 
-  val nways = accelParams.nways
-  val nsets = accelParams.nsets
-  val cacheBlockBytes = accelParams.cacheBlockBytes
 }
 
 trait HasAccelShellParams {
@@ -193,6 +190,8 @@ trait HasAccelShellParams {
   def hostParams: AXIParams = p(HostParamKey)
 
   def memParams: AXIParams = p(MemParamKey)
+
+  def nastiParams: NastiParameters = p(NastiKey)
 
 }
 
