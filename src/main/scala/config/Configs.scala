@@ -64,6 +64,7 @@ case class DandelionAccelParams(
                                  verbosity: String = "low",
                                  components: String = "",
                                  printLog: Boolean = false,
+                                 printMemLog: Boolean = false,
                                  printCLog: Boolean = false,
                                  cacheNWays: Int = 1,
                                  cacheNSets: Int = 256
@@ -88,6 +89,7 @@ case class DandelionAccelParams(
 
   // Debugging dumps
   val log: Boolean = printLog
+  val memLog: Boolean = printMemLog
   val clog: Boolean = printCLog
   val verb: String = verbosity
   val comp: String = components
@@ -174,6 +176,7 @@ trait HasAccelParams {
   val beats = typeSize / xlen
   val fType = accelParams.fType
   val log = accelParams.log
+  val memLog = accelParams.memLog
   val clog = accelParams.clog
   val verb = accelParams.verb
   val comp = accelParams.comp

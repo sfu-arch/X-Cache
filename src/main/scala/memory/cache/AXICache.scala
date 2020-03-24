@@ -410,6 +410,11 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
   val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK ::
     s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
   val state = RegInit(s_IDLE)
+
+  val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
+  val flush_state = RegInit(s_flush_IDLE)
+  val flush_mode = RegInit(false.B)
+
   // memory
   val v        = RegInit(0.U(nSets.W))
   val d        = RegInit(0.U(nSets.W))
@@ -419,6 +424,9 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
   //val dataMem  = Seq.fill(nWords)(SeqMem(nSets, Vec(wBytes, UInt(8.W)))) // Chisel2
 
   val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
+  val cpu_tag_reg = Reg(io.cpu.req.bits.tag.cloneType)
+  val cpu_iswrite_reg = Reg(io.cpu.req.bits.iswrite.cloneType)
+  val cpu_tile_reg = Reg(io.cpu.req.bits.tile.cloneType)
   val cpu_data = Reg(io.cpu.req.bits.data.cloneType)
   val cpu_mask = Reg(io.cpu.req.bits.mask.cloneType)
 
@@ -426,6 +434,11 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
   require(dataBeats > 0)
   val (read_count,  read_wrap_out)  = Counter(io.mem.r.fire(), dataBeats)
   val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), dataBeats)
+
+  val (set_count, set_wrap) = Counter(flush_state === s_flush_START, nSets)
+  val dirty_cache_block = Cat((dataMem map (_.read(set_count - 1.U).asUInt)).reverse)
+  val block_rmeta = RegInit(init = MetaData.default)
+
 
   val is_idle   = state === s_IDLE
   val is_read   = state === s_READ_CACHE
@@ -459,6 +472,17 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
   io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i+1)*xlen-1, i*xlen))(off_reg)
   io.cpu.resp.valid     := is_idle || is_read && hit || is_alloc_reg && !cpu_mask.orR
 
+  io.cpu.resp.bits.tile := 0.U
+  io.cpu.resp.bits.valid := true.B
+  io.cpu.resp.bits.tag := cpu_tag_reg
+  io.cpu.resp.bits.iswrite := cpu_iswrite_reg
+
+  when(io.cpu.req.fire){
+    cpu_tag_reg := io.cpu.req.bits.tag
+    cpu_iswrite_reg := io.cpu.req.bits.iswrite
+    cpu_tile_reg := io.cpu.req.bits.tile
+  }
+
   when(io.cpu.resp.valid) {
     addr_reg  := addr
     cpu_data  := io.cpu.req.bits.data
@@ -480,7 +504,7 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
     }
     dataMem.zipWithIndex foreach { case (mem, i) =>
       val data = VecInit.tabulate(wBytes)(k => wdata(i*xlen+(k+1)*8-1, i*xlen+k*8))
-      mem.write(idx_reg, data, wmask((i+1)*wBytes-1, i*wBytes).toBools)
+      mem.write(idx_reg, data, wmask((i+1)*wBytes-1, i*wBytes).asBool())
       mem suggestName s"dataMem_${i}"
     }
   }
@@ -492,17 +516,25 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
   io.mem.r.ready := state === s_REFILL
   when(io.mem.r.fire()) { refill_buf(read_count) := io.mem.r.bits.data }
 
+  // Info
+  val is_block_dirty = v(set_count) && d(set_count)
+  val block_addr = Cat(block_rmeta.tag, set_count) << blen.U
+
   // write addr
   io.mem.aw.bits := NastiWriteAddressChannel(
-    0.U, (Cat(rmeta.tag, idx_reg) << blen.U).asUInt(), log2Up(Axi_param.dataBits/8).U, (dataBeats-1).U)
+    0.U, Mux(flush_mode, block_addr, Cat(rmeta.tag, idx_reg) << blen.U).asUInt(), log2Up(Axi_param.dataBits/8).U, (dataBeats-1).U)
   io.mem.aw.valid := false.B
   // write data
   io.mem.w.bits := NastiWriteDataChannel(
-    VecInit.tabulate(dataBeats)(i => read((i+1)*Axi_param.dataBits-1, i*Axi_param.dataBits))(write_count),
+    Mux(flush_mode,
+      VecInit.tabulate(dataBeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count),
+      VecInit.tabulate(dataBeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)),
+//    VecInit.tabulate(dataBeats)(i => read((i+1)*Axi_param.dataBits-1, i*Axi_param.dataBits))(write_count),
     None, write_wrap_out)
   io.mem.w.valid := false.B
   // write resp
   io.mem.b.ready := false.B
+  io.cpu.flush_done := false.B
 
   // Cache FSM
   val is_dirty = v(idx_reg) && d(idx_reg)
@@ -563,6 +595,60 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
     is(s_REFILL) {
       when(read_wrap_out) {
         state := Mux(cpu_mask.orR, s_WRITE_CACHE, s_IDLE)
+      }
+    }
+  }
+
+  //Flush state machine
+  switch(flush_state) {
+    is(s_flush_IDLE) {
+      when(io.cpu.flush) {
+        flush_state := s_flush_START
+        flush_mode := true.B
+      }
+    }
+    is(s_flush_START) {
+      when(set_wrap) {
+        io.cpu.flush_done := true.B
+        flush_mode := false.B
+        flush_state := s_flush_IDLE
+      }.elsewhen(is_block_dirty) {
+        flush_state := s_flush_ADDR
+        block_rmeta := metaMem.read(set_count)
+      }
+    }
+    is(s_flush_ADDR) {
+      /**
+       * When cycle delay to read from metaMem
+       */
+      flush_state := s_flush_WRITE
+    }
+    is(s_flush_WRITE) {
+      if(clog){
+        printf(p"Dirty block address: 0x${Hexadecimal(block_addr)}\n")
+        printf(p"Dirty block data: 0x${Hexadecimal(dirty_cache_block)}\n")
+      }
+
+      io.mem.aw.valid := true.B
+      io.mem.ar.valid := false.B
+
+      when(io.mem.aw.fire()) {
+        flush_state := s_flush_WRITE_BACK
+      }
+    }
+    is(s_flush_WRITE_BACK) {
+      if(clog){
+        printf(p"Write data: ${VecInit.tabulate(dataBeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)}\n")
+      }
+      io.mem.w.valid := true.B
+      when(write_wrap_out) {
+        flush_state := s_flush_WRITE_ACK
+      }
+    }
+    is(s_flush_WRITE_ACK) {
+      io.mem.b.ready := true.B
+      when(io.mem.b.fire()) {
+        flush_state := s_flush_START
       }
     }
   }

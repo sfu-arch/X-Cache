@@ -87,7 +87,7 @@ class UnifiedController(ID: Int,
   //--------------------------
 
   //------------------------------------------------------------------------------------
-  if(log){
+  if(memLog){
     when(io.MemReq.fire){
       when(io.MemReq.bits.iswrite){
         printf("[LOG] [MemController] [MemReq]: Addr: %d, Data: %d, IsWrite: ST\n", io.MemReq.bits.addr, io.MemReq.bits.data)
