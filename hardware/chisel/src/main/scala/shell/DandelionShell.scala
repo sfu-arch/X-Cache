@@ -250,7 +250,8 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
   val ptrBits = regBits * 2
 
   val vcr = Module(new VCR)
-  val cache = Module(new SimpleCache(debug = true))
+  //val cache = Module(new SimpleCache(debug = true))
+  val cache = Module(new ReferenceCache())
 
   val accel = Module(accelModule())
 
