@@ -186,7 +186,7 @@ abstract class WController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit
   })
 }
 
-class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit p: Parameters) extends WController(NumOps, BaseSize, NumEntries)(p) {
+class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int, Serialize: Boolean = true)(implicit p: Parameters) extends WController(NumOps, BaseSize, NumEntries)(p) {
   require(NumEntries >= 0)
   // Number of MLP entries
   val MLPSize   = NumEntries
@@ -258,7 +258,7 @@ class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implici
 
   // Cache request arbiter
   // cachereq_arb.io.out.ready := io.MemReq.ready
-  io.MemReq <> cachereq_arb.io.out
+  io.MemReq <> Queue(cachereq_arb.io.out, 16)
 
   // Cache response Demux
   cacheresp_demux.io.en := io.MemResp.valid
@@ -269,5 +269,40 @@ class WriteMemoryController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implici
   out_arb.io.out.ready := true.B
   out_demux.io.enable := out_arb.io.out.fire( )
   out_demux.io.input := out_arb.io.out.bits
+
+  /**
+   * Currently our cache doesn't support multiple memory request on the fly
+   * if we turn on the sequential logic, then whenver we fire a memory request
+   * we make memory request false so there won't be a new memory request on the line
+   * until the memory response comes back
+   * Please not that the response can happen at the same cycle if the value is cached
+   */
+  if(Serialize){
+    val mem_req_reg = RegEnable(next = io.MemReq.bits, io.MemReq.fire)
+
+    val s_idle :: s_request :: Nil = Enum(2)
+    val mem_state = RegInit(s_idle)
+
+    switch(mem_state){
+      is(s_idle){
+        when(io.MemReq.fire && !io.MemReq.bits.iswrite){
+          when(io.MemResp.valid && (io.MemResp.bits.tag === io.MemReq.bits.tag)){
+            mem_state := s_idle
+          }.otherwise{
+            mem_state := s_request
+          }
+        }
+      }
+      is(s_request){
+        when(io.MemResp.valid && (mem_req_reg.tag === io.MemResp.bits.tag)){
+          mem_state := s_idle
+        }.otherwise{
+          io.MemReq.valid := false.B
+          mem_state := s_request
+        }
+      }
+    }
+  }
+
 
 }

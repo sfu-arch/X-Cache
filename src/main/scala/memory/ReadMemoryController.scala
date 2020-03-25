@@ -1,6 +1,7 @@
 package dandelion.memory
 
 // Generic Packages
+
 import chisel3._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
@@ -28,49 +29,49 @@ abstract class ReadEntryIO()(implicit val p: Parameters)
     //    val NodeResp = Decoupled(new ReadResp)
 
     //Memory interface
-    val MemReq  = Decoupled(new MemReq)
+    val MemReq = Decoupled(new MemReq)
     val MemResp = Input(new MemResp)
 
     // val Output
     val output = Decoupled(new ReadResp)
 
-    val free = Output(Bool( ))
-    val done = Output(Bool( ))
+    val free = Output(Bool())
+    val done = Output(Bool())
   })
 }
 
 /**
-  * @brief Read Table Entry
-  * @note [long description]
-  * @param ID [Read taSwitchInControl() p * @return [description]
-  */
-class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO( )(p) with UniformPrintfs {
+ * @brief Read Table Entry
+ * @note [long description]
+ * @param ID [Read taSwitchInControl() p * @return [description]
+ */
+class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO()(p) with UniformPrintfs {
 
   val ID = RegInit(~id.U)
   ID := id.U
-  val request_R       = RegInit(ReadReq.default)
+  val request_R = RegInit(ReadReq.default)
   val request_valid_R = RegInit(false.B)
   // Data buffers for misaligned accesses
 
   // Mask for final ANDing and output of data
-  val bitmask      = RegInit(0.U(((2) * xlen).W))
+  val bitmask = RegInit(0.U(((2) * xlen).W))
   // Send word mask for tracking how many words need to be read
   val sendbytemask = RegInit(0.U(((2) * xlen / 8).W))
 
   // Is the request valid and request to memory
-  val ReqValid   = RegInit(false.B)
+  val ReqValid = RegInit(false.B)
   val ReqAddress = RegInit(0.U(xlen.W))
 
   // Incoming data valid and data operand.
-  val DataValid  = RegInit(false.B)
-  val ptr        = RegInit(0.U(log2Ceil(2).W))
+  val DataValid = RegInit(false.B)
+  val ptr = RegInit(0.U(log2Ceil(2).W))
   val linebuffer = RegInit(VecInit(Seq.fill(2)(0.U(xlen.W))))
   val xlen_bytes = xlen / 8
-  val output     = WireInit(0.U(xlen.W))
+  val output = WireInit(0.U(xlen.W))
 
   // State machine
   val s_idle :: s_SENDING :: s_RECEIVING :: s_Done :: Nil = Enum(4)
-  val state                                               = RegInit(s_idle)
+  val state = RegInit(s_idle)
 
   // Check if entry free.
   /*================================================
@@ -108,7 +109,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO( )(p) 
   /*=======================================================
   =            Latch Inputs. Calculate masks              =
   ========================================================*/
-  when(io.NodeReq.fire( )) {
+  when(io.NodeReq.fire()) {
     request_R := io.NodeReq.bits
     // Calculate things to start the sending process
     // Base word address
@@ -132,7 +133,7 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO( )(p) 
 
   switch(state) {
     is(s_idle) {
-      when(io.NodeReq.fire( )) {
+      when(io.NodeReq.fire()) {
         state := s_SENDING
       }
     }
@@ -202,35 +203,33 @@ class ReadTableEntry(id: Int)(implicit p: Parameters) extends ReadEntryIO( )(p) 
 abstract class RController(NumOps: Int, BaseSize: Int, NumEntries: Int)(implicit val p: Parameters)
   extends Module with HasAccelParams {
   val io = IO(new Bundle {
-    val ReadIn  = Vec(NumOps, Flipped(Decoupled(new ReadReq( ))))
-    val ReadOut = Vec(NumOps, Output(new ReadResp( )))
-    val MemReq  = Decoupled(new MemReq)
+    val ReadIn = Vec(NumOps, Flipped(Decoupled(new ReadReq())))
+    val ReadOut = Vec(NumOps, Output(new ReadResp()))
+    val MemReq = Decoupled(new MemReq)
     val MemResp = Flipped(Valid(new MemResp))
   })
 }
 
 
-class ReadMemoryController
-(NumOps: Int,
- BaseSize: Int, NumEntries: Int)
-(implicit p: Parameters)
+class ReadMemoryController (NumOps: Int, BaseSize: Int, NumEntries: Int, Serialize: Boolean = true) (implicit p: Parameters)
   extends RController(NumOps, BaseSize, NumEntries)(p) {
+
   require(NumEntries >= 0)
   // Number of MLP entries
-  val MLPSize   = NumEntries
+  val MLPSize = NumEntries
   // Input arbiter
-  val in_arb    = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq( ), Locks = 1))
+  val in_arb = Module(new ArbiterTree(BaseSize = BaseSize, NumOps = NumOps, new ReadReq(), Locks = 1))
   // MSHR allocator
-  val alloc_arb = Module(new Arbiter(Bool( ), MLPSize))
+  val alloc_arb = Module(new Arbiter(Bool(), MLPSize))
 
   // Memory request
-  val cachereq_arb    = Module(new Arbiter(new MemReq, MLPSize))
+  val cachereq_arb = Module(new Arbiter(new MemReq, MLPSize))
   // Memory response Demux
   val cacheresp_demux = Module(new Demux(new MemResp, MLPSize))
 
   // Output arbiter and demuxes
-  val out_arb   = Module(new RRArbiter(new ReadResp, MLPSize))
-  val out_demux = Module(new DeMuxTree(BaseSize = BaseSize, NumOps = NumOps, new ReadResp( )))
+  val out_arb = Module(new RRArbiter(new ReadResp, MLPSize))
+  val out_demux = Module(new DeMuxTree(BaseSize = BaseSize, NumOps = NumOps, new ReadResp()))
 
   /*=====================================================================
   =            Wire up incoming reads from nodes to ReadMSHR            =
@@ -250,11 +249,10 @@ class ReadMemoryController
 
   val ReadTable = for (i <- 0 until MLPSize) yield {
     val read_entry = Module(new ReadTableEntry(i))
-    // val MSHR = Module(new ReadTableEntry(i))
     // Allocator wireup with table entries
     alloc_arb.io.in(i).valid := read_entry.io.free
-    alloc_arb.io.in(i).bits <> DontCare
-    read_entry.io.NodeReq.valid := alloc_arb.io.in(i).fire( )
+    alloc_arb.io.in(i).bits := DontCare
+    read_entry.io.NodeReq.valid := alloc_arb.io.in(i).fire()
     read_entry.io.NodeReq.bits := in_arb.io.out.bits
 
     // Table entries -> MemReq arbiter.
@@ -285,8 +283,7 @@ class ReadMemoryController
   alloc_arb.io.out.ready := in_arb.io.out.valid
 
   // Cache request arbiter
-  // cachereq_arb.io.out.ready := io.MemReq.ready
-  io.MemReq <> cachereq_arb.io.out
+  io.MemReq <> Queue(cachereq_arb.io.out, 16)
 
   // Cache response Demux
   cacheresp_demux.io.en := io.MemResp.valid
@@ -295,10 +292,42 @@ class ReadMemoryController
 
   // Output arbiter -> Demux
   out_arb.io.out.ready := true.B
-  out_demux.io.enable := out_arb.io.out.fire( )
+  out_demux.io.enable := out_arb.io.out.fire()
   out_demux.io.input := out_arb.io.out.bits
 
-  // printf(p"\n Read Demux Out: ${out_demux.io.outputs}")
+  /**
+   * Currently our cache doesn't support multiple memory request on the fly
+   * if we turn on the sequential logic, then whenver we fire a memory request
+   * we make memory request false so there won't be a new memory request on the line
+   * until the memory response comes back
+   * Please not that the response can happen at the same cycle if the value is cached
+   */
+  if(Serialize){
+    val mem_req_reg = RegEnable(next = io.MemReq.bits, io.MemReq.fire)
+
+    val s_idle :: s_request :: Nil = Enum(2)
+    val mem_state = RegInit(s_idle)
+
+    switch(mem_state){
+      is(s_idle){
+        when(io.MemReq.fire && !io.MemReq.bits.iswrite){
+          when(io.MemResp.valid && (io.MemResp.bits.tag === io.MemReq.bits.tag)){
+            mem_state := s_idle
+          }.otherwise{
+            mem_state := s_request
+          }
+        }
+      }
+      is(s_request){
+        when(io.MemResp.valid && (mem_req_reg.tag === io.MemResp.bits.tag)){
+          mem_state := s_idle
+        }.otherwise{
+          io.MemReq.valid := false.B
+          mem_state := s_request
+        }
+      }
+    }
+  }
 
 }
 
