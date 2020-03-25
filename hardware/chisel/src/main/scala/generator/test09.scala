@@ -81,13 +81,13 @@ class test09DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
   val Gep_arrayidx3 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 3)(ElementSize = 8, ArraySize = List()))
 
   //  %0 = load i32, i32* %arrayidx, align 4, !dbg !30, !tbaa !34, !UID !38
-  val ld_4 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 1, NumOuts = 1, ID = 4, RouteID = 0))
+  val ld_4 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 4, RouteID = 0))
 
   //  %arrayidx2 = getelementptr inbounds i32, i32* %b, i64 %indvars.iv, !dbg !39, !UID !40
   val Gep_arrayidx25 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 5)(ElementSize = 8, ArraySize = List()))
 
   //  %1 = load i32, i32* %arrayidx2, align 4, !dbg !39, !tbaa !34, !UID !41
-  val ld_6 = Module(new UnTypLoad(NumPredOps = 1, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1))
+  val ld_6 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1))
 
   //  %add = add i32 %1, %0, !dbg !42, !UID !43
   val binaryOp_add7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "add")(sign = false, Debug = false))
@@ -364,7 +364,7 @@ class test09DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
 
   //st_9.io.PredOp(1) <> ld_6.io.SuccOp(0)
 
-  ld_6.io.PredOp(0) <> ld_4.io.SuccOp(0)
+  //ld_6.io.PredOp(0) <> ld_4.io.SuccOp(0)
 
 
   /* ================================================================== *
