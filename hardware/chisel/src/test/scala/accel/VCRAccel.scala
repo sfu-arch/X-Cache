@@ -5,7 +5,7 @@ import chisel3.MultiIOModule
 import dandelion.shell._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
-import dandelion.generator.{test03DF, test14DF}
+import dandelion.generator.{test04DF, test05DF}
 import dandelion.accel.DandelionAccelModule
 import sim.shell._
 
@@ -51,7 +51,7 @@ object DandelionSimAccelMain extends App {
 
   //These are default values for VCR
   var num_ptrs = 4
-  var num_vals = 2
+  var num_vals = 3
   var num_debugs = 1
   var num_returns = 1
   var num_events = 1
@@ -72,6 +72,6 @@ object DandelionSimAccelMain extends App {
   implicit val p =
     new WithSimShellConfig(dLen = 64)(nPtrs = num_ptrs + num_debugs , nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
   chisel3.Driver.execute(args.take(4),
-    () => new DandelionSimAccel(() => new test03DF(ArgsIn = List(32, 32), Returns = List(32)))(num_ptrs, num_debugs, num_vals, num_returns, num_events, num_ctrl))
+    () => new DandelionSimAccel(() => new test05DF(ArgsIn = List(32), Returns = List(32)))(num_ptrs, num_debugs, num_vals, num_returns, num_events, num_ctrl))
 }
 

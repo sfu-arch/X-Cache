@@ -8,7 +8,7 @@ import dandelion.interfaces.{ControlBundle, DataBundle}
 import dandelion.interfaces.axi._
 import dandelion.memory.cache._
 import dandelion.accel._
-import dandelion.generator.DebugVME03DF
+import dandelion.generator.{DebugVME03DF, DebugVME04DF}
 
 /** Register File.
  *
@@ -297,7 +297,7 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
   vmem.io.vme.rd(0).cmd.valid := false.B
 
   val accel = Module(accelModule())
-  val debug_module = Module(new DebugVME03DF())
+  val debug_module = Module(new DebugVME04DF())
 
   accel.io.MemReq <> DontCare
   accel.io.MemResp <> DontCare
@@ -356,7 +356,7 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
   /**
    * Connecting debug ptrs
    */
-  debug_module.io.addrDebug := vcr.io.vcr.ptrs(((numPtrs + numDebug)- 1))
+  debug_module.io.addrDebug := vcr.io.vcr.ptrs(((numPtrs + numDebug) - 1))
 
   accel.io.in.bits.enable := ControlBundle.debug()
 
