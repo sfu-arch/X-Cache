@@ -12,13 +12,13 @@ import vta.shell.DandelionF1Accel
 
 /** Test. This generates a testbench file for simulation */
 class DandelionSimAccel[T <: DandelionAccelModule](accelModule: () => T)
-                                                  (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+                                                  (numPtrs:Int, numVals:Int, numRets: Int, numEvents: Int, numCtrls: Int)
                                                   (implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
   //val vta_shell = Module(new DandelionVTAShell())
-  val vta_shell = Module(new DandelionCacheShell(accelModule)(numPtrs, numVals, numRets, numEvents, numCtrls))
+  val vta_shell = Module(new DandelionCacheShell(accelModule)(numPtrs = numPtrs, numVals = numVals, numRets = numRets, numEvents = numEvents, numCtrls = numCtrls))
 
   sim_shell.mem <> DontCare
   sim_shell.host <> DontCare
@@ -50,17 +50,17 @@ class DandelionSimAccel[T <: DandelionAccelModule](accelModule: () => T)
 object DandelionSimAccelMain extends App {
 
   //These are default values for VCR
-  var num_ptrs = 4
-  var num_vals = 2
+  var num_ptrs = 0
+  var num_vals = 0
   var num_returns = 1
   var num_events = 1
-  var num_ctrl = 1
+  var num_ctrls = 1
   args.sliding(2, 2).toList.collect {
     case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
     case Array("--num-vals", argVals: String) => num_vals = argVals.toInt
-    case Array("--num-rets", argVals: String) => num_returns = argVals.toInt
-    case Array("--num-event", argEvent: String) => num_vals = argEvent.toInt
-    case Array("--num-ctrl", argCtrl: String) => num_vals = argCtrl.toInt
+    case Array("--num-rets", argRets: String) => num_returns = argRets.toInt
+    case Array("--num-events", argEvent: String) => num_events = argEvent.toInt
+    case Array("--num-ctrls", argCtrl: String) => num_ctrls = argCtrl.toInt
   }
 
   /**
@@ -68,35 +68,36 @@ object DandelionSimAccelMain extends App {
    *       Pass generated accelerator to TestAccel
    */
   implicit val p =
-    new WithSimShellConfig(dLen = 64, pLog = true, cLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
+    new WithSimShellConfig(dLen = 64, pLog = true, cLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
   chisel3.Driver.execute(args.take(4),
-    () => new DandelionSimAccel(() => new test09DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
+    () => new DandelionSimAccel(() => new test09DF())(numPtrs = num_ptrs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
 }
 
 
 object DandelionF1AccelMain extends App {
 
   //These are default values for VCR
-  var num_ptrs = 4
-  var num_vals = 2
-  var num_returns = 0
+  var num_ptrs = 0
+  var num_vals = 0
+  var num_returns = 1
   var num_events = 1
-  var num_ctrl = 1
+  var num_ctrls = 1
   args.sliding(2, 2).toList.collect {
     case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
     case Array("--num-vals", argVals: String) => num_vals = argVals.toInt
-    case Array("--num-rets", argVals: String) => num_returns = argVals.toInt
-    case Array("--num-event", argEvent: String) => num_vals = argEvent.toInt
-    case Array("--num-ctrl", argCtrl: String) => num_vals = argCtrl.toInt
+    case Array("--num-rets", argRets: String) => num_returns = argRets.toInt
+    case Array("--num-events", argEvent: String) => num_events = argEvent.toInt
+    case Array("--num-ctrls", argCtrl: String) => num_ctrls = argCtrl.toInt
   }
 
+
   /**
-    * @note make sure for simulation dataLen is equal to 64
-    *       Pass generated accelerator to TestAccel
-    */
+   * @note make sure for simulation dataLen is equal to 64
+   *       Pass generated accelerator to TestAccel
+   */
   implicit val p =
-    new WithF1ShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
+    new WithF1ShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals , nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
   chisel3.Driver.execute(args.take(4),
-    () => new DandelionF1Accel(() => new test05DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
+    () => new DandelionF1Accel(() => new test05DF())(nPtrs = num_ptrs, nVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
 }
 

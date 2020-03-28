@@ -19,7 +19,7 @@ import dandelion.junctions._
  * @param hostParams
  * @param memParams
  */
-class WithShellConfig(vcrParams: DandelionVCRParams = DandelionVCRParams(),
+class WithShellConfig(vcrParams: DandelionDCRParams = DandelionDCRParams(),
                       vmeParams: DandelionVMEParams = DandelionVMEParams(),
                       hostParams: AXIParams = AXIParams(
                         addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
@@ -30,7 +30,7 @@ class WithShellConfig(vcrParams: DandelionVCRParams = DandelionVCRParams(),
                       nastiParams: NastiParameters = NastiParameters(dataBits = 64, addrBits = 32, idBits = 13))
   extends Config((site, here, up) => {
     // Core
-    case VCRKey => vcrParams
+    case DCRKey => vcrParams
     case VMEKey => vmeParams
     case HostParamKey => hostParams
     case MemParamKey => memParams
@@ -39,9 +39,9 @@ class WithShellConfig(vcrParams: DandelionVCRParams = DandelionVCRParams(),
   )
 
 class WithSimShellConfig(dLen: Int = 64, pLog: Boolean = false, cLog: Boolean = false)
-                        (nPtrs: Int = 2, nVals: Int = 1, nRets: Int = 0, nCtrl: Int = 1, nEvent: Int = 1) extends Config(
+                        (nPtrs: Int, nVals: Int, nRets: Int, nEvents: Int, nCtrls: Int) extends Config(
   new WithAccelConfig(DandelionAccelParams(dataLen = dLen, printLog = pLog, printCLog = cLog)) ++
-    new WithShellConfig(DandelionVCRParams(numCtrl = nCtrl, numEvent = nEvent, numPtrs = nPtrs, numVals = nVals, numRets = nRets)))
+    new WithShellConfig(DandelionDCRParams(numCtrl = nCtrls, numEvent = nEvents, numPtrs = nPtrs, numVals = nVals, numRets = nRets)))
 
 
 /**
@@ -53,7 +53,7 @@ class WithSimShellConfig(dLen: Int = 64, pLog: Boolean = false, cLog: Boolean = 
  * @param hostParams
  * @param memParams
  */
-class WithF1Config(vcrParams: DandelionVCRParams = DandelionVCRParams(),
+class WithF1Config(vcrParams: DandelionDCRParams = DandelionDCRParams(),
                    vmeParams: DandelionVMEParams = DandelionVMEParams(),
                    hostParams: AXIParams = AXIParams(
                      addrBits = 32, dataBits = 32, idBits = 13, lenBits = 8),
@@ -64,7 +64,7 @@ class WithF1Config(vcrParams: DandelionVCRParams = DandelionVCRParams(),
                    nastiParams: NastiParameters = NastiParameters(dataBits = 64, addrBits = 32, idBits = 13))
   extends Config((site, here, up) => {
     // Core
-    case VCRKey => vcrParams
+    case DCRKey => vcrParams
     case VMEKey => vmeParams
     case HostParamKey => hostParams
     case MemParamKey => memParams
@@ -73,7 +73,7 @@ class WithF1Config(vcrParams: DandelionVCRParams = DandelionVCRParams(),
   )
 
 class WithF1ShellConfig(dLen: Int = 64, pLog: Boolean = false)
-                       (nPtrs: Int = 4, nVals: Int = 2, nRets: Int = 1, nCtrl: Int = 1, nEvent: Int = 1) extends Config(
+                       (nPtrs: Int, nVals: Int, nRets: Int, nEvents: Int, nCtrls: Int) extends Config(
   new WithAccelConfig(DandelionAccelParams(dataLen = dLen, printLog = pLog)) ++
-    new WithF1Config(DandelionVCRParams(numCtrl = nCtrl, numEvent = nEvent, numPtrs = nPtrs, numVals = nVals, numRets = nRets)))
+    new WithF1Config(DandelionDCRParams(numCtrl = nCtrls, numEvent = nEvents, numPtrs = nPtrs, numVals = nVals, numRets = nRets)))
 
