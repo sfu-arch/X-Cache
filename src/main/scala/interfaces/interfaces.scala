@@ -543,6 +543,16 @@ class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle()
   override def cloneType = new Call(argTypes).asInstanceOf[this.type]
 }
 
+// Call type that wraps an enable and variable DataBundle together
+class CallDCR(val ptrsArgTypes: Seq[Int],
+              val valsArgTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle() {
+  val enable = new ControlBundle
+  val dataPtrs = new VariableData(ptrsArgTypes)
+  val dataVals = new VariableData(valsArgTypes)
+
+  override def cloneType = new CallDCR(ptrsArgTypes, valsArgTypes).asInstanceOf[this.type]
+}
+
 // Call type that wraps a decoupled enable and decoupled variable data bundle together
 class CallDecoupled(val argTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle() {
   val enable = Decoupled(new ControlBundle)
@@ -557,6 +567,27 @@ class CallDecoupledVec(val argTypes: Seq[Int])(implicit p: Parameters) extends A
   val data = new VariableDecoupledVec(argTypes)
 
   override def cloneType = new CallDecoupledVec(argTypes).asInstanceOf[this.type]
+}
+
+
+// Call type that wraps a decoupled enable and decoupled variable data bundle together
+class CallDCRDecoupled(val ptrsArgTypes: Seq[Int],
+                       val valsArgTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle() {
+  val enable = Decoupled(new ControlBundle)
+  val dataPtrs = new VariableDecoupledData(ptrsArgTypes)
+  val dataVals = new VariableDecoupledData(valsArgTypes)
+
+  override def cloneType = new CallDCRDecoupled(ptrsArgTypes, valsArgTypes).asInstanceOf[this.type]
+}
+
+// Call type that wraps a decoupled enable and decoupled vector DataBundle together
+class CallDCRDecoupledVec(val ptrsArgTypes: Seq[Int],
+                          val valsArgTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle() {
+  val enable = Decoupled(new ControlBundle)
+  val dataPtrs = new VariableDecoupledVec(ptrsArgTypes)
+  val dataVals = new VariableDecoupledVec(valsArgTypes)
+
+  override def cloneType = new CallDCRDecoupledVec(ptrsArgTypes, valsArgTypes).asInstanceOf[this.type]
 }
 
 // Function unit request type
