@@ -36,7 +36,7 @@ trait AccelParams {
  * VCR parameters.
  * These parameters are used on VCR interfaces and modules.
  */
-trait VCRParams {
+trait DCRParams {
   val nCtrl: Int
   val nECnt: Int
   val nVals: Int
@@ -100,7 +100,7 @@ case class DandelionAccelParams(
  * VCR parameters.
  * These parameters are used on VCR interfaces and modules.
  */
-case class DandelionVCRParams(numCtrl: Int = 1,
+case class DandelionDCRParams(numCtrl: Int = 1,
                               numEvent: Int = 1,
                               numVals: Int = 2,
                               numPtrs: Int = 4,
@@ -132,14 +132,14 @@ case class DandelionVMEParams(numRead: Int = 1,
 case class ShellParams(
                         val hostParams: AXIParams,
                         val memParams: AXIParams,
-                        val vcrParams: DandelionVCRParams,
+                        val vcrParams: DandelionDCRParams,
                         val vmeParams: DandelionVMEParams
                       )
 
 
 case object DandelionConfigKey extends Field[DandelionAccelParams]
 
-case object VCRKey extends Field[DandelionVCRParams]
+case object DCRKey extends Field[DandelionDCRParams]
 
 case object VMEKey extends Field[DandelionVMEParams]
 
@@ -186,7 +186,7 @@ trait HasAccelParams {
 trait HasAccelShellParams {
   implicit val p: Parameters
 
-  def vcrParams: DandelionVCRParams = p(VCRKey)
+  def dcrParams: DandelionDCRParams = p(DCRKey)
 
   def vmeParams: DandelionVMEParams = p(VMEKey)
 

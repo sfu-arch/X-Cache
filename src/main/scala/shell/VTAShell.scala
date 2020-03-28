@@ -35,7 +35,7 @@ class VTAShell(implicit val p: Parameters) extends Module with HasAccelShellPara
     val mem = new AXIMaster(memParams)
   })
 
-  val vcr = Module(new VCR)
+  val dcr = Module(new DCR)
   val vme = Module(new VME)
 
   /**
