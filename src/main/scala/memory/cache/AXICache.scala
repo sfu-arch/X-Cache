@@ -394,6 +394,15 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
 
 }
 
+
+/**
+ * NOTE: There is a limitation in the cache behavior.
+ * You shouldn't make a new request valid untill the previous request is became valid
+ * otherwise, the cache behaviour is unpredictable
+ * @param ID
+ * @param debug
+ * @param p
+ */
 class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
   with CacheAccelParams
   with HasAccelShellParams {
@@ -411,7 +420,7 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
     s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
   val state = RegInit(s_IDLE)
 
-  val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
+  val s_flush_IDLE :: s_flush_START :: s_flush_ADDR ::s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
   val flush_state = RegInit(s_flush_IDLE)
   val flush_mode = RegInit(false.B)
 
@@ -419,8 +428,8 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
   val v        = RegInit(0.U(nSets.W))
   val d        = RegInit(0.U(nSets.W))
   val metaMem  = SyncReadMem(nSets, new MetaData)
-  //val metaMem  = SeqMem(nSets, new MetaData) //Chisel2
   val dataMem  = Seq.fill(nWords)(SyncReadMem(nSets, Vec(wBytes, UInt(8.W))))
+  //val metaMem  = SeqMem(nSets, new MetaData) //Chisel2
   //val dataMem  = Seq.fill(nWords)(SeqMem(nSets, Vec(wBytes, UInt(8.W)))) // Chisel2
 
   val addr_reg = Reg(io.cpu.req.bits.addr.cloneType)
@@ -437,7 +446,8 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
 
   val (set_count, set_wrap) = Counter(flush_state === s_flush_START, nSets)
   val dirty_cache_block = Cat((dataMem map (_.read(set_count - 1.U).asUInt)).reverse)
-  val block_rmeta = RegInit(init = MetaData.default)
+  val block_rmeta = Reg(new MetaData)
+  val read_rmeta = Wire(new MetaData)
 
 
   val is_idle   = state === s_IDLE
@@ -504,8 +514,15 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
     }
     dataMem.zipWithIndex foreach { case (mem, i) =>
       val data = VecInit.tabulate(wBytes)(k => wdata(i*xlen+(k+1)*8-1, i*xlen+k*8))
-      mem.write(idx_reg, data, wmask((i+1)*wBytes-1, i*wBytes).asBool())
+      mem.write(idx_reg, data, wmask((i+1)*wBytes-1, i*wBytes).asBools())
       mem suggestName s"dataMem_${i}"
+    }
+  }
+
+  if(clog){
+    when(wen && is_alloc){
+      printf(p"Write meta: idx:${idx_reg.asUInt()} -- data:${wmeta.tag}\n")
+      printf(p"Write meta: addr: ${addr_reg}\n")
     }
   }
 
@@ -518,7 +535,15 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
 
   // Info
   val is_block_dirty = v(set_count) && d(set_count)
-  val block_addr = Cat(block_rmeta.tag, set_count) << blen.U
+  val block_addr = Cat(block_rmeta.tag, set_count - 1.U) << blen.U
+  read_rmeta :=  metaMem.read(set_count, (is_block_dirty) && (flush_state === s_flush_START))
+  block_rmeta := read_rmeta
+
+  if(clog){
+    when((is_block_dirty) && (flush_state === s_flush_START)){
+      printf(p"Read value of ${set_count} -- ${read_rmeta}\n")
+    }
+  }
 
   // write addr
   io.mem.aw.bits := NastiWriteAddressChannel(
@@ -614,19 +639,30 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
         flush_state := s_flush_IDLE
       }.elsewhen(is_block_dirty) {
         flush_state := s_flush_ADDR
-        block_rmeta := metaMem.read(set_count)
+        if(clog){
+          printf(p"[START] Read value of ${set_count} -- ${read_rmeta}\n")
+          printf(p"[START] Reg -- Read value of ${set_count} -- ${block_rmeta.tag}\n")
+        }
       }
     }
-    is(s_flush_ADDR) {
+    is(s_flush_ADDR){
       /**
-       * When cycle delay to read from metaMem
+       * There is a bug in sequential memory of chisel that doesn't provide data in the same cycle
        */
+      if(clog){
+        printf(p"[ADDR] Read value of ${set_count} -- ${read_rmeta}\n")
+        printf(p"[ADDR] Reg -- Read value of ${set_count} -- ${block_rmeta.tag}\n")
+      }
       flush_state := s_flush_WRITE
     }
     is(s_flush_WRITE) {
       if(clog){
+        printf(p"[WRITE] Read value of ${set_count} -- ${read_rmeta}\n")
+        printf(p"[WRITE] Reg -- Read value of ${set_count} -- ${block_rmeta.tag}\n")
+        printf(p"SetCount:[${set_count - 1.U}] -- block_rmeta[${block_rmeta.tag}]\n")
         printf(p"Dirty block address: 0x${Hexadecimal(block_addr)}\n")
         printf(p"Dirty block data: 0x${Hexadecimal(dirty_cache_block)}\n")
+        printf(p"Read value of ${set_count} -- ${read_rmeta.tag}\n")
       }
 
       io.mem.aw.valid := true.B
