@@ -279,8 +279,8 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
   vcr.io.dcr.ecnt(0).valid := last
   vcr.io.dcr.ecnt(0).bits := cycles
 
-  if (accel.Returns.size > 0) {
-    for (i <- 1 to accel.Returns.size) {
+  if (accel.RetsOut.size > 0) {
+    for (i <- 1 to accel.RetsOut.size) {
       vcr.io.dcr.ecnt(i).bits := accel.io.out.bits.data(s"field${i - 1}").data
       vcr.io.dcr.ecnt(i).valid := accel.io.out.valid
     }
@@ -293,15 +293,11 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
   val ptrs = Seq.tabulate(numPtrs) { i => RegEnable(next = vcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
   val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
 
-  /**
-   * For now the rule is to first assign the pointers and then assign the vals
-   */
   for (i <- 0 until numPtrs) {
-    accel.io.in.bits.data(s"field${i}") := DataBundle(ptrs(i))
+    accel.io.inPtrs.bits.data(s"field${i}") := DataBundle(ptrs(i))
   }
-
-  for (i <- numPtrs until numPtrs + numVals) {
-    accel.io.in.bits.data(s"field${i}") := DataBundle(vals(i - numPtrs))
+  for (i <- 0 until numVals) {
+    accel.io.inVals.bits.data(s"field${i}") := DataBundle(vals(i - numPtrs))
   }
 
   accel.io.in.bits.enable := ControlBundle.active()

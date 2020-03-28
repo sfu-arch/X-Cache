@@ -23,8 +23,8 @@ import regfile._
 import util._
 
 
-class test09DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns){
+class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), Returns: Seq[Int] = List(32))
+			(implicit p: Parameters) extends DandelionAccelModule(PtrsIn, ValsIn, Returns){
 
 
   /* ================================================================== *
@@ -32,15 +32,15 @@ class test09DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
    * ================================================================== */
 
   val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 1)
-  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2, Serialize = true))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2, Serialize = true))
   (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(1, 1, 1)))
-  InputSplitter.io.In <> io.in
+  val PtrsInSplitter= Module(new SplitCallNew(List(1, 1, 1)))
+  PtrsInSplitter.io.In <> io.in
 
 
 
@@ -131,7 +131,7 @@ class test09DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> PtrsInSplitter.io.Out.enable
 
 
 
@@ -175,11 +175,11 @@ class test09DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field0")(0)
+  Loop_0.io.InLiveIn(0) <> PtrsInSplitter.io.Out.data.elements("field0")(0)
 
-  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field1")(0)
+  Loop_0.io.InLiveIn(1) <> PtrsInSplitter.io.Out.data.elements("field1")(0)
 
-  Loop_0.io.InLiveIn(2) <> InputSplitter.io.Out.data.elements("field2")(0)
+  Loop_0.io.InLiveIn(2) <> PtrsInSplitter.io.Out.data.elements("field2")(0)
 
 
 
@@ -359,12 +359,6 @@ class test09DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
    * ================================================================== */
 
   br_12.io.PredOp(0) <> st_9.io.SuccOp(0)
-
-  //st_9.io.PredOp(0) <> ld_4.io.SuccOp(0)
-
-  //st_9.io.PredOp(1) <> ld_6.io.SuccOp(0)
-
-  //ld_6.io.PredOp(0) <> ld_4.io.SuccOp(0)
 
 
   /* ================================================================== *

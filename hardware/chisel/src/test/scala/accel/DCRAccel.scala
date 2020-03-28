@@ -42,11 +42,6 @@ class DandelionSimAccel[T <: DandelionAccelModule](accelModule: () => T)
   vta_shell.io.host.w <> sim_shell.host.w
 }
 
-/**
- * @todo Find the solution to define a new config here instead of dandelion library
- */
-
-
 object DandelionSimAccelMain extends App {
 
   //These are default values for VCR
