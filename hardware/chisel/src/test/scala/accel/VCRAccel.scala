@@ -50,10 +50,10 @@ class DandelionSimAccel[T <: DandelionAccelModule](accelModule: () => T)
 object DandelionSimAccelMain extends App {
 
   //These are default values for VCR
-  var num_ptrs = 4
+  var num_ptrs = 0
   var num_vals = 3
   var num_debugs = 1
-  var num_returns = 0
+  var num_returns = 1
   var num_events = 1
   var num_ctrl = 1
   args.sliding(2, 2).toList.collect {
