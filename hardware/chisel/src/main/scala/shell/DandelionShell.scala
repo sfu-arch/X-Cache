@@ -8,7 +8,8 @@ import dandelion.interfaces.{ControlBundle, DataBundle}
 import dandelion.interfaces.axi._
 import dandelion.memory.cache._
 import dandelion.accel._
-import dandelion.generator.{DebugVME03DF, DebugVME04DF}
+import dandelion.generator.DebugVME04DF
+//import dandelion.generator.{DebugVME03DF, DebugVME04DF}
 
 /** Register File.
  *
