@@ -38,7 +38,7 @@ import dandelion.accel._
 /*
 +------------------+                          +-----------------+
 |                  | f(bits)+--------+        |                 |
-|   VMEReadMaster  +------->+Buffers +-------->VMEWriteMaster   |
+|   DMEReadMaster  +------->+Buffers +-------->DMEWriteMaster   |
 |                  |        +--------+        |                 |
 +------------------+                          +-----------------+
 
@@ -57,9 +57,9 @@ class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with H
   })
 
   val vcr = Module(new DCR)
-  val vmem = Module(new VME)
+  val dmem = Module(new DME)
 
-  val buffer = Module(new Queue(vmem.io.vme.rd(0).data.bits.cloneType, 40))
+  val buffer = Module(new Queue(dmem.io.dme.rd(0).data.bits.cloneType, 40))
 
   val sIdle :: sReq :: sBusy :: Nil = Enum(3)
   val Rstate = RegInit(sIdle)
@@ -83,7 +83,7 @@ class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with H
       }
     }
     is(sReq) {
-      when(vmem.io.vme.rd(0).cmd.fire()) {
+      when(dmem.io.dme.rd(0).cmd.fire()) {
         Rstate := sBusy
       }
     }
@@ -96,44 +96,44 @@ class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with H
       }
     }
     is(sReq) {
-      when(vmem.io.vme.wr(0).cmd.fire()) {
+      when(dmem.io.dme.wr(0).cmd.fire()) {
         Wstate := sBusy
       }
     }
   }
 
-  vmem.io.vme.rd(0).cmd.bits.addr := vcr.io.dcr.ptrs(0)
-  vmem.io.vme.rd(0).cmd.bits.len := vcr.io.dcr.vals(1)
-  vmem.io.vme.rd(0).cmd.valid := false.B
+  dmem.io.dme.rd(0).cmd.bits.addr := vcr.io.dcr.ptrs(0)
+  dmem.io.dme.rd(0).cmd.bits.len := vcr.io.dcr.vals(1)
+  dmem.io.dme.rd(0).cmd.valid := false.B
 
-  vmem.io.vme.wr(0).cmd.bits.addr := vcr.io.dcr.ptrs(2)
-  vmem.io.vme.wr(0).cmd.bits.len := vcr.io.dcr.vals(1)
-  vmem.io.vme.wr(0).cmd.valid := false.B
+  dmem.io.dme.wr(0).cmd.bits.addr := vcr.io.dcr.ptrs(2)
+  dmem.io.dme.wr(0).cmd.bits.len := vcr.io.dcr.vals(1)
+  dmem.io.dme.wr(0).cmd.valid := false.B
 
   when(Rstate === sReq) {
-    vmem.io.vme.rd(0).cmd.valid := true.B
+    dmem.io.dme.rd(0).cmd.valid := true.B
   }
 
   when(Wstate === sReq) {
-    vmem.io.vme.wr(0).cmd.valid := true.B
+    dmem.io.dme.wr(0).cmd.valid := true.B
   }
 
   // Final
-  val last = Wstate === sBusy && vmem.io.vme.wr(0).ack
+  val last = Wstate === sBusy && dmem.io.dme.wr(0).ack
   vcr.io.dcr.finish := last
   vcr.io.dcr.ecnt(0).valid := last
 
-  when(vmem.io.vme.wr(0).ack) {
+  when(dmem.io.dme.wr(0).ack) {
     Rstate := sIdle
     Wstate := sIdle
   }
 
 
-  buffer.io.enq <> vmem.io.vme.rd(0).data
-  buffer.io.enq.bits := vmem.io.vme.rd(0).data.bits + vcr.io.dcr.vals(0)
-  vmem.io.vme.wr(0).data <> buffer.io.deq
+  buffer.io.enq <> dmem.io.dme.rd(0).data
+  buffer.io.enq.bits := dmem.io.dme.rd(0).data.bits + vcr.io.dcr.vals(0)
+  dmem.io.dme.wr(0).data <> buffer.io.deq
 
-  io.mem <> vmem.io.mem
+  io.mem <> dmem.io.mem
   io.host <> vcr.io.host
 
 }
@@ -145,9 +145,9 @@ class DandelionF1DTAShell(implicit val p: Parameters) extends MultiIOModule with
   })
 
   val dcr = Module(new DCRF1)
-  val vmem = Module(new VME)
+  val dmem = Module(new DME)
 
-  val buffer = Module(new Queue(vmem.io.vme.rd(0).data.bits.cloneType, 40))
+  val buffer = Module(new Queue(dmem.io.dme.rd(0).data.bits.cloneType, 40))
 
   val sIdle :: sReq :: sBusy :: Nil = Enum(3)
   val Rstate = RegInit(sIdle)
@@ -171,7 +171,7 @@ class DandelionF1DTAShell(implicit val p: Parameters) extends MultiIOModule with
       }
     }
     is(sReq) {
-      when(vmem.io.vme.rd(0).cmd.fire()) {
+      when(dmem.io.dme.rd(0).cmd.fire()) {
         Rstate := sBusy
       }
     }
@@ -184,44 +184,44 @@ class DandelionF1DTAShell(implicit val p: Parameters) extends MultiIOModule with
       }
     }
     is(sReq) {
-      when(vmem.io.vme.wr(0).cmd.fire()) {
+      when(dmem.io.dme.wr(0).cmd.fire()) {
         Wstate := sBusy
       }
     }
   }
 
-  vmem.io.vme.rd(0).cmd.bits.addr := dcr.io.dcr.ptrs(0)
-  vmem.io.vme.rd(0).cmd.bits.len := dcr.io.dcr.vals(1)
-  vmem.io.vme.rd(0).cmd.valid := false.B
+  dmem.io.dme.rd(0).cmd.bits.addr := dcr.io.dcr.ptrs(0)
+  dmem.io.dme.rd(0).cmd.bits.len := dcr.io.dcr.vals(1)
+  dmem.io.dme.rd(0).cmd.valid := false.B
 
-  vmem.io.vme.wr(0).cmd.bits.addr := dcr.io.dcr.ptrs(1)
-  vmem.io.vme.wr(0).cmd.bits.len := dcr.io.dcr.vals(1)
-  vmem.io.vme.wr(0).cmd.valid := false.B
+  dmem.io.dme.wr(0).cmd.bits.addr := dcr.io.dcr.ptrs(1)
+  dmem.io.dme.wr(0).cmd.bits.len := dcr.io.dcr.vals(1)
+  dmem.io.dme.wr(0).cmd.valid := false.B
 
   when(Rstate === sReq) {
-    vmem.io.vme.rd(0).cmd.valid := true.B
+    dmem.io.dme.rd(0).cmd.valid := true.B
   }
 
   when(Wstate === sReq) {
-    vmem.io.vme.wr(0).cmd.valid := true.B
+    dmem.io.dme.wr(0).cmd.valid := true.B
   }
 
   // Final
-  val last = Wstate === sBusy && vmem.io.vme.wr(0).ack
+  val last = Wstate === sBusy && dmem.io.dme.wr(0).ack
   dcr.io.dcr.finish := last
   dcr.io.dcr.ecnt(0).valid := last
 
-  when(vmem.io.vme.wr(0).ack) {
+  when(dmem.io.dme.wr(0).ack) {
     Rstate := sIdle
     Wstate := sIdle
   }
 
 
-  buffer.io.enq <> vmem.io.vme.rd(0).data
-  buffer.io.enq.bits := vmem.io.vme.rd(0).data.bits + dcr.io.dcr.vals(0)
-  vmem.io.vme.wr(0).data <> buffer.io.deq
+  buffer.io.enq <> dmem.io.dme.rd(0).data
+  buffer.io.enq.bits := dmem.io.dme.rd(0).data.bits + dcr.io.dcr.vals(0)
+  dmem.io.dme.wr(0).data <> buffer.io.deq
 
-  io.mem <> vmem.io.mem
+  io.mem <> dmem.io.mem
   io.host <> dcr.io.host
 
 }
@@ -462,6 +462,132 @@ class DandelionDCRCacheShell[T <: DandelionAccelDCRModule](accelModule: () => T)
   vcr.io.dcr.finish := last
 
   io.mem <> cache.io.mem
+  io.host <> vcr.io.host
+
+}
+
+/* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
+/**
+ *
+ * @param accelModule Testing module from dandelion-generator
+ * @param numPtrs     Number of input Ptrs for the accelerator
+ * @param numVals     Number of input Vals for the accelerator
+ * @param numRets     Number of return values to the accelerator
+ * @param numEvents   Number of event values to the accelerator
+ * @param numCtrls    Number of control registers of the accelerator
+ * @param p           implicit parameters that contains all the accelerator configuration
+ * @tparam T
+ */
+class DandelionDCRShell[T <: DandelionAccelDCRModule](accelModule: () => T)
+                                                          (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+                                                          (implicit val p: Parameters) extends Module with HasAccelShellParams {
+  val io = IO(new Bundle {
+    val host = new AXILiteClient(hostParams)
+    val mem = new AXIMaster(memParams)
+  })
+
+  val regBits = dcrParams.regBits
+  val ptrBits = regBits * 2
+
+  val vcr = Module(new DCR)
+  val dme = Module(new DME)
+  val cache = Module(new DMECache())
+
+  val accel = Module(accelModule())
+
+  cache.io.cpu.req <> accel.io.MemReq
+  accel.io.MemResp <> cache.io.cpu.resp
+
+  val sIdle :: sBusy :: sFlush :: sDone :: Nil = Enum(4)
+
+  val state = RegInit(sIdle)
+  val cycles = RegInit(0.U(regBits.W))
+  val cnt = RegInit(0.U(regBits.W))
+  val last = state === sDone
+  val is_busy = state === sBusy
+
+  when(state === sIdle) {
+    cycles := 0.U
+  }.elsewhen(state =/= sFlush) {
+    cycles := cycles + 1.U
+  }
+
+  /**
+   * Connecting event controls and return values
+   * Event zero always contains the cycle count
+   */
+  vcr.io.dcr.ecnt(0).valid := last
+  vcr.io.dcr.ecnt(0).bits := cycles
+
+  if (accel.RetsOut.size > 0) {
+    for (i <- 1 to accel.RetsOut.size) {
+      vcr.io.dcr.ecnt(i).bits := accel.io.out.bits.data(s"field${i - 1}").data
+      vcr.io.dcr.ecnt(i).valid := accel.io.out.valid
+    }
+  }
+
+  /**
+   * @note This part needs to be changes for each function
+   */
+
+  val ptrs = Seq.tabulate(numPtrs) { i => RegEnable(next = vcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
+  val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
+
+  for (i <- 0 until numPtrs) {
+    accel.io.in.bits.dataPtrs(s"field${i}") := DataBundle(ptrs(i))
+  }
+  for (i <- 0 until numVals) {
+    accel.io.in.bits.dataVals(s"field${i}") := DataBundle(vals(i - numPtrs))
+  }
+
+  accel.io.in.bits.enable := ControlBundle.active()
+
+
+  accel.io.in.valid := false.B
+  accel.io.out.ready := is_busy
+
+  cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
+
+  switch(state) {
+    is(sIdle) {
+      when(vcr.io.dcr.launch) {
+        printf(p"Ptrs: ")
+        ptrs.zipWithIndex.foreach(t => printf(p"ptr(${t._2}): ${t._1}, "))
+        printf(p"\nVals: ")
+        vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): ${t._1}, "))
+        printf(p"\n")
+        accel.io.in.valid := true.B
+        when(accel.io.in.fire) {
+          state := sBusy
+        }
+      }
+    }
+    is(sBusy) {
+      when(accel.io.out.fire) {
+        state := sFlush
+      }
+    }
+    is(sFlush) {
+      cache.io.cpu.flush := true.B
+      when(cache.io.cpu.flush_done) {
+        state := sDone
+      }
+    }
+    is(sDone) {
+      state := sIdle
+    }
+  }
+
+
+  vcr.io.dcr.finish := last
+
+  //io.mem <> cache.io.mem
+
+  dme.io.dme.rd(0) <> cache.io.mem.rd
+  dme.io.dme.wr(0) <> cache.io.mem.wr
+
+  io.mem <> dme.io.mem
   io.host <> vcr.io.host
 
 }

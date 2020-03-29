@@ -17,7 +17,6 @@ class DandelionSimAccel[T <: DandelionAccelModule](accelModule: () => T)
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
-  //val vta_shell = Module(new DandelionVTAShell())
   val vta_shell = Module(new DandelionCacheShell(accelModule)(numPtrs = numPtrs, numVals = numVals, numRets = numRets, numEvents = numEvents, numCtrls = numCtrls))
 
   sim_shell.mem <> DontCare
@@ -49,8 +48,7 @@ class DandelionSimDCRAccel[T <: DandelionAccelDCRModule](accelModule: () => T)
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
-  //val vta_shell = Module(new DandelionVTAShell())
-  val vta_shell = Module(new DandelionDCRCacheShell(accelModule)(numPtrs = numPtrs, numVals = numVals, numRets = numRets, numEvents = numEvents, numCtrls = numCtrls))
+  val shell = Module(new DandelionDCRShell(accelModule)(numPtrs = numPtrs, numVals = numVals, numRets = numRets, numEvents = numEvents, numCtrls = numCtrls))
 
   sim_shell.mem <> DontCare
   sim_shell.host <> DontCare
@@ -61,17 +59,17 @@ class DandelionSimDCRAccel[T <: DandelionAccelDCRModule](accelModule: () => T)
    * @TODO: This is a bug from chisel otherwise, bulk connection should work here
    */
   //  sim_shell.mem <> vta_shell.io.mem
-  sim_shell.mem.ar <> vta_shell.io.mem.ar
-  sim_shell.mem.aw <> vta_shell.io.mem.aw
-  sim_shell.mem.w <> vta_shell.io.mem.w
-  vta_shell.io.mem.b <> sim_shell.mem.b
-  vta_shell.io.mem.r <> sim_shell.mem.r
+  sim_shell.mem.ar <> shell.io.mem.ar
+  sim_shell.mem.aw <> shell.io.mem.aw
+  sim_shell.mem.w <> shell.io.mem.w
+  shell.io.mem.b <> sim_shell.mem.b
+  shell.io.mem.r <> sim_shell.mem.r
 
-  sim_shell.host.b <> vta_shell.io.host.b
-  sim_shell.host.r <> vta_shell.io.host.r
-  vta_shell.io.host.ar <> sim_shell.host.ar
-  vta_shell.io.host.aw <> sim_shell.host.aw
-  vta_shell.io.host.w <> sim_shell.host.w
+  sim_shell.host.b <> shell.io.host.b
+  sim_shell.host.r <> shell.io.host.r
+  shell.io.host.ar <> sim_shell.host.ar
+  shell.io.host.aw <> sim_shell.host.aw
+  shell.io.host.w <> sim_shell.host.w
 }
 
 
@@ -119,7 +117,7 @@ object DandelionSimDCRAccelMain extends App {
   var accel_name = "test09"
 
   args.sliding(2, 2).toList.collect {
-    case Array("--num-accel", argAccel: String) => accel_name = argAccel
+    case Array("--accel-name", argAccel: String) => accel_name = argAccel
     case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
     case Array("--num-vals", argVals: String) => num_vals = argVals.toInt
     case Array("--num-rets", argRets: String) => num_returns = argRets.toInt

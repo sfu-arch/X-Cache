@@ -47,6 +47,16 @@ NO_DYNAMIC_PYTHON_ERROR = (
 NO_PYTHON_LIBRARY_ERROR = 'ERROR: unable to find an appropriate Python library.'
 NO_PYTHON_HEADERS_ERROR = 'ERROR: Python headers are missing in {include_dir}.'
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 # Regular expressions used to find static and dynamic Python libraries.
 # Notes:
 #  - Python 3 library name may have an 'm' suffix on Unix platforms, for
@@ -132,6 +142,7 @@ def BuildAccel(config):
       make_params += ["{}={} ".format(str(config), str(configData['Accel'][config]))]
 
     # print(make_params)
+    print(bcolors.OKGREEN + " ".join(str(val) for val in ['make', 'chisel'] + make_params) + bcolors.ENDC)
     CheckCall(['make', 'chisel'] + make_params)
 
 def BuildDsim():

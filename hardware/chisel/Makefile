@@ -37,6 +37,7 @@ BUILD_NAME = build
 USE_TRACE = 1
 LIBNAME = libhw
 
+nameAccel = test09
 numPtrs= 4
 numVals= 2
 numRets= 0
@@ -112,6 +113,7 @@ $(verilator_build_dir)/V$(TOP).cpp: $(chisel_build_dir)/$(TOP).v
 verilog: $(chisel_build_dir)/$(TOP).v
 $(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')#install_vta_package
 	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP) \
+		--accel-name $(nameAccel) \
 		--num-ptrs $(numPtrs) --num-vals $(numVals) \
 		--num-rets $(numRets) --num-events $(numEnts) \
 		--num-ctrls $(numCtrls)'

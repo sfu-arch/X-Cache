@@ -15,12 +15,12 @@ import dandelion.junctions._
  * AXI -- memParams:dataBits
  *
  * @param vcrParams
- * @param vmeParams
+ * @param dmeParams
  * @param hostParams
  * @param memParams
  */
 class WithShellConfig(vcrParams: DandelionDCRParams = DandelionDCRParams(),
-                      vmeParams: DandelionVMEParams = DandelionVMEParams(),
+                      dmeParams: DandelionDMEParams = DandelionDMEParams(),
                       hostParams: AXIParams = AXIParams(
                         addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
                       memParams: AXIParams = AXIParams(
@@ -31,7 +31,7 @@ class WithShellConfig(vcrParams: DandelionDCRParams = DandelionDCRParams(),
   extends Config((site, here, up) => {
     // Core
     case DCRKey => vcrParams
-    case VMEKey => vmeParams
+    case DMEKey => dmeParams
     case HostParamKey => hostParams
     case MemParamKey => memParams
     case NastiKey => nastiParams
@@ -49,12 +49,12 @@ class WithSimShellConfig(dLen: Int = 64, pLog: Boolean = false, cLog: Boolean = 
  * AXI -- memParams:dataBits
  *
  * @param vcrParams
- * @param vmeParams
+ * @param dmeParams
  * @param hostParams
  * @param memParams
  */
 class WithF1Config(vcrParams: DandelionDCRParams = DandelionDCRParams(),
-                   vmeParams: DandelionVMEParams = DandelionVMEParams(),
+                   dmeParams: DandelionDMEParams = DandelionDMEParams(),
                    hostParams: AXIParams = AXIParams(
                      addrBits = 32, dataBits = 32, idBits = 13, lenBits = 8),
                    memParams: AXIParams = AXIParams(
@@ -65,7 +65,7 @@ class WithF1Config(vcrParams: DandelionDCRParams = DandelionDCRParams(),
   extends Config((site, here, up) => {
     // Core
     case DCRKey => vcrParams
-    case VMEKey => vmeParams
+    case DMEKey => dmeParams
     case HostParamKey => hostParams
     case MemParamKey => memParams
     case NastiKey => nastiParams
