@@ -36,7 +36,7 @@ class VTAShell(implicit val p: Parameters) extends Module with HasAccelShellPara
   })
 
   val dcr = Module(new DCR)
-  val vme = Module(new VME)
+  val vme = Module(new DME)
 
   /**
     * @todo: A template to provide core to talk with vcr and vme

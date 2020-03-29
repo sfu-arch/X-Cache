@@ -45,10 +45,10 @@ trait DCRParams {
 }
 
 /**
- * VME parameters.
- * These parameters are used on VME interfaces and modules.
+ * DME parameters.
+ * These parameters are used on DME interfaces and modules.
  */
-trait VMEParams {
+trait DMEParams {
   val nReadClients: Int
   val nWriteClients: Int
 }
@@ -113,18 +113,18 @@ case class DandelionDCRParams(numCtrl: Int = 1,
 }
 
 /**
- * VME parameters.
- * These parameters are used on VME interfaces and modules.
+ * DME parameters.
+ * These parameters are used on DME interfaces and modules.
  */
-case class DandelionVMEParams(numRead: Int = 1,
+case class DandelionDMEParams(numRead: Int = 1,
                               numWrite: Int = 1) {
   val nReadClients: Int = numRead
   val nWriteClients: Int = numWrite
   require(nReadClients > 0,
-    s"\n\n[VTA] [VMEParams] nReadClients must be larger than 0\n\n")
+    s"\n\n[VTA] [DMEParams] nReadClients must be larger than 0\n\n")
   require(
     nWriteClients == 1,
-    s"\n\n[VTA] [VMEParams] nWriteClients must be 1, only one-write-client support atm\n\n")
+    s"\n\n[VTA] [DMEParams] nWriteClients must be 1, only one-write-client support atm\n\n")
 }
 
 
@@ -133,7 +133,7 @@ case class ShellParams(
                         val hostParams: AXIParams,
                         val memParams: AXIParams,
                         val vcrParams: DandelionDCRParams,
-                        val vmeParams: DandelionVMEParams
+                        val dmeParams: DandelionDMEParams
                       )
 
 
@@ -141,7 +141,7 @@ case object DandelionConfigKey extends Field[DandelionAccelParams]
 
 case object DCRKey extends Field[DandelionDCRParams]
 
-case object VMEKey extends Field[DandelionVMEParams]
+case object DMEKey extends Field[DandelionDMEParams]
 
 case object HostParamKey extends Field[AXIParams]
 
@@ -188,7 +188,7 @@ trait HasAccelShellParams {
 
   def dcrParams: DandelionDCRParams = p(DCRKey)
 
-  def vmeParams: DandelionVMEParams = p(VMEKey)
+  def dmeParams: DandelionDMEParams = p(DMEKey)
 
   def hostParams: AXIParams = p(HostParamKey)
 

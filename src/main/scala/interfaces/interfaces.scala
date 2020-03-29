@@ -496,7 +496,6 @@ class VariableData(val argTypes: Seq[Int])(implicit p: Parameters) extends Recor
       s"field$i" -> new DataBundle()(
         p.alterPartial({ case DandelionConfigKey => p(DandelionConfigKey).copy(dataLen = argTypes(i)) })
       )
-    //        i => s"field$i" -> new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) }))
   }
   override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
 
@@ -513,7 +512,6 @@ class VariableDecoupledData(val argTypes: Seq[Int])(implicit p: Parameters) exte
         p.alterPartial({ case DandelionConfigKey => p(DandelionConfigKey).copy(dataLen = argTypes(i)) })
       )
       )
-    //      i => s"field$i" -> Decoupled(new DataBundle()(p.alterPartial({ case DAXLEN => argTypes(i) })))
   }
   override val elements = ListMap(elts map { case (field, elt) => field -> elt.cloneType }: _*)
 
