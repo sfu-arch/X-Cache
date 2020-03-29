@@ -37,11 +37,11 @@ BUILD_NAME = build
 USE_TRACE = 1
 LIBNAME = libhw
 
-NUM_PTRS = 4
-NUM_VALS = 2
-NUM_RETS = 0
-NUM_EVENTS = 1
-NUM_CTRLS = 1
+numPtrs= 4
+numVals= 2
+numRets= 0
+numEnts= 1
+numCtrls= 1
 
 vta_dir = $(abspath ../../)
 tvm_dir = $(abspath ../../include/)
@@ -112,9 +112,9 @@ $(verilator_build_dir)/V$(TOP).cpp: $(chisel_build_dir)/$(TOP).v
 verilog: $(chisel_build_dir)/$(TOP).v
 $(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')#install_vta_package
 	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP) \
-		--num-ptrs $(NUM_PTRS) --num-vals $(NUM_VALS) \
-		--num-rets $(NUM_RETS) --num-events $(NUM_EVENTS) \
-		--num-ctrls $(NUM_CTRLS)'
+		--num-ptrs $(numPtrs) --num-vals $(numVals) \
+		--num-rets $(numRets) --num-events $(numEnts) \
+		--num-ctrls $(numCtrls)'
 
 clean:
 	-rm -rf $(build_dir) target project/target project/project

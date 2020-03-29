@@ -12,7 +12,7 @@ import vta.shell.DandelionF1Accel
 
 /** Test. This generates a testbench file for simulation */
 class DandelionSimAccel[T <: DandelionAccelModule](accelModule: () => T)
-                                                  (numPtrs:Int, numVals:Int, numRets: Int, numEvents: Int, numCtrls: Int)
+                                                  (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
                                                   (implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
@@ -44,8 +44,8 @@ class DandelionSimAccel[T <: DandelionAccelModule](accelModule: () => T)
 
 /** Test. This generates a testbench file for simulation */
 class DandelionSimDCRAccel[T <: DandelionAccelDCRModule](accelModule: () => T)
-                                                  (numPtrs:Int, numVals:Int, numRets: Int, numEvents: Int, numCtrls: Int)
-                                                  (implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
+                                                        (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+                                                        (implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
@@ -75,7 +75,6 @@ class DandelionSimDCRAccel[T <: DandelionAccelDCRModule](accelModule: () => T)
 }
 
 
-
 object DandelionSimAccelMain extends App {
 
   //These are default values for VCR
@@ -102,6 +101,9 @@ object DandelionSimAccelMain extends App {
     () => new DandelionSimAccel(() => new test05DF())(numPtrs = num_ptrs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
 }
 
+/**
+ * Main object for compatible DCR accelerator with Dandelion generator
+ */
 object DandelionSimDCRAccelMain extends App {
 
   //These are default values for VCR
@@ -110,7 +112,14 @@ object DandelionSimDCRAccelMain extends App {
   var num_returns = 1
   var num_events = 1
   var num_ctrls = 1
+
+  /**
+   * Make sure accel name is added to TestDCRAccel class
+   */
+  var accel_name = "test09"
+
   args.sliding(2, 2).toList.collect {
+    case Array("--num-accel", argAccel: String) => accel_name = argAccel
     case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
     case Array("--num-vals", argVals: String) => num_vals = argVals.toInt
     case Array("--num-rets", argRets: String) => num_returns = argRets.toInt
@@ -125,9 +134,8 @@ object DandelionSimDCRAccelMain extends App {
   implicit val p =
     new WithSimShellConfig(dLen = 64, pLog = true, cLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
   chisel3.Driver.execute(args.take(4),
-    () => new DandelionSimDCRAccel(() => new test09DF())(numPtrs = num_ptrs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
+    () => new DandelionSimDCRAccel(() => DandelionTestDCRAccel(accel_name))(numPtrs = num_ptrs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
 }
-
 
 
 object DandelionF1AccelMain extends App {
@@ -152,7 +160,7 @@ object DandelionF1AccelMain extends App {
    *       Pass generated accelerator to TestAccel
    */
   implicit val p =
-    new WithF1ShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals , nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
+    new WithF1ShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
   chisel3.Driver.execute(args.take(4),
     () => new DandelionF1Accel(() => new test05DF())(nPtrs = num_ptrs, nVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
 }
