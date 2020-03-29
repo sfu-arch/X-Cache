@@ -113,7 +113,11 @@ def FindExecutable( executable ):
 
 def ParseArguments():
   parser = argparse.ArgumentParser()
-  parser.add_argument( '--accel-config', action = 'store', dest='accel_config', required=True, type=dir_path,
+  parser.add_argument( '--build-accel', action='store_true', dest='build',
+                        help = 'Building accelerator model')
+  parser.add_argument( '--build-dsim', action='store_true', dest='dsim',
+                        help = 'Building dsim library')
+  parser.add_argument( '--accel-config', action = 'store', dest='accel_config', type=dir_path,
                        help = 'The accelerator name that will we passed to hardware generator')
   args = parser.parse_args()
 
@@ -130,6 +134,9 @@ def BuildAccel(config):
     # print(make_params)
     CheckCall(['make', 'chisel'] + make_params)
 
+def BuildDsim():
+  CheckCall([sys.executable, '-m', 'pip', 'install', '.'])
+
 def Main():
   pybind11_file = p.join( DIR_OF_THIS_SCRIPT, 'pybind11', 'CMakeLists.txt' )
 
@@ -138,12 +145,13 @@ def Main():
       'File {0} does not exist; you probably forgot to run:\n'
       '\tgit submodule update --init --recursive\n'.format( pybind11_file) )
 
-  # CheckCall( [ sys.executable, build_file ] + sys.argv[ 1: ] )
-
   args = ParseArguments()
-  
-  print(args.accel_config)
-  BuildAccel(args.accel_config)
+
+  if args.dsim:
+    BuildDsim()
+  else:
+    BuildAccel(args.accel_config)
+
 
 if __name__ == "__main__":
   Main()
