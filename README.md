@@ -1,6 +1,9 @@
 muIR-Sim
 ==========================
 
+[![](https://tokei.rs/b1/github/sfu-arch/muir-sim)](https://github.com/sfu-arch/muir-sim)
+
+
 µIR-sim is a new simulation environment that improves software and hardware integration and simulation accuracy compare to functional simulation. One of the goals of this framework is integration the hardware development process into the software stack from the beginning, allowing features to be incrementally implemented and evaluated as workloads evolve over time.
 Under this environment, the hardware description is the actual specification. This reduces the burden of maintaining consistency between the specification written usually in a higher language such as C/C++ and the actual hardware design described in a language such as Verilog.
 Moving to µIR-sim will allow us to have am ore fluid hardware-software specification, and invite more contributions to modify different layers of the stack.
