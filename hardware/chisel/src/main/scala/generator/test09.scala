@@ -24,7 +24,7 @@ import util._
 
 
 class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelModule(PtrsIn, ValsIn, Returns){
+			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
   /* ================================================================== *
@@ -39,7 +39,7 @@ class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val PtrsInSplitter= Module(new SplitCallNew(List(1, 1, 1)))
+  val PtrsInSplitter= Module(new SplitCallDCR(ptrsArgTypes = List(1, 1, 1), valsArgTypes = List()))
   PtrsInSplitter.io.In <> io.in
 
 
@@ -175,11 +175,11 @@ class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> PtrsInSplitter.io.Out.data.elements("field0")(0)
+  Loop_0.io.InLiveIn(0) <> PtrsInSplitter.io.Out.dataPtrs.elements("field0")(0)
 
-  Loop_0.io.InLiveIn(1) <> PtrsInSplitter.io.Out.data.elements("field1")(0)
+  Loop_0.io.InLiveIn(1) <> PtrsInSplitter.io.Out.dataPtrs.elements("field1")(0)
 
-  Loop_0.io.InLiveIn(2) <> PtrsInSplitter.io.Out.data.elements("field2")(0)
+  Loop_0.io.InLiveIn(2) <> PtrsInSplitter.io.Out.dataPtrs.elements("field2")(0)
 
 
 
