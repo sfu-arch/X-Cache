@@ -1,0 +1,10 @@
+{
+    "Accel" : {
+        "nameAccel" : "test09",
+        "numPtrs"  : 3,
+        "numVals"  : 0,
+        "numRets"  : 1,
+        "numEnts"  : 1,
+        "numCtrls" : 1
+    }
+}
