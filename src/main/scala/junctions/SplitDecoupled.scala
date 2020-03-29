@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 import dandelion.interfaces._
 import chipsalliance.rocketchip.config._
-import dandelion.config.{HasAccelShellParams, HasAccelParams}
+import dandelion.config.HasAccelParams
 
 class SplitCustomIO(argTypes: Seq[Bits])(implicit p: Parameters) extends Bundle {
   val In = Flipped(Decoupled(new VariableCustom(argTypes)))
@@ -141,10 +141,8 @@ class SplitCall(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
 
 }
 
-class SplitCallNewIO(val ptrsArgCounts: Seq[Int],
-                     val valsArgCounts: Seq[Int])(implicit p: Parameters) extends Bundle with HasAccelParams {
-  val In = Flipped(Decoupled(new CallDCR(Seq.fill(ptrsArgCounts.length)(xlen),
-    Seq.fill(valsArgCounts.length)(xlen))))
+class SplitCallNewIO(val argTypes: Seq[Int])(implicit p: Parameters) extends Bundle {
+  val In = Flipped(Decoupled(new Call(Seq.fill(argTypes.length)(32))))
   val Out = new CallDecoupledVec(argTypes)
 
   override def cloneType = new SplitCallNewIO(argTypes).asInstanceOf[this.type]
@@ -208,26 +206,54 @@ class SplitCallNew(val argTypes: Seq[Int])(implicit p: Parameters) extends Modul
 
 }
 
-class SplitCallDCRIO(val argTypes: Seq[Int])(implicit p: Parameters) extends Bundle {
-  val In = Flipped(Decoupled(new Call(Seq.fill(argTypes.length)(32))))
-  val Out = new CallDecoupledVec(argTypes)
+class SplitCallDCRIO(val ptrsArgTypes: Seq[Int],
+                     val valsArgTypes: Seq[Int])(implicit val p: Parameters) extends Bundle with HasAccelParams {
+  val In = Flipped(Decoupled(new CallDCR(Seq.fill(ptrsArgTypes.length)(xlen), Seq.fill(valsArgTypes.length)(xlen))))
+  val Out = new CallDCRDecoupledVec(ptrsArgTypes, valsArgTypes)
 
-  override def cloneType = new SplitCallNewIO(argTypes).asInstanceOf[this.type]
+  override def cloneType = new SplitCallDCRIO(ptrsArgTypes, valsArgTypes).asInstanceOf[this.type]
 }
 
-class SplitCallDCR(val argTypes: Seq[Int])(implicit p: Parameters) extends Module {
-  val io = IO(new SplitCallDCRIO(argTypes))
+class SplitCallDCR(val ptrsArgTypes: Seq[Int], val valsArgTypes: Seq[Int])(implicit p: Parameters) extends Module {
+  val io = IO(new SplitCallDCRIO(ptrsArgTypes, valsArgTypes))
+
   val inputReg  = RegInit(0.U.asTypeOf(io.In.bits))
   val inputReadyReg = RegInit(false.B)
   val enableValidReg = RegInit(false.B)
 
-  val outputValidReg = for(i <- argTypes.indices) yield {
-    val validReg = Seq.fill(argTypes(i)){RegInit(false.B)}
+  val outputPtrsValidReg = for(i <- ptrsArgTypes.indices) yield {
+    val validReg = Seq.fill(ptrsArgTypes(i)){RegInit(false.B)}
     validReg
   }
-  val allValid = for(i <- argTypes.indices) yield {
-    val allValid = outputValidReg(i).reduceLeft(_ || _)
-    allValid
+
+  val outputValsValidReg = for(i <- valsArgTypes.indices) yield {
+    val validReg = Seq.fill(valsArgTypes(i)){RegInit(false.B)}
+    validReg
+  }
+
+
+  val ptrsValid = for(i <- ptrsArgTypes.indices) yield {
+    val ptrsV = outputPtrsValidReg(i).reduceLeft(_ || _)
+    ptrsV
+  }
+
+  val valsValid = for(i <- valsArgTypes.indices) yield {
+    val valsV = outputValsValidReg(i).reduceLeft(_ || _)
+    valsV
+  }
+
+  def isPtrsValid(): Bool ={
+    if(ptrsArgTypes.length > 0)
+      ptrsValid.reduceLeft(_ || _)
+    else
+      true.B
+  }
+
+  def isValsValid(): Bool ={
+    if(valsArgTypes.length > 0)
+      valsValid.reduceLeft(_ || _)
+    else
+      true.B
   }
 
   val s_idle :: s_latched :: Nil = Enum(2)
@@ -243,24 +269,38 @@ class SplitCallDCR(val argTypes: Seq[Int])(implicit p: Parameters) extends Modul
       }
     }
     is(s_latched) {
-      when (!allValid.reduceLeft(_ || _) && !enableValidReg) {
+      when (!isPtrsValid && !isValsValid && !enableValidReg) {
         state := s_idle
       }
     }
   }
 
-  for (i <- argTypes.indices) {
-    for (j <- 0 until argTypes(i)) {
+  for (i <- ptrsArgTypes.indices) {
+    for (j <- 0 until ptrsArgTypes(i)) {
       when(io.In.valid && state === s_idle) {
-        outputValidReg(i)(j) := true.B
+        outputPtrsValidReg(i)(j) := true.B
       }
-      when(state === s_latched && io.Out.data(s"field$i")(j).ready) {
-        outputValidReg(i)(j) := false.B
+      when(state === s_latched && io.Out.dataPtrs(s"field$i")(j).ready) {
+        outputPtrsValidReg(i)(j) := false.B
       }
-      io.Out.data(s"field$i")(j).valid := outputValidReg(i)(j)
-      io.Out.data(s"field$i")(j).bits := inputReg.data(s"field$i")
+      io.Out.dataPtrs(s"field$i")(j).valid := outputPtrsValidReg(i)(j)
+      io.Out.dataPtrs(s"field$i")(j).bits := inputReg.dataPtrs(s"field$i")
     }
   }
+
+  for (i <- valsArgTypes.indices) {
+    for (j <- 0 until valsArgTypes(i)) {
+      when(io.In.valid && state === s_idle) {
+        outputValsValidReg(i)(j) := true.B
+      }
+      when(state === s_latched && io.Out.dataVals(s"field$i")(j).ready) {
+        outputValsValidReg(i)(j) := false.B
+      }
+      io.Out.dataVals(s"field$i")(j).valid := outputValsValidReg(i)(j)
+      io.Out.dataVals(s"field$i")(j).bits := inputReg.dataVals(s"field$i")
+    }
+  }
+
 
   when(io.In.valid && state === s_idle) {
     enableValidReg := true.B

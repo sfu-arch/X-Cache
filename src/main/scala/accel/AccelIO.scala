@@ -9,6 +9,32 @@ import dandelion.interfaces.{CallDCR, Call, MemReq, MemResp}
 
 /**
  * Global definition for dandelion accelerators
+ * @param ArgsIn
+ * @param Returns
+ * @param p
+ * @tparam T
+ */
+class DandelionAccelIO[T <: Data](val ArgsIn: Seq[Int],
+                                  val Returns: Seq[Int])(implicit p: Parameters)
+  extends AccelBundle()(p) {
+  val in = Flipped(Decoupled(new Call(ArgsIn)))
+  val MemResp = Flipped(Valid(new MemResp))
+  val MemReq = Decoupled(new MemReq)
+  val out = Decoupled(new Call(Returns))
+
+  override def cloneType = new DandelionAccelIO(ArgsIn, Returns)(p).asInstanceOf[this.type]
+
+}
+
+
+abstract class DandelionAccelModule(val ArgsIn: Seq[Int],
+                                    val Returns: Seq[Int])(implicit val p: Parameters) extends Module with HasAccelParams {
+  override lazy val io = IO(new DandelionAccelIO(ArgsIn, Returns))
+}
+
+
+/**
+ * Global definition for dandelion accelerators
  *
  * @param PtrsIn
  * @param ValsIn
@@ -16,7 +42,7 @@ import dandelion.interfaces.{CallDCR, Call, MemReq, MemResp}
  * @param p
  * @tparam T
  */
-class DandelionAccelIO[T <: Data](val PtrsIn: Seq[Int],
+class DandelionAccelDCRIO[T <: Data](val PtrsIn: Seq[Int],
                                   val ValsIn: Seq[Int],
                                   val RetsOut: Seq[Int])(implicit p: Parameters)
   extends AccelBundle()(p) {
@@ -25,13 +51,13 @@ class DandelionAccelIO[T <: Data](val PtrsIn: Seq[Int],
   val MemReq = Decoupled(new MemReq)
   val out = Decoupled(new Call(RetsOut))
 
-  override def cloneType = new DandelionAccelIO(PtrsIn, ValsIn, RetsOut)(p).asInstanceOf[this.type]
+  override def cloneType = new DandelionAccelDCRIO(PtrsIn, ValsIn, RetsOut)(p).asInstanceOf[this.type]
 
 }
 
 
-abstract class DandelionAccelModule(val PtrsIn: Seq[Int],
+abstract class DandelionAccelDCRModule(val PtrsIn: Seq[Int],
                                     val ValsIn: Seq[Int],
                                     val RetsOut: Seq[Int])(implicit val p: Parameters) extends Module with HasAccelParams {
-  override lazy val io = IO(new DandelionAccelIO(PtrsIn, ValsIn, RetsOut))
+  override lazy val io = IO(new DandelionAccelDCRIO(PtrsIn, ValsIn, RetsOut))
 }

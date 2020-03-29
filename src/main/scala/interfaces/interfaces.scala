@@ -546,7 +546,7 @@ class Call(val argTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle()
 // Call type that wraps an enable and variable DataBundle together
 class CallDCR(val ptrsArgTypes: Seq[Int],
               val valsArgTypes: Seq[Int])(implicit p: Parameters) extends AccelBundle() {
-  val enable = new ControlBundle
+  val enable   = new ControlBundle
   val dataPtrs = new VariableData(ptrsArgTypes)
   val dataVals = new VariableData(valsArgTypes)
 
