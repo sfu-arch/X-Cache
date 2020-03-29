@@ -4,3 +4,4 @@ hardware/verilog/build/*
 *.swp
 project/
 target/
+.idea/
