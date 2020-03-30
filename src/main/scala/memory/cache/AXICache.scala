@@ -558,7 +558,6 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
     Mux(flush_mode,
       VecInit.tabulate(dataBeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count),
       VecInit.tabulate(dataBeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)),
-    //    VecInit.tabulate(dataBeats)(i => read((i+1)*Axi_param.dataBits-1, i*Axi_param.dataBits))(write_count),
     None, write_wrap_out)
   io.mem.w.valid := false.B
   // write resp
@@ -820,8 +819,6 @@ class DMECache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Para
     }
   }
 
-  //io.mem.ar.bits := NastiReadAddressChannel(
-  //  0.U, (Cat(tag_reg, idx_reg) << blen.U).asUInt(), log2Up(Axi_param.dataBits/8).U, (dataBeats-1).U)
   io.mem.rd.cmd.bits.addr := Cat(tag_reg, idx_reg) << blen.U
   io.mem.rd.cmd.bits.len := (dataBeats - 1).U
   io.mem.rd.cmd.valid := false.B
@@ -845,27 +842,17 @@ class DMECache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Para
   }
 
   // write addr
-  //io.mem.aw.bits := NastiWriteAddressChannel(
-  //  0.U, Mux(flush_mode, block_addr, Cat(rmeta.tag, idx_reg) << blen.U).asUInt(), log2Up(Axi_param.dataBits/8).U, (dataBeats-1).U)
-  //io.mem.aw.valid := false.B
   io.mem.wr.cmd.bits.addr := Mux(flush_mode, block_addr, Cat(rmeta.tag, idx_reg) << blen.U)
   io.mem.wr.cmd.bits.len := (dataBeats - 1).U
   io.mem.wr.cmd.valid := false.B
 
   // write data
-  //io.mem.w.bits := NastiWriteDataChannel(
-  //  Mux(flush_mode,
-  //    VecInit.tabulate(dataBeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count),
-  //    VecInit.tabulate(dataBeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)),
-  //  None, write_wrap_out)
-  //io.mem.w.valid := false.B
   io.mem.wr.data.bits := Mux(flush_mode,
     VecInit.tabulate(dataBeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count),
     VecInit.tabulate(dataBeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count))
   io.mem.wr.data.valid := false.B
 
   // write resp
-  //io.mem.b.ready := false.B
   io.cpu.flush_done := false.B
 
   // Cache FSM
@@ -884,8 +871,6 @@ class DMECache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Para
           state := s_IDLE
         }
       }.otherwise {
-        //io.mem.aw.valid := is_dirty
-        //io.mem.ar.valid := !is_dirty
         io.mem.wr.cmd.valid := is_dirty
         io.mem.rd.cmd.valid := !is_dirty
         when(io.mem.wr.cmd.fire()) {
@@ -915,8 +900,6 @@ class DMECache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Para
       }
     }
     is(s_WRITE_ACK) {
-      //io.mem.b.ready := true.B
-      //when(io.mem.b.fire()) {
       when(io.mem.wr.ack) {
         state := s_REFILL_READY
       }
@@ -992,8 +975,6 @@ class DMECache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Para
       }
     }
     is(s_flush_WRITE_ACK) {
-      //io.mem.b.ready := true.B
-      //when(io.mem.b.fire()) {
       when(io.mem.wr.ack) {
         flush_state := s_flush_START
       }

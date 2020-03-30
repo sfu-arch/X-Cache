@@ -121,10 +121,10 @@ case class DandelionDMEParams(numRead: Int = 1,
   val nReadClients: Int = numRead
   val nWriteClients: Int = numWrite
   require(nReadClients > 0,
-    s"\n\n[VTA] [DMEParams] nReadClients must be larger than 0\n\n")
+    s"\n\n[Dandelion] [DMEParams] nReadClients must be larger than 0\n\n")
   require(
-    nWriteClients == 1,
-    s"\n\n[VTA] [DMEParams] nWriteClients must be 1, only one-write-client support atm\n\n")
+    nWriteClients > 0,
+    s"\n\n[Dandelion] [DMEParams] nWriteClients must be larger than 0\n\n")
 }
 
 

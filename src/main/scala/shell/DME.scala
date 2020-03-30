@@ -12,9 +12,9 @@ import dandelion.interfaces.axi._
 abstract class DMEBase(implicit p: Parameters) extends DandelionParameterizedBundle()(p)
 
 /** DMECmd.
-  *
-  * This interface is used for creating write and read requests to memory.
-  */
+ *
+ * This interface is used for creating write and read requests to memory.
+ */
 class DMECmd(implicit val p: Parameters) extends DMEBase with HasAccelShellParams {
   val addrBits = memParams.addrBits
   val lenBits = memParams.lenBits
@@ -23,10 +23,10 @@ class DMECmd(implicit val p: Parameters) extends DMEBase with HasAccelShellParam
 }
 
 /** DMEReadMaster.
-  *
-  * This interface is used by modules inside the core to generate read requests
-  * and receive responses from VME.
-  */
+ *
+ * This interface is used by modules inside the core to generate read requests
+ * and receive responses from DME.
+ */
 class DMEReadMaster(implicit val p: Parameters) extends Bundle with HasAccelShellParams {
   val dataBits = memParams.dataBits
   val cmd = Decoupled(new DMECmd)
@@ -37,10 +37,10 @@ class DMEReadMaster(implicit val p: Parameters) extends Bundle with HasAccelShel
 }
 
 /** DMEReadClient.
-  *
-  * This interface is used by the VME to receive read requests and generate
-  * responses to modules inside the core.
-  */
+ *
+ * This interface is used by the DME to receive read requests and generate
+ * responses to modules inside the core.
+ */
 class DMEReadClient(implicit val p: Parameters) extends Bundle with HasAccelShellParams {
   val dataBits = memParams.dataBits
   val cmd = Flipped(Decoupled(new DMECmd))
@@ -50,11 +50,11 @@ class DMEReadClient(implicit val p: Parameters) extends Bundle with HasAccelShel
     new DMEReadClient().asInstanceOf[this.type]
 }
 
-/** VMEWriteMaster.
-  *
-  * This interface is used by modules inside the core to generate write requests
-  * to the VME.
-  */
+/** DMEWriteMaster.
+ *
+ * This interface is used by modules inside the core to generate write requests
+ * to the DME.
+ */
 class DMEWriteMaster(implicit val p: Parameters) extends Bundle with HasAccelShellParams {
   val dataBits = memParams.dataBits
   val cmd = Decoupled(new DMECmd)
@@ -66,10 +66,10 @@ class DMEWriteMaster(implicit val p: Parameters) extends Bundle with HasAccelShe
 }
 
 /** DMEWriteClient.
-  *
-  * This interface is used by the VME to handle write requests from modules inside
-  * the core.
-  */
+ *
+ * This interface is used by the DME to handle write requests from modules inside
+ * the core.
+ */
 class DMEWriteClient(implicit val p: Parameters) extends Bundle with HasAccelShellParams {
   val dataBits = memParams.dataBits
   val cmd = Flipped(Decoupled(new DMECmd))
@@ -80,19 +80,19 @@ class DMEWriteClient(implicit val p: Parameters) extends Bundle with HasAccelShe
     new DMEWriteClient().asInstanceOf[this.type]
 }
 
-/** VMEMaster.
-  *
-  * Pack nRd number of VMEReadMaster interfaces and nWr number of VMEWriteMaster
-  * interfaces.
-  */
+/** DMEMaster.
+ *
+ * Pack nRd number of DMEReadMaster interfaces and nWr number of DMEWriteMaster
+ * interfaces.
+ */
 class DMEMaster(implicit val p: Parameters) extends Bundle with HasAccelShellParams {
   val rd = new DMEReadMaster
   val wr = new DMEWriteMaster
 }
 
-/** VMEMasterVector.
+/** DMEMasterVector.
  *
- * Pack nRd number of VMEReadMaster interfaces and nWr number of VMEWriteMaster
+ * Pack nRd number of DMEReadMaster interfaces and nWr number of DMEWriteMaster
  * interfaces.
  */
 class DMEMasterVector(implicit val p: Parameters) extends Bundle with HasAccelShellParams {
@@ -103,11 +103,11 @@ class DMEMasterVector(implicit val p: Parameters) extends Bundle with HasAccelSh
 }
 
 
-/** VMEClient.
-  *
-  * Pack nRd number of VMEReadClient interfaces and nWr number of VMEWriteClient
-  * interfaces.
-  */
+/** DMEClient.
+ *
+ * Pack nRd number of DMEReadClient interfaces and nWr number of DMEWriteClient
+ * interfaces.
+ */
 class DMEClientVector(implicit val p: Parameters) extends Bundle with HasAccelShellParams {
   val nRd = dmeParams.nReadClients
   val nWr = dmeParams.nWriteClients
@@ -115,11 +115,11 @@ class DMEClientVector(implicit val p: Parameters) extends Bundle with HasAccelSh
   val wr = Vec(nWr, new DMEWriteClient)
 }
 
-/** VTA Memory Engine (VME).
-  *
-  * This unit multiplexes the memory controller interface for the Core. Currently,
-  * it supports single-writer and multiple-reader mode and it is also based on AXI.
-  */
+/** Dandelion Memory Engine (DME).
+ *
+ * This unit multiplexes the memory controller interface for the Core. Currently,
+ * it supports single-writer and multiple-reader mode and it is also based on AXI.
+ */
 class DME(implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
     val mem = new AXIMaster(memParams)
@@ -155,6 +155,15 @@ class DME(implicit val p: Parameters) extends Module with HasAccelShellParams {
     }
   }
 
+  /* ----------------------------------------------------------------*/
+  val nWriteClients = dmeParams.nWriteClients
+  val wr_arb = Module(new Arbiter(new DMECmd, nWriteClients))
+  val wr_arb_chosen = RegEnable(wr_arb.io.chosen, wr_arb.io.out.fire())
+
+  for (i <- 0 until nWriteClients) {
+    wr_arb.io.in(i) <> io.dme.wr(i).cmd
+  }
+
   val sWriteIdle :: sWriteAddr :: sWriteData :: sWriteResp :: Nil = Enum(4)
   val wstate = RegInit(sWriteIdle)
   val addrBits = memParams.addrBits
@@ -169,7 +178,7 @@ class DME(implicit val p: Parameters) extends Module with HasAccelShellParams {
 
   switch(wstate) {
     is(sWriteIdle) {
-      when(io.dme.wr(0).cmd.valid) {
+      when(wr_arb.io.out.valid) {
         wstate := sWriteAddr
       }
     }
@@ -180,10 +189,7 @@ class DME(implicit val p: Parameters) extends Module with HasAccelShellParams {
     }
     is(sWriteData) {
       when(
-        io.dme
-          .wr(0)
-          .data
-          .valid && io.mem.w.ready && wr_cnt === io.dme.wr(0).cmd.bits.len) {
+        io.dme.wr(wr_arb_chosen).data.valid && io.mem.w.ready && wr_cnt === wr_arb.io.out.bits.len) {
         wstate := sWriteResp
       }
     }
@@ -195,42 +201,34 @@ class DME(implicit val p: Parameters) extends Module with HasAccelShellParams {
   }
 
   // registers storing read/write cmds
-  val rd_len = RegInit(0.U(lenBits.W))
-  val wr_len = RegInit(0.U(lenBits.W))
-  val rd_addr = RegInit(0.U(addrBits.W))
-  val wr_addr = RegInit(0.U(addrBits.W))
+  val rd_len = RegEnable(init = 0.U(lenBits.W), enable = rd_arb.io.out.fire, next = rd_arb.io.out.bits.len)
+  val rd_addr = RegEnable(init = 0.U(addrBits.W), enable = rd_arb.io.out.fire, next = rd_arb.io.out.bits.addr)
+  val wr_len = RegEnable(init = 0.U(lenBits.W), enable = wr_arb.io.out.fire, next = wr_arb.io.out.bits.len)
+  val wr_addr = RegEnable(init = 0.U(addrBits.W), enable = wr_arb.io.out.fire, next = wr_arb.io.out.bits.addr)
 
-  when(rd_arb.io.out.fire()) {
-    rd_len := rd_arb.io.out.bits.len
-    rd_addr := rd_arb.io.out.bits.addr
-  }
-
-  when(io.dme.wr(0).cmd.fire()) {
-    wr_len := io.dme.wr(0).cmd.bits.len
-    wr_addr := io.dme.wr(0).cmd.bits.addr
-  }
+  rd_arb.io.out.ready := rstate === sReadIdle
+  wr_arb.io.out.ready := wstate === sWriteIdle
 
   // rd arb
-  rd_arb.io.out.ready := rstate === sReadIdle
-
-  // dme
   for (i <- 0 until nReadClients) {
-    io.dme.rd(i).data.valid := rd_arb_chosen === i.asUInt & io.mem.r.valid
+    io.dme.rd(i).data.valid := rd_arb_chosen === i.U && io.mem.r.valid
     io.dme.rd(i).data.bits := io.mem.r.bits.data
   }
 
-  io.dme.wr(0).cmd.ready := wstate === sWriteIdle
-  io.dme.wr(0).ack := io.mem.b.fire()
-  io.dme.wr(0).data.ready := wstate === sWriteData & io.mem.w.ready
+  // wr arb
+  for (i <- 0 until nWriteClients) {
+    io.dme.wr(i).ack := (wr_arb_chosen === i.U) && io.mem.b.fire()
+    io.dme.wr(i).data.ready := (wr_arb_chosen === i.U) && (wstate === sWriteData) && (io.mem.w.ready)
+  }
 
   // mem
   io.mem.aw.valid := wstate === sWriteAddr
   io.mem.aw.bits.addr := wr_addr
   io.mem.aw.bits.len := wr_len
 
-  io.mem.w.valid := wstate === sWriteData & io.dme.wr(0).data.valid
-  io.mem.w.bits.data := io.dme.wr(0).data.bits
-  io.mem.w.bits.last := wr_cnt === io.dme.wr(0).cmd.bits.len
+  io.mem.w.valid := (wstate === sWriteData) && io.dme.wr(wr_arb_chosen).data.valid
+  io.mem.w.bits.data := io.dme.wr(wr_arb_chosen).data.bits
+  io.mem.w.bits.last := wr_cnt === io.dme.wr(wr_arb_chosen).cmd.bits.len
 
   io.mem.b.ready := wstate === sWriteResp
 
@@ -243,3 +241,5 @@ class DME(implicit val p: Parameters) extends Module with HasAccelShellParams {
   // AXI constants - statically defined
   io.mem.setConst()
 }
+
+
