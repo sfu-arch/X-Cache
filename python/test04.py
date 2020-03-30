@@ -10,6 +10,10 @@ def test04(a, b, n):
 
 
 
+# Debug container
+a = np.zeros(20)
+a_s = dsim.DArray(a)
+
 if platform.system() == 'Linux':
     hw_lib_path = "./hardware/chisel/build/libhw.so"
 elif platform.system() == 'Darwin':
@@ -19,7 +23,7 @@ val_a = 5
 val_b = 3
 val_n = 5
 
-events = dsim.sim(ptrs = [  ], vars= [val_a, val_b, val_n], numRets=1, numEvents=1, hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [], debugs = [a_s], vars= [val_a, val_b, val_n], numRets=1, numEvents=1, hwlib = hw_lib_path)
 
 print("Cycle: " + str(events[0]))
 
@@ -27,3 +31,8 @@ if events[1] == test04(val_a, val_b, val_n):
     print("Success!\nRet: " + str(events[1]))
 else:
     print("Failed!\nExpected {0}, but Returned: {1}".format(str(test04(val_a, val_b, val_n)), str(events[1])))
+
+
+print("Cycle: " + str(events[0]))
+print("Ret: " + str(events[1]))
+print(a_s.getData())
