@@ -101,10 +101,12 @@ object DandelionSimAccelMain extends App {
 
 /**
  * Main object for compatible DCR accelerator with Dandelion generator
+ * @TODO: The option manager needs to be added instead of parsing input arguments
+ *       this is not a clean way to pass arguments
  */
 object DandelionSimDCRAccelMain extends App {
 
-  //These are default values for VCR
+  //These are default values for DCR
   var num_ptrs = 0
   var num_vals = 0
   var num_returns = 1
@@ -116,6 +118,13 @@ object DandelionSimDCRAccelMain extends App {
    */
   var accel_name = "test09"
 
+  /**
+   * Accel config values
+   */
+  var data_len = 64
+  var print_log = true
+  var cache_log = false
+
   args.sliding(2, 2).toList.collect {
     case Array("--accel-name", argAccel: String) => accel_name = argAccel
     case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
@@ -123,6 +132,9 @@ object DandelionSimDCRAccelMain extends App {
     case Array("--num-rets", argRets: String) => num_returns = argRets.toInt
     case Array("--num-events", argEvent: String) => num_events = argEvent.toInt
     case Array("--num-ctrls", argCtrl: String) => num_ctrls = argCtrl.toInt
+    case Array("--data-len", dlen: String) => data_len = dlen.toInt
+    case Array("--print-log", printLog: String) => print_log= printLog.toBoolean
+    case Array("--cache-log", cacheLog: String) => cache_log= cacheLog.toBoolean
   }
 
   /**
@@ -130,7 +142,7 @@ object DandelionSimDCRAccelMain extends App {
    *       Pass generated accelerator to TestAccel
    */
   implicit val p =
-    new WithSimShellConfig(dLen = 64, pLog = true, cLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
+    new WithSimShellConfig(dLen = data_len, pLog = print_log, cLog = cache_log)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
   chisel3.Driver.execute(args.take(4),
     () => new DandelionSimDCRAccel(() => DandelionTestDCRAccel(accel_name))(numPtrs = num_ptrs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
 }
