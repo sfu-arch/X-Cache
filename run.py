@@ -139,7 +139,11 @@ def BuildAccel(config):
   with open(config, 'r') as configFile:
     configData = json.load(configFile)
     for config in configData['Accel']:
-      make_params += ["{}={} ".format(str(config), str(configData['Accel'][config]))]
+      if config == 'Build':
+        for build in configData['Accel'][config]:
+          make_params += ["{}={} ".format(str(build), str(configData['Accel'][config][build]))]
+      else:
+        make_params += ["{}={} ".format(str(config), str(configData['Accel'][config]))]
 
     # print(make_params)
     print(bcolors.OKGREEN + " ".join(str(val) for val in ['make', 'chisel'] + make_params) + bcolors.ENDC)

@@ -1,12 +1,12 @@
 {
     "Accel" : {
         "nameAccel" : "test09",
-        "dataLen"  : 64,
         "numPtrs"  : 3,
         "numVals"  : 0,
         "numRets"  : 1,
         "numEnts"  : 1,
         "numCtrls" : 1,
+        "dataLen"  : 64,
 
         "Build" : {
             "printLog" : true,

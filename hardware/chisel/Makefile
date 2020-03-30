@@ -43,6 +43,9 @@ numVals= 2
 numRets= 0
 numEnts= 1
 numCtrls= 1
+dataLen= 64
+printLog=true
+cacheLog=false
 
 vta_dir = $(abspath ../../)
 tvm_dir = $(abspath ../../include/)
@@ -116,7 +119,10 @@ $(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /
 		--accel-name $(nameAccel) \
 		--num-ptrs $(numPtrs) --num-vals $(numVals) \
 		--num-rets $(numRets) --num-events $(numEnts) \
-		--num-ctrls $(numCtrls)'
+		--num-ctrls $(numCtrls)\
+		--data-len $(dataLen) \
+		--print-log $(printLog) \
+		--cache-log $(cacheLog)'
 
 clean:
 	-rm -rf $(build_dir) target project/target project/project
