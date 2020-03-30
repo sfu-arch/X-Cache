@@ -32,13 +32,14 @@ ifeq (, $(VERILATOR_INC_DIR))
   endif
 endif
 
-TOP = DandelionSimDCRAccel
+TOP = DandelionSimDebugAccel
 BUILD_NAME = build
 USE_TRACE = 1
 LIBNAME = libhw
 
 nameAccel = test09
 numPtrs= 4
+numDbgs= 1
 numVals= 2
 numRets= 0
 numEnts= 1
@@ -117,7 +118,8 @@ verilog: $(chisel_build_dir)/$(TOP).v
 $(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')#install_vta_package
 	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP) \
 		--accel-name $(nameAccel) \
-		--num-ptrs $(numPtrs) --num-vals $(numVals) \
+		--num-ptrs $(numPtrs) --num-dbgs $(numDbgs) \
+		--num-vals $(numVals) \
 		--num-rets $(numRets) --num-events $(numEnts) \
 		--num-ctrls $(numCtrls)\
 		--data-len $(dataLen) \

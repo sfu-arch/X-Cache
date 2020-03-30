@@ -12,7 +12,7 @@ def test04(a, b, n):
 
 # Debug container
 a = np.zeros(20)
-a_s = dsim.DArray(a)
+a_s = dsim.DArray(a, dsim.DArray.DType.DWord)
 
 if platform.system() == 'Linux':
     hw_lib_path = "./hardware/chisel/build/libhw.so"
