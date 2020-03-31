@@ -8,32 +8,31 @@ import dandelion.interfaces.{ControlBundle, DataBundle}
 import dandelion.interfaces.axi._
 import dandelion.memory.cache._
 import dandelion.accel._
-import dandelion.generator.DebugVME04DF
 
 /** Register File.
- *
- * Six 32-bit register file.
- *
- * -------------------------------
- * Register description    | addr
- * -------------------------|-----
- * Control status register | 0x00
- * Cycle counter           | 0x04
- * Constant value          | 0x08
- * Vector length           | 0x0c
- * Input pointer lsb       | 0x10
- * Input pointer msb       | 0x14
- * Output pointer lsb      | 0x18
- * Output pointer msb      | 0x1c
- * -------------------------------
- *
- * ------------------------------
- * Control status register | bit
- * ------------------------------
- * Launch                  | 0
- * Finish                  | 1
- * ------------------------------
- */
+  *
+  * Six 32-bit register file.
+  *
+  * -------------------------------
+  * Register description    | addr
+  * -------------------------|-----
+  * Control status register | 0x00
+  * Cycle counter           | 0x04
+  * Constant value          | 0x08
+  * Vector length           | 0x0c
+  * Input pointer lsb       | 0x10
+  * Input pointer msb       | 0x14
+  * Output pointer lsb      | 0x18
+  * Output pointer msb      | 0x1c
+  * -------------------------------
+  *
+  * ------------------------------
+  * Control status register | bit
+  * ------------------------------
+  * Launch                  | 0
+  * Finish                  | 1
+  * ------------------------------
+  */
 
 
 /*
@@ -48,9 +47,9 @@ import dandelion.generator.DebugVME04DF
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
 
 /**
- *
- * @param p
- */
+  *
+  * @param p
+  */
 class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val io = IO(new Bundle {
     val host = new AXILiteClient(hostParams)
@@ -229,16 +228,16 @@ class DandelionF1DTAShell(implicit val p: Parameters) extends MultiIOModule with
 
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
 /**
- *
- * @param accelModule Testing module from dandelion-generator
- * @param numPtrs     Number of input Ptrs for the accelerator
- * @param numVals     Number of input Vals for the accelerator
- * @param numRets     Number of return values to the accelerator
- * @param numEvents   Number of event values to the accelerator
- * @param numCtrls    Number of control registers of the accelerator
- * @param p           implicit parameters that contains all the accelerator configuration
- * @tparam T
- */
+  *
+  * @param accelModule Testing module from dandelion-generator
+  * @param numPtrs     Number of input Ptrs for the accelerator
+  * @param numVals     Number of input Vals for the accelerator
+  * @param numRets     Number of return values to the accelerator
+  * @param numEvents   Number of event values to the accelerator
+  * @param numCtrls    Number of control registers of the accelerator
+  * @param p           implicit parameters that contains all the accelerator configuration
+  * @tparam T
+  */
 class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
                                                     (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
                                                     (implicit val p: Parameters) extends Module with HasAccelShellParams {
@@ -274,9 +273,9 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
   }
 
   /**
-   * Connecting event controls and return values
-   * Event zero always contains the cycle count
-   */
+    * Connecting event controls and return values
+    * Event zero always contains the cycle count
+    */
   vcr.io.dcr.ecnt(0).valid := last
   vcr.io.dcr.ecnt(0).bits := cycles
 
@@ -288,8 +287,8 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
   }
 
   /**
-   * @note This part needs to be changes for each function
-   */
+    * @note This part needs to be changes for each function
+    */
 
   val ptrs = Seq.tabulate(numPtrs) { i => RegEnable(next = vcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
   val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
@@ -347,19 +346,19 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
 
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
 /**
- *
- * @param accelModule Testing module from dandelion-generator
- * @param numPtrs     Number of input Ptrs for the accelerator
- * @param numVals     Number of input Vals for the accelerator
- * @param numRets     Number of return values to the accelerator
- * @param numEvents   Number of event values to the accelerator
- * @param numCtrls    Number of control registers of the accelerator
- * @param p           implicit parameters that contains all the accelerator configuration
- * @tparam T
- */
+  *
+  * @param accelModule Testing module from dandelion-generator
+  * @param numPtrs     Number of input Ptrs for the accelerator
+  * @param numVals     Number of input Vals for the accelerator
+  * @param numRets     Number of return values to the accelerator
+  * @param numEvents   Number of event values to the accelerator
+  * @param numCtrls    Number of control registers of the accelerator
+  * @param p           implicit parameters that contains all the accelerator configuration
+  * @tparam T
+  */
 class DandelionDCRCacheShell[T <: DandelionAccelDCRModule](accelModule: () => T)
-                                                    (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
-                                                    (implicit val p: Parameters) extends Module with HasAccelShellParams {
+                                                          (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+                                                          (implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
     val host = new AXILiteClient(hostParams)
     val mem = new AXIMaster(memParams)
@@ -392,9 +391,9 @@ class DandelionDCRCacheShell[T <: DandelionAccelDCRModule](accelModule: () => T)
   }
 
   /**
-   * Connecting event controls and return values
-   * Event zero always contains the cycle count
-   */
+    * Connecting event controls and return values
+    * Event zero always contains the cycle count
+    */
   vcr.io.dcr.ecnt(0).valid := last
   vcr.io.dcr.ecnt(0).bits := cycles
 
@@ -406,8 +405,8 @@ class DandelionDCRCacheShell[T <: DandelionAccelDCRModule](accelModule: () => T)
   }
 
   /**
-   * @note This part needs to be changes for each function
-   */
+    * @note This part needs to be changes for each function
+    */
 
   val ptrs = Seq.tabulate(numPtrs) { i => RegEnable(next = vcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
   val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
@@ -468,19 +467,19 @@ class DandelionDCRCacheShell[T <: DandelionAccelDCRModule](accelModule: () => T)
 
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
 /**
- *
- * @param accelModule Testing module from dandelion-generator
- * @param numPtrs     Number of input Ptrs for the accelerator
- * @param numVals     Number of input Vals for the accelerator
- * @param numRets     Number of return values to the accelerator
- * @param numEvents   Number of event values to the accelerator
- * @param numCtrls    Number of control registers of the accelerator
- * @param p           implicit parameters that contains all the accelerator configuration
- * @tparam T
- */
+  *
+  * @param accelModule Testing module from dandelion-generator
+  * @param numPtrs     Number of input Ptrs for the accelerator
+  * @param numVals     Number of input Vals for the accelerator
+  * @param numRets     Number of return values to the accelerator
+  * @param numEvents   Number of event values to the accelerator
+  * @param numCtrls    Number of control registers of the accelerator
+  * @param p           implicit parameters that contains all the accelerator configuration
+  * @tparam T
+  */
 class DandelionDCRShell[T <: DandelionAccelDCRModule](accelModule: () => T)
-                                                          (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
-                                                          (implicit val p: Parameters) extends Module with HasAccelShellParams {
+                                                     (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+                                                     (implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
     val host = new AXILiteClient(hostParams)
     val mem = new AXIMaster(memParams)
@@ -513,9 +512,9 @@ class DandelionDCRShell[T <: DandelionAccelDCRModule](accelModule: () => T)
   }
 
   /**
-   * Connecting event controls and return values
-   * Event zero always contains the cycle count
-   */
+    * Connecting event controls and return values
+    * Event zero always contains the cycle count
+    */
   vcr.io.dcr.ecnt(0).valid := last
   vcr.io.dcr.ecnt(0).bits := cycles
 
@@ -527,8 +526,8 @@ class DandelionDCRShell[T <: DandelionAccelDCRModule](accelModule: () => T)
   }
 
   /**
-   * @note This part needs to be changes for each function
-   */
+    * @note This part needs to be changes for each function
+    */
 
   val ptrs = Seq.tabulate(numPtrs) { i => RegEnable(next = vcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
   val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
@@ -592,29 +591,38 @@ class DandelionDCRShell[T <: DandelionAccelDCRModule](accelModule: () => T)
 }
 
 
-
 /* Receives a counter value as input. Waits for N cycles and then returns N + const as output */
 /**
- *
- * @param accelModule Testing module from dandelion-generator
- * @param numPtrs     Number of input ptrs for the accelerator
- * @param numVals     Number of input values to the accelerator
- * @param numRets     Number of return values to the accelerator
- * @param numEvents   Number of event values to the accelerator
- * @param numCtrls    Number of control registers of the accelerator
- * @param p           implicit parameters that contains all the accelerator configuration
- * @tparam T
- */
-class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
-                                                    (numPtrs: Int, numDbgs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
-                                                    (implicit val p: Parameters) extends Module with HasAccelShellParams {
+  *
+  * @param accelModule Testing module from dandelion-generator
+  * @param numPtrs     Number of input ptrs for the accelerator
+  * @param numVals     Number of input values to the accelerator
+  * @param numRets     Number of return values to the accelerator
+  * @param numEvents   Number of event values to the accelerator
+  * @param numCtrls    Number of control registers of the accelerator
+  * @param p           implicit parameters that contains all the accelerator configuration
+  */
+class DandelionDebugShell(accelModule: () => DandelionAccelModule)
+                         (debugModule: () =>  DandelionAccelDebugModule)
+                         (numPtrs: Int, numDbgs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+                         (implicit val p: Parameters) extends Module with HasAccelParams with HasAccelShellParams {
   val io = IO(new Bundle {
     val host = new AXILiteClient(hostParams)
     val mem = new AXIMaster(memParams)
   })
 
   val regBits = dcrParams.regBits
-  val ptrBits = regBits * 2
+
+  /**
+    * If xlen is 64bit, and vcr registers are 32bits then
+    * ptrs are lo and hi
+    */
+  val ptrBits =
+    if(xlen / regBits == 2)
+      regBits * 2
+    else
+      regBits
+
 
   val dcr = Module(new DCR)
   val dmem = Module(new DME())
@@ -622,20 +630,22 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
 
 
   val accel = Module(accelModule())
-  val debug_module = Module(new DebugVME04DF())
+  val debug_module = Module(debugModule())
 
   cache.io.cpu.req <> accel.io.MemReq
   accel.io.MemResp <> cache.io.cpu.resp
   cache.io.cpu.abort := false.B
 
+  /**
+    * Connecting cache to DME
+    */
   dmem.io.dme.rd(0) <> cache.io.mem.rd
   dmem.io.dme.wr(0) <> cache.io.mem.wr
 
   /**
-   * todo: make enable dependent on logic
-   */
-
-  debug_module.io.Enable := true.B
+    * TODO: make enable dependent on logic
+    */
+  debug_module.io.enableNode.foreach(_ := true.B)
 
   val sIdle :: sBusy :: sFlush :: sDone :: Nil = Enum(4)
 
@@ -647,14 +657,14 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
 
   when(state === sIdle) {
     cycles := 0.U
-  }.elsewhen(state =/= sFlush){
+  }.elsewhen(state =/= sFlush) {
     cycles := cycles + 1.U
   }
 
   /**
-   * Connecting event controls and return values
-   * Event zero always contains the cycle count
-   */
+    * Connecting event controls and return values
+    * Event zero always contains the cycle count
+    */
   dcr.io.dcr.ecnt(0).valid := last
   dcr.io.dcr.ecnt(0).bits := cycles
 
@@ -664,15 +674,15 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
   }
 
   /**
-   * @note This part needs to be changes for each function
-   */
+    * @note This part needs to be changes for each function
+    */
 
   val ptrs = Seq.tabulate(numPtrs + numDbgs) { i => RegEnable(next = dcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
   val vals = Seq.tabulate(numVals) { i => RegEnable(next = dcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
 
   /**
-   * For now the rule is to first assign the pointers and then assign the vals
-   */
+    * For now the rule is to first assign the pointers and then assign the vals
+    */
 
   for (i <- 0 until numPtrs) {
     accel.io.in.bits.data(s"field${i}") := DataBundle(ptrs(i))
@@ -683,33 +693,46 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
   }
 
   /**
-   * Connecting debug ptrs
-   */
-  debug_module.io.addrDebug := dcr.io.dcr.ptrs(((numPtrs + numDbgs) - 1))
+    * Connecting debug ptrs
+    */
+  for( i <- 0 until numDbgs){
+    debug_module.io.addrDebug(i) := dcr.io.dcr.ptrs(numPtrs + i)
+  }
 
   accel.io.in.bits.enable := ControlBundle.debug()
-
 
   accel.io.in.valid := false.B
   accel.io.out.ready := is_busy
 
   cache.io.cpu.flush := state === sFlush
 
-  dmem.io.dme.wr(1).cmd.bits := debug_module.io.vmeOut.cmd.bits
-  dmem.io.dme.wr(1).cmd.valid := debug_module.io.vmeOut.cmd.valid
-  debug_module.io.vmeOut.cmd.ready := dmem.io.dme.wr(1).cmd.ready
+  for(i <- 0 until numDbgs){
+    dmem.io.dme.wr(i + 1).cmd.bits := debug_module.io.vmeOut(i).cmd.bits
+    dmem.io.dme.wr(i + 1).cmd.valid := debug_module.io.vmeOut(i).cmd.valid
+    debug_module.io.vmeOut(i).cmd.ready := dmem.io.dme.wr(i + 1).cmd.ready
 
-  dmem.io.dme.wr(1).data <> debug_module.io.vmeOut.data
-  debug_module.io.vmeOut.ack := dmem.io.dme.wr(1).ack
+    dmem.io.dme.wr(i + 1).data <> debug_module.io.vmeOut(i).data
+    debug_module.io.vmeOut(i).ack := dmem.io.dme.wr(i + 1).ack
+  }
 
-  val dme_ack = RegInit(false.B)
-  when(dmem.io.dme.wr(1).ack){
-    dme_ack := true.B
+  val dme_ack = RegInit(VecInit(Seq.fill(numDbgs)(false.B)))
+  for(i <- 0 until numDbgs){
+    when(dmem.io.dme.wr(i + 1).ack) {
+      dme_ack(i) := true.B
+    }
+  }
+
+  def isDMEAck(): Bool ={
+    if(numDbgs == 0)
+      true.B
+    else{
+      dme_ack.reduceLeft(_ && _)
+    }
   }
 
   val cache_done = RegInit(false.B)
-  when(state === sFlush){
-    when(cache.io.cpu.flush_done){
+  when(state === sFlush) {
+    when(cache.io.cpu.flush_done) {
       cache_done := true.B
     }
   }
@@ -734,7 +757,7 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
       }
     }
     is(sFlush) {
-      when(dme_ack && cache_done) {
+      when(isDMEAck && cache_done) {
         state := sDone
       }
     }
