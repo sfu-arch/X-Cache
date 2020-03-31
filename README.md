@@ -30,13 +30,13 @@ sudo apt-get install gcc-8-multilib g++-8-multilib
 git clone https://github.com/sfu-arch/muir-sim.git
 cd muir-sim
 git submodule update --init --recursive
-make chisel NPROCS=4 NUM_PTRS=0 NUM_VALS=2 NUM_RETS=1
+python3 run.py --accel-config examples/test01_config.json
 ```
 
 **Step three:** Is building `src/driver.cc` using pip3 so our python script can start using our C++ driver for simulation:
 
 ```bash
-pip3 install --user .
+python3 run.py --build-dsim
 python3 python/test01.py
 ```
 
@@ -55,13 +55,24 @@ Success!
 Ret: 15
 ```
 
-To enable tracing of the output change `pLog` variable in *hardware/chisel/src/test/scala/accel/VCRAccel.scala* file to `true`:
+To enable tracing of the output change `printLog` variable to `true`:
 
-```scala
-  implicit val p =
-    new WithSimShellConfig(dLen = 64, pLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvent = num_events, nCtrl =  num_ctrl)
-  chisel3.Driver.execute(args.take(4),
-    () => new DandelionSimAccel(() => new test01DF())(num_ptrs, num_vals, num_returns, num_events, num_ctrl))
+```json
+{
+    "Accel" : {
+        "nameAccel" : "test01",
+        "numPtrs"  : 0,
+        "numVals"  : 2,
+        "numRets"  : 1,
+        "numEnts"  : 1,
+        "numCtrls" : 1,
+        "dataLen"  : 64,
+
+        "Build" : {
+            "printLog" : true,
+            "cacheLog" : false
+        }
+    }
 }
 
 ```
@@ -70,14 +81,46 @@ To enable tracing of the output change `pLog` variable in *hardware/chisel/src/t
 **NOTE:** In [dandelion-tutorial](https://github.com/amsharifian/dandelion-tutorial) you can find depth explanation about every pieces of **Dandelion** project, muIR-Sim, is one of the subprojects, and how to modify the driver and scala file for different simulation scenarios.
 
 
-## Generating Custom Logic for real FPGAs
+Fro adding new test cases you need to modify the following file: *hardware/chisel/src/test/accel/TestDCRAccel.scala
+
+```scala
+object DandelionTestDCRAccel {
+
+  /**
+   * Please make sure to add your new test case in the apply function
+   * @param testName
+   * @param p
+   * @return
+   */
+  def apply(testName: String)(implicit p: Parameters): () => DandelionAccelDCRModule = {
+    testName match {
+      case "test01" => () => new test01DF()
+      case "test02" => () => new test02DF()
+      case "test03" => () => new test03DF()
+      case "test04" => () => new test04DF()
+      case "test05" => () => new test05DF()
+      case "test06" => () => new test06DF()
+      case "test07" => () => new test07DF()
+      case "test08" => () => new test08DF()
+      case "test09" => () => new test09DF()
+      case _ => throw new Exception(s"[EXCEPTION] The accel's name is not defined -- " +
+        s"Please check the accel name you have passed: ${testName}")
+    }
+  }
+
+}
+```
+
+Add your new accelerator to the following list, and make sure the name in the case statement matches with your accelerator's name in the json config file.
+
+## Generating Custom Logic for AWS F1
 
 muIR-Sim repo provides different shell for FPGA SoC boards and Amazon AWS F1 instances along with the software simulation framework. The idea behind these shell is that the designer first test their implementation using muIR sim and then take the tested logic and put it on either FPGA SoC boards or Amazon AWS instances.
 
 To generate verilog design of the accelerator for AWS for instance, you only need to run the following command:
 
 ```bash
-make f1 TOP=DandelionF1Accel NPROCS=4 NUM_PTRS=0 NUM_VALS=2 NUM_RETS=1
+python3 run.py --build-f1 examples/test01_config.json
 ```
 
 ## µIR-sim Design
