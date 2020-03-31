@@ -9,7 +9,6 @@ import dandelion.interfaces.axi._
 import dandelion.memory.cache._
 import dandelion.accel._
 import dandelion.generator.DebugVME04DF
-//import dandelion.generator.{DebugVME03DF, DebugVME04DF}
 
 /** Register File.
  *
@@ -67,7 +66,7 @@ class DandelionVTAShell(implicit val p: Parameters) extends MultiIOModule with H
   val Rstate = RegInit(sIdle)
   val Wstate = RegInit(sIdle)
 
-  val cycle_count = new Counter(200)
+  val cycle_count = new Counter(2000)
 
   when(Rstate =/= sIdle) {
     cycle_count.inc()
@@ -155,7 +154,7 @@ class DandelionF1DTAShell(implicit val p: Parameters) extends MultiIOModule with
   val Rstate = RegInit(sIdle)
   val Wstate = RegInit(sIdle)
 
-  val cycle_count = new Counter(200)
+  val cycle_count = new Counter(2000)
 
   when(Rstate =/= sIdle) {
     cycle_count.inc()
@@ -306,7 +305,7 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
   accel.io.out.ready := is_busy
 
   cache.io.cpu.abort := false.B
-  cache.io.cpu.flush := false.B
+  cache.io.cpu.flush := state === sFlush
 
   switch(state) {
     is(sIdle) {
@@ -328,7 +327,6 @@ class DandelionCacheShell[T <: DandelionAccelModule](accelModule: () => T)
       }
     }
     is(sFlush) {
-      cache.io.cpu.flush := true.B
       when(cache.io.cpu.flush_done) {
         state := sDone
       }
@@ -549,7 +547,7 @@ class DandelionDCRShell[T <: DandelionAccelDCRModule](accelModule: () => T)
   accel.io.out.ready := is_busy
 
   cache.io.cpu.abort := false.B
-  cache.io.cpu.flush := false.B
+  cache.io.cpu.flush := state === sFlush
 
   switch(state) {
     is(sIdle) {
@@ -571,7 +569,6 @@ class DandelionDCRShell[T <: DandelionAccelDCRModule](accelModule: () => T)
       }
     }
     is(sFlush) {
-      cache.io.cpu.flush := true.B
       when(cache.io.cpu.flush_done) {
         state := sDone
       }
@@ -621,20 +618,18 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
 
   val dcr = Module(new DCR)
   val dmem = Module(new DME())
-  //val cache = Module(new SimpleCache())
+  val cache = Module(new DMECache())
 
-
-  dmem.io.dme.rd(0).data.ready := 0.U
-
-  dmem.io.dme.rd(0).cmd.bits.addr := 0.U
-  dmem.io.dme.rd(0).cmd.bits.len := 0.U
-  dmem.io.dme.rd(0).cmd.valid := false.B
 
   val accel = Module(accelModule())
   val debug_module = Module(new DebugVME04DF())
 
-  accel.io.MemReq <> DontCare
-  accel.io.MemResp <> DontCare
+  cache.io.cpu.req <> accel.io.MemReq
+  accel.io.MemResp <> cache.io.cpu.resp
+  cache.io.cpu.abort := false.B
+
+  dmem.io.dme.rd(0) <> cache.io.mem.rd
+  dmem.io.dme.wr(0) <> cache.io.mem.wr
 
   /**
    * todo: make enable dependent on logic
@@ -652,7 +647,7 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
 
   when(state === sIdle) {
     cycles := 0.U
-  }.otherwise {
+  }.elsewhen(state =/= sFlush){
     cycles := cycles + 1.U
   }
 
@@ -698,15 +693,26 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
   accel.io.in.valid := false.B
   accel.io.out.ready := is_busy
 
-  dmem.io.dme.wr(0).cmd.bits := debug_module.io.vmeOut.cmd.bits
-  dmem.io.dme.wr(0).cmd.valid := debug_module.io.vmeOut.cmd.valid
-  debug_module.io.vmeOut.cmd.ready := dmem.io.dme.wr(0).cmd.ready
+  cache.io.cpu.flush := state === sFlush
 
-  dmem.io.dme.wr(0).data <> debug_module.io.vmeOut.data
-  debug_module.io.vmeOut.ack := dmem.io.dme.wr(0).ack
+  dmem.io.dme.wr(1).cmd.bits := debug_module.io.vmeOut.cmd.bits
+  dmem.io.dme.wr(1).cmd.valid := debug_module.io.vmeOut.cmd.valid
+  debug_module.io.vmeOut.cmd.ready := dmem.io.dme.wr(1).cmd.ready
 
-  //  cache.io.cpu.abort := false.B
-  //  cache.io.cpu.flush := false.B
+  dmem.io.dme.wr(1).data <> debug_module.io.vmeOut.data
+  debug_module.io.vmeOut.ack := dmem.io.dme.wr(1).ack
+
+  val dme_ack = RegInit(false.B)
+  when(dmem.io.dme.wr(1).ack){
+    dme_ack := true.B
+  }
+
+  val cache_done = RegInit(false.B)
+  when(state === sFlush){
+    when(cache.io.cpu.flush_done){
+      cache_done := true.B
+    }
+  }
 
   switch(state) {
     is(sIdle) {
@@ -728,7 +734,7 @@ class DandelionDebugShell[T <: DandelionAccelModule](accelModule: () => T)
       }
     }
     is(sFlush) {
-      when(dmem.io.dme.wr(0).ack) {
+      when(dme_ack && cache_done) {
         state := sDone
       }
     }

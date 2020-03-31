@@ -38,10 +38,27 @@ class WithShellConfig(vcrParams: DandelionDCRParams = DandelionDCRParams(),
   }
   )
 
+
+/**
+  *
+  * @param dLen Accelerator data length
+  * @param pLog Accelerator simulation print logs
+  * @param cLog Accelerator's cache log prints
+  * @param nPtrs Number of Accelerator's input pointers
+  * @param nVals Number of Accelerator's input values
+  * @param nRets Number of Accelerator's returns
+  * @param nEvents Number of Accelerator's event counters
+  * @param nCtrls Number of Accelerator's control registers
+  * @param nDbgs Default value for nDbgs is 0
+  *
+  * The input to DME parameters for write is number of
+  * debug nodes plus one for cache
+  */
 class WithSimShellConfig(dLen: Int = 64, pLog: Boolean = false, cLog: Boolean = false)
-                        (nPtrs: Int, nVals: Int, nRets: Int, nEvents: Int, nCtrls: Int) extends Config(
+                        (nPtrs: Int, nVals: Int, nRets: Int, nEvents: Int, nCtrls: Int, nDbgs:Int = 0) extends Config(
   new WithAccelConfig(DandelionAccelParams(dataLen = dLen, printLog = pLog, printCLog = cLog)) ++
-    new WithShellConfig(DandelionDCRParams(numCtrl = nCtrls, numEvent = nEvents, numPtrs = nPtrs, numVals = nVals, numRets = nRets)))
+    new WithShellConfig(vcrParams = DandelionDCRParams(numCtrl = nCtrls, numEvent = nEvents, numPtrs = nPtrs + nDbgs, numVals = nVals, numRets = nRets),
+      dmeParams = DandelionDMEParams(numRead = 1, numWrite = 1 + nDbgs)))
 
 
 /**
