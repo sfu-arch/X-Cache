@@ -2,25 +2,11 @@ package dandelion.generator
 
 import chipsalliance.rocketchip.config._
 import chisel3._
-import chisel3.util._
-import chisel3.Module._
-import chisel3.testers._
-import chisel3.iotesters._
 import dandelion.accel._
-import dandelion.arbiters._
-import dandelion.config._
 import dandelion.control._
-import dandelion.fpu._
-import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
-import dandelion.memory._
-import dandelion.memory.stack._
 import dandelion.node._
-import muxes._
-import org.scalatest._
-import regfile._
-import util._
 
 
 class test04DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32))
@@ -44,7 +30,7 @@ class test04DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32, 32), R
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
-  val Loop_0 = Module(new LoopBlockNode(NumIns = List(2, 1, 1), NumOuts = List(1), NumCarry = List(1, 1), NumExits = 1, ID = 0))
+  val Loop_0 = Module(new LoopBlockNode(NumIns = List(2, 1, 1), NumOuts = List(1), NumCarry = List(1, 1), NumExits = 1, ID = 0, Debug = false))
 
 
 
@@ -81,7 +67,7 @@ class test04DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32, 32), R
   val phii_073 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 3, Res = false))
 
   //  %sum.06 = phi i32 [ %mul, %for.body ], [ %a, %for.body.preheader ], !UID !35
-  val phisum_064 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 4, Res = false, Debug = true, GuardVal = 3))
+  val phisum_064 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 4, Res = false, Debug = true, GuardVal = List(5, 30, 105, 330, 1005)))
 
   //  %add = add i32 %sum.06, %a, !dbg !31, !UID !36
   val binaryOp_add5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false, Debug = false))
@@ -105,7 +91,7 @@ class test04DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32, 32), R
   val phisum_0_lcssa11 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 11, Res = true))
 
   //  ret i32 %sum.0.lcssa, !dbg !46, !UID !48, !BB_UID !49
-  val ret_12 = Module(new RetNode2(retTypes = List(32), ID = 12))
+  val ret_12 = Module(new RetNode2(retTypes = List(32), ID = 12, NumBores = 1, Debug = true))
 
 
 

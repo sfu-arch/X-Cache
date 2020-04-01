@@ -1,3 +1,4 @@
+from common import bcolors
 import numpy as np
 import platform
 import dsim
@@ -25,14 +26,12 @@ val_n = 5
 
 events = dsim.sim(ptrs = [], debugs = [a_s], vars= [val_a, val_b, val_n], numRets=1, numEvents=1, hwlib = hw_lib_path)
 
-print("Cycle: " + str(events[0]))
-
 if events[1] == test04(val_a, val_b, val_n):
-    print("Success!\nRet: " + str(events[1]))
+    print(bcolors.OKGREEN + "[Success] Ret: " + str(events[1]) + bcolors.ENDC)
 else:
-    print("Failed!\nExpected {0}, but Returned: {1}".format(str(test04(val_a, val_b, val_n)), str(events[1])))
+    print(bcolors.FAIL + "[Failed] Expected {0}, but Returned: {1}".format(str(test04(val_a, val_b, val_n)), str(events[1])) + bcolors.ENDC)
 
 
-print("Cycle: " + str(events[0]))
-print("Ret: " + str(events[1]))
+print(bcolors.OKBLUE + "Cycle: " + str(events[0]) + bcolors.ENDC)
+print(bcolors.OKBLUE + "Ret: " + str(events[1]) + bcolors.ENDC)
 print(a_s.getData())

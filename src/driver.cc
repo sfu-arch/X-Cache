@@ -14,7 +14,7 @@
 #include "runtime/registry.h"
 #include "virtual_memory.h"
 
-#define EN_DEBUG 1
+//#define EN_DEBUG
 
 #ifdef EN_DEBUG
 #define DEBUG(x)                                   \
@@ -85,7 +85,7 @@ class Device {
         // if (ptrs.size() != this->ptrs_.size())
         //     throw std::runtime_error("Number of PTRS must be one");
 
-        cout << "DEBUG SIZE: " << debugs.size() << "\n";
+        //cout << "DEBUG SIZE: " << debugs.size() << "\n";
 
         if (values.size() != this->vals_.size())
             throw std::runtime_error("Number of VLAS must be one");
@@ -207,20 +207,12 @@ class Device {
         /**
          * We have event counters after control addresses
          */
-        cout << "Address before event: " << std::hex << address << "\n";
-
         address += rets.size() * 4 ;
-
-        cout << "Address after event: " << std::hex << address << "\n";
-
         int32_t cnt = 0;
         for (auto val : values) {
             dpi_->WriteReg(address + (cnt * 4), val);  // arg
             cnt++;
         }
-
-        cout << "Address after vals: " << std::hex << address + (cnt * 4) << "\n";
-
         for (auto ptr : ptrs_) {
             dpi_->WriteReg(address + (( cnt )*4),
                            this->MemGetPhyAddr(ptr));  // ptr
@@ -228,18 +220,12 @@ class Device {
             cnt++;
         }
 
-        cout << "Address after ptrs: " << std::hex << address + (cnt * 4) << "\n";
-
         for (auto dbg : debugs_) {
             dpi_->WriteReg(address + ((cnt)*4),
                            this->MemGetPhyAddr(dbg));  // ptr
 
             cnt++;
         }
-
-        cout << "Address after debugs: " << std::hex << address + (cnt * 4) << "\n";
-
-
 
         dpi_->WriteReg(0x00, 0x1);  // launch
     }

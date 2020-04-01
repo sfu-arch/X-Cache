@@ -1,10 +1,8 @@
 {
     "Accel" : {
-        "TOP" : "DandelionAccelDebugSim",
-        "nameAccel" : "test04",
+        "nameAccel" : "test02",
         "numPtrs"  : 0,
-        "numDbgs"  : 1,
-        "numVals"  : 3,
+        "numVals"  : 2,
         "numRets"  : 1,
         "numEnts"  : 1,
         "numCtrls" : 1,

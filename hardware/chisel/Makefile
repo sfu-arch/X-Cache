@@ -32,6 +32,7 @@ ifeq (, $(VERILATOR_INC_DIR))
   endif
 endif
 
+#TOP = DandelionSimDCRAccel
 TOP = DandelionSimDebugAccel
 BUILD_NAME = build
 USE_TRACE = 1
@@ -47,6 +48,7 @@ numCtrls= 1
 dataLen= 64
 printLog=true
 cacheLog=false
+boreIDs = 
 
 vta_dir = $(abspath ../../)
 tvm_dir = $(abspath ../../include/)
@@ -115,8 +117,10 @@ $(verilator_build_dir)/V$(TOP).cpp: $(chisel_build_dir)/$(TOP).v
 	verilator $(verilator_opt) $<
 
 verilog: $(chisel_build_dir)/$(TOP).v
-$(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')#install_vta_package
-	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP) \
+$(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')
+	sbt 'test:runMain test.${TOP}Main \
+		--target-dir $(chisel_build_dir) \
+		--top-name $(TOP) \
 		--accel-name $(nameAccel) \
 		--num-ptrs $(numPtrs) \
 		--num-dbgs $(numDbgs) \
@@ -126,7 +130,8 @@ $(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /
 		--num-ctrls $(numCtrls)\
 		--data-len $(dataLen) \
 		--print-log $(printLog) \
-		--cache-log $(cacheLog)'
+		--cache-log $(cacheLog) \
+		--bore-ids $(boreIDs)'
 
 clean:
 	-rm -rf $(build_dir) target project/target project/project
