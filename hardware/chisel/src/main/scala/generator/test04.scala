@@ -23,8 +23,8 @@ import regfile._
 import util._
 
 
-class test04DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns){
+class test04DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32))
+			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
   /* ================================================================== *
@@ -35,8 +35,8 @@ class test04DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
   io.MemReq <> DontCare
   io.MemResp <> DontCare
 
-  val InputSplitter = Module(new SplitCallNew(List(2, 1, 2)))
-  InputSplitter.io.In <> io.in
+  val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(), valsArgTypes = List(2, 1, 2)))
+  ArgSplitter.io.In <> io.in
 
 
 
@@ -69,7 +69,7 @@ class test04DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
    * ================================================================== */
 
   //  %cmp5 = icmp sgt i32 %n, 0, !dbg !24, !UID !27
-  val icmp_cmp50 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "ugt")(sign = false, Debug = false))
+  val icmp_cmp50 = Module(new ComputeNode(NumOuts = 1, ID = 0, opCode = "sgt")(sign = true, Debug = false))
 
   //  br i1 %cmp5, label %for.body.preheader, label %for.end, !dbg !28, !UID !29, !BB_UID !30
   val br_1 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 1))
@@ -81,7 +81,7 @@ class test04DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
   val phii_073 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 3, Res = false))
 
   //  %sum.06 = phi i32 [ %mul, %for.body ], [ %a, %for.body.preheader ], !UID !35
-  val phisum_064 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 4, Res = false))
+  val phisum_064 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 4, Res = false, Debug = true, GuardVal = 3))
 
   //  %add = add i32 %sum.06, %a, !dbg !31, !UID !36
   val binaryOp_add5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false, Debug = false))
@@ -128,7 +128,7 @@ class test04DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
 
   bb_for_body_preheader1.io.predicateIn(0) <> br_1.io.TrueOutput(0)
 
@@ -178,11 +178,11 @@ class test04DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field0")(0)
+  Loop_0.io.InLiveIn(0) <> ArgSplitter.io.Out.dataVals.elements("field0")(0)
 
-  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field1")(0)
+  Loop_0.io.InLiveIn(1) <> ArgSplitter.io.Out.dataVals.elements("field1")(0)
 
-  Loop_0.io.InLiveIn(2) <> InputSplitter.io.Out.data.elements("field2")(0)
+  Loop_0.io.InLiveIn(2) <> ArgSplitter.io.Out.dataVals.elements("field2")(0)
 
 
 
@@ -220,9 +220,9 @@ class test04DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
    *                   LOOP CARRY DEPENDENCIES                          *
    * ================================================================== */
 
-  Loop_0.io.CarryDepenIn(0) <> binaryOp_mul6.io.Out(1)
+  Loop_0.io.CarryDepenIn(0) <> binaryOp_inc7.io.Out(0)
 
-  Loop_0.io.CarryDepenIn(1) <> binaryOp_inc7.io.Out(0)
+  Loop_0.io.CarryDepenIn(1) <> binaryOp_mul6.io.Out(1)
 
 
 
@@ -230,9 +230,9 @@ class test04DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
    *                   LOOP DATA CARRY DEPENDENCIES                     *
    * ================================================================== */
 
-  phisum_064.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
+  phii_073.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
 
-  phii_073.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field1")(0)
+  phisum_064.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field1")(0)
 
 
 
@@ -341,9 +341,15 @@ class test04DF(ArgsIn: Seq[Int] = List(32, 32, 32), Returns: Seq[Int] = List(32)
 
   ret_12.io.In.data("field0") <> phisum_0_lcssa11.io.Out(0)
 
-  phisum_0_lcssa11.io.InData(0) <> InputSplitter.io.Out.data.elements("field0")(1)
+  phisum_0_lcssa11.io.InData(0) <> ArgSplitter.io.Out.dataVals.elements("field0")(1)
 
-  icmp_cmp50.io.LeftIO <> InputSplitter.io.Out.data.elements("field2")(1)
+  icmp_cmp50.io.LeftIO <> ArgSplitter.io.Out.dataVals.elements("field2")(1)
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING DATA DEPENDENCIES                     *
+   * ================================================================== */
 
 
 

@@ -602,7 +602,7 @@ class DandelionDCRShell[T <: DandelionAccelDCRModule](accelModule: () => T)
   * @param numCtrls    Number of control registers of the accelerator
   * @param p           implicit parameters that contains all the accelerator configuration
   */
-class DandelionDebugShell(accelModule: () => DandelionAccelModule)
+class DandelionDebugShell(accelModule: () => DandelionAccelDCRModule)
                          (debugModule: () =>  DandelionAccelDebugModule)
                          (numPtrs: Int, numDbgs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
                          (implicit val p: Parameters) extends Module with HasAccelParams with HasAccelShellParams {
@@ -685,11 +685,11 @@ class DandelionDebugShell(accelModule: () => DandelionAccelModule)
     */
 
   for (i <- 0 until numPtrs) {
-    accel.io.in.bits.data(s"field${i}") := DataBundle(ptrs(i))
+    accel.io.in.bits.dataPtrs(s"field${i}") := DataBundle(ptrs(i))
   }
 
-  for (i <- numPtrs until numPtrs + numVals) {
-    accel.io.in.bits.data(s"field${i}") := DataBundle(vals(i - numPtrs))
+  for (i <- 0 until numVals) {
+    accel.io.in.bits.dataVals(s"field${i}") := DataBundle(vals(i))
   }
 
   /**

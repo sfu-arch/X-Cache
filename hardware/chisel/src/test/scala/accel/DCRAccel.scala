@@ -11,36 +11,35 @@ import sim.shell._
 import vta.shell.DandelionF1Accel
 
 /** Test. This generates a testbench file for simulation */
-class DandelionSimAccel[T <: DandelionAccelModule](accelModule: () => T)
-                                                  (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
-                                                  (implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
-  val sim_clock = IO(Input(Clock()))
-  val sim_wait = IO(Output(Bool()))
-  val sim_shell = Module(new AXISimShell)
-  val shell = Module(new DandelionCacheShell(accelModule)(numPtrs = numPtrs, numVals = numVals, numRets = numRets, numEvents = numEvents, numCtrls = numCtrls))
+//class DandelionSimAccel[T <: DandelionAccelModule](accelModule: () => T)
+//                                                  (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+//                                                  (implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
+//  val sim_clock = IO(Input(Clock()))
+//  val sim_wait = IO(Output(Bool()))
+//  val sim_shell = Module(new AXISimShell)
+//  val shell = Module(new DandelionCacheShell(accelModule)(numPtrs = numPtrs, numVals = numVals, numRets = numRets, numEvents = numEvents, numCtrls = numCtrls))
+//
+//  sim_shell.sim_clock := sim_clock
+//  sim_wait := sim_shell.sim_wait
+//
+//  /**
+//    * @TODO: This is a bug from chisel otherwise, bulk connection should work here
+//    */
+//  sim_shell.mem.ar <> shell.io.mem.ar
+//  sim_shell.mem.aw <> shell.io.mem.aw
+//  sim_shell.mem.w <> shell.io.mem.w
+//  shell.io.mem.b <> sim_shell.mem.b
+//  shell.io.mem.r <> sim_shell.mem.r
+//
+//  sim_shell.host.b <> shell.io.host.b
+//  sim_shell.host.r <> shell.io.host.r
+//  shell.io.host.ar <> sim_shell.host.ar
+//  shell.io.host.aw <> sim_shell.host.aw
+//  shell.io.host.w <> sim_shell.host.w
+//}
 
-  sim_shell.sim_clock := sim_clock
-  sim_wait := sim_shell.sim_wait
 
-  /**
-    * @TODO: This is a bug from chisel otherwise, bulk connection should work here
-    */
-  sim_shell.mem.ar <> shell.io.mem.ar
-  sim_shell.mem.aw <> shell.io.mem.aw
-  sim_shell.mem.w <> shell.io.mem.w
-  shell.io.mem.b <> sim_shell.mem.b
-  shell.io.mem.r <> sim_shell.mem.r
-
-  sim_shell.host.b <> shell.io.host.b
-  sim_shell.host.r <> shell.io.host.r
-  shell.io.host.ar <> sim_shell.host.ar
-  shell.io.host.aw <> sim_shell.host.aw
-  shell.io.host.w <> sim_shell.host.w
-}
-
-
-class DandelionSimDebugAccel(accelModule: () => DandelionAccelModule)
-                            (debugModule: () => DandelionAccelDebugModule)
+class DandelionSimDebugAccel(accelModule: () => DandelionAccelDCRModule, debugModule: () => DandelionAccelDebugModule)
                             (numPtrs: Int, numDbgs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
                             (implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val sim_clock = IO(Input(Clock()))
@@ -106,31 +105,31 @@ class DandelionSimDCRAccel(accelModule: () => DandelionAccelDCRModule)
   * @TODO: After updating all the examples and muIR generator to use the new
   *        Call interface, seperating Ptrs and Vals, this object needs to be removed
   */
-object DandelionSimAccelMain extends App {
-
-  //These are default values for VCR
-  var num_ptrs = 0
-  var num_vals = 0
-  var num_returns = 1
-  var num_events = 1
-  var num_ctrls = 1
-  args.sliding(2, 2).toList.collect {
-    case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
-    case Array("--num-vals", argVals: String) => num_vals = argVals.toInt
-    case Array("--num-rets", argRets: String) => num_returns = argRets.toInt
-    case Array("--num-events", argEvent: String) => num_events = argEvent.toInt
-    case Array("--num-ctrls", argCtrl: String) => num_ctrls = argCtrl.toInt
-  }
-
-  /**
-    * @note make sure for simulation dataLen is equal to 64
-    *       Pass generated accelerator to TestAccel
-    */
-  implicit val p =
-    new WithSimShellConfig(dLen = 64, pLog = true, cLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
-  chisel3.Driver.execute(args.take(4),
-    () => new DandelionSimAccel(() => new test04DF())(numPtrs = num_ptrs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
-}
+//object DandelionSimAccelMain extends App {
+//
+//  //These are default values for VCR
+//  var num_ptrs = 0
+//  var num_vals = 0
+//  var num_returns = 1
+//  var num_events = 1
+//  var num_ctrls = 1
+//  args.sliding(2, 2).toList.collect {
+//    case Array("--num-ptrs", argPtrs: String) => num_ptrs = argPtrs.toInt
+//    case Array("--num-vals", argVals: String) => num_vals = argVals.toInt
+//    case Array("--num-rets", argRets: String) => num_returns = argRets.toInt
+//    case Array("--num-events", argEvent: String) => num_events = argEvent.toInt
+//    case Array("--num-ctrls", argCtrl: String) => num_ctrls = argCtrl.toInt
+//  }
+//
+//  /**
+//    * @note make sure for simulation dataLen is equal to 64
+//    *       Pass generated accelerator to TestAccel
+//    */
+//  implicit val p =
+//    new WithSimShellConfig(dLen = 64, pLog = true, cLog = true)(nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
+//  chisel3.Driver.execute(args.take(4),
+//    () => new DandelionSimAccel(() => new test04DF())(numPtrs = num_ptrs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
+//}
 
 /**
   * Main object for compatible DCR accelerator with Dandelion generator
@@ -232,9 +231,10 @@ object DandelionSimDebugAccelMain extends App {
   implicit val p =
     new WithDebugSimShellConfig(dLen = data_len, pLog = print_log, cLog = cache_log)(
       nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls, nDbgs = num_dbgs)
+
+  lazy val accel_module = DandelionTestDebugDCRAccel(accel_name, num_dbgs)
   chisel3.Driver.execute(args.take(4),
-    () => new DandelionSimDebugAccel(() => new test04DebugDF())
-    (() => new test04DebugVMEDF(num_dbgs))
+    () => new DandelionSimDebugAccel(accel_module._1, accel_module._2)
     (numPtrs = num_ptrs, numDbgs = num_dbgs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
 }
 
