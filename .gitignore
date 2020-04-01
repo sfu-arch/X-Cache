@@ -5,3 +5,4 @@ hardware/verilog/build/*
 project/
 target/
 .idea/
+__pycache__/
