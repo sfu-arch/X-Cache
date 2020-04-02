@@ -23,8 +23,8 @@ import regfile._
 import util._
 
 
-class test05DF(ArgsIn: Seq[Int] = List(32), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns){
+class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: Seq[Int] = List(32))
+			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
   /* ================================================================== *
@@ -32,15 +32,15 @@ class test05DF(ArgsIn: Seq[Int] = List(32), Returns: Seq[Int] = List(32))
    * ================================================================== */
 
   val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 1)
-  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2))
+  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2, Serialize = true))
+  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2, Serialize = true))
   (RWArbiter = new ReadWriteArbiter()))
 
   io.MemReq <> MemCtrl.io.MemReq
   MemCtrl.io.MemResp <> io.MemResp
 
-  val InputSplitter = Module(new SplitCallNew(List(2)))
-  InputSplitter.io.In <> io.in
+  val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(2), valsArgTypes = List()))
+  ArgSplitter.io.In <> io.in
 
 
 
@@ -93,7 +93,7 @@ class test05DF(ArgsIn: Seq[Int] = List(32), Returns: Seq[Int] = List(32))
   val binaryOp_mul7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "shl")(sign = false, Debug = false))
 
   //  store i32 %mul, i32* %arrayidx, align 4, !dbg !40, !tbaa !24, !UID !41
-  val st_8 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 8, RouteID = 0))
+  val st_8 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 8, RouteID = 0))
 
   //  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !dbg !42, !UID !43
   val binaryOp_indvars_iv_next9 = Module(new ComputeNode(NumOuts = 2, ID = 9, opCode = "add")(sign = false, Debug = false))
@@ -102,7 +102,7 @@ class test05DF(ArgsIn: Seq[Int] = List(32), Returns: Seq[Int] = List(32))
   val icmp_exitcond10 = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "eq")(sign = false, Debug = false))
 
   //  br i1 %exitcond, label %for.cond.cleanup, label %for.body, !dbg !19, !llvm.loop !46, !UID !48, !BB_UID !49
-  val br_11 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 11))
+  val br_11 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 1, ID = 11))
 
 
 
@@ -131,7 +131,7 @@ class test05DF(ArgsIn: Seq[Int] = List(32), Returns: Seq[Int] = List(32))
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
 
 
 
@@ -175,7 +175,7 @@ class test05DF(ArgsIn: Seq[Int] = List(32), Returns: Seq[Int] = List(32))
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field0")(0)
+  Loop_0.io.InLiveIn(0) <> ArgSplitter.io.Out.dataPtrs.elements("field0")(0)
 
 
 
@@ -339,9 +339,17 @@ class test05DF(ArgsIn: Seq[Int] = List(32), Returns: Seq[Int] = List(32))
 
   br_11.io.CmpIO <> icmp_exitcond10.io.Out(0)
 
-  Gep_arrayidx31.io.baseAddress <> InputSplitter.io.Out.data.elements("field0")(1)
+  Gep_arrayidx31.io.baseAddress <> ArgSplitter.io.Out.dataPtrs.elements("field0")(1)
 
   st_8.io.Out(0).ready := true.B
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING DATA DEPENDENCIES                     *
+   * ================================================================== */
+
+  br_11.io.PredOp(0) <> st_8.io.SuccOp(0)
 
 
 

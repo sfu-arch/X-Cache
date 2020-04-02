@@ -56,6 +56,7 @@ object DandelionTestDebugDCRAccel {
   def apply(testName: String, numDbgs: Int, boreIDsList: Seq[Int])(implicit p: Parameters): (() => DandelionAccelDCRModule, () => DandelionAccelDebugModule) = {
     testName match {
       case "test04" => (() => new test04DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "test05" => (() => new test05DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case _ => throw new Exception(s"[EXCEPTION] The accel's name is not defined -- " +
         s"Please check the accel name you have passed: ${testName}")
     }
