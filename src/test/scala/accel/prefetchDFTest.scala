@@ -3,20 +3,23 @@ package dandelion.accel
 
 import java.io.PrintWriter
 import java.io.File
+
 import chisel3._
 import chisel3.Module
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import chipsalliance.rocketchip.config._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import util._
 import dandelion.interfaces._
 import dandelion.memory._
 import dandelion.dataflow.prefetchDF
+import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache}
 
 
-class prefetchDFMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
+class prefetchDFMainIO(implicit val p: Parameters) extends Module with HasAccelParams
+with HasAccelShellParams
+  with HasCacheAccelParams{
   val io = IO( new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -28,13 +31,13 @@ class prefetchDFMainIO(implicit val p: Parameters) extends Module with HasAccelP
 
 class prefetchDFMain(implicit p: Parameters) extends prefetchDFMainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new ReferenceCache())            // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B

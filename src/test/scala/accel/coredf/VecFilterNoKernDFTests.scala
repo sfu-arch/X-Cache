@@ -8,6 +8,7 @@ import chisel3.testers._
 import dandelion.interfaces._
 import dandelion.junctions._
 import chipsalliance.rocketchip.config._
+import dandelion.accel.coredf.VecFilterNoKernDFCore
 import dandelion.config._
 import dandelion.memory.cache.HasCacheAccelParams
 

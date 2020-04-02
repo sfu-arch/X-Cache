@@ -3,6 +3,7 @@ package dandelion.generator
 
 import java.io.PrintWriter
 import java.io.File
+
 import chisel3._
 import chisel3.Module
 import chisel3.iotesters._
@@ -13,6 +14,7 @@ import util._
 import dandelion.interfaces._
 import dandelion.memory._
 import dandelion.accel._
+import dandelion.memory.cache.ReferenceCache
 
 class test11MainIO(implicit val p: Parameters)  extends Module with HasAccelParams with CacheParams {
   val io = IO( new Bundle {
@@ -28,13 +30,13 @@ class test11MainIO(implicit val p: Parameters)  extends Module with HasAccelPara
 class test11MainDirect(implicit p: Parameters) extends test11MainIO{
 
 
-  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new ReferenceCache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
   val memCopy = Mem(1024, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := true.B
