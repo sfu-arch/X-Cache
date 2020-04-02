@@ -14,9 +14,10 @@ import util._
 import dandelion.interfaces._
 import dandelion.memory._
 import dandelion.accel._
-import dandelion.memory.cache.ReferenceCache
+import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache}
 
-class test11MainIO(implicit val p: Parameters)  extends Module with HasAccelParams with CacheParams {
+class test11MainIO(implicit val p: Parameters)  extends Module
+  with HasAccelParams with HasAccelShellParams with HasCacheAccelParams{
   val io = IO( new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
     val req = Flipped(Decoupled(new MemReq))

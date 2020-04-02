@@ -67,62 +67,6 @@ class cilk_for_test03Main1(tiles: Int)(implicit p: Parameters) extends AccelIO(L
 
 }
 
-class cilk_for_test03SuperCache(NumTiles: Int = 1, NumBanks: Int = 2)(implicit p: Parameters)
-  extends AccelIO(List(32, 32, 32), List(32)) {
-
-  val cache = Module(new NParallelCache(NumTiles = NumTiles + 1, NumBanks)) // Simple Nasti Cache
-
-  val memModels = for (i <- 0 until NumBanks) yield {
-    val mem = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-    mem
-  }
-
-  // Connect the wrapper I/O to the memory model initialization interface so the
-  // test bench can write contents at start.
-  for (i <- 0 until NumBanks) {
-    memModels(i).io.nasti <> cache.io.nasti(i)
-    memModels(i).io.init.bits.addr := 0.U
-    memModels(i).io.init.bits.data := 0.U
-    memModels(i).io.init.valid := false.B
-  }
-
-  val cilk_for_testDF = Module(new cilk_for_test03DF())
-  cilk_for_testDF.io.MemReq <> DontCare
-  cilk_for_testDF.io.MemResp <> DontCare
-
-  val cilk_for_tiles = for (i <- 0 until NumTiles) yield {
-    val cilk03 = Module(new cilk_for_test03_detach1DF())
-    cilk03
-  }
-
-
-  val TC = Module(new TaskController(List(32, 32, 32, 32), List(), 1, numChild = NumTiles))
-
-  // Merge the memory interfaces and connect to the stack memory
-  for (i <- 0 until NumTiles) {
-    // Connect to stack memory interface
-    cache.io.cpu.MemReq(i) <> cilk_for_tiles(i).io.MemReq
-    cilk_for_tiles(i).io.MemResp <> cache.io.cpu.MemResp(i)
-
-
-    // Connect to task controller
-    cilk_for_tiles(i).io.in <> TC.io.childOut(i)
-    TC.io.childIn(i) <> cilk_for_tiles(i).io.out
-  }
-
-  TC.io.parentIn(0) <> cilk_for_testDF.io.call_8_out
-  cilk_for_testDF.io.call_8_in <> TC.io.parentOut(0)
-
-
-  cache.io.cpu.MemReq(NumTiles) <> io.req
-  io.resp <> cache.io.cpu.MemResp(NumTiles)
-
-  cilk_for_testDF.io.in <> io.in
-  io.out <> cilk_for_testDF.io.out
-
-}
-
-
 class cilk_for_test03Test01[T <: AccelIO](c: T, tiles: Int)
                                          (inAddrVec: List[Int], inDataVec: List[Int],
                                           outAddrVec: List[Int], outDataVec: List[Int])
