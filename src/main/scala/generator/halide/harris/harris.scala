@@ -14,9 +14,6 @@ class harrisMainIO(implicit val p: Parameters) extends Module with HasAccelParam
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32))))
 
-    //    val req = Flipped(Decoupled(new MemReq))
-    //    val resp = Output(Valid(new MemResp))
-
     val MemResp = Flipped(Valid(new MemResp))
     val MemReq = Decoupled(new MemReq)
 

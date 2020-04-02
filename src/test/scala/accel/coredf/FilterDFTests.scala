@@ -1,4 +1,3 @@
-// See LICENSE for license details.
 package accel.coredf
 
 import dandelion.accel._
@@ -9,9 +8,14 @@ import dandelion.interfaces._
 import dandelion.junctions._
 import chipsalliance.rocketchip.config._
 import chipsalliance.rocketchip.config._
+import dandelion.accel.coredf.FilterDFCore
 import dandelion.config._
+import dandelion.memory.cache.HasCacheAccelParams
 
-class FilterDFTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester with CacheParams {
+class FilterDFTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester
+  with HasAccelParams
+  with HasAccelShellParams
+  with HasCacheAccelParams{
 
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
@@ -30,15 +34,15 @@ class FilterDFTester(accel: => Accelerator)(implicit val p: Parameters) extends 
   dut.io.f2h.b <> Queue(dutMem.b, 32)
   dut.io.f2h.r <> Queue(dutMem.r, 32)
 
-  val size = log2Ceil(nastiXDataBits / 8).U
-  val len = (databeats - 1).U
+  val size = log2Ceil(nastiParams.dataBits/ 8).U
+  val len = (dataBeats - 1).U
 
   /* Main Memory */
-  val mem = Mem(1 << 20, UInt(nastiXDataBits.W))
+  val mem = Mem(1 << 20, UInt(nastiParams.dataBits.W))
   val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: Nil = Enum(4)
   val memState = RegInit(sMemIdle)
-  val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, databeats)
-  val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, databeats)
+  val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, dataBeats)
+  val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, dataBeats)
 
   dutMem.ar.ready := false.B
   dutMem.aw.ready := false.B
@@ -244,9 +248,7 @@ class FilterDFTester(accel: => Accelerator)(implicit val p: Parameters) extends 
 
 class FilterDFTests extends org.scalatest.FlatSpec {
   implicit val p = new WithAccelConfig
-/*
   "Accel" should "pass" in {
       assert(TesterDriver execute (() => new FilterDFTester(new Accelerator(18,3,new FilterDFCore(18,3)))))
   }
-*/
 }

@@ -8,10 +8,13 @@ import chisel3.testers._
 import dandelion.interfaces._
 import dandelion.junctions._
 import chipsalliance.rocketchip.config._
-import chipsalliance.rocketchip.config._
 import dandelion.config._
+import dandelion.memory.cache.HasCacheAccelParams
 
-class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester with CacheParams {
+class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester
+  with HasAccelParams
+  with HasAccelShellParams
+  with HasCacheAccelParams{
 
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
@@ -30,15 +33,15 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: Parameters)
   dut.io.f2h.b <> Queue(dutMem.b, 32)
   dut.io.f2h.r <> Queue(dutMem.r, 32)
 
-  val size = log2Ceil(nastiXDataBits / 8).U
-  val len = (databeats - 1).U
+  val size = log2Ceil(nastiParams.dataBits/ 8).U
+  val len = (dataBeats - 1).U
 
   /* Main Memory */
-  val mem = Mem(1 << 20, UInt(nastiXDataBits.W))
+  val mem = Mem(1 << 20, UInt(nastiParams.dataBits.W))
   val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: Nil = Enum(4)
   val memState = RegInit(sMemIdle)
-  val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, databeats)
-  val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, databeats)
+  val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, dataBeats)
+  val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, dataBeats)
 
   dutMem.ar.ready := false.B
   dutMem.aw.ready := false.B
@@ -46,7 +49,7 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: Parameters)
   dutMem.b.valid := memState === sMemWrAck
   dutMem.b.bits := NastiWriteResponseChannel(0.U)
   dutMem.r.valid := memState === sMemRead
-  dutMem.r.bits := NastiReadDataChannel(0.U, mem((dutMem.ar.bits.addr >> size) + rCnt), rDone)
+  dutMem.r.bits := NastiReadDataChannel(0.U, mem.read((dutMem.ar.bits.addr >> size) + rCnt), rDone)
 
   switch(memState) {
     is(sMemIdle) {
@@ -60,7 +63,7 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: Parameters)
       assert(dutMem.aw.bits.size === size)
       assert(dutMem.aw.bits.len === len)
       when(dutMem.w.valid) {
-        mem((dutMem.aw.bits.addr >> size) + wCnt) := dutMem.w.bits.data
+        mem.read((dutMem.aw.bits.addr >> size) + wCnt) := dutMem.w.bits.data
         printf("[write] mem[%x] <= %x\n", (dutMem.aw.bits.addr >> size) + wCnt, dutMem.w.bits.data)
         dutMem.w.ready := true.B
       }
@@ -210,9 +213,7 @@ class VecFilterNoKernDFTester(accel: => Accelerator)(implicit val p: Parameters)
 
 class VecFilterNoKernDFTests extends org.scalatest.FlatSpec {
   implicit val p = new WithAccelConfig()
-/*
   "Accel" should "pass" in {
     assert(TesterDriver execute (() => new VecFilterNoKernDFTester(new Accelerator(12,4,new VecFilterNoKernDFCore(12,4)))))
   }
-*/
 }

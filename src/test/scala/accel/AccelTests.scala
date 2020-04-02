@@ -1,5 +1,3 @@
-// See LICENSE for license details.
-
 package dandelion.accel
 
 import chisel3._
@@ -9,6 +7,7 @@ import dandelion.interfaces._
 import chipsalliance.rocketchip.config._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
+import dandelion.memory.cache.HasCacheAccelParams
 
 class Command extends Bundle {
   val opCode = UInt()
@@ -30,7 +29,7 @@ object Command {
   }
 }
 
-class AccelTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester with CacheParams {
+class AccelTester(accel: => Accelerator)(implicit val p: Parameters) extends BasicTester with HasCacheAccelParams{
 
   /* NastiMaster block to emulate CPU */
   val hps = Module(new NastiMaster)
@@ -155,7 +154,7 @@ class AccelTester(accel: => Accelerator)(implicit val p: Parameters) extends Bas
 
 class AccelTests extends org.scalatest.FlatSpec {
   implicit val p = new WithAccelConfig
-//  "Accel" should "pass" in {
-//    assert(TesterDriver execute (() => new AccelTester(new Accelerator(3,3,new Core(3,3)))))
-//  }
+  "Accel" should "pass" in {
+    assert(TesterDriver execute (() => new AccelTester(new Accelerator(3,3,new Core(3,3)))))
+  }
 }
