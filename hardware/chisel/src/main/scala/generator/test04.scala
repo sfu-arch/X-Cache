@@ -67,7 +67,12 @@ class test04DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32, 32), R
   val phii_073 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 3, Res = false))
 
   //  %sum.06 = phi i32 [ %mul, %for.body ], [ %a, %for.body.preheader ], !UID !35
-  val phisum_064 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 4, Res = false, Debug = true, GuardVal = List(5, 30, 105, 330, 1005)))
+  /**
+   * This is an injected bug for fourth iteration
+   * Correct vals are: 5, 30, 105, 330, 1005
+   */
+  val phisum_064 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 4, Res = false, Debug = true,
+    GuardVals = List(5, 30, 108, 330, 1005)))
 
   //  %add = add i32 %sum.06, %a, !dbg !31, !UID !36
   val binaryOp_add5 = Module(new ComputeNode(NumOuts = 1, ID = 5, opCode = "add")(sign = false, Debug = false))

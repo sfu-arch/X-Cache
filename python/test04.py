@@ -34,4 +34,6 @@ else:
 
 print(bcolors.OKBLUE + "Cycle: " + str(events[0]) + bcolors.ENDC)
 print(bcolors.OKBLUE + "Ret: " + str(events[1]) + bcolors.ENDC)
-print(a_s.getData())
+
+print('Debug buffe1:')
+print([ hex(int(x) & ((1 << 64) - 1)) for x in a_s.getData()])
