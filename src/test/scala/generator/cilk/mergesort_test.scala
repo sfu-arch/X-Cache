@@ -4,9 +4,10 @@ import chisel3._
 import chisel3.util._
 import chisel3.Module
 import chisel3.testers._
-import dandelion.concurrent.{TaskController,TaskControllerIO}
+import dandelion.concurrent.{TaskController, TaskControllerIO}
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
+
 import scala.util.control.Breaks._
 import muxes._
 import chipsalliance.rocketchip.config._
@@ -20,27 +21,29 @@ import dandelion.memory.stack._
 import dandelion.arbiters._
 import dandelion.loop._
 import dandelion.accel._
+import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache}
 
 
-
-class mergesortMainIO(implicit val p: Parameters)  extends Module with HasAccelParams with CacheParams {
-  val io = IO( new AccelBundle {
-    val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
-    val req  = Flipped(Decoupled(new MemReq))
+class mergesortMainIO(implicit val p: Parameters) extends Module with HasAccelParams
+  with HasAccelShellParams
+  with HasCacheAccelParams {
+  val io = IO(new AccelBundle {
+    val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
+    val req = Flipped(Decoupled(new MemReq))
     val resp = Output(Valid(new MemResp))
     val out = Decoupled(new Call(List(32)))
   })
 }
 
 
-class mergesortMain1(tiles : Int)(implicit p: Parameters) extends mergesortMainIO {
+class mergesortMain1(tiles: Int)(implicit p: Parameters) extends mergesortMainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new ReferenceCache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
@@ -55,19 +58,19 @@ class mergesortMain1(tiles : Int)(implicit p: Parameters) extends mergesortMainI
     val mergesortby_continue = Module(new mergesort_mergeDF())
     mergesortby_continue
   }
-  val TC = Module(new TaskController(List(32,32,32,32), List(32), 1+(2*NumMergesorts), NumMergesorts))
-  val CacheArb = Module(new MemArbiter(NumMergesorts+1))
-  val StackArb = Module(new MemArbiter(2*NumMergesorts))
-  val Stack = Module(new StackMem((1 << tlen)*4))
+  val TC = Module(new TaskController(List(32, 32, 32, 32), List(32), 1 + (2 * NumMergesorts), NumMergesorts))
+  val CacheArb = Module(new MemArbiter(NumMergesorts + 1))
+  val StackArb = Module(new MemArbiter(2 * NumMergesorts))
+  val Stack = Module(new StackMem((1 << tlen) * 4))
 
 
   // Merge the memory interfaces and connect to the stack memory
   for (i <- 0 until NumMergesorts) {
     // Connect to stack memory interface
-    StackArb.io.cpu.MemReq(2*i) <> mergesort(i).io.StackReq
-    mergesort(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i)
-    StackArb.io.cpu.MemReq(2*i+1) <> mergesort_merge(i).io.StackReq
-    mergesort_merge(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i+1)
+    StackArb.io.cpu.MemReq(2 * i) <> mergesort(i).io.StackReq
+    mergesort(i).io.StackResp <> StackArb.io.cpu.MemResp(2 * i)
+    StackArb.io.cpu.MemReq(2 * i + 1) <> mergesort_merge(i).io.StackReq
+    mergesort_merge(i).io.StackResp <> StackArb.io.cpu.MemResp(2 * i + 1)
 
     // Connect to cache memory
     CacheArb.io.cpu.MemReq(i) <> mergesort_merge(i).io.GlblReq
@@ -78,10 +81,10 @@ class mergesortMain1(tiles : Int)(implicit p: Parameters) extends mergesortMainI
     mergesort(i).io.call24_in <> mergesort_merge(i).io.out
 
     // Connect to task controller
-    TC.io.parentIn(2*i) <> mergesort(i).io.call18_out
-    mergesort(i).io.call18_in <> TC.io.parentOut(2*i)
-    TC.io.parentIn(2*i+1) <> mergesort(i).io.call21_out
-    mergesort(i).io.call21_in <> TC.io.parentOut(2*i+1)
+    TC.io.parentIn(2 * i) <> mergesort(i).io.call18_out
+    mergesort(i).io.call18_in <> TC.io.parentOut(2 * i)
+    TC.io.parentIn(2 * i + 1) <> mergesort(i).io.call21_out
+    mergesort(i).io.call21_in <> TC.io.parentOut(2 * i + 1)
     mergesort(i).io.in <> TC.io.childOut(i)
     TC.io.childIn(i) <> mergesort(i).io.out
   }
@@ -94,12 +97,12 @@ class mergesortMain1(tiles : Int)(implicit p: Parameters) extends mergesortMainI
 
   Stack.io.req <> StackArb.io.cache.MemReq
   StackArb.io.cache.MemResp <> Stack.io.resp
-  TC.io.parentIn(2*NumMergesorts) <> io.in
-  io.out <> TC.io.parentOut(2*NumMergesorts)
+  TC.io.parentIn(2 * NumMergesorts) <> io.in
+  io.out <> TC.io.parentOut(2 * NumMergesorts)
 
 }
 
-class mergesortMain2(tiles : Int)(implicit p: Parameters) extends mergesortMainIO {
+class mergesortMain2(tiles: Int)(implicit p: Parameters) extends mergesortMainIO {
 
   val NumMergesorts = tiles
   val mergesort = for (i <- 0 until NumMergesorts) yield {
@@ -110,20 +113,20 @@ class mergesortMain2(tiles : Int)(implicit p: Parameters) extends mergesortMainI
     val mergesortby_continue = Module(new mergesort_mergeDF())
     mergesortby_continue
   }
-  val TC = Module(new TaskController(List(32,32,32,32), List(32), 1+(2*NumMergesorts), NumMergesorts))
-  val SortArb = Module(new MemArbiter(NumMergesorts+1))
-  val StackArb = Module(new MemArbiter(2*NumMergesorts))
-  val Stack = Module(new StackMem((1 << tlen)*4))
-  val SortMem  = Module(new StackMem(2048))
+  val TC = Module(new TaskController(List(32, 32, 32, 32), List(32), 1 + (2 * NumMergesorts), NumMergesorts))
+  val SortArb = Module(new MemArbiter(NumMergesorts + 1))
+  val StackArb = Module(new MemArbiter(2 * NumMergesorts))
+  val Stack = Module(new StackMem((1 << tlen) * 4))
+  val SortMem = Module(new StackMem(2048))
 
 
   // Merge the memory interfaces and connect to the stack memory
   for (i <- 0 until NumMergesorts) {
     // Connect to stack memory interface
-    StackArb.io.cpu.MemReq(2*i) <> mergesort(i).io.StackReq
-    mergesort(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i)
-    StackArb.io.cpu.MemReq(2*i+1) <> mergesort_merge(i).io.StackReq
-    mergesort_merge(i).io.StackResp <> StackArb.io.cpu.MemResp(2*i+1)
+    StackArb.io.cpu.MemReq(2 * i) <> mergesort(i).io.StackReq
+    mergesort(i).io.StackResp <> StackArb.io.cpu.MemResp(2 * i)
+    StackArb.io.cpu.MemReq(2 * i + 1) <> mergesort_merge(i).io.StackReq
+    mergesort_merge(i).io.StackResp <> StackArb.io.cpu.MemResp(2 * i + 1)
 
     // Connect to cache memory
     SortArb.io.cpu.MemReq(i) <> mergesort_merge(i).io.GlblReq
@@ -134,10 +137,10 @@ class mergesortMain2(tiles : Int)(implicit p: Parameters) extends mergesortMainI
     mergesort(i).io.call24_in <> mergesort_merge(i).io.out
 
     // Connect to task controller
-    TC.io.parentIn(2*i) <> mergesort(i).io.call18_out
-    mergesort(i).io.call18_in <> TC.io.parentOut(2*i)
-    TC.io.parentIn(2*i+1) <> mergesort(i).io.call21_out
-    mergesort(i).io.call21_in <> TC.io.parentOut(2*i+1)
+    TC.io.parentIn(2 * i) <> mergesort(i).io.call18_out
+    mergesort(i).io.call18_in <> TC.io.parentOut(2 * i)
+    TC.io.parentIn(2 * i + 1) <> mergesort(i).io.call21_out
+    mergesort(i).io.call21_in <> TC.io.parentOut(2 * i + 1)
     mergesort(i).io.in <> TC.io.childOut(i)
     TC.io.childIn(i) <> mergesort(i).io.out
   }
@@ -150,14 +153,14 @@ class mergesortMain2(tiles : Int)(implicit p: Parameters) extends mergesortMainI
 
   Stack.io.req <> StackArb.io.cache.MemReq
   StackArb.io.cache.MemResp <> Stack.io.resp
-  TC.io.parentIn(2*NumMergesorts) <> io.in
-  io.out <> TC.io.parentOut(2*NumMergesorts)
+  TC.io.parentIn(2 * NumMergesorts) <> io.in
+  io.out <> TC.io.parentOut(2 * NumMergesorts)
 
 }
 
-class mergesortMain3(tiles : Int)(implicit p: Parameters) extends mergesortMainIO {
+class mergesortMain3(tiles: Int)(implicit p: Parameters) extends mergesortMainIO {
 
-  val cache = Module(new Cache)            // Simple Nasti Cache
+  val cache = Module(new Cache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
@@ -177,19 +180,19 @@ class mergesortMain3(tiles : Int)(implicit p: Parameters) extends mergesortMainI
     val mergesortby_continue = Module(new mergesort_mergeDF())
     mergesortby_continue
   }
-  val TC = Module(new TaskController(List(32,32,32,32), List(32), 1+(2*NumMergesorts), NumMergesorts))
-  val CacheArb = Module(new MemArbiter(NumMergesorts+1))
-//  val StackArb = Module(new MemArbiter(2*NumMergesorts))
-//  val Stack = Module(new StackMem((1 << tlen)*4))
-  val Stack = Module(new InterleavedStack((1 << tlen)*4, List(3,2), 2*NumMergesorts))
+  val TC = Module(new TaskController(List(32, 32, 32, 32), List(32), 1 + (2 * NumMergesorts), NumMergesorts))
+  val CacheArb = Module(new MemArbiter(NumMergesorts + 1))
+  //  val StackArb = Module(new MemArbiter(2*NumMergesorts))
+  //  val Stack = Module(new StackMem((1 << tlen)*4))
+  val Stack = Module(new InterleavedStack((1 << tlen) * 4, List(3, 2), 2 * NumMergesorts))
 
   // Merge the memory interfaces and connect to the stack memory
   for (i <- 0 until NumMergesorts) {
     // Connect to stack memory interface
-    Stack.io.MemReq(2*i) <> mergesort(i).io.StackReq
-    mergesort(i).io.StackResp <> Stack.io.MemResp(2*i)
-    Stack.io.MemReq(2*i+1) <> mergesort_merge(i).io.StackReq
-    mergesort_merge(i).io.StackResp <> Stack.io.MemResp(2*i+1)
+    Stack.io.MemReq(2 * i) <> mergesort(i).io.StackReq
+    mergesort(i).io.StackResp <> Stack.io.MemResp(2 * i)
+    Stack.io.MemReq(2 * i + 1) <> mergesort_merge(i).io.StackReq
+    mergesort_merge(i).io.StackResp <> Stack.io.MemResp(2 * i + 1)
 
     // Connect to cache memory
     CacheArb.io.cpu.MemReq(i) <> mergesort_merge(i).io.GlblReq
@@ -200,10 +203,10 @@ class mergesortMain3(tiles : Int)(implicit p: Parameters) extends mergesortMainI
     mergesort(i).io.call24_in <> mergesort_merge(i).io.out
 
     // Connect to task controller
-    TC.io.parentIn(2*i) <> mergesort(i).io.call18_out
-    mergesort(i).io.call18_in <> TC.io.parentOut(2*i)
-    TC.io.parentIn(2*i+1) <> mergesort(i).io.call21_out
-    mergesort(i).io.call21_in <> TC.io.parentOut(2*i+1)
+    TC.io.parentIn(2 * i) <> mergesort(i).io.call18_out
+    mergesort(i).io.call18_in <> TC.io.parentOut(2 * i)
+    TC.io.parentIn(2 * i + 1) <> mergesort(i).io.call21_out
+    mergesort(i).io.call21_in <> TC.io.parentOut(2 * i + 1)
     mergesort(i).io.in <> TC.io.childOut(i)
     TC.io.childIn(i) <> mergesort(i).io.out
   }
@@ -214,35 +217,35 @@ class mergesortMain3(tiles : Int)(implicit p: Parameters) extends mergesortMainI
   cache.io.cpu.req <> CacheArb.io.cache.MemReq
   CacheArb.io.cache.MemResp <> cache.io.cpu.resp
 
-//  Stack.io.req <> StackArb.io.cache.MemReq
-//  StackArb.io.cache.MemResp <> Stack.io.resp
-  TC.io.parentIn(2*NumMergesorts) <> io.in
-  io.out <> TC.io.parentOut(2*NumMergesorts)
+  //  Stack.io.req <> StackArb.io.cache.MemReq
+  //  StackArb.io.cache.MemResp <> Stack.io.resp
+  TC.io.parentIn(2 * NumMergesorts) <> io.in
+  io.out <> TC.io.parentOut(2 * NumMergesorts)
 
 }
 
-class mergesortTest01[T <: mergesortMainIO](c: T, len : Int) extends PeekPokeTester(c) {
+class mergesortTest01[T <: mergesortMainIO](c: T, len: Int) extends PeekPokeTester(c) {
 
-    // recursive merge of 2 sorted lists
-    def merge(left: List[Int], right: List[Int]): List[Int] =
-      (left, right) match {
-        case(left, Nil) => left
-        case(Nil, right) => right
-        case(leftHead :: leftTail, rightHead :: rightTail) =>
-          if (leftHead < rightHead) leftHead::merge(leftTail, right)
-          else rightHead :: merge(left, rightTail)
-      }
-
-    def mergeSort(list: List[Int]): List[Int] = {
-      val n = list.length / 2
-      if (n == 0) list // i.e. if list is empty or single value, no sorting needed
-      else {
-        val (left, right) = list.splitAt(n)
-        merge(mergeSort(left), mergeSort(right))
-      }
+  // recursive merge of 2 sorted lists
+  def merge(left: List[Int], right: List[Int]): List[Int] =
+    (left, right) match {
+      case (left, Nil) => left
+      case (Nil, right) => right
+      case (leftHead :: leftTail, rightHead :: rightTail) =>
+        if (leftHead < rightHead) leftHead :: merge(leftTail, right)
+        else rightHead :: merge(left, rightTail)
     }
 
-  def MemRead(addr:Int):BigInt = {
+  def mergeSort(list: List[Int]): List[Int] = {
+    val n = list.length / 2
+    if (n == 0) list // i.e. if list is empty or single value, no sorting needed
+    else {
+      val (left, right) = list.splitAt(n)
+      merge(mergeSort(left), mergeSort(right))
+    }
+  }
+
+  def MemRead(addr: Int): BigInt = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
@@ -260,7 +263,7 @@ class mergesortTest01[T <: mergesortMainIO](c: T, len : Int) extends PeekPokeTes
     result
   }
 
-  def MemWrite(addr:Int, data:Int):BigInt = {
+  def MemWrite(addr: Int, data: Int): BigInt = {
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
@@ -278,16 +281,16 @@ class mergesortTest01[T <: mergesortMainIO](c: T, len : Int) extends PeekPokeTes
 
   scala.util.Random.setSeed(1234)
   val inDataVec = List.fill(len)(scala.util.Random.nextInt(256))
-  val inAddrVec = List.range(0, 4*inDataVec.length, 4)
+  val inAddrVec = List.range(0, 4 * inDataVec.length, 4)
   val outDataVec = mergeSort(inDataVec)
-  val outAddrVec = List.range(4*inDataVec.length, 4*inDataVec.length*2, 4)
+  val outAddrVec = List.range(4 * inDataVec.length, 4 * inDataVec.length * 2, 4)
 
 
   // Write initial contents to the memory model.
-  for(i <- 0 until inAddrVec.length) {
+  for (i <- 0 until inAddrVec.length) {
     MemWrite(inAddrVec(i), inDataVec(i))
   }
-  for(i <- 0 until outAddrVec.length) {
+  for (i <- 0 until outAddrVec.length) {
     MemWrite(outAddrVec(i), inDataVec(i))
   }
 
@@ -314,13 +317,13 @@ class mergesortTest01[T <: mergesortMainIO](c: T, len : Int) extends PeekPokeTes
   step(1)
   poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 4*inDataVec.length)  // B[]
+  poke(c.io.in.bits.data("field0").data, 4 * inDataVec.length) // B[]
   poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 0)                   // iBegin
+  poke(c.io.in.bits.data("field1").data, 0) // iBegin
   poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, inDataVec.length)    // iEnd
+  poke(c.io.in.bits.data("field2").data, inDataVec.length) // iEnd
   poke(c.io.in.bits.data("field2").predicate, true.B)
-  poke(c.io.in.bits.data("field3").data, 0)                   // A[]
+  poke(c.io.in.bits.data("field3").data, 0) // A[]
   poke(c.io.in.bits.data("field3").predicate, true.B)
   poke(c.io.out.ready, true.B)
   step(1)
@@ -362,7 +365,7 @@ class mergesortTest01[T <: mergesortMainIO](c: T, len : Int) extends PeekPokeTes
 
   //  Peek into the CopyMem to see if the expected data is written back to the Cache
   var valid_data = true
-  for(i <- 0 until outDataVec.length) {
+  for (i <- 0 until outDataVec.length) {
     val data = MemRead(inAddrVec(i))
     if (data != outDataVec(i)) {
       println(Console.RED + s"*** Incorrect data received addr=${inAddrVec(i)}. Got $data. Hoping for ${outDataVec(i)}" + Console.RESET)
@@ -374,14 +377,14 @@ class mergesortTest01[T <: mergesortMainIO](c: T, len : Int) extends PeekPokeTes
     println(Console.BLUE + "*** Correct data written back." + Console.RESET)
   }
 
-  if(!result) {
+  if (!result) {
     println(Console.RED + "*** Timeout." + Console.RESET)
     fail
   }
 }
 
 object mergesortTesterParams {
-//  val tile_list = List(1,2,4,8)
+  //  val tile_list = List(1,2,4,8)
   val tile_list = List(4)
   val len_list = List(100)
 }

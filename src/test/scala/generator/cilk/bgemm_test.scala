@@ -4,12 +4,14 @@ package dandelion.generator.cilk
 import chisel3._
 import chisel3.Module
 import org.scalatest.{FlatSpec, Matchers}
-import dandelion.concurrent.{TaskController,TaskControllerIO}
+import dandelion.concurrent.{TaskController, TaskControllerIO}
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.memory._
 import dandelion.accel._
 import dandelion.interfaces.NastiMemSlave
+import dandelion.memory.cache.ReferenceCache
+
 import scala.util.Random
 import helpers._
 
@@ -17,12 +19,12 @@ import helpers._
 class bgemmMainDirect(implicit p: Parameters) extends
   AccelIO(List(32, 32, 32), List())(p) {
 
-  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new ReferenceCache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave(latency = 80)) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
@@ -70,12 +72,12 @@ class bgemmMainDirect(implicit p: Parameters) extends
 class bgemmMainTM(val Tile: Int = 1)(implicit p: Parameters)
   extends AccelIO(List(32, 32, 32), List())(p) {
 
-  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new ReferenceCache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave(latency = 80)) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
@@ -158,35 +160,35 @@ class bgemmTest01[T <: AccelIO](c: T)
   initMemory()
 
   // Initializing the signals
-  poke(c.io.in.bits.enable.control, false)
-  poke(c.io.in.bits.enable.taskID, 0)
-  poke(c.io.in.valid, false)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, false)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").predicate, false)
-  poke(c.io.in.bits.data("field2").data, 0)
-  poke(c.io.in.bits.data("field2").predicate, false)
-  poke(c.io.out.ready, false)
+  poke(c.io.in.bits.enable.control, false.B)
+  poke(c.io.in.bits.enable.taskID, 0.U)
+  poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, false.B)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field2").data, 0.U)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
+  poke(c.io.out.ready, false.B)
   step(1)
-  poke(c.io.in.bits.enable.control, true)
-  poke(c.io.in.valid, true)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, true)
-  poke(c.io.in.bits.data("field1").data, 64)
-  poke(c.io.in.bits.data("field1").predicate, true)
-  poke(c.io.in.bits.data("field2").data, 256)
-  poke(c.io.in.bits.data("field2").predicate, true)
-  poke(c.io.out.ready, true)
+  poke(c.io.in.bits.enable.control, true.B)
+  poke(c.io.in.valid, true.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, true.B)
+  poke(c.io.in.bits.data("field1").data, 64.U)
+  poke(c.io.in.bits.data("field1").predicate, true.B)
+  poke(c.io.in.bits.data("field2").data, 256.U)
+  poke(c.io.in.bits.data("field2").predicate, true.B)
+  poke(c.io.out.ready, true.B)
   step(1)
-  poke(c.io.in.bits.enable.control, false)
-  poke(c.io.in.valid, false)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, false)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").predicate, false)
-  poke(c.io.in.bits.data("field2").data, 0)
-  poke(c.io.in.bits.data("field2").predicate, false)
+  poke(c.io.in.bits.enable.control, false.B)
+  poke(c.io.in.valid, false.B)
+  poke(c.io.in.bits.data("field0").data, 0.U)
+  poke(c.io.in.bits.data("field0").predicate, false.B)
+  poke(c.io.in.bits.data("field1").data, 0.U)
+  poke(c.io.in.bits.data("field1").predicate, false.B)
+  poke(c.io.in.bits.data("field2").data, 0.U)
+  poke(c.io.in.bits.data("field2").predicate, false.B)
 
   step(1)
 
