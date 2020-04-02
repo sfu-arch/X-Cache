@@ -96,7 +96,7 @@ class ReadMemoryControllerTests(c: ReadMemoryController)
 
 
 class ReadMemoryControllerTester extends  FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Memory Controller tester" in {
     chisel3.iotesters.Driver(() => new ReadMemoryController(NumOps=1,BaseSize=2,NumEntries=2)(p)) {
       c => new ReadMemoryControllerTests(c)

@@ -70,7 +70,7 @@ class StackTester(df: Stack)
 
 
 class StackTests extends  FlatSpec with Matchers {
-   implicit val p = new WithAccelConfig
+   implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new Stack(NumOps = 10)) {
        c => new StackTester(c)

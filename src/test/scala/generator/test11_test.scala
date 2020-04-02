@@ -136,7 +136,7 @@ class test11Test01[T <: test11MainDirect](c: T) extends PeekPokeTester(c) {
 }
 
 class test11Tester1 extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that test11 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

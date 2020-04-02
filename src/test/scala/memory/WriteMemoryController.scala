@@ -96,7 +96,7 @@ class WriteMemoryControllerTests(c: WriteMemoryController)(implicit p: Parameter
 
 
 class WriteMemoryControllerTester extends  FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Memory Controller tester" in {
     chisel3.iotesters.Driver(() => new WriteMemoryController(NumOps=1,BaseSize=2,NumEntries=2)(p)) {
       c => new WriteMemoryControllerTests(c)

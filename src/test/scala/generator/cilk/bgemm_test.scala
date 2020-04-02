@@ -230,7 +230,7 @@ class bgemmTester1 extends FlatSpec with Matchers {
   )
 
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that bgemm works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -265,7 +265,7 @@ class bgemmTester2 extends FlatSpec with Matchers {
   )
 
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that bgemm works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

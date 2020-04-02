@@ -72,7 +72,7 @@ class matadd_Test01[T <: mataddMainIO](c: T) extends PeekPokeTester(c) {
     poke(c.io.req.bits.iswrite, 0.U)
     poke(c.io.req.bits.tag, 0.U)
     poke(c.io.req.bits.mask, 0.U)
-    poke(c.io.req.bits.mask, -1.U)
+    poke(c.io.req.bits.mask, "hFFFF".U)
     step(1)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
@@ -91,7 +91,7 @@ class matadd_Test01[T <: mataddMainIO](c: T) extends PeekPokeTester(c) {
     poke(c.io.req.bits.iswrite, 1.U)
     poke(c.io.req.bits.tag, 0.U)
     poke(c.io.req.bits.mask, 0.U)
-    poke(c.io.req.bits.mask, -1.U)
+    poke(c.io.req.bits.mask, "hFFFF".U)
     step(1)
     poke(c.io.req.valid, 0.U)
     1
@@ -192,7 +192,7 @@ class matadd_Test01[T <: mataddMainIO](c: T) extends PeekPokeTester(c) {
 }
 
 class mataddTester1 extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that matadd works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

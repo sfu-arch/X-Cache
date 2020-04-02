@@ -87,7 +87,7 @@ class LiveOutTester(df: LiveOutNode)
 
 
 class LiveOutTests extends  FlatSpec with Matchers {
-   implicit val p = new WithAccelConfig
+   implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver.execute(
      Array(

@@ -180,7 +180,7 @@ class k3mmTest01[T <: k3mmMainIO](c: T) extends PeekPokeTester(c) {
 
 
 class k3mmTester1 extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   //it should "Check that k3mm works correctly." in {
     //// iotester flags:
     //// -ll  = log level <Error|Warn|Info|Debug|Trace>

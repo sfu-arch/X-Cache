@@ -40,6 +40,7 @@ class cacheDFMain(implicit p: Parameters) extends cacheDFMainIO {
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
 
   // Wire up the cache and modules under test.
@@ -85,8 +86,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     poke(c.io.req.bits.addr, addr.U)
     poke(c.io.req.bits.iswrite, 0.U)
     poke(c.io.req.bits.tag, 0.U)
-    poke(c.io.req.bits.mask, 0.U)
-    poke(c.io.req.bits.mask, -1.U)
+    poke(c.io.req.bits.mask, "hFFFF".U)
     step(1)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
@@ -104,8 +104,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     poke(c.io.req.bits.data, data.U)
     poke(c.io.req.bits.iswrite, 1.U)
     poke(c.io.req.bits.tag, 0.U)
-    poke(c.io.req.bits.mask, 0.U)
-    poke(c.io.req.bits.mask, -1.U)
+    poke(c.io.req.bits.mask, "hFFFF".U)
     step(1)
     poke(c.io.req.valid, 0.U)
     1
@@ -210,7 +209,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
 }
 
 class baseCacheTester extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig ++ new WithTestConfig
   it should "Check that cacheTest works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

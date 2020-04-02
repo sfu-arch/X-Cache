@@ -97,7 +97,7 @@ class controlTester(df: BasicBlockNode)
 
 
 class ControlTests extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "BasicBlock tester" in {
     chisel3.iotesters.Driver.execute(
      Array(

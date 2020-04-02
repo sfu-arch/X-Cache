@@ -150,7 +150,7 @@ class cilk_for_test02Tester1 extends FlatSpec with Matchers {
   val outAddrVec = List(0)
   val outDataVec = List(0)
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
 
 
   val tile_list = List(1)

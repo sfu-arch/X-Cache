@@ -97,7 +97,7 @@ class Sample02Tester(df: StackDF)
 
 
 class Sample02Tests extends  FlatSpec with Matchers {
-   implicit val p = new WithAccelConfig
+   implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Dataflow sample 01 tester" in {
      chisel3.iotesters.Driver(() => new StackDF()(p)) {
        c => new Sample02Tester(c)

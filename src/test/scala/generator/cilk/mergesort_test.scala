@@ -390,7 +390,7 @@ object mergesortTesterParams {
 }
 
 //class mergesortTester1 extends FlatSpec with Matchers {
-//  implicit val p = new WithAccelConfig
+//  implicit val p = new WithAccelConfig ++ new WithTestConfig
 //  val testParams = p.alterPartial({
 //    case TLEN => 11
 //    case TRACE => false

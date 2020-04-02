@@ -228,7 +228,7 @@ class dedupTest01[T <: dedupMainIO](c: T, tiles: Int) extends PeekPokeTester(c) 
 }
 
 //class dedupTester1 extends FlatSpec with Matchers {
-//  implicit val p = new WithAccelConfig
+//  implicit val p = new WithAccelConfig ++ new WithTestConfig
 //  // iotester flags:
 //  // -ll  = log level <Error|Warn|Info|Debug|Trace>
 //  // -tbn = backend <firrtl|verilator|vcs>

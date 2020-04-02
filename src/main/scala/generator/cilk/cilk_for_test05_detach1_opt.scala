@@ -402,7 +402,7 @@ import java.io.{File, FileWriter}
 object cilk_for_test05_detach1_optMain extends App {
   val dir = new File("RTL/cilk_for_test05_detach1_opt");
   dir.mkdirs
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test05_detach1_optDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

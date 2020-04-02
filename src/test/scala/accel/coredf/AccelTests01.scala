@@ -216,7 +216,7 @@ class AccelTester01(accel: => Accelerator)(implicit val p: Parameters) extends B
 }
 
 class AccelTests01 extends org.scalatest.FlatSpec {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   "Accel" should "pass" in {
       assert(TesterDriver execute (() => new AccelTester01(new Accelerator(3,3,new TestCore(3,3)))))
     }

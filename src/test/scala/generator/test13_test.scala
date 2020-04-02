@@ -163,7 +163,7 @@ class test13Tester extends FlatSpec with Matchers {
     0x3ff4de9b, 0x40000000)
 
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that test11 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

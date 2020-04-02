@@ -79,7 +79,7 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
     poke(c.io.req.bits.iswrite, 0.U)
     poke(c.io.req.bits.tag, 0.U)
     poke(c.io.req.bits.mask, 0.U)
-    poke(c.io.req.bits.mask, -1.U)
+    poke(c.io.req.bits.mask, "hFFFF".U)
     step(1)
     while (peek(c.io.resp.valid) == 0) {
       step(1)

@@ -52,7 +52,7 @@ class LoadMaskTests (c: LoadMaskNode)(implicit p: Parameters) extends PeekPokeTe
 //}
 
 class LoadMaskTester extends  FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
 /*
  it should "Load Node tester" in {
 

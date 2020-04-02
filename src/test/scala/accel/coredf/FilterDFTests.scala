@@ -247,7 +247,7 @@ class FilterDFTester(accel: => Accelerator)(implicit val p: Parameters) extends 
 }
 
 class FilterDFTests extends org.scalatest.FlatSpec {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   "Accel" should "pass" in {
       assert(TesterDriver execute (() => new FilterDFTester(new Accelerator(18,3,new FilterDFCore(18,3)))))
   }

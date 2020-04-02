@@ -196,7 +196,7 @@ class cilk_for_test06Tester1 extends FlatSpec with Matchers {
   val outAddrVec = List.range(0x100, 0x100 + 0x24, 4)
   val outDataVec = List(74, 1, 18, 2, 65, 10, 10, 5, 16)
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that cilk_for_test06 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -227,7 +227,7 @@ class cilk_for_test06Tester2 extends FlatSpec with Matchers {
   val outAddrVec = List.range(0x100, 0x100 + 0x24, 4)
   val outDataVec = List(74, 1, 18, 2, 65, 10, 10, 5, 16)
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

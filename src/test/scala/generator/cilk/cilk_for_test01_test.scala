@@ -145,7 +145,7 @@ class cilk_for_test01Tester1 extends FlatSpec with Matchers {
   val outAddrVec = List.range(20, 20 + (4 * 5), 4)
   val outDataVec = List(2, 4, 6, 8, 10)
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that cilk_for_test01 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

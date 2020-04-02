@@ -111,6 +111,8 @@ class RetNode2IO(val retTypes: Seq[Int])(implicit p: Parameters)
   extends Bundle {
   val In = Flipped(new CallDecoupled(retTypes))
   val Out = Decoupled(new Call(retTypes)) // Returns to calling block(s)
+
+  override def cloneType = new RetNode2IO(retTypes).asInstanceOf[this.type]
 }
 
 class RetNode2(retTypes: Seq[Int], ID: Int)

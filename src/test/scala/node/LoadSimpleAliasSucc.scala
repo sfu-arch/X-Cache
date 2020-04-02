@@ -105,7 +105,7 @@ class LoadAliasSuccTests(c: UnTypLoadAlias) extends PeekPokeTester(c) {
 import Constants._
 
 class LoadAliasSuccTester extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Load Node tester" in {
     chisel3.iotesters.Driver(() => new UnTypLoadAlias(NumPredOps = 0, NumSuccOps = 0, NumAliasPredOps = 2, NumAliasSuccOps = 1, NumOuts = 1, Typ = MT_W, ID = 1, RouteID = 0)) { c =>
       new LoadAliasSuccTests(c)

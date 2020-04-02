@@ -163,7 +163,7 @@ class cilk_saxpyTester1 extends FlatSpec with Matchers {
   val outAddrVec = List.range(4 * dataLen, 8 * dataLen, 4)
   val outDataVec = inX.zip(inY).map { case (x, y) => cof_a * x + y }
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

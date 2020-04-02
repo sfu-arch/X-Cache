@@ -53,7 +53,7 @@ class FPDivNodeTester(c: FPDivSqrtNode) extends PeekPokeTester(c) {
 
 
 class FPDivNodeTests extends  FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "FPDivSqrt Node tester" in {
     chisel3.iotesters.Driver(() => new FPDivSqrtNode(NumOuts=1,ID=1,RouteID=0,opCode = "SQRT")(t = FType.S)) { c =>
       new FPDivNodeTester(c)

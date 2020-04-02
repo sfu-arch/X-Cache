@@ -370,7 +370,7 @@ import java.io.{File, FileWriter}
 object bgemmTop extends App {
   val dir = new File("RTL/bgemmTop");
   dir.mkdirs
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new bgemmDF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

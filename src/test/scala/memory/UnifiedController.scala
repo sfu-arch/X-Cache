@@ -131,7 +131,7 @@ class UnifiedControllerTests (c: UnifiedController)(implicit p: Parameters) exte
 
 
 class UnifiedControllerTester extends  FlatSpec with Matchers {
-	implicit val p = new WithAccelConfig
+	implicit val p = new WithAccelConfig ++ new WithTestConfig
 	// iotester flags:
 	// -ll  = log level <Error|Warn|Info|Debug|Trace>
 	// -tbn = backend <firrtl|verilator|vcs>

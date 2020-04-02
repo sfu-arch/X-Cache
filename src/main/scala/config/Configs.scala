@@ -155,8 +155,38 @@ class WithAccelConfig(inParams: DandelionAccelParams = DandelionAccelParams())
     // Core
     case DandelionConfigKey => inParams
   }
-
   )
+
+
+/**
+  * Please note that the dLen from WithSimShellConfig should be the same value as
+  * AXI -- memParams:dataBits
+  *
+  * @param vcrParams
+  * @param dmeParams
+  * @param hostParams
+  * @param memParams
+  */
+class WithTestConfig(vcrParams: DandelionDCRParams = DandelionDCRParams(),
+                      dmeParams: DandelionDMEParams = DandelionDMEParams(),
+                      hostParams: AXIParams = AXIParams(
+                        addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
+                      memParams: AXIParams = AXIParams(
+                        addrBits = 32, dataBits = 64, userBits = 5,
+                        lenBits = 4, // limit to 16 beats, instead of 256 beats in AXI4
+                        coherent = true),
+                      nastiParams: NastiParameters = NastiParameters(dataBits = 64, addrBits = 32, idBits = 13))
+  extends Config((site, here, up) => {
+    // Core
+    case DCRKey => vcrParams
+    case DMEKey => dmeParams
+    case HostParamKey => hostParams
+    case MemParamKey => memParams
+    case NastiKey => nastiParams
+  }
+  )
+
+
 
 trait HasAccelParams {
   implicit val p: Parameters

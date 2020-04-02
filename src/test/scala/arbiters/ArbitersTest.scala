@@ -44,7 +44,7 @@ class ArbiterTester (bus: WordRegFile)(implicit p: Parameters) extends PeekPokeT
 }
 
 class ArbiterTests extends  FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "compute gcd excellently" in {
     chisel3.iotesters.Driver(() => new WordRegFile(Size=32, NReads=10, NWrites=10)) { c =>
       new ArbiterTester(c)

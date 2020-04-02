@@ -231,7 +231,7 @@ class stencilSerialTester1 extends FlatSpec with Matchers {
     //2, 3, 3, 2
   //)
 
-  //implicit val p = new WithAccelConfig
+  //implicit val p = new WithAccelConfig ++ new WithTestConfig
   //val testParams = p.alterPartial({
     //case TLEN => 8
     //case TRACE => true

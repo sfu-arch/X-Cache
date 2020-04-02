@@ -133,7 +133,7 @@ class reluTester1 extends FlatSpec with Matchers {
   val outDataVec = inDataVec.map((x) => if(x < 0) 0 else x)
 
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

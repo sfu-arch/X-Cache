@@ -219,7 +219,7 @@ class vector_scaleTester1 extends FlatSpec with Matchers {
     255, 65, 255, 255, 255, 255)
 
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -255,7 +255,7 @@ class vector_scaleTester2 extends FlatSpec with Matchers {
     255, 65, 255, 255, 255, 255)
 
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

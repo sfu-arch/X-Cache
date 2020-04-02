@@ -194,7 +194,7 @@ class cilk_for_test07Tester1 extends FlatSpec with Matchers {
     179, 193, 58, 64, 68, 102, 40, 33, 97,
     41, 61, 58, 56, 32, 9)
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that cilk_for_test07 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -224,7 +224,7 @@ class cilk_for_test07Tester2 extends FlatSpec with Matchers {
     179, 193, 58, 64, 68, 102, 40, 33, 97,
     41, 61, 58, 56, 32, 9)
 
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

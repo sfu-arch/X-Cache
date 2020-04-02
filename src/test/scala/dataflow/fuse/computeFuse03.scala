@@ -116,7 +116,7 @@ class computeF03CTester(df: ComputeFuse03CDF)
 }
 
 class ComputeF03CTests extends  FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Not fuse tester" in {
     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator", "--target-dir", "test_run_dir"),
       () => new ComputeFuse03CDF()) {
@@ -131,7 +131,7 @@ class ComputeF03CTests extends  FlatSpec with Matchers {
   * @note different example of test cases
   */
 //class VerilogTests extends  FlatSpec with Matchers {
-//   implicit val p = new WithAccelConfig
+//   implicit val p = new WithAccelConfig ++ new WithTestConfig
 //   it should "Dataflow tester" in {
 //      chisel3.iotesters.Driver.execute(Array("--backend-name", "firrtl", "--target-dir", "test_run_dir"), () => new Compute01DF()){
 //       c => new compute01Tester(c)
@@ -152,7 +152,7 @@ class ComputeF03CTests extends  FlatSpec with Matchers {
 // }
 
 //object Compute01DFVerilog extends App {
-  //implicit val p = new WithAccelConfig
+  //implicit val p = new WithAccelConfig ++ new WithTestConfig
   //chisel3.iotesters.Driver.execute(args, () => new Compute01DF()(p))
   //{ c => new compute01Tester(c)  }
 //}

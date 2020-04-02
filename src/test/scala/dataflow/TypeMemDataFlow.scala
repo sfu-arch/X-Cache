@@ -29,7 +29,7 @@ expect(0.U,0.U)
 
 class TypeMemDataflowTests extends ChiselFlatSpec {
   behavior of "Accumulator"
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   backends foreach {backend =>
     it should s"correctly accumulate randomly generated numbers in $backend" in {
       Driver(() => new TypeMemDataFlow()(p), backend)(c => new TypeMemDataFlowTester(c)) should be (true)
@@ -38,7 +38,7 @@ class TypeMemDataflowTests extends ChiselFlatSpec {
 }
 
 // class TypeMemDataflowTests extends  FlatSpec with Matchers {
-//    implicit val p = new WithAccelConfig
+//    implicit val p = new WithAccelConfig ++ new WithTestConfig
 //   it should "Dataflow tester" in {
 //      chisel3.iotesters.Driver(() => new TypeMemDataFlow()(p)) { c =>
 //        new TypeMemDataFlowTester(c)

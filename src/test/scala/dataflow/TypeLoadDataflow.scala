@@ -28,7 +28,7 @@ class TypeLoadDataFlowTester(df: TypeLoadDataFlow)(implicit p: Parameters) exten
 
 
 class TypeLoadDataflowTests extends  FlatSpec with Matchers {
-   implicit val p = new WithAccelConfig
+   implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Dataflow tester" in {
      chisel3.iotesters.Driver(() => new TypeLoadDataFlow()(p)) { c =>
        new TypeLoadDataFlowTester(c)

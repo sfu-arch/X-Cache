@@ -111,7 +111,7 @@ class ReadWriteArbiterTests01(c: => ReadWriteArbiter) (implicit p: Parameters)
 
 
 class ReadWriteArbiterTester01 extends  FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Memory Controller tester" in {
     chisel3.iotesters.Driver(() => new ReadWriteArbiter()(p)) {
       c => new ReadWriteArbiterTests01(c)

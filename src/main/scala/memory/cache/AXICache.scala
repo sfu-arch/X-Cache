@@ -405,6 +405,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
  * @param p
  */
 class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
+  with HasAccelParams
   with HasCacheAccelParams
   with HasAccelShellParams {
   //import Chisel._ // FIXME: read enable signals for memories are broken by new chisel

@@ -361,7 +361,7 @@ import java.io.{File, FileWriter}
 object cilk_for_test03Top extends App {
   val dir = new File("RTL/cilk_for_test03Top");
   dir.mkdirs
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new cilk_for_test03DF()))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")

@@ -51,7 +51,7 @@ class TestMuxTests(df: TestMux)
 
 
 class TestMuxTester extends  FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Mux tester" in {
     chisel3.iotesters.Driver(() => new TestMux(4)(p)) {
       c => new TestMuxTests(c)

@@ -204,7 +204,7 @@ class basePrefetchTest01[T <: prefetchDFMainIO](c: T) extends PeekPokeTester(c) 
 }
 
 class basePrefetchTester extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that prefetchTest works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
