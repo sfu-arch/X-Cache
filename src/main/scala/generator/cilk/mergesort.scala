@@ -22,6 +22,7 @@ import dandelion.accel._
 import dandelion.node._
 import dandelion.junctions._
 import dandelion.config._
+import dandelion.memory.cache.HasCacheAccelParams
 
 
 /**
@@ -1018,7 +1019,7 @@ class mergesortDF(implicit p: Parameters) extends mergesortDFIO()(p) {
   io.out <> retArb.io.out
 
 }
-class mergesortTopIO(implicit val p: Parameters)  extends Module with HasAccelParams with CacheParams {
+class mergesortTopIO(implicit val p: Parameters)  extends Module with HasAccelParams with HasCacheAccelParams{
   val io = IO( new AccelBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32,32))))
     val MemResp = Flipped(Valid(new MemResp))

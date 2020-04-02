@@ -70,8 +70,6 @@ case class DandelionAccelParams(
                                  cacheNSets: Int = 256
                                ) extends AccelParams {
 
-  require(dataLen > 16, s"Datalen can not be less than 16bits at the moment")
-
   var xlen: Int = dataLen
   var ylen: Int = addrLen
   val tlen: Int = taskLen

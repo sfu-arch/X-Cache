@@ -23,6 +23,7 @@ import regfile._
 import dandelion.memory.stack._
 import util._
 import dandelion.config._
+import dandelion.memory.cache.HasCacheAccelParams
 
 
   /* ================================================================== *
@@ -592,7 +593,7 @@ class dedupDF(implicit p: Parameters) extends dedupDFIO()(p) {
 
 }
 
-class dedupTopIO(implicit val p: Parameters)  extends Module with HasAccelParams with CacheParams {
+class dedupTopIO(implicit val p: Parameters)  extends Module with HasAccelParams with HasCacheAccelParams{
   val io = IO( new AccelBundle {
     val in = Flipped(Decoupled(new Call(List(32,32,32))))
     val MemResp = Flipped(Valid(new MemResp))

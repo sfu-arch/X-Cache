@@ -3,29 +3,21 @@ package cache
 
 import java.io.PrintWriter
 import java.io.File
+
 import chisel3._
-import chisel3.util._
 import chisel3.Module
-import chisel3.testers._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-import muxes._
-import chipsalliance.rocketchip.config._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
-import dandelion.control._
 import util._
 import dandelion.interfaces._
-import regfile._
 import dandelion.memory._
-import dandelion.memory.stack._
-import dandelion.arbiters._
-import dandelion.loop._
 import dandelion.accel._
-import dandelion.junctions._
+import dandelion.memory.cache.ReferenceCache
 
 
-class cacheDFMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
+class cacheDFMainIO(implicit val p: Parameters) extends Module with HasAccelParams with HasAccelShellParams {
   val io = IO(new Bundle {
     val in   = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req  = Flipped(Decoupled(new MemReq))
@@ -37,13 +29,13 @@ class cacheDFMainIO(implicit val p: Parameters) extends Module with HasAccelPara
 
 class cacheDFMain(implicit p: Parameters) extends cacheDFMainIO {
 
-  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new ReferenceCache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
@@ -89,12 +81,12 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.valid, 1.U)
+    poke(c.io.req.bits.addr, addr.U)
+    poke(c.io.req.bits.iswrite, 0.U)
+    poke(c.io.req.bits.tag, 0.U)
+    poke(c.io.req.bits.mask, 0.U)
+    poke(c.io.req.bits.mask, -1.U)
     step(1)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
@@ -107,15 +99,15 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.valid, 1.U)
+    poke(c.io.req.bits.addr, addr.U)
+    poke(c.io.req.bits.data, data.U)
+    poke(c.io.req.bits.iswrite, 1.U)
+    poke(c.io.req.bits.tag, 0.U)
+    poke(c.io.req.bits.mask, 0.U)
+    poke(c.io.req.bits.mask, -1.U)
     step(1)
-    poke(c.io.req.valid, 0)
+    poke(c.io.req.valid, 0.U)
     1
   }
 
@@ -123,7 +115,6 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     //Writing mem states back to the file
     val pw = new PrintWriter(new File(path))
     for (i <- 0 until outDataVec.length) {
-      //      for (i <- 0 until outDataVec.length) {
       val data = MemRead(outAddrVec(i))
       pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
     }

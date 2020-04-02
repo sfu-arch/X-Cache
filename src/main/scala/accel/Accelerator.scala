@@ -7,6 +7,7 @@ import dandelion.junctions._
 import dandelion.interfaces._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
+import dandelion.memory.cache.ReferenceCache
 
 abstract class AcceleratorIO(implicit val p: Parameters) extends Module with HasAccelParams {
   val io = IO(
@@ -21,7 +22,7 @@ class Accelerator(cNum : Int, sNum : Int, coreDF: => CoreT) (implicit p: Paramet
 
   val regs  = Module(new DataBundleReg(cNum, sNum))
   val core  = Module(coreDF)
-  val cache = Module(new Cache)
+  val cache = Module(new ReferenceCache)
 
   // Connect HPC AXI Master interface the control/status register block
   // AXI Slave interface
@@ -38,6 +39,6 @@ class Accelerator(cNum : Int, sNum : Int, coreDF: => CoreT) (implicit p: Paramet
 
   // Connect the cache CPU interface to the core logic block
   core.io.cache <> cache.io.cpu
-  io.f2h <> cache.io.nasti
+  io.f2h <> cache.io.mem
 
 }

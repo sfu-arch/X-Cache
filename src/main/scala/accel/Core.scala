@@ -8,6 +8,7 @@ import dandelion.config._
 import dandelion.interfaces._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
+import dandelion.memory.cache.CacheCPUIO
 
 
 /**
@@ -38,7 +39,7 @@ abstract class CoreDFIO(cNum: Int, sNum: Int)(implicit val p: Parameters) extend
       val ctrl = Vec(cNum, Flipped(Decoupled(new DataBundle())))
       val stat = Vec(sNum, Decoupled(new DataBundle()))
       //      val err   = Output(UInt(xlen.W)) TODO : Need to have a err signal with error codes
-      val cache = Flipped(new CacheIO)
+      val cache = Flipped(new CacheCPUIO)
     }
   )
 }

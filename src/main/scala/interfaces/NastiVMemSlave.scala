@@ -6,10 +6,11 @@ import dandelion.junctions._
 import dandelion.memory._
 import dandelion.config._
 import chipsalliance.rocketchip.config._
-import dandelion.accel.CacheParams
+import dandelion.memory.cache.HasCacheAccelParams
 
 
-class NastiVMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p: Parameters) extends Module with CacheParams {
+class NastiVMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p: Parameters)
+  extends Module with HasAccelParams with HasAccelShellParams with HasCacheAccelParams {
 
   val io = IO(new NastiMemSlaveIO()(p))
 
@@ -23,8 +24,8 @@ class NastiVMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p
   io.nasti.b <> Queue(dutMem.b, 32)
   io.nasti.r <> Queue(dutMem.r, 32)
 
-  val size = log2Ceil(nastiXDataBits / 8).U
-  val len = (databeats - 1).U
+  val size = log2Ceil(nastiParams.dataBits / 8).U
+  val len = (dataBeats - 1).U
 
   /* Main Memory */
   //  val mem = Mem(depth, UInt(nastiXDataBits.W))
@@ -38,8 +39,8 @@ class NastiVMemSlave(val depth: Int = 1 << 24, latency: Int = 20)(implicit val p
 
   val sMemIdle :: sMemWrite :: sMemWrAck :: sMemRead :: sMemWait :: Nil = Enum(5)
   val memState = RegInit(sMemIdle)
-  val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, databeats)
-  val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, databeats)
+  val (wCnt, wDone) = Counter(memState === sMemWrite && dutMem.w.valid, dataBeats)
+  val (rCnt, rDone) = Counter(memState === sMemRead && dutMem.r.ready, dataBeats)
   //val (waitCnt, waitDone) = Counter(memState === sMemWait, latency)
   val waitCnt = RegInit(0.U(16.W))
 

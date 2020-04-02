@@ -2,21 +2,19 @@ package dandelion.dataflow.filter
 
 import chisel3._
 import chisel3.util._
-
 import dandelion.node._
 import chipsalliance.rocketchip.config._
-import dandelion.config._
 import dandelion.interfaces._
-import dandelion.accel.{CacheIO}
 import dandelion.memory._
 import dandelion.config._
+import dandelion.memory.cache.CacheCPUIO
 
 class CacheLoader(FilterSize : Int)(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
     val enable = Flipped(Decoupled(new ControlBundle()))
     val ptr    = Vec(FilterSize,Flipped(Decoupled(new DataBundle())))
-    val cache  = Flipped(new CacheIO)
+    val cache  = Flipped(new CacheCPUIO)
     val data   = Vec(FilterSize,Decoupled(new DataBundle()))
   })
 

@@ -8,8 +8,9 @@ import util._
 import dandelion.interfaces._
 import dandelion.memory._
 import dandelion.accel._
+import dandelion.memory.cache.HasCacheAccelParams
 
-class harrisMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
+class harrisMainIO(implicit val p: Parameters) extends Module with HasAccelParams with HasAccelShellParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32))))
 
@@ -27,20 +28,8 @@ class harrisMainIO(implicit val p: Parameters) extends Module with HasAccelParam
 
 class harrisMain(implicit p: Parameters) extends harrisMainIO {
 
-  //  val cache = Module(new Cache) // Simple Nasti Cache
-  //  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
-  //
-  //  // Connect the wrapper I/O to the memory model initialization interface so the
-  //  // test bench can write contents at start.
-  //  memModel.io.nasti <> cache.io.nasti
-  //  memModel.io.init.bits.addr := 0.U
-  //  memModel.io.init.bits.data := 0.U
-  //  memModel.io.init.valid := false.B
-  //  cache.io.cpu.abort := false.B
-
 
   // Wire up the cache and modules under test.
-  //  val test04 = Module(new test04DF())
   val harris_f1 = Module(new extract_function_harris_f1DF())
   val harris_f2 = Module(new extract_function_harris_f2DF())
   val harris_f3 = Module(new extract_function_harris_f3DF())

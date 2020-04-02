@@ -1,4 +1,3 @@
-// See LICENSE for license details.
 package dandelion.memory.cache
 
 import chisel3._
@@ -12,7 +11,7 @@ import dandelion.junctions._
 import dandelion.shell._
 
 
-trait CacheAccelParams extends HasAccelParams with HasAccelShellParams {
+trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
@@ -37,7 +36,7 @@ class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBu
 }
 
 
-class MetaData(implicit p: Parameters) extends AXIAccelBundle with CacheAccelParams {
+class MetaData(implicit p: Parameters) extends AXIAccelBundle with HasCacheAccelParams {
   val tag = UInt(taglen.W)
 }
 
@@ -63,7 +62,7 @@ object MetaData {
 }
 
 class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
-  with CacheAccelParams
+  with HasCacheAccelParams
   with HasAccelShellParams {
   val io = IO(new Bundle {
     val cpu = new CacheCPUIO
@@ -406,7 +405,7 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
  * @param p
  */
 class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
-  with CacheAccelParams
+  with HasCacheAccelParams
   with HasAccelShellParams {
   //import Chisel._ // FIXME: read enable signals for memories are broken by new chisel
 
@@ -701,7 +700,7 @@ class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p
  * @param p
  */
 class DMECache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
-  with CacheAccelParams
+  with HasCacheAccelParams
   with HasAccelShellParams {
 
   val io = IO(new Bundle {
