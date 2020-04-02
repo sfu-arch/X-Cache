@@ -27,7 +27,7 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
                 name: sourcecode.Name,
                 file: sourcecode.File)
   extends Module with HasAccelParams with UniformPrintfs {
-  override lazy val io = IO(new SharedFPUIO(NumOps, argTypes = List(xlen, xlen, 1)))
+  override lazy val io = IO(new SharedFPUIO(NumOps, argTypes = List(xlen, xlen, xlen)))
 
   // Printf debugging
   val node_name       = name.value
@@ -36,7 +36,7 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
 
   print(t.expWidth)
   // Arguments for function unit
-  val argTypes = List(xlen, xlen, 1)
+  val argTypes = List(xlen, xlen, xlen)
   // The function unit
   val ds       = Module(new DivSqrtRecFN_small(t.expWidth, t.sigWidth, 0))
   //  Metadata queue associated with function unit
@@ -69,7 +69,7 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
   in_arbiter.io.out.ready := ds.io.inReady && RouteQ.io.enq.ready
   // Wire up arbiter to function unit. Direct params to function unit
   ds.io.inValid := in_arbiter.io.out.valid
-  ds.io.sqrtOp := in_arbiter.io.out.bits.data("field2").data.asBool
+  ds.io.sqrtOp := in_arbiter.io.out.bits.data("field2").data.orR
   ds.io.a := t.recode(in_arbiter.io.out.bits.data("field0").data)
   ds.io.b := t.recode(in_arbiter.io.out.bits.data("field1").data)
   //  ds.io.a := in_arbiter.io.out.bits.data("field0").data

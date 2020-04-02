@@ -5,7 +5,6 @@ import chisel3.iotesters._
 import org.scalatest.{Matchers, FlatSpec}
 
 import chipsalliance.rocketchip.config._
-import chipsalliance.rocketchip.config._
 import dandelion.config._
 
 

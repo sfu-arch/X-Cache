@@ -33,9 +33,9 @@ trait AccelParams {
 }
 
 /**
- * VCR parameters.
- * These parameters are used on VCR interfaces and modules.
- */
+  * VCR parameters.
+  * These parameters are used on VCR interfaces and modules.
+  */
 trait DCRParams {
   val nCtrl: Int
   val nECnt: Int
@@ -45,9 +45,9 @@ trait DCRParams {
 }
 
 /**
- * DME parameters.
- * These parameters are used on DME interfaces and modules.
- */
+  * DME parameters.
+  * These parameters are used on DME interfaces and modules.
+  */
 trait DMEParams {
   val nReadClients: Int
   val nWriteClients: Int
@@ -69,6 +69,9 @@ case class DandelionAccelParams(
                                  cacheNWays: Int = 1,
                                  cacheNSets: Int = 256
                                ) extends AccelParams {
+
+  require(dataLen > 16, s"Datalen can not be less than 16bits at the moment")
+
   var xlen: Int = dataLen
   var ylen: Int = addrLen
   val tlen: Int = taskLen
@@ -85,6 +88,7 @@ case class DandelionAccelParams(
   //Cache
   val nways = cacheNWays // TODO: set-associative
   val nsets = cacheNSets
+
   def cacheBlockBytes: Int = 4 * (xlen >> 3) // 4 x 64 bits = 32B
 
   // Debugging dumps
@@ -97,9 +101,9 @@ case class DandelionAccelParams(
 }
 
 /**
- * VCR parameters.
- * These parameters are used on VCR interfaces and modules.
- */
+  * VCR parameters.
+  * These parameters are used on VCR interfaces and modules.
+  */
 case class DandelionDCRParams(numCtrl: Int = 1,
                               numEvent: Int = 1,
                               numVals: Int = 2,
@@ -113,9 +117,9 @@ case class DandelionDCRParams(numCtrl: Int = 1,
 }
 
 /**
- * DME parameters.
- * These parameters are used on DME interfaces and modules.
- */
+  * DME parameters.
+  * These parameters are used on DME interfaces and modules.
+  */
 case class DandelionDMEParams(numRead: Int = 1,
                               numWrite: Int = 1) {
   val nReadClients: Int = numRead
@@ -152,12 +156,6 @@ class WithAccelConfig(inParams: DandelionAccelParams = DandelionAccelParams())
   extends Config((site, here, up) => {
     // Core
     case DandelionConfigKey => inParams
-
-    // NastiIO
-    //    case NastiKey => new NastiParameters(
-    //      idBits = 12,
-    //      dataBits = 32,
-    //      addrBits = 32)
   }
 
   )
