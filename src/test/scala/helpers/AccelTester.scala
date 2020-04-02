@@ -2,6 +2,7 @@ package helpers
 
 import java.io.PrintWriter
 import java.io.File
+
 import chisel3._
 import chisel3.Module
 import chisel3.iotesters._
@@ -10,9 +11,11 @@ import dandelion.config._
 import util._
 import dandelion.interfaces._
 import dandelion.accel._
+import dandelion.memory.cache.HasCacheAccelParams
 
 
-class AccelIO(Args: List[Int], Returns: List[Int])(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
+class AccelIO(Args: List[Int], Returns: List[Int])(implicit val p: Parameters) extends Module
+  with HasAccelParams with HasAccelShellParams with HasCacheAccelParams{
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(Args)))
     val req = Flipped(Decoupled(new MemReq))
