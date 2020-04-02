@@ -11,9 +11,12 @@ import dandelion.interfaces._
 import dandelion.memory._
 import dandelion.accel._
 import dandelion.generator.dfTypee.mataddDF
+import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache}
 
 
-class mataddMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
+class mataddMainIO(implicit val p: Parameters) extends Module with HasAccelParams
+  with HasAccelShellParams
+  with HasCacheAccelParams{
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -27,12 +30,12 @@ class mataddMainIO(implicit val p: Parameters) extends Module with HasAccelParam
 
 class mataddMain(implicit p: Parameters) extends mataddMainIO {
 
-  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new ReferenceCache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B

@@ -10,10 +10,12 @@ import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.memory._
+import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache}
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class sortMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
+class sortMainIO(implicit val p: Parameters) extends Module
+  with HasAccelParams with HasAccelShellParams with HasCacheAccelParams{
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -26,14 +28,14 @@ class sortMainIO(implicit val p: Parameters) extends Module with HasAccelParams 
 
 class sortMain(implicit p: Parameters) extends sortMainIO {
 
-  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new ReferenceCache()) // Simple Nasti Cache
   val memModel = Module(new NastiInitMemSlave()()) // Model of DRAM to connect to Cache
 //  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B

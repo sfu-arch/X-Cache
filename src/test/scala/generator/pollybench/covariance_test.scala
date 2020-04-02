@@ -10,10 +10,14 @@ import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.memory._
+import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache}
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class covarianceMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
+class covarianceMainIO(implicit val p: Parameters) extends Module
+  with HasAccelParams
+  with HasAccelShellParams
+  with HasCacheAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -26,14 +30,14 @@ class covarianceMainIO(implicit val p: Parameters) extends Module with HasAccelP
 
 class covarianceMain(implicit p: Parameters) extends covarianceMainIO {
 
-  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new ReferenceCache()) // Simple Nasti Cache
   val memModel = Module(new NastiInitMemSlave()()) // Model of DRAM to connect to Cache
-//  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
+  //  val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
@@ -195,20 +199,20 @@ class covarianceTest01[T <: covarianceMainIO](c: T) extends PeekPokeTester(c) {
 class covarianceTester1 extends FlatSpec with Matchers {
   implicit val p = new WithAccelConfig
   //it should "Check that covariance works correctly." in {
-    //// iotester flags:
-    //// -ll  = log level <Error|Warn|Info|Debug|Trace>
-    //// -tbn = backend <firrtl|verilator|vcs>
-    //// -td  = target directory
-    //// -tts = seed for RNG
-    //chisel3.iotesters.Driver.execute(
-      //Array(
-        //// "-ll", "Info",
-        //"-tn", "covarianceMain",
-        //"-tbn", "verilator",
-        //"-td", "test_run_dir/covariance",
-        //"-tts", "0001"),
-      //() => new covarianceMain()(testParams)) {
-      //c => new covarianceTest01(c)
-    //} should be(true)
+  //// iotester flags:
+  //// -ll  = log level <Error|Warn|Info|Debug|Trace>
+  //// -tbn = backend <firrtl|verilator|vcs>
+  //// -td  = target directory
+  //// -tts = seed for RNG
+  //chisel3.iotesters.Driver.execute(
+  //Array(
+  //// "-ll", "Info",
+  //"-tn", "covarianceMain",
+  //"-tbn", "verilator",
+  //"-td", "test_run_dir/covariance",
+  //"-tts", "0001"),
+  //() => new covarianceMain()(testParams)) {
+  //c => new covarianceTest01(c)
+  //} should be(true)
   //}
 }

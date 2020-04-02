@@ -8,10 +8,14 @@ import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.interfaces._
 import dandelion.memory._
+import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache}
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class bbgemmMainIO(implicit val p: Parameters) extends Module with HasAccelParams with CacheParams {
+class bbgemmMainIO(implicit val p: Parameters) extends Module
+  with HasAccelParams
+  with HasAccelShellParams
+  with HasCacheAccelParams {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(new Call(List(32, 32, 32))))
     val req = Flipped(Decoupled(new MemReq))
@@ -24,14 +28,14 @@ class bbgemmMainIO(implicit val p: Parameters) extends Module with HasAccelParam
 
 class bbgemmMain(implicit p: Parameters) extends bbgemmMainIO {
 
-  val cache = Module(new Cache) // Simple Nasti Cache
+  val cache = Module(new ReferenceCache()) // Simple Nasti Cache
   //val memModel = Module(new NastiInitMemSlave()()) // Model of DRAM to connect to Cache
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
 
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
-  memModel.io.nasti <> cache.io.nasti
+  memModel.io.nasti <> cache.io.mem
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
@@ -100,16 +104,16 @@ class bbgemmTest01[T <: bbgemmMainIO](c: T) extends PeekPokeTester(c) {
     1
   }
 
-//  def dumpMemory(path: String) = {
-//    //Writing mem states back to the file
-//    val pw = new PrintWriter(new File(path))
-//    for (i <- 0 until outDataVec.length) {
-//      val data = MemRead(outAddrVec(i))
-//      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
-//    }
-//    pw.close
-//
-//  }
+  //  def dumpMemory(path: String) = {
+  //    //Writing mem states back to the file
+  //    val pw = new PrintWriter(new File(path))
+  //    for (i <- 0 until outDataVec.length) {
+  //      val data = MemRead(outAddrVec(i))
+  //      pw.write("0X" + outAddrVec(i).toHexString + " -> " + data + "\n")
+  //    }
+  //    pw.close
+  //
+  //  }
 
 
   //  val inAddrVec = List.range(0x0037957020, 0x000037957020 + (4 * 10), 4)
@@ -117,7 +121,7 @@ class bbgemmTest01[T <: bbgemmMainIO](c: T) extends PeekPokeTester(c) {
 
   //Write initial contents to the memory model.
   //for (i <- 0 until inDataVec.length) {
-   // MemWrite(inAddrVec(i), inDataVec(i))
+  // MemWrite(inAddrVec(i), inDataVec(i))
   //}
 
   //  step(10)
