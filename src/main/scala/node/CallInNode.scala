@@ -16,6 +16,8 @@ class CallInNodeIO(val argTypes: Seq[Int])(implicit p: Parameters)
   // Data I/O
   val In   = Flipped(Decoupled(new Call(argTypes))) // From task
   val Out  = new CallDecoupled(argTypes)            // Returns to calling block(s)
+
+  override def cloneType = new CallInNodeIO(argTypes).asInstanceOf[this.type]
 }
 
 class CallInNode(ID: Int, argTypes: Seq[Int])
