@@ -194,7 +194,7 @@ class stencilSerialTester1 extends FlatSpec with Matchers {
   )
 
 
-  implicit val p = new WithAccelConfig(DandelionAccelParams(dataLen = 8))
+  implicit val p = new WithAccelConfig(DandelionAccelParams(dataLen = 8)) ++ new WithTestConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
@@ -214,48 +214,3 @@ class stencilSerialTester1 extends FlatSpec with Matchers {
   }
 }
 
-
-//class stencilSerialTester2 extends FlatSpec with Matchers {
-
-  //val inDataVec = List(
-    //7, 9, 3, 8,
-    //0, 2, 4, 8,
-    //3, 9, 0, 5,
-    //2, 2, 7, 3)
-  //val inAddrVec = List.range(0, 4 * 16, 4)
-
-  //val outAddrVec = List.range(256, 256 + (4 * 16), 4)
-  //val outDataVec = List(
-    //3, 3, 4, 3,
-    //4, 5, 6, 4,
-    //3, 4, 5, 4,
-    //2, 3, 3, 2
-  //)
-
-  //implicit val p = new WithAccelConfig ++ new WithTestConfig
-  //val testParams = p.alterPartial({
-    //case TLEN => 8
-    //case TRACE => true
-  //})
-  //// iotester flags:
-  //// -ll  = log level <Error|Warn|Info|Debug|Trace>
-  //// -tbn = backend <firrtl|verilator|vcs>
-  //// -td  = target directory
-  //// -tts = seed for RNG
-  ////  val tile_list = List(1,2,4,8)
-  //val tile_list = List(1)
-  //for (tile <- tile_list) {
-    //it should s"Test: $tile tiles" in {
-      //chisel3.iotesters.Driver.execute(
-        //Array(
-          //"-ll", "Warn",
-          //"-tn", "cilkstencilSerialTM",
-          //"-tbn", "verilator",
-          //"-td", s"test_run_dir/stencilSerial_${tile}",
-          //"-tts", "0001"),
-        //() => new stencilSerialMainTM(tile)(testParams)) {
-        //c => new stencilSerialTest02(c, tile)(inAddrVec, inDataVec.toList, outAddrVec, outDataVec)
-      //} should be(true)
-    //}
-  //}
-//}
