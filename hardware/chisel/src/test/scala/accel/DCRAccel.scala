@@ -8,7 +8,7 @@ import dandelion.config._
 import dandelion.generator._
 import dandelion.accel.{DandelionAccelDCRModule, DandelionAccelDebugModule, DandelionAccelModule}
 import sim.shell._
-import vta.shell.DandelionF1Accel
+import dandelion.shell._
 
 class DandelionSimDebugAccel(accelModule: () => DandelionAccelDCRModule, debugModule: () => DandelionAccelDebugModule)
                             (numPtrs: Int, numDbgs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)

@@ -19,9 +19,17 @@ val_a = list(range(1, 11))
 print(val_a)
 a_s = dsim.DArray(val_a, dsim.DArray.DType.DWord)
 
-events = dsim.sim(ptrs = [a_s], vars= [], numRets=1, numEvents=1, hwlib = hw_lib_path)
+
+# Debug container
+b = np.zeros(20)
+b_s = dsim.DArray(b, dsim.DArray.DType.DWord)
+
+events = dsim.sim(ptrs = [a_s], debugs=[b_s], vars= [], numRets=1, numEvents=1, hwlib = hw_lib_path)
 
 print("Cycle: " + str(events[0]))
-print("Output array:\n\t")
-print(a_s.getData())
+print("Output array:\t")
+print(list(a_s.getData()))
 print(test05(val_a))
+
+print("Debug output:")
+print(list(b_s.getData()))

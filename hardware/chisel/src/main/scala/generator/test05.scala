@@ -81,7 +81,7 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3))
 
   //  %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ], !UID !32
-  val phiindvars_iv4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 4, Res = true))
+  val phiindvars_iv4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 4, Res = true, Debug = true, GuardVals = List(0, 0, 0, 0, 0, 0)))
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i64 %indvars.iv, !dbg !33, !UID !36
   val Gep_arrayidx5 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 5)(ElementSize = 8, ArraySize = List()))
