@@ -26,7 +26,8 @@ class cilk_for_test05MainTM(tiles: Int)(implicit p: Parameters)
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   val children = tiles
   val TaskControllerModule = Module(new TaskController(List(32, 32, 32, 32), List(), 1, children))

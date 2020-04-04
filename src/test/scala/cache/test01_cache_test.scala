@@ -41,7 +41,8 @@ class test_cache01Main(implicit p: Parameters) extends test_cache01MainIO {
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   // Wire up the cache and modules under test.
   val test_cache01 = Module(new test_cache01DF())

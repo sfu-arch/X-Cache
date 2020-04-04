@@ -29,6 +29,8 @@ class bgemmMainDirect(implicit p: Parameters) extends
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
+
 
 
   val bgemm = Module(new bgemmDF())
@@ -74,6 +76,8 @@ class bgemmMainTM(val Tile: Int = 1)(implicit p: Parameters)
 
   val cache = Module(new ReferenceCache) // Simple Nasti Cache
   val memModel = Module(new NastiMemSlave(latency = 80)) // Model of DRAM to connect to Cache
+  cache.io.cpu.flush := false.B
+
 
   // Connect the wrapper I/O to the memory model initialization interface so the
   // test bench can write contents at start.
@@ -81,7 +85,8 @@ class bgemmMainTM(val Tile: Int = 1)(implicit p: Parameters)
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
 
   val children = Tile

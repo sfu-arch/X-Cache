@@ -47,7 +47,8 @@ class dedupMainTM(tiles: Int)(implicit p: Parameters) extends dedupMainIO {
   memModel.io.init.bits.addr := io.addr
   memModel.io.init.bits.data := io.din
   memModel.io.init.valid := io.write
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   // Wire up the cache, TM, and modules under test.
 

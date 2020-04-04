@@ -26,7 +26,8 @@ class stencilSerialDirect()(implicit p: Parameters) extends AccelIO(List(32, 32)
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   // Wire up the cache, TM, and modules under test.
   val stencil = Module(new stencilSerialDF())

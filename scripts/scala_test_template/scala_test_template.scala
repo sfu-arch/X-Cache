@@ -45,7 +45,8 @@ class {{module_name}}Main(implicit p: Parameters) extends {{module_name}}MainIO 
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   // Wire up the cache and modules under test.
   val {{module_name}}= Module(new {{module_name}}DF())

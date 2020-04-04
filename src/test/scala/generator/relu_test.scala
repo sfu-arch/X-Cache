@@ -26,7 +26,8 @@ class reluMainDirect()(implicit p: Parameters)
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
 
   val testDF = Module(new reluDF())

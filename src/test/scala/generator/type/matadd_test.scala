@@ -39,7 +39,8 @@ class mataddMain(implicit p: Parameters) extends mataddMainIO {
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   val matadd_df = Module(new mataddDF())
 

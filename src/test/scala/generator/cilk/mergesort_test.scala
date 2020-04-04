@@ -47,7 +47,8 @@ class mergesortMain1(tiles: Int)(implicit p: Parameters) extends mergesortMainIO
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   val NumMergesorts = tiles
   val mergesort = for (i <- 0 until NumMergesorts) yield {
@@ -169,7 +170,8 @@ class mergesortMain3(tiles: Int)(implicit p: Parameters) extends mergesortMainIO
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   val NumMergesorts = tiles
   val mergesort = for (i <- 0 until NumMergesorts) yield {

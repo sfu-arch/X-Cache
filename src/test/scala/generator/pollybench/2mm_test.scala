@@ -40,7 +40,8 @@ class k2mmMain(implicit p: Parameters) extends k2mmMainIO {
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   // Wire up the cache and modules under test.
   val k2mm = Module(new k2mmDF())

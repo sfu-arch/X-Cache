@@ -26,6 +26,7 @@ class cilk_for_test02Main(tiles: Int)(implicit p: Parameters) extends AccelIO(Li
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
   cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
   val cilk_for_testDF = Module(new cilk_for_test02DF())
 

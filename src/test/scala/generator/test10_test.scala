@@ -41,7 +41,8 @@ class test10MainDirect(implicit p: Parameters) extends test10MainIO {
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := true.B
-  cache.io.cpu.abort := false.B
+    cache.io.cpu.abort := false.B
+  cache.io.cpu.flush := false.B
 
 
   // Wire up the cache and modules under test.
