@@ -26,7 +26,7 @@ class stencilSerialDirect()(implicit p: Parameters) extends AccelIO(List(32, 32)
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-    cache.io.cpu.abort := false.B
+  cache.io.cpu.abort := false.B
   cache.io.cpu.flush := false.B
 
   // Wire up the cache, TM, and modules under test.
@@ -45,13 +45,6 @@ class stencilSerialDirect()(implicit p: Parameters) extends AccelIO(List(32, 32)
 
   // tester to cilk_for_test02
   stencil.io.in <> io.in
-
-  // cilk_for_test02 to task controller
-  //stencil_detach1.io.in <> stencil.io.call_8_out
-  //stencil.io.call_8_in <> stencil_detach1.io.out
-
-  //stencil_inner.io.in <> stencil_detach1.io.call_4_out
-  //stencil_detach1.io.call_4_in <> stencil_inner.io.out
 
   // cilk_for_test02 to tester
   io.out <> stencil.io.out
@@ -194,7 +187,7 @@ class stencilSerialTester1 extends FlatSpec with Matchers {
   )
 
 
-  implicit val p = new WithAccelConfig(DandelionAccelParams(dataLen = 8)) ++ new WithTestConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>

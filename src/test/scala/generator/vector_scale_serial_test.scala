@@ -149,7 +149,7 @@ class vectorScaleSerialTester1 extends FlatSpec with Matchers {
     255, 65, 255, 255, 255, 255)
 
 
-  implicit val p = new WithAccelConfig(DandelionAccelParams(dataLen = 6)) ++ new WithTestConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   // iotester flags:
   // -ll  = log level <Error|Warn|Info|Debug|Trace>
   // -tbn = backend <firrtl|verilator|vcs>
