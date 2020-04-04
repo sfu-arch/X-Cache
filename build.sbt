@@ -8,10 +8,12 @@ import sys.process._
 enablePlugins(PackPlugin)
 
 lazy val commonSettings = Seq(
+  name := "dandelion-lib",
   organization := "edu.sfu.cs",
   version      := "1.0-SNAPSHOT",
   scalaVersion := "2.12.10",
-  parallelExecution in Global := false,
+  parallelExecution in Global := true,
+  parallelExecution in Test := true,
   logBuffered in Test := false,
   testOptions in Test += Tests.Argument("-oDS"),
   traceLevel   := 15,
@@ -49,7 +51,8 @@ def dependOnIoTesters(prj: Project) = {
 lazy val `api-config-chipsalliance` = (project in file("api-config-chipsalliance/build-rules/sbt"))
   .settings(commonSettings)
   .settings(publishArtifact := false)
-lazy val hardfloat  = dependOnChisel(project).settings(commonSettings)
+lazy val hardfloat  = dependOnChisel(project)
+  .settings(commonSettings)
   .settings(publishArtifact := false)
 
 lazy val dandelion= dependOnChisel(project in file("."))
