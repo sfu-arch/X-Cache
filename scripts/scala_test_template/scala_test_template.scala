@@ -91,7 +91,6 @@ class {{module_name}}Test01[T <: {{module_name}}MainIO](c: T) extends PeekPokeTe
     poke(c.io.req.bits.iswrite, 0)
     poke(c.io.req.bits.tag, 0)
     poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
     step(1)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
@@ -109,8 +108,7 @@ class {{module_name}}Test01[T <: {{module_name}}MainIO](c: T) extends PeekPokeTe
     poke(c.io.req.bits.data, data)
     poke(c.io.req.bits.iswrite, 1)
     poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.mask, "hF".U((c.xlen/ 8).W))
     step(1)
     poke(c.io.req.valid, 0)
     1

@@ -35,11 +35,11 @@ class AccelTesterLocal[T <: AccelIO](c: T)
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.iswrite, 0)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
+    poke(c.io.req.valid, 1.U)
+    poke(c.io.req.bits.addr, addr.U)
+    poke(c.io.req.bits.iswrite, 0.U)
+    poke(c.io.req.bits.tag, 0.U)
+    poke(c.io.req.bits.mask, 0.U)
     step(1)
 
     poke(c.io.req.valid, 0)
@@ -54,14 +54,14 @@ class AccelTesterLocal[T <: AccelIO](c: T)
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, (1 << (c.io.req.bits.mask.getWidth)) - 1)
+    poke(c.io.req.valid, 1.U)
+    poke(c.io.req.bits.addr, addr.U)
+    poke(c.io.req.bits.data, data.U)
+    poke(c.io.req.bits.iswrite, 1.U)
+    poke(c.io.req.bits.tag, 0.U)
+    poke(c.io.req.bits.mask, "hF".U((c.xlen/ 8).W))
     step(1)
-    poke(c.io.req.valid, 0)
+    poke(c.io.req.valid, 0.U)
     1
   }
 

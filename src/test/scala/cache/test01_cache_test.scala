@@ -79,7 +79,6 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
     poke(c.io.req.bits.iswrite, 0.U)
     poke(c.io.req.bits.tag, 0.U)
     poke(c.io.req.bits.mask, 0.U)
-    poke(c.io.req.bits.mask, "hFFFF".U)
     step(1)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
@@ -92,13 +91,12 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
     while (peek(c.io.req.ready) == 0) {
       step(1)
     }
-    poke(c.io.req.valid, 1)
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.data, data)
-    poke(c.io.req.bits.iswrite, 1)
+    poke(c.io.req.valid, 1.U)
+    poke(c.io.req.bits.addr, addr.U)
+    poke(c.io.req.bits.data, data.U)
+    poke(c.io.req.bits.iswrite, 1.U)
     poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, 0)
-    poke(c.io.req.bits.mask, -1)
+    poke(c.io.req.bits.mask, "hF".U((c.xlen/ 8).W))
     step(1)
     poke(c.io.req.valid, 0)
     1
@@ -217,7 +215,7 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
 
 
 class test_cache01Tester1 extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   it should "Check that test_cache01 works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>

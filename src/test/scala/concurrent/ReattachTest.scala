@@ -61,7 +61,7 @@ class ReattachTest01(c: Reattach) extends PeekPokeTester(c) {
 
 
 class ReattachTester extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   var tbn = "verilator"
 //  var tbn = "firrtl"
 

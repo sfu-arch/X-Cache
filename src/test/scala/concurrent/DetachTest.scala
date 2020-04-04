@@ -80,7 +80,7 @@ class DetachTests(c: Detach) extends PeekPokeTester(c) {
 }
 
 class DetachTester extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig
+  implicit val p = new WithAccelConfig ++ new WithTestConfig
   var tbn = "verilator"
 //  var tbn = "firrtl"
 

@@ -1169,8 +1169,9 @@ class CBranchFastNodeVariable2(val NumTrue: Int = 1, val NumFalse: Int = 1, val 
   * This class is the fast version of CBranch which the IO supports
   * a vector of output for each side True/False
   *
-  * @param NumPredOps Number of parents
-  * @param NumOuts    Number of outputs
+  * @param NumTrue
+  * @param NumFalse
+  * @param NumPredecessor Number of parents
   * @param ID         Node id
   */
 

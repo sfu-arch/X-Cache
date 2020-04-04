@@ -86,7 +86,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     poke(c.io.req.bits.addr, addr.U)
     poke(c.io.req.bits.iswrite, 0.U)
     poke(c.io.req.bits.tag, 0.U)
-    poke(c.io.req.bits.mask, "hFFFF".U)
+    poke(c.io.req.bits.mask, 0.U)
     step(1)
     while (peek(c.io.resp.valid) == 0) {
       step(1)
@@ -104,7 +104,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
     poke(c.io.req.bits.data, data.U)
     poke(c.io.req.bits.iswrite, 1.U)
     poke(c.io.req.bits.tag, 0.U)
-    poke(c.io.req.bits.mask, "hFFFF".U)
+    poke(c.io.req.bits.mask, "hF".U((c.xlen/ 8).W))
     step(1)
     poke(c.io.req.valid, 0.U)
     1
@@ -122,7 +122,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
   }
 
   val inAddrVec  = List(0x0, 0x4, 0x8, 0xc, 0x10)
-  val inDataVec  = List(1, 20, 30, 40, 5)
+  val inDataVec  = List(10, 20, 30, 40, 50)
   val outAddrVec = List(0x0, 0x4, 0x8, 0xc, 0x10)
   val outDataVec = List(1, 2, 3, 4, 5)
 
@@ -146,7 +146,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
   // 3) field2 : true -> load, false -> store
 
   poke(c.io.in.valid, false.B)
-
+  poke(c.io.in.bits.enable.control, true.B)
   poke(c.io.in.bits.data("field0").data, 0.U)
   poke(c.io.in.bits.data("field0").predicate, false.B)
   poke(c.io.in.bits.data("field1").data, 0.U)
@@ -209,7 +209,7 @@ class basecacheTest01[T <: cacheDFMainIO](c: T) extends PeekPokeTester(c) {
 }
 
 class baseCacheTester extends FlatSpec with Matchers {
-  implicit val p = new WithAccelConfig ++ new WithTestConfig ++ new WithTestConfig
+  implicit val p = new WithAccelConfig(DandelionAccelParams(printLog = true)) ++ new WithTestConfig
   it should "Check that cacheTest works correctly." in {
     // iotester flags:
     // -ll  = log level <Error|Warn|Info|Debug|Trace>
@@ -218,10 +218,9 @@ class baseCacheTester extends FlatSpec with Matchers {
     // -tts = seed for RNG
     chisel3.iotesters.Driver.execute(
       Array(
-        // "-ll", "Info",
         "-tbn", "verilator",
-        "-td", "test_run_dir/cacheTest",
-        "-tts", "0001"),
+        "-td", "test_run_dir/cacheTestDF",
+        "-tts", "001"),
       () => new cacheDFMain( )) {
       c => new basecacheTest01(c)
     } should be(true)
