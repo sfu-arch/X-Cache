@@ -32,4 +32,4 @@ print(list(a_s.getData()))
 print(test05(val_a))
 
 print("Debug output:")
-print(list(b_s.getData()))
+print([ hex(int(x) & ((1 << 64) - 1)) for x in b_s.getData()])

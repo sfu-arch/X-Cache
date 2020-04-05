@@ -63,14 +63,15 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   //  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3))
 
   //  %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ], !UID !32
-  val phiindvars_iv4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 4, Res = true, Debug = true,
+  val phiindvars_iv4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 4, Res = true, Debug = false,
     GuardVals = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)))
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i64 %indvars.iv, !dbg !33, !UID !36
   val Gep_arrayidx5 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 5)(ElementSize = 8, ArraySize = List()))
 
   //  %1 = load i32, i32* %arrayidx, align 4, !dbg !33, !tbaa !24, !UID !37
-  val ld_6 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1))
+  val ld_6 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1, Debug = true,
+    GuardVals = List(4096, 4104, 4112, 4120, 4120, 4128, 4136, 4144, 4152, 4160, 4168)))
 
   //  %mul = shl i32 %1, 1, !dbg !38, !UID !39
   val binaryOp_mul7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "shl")(sign = false, Debug = false))
@@ -250,18 +251,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   /* ================================================================== *
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
-
-  //  MemCtrl.io.ReadIn(0) <> ld_2.io.memReq
-  //
-  //  ld_2.io.memResp <> MemCtrl.io.ReadOut(0)
-  //
-  //  MemCtrl.io.ReadIn(1) <> ld_6.io.memReq
-  //
-  //  ld_6.io.memResp <> MemCtrl.io.ReadOut(1)
-  //
-  //  MemCtrl.io.WriteIn(0) <> st_8.io.memReq
-  //
-  //  st_8.io.memResp <> MemCtrl.io.WriteOut(0)
 
   MemCtrl.io.accel.mem(0).MemReq <> ld_2.io.MemReq
   ld_2.io.MemResp <> MemCtrl.io.accel.mem(0).MemResp
