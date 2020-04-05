@@ -27,6 +27,7 @@ object DandelionTestDCRAccel {
   def apply(testName: String)(implicit p: Parameters): DandelionAccelDCRModule = {
     testName match {
       case "test04" => new test04DF()
+      case "test05" => new test05DF()
       case "test09" => new test09DF()
       case _ => throw new Exception(s"[EXCEPTION] The accel's name is not defined -- " +
         s"Please check the accel name you have passed: ${testName}")

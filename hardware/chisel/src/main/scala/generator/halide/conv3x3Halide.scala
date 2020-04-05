@@ -676,8 +676,8 @@ class conv3x3HalideDF(implicit p: Parameters) extends conv3x3HalideDFIO()(p) {
 
   st_37.io.memReq.ready := true.B
   st_37.io.memResp.valid := true.B
-  st_37.io.memResp.RouteID := 0.U
-  st_37.io.memResp.done := true.B
+  st_37.io.memResp.bits.RouteID := 0.U
+  st_37.io.memResp.bits.done := true.B
 
 
 

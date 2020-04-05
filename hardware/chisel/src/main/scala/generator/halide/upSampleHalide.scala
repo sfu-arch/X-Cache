@@ -726,8 +726,8 @@ class upSampleHalideDF(implicit p: Parameters) extends upSampleHalideDFIO()(p) {
 
   st_44.io.memReq.ready := true.B
   st_44.io.memResp.valid := true.B
-  st_44.io.memResp.RouteID := 0.U
-  st_44.io.memResp.done := true.B
+  st_44.io.memResp.bits.RouteID := 0.U
+  st_44.io.memResp.bits.done := true.B
 
 
 

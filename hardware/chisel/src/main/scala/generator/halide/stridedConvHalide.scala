@@ -1135,8 +1135,8 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   st_39.io.memReq.ready := true.B
   st_39.io.memResp.valid := true.B
-  st_39.io.memResp.RouteID := 0.U
-  st_39.io.memResp.done := true.B
+  st_39.io.memResp.bits.RouteID := 0.U
+  st_39.io.memResp.bits.done := true.B
 
   MemCtrl.io.ReadIn(3) <> ld_40.io.memReq
 
@@ -1155,8 +1155,8 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   st_47.io.memReq.ready := true.B
   st_47.io.memResp.valid := true.B
-  st_47.io.memResp.RouteID := 0.U
-  st_47.io.memResp.done := true.B
+  st_47.io.memResp.bits.RouteID := 0.U
+  st_47.io.memResp.bits.done := true.B
 
   MemCtrl.io.ReadIn(5) <> ld_48.io.memReq
 
@@ -1175,8 +1175,8 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   st_55.io.memReq.ready := true.B
   st_55.io.memResp.valid := true.B
-  st_55.io.memResp.RouteID := 0.U
-  st_55.io.memResp.done := true.B
+  st_55.io.memResp.bits.RouteID := 0.U
+  st_55.io.memResp.bits.done := true.B
 
   MemCtrl.io.ReadIn(7) <> ld_56.io.memReq
 
@@ -1195,8 +1195,8 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   st_64.io.memReq.ready := true.B
   st_64.io.memResp.valid := true.B
-  st_64.io.memResp.RouteID := 0.U
-  st_64.io.memResp.done := true.B
+  st_64.io.memResp.bits.RouteID := 0.U
+  st_64.io.memResp.bits.done := true.B
 
   MemCtrl.io.ReadIn(9) <> ld_65.io.memReq
 
@@ -1214,8 +1214,8 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   st_72.io.memReq.ready := true.B
   st_72.io.memResp.valid := true.B
-  st_72.io.memResp.RouteID := 0.U
-  st_72.io.memResp.done := true.B
+  st_72.io.memResp.bits.RouteID := 0.U
+  st_72.io.memResp.bits.done := true.B
 
   MemCtrl.io.ReadIn(11) <> ld_73.io.memReq
 
@@ -1234,8 +1234,8 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   st_80.io.memReq.ready := true.B
   st_80.io.memResp.valid := true.B
-  st_80.io.memResp.RouteID := 0.U
-  st_80.io.memResp.done := true.B
+  st_80.io.memResp.bits.RouteID := 0.U
+  st_80.io.memResp.bits.done := true.B
 
   MemCtrl.io.ReadIn(13) <> ld_81.io.memReq
 
@@ -1253,8 +1253,8 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   st_88.io.memReq.ready := true.B
   st_88.io.memResp.valid := true.B
-  st_88.io.memResp.RouteID := 0.U
-  st_88.io.memResp.done := true.B
+  st_88.io.memResp.bits.RouteID := 0.U
+  st_88.io.memResp.bits.done := true.B
 
   MemCtrl.io.ReadIn(15) <> ld_89.io.memReq
 
@@ -1273,8 +1273,8 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   st_96.io.memReq.ready := true.B
   st_96.io.memResp.valid := true.B
-  st_96.io.memResp.RouteID := 0.U
-  st_96.io.memResp.done := true.B
+  st_96.io.memResp.bits.RouteID := 0.U
+  st_96.io.memResp.bits.done := true.B
 
   MemCtrl.io.ReadIn(17) <> ld_97.io.memReq
 
@@ -1293,8 +1293,8 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   st_104.io.memReq.ready := true.B
   st_104.io.memResp.valid := true.B
-  st_104.io.memResp.RouteID := 0.U
-  st_104.io.memResp.done := true.B
+  st_104.io.memResp.bits.RouteID := 0.U
+  st_104.io.memResp.bits.done := true.B
 
 
 
@@ -1632,20 +1632,4 @@ class stridedConvHalideDF(implicit p: Parameters) extends stridedConvHalideDFIO(
 
   io.out <> ret_11.io.Out
 
-}
-
-import java.io.{File, FileWriter}
-
-object stridedConvHalideTop extends App {
-  val dir = new File("RTL/stridedConvHalideTop");
-  dir.mkdirs
-  implicit val p = new WithAccelConfig
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new stridedConvHalideDF()))
-
-  val verilogFile = new File(dir, s"${chirrtl.main}.v")
-  val verilogWriter = new FileWriter(verilogFile)
-  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
-  val compiledStuff = compileResult.getEmittedCircuit
-  verilogWriter.write(compiledStuff.value)
-  verilogWriter.close()
 }

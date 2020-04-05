@@ -948,8 +948,8 @@ class convLayerHalideDF(implicit p: Parameters) extends convLayerHalideDFIO()(p)
 
   st_41.io.memReq.ready := true.B
   st_41.io.memResp.valid := true.B
-  st_41.io.memResp.RouteID := 0.U
-  st_41.io.memResp.done := true.B
+  st_41.io.memResp.bits.RouteID := 0.U
+  st_41.io.memResp.bits.done := true.B
 
   MemCtrl.io.ReadIn(0) <> ld_60.io.memReq
 
@@ -1115,20 +1115,4 @@ class convLayerHalideDF(implicit p: Parameters) extends convLayerHalideDFIO()(p)
 
   io.out <> ret_13.io.Out
 
-}
-
-import java.io.{File, FileWriter}
-
-object convLayerHalideTop extends App {
-  val dir = new File("RTL/convLayerHalideTop");
-  dir.mkdirs
-  implicit val p = new WithAccelConfig
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new convLayerHalideDF()))
-
-  val verilogFile = new File(dir, s"${chirrtl.main}.v")
-  val verilogWriter = new FileWriter(verilogFile)
-  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
-  val compiledStuff = compileResult.getEmittedCircuit
-  verilogWriter.write(compiledStuff.value)
-  verilogWriter.close()
 }

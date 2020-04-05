@@ -826,8 +826,8 @@ class downSampleHalideDF(implicit p: Parameters) extends downSampleHalideDFIO()(
 
   st_28.io.memReq.ready := true.B
   st_28.io.memResp.valid := true.B
-  st_28.io.memResp.RouteID := 0.U
-  st_28.io.memResp.done := true.B
+  st_28.io.memResp.bits.RouteID := 0.U
+  st_28.io.memResp.bits.done := true.B
 
 
   MemCtrl.io.ReadIn(0) <> ld_47.io.memReq
@@ -974,20 +974,4 @@ class downSampleHalideDF(implicit p: Parameters) extends downSampleHalideDFIO()(
 
   io.out <> ret_1.io.Out
 
-}
-
-import java.io.{File, FileWriter}
-
-object downSampleHalideTop extends App {
-  val dir = new File("RTL/downSampleHalideTop");
-  dir.mkdirs
-  implicit val p = new WithAccelConfig
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new downSampleHalideDF()))
-
-  val verilogFile = new File(dir, s"${chirrtl.main}.v")
-  val verilogWriter = new FileWriter(verilogFile)
-  val compileResult = (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm))
-  val compiledStuff = compileResult.getEmittedCircuit
-  verilogWriter.write(compiledStuff.value)
-  verilogWriter.close()
 }

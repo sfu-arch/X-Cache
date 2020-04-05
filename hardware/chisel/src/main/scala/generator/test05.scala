@@ -2,46 +2,29 @@ package dandelion.generator
 
 import chipsalliance.rocketchip.config._
 import chisel3._
-import chisel3.util._
-import chisel3.Module._
-import chisel3.testers._
-import chisel3.iotesters._
 import dandelion.accel._
-import dandelion.arbiters._
-import dandelion.config._
 import dandelion.control._
-import dandelion.fpu._
-import dandelion.interfaces._
 import dandelion.junctions._
 import dandelion.loop._
 import dandelion.memory._
-import dandelion.memory.stack._
 import dandelion.node._
-import muxes._
-import org.scalatest._
-import regfile._
-import util._
 
 
 class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
+              (implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns) {
 
 
   /* ================================================================== *
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 1)
-  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2, Serialize = true))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2, Serialize = true))
-  (RWArbiter = new ReadWriteArbiter()))
+  val MemCtrl = Module(new CacheMemoryEngine(ID = 99, NumOps = 3))
 
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
+  io.MemReq <> MemCtrl.io.cache.MemReq
+  MemCtrl.io.cache.MemResp <> io.MemResp
 
   val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(2), valsArgTypes = List()))
   ArgSplitter.io.In <> io.in
-
 
 
   /* ================================================================== *
@@ -49,7 +32,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
    * ================================================================== */
 
   val Loop_0 = Module(new LoopBlockNode(NumIns = List(1), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
-
 
 
   /* ================================================================== *
@@ -63,7 +45,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val bb_for_body2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 12, NumPhi = 1, BID = 2))
 
 
-
   /* ================================================================== *
    *                   PRINTING INSTRUCTION NODES                       *
    * ================================================================== */
@@ -75,25 +56,27 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val Gep_arrayidx31 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 1)(ElementSize = 8, ArraySize = List()))
 
   //  %0 = load i32, i32* %arrayidx3, align 4, !dbg !22, !tbaa !24, !UID !28
-  val ld_2 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 2, RouteID = 0))
+  val ld_2 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 2, RouteID = 0))
 
   //  ret i32 %0, !dbg !29, !UID !30, !BB_UID !31
-  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3))
+  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3, NumBores = 1, Debug = true))
+  //  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3))
 
   //  %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ], !UID !32
-  val phiindvars_iv4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 4, Res = true, Debug = true, GuardVals = List(0, 0, 0, 0, 0, 0)))
+  val phiindvars_iv4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 4, Res = true, Debug = true,
+    GuardVals = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)))
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i64 %indvars.iv, !dbg !33, !UID !36
   val Gep_arrayidx5 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 5)(ElementSize = 8, ArraySize = List()))
 
   //  %1 = load i32, i32* %arrayidx, align 4, !dbg !33, !tbaa !24, !UID !37
-  val ld_6 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1))
+  val ld_6 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1))
 
   //  %mul = shl i32 %1, 1, !dbg !38, !UID !39
   val binaryOp_mul7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "shl")(sign = false, Debug = false))
 
   //  store i32 %mul, i32* %arrayidx, align 4, !dbg !40, !tbaa !24, !UID !41
-  val st_8 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 8, RouteID = 0))
+  val st_8 = Module(new UnTypStoreCache(NumPredOps = 0, NumSuccOps = 1, ID = 8, RouteID = 2))
 
   //  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !dbg !42, !UID !43
   val binaryOp_indvars_iv_next9 = Module(new ComputeNode(NumOuts = 2, ID = 9, opCode = "add")(sign = false, Debug = false))
@@ -105,26 +88,24 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val br_11 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 1, ID = 11))
 
 
-
   /* ================================================================== *
    *                   PRINTING CONSTANTS NODES                         *
    * ================================================================== */
 
   //i64 9
-  val const0 = Module(new ConstFastNode(value = 9, ID = 0))
+  val const0 = Module(new ConstFastNode(value = 9, ID = 11))
 
   //i64 0
-  val const1 = Module(new ConstFastNode(value = 0, ID = 1))
+  val const1 = Module(new ConstFastNode(value = 0, ID = 12))
 
   //i32 1
-  val const2 = Module(new ConstFastNode(value = 1, ID = 2))
+  val const2 = Module(new ConstFastNode(value = 1, ID = 13))
 
   //i64 1
-  val const3 = Module(new ConstFastNode(value = 1, ID = 3))
+  val const3 = Module(new ConstFastNode(value = 1, ID = 14))
 
   //i64 10
-  val const4 = Module(new ConstFastNode(value = 10, ID = 4))
-
+  val const4 = Module(new ConstFastNode(value = 10, ID = 15))
 
 
   /* ================================================================== *
@@ -132,7 +113,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
    * ================================================================== */
 
   bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
-
 
 
   /* ================================================================== *
@@ -146,11 +126,9 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   bb_for_body2.io.predicateIn(0) <> Loop_0.io.activate_loop_back
 
 
-
   /* ================================================================== *
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -164,11 +142,9 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   Loop_0.io.loopFinish(0) <> br_11.io.TrueOutput(0)
 
 
-
   /* ================================================================== *
    *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -178,7 +154,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   Loop_0.io.InLiveIn(0) <> ArgSplitter.io.Out.dataPtrs.elements("field0")(0)
 
 
-
   /* ================================================================== *
    *                   LOOP DATA LIVE-IN DEPENDENCIES                   *
    * ================================================================== */
@@ -186,17 +161,14 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   Gep_arrayidx5.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field0")(0)
 
 
-
   /* ================================================================== *
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   LOOP LIVE OUT DEPENDENCIES                       *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -206,13 +178,11 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   Loop_0.io.CarryDepenIn(0) <> binaryOp_indvars_iv_next9.io.Out(0)
 
 
-
   /* ================================================================== *
    *                   LOOP DATA CARRY DEPENDENCIES                     *
    * ================================================================== */
 
   phiindvars_iv4.io.InData(1) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
-
 
 
   /* ================================================================== *
@@ -265,8 +235,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   br_11.io.enable <> bb_for_body2.io.Out(11)
 
 
-
-
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
@@ -274,35 +242,40 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   phiindvars_iv4.io.Mask <> bb_for_body2.io.MaskBB(0)
 
 
-
   /* ================================================================== *
    *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
-
 
 
   /* ================================================================== *
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
 
-  MemCtrl.io.ReadIn(0) <> ld_2.io.memReq
+  //  MemCtrl.io.ReadIn(0) <> ld_2.io.memReq
+  //
+  //  ld_2.io.memResp <> MemCtrl.io.ReadOut(0)
+  //
+  //  MemCtrl.io.ReadIn(1) <> ld_6.io.memReq
+  //
+  //  ld_6.io.memResp <> MemCtrl.io.ReadOut(1)
+  //
+  //  MemCtrl.io.WriteIn(0) <> st_8.io.memReq
+  //
+  //  st_8.io.memResp <> MemCtrl.io.WriteOut(0)
 
-  ld_2.io.memResp <> MemCtrl.io.ReadOut(0)
+  MemCtrl.io.accel.mem(0).MemReq <> ld_2.io.MemReq
+  ld_2.io.MemResp <> MemCtrl.io.accel.mem(0).MemResp
 
-  MemCtrl.io.ReadIn(1) <> ld_6.io.memReq
+  MemCtrl.io.accel.mem(1).MemReq <> ld_6.io.MemReq
+  ld_6.io.MemResp <> MemCtrl.io.accel.mem(1).MemResp
 
-  ld_6.io.memResp <> MemCtrl.io.ReadOut(1)
-
-  MemCtrl.io.WriteIn(0) <> st_8.io.memReq
-
-  st_8.io.memResp <> MemCtrl.io.WriteOut(0)
-
+  MemCtrl.io.accel.mem(2).MemReq <> st_8.io.MemReq
+  st_8.io.MemResp <> MemCtrl.io.accel.mem(2).MemResp
 
 
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -344,13 +317,11 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   st_8.io.Out(0).ready := true.B
 
 
-
   /* ================================================================== *
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
   br_11.io.PredOp(0) <> st_8.io.SuccOp(0)
-
 
 
   /* ================================================================== *

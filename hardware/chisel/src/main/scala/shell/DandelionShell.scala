@@ -688,16 +688,18 @@ class DandelionDebugShell(accelModule: () => DandelionAccelDCRModule)
     accel.io.in.bits.dataPtrs(s"field${i}") := DataBundle(ptrs(i))
   }
 
+  /**
+   * Connecting debug ptrs
+   */
+  for( i <- 0 until numDbgs){
+    debug_module.io.addrDebug(i) := dcr.io.dcr.ptrs(numPtrs + i)
+  }
+
+
   for (i <- 0 until numVals) {
     accel.io.in.bits.dataVals(s"field${i}") := DataBundle(vals(i))
   }
 
-  /**
-    * Connecting debug ptrs
-    */
-  for( i <- 0 until numDbgs){
-    debug_module.io.addrDebug(i) := dcr.io.dcr.ptrs(numPtrs + i)
-  }
 
   accel.io.in.bits.enable := ControlBundle.debug()
 
@@ -743,7 +745,11 @@ class DandelionDebugShell(accelModule: () => DandelionAccelDCRModule)
         printf(p"Ptrs: ")
         ptrs.zipWithIndex.foreach(t => printf(p"ptr(${t._2}): ${t._1}, "))
         printf(p"\nVals: ")
-        vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): ${t._1}, "))
+        if(numVals > 0) {
+          vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): ${t._1}, "))
+        } else{
+          printf("N/A")
+        }
         printf(p"\n")
         accel.io.in.valid := true.B
         when(accel.io.in.fire) {
@@ -757,7 +763,7 @@ class DandelionDebugShell(accelModule: () => DandelionAccelDCRModule)
       }
     }
     is(sFlush) {
-      when(isDMEAck && cache_done) {
+      when(cache_done && isDMEAck()) {
         state := sDone
       }
     }
