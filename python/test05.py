@@ -23,7 +23,7 @@ a_s = dsim.DArray(val_a, dsim.DArray.DType.DWord)
 # Debug container
 b = np.zeros(20)
 b_s = dsim.DArray(b, dsim.DArray.DType.DWord)
-c = np.zeros(20)
+c = np.zeros(30)
 c_s = dsim.DArray(c, dsim.DArray.DType.DWord)
 
 events = dsim.sim(ptrs = [a_s], debugs=[b_s, c_s], vars= [], numRets=1, numEvents=1, hwlib = hw_lib_path)

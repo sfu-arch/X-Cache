@@ -71,7 +71,8 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
 
   //  %1 = load i32, i32* %arrayidx, align 4, !dbg !33, !tbaa !24, !UID !37
   val ld_6 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1, Debug = true,
-    GuardVals = List(4096, 4104, 4112, 4120, 4120, 4128, 4136, 4144, 4152, 4160, 4168)))
+    GuardAddress = List(4096, 4104, 4112, 4120, 4128, 4136, 4144, 4152, 4160, 4168),
+    GuardData = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)))
 
   //  %mul = shl i32 %1, 1, !dbg !38, !UID !39
   val binaryOp_mul7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "shl")(sign = false, Debug = false))
