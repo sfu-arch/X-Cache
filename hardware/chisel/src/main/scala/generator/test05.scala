@@ -63,7 +63,7 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   //  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3))
 
   //  %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ], !UID !32
-  val phiindvars_iv4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 4, Res = true, Debug = false,
+  val phiindvars_iv4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 4, Res = true, Debug = true,
     GuardVals = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)))
 
   //  %arrayidx = getelementptr inbounds i32, i32* %a, i64 %indvars.iv, !dbg !33, !UID !36
