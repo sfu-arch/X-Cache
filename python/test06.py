@@ -23,7 +23,7 @@ elif platform.system() == 'Darwin':
 val_a = 50
 val_b = 5
 
-events = dsim.sim(ptrs = [  ], vars= [val_a, val_b], numRets=1, numEvents=1, hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [  ], vars= [val_a, val_b], debugs = [], numRets=1, numEvents=1, hwlib = hw_lib_path)
 
 print("Cycle: " + str(events[0]))
 

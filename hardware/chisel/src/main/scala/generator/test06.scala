@@ -23,8 +23,8 @@ import regfile._
 import util._
 
 
-class test06DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns){
+class test06DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
+			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
   /* ================================================================== *
@@ -35,8 +35,8 @@ class test06DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
   io.MemReq <> DontCare
   io.MemResp <> DontCare
 
-  val InputSplitter = Module(new SplitCallNew(List(3, 2)))
-  InputSplitter.io.In <> io.in
+  val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(), valsArgTypes = List(3, 2)))
+  ArgSplitter.io.In <> io.in
 
 
 
@@ -152,7 +152,7 @@ class test06DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
 
   bb_for_body_preheader1.io.predicateIn(0) <> br_1.io.TrueOutput(0)
 
@@ -202,9 +202,9 @@ class test06DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field1")(0)
+  Loop_0.io.InLiveIn(0) <> ArgSplitter.io.Out.dataVals.elements("field1")(0)
 
-  Loop_0.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field0")(0)
+  Loop_0.io.InLiveIn(1) <> ArgSplitter.io.Out.dataVals.elements("field0")(0)
 
 
 
@@ -242,11 +242,11 @@ class test06DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    *                   LOOP CARRY DEPENDENCIES                          *
    * ================================================================== */
 
-  Loop_0.io.CarryDepenIn(0) <> binaryOp_b_addr_115.io.Out(1)
+  Loop_0.io.CarryDepenIn(0) <> binaryOp_a_addr_113.io.Out(1)
 
   Loop_0.io.CarryDepenIn(1) <> binaryOp_inc16.io.Out(0)
 
-  Loop_0.io.CarryDepenIn(2) <> binaryOp_a_addr_113.io.Out(1)
+  Loop_0.io.CarryDepenIn(2) <> binaryOp_b_addr_115.io.Out(1)
 
 
 
@@ -254,11 +254,11 @@ class test06DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    *                   LOOP DATA CARRY DEPENDENCIES                     *
    * ================================================================== */
 
-  phib_addr_0179.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
+  phia_addr_01610.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
 
   phii_0188.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field1")(0)
 
-  phia_addr_01610.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field2")(0)
+  phib_addr_0179.io.InData(0) <> Loop_0.io.CarryDepenOut.elements("field2")(0)
 
 
 
@@ -419,11 +419,17 @@ class test06DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
 
   br_18.io.CmpIO <> icmp_cmp17.io.Out(0)
 
-  icmp_cmp150.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(1)
+  icmp_cmp150.io.LeftIO <> ArgSplitter.io.Out.dataVals.elements("field0")(1)
 
-  phia_addr_0_lcssa4.io.InData(0) <> InputSplitter.io.Out.data.elements("field0")(2)
+  phia_addr_0_lcssa4.io.InData(0) <> ArgSplitter.io.Out.dataVals.elements("field0")(2)
 
-  phib_addr_0_lcssa5.io.InData(0) <> InputSplitter.io.Out.data.elements("field1")(1)
+  phib_addr_0_lcssa5.io.InData(0) <> ArgSplitter.io.Out.dataVals.elements("field1")(1)
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING DATA DEPENDENCIES                     *
+   * ================================================================== */
 
 
 
