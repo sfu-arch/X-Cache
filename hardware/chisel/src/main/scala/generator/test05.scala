@@ -59,7 +59,7 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val ld_2 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 2, RouteID = 0))
 
   //  ret i32 %0, !dbg !29, !UID !30, !BB_UID !31
-  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3, NumBores = 1, Debug = true))
+  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3, NumBores = 3, Debug = true))
   //  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3))
 
   //  %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ], !UID !32
@@ -78,7 +78,9 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val binaryOp_mul7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "shl")(sign = false, Debug = false))
 
   //  store i32 %mul, i32* %arrayidx, align 4, !dbg !40, !tbaa !24, !UID !41
-  val st_8 = Module(new UnTypStoreCache(NumPredOps = 0, NumSuccOps = 1, ID = 8, RouteID = 2))
+  val st_8 = Module(new UnTypStoreCache(NumPredOps = 0, NumSuccOps = 1, ID = 8, RouteID = 2, Debug = true,
+    GuardAddress = List(4096, 4104, 4112, 4120, 4128, 4136, 4144, 4152, 4160, 4168),
+  ))
 
   //  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !dbg !42, !UID !43
   val binaryOp_indvars_iv_next9 = Module(new ComputeNode(NumOuts = 2, ID = 9, opCode = "add")(sign = false, Debug = false))
