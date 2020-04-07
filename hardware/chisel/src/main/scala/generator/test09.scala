@@ -31,16 +31,12 @@ class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 2, NWrites = 1)
-  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2, Serialize = true))
-  (RControl = new ReadMemoryController(NumOps = 2, BaseSize = 2, NumEntries = 2, Serialize = true))
-  (RWArbiter = new ReadWriteArbiter()))
+  val MemCtrl = Module(new CacheMemoryEngine(ID = 0, NumRead = 2, NumWrite = 1))
 
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
-
-  val PtrsInSplitter= Module(new SplitCallDCR(ptrsArgTypes = List(1, 1, 1), valsArgTypes = List()))
-  PtrsInSplitter.io.In <> io.in
+  io.MemReq <> MemCtrl.io.cache.MemReq
+  MemCtrl.io.cache.MemResp <> io.MemResp
+  val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(1, 1, 1), valsArgTypes = List()))
+  ArgSplitter.io.In <> io.in
 
 
 
@@ -81,13 +77,13 @@ class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
   val Gep_arrayidx3 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 3)(ElementSize = 8, ArraySize = List()))
 
   //  %0 = load i32, i32* %arrayidx, align 4, !dbg !30, !tbaa !34, !UID !38
-  val ld_4 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 4, RouteID = 0))
+  val ld_4 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 4, RouteID = 0))
 
   //  %arrayidx2 = getelementptr inbounds i32, i32* %b, i64 %indvars.iv, !dbg !39, !UID !40
   val Gep_arrayidx25 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 5)(ElementSize = 8, ArraySize = List()))
 
   //  %1 = load i32, i32* %arrayidx2, align 4, !dbg !39, !tbaa !34, !UID !41
-  val ld_6 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1))
+  val ld_6 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 6, RouteID = 1))
 
   //  %add = add i32 %1, %0, !dbg !42, !UID !43
   val binaryOp_add7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "add")(sign = false, Debug = false))
@@ -96,7 +92,7 @@ class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
   val Gep_arrayidx48 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 8)(ElementSize = 8, ArraySize = List()))
 
   //  store i32 %add, i32* %arrayidx4, align 4, !dbg !46, !tbaa !34, !UID !47
-  val st_9 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 1, ID = 9, RouteID = 0))
+  val st_9 = Module(new UnTypStoreCache(NumPredOps = 0, NumSuccOps = 1, ID = 9, RouteID = 2))
 
   //  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !dbg !48, !UID !49
   val binaryOp_indvars_iv_next10 = Module(new ComputeNode(NumOuts = 2, ID = 10, opCode = "add")(sign = false, Debug = false))
@@ -131,7 +127,7 @@ class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> PtrsInSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
 
 
 
@@ -175,11 +171,11 @@ class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
    *                   LOOP INPUT DATA DEPENDENCIES                     *
    * ================================================================== */
 
-  Loop_0.io.InLiveIn(0) <> PtrsInSplitter.io.Out.dataPtrs.elements("field0")(0)
+  Loop_0.io.InLiveIn(0) <> ArgSplitter.io.Out.dataPtrs.elements("field0")(0)
 
-  Loop_0.io.InLiveIn(1) <> PtrsInSplitter.io.Out.dataPtrs.elements("field1")(0)
+  Loop_0.io.InLiveIn(1) <> ArgSplitter.io.Out.dataPtrs.elements("field1")(0)
 
-  Loop_0.io.InLiveIn(2) <> PtrsInSplitter.io.Out.dataPtrs.elements("field2")(0)
+  Loop_0.io.InLiveIn(2) <> ArgSplitter.io.Out.dataPtrs.elements("field2")(0)
 
 
 
@@ -294,17 +290,17 @@ class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
 
-  MemCtrl.io.ReadIn(0) <> ld_4.io.memReq
+  MemCtrl.io.rd.mem(0).MemReq <> ld_4.io.MemReq
 
-  ld_4.io.memResp <> MemCtrl.io.ReadOut(0)
+  ld_4.io.MemResp <> MemCtrl.io.rd.mem(0).MemResp
 
-  MemCtrl.io.ReadIn(1) <> ld_6.io.memReq
+  MemCtrl.io.rd.mem(1).MemReq <> ld_6.io.MemReq
 
-  ld_6.io.memResp <> MemCtrl.io.ReadOut(1)
+  ld_6.io.MemResp <> MemCtrl.io.rd.mem(1).MemResp
 
-  MemCtrl.io.WriteIn(0) <> st_9.io.memReq
+  MemCtrl.io.wr.mem(0).MemReq <> st_9.io.MemReq
 
-  st_9.io.memResp <> MemCtrl.io.WriteOut(0)
+  st_9.io.MemResp <> MemCtrl.io.wr.mem(0).MemResp
 
 
 
@@ -359,6 +355,7 @@ class test09DF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
    * ================================================================== */
 
   br_12.io.PredOp(0) <> st_9.io.SuccOp(0)
+
 
 
   /* ================================================================== *

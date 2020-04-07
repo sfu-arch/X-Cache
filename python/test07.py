@@ -21,7 +21,7 @@ val_a = list(range(0, 9))
 a_s = dsim.DArray(val_a, dsim.DArray.DType.DWord)
 val_n = 3
 
-events = dsim.sim(ptrs = [a_s], vars= [val_n], numRets=1, numEvents=1, hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [a_s], vars= [val_n], debugs=[],numRets=1, numEvents=1, hwlib = hw_lib_path)
 
 print("Cycle: " + str(events[0]))
 print(a_s.getData())

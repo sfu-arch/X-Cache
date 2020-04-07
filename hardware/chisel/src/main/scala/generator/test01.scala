@@ -1,5 +1,6 @@
 package dandelion.generator
 
+import chipsalliance.rocketchip.config._
 import chisel3._
 import chisel3.util._
 import chisel3.Module._
@@ -7,7 +8,6 @@ import chisel3.testers._
 import chisel3.iotesters._
 import dandelion.accel._
 import dandelion.arbiters._
-import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.control._
 import dandelion.fpu._
@@ -23,8 +23,8 @@ import regfile._
 import util._
 
 
-class test01DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns){
+class test01DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
+			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
   /* ================================================================== *
@@ -35,8 +35,8 @@ class test01DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
   io.MemReq <> DontCare
   io.MemResp <> DontCare
 
-  val InputSplitter = Module(new SplitCallNew(List(1, 1)))
-  InputSplitter.io.In <> io.in
+  val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(), valsArgTypes = List(1, 1)))
+  ArgSplitter.io.In <> io.in
 
 
 
@@ -76,7 +76,7 @@ class test01DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
 
 
 
@@ -182,9 +182,15 @@ class test01DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
 
   ret_1.io.In.data("field0") <> binaryOp_mul0.io.Out(0)
 
-  binaryOp_mul0.io.RightIO <> InputSplitter.io.Out.data.elements("field0")(0)
+  binaryOp_mul0.io.RightIO <> ArgSplitter.io.Out.dataVals.elements("field0")(0)
 
-  binaryOp_mul0.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
+  binaryOp_mul0.io.LeftIO <> ArgSplitter.io.Out.dataVals.elements("field1")(0)
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING DATA DEPENDENCIES                     *
+   * ================================================================== */
 
 
 

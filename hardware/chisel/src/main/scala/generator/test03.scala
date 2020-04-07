@@ -23,8 +23,8 @@ import regfile._
 import util._
 
 
-class test03DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns){
+class test03DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
+			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
   /* ================================================================== *
@@ -35,8 +35,8 @@ class test03DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
   io.MemReq <> DontCare
   io.MemResp <> DontCare
 
-  val InputSplitter = Module(new SplitCallNew(List(3, 3)))
-  InputSplitter.io.In <> io.in
+  val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(), valsArgTypes = List(3, 3)))
+  ArgSplitter.io.In <> io.in
 
 
 
@@ -59,7 +59,7 @@ class test03DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    * ================================================================== */
 
   //  %cmp = icmp slt i32 %b, %a, !dbg !17, !UID !19
-  val icmp_cmp0 = Module(new ComputeNode(NumOuts = 2, ID = 0, opCode = "ult")(sign = false, Debug = false))
+  val icmp_cmp0 = Module(new ComputeNode(NumOuts = 2, ID = 0, opCode = "slt")(sign = true, Debug = false))
 
   //  %sub = select i1 %cmp, i32 %b, i32 0, !dbg !20, !UID !21
   val select_sub1 = Module(new SelectNode(NumOuts = 1, ID = 1)(fast = false))
@@ -97,7 +97,7 @@ class test03DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
 
 
 
@@ -238,17 +238,23 @@ class test03DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
 
   ret_6.io.In.data("field0") <> binaryOp_mul5.io.Out(0)
 
-  icmp_cmp0.io.RightIO <> InputSplitter.io.Out.data.elements("field0")(0)
+  icmp_cmp0.io.RightIO <> ArgSplitter.io.Out.dataVals.elements("field0")(0)
 
-  binaryOp_a_addr_02.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(1)
+  binaryOp_a_addr_02.io.LeftIO <> ArgSplitter.io.Out.dataVals.elements("field0")(1)
 
-  select_sub13.io.InData2 <> InputSplitter.io.Out.data.elements("field0")(2)
+  select_sub13.io.InData2 <> ArgSplitter.io.Out.dataVals.elements("field0")(2)
 
-  icmp_cmp0.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
+  icmp_cmp0.io.LeftIO <> ArgSplitter.io.Out.dataVals.elements("field1")(0)
 
-  select_sub1.io.InData1 <> InputSplitter.io.Out.data.elements("field1")(1)
+  select_sub1.io.InData1 <> ArgSplitter.io.Out.dataVals.elements("field1")(1)
 
-  binaryOp_b_addr_04.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(2)
+  binaryOp_b_addr_04.io.LeftIO <> ArgSplitter.io.Out.dataVals.elements("field1")(2)
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING DATA DEPENDENCIES                     *
+   * ================================================================== */
 
 
 

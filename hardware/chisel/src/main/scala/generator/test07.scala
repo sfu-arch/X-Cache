@@ -23,24 +23,20 @@ import regfile._
 import util._
 
 
-class test07DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns){
+class test07DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(32), Returns: Seq[Int] = List(32))
+			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
   /* ================================================================== *
    *                   PRINTING MEMORY MODULES                          *
    * ================================================================== */
 
-  val MemCtrl = Module(new UnifiedController(ID = 0, Size = 32, NReads = 1, NWrites = 1)
-  (WControl = new WriteMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
-  (RControl = new ReadMemoryController(NumOps = 1, BaseSize = 2, NumEntries = 2))
-  (RWArbiter = new ReadWriteArbiter()))
+  val MemCtrl = Module(new CacheMemoryEngine(ID = 0, NumRead = 1, NumWrite = 1))
 
-  io.MemReq <> MemCtrl.io.MemReq
-  MemCtrl.io.MemResp <> io.MemResp
-
-  val InputSplitter = Module(new SplitCallNew(List(1, 3)))
-  InputSplitter.io.In <> io.in
+  io.MemReq <> MemCtrl.io.cache.MemReq
+  MemCtrl.io.cache.MemResp <> io.MemResp
+  val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(1), valsArgTypes = List(3)))
+  ArgSplitter.io.In <> io.in
 
 
 
@@ -130,13 +126,13 @@ class test07DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
   val Gep_arrayidx16 = Module(new GepNode(NumIns = 1, NumOuts = 2, ID = 16)(ElementSize = 8, ArraySize = List()))
 
   //  %1 = load i32, i32* %arrayidx, align 4, !dbg !60, !tbaa !63, !UID !67
-  val ld_17 = Module(new UnTypLoad(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 17, RouteID = 0))
+  val ld_17 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 17, RouteID = 0))
 
   //  %mul5 = shl i32 %1, 1, !dbg !68, !UID !69
   val binaryOp_mul518 = Module(new ComputeNode(NumOuts = 1, ID = 18, opCode = "shl")(sign = false, Debug = false))
 
   //  store i32 %mul5, i32* %arrayidx, align 4, !dbg !70, !tbaa !63, !UID !71
-  val st_19 = Module(new UnTypStore(NumPredOps = 0, NumSuccOps = 0, ID = 19, RouteID = 0))
+  val st_19 = Module(new UnTypStoreCache(NumPredOps = 0, NumSuccOps = 1, ID = 19, RouteID = 1))
 
   //  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !dbg !72, !UID !73
   val binaryOp_indvars_iv_next20 = Module(new ComputeNode(NumOuts = 2, ID = 20, opCode = "add")(sign = false, Debug = false))
@@ -145,7 +141,7 @@ class test07DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
   val icmp_exitcond21 = Module(new ComputeNode(NumOuts = 1, ID = 21, opCode = "eq")(sign = false, Debug = false))
 
   //  br i1 %exitcond, label %for.cond.cleanup3, label %for.body4, !dbg !45, !llvm.loop !76, !UID !78, !BB_UID !79
-  val br_22 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 22))
+  val br_22 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 1, ID = 22))
 
 
 
@@ -180,7 +176,7 @@ class test07DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
 
   bb_for_body_lr_ph1.io.predicateIn(0) <> br_1.io.FalseOutput(0)
 
@@ -248,9 +244,9 @@ class test07DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
 
   Loop_0.io.InLiveIn(2) <> Loop_1.io.OutLiveIn.elements("field2")(0)
 
-  Loop_1.io.InLiveIn(0) <> InputSplitter.io.Out.data.elements("field1")(0)
+  Loop_1.io.InLiveIn(0) <> ArgSplitter.io.Out.dataVals.elements("field0")(0)
 
-  Loop_1.io.InLiveIn(1) <> InputSplitter.io.Out.data.elements("field0")(0)
+  Loop_1.io.InLiveIn(1) <> ArgSplitter.io.Out.dataPtrs.elements("field0")(0)
 
   Loop_1.io.InLiveIn(2) <> sextwide_trip_count2.io.Out(0)
 
@@ -413,13 +409,13 @@ class test07DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    *                   CONNECTING MEMORY CONNECTIONS                    *
    * ================================================================== */
 
-  MemCtrl.io.ReadIn(0) <> ld_17.io.memReq
+  MemCtrl.io.rd.mem(0).MemReq <> ld_17.io.MemReq
 
-  ld_17.io.memResp <> MemCtrl.io.ReadOut(0)
+  ld_17.io.MemResp <> MemCtrl.io.rd.mem(0).MemResp
 
-  MemCtrl.io.WriteIn(0) <> st_19.io.memReq
+  MemCtrl.io.wr.mem(0).MemReq <> st_19.io.MemReq
 
-  st_19.io.memResp <> MemCtrl.io.WriteOut(0)
+  st_19.io.MemResp <> MemCtrl.io.wr.mem(0).MemResp
 
 
 
@@ -479,11 +475,19 @@ class test07DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
 
   br_22.io.CmpIO <> icmp_exitcond21.io.Out(0)
 
-  icmp_cmp250.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(1)
+  icmp_cmp250.io.LeftIO <> ArgSplitter.io.Out.dataVals.elements("field0")(1)
 
-  sextwide_trip_count2.io.Input <> InputSplitter.io.Out.data.elements("field1")(2)
+  sextwide_trip_count2.io.Input <> ArgSplitter.io.Out.dataVals.elements("field0")(2)
 
   st_19.io.Out(0).ready := true.B
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING DATA DEPENDENCIES                     *
+   * ================================================================== */
+
+  br_22.io.PredOp(0) <> st_19.io.SuccOp(0)
 
 
 

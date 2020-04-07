@@ -12,7 +12,7 @@ elif platform.system() == 'Darwin':
     hw_lib_path = "./hardware/chisel/build/libhw.dylib"
 
 
-events = dsim.sim(ptrs = [  ], vars= [5, 3], numRets=1, numEvents=1, hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [  ], vars= [5, 3], debugs=[], numRets=1, numEvents=1, hwlib = hw_lib_path)
 
 print("Cycle: " + str(events[0]))
 

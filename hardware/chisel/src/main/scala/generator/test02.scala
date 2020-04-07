@@ -23,8 +23,8 @@ import regfile._
 import util._
 
 
-class test02DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelModule(ArgsIn, Returns){
+class test02DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
+			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
   /* ================================================================== *
@@ -35,8 +35,8 @@ class test02DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
   io.MemReq <> DontCare
   io.MemResp <> DontCare
 
-  val InputSplitter = Module(new SplitCallNew(List(2, 1)))
-  InputSplitter.io.In <> io.in
+  val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(), valsArgTypes = List(2, 1)))
+  ArgSplitter.io.In <> io.in
 
 
 
@@ -94,7 +94,7 @@ class test02DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
-  bb_entry0.io.predicateIn(0) <> InputSplitter.io.Out.enable
+  bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
 
 
 
@@ -227,11 +227,17 @@ class test02DF(ArgsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
 
   ret_4.io.In.data("field0") <> select_spec_select3.io.Out(0)
 
-  binaryOp_div_mask0.io.LeftIO <> InputSplitter.io.Out.data.elements("field0")(0)
+  binaryOp_div_mask0.io.LeftIO <> ArgSplitter.io.Out.dataVals.elements("field0")(0)
 
-  binaryOp_add2.io.RightIO <> InputSplitter.io.Out.data.elements("field0")(1)
+  binaryOp_add2.io.RightIO <> ArgSplitter.io.Out.dataVals.elements("field0")(1)
 
-  binaryOp_add2.io.LeftIO <> InputSplitter.io.Out.data.elements("field1")(0)
+  binaryOp_add2.io.LeftIO <> ArgSplitter.io.Out.dataVals.elements("field1")(0)
+
+
+
+  /* ================================================================== *
+   *                   CONNECTING DATA DEPENDENCIES                     *
+   * ================================================================== */
 
 
 

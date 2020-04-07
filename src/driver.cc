@@ -254,8 +254,8 @@ class Device {
     }
 
     // wait cycles
-    // uint32_t wait_cycles_{100000000};
-    uint32_t wait_cycles_{400};
+     uint32_t wait_cycles_{10000000};
+    //uint32_t wait_cycles_{400};
     // DPI loader
     DPILoader *loader_{nullptr};
     // DPI Module
