@@ -1,0 +1,18 @@
+{
+    "Accel" : {
+        "nameAccel" : "stencil",
+        "numPtrs"  : 2,
+        "numDbgs"  : 0,
+        "numVals"  : 0,
+        "numRets"  : 0,
+        "numEnts"  : 1,
+        "numCtrls" : 1,
+        "dataLen"  : 64,
+        "boreIDs"  : [],
+
+        "Build" : {
+            "printLog" : true,
+            "cacheLog" : false
+        }
+    }
+}

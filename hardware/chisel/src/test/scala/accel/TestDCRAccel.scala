@@ -48,7 +48,7 @@ object DandelionTestDCRAccel {
  */
 abstract class DandelionTestDebugDCRAccel[T <: DandelionAccelDebugModule](implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams
 
-object DandelionTestDebugDCRAccel{
+object DandelionTestDebugDCRAccel {
 
   /**
    * Please make sure to add your new test case in the apply function
@@ -59,6 +59,8 @@ object DandelionTestDebugDCRAccel{
    */
   def apply(testName: String, numDbgs: Int, boreIDsList: Seq[Int])(implicit p: Parameters): (() => DandelionAccelDCRModule, () => DandelionAccelDebugModule) = {
     testName match {
+
+      //TestCases
       case "test01" => (() => new test01DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "test02" => (() => new test02DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "test03" => (() => new test03DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
@@ -68,7 +70,12 @@ object DandelionTestDebugDCRAccel{
       case "test07" => (() => new test07DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "test08" => (() => new test08DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "test09" => (() => new test09DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+
+      //Real examples
       case "relu" => (() => new reluDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "stencil" => (() => new stencilDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+
+
       case _ => throw new Exception(s"[EXCEPTION] The accel's name is not defined -- " +
         s"Please check the accel name you have passed: ${testName}")
     }
