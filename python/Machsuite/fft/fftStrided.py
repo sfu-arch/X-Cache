@@ -29,9 +29,7 @@ def fftStrided(real, img, real_twid, img_twid):
     while span:
         odd = span
         while odd < FFT_SIZE:
-            print("bef {}".format(odd))
             odd = odd | span
-            print("aft {}".format(odd))
             even  = odd ^ span
 
             temp = real[even] + real[odd]
@@ -57,10 +55,6 @@ def fftStrided(real, img, real_twid, img_twid):
     return (real, img)
 
 
-
-
-# if len(data_x) == sum([1 for i, j in zip(data_x, check_data[0]) if isclose(i,j)]):
-    # if len(data_y) == sum([1 for i, j in zip(data_y, check_data[1]) if isclose(i,j)]):
 
 
 # Input matrix
@@ -89,15 +83,12 @@ cm.dump_output('sim_real.data', real_s.getData_Double())
 cm.dump_output('sim_img.data', img_s.getData_Double())
 
 
-if len(data_x) == sum([1 for i, j in zip(real_s.getData_Double(), check_data[0]) if isclose(i,j)]):
-    if len(data_y) == sum([1 for i, j in zip(img_s.getData_Double(), check_data[1]) if isclose(i,j)]):
-        print("Sucess!")
+if len(check_data[0]) == sum([1 for i, j in zip(real_s.getData_Double(), data_x) if isclose(i,j)]):
+    print("Sucess real numbers match!")
+    if len(check_data[1]) == sum([1 for i, j in zip(img_s.getData_Double(), data_y) if isclose(i,j)]):
+        print("Sucess img numbers match!")
+    else:
+        print("Failed img numbers doesn't match")
 else:
-    print("Failed!")
+    print("Failed real number doesn't match!")
     
-
-# if len(res) == sum([1 for i, j in zip(mat_res_s.getData_Double(), check_data[0]) if isclose(i,j)]):
-    # print("Sucess!")
-# else:
-    # print("Failed!")
-
