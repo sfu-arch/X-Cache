@@ -78,6 +78,7 @@ object DandelionTestDebugDCRAccel {
       case "conv2d" => (() => new conv2dDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "conv2dUnroll" => (() => new conv2dUnrollDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "spmvCRS" => (() => new spmvCRSDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "fftStrided" => (() => new fftDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
 
 
       case _ => throw new Exception(s"[EXCEPTION] The accel's name is not defined -- " +
