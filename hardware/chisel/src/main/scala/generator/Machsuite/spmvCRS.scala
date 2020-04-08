@@ -192,10 +192,10 @@ class spmvCRSDF(PtrsIn: Seq[Int] = List(32, 32, 32, 32, 32), ValsIn: Seq[Int] = 
   val const3 = Module(new ConstFastNode(value = 494, ID = 3))
 
   //double 0.000000e+00
-  val constf0 = Module(new ConstNode(value = 0x0, ID = 0))
+  val constf0 = Module(new ConstFastNode(value = 0x0, ID = 0))
 
   //double 0.000000e+00
-  val constf1 = Module(new ConstNode(value = 0x0, ID = 1))
+  val constf1 = Module(new ConstFastNode(value = 0x0, ID = 1))
 
 
 
@@ -534,9 +534,9 @@ class spmvCRSDF(PtrsIn: Seq[Int] = List(32, 32, 32, 32, 32), ValsIn: Seq[Int] = 
 
   icmp_exitcond3930.io.RightIO <> const3.io.Out
 
-  phisum_03413.io.InData(0) <> constf0.io.Out(0)
+  phisum_03413.io.InData(0) <> constf0.io.Out
 
-  phisum_0_lcssa27.io.InData(0) <> constf1.io.Out(0)
+  phisum_0_lcssa27.io.InData(0) <> constf1.io.Out
 
   Gep_arrayidx2.io.idx(0) <> phiindvars_iv371.io.Out(0)
 
