@@ -74,6 +74,8 @@ object DandelionTestDebugDCRAccel {
       //Real examples
       case "relu" => (() => new reluDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "stencil" => (() => new stencilDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "saxpy" => (() => new saxpyDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "conv2d" => (() => new conv2dDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
 
 
       case _ => throw new Exception(s"[EXCEPTION] The accel's name is not defined -- " +
