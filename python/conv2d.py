@@ -46,13 +46,13 @@ img_out = np.zeros(IMG_SIZE * IMG_SIZE, dtype = int)
 
 
 # Input matrix
-img_in_s = dsim.DArray(img_in, dsim.DArray.DType.DWord)
+img_in_s = dsim.DArray(img_in, dsim.DArray.DType.UInt64)
 
 # Coeffs
-coeffs_s = dsim.DArray(coeffs, dsim.DArray.DType.DWord)
+coeffs_s = dsim.DArray(coeffs, dsim.DArray.DType.UInt64)
 
 # Output matrix
-img_out_s = dsim.DArray(img_out, dsim.DArray.DType.DWord)
+img_out_s = dsim.DArray(img_out, dsim.DArray.DType.UInt64)
 
 
 events = dsim.sim(ptrs = [img_in_s, img_out_s, coeffs_s], vars= [IMG_SIZE, IMG_SIZE, 5, 8], debugs=[], numRets=0, numEvents=1, hwlib = hw_lib_path)
@@ -62,13 +62,13 @@ res = conv2d(img_in, img_out.tolist(), coeffs, IMG_SIZE, IMG_SIZE, 5, 8)
 
 
 print("Cycle: " + str(events[0]))
-if list(img_out_s.getData()) == res:
+if list(img_out_s.getData_UInt64()) == res:
     print("Input data:")
     print([*img_in])
     print("stencil's output:")
     print(res)
     print("Success!")
 else:
-    print(a_s.getData())
-    print(b_s.getData())
+    print(a_s.getData_UInt64())
+    print(b_s.getData_UInt64())
     print("Failed!")

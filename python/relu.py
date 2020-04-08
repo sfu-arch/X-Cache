@@ -22,17 +22,17 @@ N = 8
 
 # Input matrix
 a = initData(N)
-a_s = dsim.DArray(a, dsim.DArray.DType.DWord)
+a_s = dsim.DArray(a, dsim.DArray.DType.UInt64)
 
 # Output matrix
 b = np.zeros(N)
-b_s = dsim.DArray(b, dsim.DArray.DType.DWord)
+b_s = dsim.DArray(b, dsim.DArray.DType.UInt64)
 
 
 events = dsim.sim(ptrs = [a_s, b_s], vars= [N], debugs=[], numRets=0, numEvents=1, hwlib = hw_lib_path)
 
 print("Cycle: " + str(events[0]))
-if list(b_s.getData()) == relu(a):
+if list(b_s.getData_UInt64()) == relu(a):
     print("Input mat:")
     print(a)
     print("Relu's output:")

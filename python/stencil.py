@@ -41,11 +41,11 @@ elif platform.system() == 'Darwin':
 
 # Input matrix
 a = initData(num_rows, num_cols)
-a_s = dsim.DArray(a, dsim.DArray.DType.DWord)
+a_s = dsim.DArray(a, dsim.DArray.DType.UInt64)
 
 # Output matrix
 b = np.zeros((num_rows, num_cols), dtype = int)
-b_s = dsim.DArray(b, dsim.DArray.DType.DWord)
+b_s = dsim.DArray(b, dsim.DArray.DType.UInt64)
 
 
 
@@ -58,13 +58,13 @@ events = dsim.sim(ptrs = [a_s, b_s], vars= [], debugs=[], numRets=0, numEvents=1
 correct_res = stencil(flatten(a.tolist()), flatten(b.tolist()))
 
 print("Cycle: " + str(events[0]))
-if list(b_s.getData()) == correct_res:
+if list(b_s.getData_UInt64()) == correct_res:
     print("Input mat:")
     print(a)
     print("stencil's output:")
     print(correct_res)
     print("Success!")
 else:
-    print(a_s.getData())
-    print(b_s.getData())
+    print(a_s.getData_UInt64())
+    print(b_s.getData_UInt64())
     print("Failed!")

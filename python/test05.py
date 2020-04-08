@@ -17,25 +17,25 @@ elif platform.system() == 'Darwin':
 
 val_a = list(range(1, 11))
 print(val_a)
-a_s = dsim.DArray(val_a, dsim.DArray.DType.DWord)
+a_s = dsim.DArray(val_a, dsim.DArray.DType.UInt64)
 
 
 # Debug container
 b = np.zeros(20)
-b_s = dsim.DArray(b, dsim.DArray.DType.DWord)
+b_s = dsim.DArray(b, dsim.DArray.DType.UInt64)
 c = np.zeros(30)
-c_s = dsim.DArray(c, dsim.DArray.DType.DWord)
+c_s = dsim.DArray(c, dsim.DArray.DType.UInt64)
 d = np.zeros(30)
-d_s = dsim.DArray(d, dsim.DArray.DType.DWord)
+d_s = dsim.DArray(d, dsim.DArray.DType.UInt64)
 
 events = dsim.sim(ptrs = [a_s], debugs=[b_s, c_s, d_s], vars= [], numRets=1, numEvents=1, hwlib = hw_lib_path)
 
 print("Cycle: " + str(events[0]))
 print("Output array:\t")
-print(list(a_s.getData()))
+print(list(a_s.getData_UInt64()))
 print(test05(val_a))
 
 print("Debug output:")
-print([ hex(int(x) & ((1 << 64) - 1)) for x in b_s.getData()])
-print([ hex(int(x) & ((1 << 64) - 1)) for x in c_s.getData()])
-print([ hex(int(x) & ((1 << 64) - 1)) for x in d_s.getData()])
+print([ hex(int(x) & ((1 << 64) - 1)) for x in b_s.getData_UInt64()])
+print([ hex(int(x) & ((1 << 64) - 1)) for x in c_s.getData_UInt64()])
+print([ hex(int(x) & ((1 << 64) - 1)) for x in d_s.getData_UInt64()])

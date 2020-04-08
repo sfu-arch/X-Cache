@@ -24,11 +24,11 @@ elif platform.system() == 'Darwin':
 
 # Input matrix
 a = initData(255, array_size)
-a_s = dsim.DArray(a, dsim.DArray.DType.DWord)
+a_s = dsim.DArray(a, dsim.DArray.DType.UInt64)
 
 # Output matrix
 b = np.zeros(array_size, dtype = int)
-b_s = dsim.DArray(b, dsim.DArray.DType.DWord)
+b_s = dsim.DArray(b, dsim.DArray.DType.UInt64)
 
 constant_val = 10
 
@@ -39,13 +39,13 @@ correct_res = saxpy(array_size, constant_val, a.tolist(), b.tolist())
 
 print("Cycle: " + str(events[0]))
 
-if list(b_s.getData()) == correct_res:
+if list(b_s.getData_UInt64()) == correct_res:
     print("Input data:")
     print(a)
     print("stencil's output:")
     print(correct_res)
     print("Success!")
 else:
-    print(a_s.getData())
-    print(b_s.getData())
+    print(a_s.getData_UInt64())
+    print(b_s.getData_UInt64())
     print("Failed!")

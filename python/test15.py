@@ -15,4 +15,4 @@ elif platform.system() == 'Darwin':
 cycle = dsim.sim(ptrs = [a_s], vars= [5], hwlib = hw_lib_path)
 
 print("Cycle: " + str(cycle))
-print(a_s.getData())
+print(a_s.getData_UInt64())

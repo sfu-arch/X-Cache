@@ -82,10 +82,6 @@ class Device {
                         int64_t nevents) {
 
         vector<int64_t> rets(nrets + nevents, 0);
-        // if (ptrs.size() != this->ptrs_.size())
-        //     throw std::runtime_error("Number of PTRS must be one");
-
-        //cout << "DEBUG SIZE: " << debugs.size() << "\n";
 
         if (values.size() != this->vals_.size())
             throw std::runtime_error("Number of VLAS must be one");
@@ -100,12 +96,6 @@ class Device {
             this->MemCopyFromHost(ptrs_[ind], ptrs[ind].get().getArray().data,
                                   a_size);
 
-            DEBUG("Print input data:");
-            auto b = ptrs[ind].get().getArray();
-            for (auto index = 0; index < b.shape[0]; index++) {
-                uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
-                DEBUG(k);
-            }
         }
 
         //Allocate memory for debug data
@@ -117,13 +107,6 @@ class Device {
 
             this->MemCopyFromHost(debugs_[ind], debugs[ind].get().getArray().data,
                                   a_size);
-
-            DEBUG("Print debug data:");
-            auto b = debugs[ind].get().getArray();
-            for (auto index = 0; index < b.shape[0]; index++) {
-                uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
-                DEBUG(k);
-            }
         }
 
 
@@ -139,12 +122,6 @@ class Device {
                             ptrs[ind].get().getArray().shape[0];
             this->MemCopyToHost(ptrs[ind].get().getArray().data, ptrs_[ind],
                                 a_size);
-            auto b = ptrs[ind].get().getArray();
-            DEBUG("Print output data:");
-            for (auto index = 0; index < b.shape[0]; index++) {
-                uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
-                DEBUG(k);
-            }
             this->MemFree(ptrs_[ind]);
         }
 
@@ -154,12 +131,6 @@ class Device {
                             debugs[ind].get().getArray().shape[0];
             this->MemCopyToHost(debugs[ind].get().getArray().data, debugs_[ind],
                                 a_size);
-            auto b = debugs[ind].get().getArray();
-            DEBUG("Print returned debug data:");
-            for (auto index = 0; index < b.shape[0]; index++) {
-                uint64_t k = *(((uint64_t *)(b.data)) + index * sizeof(char));
-                DEBUG(k);
-            }
             this->MemFree(debugs_[ind]);
         }
 
@@ -207,7 +178,8 @@ class Device {
         /**
          * We have event counters after control addresses
          */
-        address += rets.size() * 4 ;
+        address += rets.size() * 0x04;
+
         int32_t cnt = 0;
         for (auto val : values) {
             dpi_->WriteReg(address + (cnt * 4), val);  // arg
@@ -306,19 +278,37 @@ std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
 PYBIND11_MODULE(dsim, m) {
     py::class_<driver::DArray> darray(m, "DArray");
     darray.def(py::init<
+             py::array_t<uint64_t, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+        .def(py::init<
+             py::array_t<uint32_t, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+        .def(py::init<
+             py::array_t<int32_t, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+        .def(py::init<
              py::array_t<int64_t, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+        .def(py::init<
+             py::array_t<float, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+        .def(py::init<
+             py::array_t<double, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+
         .def("initData", &driver::DArray::initData)
-        .def("getData", &driver::DArray::getData)
+        .def("getData_UInt8", &driver::DArray::getData<uint8_t>)
+        .def("getData_UInt16", &driver::DArray::getData<uint16_t>)
+        .def("getData_UInt32", &driver::DArray::getData<uint32_t>)
+        .def("getData_UInt64", &driver::DArray::getData<uint64_t>)
+        .def("getData_Float", &driver::DArray::getData<float>)
+        .def("getData_Double", &driver::DArray::getData<double>)
         .def("__repr__", [](const driver::DArray &a) {
             return "<DArray ['" + std::to_string(a.getDimenssion()) + "']>: [" +
                    a.print_array() + "]";
         });
 
     py::enum_<driver::DArray::DType>(darray, "DType")
-        .value("Bit", driver::DArray::DType::Bit)
-        .value("Byte", driver::DArray::DType::Byte)
-        .value("Word", driver::DArray::DType::Word)
-        .value("DWord", driver::DArray::DType::DWord)
+        .value("UInt8", driver::DArray::DType::UInt8)
+        .value("UInt16", driver::DArray::DType::UInt16)
+        .value("UInt32", driver::DArray::DType::UInt32)
+        .value("UInt64", driver::DArray::DType::UInt64)
+        .value("Float", driver::DArray::DType::Float)
+        .value("Double", driver::DArray::DType::Double)
         .export_values();
 
 

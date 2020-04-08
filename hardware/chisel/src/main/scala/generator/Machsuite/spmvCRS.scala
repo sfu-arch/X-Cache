@@ -138,10 +138,10 @@ class spmvCRSDF(PtrsIn: Seq[Int] = List(32, 32, 32, 32, 32), ValsIn: Seq[Int] = 
   val ld_20 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 20, RouteID = 4))
 
   //  %mul = fmul double %3, %5, !UID !33
-  val FP_mul21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(t = p(FTYP)))
+  val FP_mul21 = Module(new FPComputeNode(NumOuts = 1, ID = 21, opCode = "fmul")(fType))
 
   //  %add12 = fadd double %sum.034, %mul, !UID !34
-  val FP_add1222 = Module(new FPComputeNode(NumOuts = 2, ID = 22, opCode = "fadd")(t = p(FTYP)))
+  val FP_add1222 = Module(new FPComputeNode(NumOuts = 2, ID = 22, opCode = "fadd")(fType))
 
   //  %indvars.iv.next = add nsw i64 %indvars.iv, 1, !UID !35
   val binaryOp_indvars_iv_next23 = Module(new ComputeNode(NumOuts = 2, ID = 23, opCode = "add")(sign = false, Debug = false))

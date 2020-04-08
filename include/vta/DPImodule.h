@@ -48,7 +48,7 @@ typedef void *DeviceHandle;
 struct HostRequest
 {
   uint8_t opcode;
-  uint8_t addr;
+  uint16_t addr;
   uint32_t value;
 };
 
@@ -117,7 +117,7 @@ private:
 class HostDevice
 {
 public:
-  void PushRequest(uint8_t opcode, uint8_t addr, uint32_t value);
+  void PushRequest(uint8_t opcode, uint16_t addr, uint32_t value);
   bool TryPopRequest(HostRequest *r, bool pop);
   void PushResponse(uint32_t value);
   void WaitPopResponse(HostResponse *r);
@@ -173,7 +173,7 @@ bool SimDevice::GetExitStatus()
   return exit_;
 }
 
-void HostDevice::PushRequest(uint8_t opcode, uint8_t addr, uint32_t value)
+void HostDevice::PushRequest(uint8_t opcode, uint16_t addr, uint32_t value)
 {
   HostRequest r;
   r.opcode = opcode;
@@ -324,7 +324,7 @@ protected:
     *exit = sim_device_.GetExitStatus();
   }
 
-  void HostDPI(dpi8_t *req_valid, dpi8_t *req_opcode, dpi8_t *req_addr,
+  void HostDPI(dpi8_t *req_valid, dpi8_t *req_opcode, dpi16_t *req_addr,
                dpi32_t *req_value, dpi8_t req_deq, dpi8_t resp_valid,
                dpi32_t resp_value)
   {
@@ -363,7 +363,7 @@ protected:
   }
 
   static void VTAHostDPI(VTAContextHandle self, dpi8_t *req_valid,
-                         dpi8_t *req_opcode, dpi8_t *req_addr,
+                         dpi8_t *req_opcode, dpi16_t *req_addr,
                          dpi32_t *req_value, dpi8_t req_deq, dpi8_t resp_valid,
                          dpi32_t resp_value)
   {
