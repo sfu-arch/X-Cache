@@ -5,10 +5,10 @@
         "numVals"  : 0,
         "numRets"  : 1,
         "numEnts"  : 1,
-        "numDbgs"  : 3,
+        "numDbgs"  : 4,
         "numCtrls" : 1,
         "dataLen"  : 64,
-        "boreIDs"  : [4, 6, 10],
+        "boreIDs"  : [4, 6, 8, 10],
 
         "Build" : {
             "printLog" : true,

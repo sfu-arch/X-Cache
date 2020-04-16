@@ -24,7 +24,7 @@ import util._
 
 
 class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: Seq[Int] = List(32))
-			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
+              (implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns) {
 
 
   /* ================================================================== *
@@ -39,13 +39,11 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   ArgSplitter.io.In <> io.in
 
 
-
   /* ================================================================== *
    *                   PRINTING LOOP HEADERS                            *
    * ================================================================== */
 
   val Loop_0 = Module(new LoopBlockNode(NumIns = List(2), NumOuts = List(), NumCarry = List(1), NumExits = 1, ID = 0))
-
 
 
   /* ================================================================== *
@@ -57,7 +55,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val bb_for_cond_cleanup1 = Module(new BasicBlockNoMaskFastNode(NumInputs = 1, NumOuts = 4, BID = 1))
 
   val bb_for_body2 = Module(new BasicBlockNode(NumInputs = 2, NumOuts = 15, NumPhi = 1, BID = 2))
-
 
 
   /* ================================================================== *
@@ -74,7 +71,7 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val ld_2 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 2, RouteID = 0))
 
   //  ret i32 %0, !dbg !29, !UID !30, !BB_UID !31
-  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3, Debug = true, NumBores = 3))
+  val ret_3 = Module(new RetNode2(retTypes = List(32), ID = 3, Debug = true, NumBores = 4))
 
   //  %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ], !UID !32
   val phiindvars_iv4 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 4, Res = true, Debug = true,
@@ -92,7 +89,8 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val binaryOp_mul7 = Module(new ComputeNode(NumOuts = 1, ID = 7, opCode = "shl")(sign = false, Debug = false))
 
   //  %2 = add nuw nsw i64 %indvars.iv, 5, !dbg !40, !UID !41
-  val binaryOp_8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign = false, Debug = false))
+  val binaryOp_8 = Module(new ComputeNode(NumOuts = 1, ID = 8, opCode = "add")(sign = false, Debug = true,
+    GuardVals = List(5, 6, 7, 8, 9)))
 
   //  %arrayidx2 = getelementptr inbounds i32, i32* %a, i64 %2, !dbg !42, !UID !43
   val Gep_arrayidx29 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 9)(ElementSize = 8, ArraySize = List()))
@@ -109,7 +107,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
 
   //  br i1 %exitcond, label %for.cond.cleanup, label %for.body, !dbg !19, !llvm.loop !50, !UID !52, !BB_UID !53
   val br_13 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 1, ID = 13))
-
 
 
   /* ================================================================== *
@@ -135,13 +132,11 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   val const5 = Module(new ConstFastNode(value = 5, ID = 5))
 
 
-
   /* ================================================================== *
    *                   BASICBLOCK -> PREDICATE INSTRUCTION              *
    * ================================================================== */
 
   bb_entry0.io.predicateIn(0) <> ArgSplitter.io.Out.enable
-
 
 
   /* ================================================================== *
@@ -155,11 +150,9 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   bb_for_body2.io.predicateIn(0) <> Loop_0.io.activate_loop_back
 
 
-
   /* ================================================================== *
    *                   PRINTING PARALLEL CONNECTIONS                    *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -173,11 +166,9 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   Loop_0.io.loopFinish(0) <> br_13.io.TrueOutput(0)
 
 
-
   /* ================================================================== *
    *                   ENDING INSTRUCTIONS                              *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -185,7 +176,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
    * ================================================================== */
 
   Loop_0.io.InLiveIn(0) <> ArgSplitter.io.Out.dataPtrs.elements("field0")(0)
-
 
 
   /* ================================================================== *
@@ -197,17 +187,14 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   Gep_arrayidx29.io.baseAddress <> Loop_0.io.OutLiveIn.elements("field0")(1)
 
 
-
   /* ================================================================== *
    *                   LOOP DATA LIVE-OUT DEPENDENCIES                  *
    * ================================================================== */
 
 
-
   /* ================================================================== *
    *                   LOOP LIVE OUT DEPENDENCIES                       *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -217,13 +204,11 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   Loop_0.io.CarryDepenIn(0) <> binaryOp_indvars_iv_next11.io.Out(0)
 
 
-
   /* ================================================================== *
    *                   LOOP DATA CARRY DEPENDENCIES                     *
    * ================================================================== */
 
   phiindvars_iv4.io.InData(1) <> Loop_0.io.CarryDepenOut.elements("field0")(0)
-
 
 
   /* ================================================================== *
@@ -284,8 +269,6 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   br_13.io.enable <> bb_for_body2.io.Out(14)
 
 
-
-
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
    * ================================================================== */
@@ -293,11 +276,9 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   phiindvars_iv4.io.Mask <> bb_for_body2.io.MaskBB(0)
 
 
-
   /* ================================================================== *
    *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -317,11 +298,9 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   st_10.io.MemResp <> MemCtrl.io.wr.mem(0).MemResp
 
 
-
   /* ================================================================== *
    *                   PRINT SHARED CONNECTIONS                         *
    * ================================================================== */
-
 
 
   /* ================================================================== *
@@ -369,13 +348,11 @@ class test05DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: 
   st_10.io.Out(0).ready := true.B
 
 
-
   /* ================================================================== *
    *                   CONNECTING DATA DEPENDENCIES                     *
    * ================================================================== */
 
   br_13.io.PredOp(0) <> st_10.io.SuccOp(0)
-
 
 
   /* ================================================================== *
