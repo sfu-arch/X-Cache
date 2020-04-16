@@ -744,10 +744,10 @@ class DandelionDebugShell(accelModule: () => DandelionAccelDCRModule)
     is(sIdle) {
       when(dcr.io.dcr.launch) {
         printf(p"Ptrs: ")
-        ptrs.zipWithIndex.foreach(t => printf(p"ptr(${t._2}): ${Hexadecimal(t._1)}, "))
+        ptrs.zipWithIndex.foreach(t => printf(p"ptr(${t._2}): 0x${Hexadecimal(t._1)}, "))
         printf(p"\nVals: ")
         if (numVals > 0) {
-          vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): ${Hexadecimal(t._1)}, "))
+          vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): 0x${Hexadecimal(t._1)}, "))
         } else {
           printf("N/A")
         }

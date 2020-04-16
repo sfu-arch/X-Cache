@@ -21,12 +21,9 @@ a_s = dsim.DArray(val_a, dsim.DArray.DType.UInt64)
 
 
 # Debug container
-b = np.zeros(20)
-b_s = dsim.DArray(b, dsim.DArray.DType.UInt64)
-c = np.zeros(30)
-c_s = dsim.DArray(c, dsim.DArray.DType.UInt64)
-d = np.zeros(30)
-d_s = dsim.DArray(d, dsim.DArray.DType.UInt64)
+b_s = dsim.DArray(np.zeros(20), dsim.DArray.DType.UInt64)
+c_s = dsim.DArray(np.zeros(30), dsim.DArray.DType.UInt64)
+d_s = dsim.DArray(np.zeros(30), dsim.DArray.DType.UInt64)
 
 events = dsim.sim(ptrs = [a_s], debugs=[b_s, c_s, d_s], vars= [], numRets=1, numEvents=1, hwlib = hw_lib_path)
 

@@ -8,7 +8,7 @@
         "numDbgs"  : 3,
         "numCtrls" : 1,
         "dataLen"  : 64,
-        "boreIDs"  : [4,6,10],
+        "boreIDs"  : [4, 6, 10],
 
         "Build" : {
             "printLog" : true,

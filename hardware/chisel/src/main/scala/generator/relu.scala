@@ -90,7 +90,7 @@ class reluDF(PtrsIn: Seq[Int] = List(32, 32), ValsIn: Seq[Int] = List(32), Retur
   val br_4 = Module(new UBranchNode(ID = 4))
 
   //  ret void, !dbg !44, !UID !45, !BB_UID !46
-  val ret_5 = Module(new RetNode2(retTypes = List(), ID = 5))
+  val ret_5 = Module(new RetNode2(retTypes = List(), ID = 5, NumBores = 1, Debug = true))
 
   //  %j.032 = phi i32 [ 0, %for.body.lr.ph ], [ %inc13, %for.cond.cleanup3 ], !UID !47
   val phij_0326 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 6, Res = true))
@@ -138,7 +138,12 @@ class reluDF(PtrsIn: Seq[Int] = List(32, 32), ValsIn: Seq[Int] = List(32), Retur
   val select__20 = Module(new SelectNode(NumOuts = 1, ID = 20)(fast = false))
 
   //  store i32 %., i32* %arrayidx7, align 4, !tbaa !69, !UID !78
-  val st_21 = Module(new UnTypStoreCache(NumPredOps = 0, NumSuccOps = 1, ID = 21, RouteID = 1))
+  val st_21 = Module(new UnTypStoreCache(NumPredOps = 0, NumSuccOps = 1, ID = 21, RouteID = 1, Debug = true,
+    GuardAddress = List(8192, 8200, 8208, 8216, 8224, 8232, 8240, 8248, 8256, 8264,
+      8272, 8280, 8288, 8296, 8304, 8312, 8320, 8328, 8336, 8344, 8352, 8360, 8368,
+      8376, 8384, 8392, 8400, 8408, 8416, 8424, 8432, 8440, 8448, 8456, 8464, 8472,
+      8480, 8488, 8496, 8504, 8512, 8520, 8528, 8536, 8544, 8552, 8560, 8568, 8576,
+      8584, 8592, 8600, 8608, 8616, 8624, 8632, 8640, 8648, 8656, 8664, 8672, 8680, 8688, 8696)))
 
   //  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !dbg !79, !UID !80
   val binaryOp_indvars_iv_next22 = Module(new ComputeNode(NumOuts = 2, ID = 22, opCode = "add")(sign = false, Debug = false))
