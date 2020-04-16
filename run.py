@@ -132,6 +132,8 @@ def ParseArguments():
                         help='Building accelerator model')
     parser.add_argument('--build-dsim', action='store_true', dest='dsim',
                         help='Building dsim library')
+    parser.add_argument('--cyclone', action='store', dest='cyclone', type=dir_path,
+                        help='Building dsim library')
     parser.add_argument('--accel-config', action='store', dest='accel_config', type=dir_path,
                         help='The accelerator name that will we passed to hardware generator')
     args = parser.parse_args()
@@ -163,6 +165,31 @@ def BuildAccel(config):
         CheckCall(['make', 'chisel'] + make_params)
 
 
+def GetCyclone(config):
+    make_params = []
+    with open(config, 'r') as configFile:
+        configData = json.load(configFile)
+        for config in configData['Accel']:
+            if config == 'Build':
+                for build in configData['Accel'][config]:
+                    make_params += ["{}={} ".format(str(build),
+                                                    str(configData['Accel'][config][build]))]
+            else:
+                if isinstance(configData['Accel'][config], list):
+                    make_params += ["{}={} ".format(str(config),
+                                                    ','.join(map(str, configData['Accel'][config])))]
+                else:
+                    make_params += ["{}={} ".format(str(config),
+                                                    str(configData['Accel'][config]))]
+
+        # print(make_params)
+        print(bcolors.OKGREEN + " ".join(str(val)
+                                         for val in ['make', 'chisel'] + make_params) + bcolors.ENDC)
+        CheckCall(['make', 'cyclone'] + ['TOP=DCRAccel'] + make_params)
+
+
+
+
 def BuildDsim():
     CheckCall([sys.executable, '-m', 'pip', 'install', '.'])
 
@@ -179,6 +206,8 @@ def Main():
 
     if args.dsim:
         BuildDsim()
+    elif args.cyclone:
+        GetCyclone(args.cyclone)
     else:
         BuildAccel(args.accel_config)
 

@@ -123,6 +123,18 @@ To generate verilog design of the accelerator for AWS for instance, you only nee
 python3 run.py --build-f1 examples/test01_config.json
 ```
 
+
+## Getting Verilog file for CycloneV
+
+
+A sample command to get Verilog file fpga boards
+
+```
+python3.7 run.py --cyclone examples/test05_config.json
+```
+
+
+
 ## µIR-sim Design
 
 µIR-sim uses Verilator to integrate µIR generated accelerators into overall system design and provides flexibility in the hardware language used to implement these designs. For example, on could use OpenCL, C/C++ or Chisel3 -- we mainly rely on Chisel3 -- to describe an accelerator design that would eventually be compiled down to Verilog, since it is the standard input language for FPGA/ASIC tools.

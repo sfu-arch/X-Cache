@@ -120,5 +120,11 @@ verilog: $(chisel_build_dir)/$(TOP).v
 $(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')
 	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP) --accel-name $(nameAccel) --num-ptrs $(numPtrs) --num-dbgs $(numDbgs) --num-vals $(numVals) --num-rets $(numRets) --num-events $(numEnts)  --num-ctrls $(numCtrls) --data-len $(dataLen) --print-log $(printLog) --cache-log $(cacheLog) --bore-ids $(boreIDs)'
 
+cyclone: $(chisel_build_dir)/$(TOP).v
+$(chisel_build_dir)/$(TOP).v: $(shell find . -type f -name "*.scala" | sed 's/ /\\ /g')
+	sbt 'test:runMain test.${TOP}Main --target-dir $(chisel_build_dir) --top-name $(TOP) --accel-name $(nameAccel) --num-ptrs $(numPtrs) --num-dbgs $(numDbgs) --num-vals $(numVals) --num-rets $(numRets) --num-events $(numEnts)  --num-ctrls $(numCtrls) --data-len $(dataLen) --print-log $(printLog) --cache-log $(cacheLog) --bore-ids $(boreIDs)'
+
+
+
 clean:
 	-rm -rf $(build_dir) target project/target project/project

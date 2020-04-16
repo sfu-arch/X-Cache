@@ -780,3 +780,201 @@ class DandelionDebugShell(accelModule: () => DandelionAccelDCRModule)
   io.host <> dcr.io.host
 
 }
+
+
+/**
+ *
+ * @param accelModule Testing module from dandelion-generator
+ * @param numPtrs     Number of input ptrs for the accelerator
+ * @param numVals     Number of input values to the accelerator
+ * @param numRets     Number of return values to the accelerator
+ * @param numEvents   Number of event values to the accelerator
+ * @param numCtrls    Number of control registers of the accelerator
+ * @param p           implicit parameters that contains all the accelerator configuration
+ */
+class DandelionDebugFPGAShell(accelModule: () => DandelionAccelDCRModule)
+                         (debugModule: () => DandelionAccelDebugModule)
+                         (numPtrs: Int, numDbgs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+                         (implicit val p: Parameters) extends Module with HasAccelParams with HasAccelShellParams {
+  val io = IO(new Bundle {
+    val host = new AXIClient(hostParams)
+    val mem = new AXIMaster(memParams)
+  })
+
+  val regBits = dcrParams.regBits
+
+  /**
+   * If xlen is 64bit, and vcr registers are 32bits then
+   * ptrs are lo and hi
+   */
+  val ptrBits =
+    if (xlen / regBits == 2)
+      regBits * 2
+    else
+      regBits
+
+
+  val dcr = Module(new DCR)
+  val dmem = Module(new DME())
+  val cache = Module(new DMECache())
+
+
+  val accel = Module(accelModule())
+  def isDebugger() = { numDbgs > 0}
+  val debug_module = if (numDbgs > 0) Some(Module(debugModule())) else None
+
+  cache.io.cpu.req <> accel.io.MemReq
+  accel.io.MemResp <> cache.io.cpu.resp
+  cache.io.cpu.abort := false.B
+
+  /**
+   * Connecting cache to DME
+   */
+  dmem.io.dme.rd(0) <> cache.io.mem.rd
+  dmem.io.dme.wr(0) <> cache.io.mem.wr
+
+  /**
+   * TODO: make enable dependent on logic
+   */
+  if(isDebugger()) debug_module.get.io.enableNode.foreach(_ := true.B)
+
+  val sIdle :: sBusy :: sFlush :: sDone :: Nil = Enum(4)
+
+  val state = RegInit(sIdle)
+  val cycles = RegInit(0.U(regBits.W))
+  val cnt = RegInit(0.U(regBits.W))
+  val last = state === sDone
+  val is_busy = state === sBusy
+
+  when(state === sIdle) {
+    cycles := 0.U
+  }.elsewhen(state =/= sFlush) {
+    cycles := cycles + 1.U
+  }
+
+  /**
+   * Connecting event controls and return values
+   * Event zero always contains the cycle count
+   */
+  dcr.io.dcr.ecnt(0).valid := last
+  dcr.io.dcr.ecnt(0).bits := cycles
+
+  for (i <- 1 to numRets) {
+    dcr.io.dcr.ecnt(i).bits := accel.io.out.bits.data(s"field${i - 1}").data
+    dcr.io.dcr.ecnt(i).valid := accel.io.out.valid
+  }
+
+  /**
+   * @note This part needs to be changes for each function
+   */
+
+  val ptrs = Seq.tabulate(numPtrs + numDbgs) { i => RegEnable(next = dcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
+  val vals = Seq.tabulate(numVals) { i => RegEnable(next = dcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable = (state === sIdle)) }
+
+  /**
+   * For now the rule is to first assign the pointers and then assign the vals
+   */
+
+  for (i <- 0 until numPtrs) {
+    accel.io.in.bits.dataPtrs(s"field${i}") := DataBundle(ptrs(i))
+  }
+
+  /**
+   * Connecting debug ptrs
+   */
+  for (i <- 0 until numDbgs) {
+    debug_module.get.io.addrDebug(i) := dcr.io.dcr.ptrs(numPtrs + i)
+  }
+
+
+  for (i <- 0 until numVals) {
+    accel.io.in.bits.dataVals(s"field${i}") := DataBundle(vals(i))
+  }
+
+
+  accel.io.in.bits.enable := ControlBundle.debug()
+
+  accel.io.in.valid := false.B
+  accel.io.out.ready := is_busy
+
+  cache.io.cpu.flush := state === sFlush
+
+  for (i <- 0 until numDbgs) {
+    dmem.io.dme.wr(i + 1).cmd.bits := debug_module.get.io.vmeOut(i).cmd.bits
+    dmem.io.dme.wr(i + 1).cmd.valid := debug_module.get.io.vmeOut(i).cmd.valid
+    debug_module.get.io.vmeOut(i).cmd.ready := dmem.io.dme.wr(i + 1).cmd.ready
+
+    dmem.io.dme.wr(i + 1).data <> debug_module.get.io.vmeOut(i).data
+    debug_module.get.io.vmeOut(i).ack := dmem.io.dme.wr(i + 1).ack
+  }
+
+  val dme_ack = if(isDebugger()) Some(RegInit(VecInit(Seq.fill(numDbgs)(false.B)))) else None
+  for (i <- 0 until numDbgs) {
+    when(dmem.io.dme.wr(i + 1).ack) {
+      dme_ack.get(i) := true.B
+    }
+  }
+
+  def isDMEAck(): Bool = {
+    if (numDbgs == 0)
+      true.B
+    else {
+      dme_ack.get.reduceLeft(_ && _)
+    }
+  }
+
+  val cache_done = RegInit(false.B)
+  when(state === sFlush) {
+    when(cache.io.cpu.flush_done) {
+      cache_done := true.B
+    }
+  }
+
+  switch(state) {
+    is(sIdle) {
+      when(dcr.io.dcr.launch) {
+        printf(p"Ptrs: ")
+        ptrs.zipWithIndex.foreach(t => printf(p"ptr(${t._2}): 0x${Hexadecimal(t._1)}, "))
+        printf(p"\nVals: ")
+        if (numVals > 0) {
+          vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): 0x${Hexadecimal(t._1)}, "))
+        } else {
+          printf("N/A")
+        }
+        printf(p"\n")
+        accel.io.in.valid := true.B
+        when(accel.io.in.fire) {
+          state := sBusy
+        }
+      }
+    }
+    is(sBusy) {
+      when(accel.io.out.fire) {
+        state := sFlush
+      }
+    }
+    is(sFlush) {
+      when(cache_done && isDMEAck()) {
+        state := sDone
+      }
+    }
+    is(sDone) {
+      state := sIdle
+    }
+  }
+
+
+  dcr.io.dcr.finish := last
+
+  io.mem <> dmem.io.mem
+  io.host <> dcr.io.host
+
+  //Specific for FPGA
+  io.host.b.bits.id := io.host.w.bits.id
+  io.host.r.bits.id := io.host.ar.bits.id
+
+  io.host.b.bits.user <> DontCare
+  io.host.r.bits.user <> DontCare
+  io.host.r.bits.last := 1.U
+
+}

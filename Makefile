@@ -32,6 +32,9 @@ chisel:
 f1:
 	make -C hardware/chisel verilog
 
+cyclone:
+	make -C hardware/chisel cyclone
+
 clean:
 	-rm -rf $(build_dir)
 	make -C hardware/chisel clean
