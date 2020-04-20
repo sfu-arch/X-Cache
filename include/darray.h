@@ -1,5 +1,9 @@
 #pragma once
 
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
 #include <algorithm>
 #include <experimental/iterator>
 #include <fstream>
@@ -10,10 +14,6 @@
 #include <vector>
 
 #include "dlpack/dlpack.h"
-
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -31,7 +31,8 @@ std::vector<std::string> split(const std::string &s, char delimiter) {
     return tokens;
 }
 
-std::string print_vector(std::vector<uint64_t> const &input, std::string const dl = " ") {
+std::string print_vector(std::vector<uint64_t> const &input,
+                         std::string const dl = " ") {
     std::stringstream str_out;
     std::copy(input.begin(), input.end(),
               std::experimental::make_ostream_joiner(str_out, dl));
@@ -46,15 +47,7 @@ class DArray {
     DLTensor array;
 
    public:
-
-    enum DType{
-        UInt8 = 0,
-        UInt16,
-        UInt32,
-        UInt64,
-        Float,
-        Double
-    };
+    enum DType { UInt8 = 0, UInt32, UInt64, Float, Double };
     DArray(uint64_t shapes, DType type) {
         array.shape = (int64_t *)malloc(sizeof(int64_t));
 
@@ -63,11 +56,9 @@ class DArray {
         // Default values
         array.dtype.code = 0;
         array.dtype.lanes = 1;
-        switch(type){
+        switch (type) {
             case DType::UInt8:
                 array.dtype.bits = 8;
-            case DType::UInt16:
-                array.dtype.bits = 16;
             case DType::UInt32:
                 array.dtype.bits = 32;
             case DType::UInt64:
@@ -77,7 +68,6 @@ class DArray {
             case DType::Double:
                 array.dtype.bits = 64;
         };
-
 
         array.ndim = 1;
 
@@ -85,24 +75,22 @@ class DArray {
 
         array.data = malloc(sizeof(uint64_t *) * array.shape[0]);
     }
-    template <typename T>
-    DArray(py::array_t<T, py::array::c_style | py::array::forcecast>
-               in_data, DType type) {
-        std::vector<T> shapes(in_data.size());
+    DArray(
+        py::array_t<int64_t, py::array::c_style | py::array::forcecast> in_data,
+        DType type) {
+        std::vector<uint64_t> shapes(in_data.size());
         std::memcpy(shapes.data(), in_data.data(),
-                    in_data.size() * sizeof(T));
+                    in_data.size() * sizeof(uint64_t));
 
-        array.shape = (int64_t *)malloc(sizeof(T));
+        array.shape = (int64_t *)malloc(sizeof(uint64_t));
 
         array.shape[0] = shapes.size();
 
         // Default values
         array.dtype.code = 0;
-    switch(type){
+        switch (type) {
             case DType::UInt8:
                 array.dtype.bits = 8;
-            case DType::UInt16:
-                array.dtype.bits = 16;
             case DType::UInt32:
                 array.dtype.bits = 32;
             case DType::UInt64:
@@ -113,6 +101,43 @@ class DArray {
                 array.dtype.bits = 64;
         };
 
+        array.dtype.lanes = 1;
+
+        array.ndim = 1;
+
+        array.strides = nullptr;
+
+        array.data = malloc(sizeof(uint64_t *) * shapes.size());
+
+        for (auto i = 0; i < in_data.size(); ++i) {
+            *(((uint64_t *)(array.data)) + i * sizeof(char)) = shapes[i];
+        }
+    }
+
+    template <typename T>
+    DArray(py::array_t<T, py::array::c_style | py::array::forcecast> in_data,
+           DType type) {
+        std::vector<T> shapes(in_data.size());
+        std::memcpy(shapes.data(), in_data.data(), in_data.size() * sizeof(T));
+
+        array.shape = (int64_t *)malloc(sizeof(T));
+
+        array.shape[0] = shapes.size();
+
+        // Default values
+        array.dtype.code = 0;
+        switch (type) {
+            case DType::UInt8:
+                array.dtype.bits = 8;
+            case DType::UInt32:
+                array.dtype.bits = 32;
+            case DType::UInt64:
+                array.dtype.bits = 64;
+            case DType::Float:
+                array.dtype.bits = 32;
+            case DType::Double:
+                array.dtype.bits = 64;
+        };
 
         array.dtype.lanes = 1;
 
@@ -122,35 +147,35 @@ class DArray {
 
         array.data = malloc(sizeof(T *) * shapes.size());
 
-        switch (type){
+        switch (type) {
             case DType::UInt8:
                 for (auto i = 0; i < in_data.size(); ++i) {
-                    *(((uint8_t *)(array.data)) + i * sizeof(uint8_t)) = shapes[i];
-                }
-                break;
-            case DType::UInt16:
-                for (auto i = 0; i < in_data.size(); ++i) {
-                    *(((uint16_t *)(array.data)) + i * sizeof(uint8_t)) = shapes[i];
+                    *(((uint8_t *)(array.data)) + i * sizeof(uint8_t)) =
+                        shapes[i];
                 }
                 break;
             case DType::UInt32:
                 for (auto i = 0; i < in_data.size(); ++i) {
-                    *(((uint32_t *)(array.data)) + i * sizeof(uint8_t)) = shapes[i];
+                    *(((uint32_t *)(array.data)) + i * sizeof(uint8_t)) =
+                        shapes[i];
                 }
                 break;
             case DType::UInt64:
                 for (auto i = 0; i < in_data.size(); ++i) {
-                    *(((uint64_t *)(array.data)) + i * sizeof(uint8_t)) = shapes[i];
+                    *(((uint64_t *)(array.data)) + i * sizeof(uint8_t)) =
+                        shapes[i];
                 }
                 break;
             case DType::Float:
                 for (auto i = 0; i < in_data.size(); ++i) {
-                    *(((float *)(array.data)) + i * sizeof(uint8_t)) = shapes[i];
+                    *(((float *)(array.data)) + i * sizeof(uint8_t)) =
+                        shapes[i];
                 }
                 break;
             case DType::Double:
                 for (auto i = 0; i < in_data.size(); ++i) {
-                    *(((double *)(array.data)) + i * sizeof(uint8_t)) = shapes[i];
+                    *(((double *)(array.data)) + i * sizeof(uint8_t)) =
+                        shapes[i];
                 }
                 break;
         };
@@ -215,6 +240,20 @@ class DArray {
 
         return ret_data;
     }
+
+
+    //py::array_t<int64_t> getData() {
+        //py::array_t<int64_t> ret_data(this->array.shape[0]);
+        //auto buff = ret_data.request();
+        //uint64_t *buff_ptr = (uint64_t *)buff.ptr;
+        //for (auto index = 0; index < this->array.shape[0]; index++) {
+            //uint64_t k =
+                //*(((uint64_t *)(this->array.data)) + index * sizeof(uint8_t));
+            //buff_ptr[index] = k;
+        //}
+
+        //return ret_data;
+    //}
 };
 
 }  // namespace driver
