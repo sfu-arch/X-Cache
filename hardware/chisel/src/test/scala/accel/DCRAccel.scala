@@ -172,7 +172,7 @@ object DandelionSimDebugAccelMain extends App {
       nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls, nDbgs = num_dbgs)
 
   lazy val accel_module = DandelionTestDebugDCRAccel(accel_name, num_dbgs, bore_ids)
-  chisel3.Driver.execute(args.take(4),
+  chisel3.Driver.execute(args.take(4) ++ List("--full-stacktrace"),
     () => new DandelionSimDebugAccel(accel_module._1, accel_module._2)
     (numPtrs = num_ptrs, numDbgs = num_dbgs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
 

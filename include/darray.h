@@ -233,27 +233,12 @@ class DArray {
         auto buff = ret_data.request();
         T *buff_ptr = (T *)buff.ptr;
         for (auto index = 0; index < this->array.shape[0]; index++) {
-            T k =
-                *(((T *)(this->array.data)) + index * sizeof(uint8_t));
+            T k = *(((T *)(this->array.data)) + index * sizeof(uint8_t));
             buff_ptr[index] = k;
         }
 
         return ret_data;
     }
-
-
-    //py::array_t<int64_t> getData() {
-        //py::array_t<int64_t> ret_data(this->array.shape[0]);
-        //auto buff = ret_data.request();
-        //uint64_t *buff_ptr = (uint64_t *)buff.ptr;
-        //for (auto index = 0; index < this->array.shape[0]; index++) {
-            //uint64_t k =
-                //*(((uint64_t *)(this->array.data)) + index * sizeof(uint8_t));
-            //buff_ptr[index] = k;
-        //}
-
-        //return ret_data;
-    //}
 };
 
 }  // namespace driver
