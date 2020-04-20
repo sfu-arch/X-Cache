@@ -156,7 +156,7 @@ class test14DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(32), Returns
   val const2 = Module(new ConstFastNode(value = 1, ID = 2))
 
   //i64 24
-  val const3 = Module(new ConstFastNode(value = 24, ID = 3))
+  val const3 = Module(new ConstFastNode(value = 5, ID = 3))
 
   //i64 0
   val const4 = Module(new ConstFastNode(value = 0, ID = 4))
@@ -168,7 +168,7 @@ class test14DF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(32), Returns
   val const6 = Module(new ConstFastNode(value = 1, ID = 6))
 
   //i64 24
-  val const7 = Module(new ConstFastNode(value = 24, ID = 7))
+  val const7 = Module(new ConstFastNode(value = 5, ID = 7))
 
 
   //i64 24
