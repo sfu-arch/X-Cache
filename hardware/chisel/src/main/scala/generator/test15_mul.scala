@@ -116,7 +116,7 @@ class test15_mulDF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(
   val const1 = Module(new ConstFastNode(value = 1, ID = 1))
 
   //i64 24
-  val const2 = Module(new ConstFastNode(value = 24, ID = 2))
+  val const2 = Module(new ConstFastNode(value = 5, ID = 2))
 
 
 

@@ -23,7 +23,7 @@ import regfile._
 import util._
 
 
-class test15_reduceDF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Returns: Seq[Int] = List(32))
+class test15_reduceDF(PtrsIn: Seq[Int] = List(64), ValsIn: Seq[Int] = List(), Returns: Seq[Int] = List(64))
 			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
@@ -113,7 +113,7 @@ class test15_reduceDF(PtrsIn: Seq[Int] = List(32), ValsIn: Seq[Int] = List(), Re
   val const2 = Module(new ConstFastNode(value = 1, ID = 2))
 
   //i64 24
-  val const3 = Module(new ConstFastNode(value = 24, ID = 3))
+  val const3 = Module(new ConstFastNode(value = 5, ID = 3))
 
 
 
