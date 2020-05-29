@@ -24,9 +24,9 @@ import util._
 
 
 class test15RootDF(PtrsIn: Seq[Int] = List(64, 64, 64), ValsIn: Seq[Int] = List(), Returns: Seq[Int] = List(64))
-                  (NumKernels: Int = 3)
                   (implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns) {
 
+  val NumKernels = 3
   val memory_arbiter = Module(new MemArbiter(NumKernels))
 
   val test15_main = Module(new test15DF(PtrsIn, ValsIn, Returns))
