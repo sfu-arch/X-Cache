@@ -23,7 +23,7 @@ import regfile._
 import util._
 
 
-class test13DF(PtrsIn: Seq[Int] = List(64, 64), ValsIn: Seq[Int] = List(64), Returns: Seq[Int] = List())
+class test16DF(PtrsIn: Seq[Int] = List(64, 64), ValsIn: Seq[Int] = List(64), Returns: Seq[Int] = List())
 			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
@@ -95,13 +95,13 @@ class test13DF(PtrsIn: Seq[Int] = List(64, 64), ValsIn: Seq[Int] = List(64), Ret
   //  %0 = load float, float* %arrayidx, align 4, !dbg !38, !tbaa !41, !UID !45
   val ld_8 = Module(new UnTypLoadCache(NumPredOps = 0, NumSuccOps = 0, NumOuts = 1, ID = 8, RouteID = 0))
 
-  //  %mul = fmul float %0, 2.000000e+00, !dbg !46, !UID !47
-  val FP_mul9 = Module(new FPComputeNode(NumOuts = 1, ID = 9, opCode = "fmul")(fType))
+  //  %div = fmul float %0, 5.000000e-01, !dbg !46, !UID !47
+  val FP_div9 = Module(new FPComputeNode(NumOuts = 1, ID = 9, opCode = "fmul")(fType))
 
   //  %arrayidx2 = getelementptr inbounds float, float* %b, i64 %indvars.iv, !dbg !48, !UID !49
   val Gep_arrayidx210 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 10)(ElementSize = 8, ArraySize = List()))
 
-  //  store float %mul, float* %arrayidx2, align 4, !dbg !50, !tbaa !41, !UID !51
+  //  store float %div, float* %arrayidx2, align 4, !dbg !50, !tbaa !41, !UID !51
   val st_11 = Module(new UnTypStoreCache(NumPredOps = 0, NumSuccOps = 1, ID = 11, RouteID = 1))
 
   //  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !dbg !52, !UID !53
@@ -128,8 +128,8 @@ class test13DF(PtrsIn: Seq[Int] = List(64, 64), ValsIn: Seq[Int] = List(64), Ret
   //i64 1
   val const2 = Module(new ConstFastNode(value = 1, ID = 2))
 
-  //float 2.000000e+00
-  val constf0 = Module(new ConstFastNode(value = 0x4000000000000000L, ID = 0))
+  //float 5.000000e-01
+  val constf0 = Module(new ConstFastNode(value = 0x3fe0000000000000L, ID = 0))
 
 
 
@@ -274,7 +274,7 @@ class test13DF(PtrsIn: Seq[Int] = List(64, 64), ValsIn: Seq[Int] = List(64), Ret
   ld_8.io.enable <> bb_for_body4.io.Out(5)
 
 
-  FP_mul9.io.enable <> bb_for_body4.io.Out(6)
+  FP_div9.io.enable <> bb_for_body4.io.Out(6)
 
 
   Gep_arrayidx210.io.enable <> bb_for_body4.io.Out(7)
@@ -338,7 +338,7 @@ class test13DF(PtrsIn: Seq[Int] = List(64, 64), ValsIn: Seq[Int] = List(64), Ret
 
   binaryOp_indvars_iv_next12.io.RightIO <> const2.io.Out
 
-  FP_mul9.io.RightIO <> constf0.io.Out
+  FP_div9.io.RightIO <> constf0.io.Out
 
   br_1.io.CmpIO <> icmp_cmp70.io.Out(0)
 
@@ -350,9 +350,9 @@ class test13DF(PtrsIn: Seq[Int] = List(64, 64), ValsIn: Seq[Int] = List(64), Ret
 
   ld_8.io.GepAddr <> Gep_arrayidx7.io.Out(0)
 
-  FP_mul9.io.LeftIO <> ld_8.io.Out(0)
+  FP_div9.io.LeftIO <> ld_8.io.Out(0)
 
-  st_11.io.inData <> FP_mul9.io.Out(0)
+  st_11.io.inData <> FP_div9.io.Out(0)
 
   st_11.io.GepAddr <> Gep_arrayidx210.io.Out(0)
 

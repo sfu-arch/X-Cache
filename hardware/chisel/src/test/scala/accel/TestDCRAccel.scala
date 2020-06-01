@@ -76,6 +76,7 @@ object DandelionTestDebugDCRAccel {
       case "test13" => (() => new test13RootDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "test14" => (() => new test14DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "test15" => (() => new test15RootDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "test16" => (() => new test16RootDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
 
       //Real examples
       case "relu" => (() => new reluDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
