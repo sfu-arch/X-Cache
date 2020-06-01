@@ -16,6 +16,24 @@
 
 //#define EN_DEBUG
 
+/**
+ * Implimentaiton of FloatingPointIEEE754
+ */
+union FloatingPointIEEE754 {
+    struct ieee754 {
+        ieee754() : mantissa(0), exponent(0), sign(0) {}
+        unsigned int mantissa : 23;
+        unsigned int exponent : 8;
+        unsigned int sign : 1;
+    };
+    ieee754 raw;
+    unsigned int bits;
+    float f;
+
+    FloatingPointIEEE754() : f(0) {}
+    FloatingPointIEEE754(float number) : f(number) {}
+};
+
 #ifdef EN_DEBUG
 #define DEBUG(x)                                   \
     do {                                           \
@@ -75,22 +93,20 @@ class Device {
         loader_ = DPILoader::Global();
     }
 
-    vector<int64_t> Run(
-        std::vector<std::reference_wrapper<DArray>> &ptrs,
-        std::vector<std::reference_wrapper<DArray>> &debugs,
+    vector<int64_t> Run(std::vector<std::reference_wrapper<DArray>> &ptrs,
+                        std::vector<std::reference_wrapper<DArray>> &debugs,
                         vector<int64_t> &values, int64_t nrets,
                         int64_t nevents) {
-
         vector<int64_t> rets(nrets + nevents, 0);
         // if (ptrs.size() != this->ptrs_.size())
         //     throw std::runtime_error("Number of PTRS must be one");
 
-        //cout << "DEBUG SIZE: " << debugs.size() << "\n";
+        // cout << "DEBUG SIZE: " << debugs.size() << "\n";
 
         if (values.size() != this->vals_.size())
             throw std::runtime_error("Number of VLAS must be one");
 
-        //Allocate memory for input data
+        // Allocate memory for input data
         for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
             size_t a_size = (ptrs[ind].get().getArray().dtype.bits >> 3) *
                             ptrs[ind].get().getArray().shape[0];
@@ -108,15 +124,15 @@ class Device {
             }
         }
 
-        //Allocate memory for debug data
+        // Allocate memory for debug data
         for (uint64_t ind = 0; ind < debugs.size(); ++ind) {
             size_t a_size = (debugs[ind].get().getArray().dtype.bits >> 3) *
                             debugs[ind].get().getArray().shape[0];
 
             debugs_[ind] = this->MemAlloc(a_size);
 
-            this->MemCopyFromHost(debugs_[ind], debugs[ind].get().getArray().data,
-                                  a_size);
+            this->MemCopyFromHost(debugs_[ind],
+                                  debugs[ind].get().getArray().data, a_size);
 
             DEBUG("Print debug data:");
             auto b = debugs[ind].get().getArray();
@@ -126,14 +142,13 @@ class Device {
             }
         }
 
-
         this->Init();
 
         this->Launch(values, rets);
 
         this->WaitForCompletion(rets);
 
-        //Reading data from device to host
+        // Reading data from device to host
         for (uint64_t ind = 0; ind < ptrs.size(); ++ind) {
             size_t a_size = (ptrs[ind].get().getArray().dtype.bits >> 3) *
                             ptrs[ind].get().getArray().shape[0];
@@ -148,7 +163,7 @@ class Device {
             this->MemFree(ptrs_[ind]);
         }
 
-        //Reading debug data from device to host
+        // Reading debug data from device to host
         for (uint64_t ind = 0; ind < debugs.size(); ++ind) {
             size_t a_size = (debugs[ind].get().getArray().dtype.bits >> 3) *
                             debugs[ind].get().getArray().shape[0];
@@ -163,7 +178,7 @@ class Device {
             this->MemFree(debugs_[ind]);
         }
 
-         return rets;
+        return rets;
     }
 
    public:
@@ -214,7 +229,7 @@ class Device {
             cnt++;
         }
         for (auto ptr : ptrs_) {
-            dpi_->WriteReg(address + (( cnt )*4),
+            dpi_->WriteReg(address + ((cnt)*4),
                            this->MemGetPhyAddr(ptr));  // ptr
 
             cnt++;
@@ -235,13 +250,13 @@ class Device {
         bool flag = false;
         for (i = 0; i < wait_cycles_; i++) {
             val = dpi_->ReadReg(0x00);
-            if (val == 2){
+            if (val == 2) {
                 flag = true;
                 break;  // finish
             }
         }
 
-        if(!flag){
+        if (!flag) {
             cout << "SIMULATION TIMEOUT\n";
         }
 
@@ -254,8 +269,8 @@ class Device {
     }
 
     // wait cycles
-     uint32_t wait_cycles_{10000000};
-    //uint32_t wait_cycles_{800};
+    uint32_t wait_cycles_{10000000};
+    // uint32_t wait_cycles_{800};
     // DPI loader
     DPILoader *loader_{nullptr};
     // DPI Module
@@ -267,10 +282,11 @@ class Device {
     std::vector<uint64_t> events_;
 };
 
-std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
-                            std::vector<std::reference_wrapper<DArray>> in_debugs,
-                            std::vector<int64_t> vars, int64_t nrets,
-                            int64_t nevents, std::string hw_lib) {
+std::vector<int64_t> RunSim(
+    std::vector<std::reference_wrapper<DArray>> in_ptrs,
+    std::vector<std::reference_wrapper<DArray>> in_debugs,
+    std::vector<int64_t> vars, int64_t nrets, int64_t nevents,
+    std::string hw_lib) {
     std::cout << "Stating MuIRSim..." << std::endl;
 
     std::shared_ptr<vta::dpi::DPIModule> n =
@@ -293,7 +309,47 @@ std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
     driver::Device dev(in_ptrs.size(), in_debugs.size(), vars.size());
     dev.loader_->Init(mod);
 
-    std::vector<int64_t> returns = dev.Run(in_ptrs, in_debugs, vars, nrets, nevents);
+    std::vector<int64_t> returns =
+        dev.Run(in_ptrs, in_debugs, vars, nrets, nevents);
+
+    return returns;
+}
+
+std::vector<int64_t> RunSim(
+    std::vector<std::reference_wrapper<DArray>> in_ptrs,
+    std::vector<std::reference_wrapper<DArray>> in_debugs,
+    std::vector<int64_t> int_vars, std::vector<float> float_vars, int64_t nrets,
+    int64_t nevents, std::string hw_lib) {
+    std::cout << "Stating MuIRSim..." << std::endl;
+
+    std::shared_ptr<vta::dpi::DPIModule> n =
+        std::make_shared<vta::dpi::DPIModule>();
+
+    if (hw_lib.empty())
+        throw std::runtime_error("Hardware library path can not be empty!");
+    else {
+        ifstream ifile(hw_lib);
+        if (!ifile)
+            throw std::runtime_error(
+                "Hardware library doesn't exist make sure the path is "
+                "correct!");
+        n->Init(hw_lib);
+    }
+
+    tvm::runtime::Module mod = tvm::runtime::Module(n);
+
+    std::vector<int64_t> cast_vars(int_vars);
+    for (auto val : float_vars) {
+        FloatingPointIEEE754 number(val);
+        cast_vars.push_back(number.bits);
+    }
+
+    // Init the simulator
+    driver::Device dev(in_ptrs.size(), in_debugs.size(), cast_vars.size());
+    dev.loader_->Init(mod);
+
+    std::vector<int64_t> returns =
+        dev.Run(in_ptrs, in_debugs, cast_vars, nrets, nevents);
 
     return returns;
 }
@@ -305,14 +361,19 @@ std::vector<int64_t> RunSim(std::vector<std::reference_wrapper<DArray>> in_ptrs,
  */
 PYBIND11_MODULE(dsim, m) {
     py::class_<driver::DArray> darray(m, "DArray");
-    darray.def(py::init<
-             py::array_t<uint64_t, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+    darray
         .def(py::init<
-             py::array_t<uint32_t, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+             py::array_t<uint64_t, py::array::c_style | py::array::forcecast>,
+             driver::DArray::DType>())
         .def(py::init<
-             py::array_t<float, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+             py::array_t<uint32_t, py::array::c_style | py::array::forcecast>,
+             driver::DArray::DType>())
         .def(py::init<
-             py::array_t<double, py::array::c_style | py::array::forcecast>, driver::DArray::DType>())
+             py::array_t<float, py::array::c_style | py::array::forcecast>,
+             driver::DArray::DType>())
+        .def(py::init<
+             py::array_t<double, py::array::c_style | py::array::forcecast>,
+             driver::DArray::DType>())
 
         .def("initData", &driver::DArray::initData)
         .def("getData_UInt8", &driver::DArray::getData<uint8_t>)
@@ -333,8 +394,22 @@ PYBIND11_MODULE(dsim, m) {
         .value("Double", driver::DArray::DType::Double)
         .export_values();
 
+    m.def(
+        "sim",
+        py::overload_cast<std::vector<std::reference_wrapper<DArray>>,
+                          std::vector<std::reference_wrapper<DArray>>,
+                          std::vector<int64_t>, int64_t, int64_t, std::string>(
+            &driver::RunSim),
+        "A function to run DSIM", py::arg("ptrs"), py::arg("debugs"),
+        py::arg("vars"), py::arg("numRets"), py::arg("numEvents"),
+        py::arg("hwlib"));
 
-    m.def("sim", &driver::RunSim, "A function to run DSIM", py::arg("ptrs"), py::arg("debugs"),
-          py::arg("vars"), py::arg("numRets"), py::arg("numEvents"),
+    m.def("sim",
+          py::overload_cast<std::vector<std::reference_wrapper<DArray>>,
+                            std::vector<std::reference_wrapper<DArray>>,
+                            std::vector<int64_t>, std::vector<float>, int64_t,
+                            int64_t, std::string>(&driver::RunSim),
+          "A function to run DSIM", py::arg("ptrs"), py::arg("debugs"),
+          py::arg("int_vars"), py::arg("float_vars"), py::arg("numRets"), py::arg("numEvents"),
           py::arg("hwlib"));
 }
