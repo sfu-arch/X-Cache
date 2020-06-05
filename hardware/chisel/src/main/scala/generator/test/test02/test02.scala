@@ -23,7 +23,7 @@ import regfile._
 import util._
 
 
-class test02DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32), Returns: Seq[Int] = List(32))
+class test02DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(64, 64), Returns: Seq[Int] = List(64))
 			(implicit p: Parameters) extends DandelionAccelDCRModule(PtrsIn, ValsIn, Returns){
 
 
@@ -187,12 +187,6 @@ class test02DF(PtrsIn: Seq[Int] = List(), ValsIn: Seq[Int] = List(32, 32), Retur
 
   /* ================================================================== *
    *                   CONNECTING PHI NODES                             *
-   * ================================================================== */
-
-
-
-  /* ================================================================== *
-   *                   PRINT ALLOCA OFFSET                              *
    * ================================================================== */
 
 

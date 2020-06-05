@@ -61,8 +61,8 @@ object DandelionTestDebugDCRAccel {
     testName match {
 
       //TestCases
-      case "test01" => (() => new test01DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
-      case "test02" => (() => new test02DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "test01" => (() => new test01RootDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "test02" => (() => new test02RootDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "test03" => (() => new test03DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "test04" => (() => new test04DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "test05" => (() => new test05DF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
@@ -87,6 +87,7 @@ object DandelionTestDebugDCRAccel {
       case "spmvCRS" => (() => new spmvCRSDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "fftStrided" => (() => new fftDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "bbgemm" => (() => new bbgemmDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "md" => (() => new md_kernelRootDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
 
 
       case _ => throw new Exception(s"[EXCEPTION] The accel's name is not defined -- " +
