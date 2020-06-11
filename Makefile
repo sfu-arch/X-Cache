@@ -30,7 +30,7 @@ chisel:
 	make -C hardware/chisel
 
 f1:
-	make -C hardware/chisel verilog
+	make -C hardware/chisel f1
 
 cyclone:
 	make -C hardware/chisel cyclone

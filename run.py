@@ -134,6 +134,8 @@ def ParseArguments():
                         help='Building dsim library')
     parser.add_argument('--cyclone', action='store', dest='cyclone', type=dir_path,
                         help='Building dsim library')
+    parser.add_argument('--f1', action='store', dest='f1', type=dir_path,
+                        help='Building dsim library')
     parser.add_argument('--accel-config', action='store', dest='accel_config', type=dir_path,
                         help='The accelerator name that will we passed to hardware generator')
     args = parser.parse_args()
@@ -188,6 +190,30 @@ def GetCyclone(config):
         CheckCall(['make', 'cyclone'] + ['TOP=DCRAccel'] + make_params)
 
 
+def GetF1(config):
+    make_params = []
+    with open(config, 'r') as configFile:
+        configData = json.load(configFile)
+        for config in configData['Accel']:
+            if config == 'Build':
+                for build in configData['Accel'][config]:
+                    make_params += ["{}={} ".format(str(build),
+                                                    str(configData['Accel'][config][build]))]
+            else:
+                if isinstance(configData['Accel'][config], list):
+                    make_params += ["{}={} ".format(str(config),
+                                                    ','.join(map(str, configData['Accel'][config])))]
+                else:
+                    make_params += ["{}={} ".format(str(config),
+                                                    str(configData['Accel'][config]))]
+
+        # print(make_params)
+        print(bcolors.OKGREEN + " ".join(str(val)
+                                         for val in ['make', 'chisel'] + make_params) + bcolors.ENDC)
+        CheckCall(['make', 'f1', 'TOP=DandelionF1Accel'] + make_params)
+
+
+
 
 
 def BuildDsim():
@@ -208,6 +234,8 @@ def Main():
         BuildDsim()
     elif args.cyclone:
         GetCyclone(args.cyclone)
+    elif args.f1:
+        GetF1(args.f1)
     else:
         BuildAccel(args.accel_config)
 
