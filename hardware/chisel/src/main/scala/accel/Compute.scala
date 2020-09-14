@@ -22,6 +22,7 @@ package accel
 import chisel3._
 import chisel3.util._
 import dandelion.dpi._
+import memory.URAM_Queue
 
 /** Compute
   *
@@ -53,6 +54,8 @@ class Compute(implicit config: AccelConfig) extends Module {
   val cnt = Reg(UInt(config.regBits.W))
   val raddr = Reg(UInt(config.ptrBits.W))
   val waddr = Reg(UInt(config.ptrBits.W))
+
+  val queue = Module(new URAM_Queue(UInt(config.regBits.W), entries = 10))
 
   switch (state) {
     is (sIdle) {
