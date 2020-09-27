@@ -12,7 +12,7 @@ import dandelion.dataflow.cache.test_cache01DF
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import chisel3.iotesters._
-import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache}
+import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache, Gem5Cache}
 import org.scalatest.{FlatSpec, Matchers}
 
 
@@ -30,7 +30,8 @@ class test_cache01MainIO(implicit val p: Parameters) extends Module with HasAcce
 
 class test_cache01Main(implicit p: Parameters) extends test_cache01MainIO {
 
-  val cache = Module(new ReferenceCache()) // Simple Nasti Cache
+  //val cache = Module(new ReferenceCache()) // Simple Nasti Cache
+  val cache = Module(new Gem5Cache())
   val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
   val memCopy = Mem(1014, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
