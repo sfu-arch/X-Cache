@@ -31,10 +31,6 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val byteOffsetBits = log2Ceil(wBytes)
   val dataBeats = bBits / memParams.dataBits
 
-  def addrToLoc (addr:UInt ) {
-    addr
-
-  }
 }
 
 
@@ -49,7 +45,10 @@ class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBu
 
 class MetaData(implicit p: Parameters) extends AXIAccelBundle with HasCacheAccelParams {
   val tag = UInt(taglen.W)
-  val state = UInt (stateLen.W)
+}
+
+class State(implicit p: Parameters) extends AXIAccelBundle with HasCacheAccelParams {
+  val state = UInt(stateLen.W)
 }
 
 object MetaData {
@@ -69,6 +68,15 @@ object MetaData {
   def default(implicit p: Parameters): MetaData = {
     val wire = Wire(new MetaData)
     wire.tag := 0.U
+    wire
+  }
+}
+
+object State {
+
+  def default(implicit p: Parameters): State= {
+    val wire = Wire(new State)
+    wire.state := 0.U
     wire
   }
 }
@@ -94,9 +102,13 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val dirty_block = nSets
 
   // memory
-  val valid   = RegInit(Vec(nSets, 0.U(nWays.W)))
+  val valid    = RegInit(Vec(nSets, 0.U(nWays.W)))
+  val validTag =  RegInit(Vec(nSets, 0.U(nWays.W)))
   val dirty   = RegInit(Vec(nSets, 0.U(nWays.W)))
-  val metaMem = Mem(nSets, Vec(nWays, new MetaData))
+  val state   = RegInit(Vec(nSets, State.default))
+
+  val metaMem = Mem((nSets * nWays).toInt, new MetaData)
+
   val dataMem = Seq.fill(nWords)(Mem(nSets,Vec (nWays, Vec(wBytes, UInt(8.W)))))
 
   val addr_reg    = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
@@ -151,26 +163,66 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val refill_buf = RegInit(VecInit(Seq.fill(dataBeats)(0.U(Axi_param.dataBits.W))))
   val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
-  hit := valid(idx_reg) && rmeta.tag === tag_reg
+   hit := valid(idx_reg) && rmeta.tag === tag_reg
 
 
+  def addrToSet( addr:UInt ): UInt={
+    val set = addr(slen + blen + wBytes, blen + wBytes + 1)
+    set.asUInt()
+  }
+
+
+  def addrToTag(addr :UInt) {
+    val tag = UInt(taglen.W)
+    tag := addr(addrLen - 1, slen + blen + wBytes + 1)
+    tag
+  }
+
+  def addrToLoc ( addr:UInt )=(UInt, UInt) {
+    val set = addrToSet(addr)
+    val way = for (i <- 0 until nWays) {
+      if (validTag(set)(i, i) === 0.B)
+        i
+    }
+    return (set, way)
+  }
+
+  def tagValidation(set: UInt, way: UInt){
+    validTag(set).bitSet(way, true.B)
+  }
+
+  def tagInvalidation(set: UInt, way: UInt){
+    validTag(set).bitSet(way, false.B)
+  }
+
+  def tagging ( addr:UInt, set:UInt, way:UInt){
+    val MD = new MetaData()
+    MD.tag := addrToTag(addr)
+    metaMem.write(set * nSets.asUInt() + way, MD)
+    tagValidation(set, way)
+  }
+
+  def detaggin( set:UInt, way:UInt){
+    tagInvalidation(set,way)
+  }
 
   def Allocate (addr: UInt){
-    (set , way) = addrToLoc (addr)
+    val (set , way) = addrToLoc (addr)
     tagging(addr, set, way)
   }
 
-  def Deallocate (addr:UInt): Unit ={
-    (set , way) = addrToLoc (addr)
-    detag(set, way)
+  def Deallocate (addr:UInt) {
+    val (set , way) = addrToLoc (addr)
+    detaggin(set, way)
   }
 
-  def probing (addr:UInt): Unit ={
-    set = addrToSet(addr)
-    way = rplPolicy (set)
+  def Probing (addr:UInt): Unit ={
+    val set = addrToSet(addr)
+    val way = rplPolicy (set)
     (set, way)
   }
-  
+
+
 
   // Read Mux
   io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i + 1) * xlen - 1, i * xlen))(off_reg)
