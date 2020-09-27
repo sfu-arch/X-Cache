@@ -68,7 +68,8 @@ case class DandelionAccelParams(
                                  printCLog: Boolean = false,
                                  cacheNWays: Int = 1,
                                  cacheNSets: Int = 256,
-                                 cacheNState:Int = 16
+                                 cacheNState:Int = 16,
+                                 cacheAddrLen:Int = 32
                                ) extends AccelParams {
 
   var xlen: Int = dataLen
@@ -88,6 +89,7 @@ case class DandelionAccelParams(
   val nways = cacheNWays // TODO: set-associative
   val nsets = cacheNSets
   val nstates = cacheNState
+  val addrlen = cacheAddrLen
 
   def cacheBlockBytes: Int = 4 * (xlen >> 3) // 4 x 64 bits = 32B
 

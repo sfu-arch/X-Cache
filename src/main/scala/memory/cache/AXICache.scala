@@ -16,8 +16,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
   val nStates = accelParams.nstates
+  val addrLen = accelParams.addrlen
 
-  val adrlen = accelParams.ylen
   val stateLen = log2Ceil(nStates)
   val bBytes = accelParams.cacheBlockBytes
   val bBits = bBytes << 3
@@ -26,10 +26,15 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   //val taglen = xlen - (slen + blen)
   val wBytes = xlen / 8
-  val taglen = adrlen - (slen + blen + wBytes )
+  val taglen = addrLen - (slen + blen + wBytes )
   val nWords = bBits / xlen
   val byteOffsetBits = log2Ceil(wBytes)
   val dataBeats = bBits / memParams.dataBits
+
+  def addrToLoc (addr:UInt ) {
+    addr
+
+  }
 }
 
 
@@ -88,7 +93,6 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   //Flush Logic
   val dirty_block = nSets
 
-
   // memory
   val valid   = RegInit(Vec(nSets, 0.U(nWays.W)))
   val dirty   = RegInit(Vec(nSets, 0.U(nWays.W)))
@@ -112,6 +116,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val (set_count, set_wrap) = Counter(flush_state === s_flush_START, nSets)
 
   //val block_addr_tag_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
+
   //@todo get ride of -1
   val dirty_cache_block = Cat((dataMem map (_.read(set_count - 1.U).asUInt)).reverse)
   val block_rmeta = RegInit(init = MetaData.default)
@@ -148,6 +153,25 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   hit := valid(idx_reg) && rmeta.tag === tag_reg
 
+
+
+  def Allocate (addr: UInt){
+    (set , way) = addrToLoc (addr)
+    tagging(addr, set, way)
+  }
+
+  def Deallocate (addr:UInt): Unit ={
+    (set , way) = addrToLoc (addr)
+    detag(set, way)
+  }
+
+  def probing (addr:UInt): Unit ={
+    set = addrToSet(addr)
+    way = rplPolicy (set)
+    (set, way)
+  }
+  
+
   // Read Mux
   io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i + 1) * xlen - 1, i * xlen))(off_reg)
   io.cpu.resp.bits.tag := cpu_tag
@@ -155,6 +179,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   io.cpu.resp.bits.iswrite := cpu_iswrite
 
   //Extra input needs to be removed
+  //Extra input needs to be remove
   io.cpu.resp.bits.tile := 0.U
 
   // Can be: 1)Write hit, 2)Read hit, 3)Read miss
