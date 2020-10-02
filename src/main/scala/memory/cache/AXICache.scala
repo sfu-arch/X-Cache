@@ -191,6 +191,19 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     (set.asUInt(), way.asUInt())
   }
 
+  def findInSet (set:UInt , tag: UInt) {
+    val way = nWays.U
+    val MD = new MetaData()
+    MD.tag := tag
+    for (i <- 0 until nWays) {
+      when (validTag(set)(i, i).asUInt() === 1.U && metaMem.read(set*nSets + i) === MD.tag){
+        way := i.asUInt()
+      }
+    }
+    way.asUInt()
+
+  }
+
   def tagValidation(set: UInt, way: UInt){
     validTag(set).bitSet(way, true.B)
   }
@@ -210,21 +223,30 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     tagInvalidation(set,way)
   }
 
-  def Allocate (addr: UInt){
+  def allocate (addr: UInt){
     val (set , way) = addrToLoc (addr)
     tagging(addr, set, way)
   }
 
-  def Deallocate (addr:UInt) {
+  def deallocate (addr:UInt) {
     val (set , way) = addrToLoc (addr)
     detaggin(set, way)
   }
 
 
-  def Probing (addr:UInt): Unit ={
+  def Probing (addr:UInt): (UInt,UInt) ={
     val set = addrToSet(addr)
     val way = rplPolicy (set)
     (set, way)
+  }
+
+  def load (addr:UInt) {
+    val set = addrToSet(addr)
+    val tag = addrToTag(addr)
+    val way = findInSet (set, tag)
+
+
+
   }
 
 
