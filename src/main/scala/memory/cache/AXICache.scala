@@ -172,19 +172,23 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   }
 
 
-  def addrToTag(addr :UInt) {
+  def addrToTag(addr :UInt): UInt= {
     val tag = UInt(taglen.W)
     tag := addr(addrLen - 1, slen + blen + wBytes + 1)
-    tag
+    tag.asUInt()
   }
 
-  def addrToLoc ( addr:UInt )=(UInt, UInt) {
+  def addrToLoc ( addr:UInt ): (UInt, UInt)= {
     val set = addrToSet(addr)
-    val way = for (i <- 0 until nWays) {
-      if (validTag(set)(i, i) === 0.B)
-        i
+    val selFlag = false.B
+    val way = UInt()
+    for (i <- 0 until nWays) {
+       when (validTag(set)(i, i).asUInt() === 0.U && !selFlag){
+        way := i.asUInt()
+        selFlag := true.B
+      }
     }
-    return (set, way)
+    (set.asUInt(), way.asUInt())
   }
 
   def tagValidation(set: UInt, way: UInt){
@@ -216,11 +220,14 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     detaggin(set, way)
   }
 
+
   def Probing (addr:UInt): Unit ={
     val set = addrToSet(addr)
     val way = rplPolicy (set)
     (set, way)
   }
+
+
 
 
 
