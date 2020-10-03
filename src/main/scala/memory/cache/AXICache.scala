@@ -107,7 +107,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val dirty   = RegInit(Vec(nSets, 0.U(nWays.W)))
   val state   = RegInit(Vec(nSets, State.default))
 
-  val metaMem = Mem((nSets * nWays).toInt, new MetaData)
+  val metaMem = Vec  (nWays, (Mem((nSets).toInt, new MetaData)))
 
   val dataMem = Seq.fill(nWords)(Mem(nSets,Vec (nWays, Vec(wBytes, UInt(8.W)))))
 
@@ -195,7 +195,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     val way = nWays.U
     val MD = new MetaData()
     MD.tag := tag
-    for (i <- 0 until nWays) {
+    for (i <- 0 until nWays) yield {
       when (validTag(set)(i, i).asUInt() === 1.U && metaMem.read(set*nSets + i) === MD.tag){
         way := i.asUInt()
       }
