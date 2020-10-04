@@ -69,7 +69,8 @@ case class DandelionAccelParams(
                                  cacheNWays: Int = 1,
                                  cacheNSets: Int = 256,
                                  cacheNState:Int = 16,
-                                 cacheAddrLen:Int = 32
+                                 cacheAddrLen:Int = 32,
+                                 comlen:Int = 4
                                ) extends AccelParams {
 
   var xlen: Int = dataLen
@@ -210,6 +211,7 @@ trait HasAccelParams {
   val clog = accelParams.clog
   val verb = accelParams.verb
   val comp = accelParams.comp
+  val comlen = accelParams.comlen
 
 }
 
