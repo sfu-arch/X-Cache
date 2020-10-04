@@ -219,8 +219,9 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
     wire.tag := this.tag
     wire.taskID := this.taskID
     wire.iswrite := this.iswrite
-    wire.tile := tile
     wire.command := this.command
+    wire.tile := tile
+    wire
   }
 }
 
