@@ -18,12 +18,11 @@ trait AccelParams {
   val typeSize: Int
   val beats: Int
   val mshrLen: Int
-//  val fType: FType
+  val fType: FType
 
   //Cache
   val nways: Int
   val nsets: Int
-  var comlen: Int
 
   def cacheBlockBytes: Int
 
@@ -72,7 +71,7 @@ case class DandelionAccelParams(
                                  cacheNSets: Int = 256,
                                  cacheNState:Int = 16,
                                  cacheAddrLen:Int = 32,
-                                 commandlen:Int = 4
+                                 nCom:Int = 8
                                ) extends AccelParams {
 
   var xlen: Int = dataLen
@@ -82,18 +81,18 @@ case class DandelionAccelParams(
   val typeSize: Int = tSize
   val beats: Int = 0
   val mshrlen: Int = mshrLen
-//  val fType = dataLen match {
-//    case 64 => FType.D
-//    case 32 => FType.S
-//    case 16 => FType.H
-//  }
+  val fType = dataLen match {
+    case 64 => FType.D
+    case 32 => FType.S
+    case 16 => FType.H
+  }
 
   //Cache
   val nways = cacheNWays
   val nsets = cacheNSets
   val nstates = cacheNState
   val addrlen = cacheAddrLen
-  var nCommand = 6
+  val nCommand = nCom
   var comlen:Int = math.ceil(math.log(nCommand)/math.log(2)).toInt
 
   def cacheBlockBytes: Int = 4 * (xlen >> 3) // 4 x 64 bits = 32B

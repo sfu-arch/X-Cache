@@ -12,7 +12,7 @@ import dandelion.dataflow.cache.test_cache01DF
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import chisel3.iotesters._
-import dandelion.memory.cache.{HasCacheAccelParams, ReferenceCache, Gem5Cache}
+import dandelion.memory.cache.{HasCacheAccelParams, Gem5Cache}
 import org.scalatest.{FlatSpec, Matchers}
 
 
@@ -125,106 +125,106 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
 
 
   testAllocate(0.U)
-/*
+
   val inAddrVec = List.range(0, (4 * 8), 4)
   val inDataVec = List(10, 20, 30, 40, 50, 60, 70, 80)
   val outAddrVec = List.range(0, (4 * 8), 4)
   val outDataVec = List(10, 20, 30, 40, 50, 60, 70, 80)
+  /*
 
-
-  //   Write initial contents to the memory model.
-  for (i <- 0 until inDataVec.length) {
-    MemWrite(inAddrVec(i), inDataVec(i))
-  }
-  step(1)
-  dumpMemory("init.mem")
-  step(1)
-
-  // Initializing the signals
-  poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0.U)
-  poke(c.io.in.bits.data("field0").taskID, 0.U)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0.U)
-  poke(c.io.in.bits.data("field1").taskID, 0.U)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0.U)
-  poke(c.io.in.bits.data("field2").taskID, 0.U)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
-  poke(c.io.out.ready, false.B)
-  step(1)
-  poke(c.io.in.bits.enable.control, true.B)
-  poke(c.io.in.valid, true.B)
-  poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
-  poke(c.io.in.bits.data("field0").predicate, true.B)
-  poke(c.io.in.bits.data("field1").data, 16) // Array b[] base address
-  poke(c.io.in.bits.data("field1").predicate, true.B)
-  poke(c.io.in.bits.data("field2").data, 1) // flag Read(1), Write(0)
-  poke(c.io.in.bits.data("field2").predicate, true.B)
-  poke(c.io.out.ready, true.B)
-  step(1)
-  poke(c.io.in.bits.enable.control, false.B)
-  poke(c.io.in.valid, false.B)
-  poke(c.io.in.bits.data("field0").data, 0)
-  poke(c.io.in.bits.data("field0").predicate, false.B)
-  poke(c.io.in.bits.data("field1").data, 0)
-  poke(c.io.in.bits.data("field1").predicate, false.B)
-  poke(c.io.in.bits.data("field2").data, 0)
-  poke(c.io.in.bits.data("field2").predicate, false.B)
-
-  step(1)
-
-  // NOTE: Don't use assert().  It seems to terminate the writing of VCD files
-  // early (before the error) which makes debugging very difficult. Check results
-  // using if() and fail command.
-  var time = 0
-  var result = false
-  while (time < 500) {
-    time += 1
+    //   Write initial contents to the memory model.
+    for (i <- 0 until inDataVec.length) {
+      MemWrite(inAddrVec(i), inDataVec(i))
+    }
     step(1)
-    if (peek(c.io.out.valid) == 1 &&
-      peek(c.io.out.bits.data("field0").predicate) == 1
-    ) {
-      result = true
-      val data = peek(c.io.out.bits.data("field0").data)
-      if (data != 2000) {
-        println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 2000" + Console.RESET)
-        fail
-      } else {
-        println(Console.BLUE + s"*** Correct return result received. Run time: $time cycles." + Console.RESET)
+    dumpMemory("init.mem")
+    step(1)
+
+    // Initializing the signals
+    poke(c.io.in.bits.enable.control, false.B)
+    poke(c.io.in.valid, false.B)
+    poke(c.io.in.bits.data("field0").data, 0.U)
+    poke(c.io.in.bits.data("field0").taskID, 0.U)
+    poke(c.io.in.bits.data("field0").predicate, false.B)
+    poke(c.io.in.bits.data("field1").data, 0.U)
+    poke(c.io.in.bits.data("field1").taskID, 0.U)
+    poke(c.io.in.bits.data("field1").predicate, false.B)
+    poke(c.io.in.bits.data("field2").data, 0.U)
+    poke(c.io.in.bits.data("field2").taskID, 0.U)
+    poke(c.io.in.bits.data("field2").predicate, false.B)
+    poke(c.io.out.ready, false.B)
+    step(1)
+    poke(c.io.in.bits.enable.control, true.B)
+    poke(c.io.in.valid, true.B)
+    poke(c.io.in.bits.data("field0").data, 0) // Array a[] base address
+    poke(c.io.in.bits.data("field0").predicate, true.B)
+    poke(c.io.in.bits.data("field1").data, 16) // Array b[] base address
+    poke(c.io.in.bits.data("field1").predicate, true.B)
+    poke(c.io.in.bits.data("field2").data, 1) // flag Read(1), Write(0)
+    poke(c.io.in.bits.data("field2").predicate, true.B)
+    poke(c.io.out.ready, true.B)
+    step(1)
+    poke(c.io.in.bits.enable.control, false.B)
+    poke(c.io.in.valid, false.B)
+    poke(c.io.in.bits.data("field0").data, 0)
+    poke(c.io.in.bits.data("field0").predicate, false.B)
+    poke(c.io.in.bits.data("field1").data, 0)
+    poke(c.io.in.bits.data("field1").predicate, false.B)
+    poke(c.io.in.bits.data("field2").data, 0)
+    poke(c.io.in.bits.data("field2").predicate, false.B)
+
+    step(1)
+
+    // NOTE: Don't use assert().  It seems to terminate the writing of VCD files
+    // early (before the error) which makes debugging very difficult. Check results
+    // using if() and fail command.
+    var time = 0
+    var result = false
+    while (time < 500) {
+      time += 1
+      step(1)
+      if (peek(c.io.out.valid) == 1 &&
+        peek(c.io.out.bits.data("field0").predicate) == 1
+      ) {
+        result = true
+        val data = peek(c.io.out.bits.data("field0").data)
+        if (data != 2000) {
+          println(Console.RED + s"*** Incorrect result received. Got $data. Hoping for 2000" + Console.RESET)
+          fail
+        } else {
+          println(Console.BLUE + s"*** Correct return result received. Run time: $time cycles." + Console.RESET)
+        }
       }
     }
-  }
 
-  step(100)
+    step(100)
 
-  //  Peek into the CopyMem to see if the expected data is written back to the Cache
-  var valid_data = true
-  for (i <- 0 until outAddrVec.length) {
-    val data = MemRead(outAddrVec(i))
-    if (data != outDataVec(i).toInt) {
-      println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+    //  Peek into the CopyMem to see if the expected data is written back to the Cache
+    var valid_data = true
+    for (i <- 0 until outAddrVec.length) {
+      val data = MemRead(outAddrVec(i))
+      if (data != outDataVec(i).toInt) {
+        println(Console.RED + s"*** Incorrect data received. Got $data. Hoping for ${outDataVec(i).toInt}" + Console.RESET)
+        fail
+        valid_data = false
+      }
+      else {
+        println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
+      }
+    }
+    if (valid_data) {
+      println(Console.BLUE + "*** Correct data written back." + Console.RESET)
+      dumpMemory("final.mem")
+    }
+
+
+    if (!result) {
+      println(Console.RED + "*** Timeout." + Console.RESET)
+      dumpMemory("final.mem")
       fail
-      valid_data = false
     }
-    else {
-      println(Console.BLUE + s"[LOG] MEM[${outAddrVec(i).toInt}] :: $data" + Console.RESET)
-    }
-  }
-  if (valid_data) {
-    println(Console.BLUE + "*** Correct data written back." + Console.RESET)
-    dumpMemory("final.mem")
-  }
 
-
-  if (!result) {
-    println(Console.RED + "*** Timeout." + Console.RESET)
-    dumpMemory("final.mem")
-    fail
-  }
-
- */
+   */
 
 }
 
