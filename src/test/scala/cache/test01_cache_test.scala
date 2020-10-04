@@ -70,7 +70,7 @@ class test_cache01Main(implicit p: Parameters) extends test_cache01MainIO {
 }
 
 
-class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c) {
+class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c) with HasCacheAccelParams {
 
   def MemRead(addr: Int): BigInt = {
     while (peek(c.io.req.ready) == 0) {
@@ -114,8 +114,18 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
     pw.close
 
   }
+  def testAllocate(addr:UInt) = {
+    poke(c.io.req.bits.addr, addr)
+    poke(c.io.req.bits.command, cAlloc)
+    step(2)
+  }
 
 
+
+
+
+  testAllocate(0.U)
+/*
   val inAddrVec = List.range(0, (4 * 8), 4)
   val inDataVec = List(10, 20, 30, 40, 50, 60, 70, 80)
   val outAddrVec = List.range(0, (4 * 8), 4)
@@ -213,6 +223,9 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
     dumpMemory("final.mem")
     fail
   }
+
+ */
+
 }
 
 

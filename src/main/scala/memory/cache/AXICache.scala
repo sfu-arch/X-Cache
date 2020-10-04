@@ -19,17 +19,26 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val addrLen = accelParams.addrlen
 
   val stateLen = log2Ceil(nStates)
+  val wBytes = xlen / 8
   val bBytes = accelParams.cacheBlockBytes
   val bBits = bBytes << 3
   val blen = log2Ceil(bBytes)
+  val nData = bBits / memParams.dataBits
+  val dataBeats = nData
+  val cNone :: cAlloc :: cDealloc :: cProbe :: cRead :: cWrite::Nil = Enum(accelParams.nCommand + 1)
+
+
+
+  // @//todo to a more generic way
+
   val slen = log2Ceil(nSets)
+  val nWords = bBits / xlen
 
   //val taglen = xlen - (slen + blen)
-  val wBytes = xlen / 8
   val taglen = addrLen - (slen + blen + wBytes )
-  val nWords = bBits / xlen
+
   val byteOffsetBits = log2Ceil(wBytes)
-  val dataBeats = bBits / memParams.dataBits
+//
 
 }
 
@@ -99,36 +108,106 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val flush_state = RegInit(s_flush_IDLE)
 
   //Flush Logic
+  //@todo ??
   val dirty_block = nSets
 
   // memory
   val valid    = RegInit(Vec(nSets, 0.U(nWays.W)))
   val validTag =  RegInit(Vec(nSets, 0.U(nWays.W)))
   val dirty   = RegInit(Vec(nSets, 0.U(nWays.W)))
-  val state   = RegInit(Vec(nSets, State.default))
+  val stateBit   = RegInit(Vec(nSets, State.default(p)))
 
-  val metaMem = Vec  (nWays, (Mem((nSets).toInt, new MetaData)))
+  //val metaMem = Vec (nWays, Mem((nSets).toInt, new MetaData))
+  val metaMem = Vec (nWays, Vec((nSets).toInt, new MetaData))
+  val dataMem = Seq.fill(nWords){Mem(nSets * nWays, Vec(wBytes, UInt(8.W)))}
 
-  val dataMem = Seq.fill(nWords)(Mem(nSets,Vec (nWays, Vec(wBytes, UInt(8.W)))))
+
+
+  def addrToSet( addr:UInt ): UInt={
+    val set = addr(slen + blen + wBytes, blen + wBytes + 1)
+    set.asUInt()
+  }
+  def addrToOffset(addr:UInt): UInt={
+    val offset = addr(blen - 1, byteOffsetBits )
+    offset.asUInt()
+  }
+
+  def addrToTag(addr :UInt): UInt= {
+    val tag = UInt(taglen.W)
+    tag := addr(addrLen - 1, slen + blen + wBytes + 1)
+    tag.asUInt()
+  }
+
+  def addrToLoc ( set:UInt ): (UInt)= {
+    val selFlag = false.B
+    val way = UInt()
+    for (i <- 0 until nWays) {
+      when (validTag(set)(i, i).asUInt() === 0.U && !selFlag){
+        way := i.asUInt()
+        selFlag := true.B
+      }
+    }
+    (way.asUInt())
+  }
+
+  def findInSet (set:UInt , tag: UInt) {
+    val way = nWays.U
+    val MD = new MetaData()
+    MD.tag := tag
+    for (i <- 0 until nWays) yield {
+      when (validTag(set)(i, i).asUInt() === 1.U && metaMem(i)(set).asUInt() === MD.tag){
+        way := i.asUInt()
+      }
+    }
+    way.asUInt()
+
+  }
+
+  def tagValidation(set: UInt, way: UInt){
+    validTag(set).bitSet(way, true.B)
+  }
+
+  def tagInvalidation(set: UInt, way: UInt){
+    validTag(set).bitSet(way, false.B)
+  }
+
+
 
   val addr_reg    = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
   val cpu_data    = RegInit(0.U(io.cpu.req.bits.data.getWidth.W))
   val cpu_mask    = RegInit(0.U(io.cpu.req.bits.mask.getWidth.W))
   val cpu_tag     = RegInit(0.U(io.cpu.req.bits.tag.getWidth.W))
   val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
-
+  val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
   val count_set = RegInit(false.B)
 
-  // Counters
-  require(dataBeats > 0)
-  val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), dataBeats)
-  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), dataBeats)
+  val tag = RegInit(0.U(taglen.W))
+  val set = RegInit(0.U(slen.W))
+  val offset = RegInit(0.U(byteOffsetBits.W))
 
+  when(io.cpu.req.fire()) {
+    addr_reg := io.cpu.req.bits.addr
+    cpu_command := io.cpu.req.bits.command
+    cpu_tag := io.cpu.req.bits.tag
+    cpu_data := io.cpu.req.bits.data
+    cpu_mask := io.cpu.req.bits.mask
+    cpu_iswrite := io.cpu.req.bits.iswrite
+
+    tag := addrToTag(io.cpu.req.bits.addr)
+    set := addrToSet(io.cpu.req.bits.addr)
+    offset := addrToOffset(io.cpu.req.bits.addr)
+  }
+
+
+  // Counters
+  require(nData > 0)
+  val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), nData)
+  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), nData)
   //  val (block_count, block_wrap) = Counter(flush_state === s_flush_BLOCK, nWords)
   val (set_count, set_wrap) = Counter(flush_state === s_flush_START, nSets)
 
-  //val block_addr_tag_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
 
+  //val block_addr_tag_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
   //@todo get ride of -1
   val dirty_cache_block = Cat((dataMem map (_.read(set_count - 1.U).asUInt)).reverse)
   val block_rmeta = RegInit(init = MetaData.default)
@@ -145,116 +224,55 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val ren = !wen && (is_idle || is_read) && io.cpu.req.valid
   val ren_reg = RegNext(ren)
 
-  val addr = io.cpu.req.bits.addr
-  val tag = addr(xlen - 1, slen + blen)
-  val idx = addr(slen + blen - 1, blen)
-  val off = addr(blen - 1, byteOffsetBits)
-
-  val tag_reg = addr_reg(xlen - 1, slen + blen)
-  val idx_reg = addr_reg(slen + blen - 1, blen)
-  val off_reg = addr_reg(blen - 1, byteOffsetBits)
 
 
-  val cache_block = Cat((dataMem map (_.read(idx).asUInt)).reverse)
-  val cache_block_size = bBytes * 8
-  val rmeta = RegNext(next = metaMem.read(idx), init = MetaData.default)
-  val rdata = RegNext(next = cache_block, init = 0.U(cache_block_size.W))
-  val rdata_buf = RegEnable(rdata, ren_reg)
-  val refill_buf = RegInit(VecInit(Seq.fill(dataBeats)(0.U(Axi_param.dataBits.W))))
-  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
-   hit := valid(idx_reg) && rmeta.tag === tag_reg
+  //val rmeta = RegNext(next = metaMem.read(idx), init = MetaData.default)
+//  val rdata = RegNext(next = cache_block, init = 0.U(cache_block_size.W))
+//  val rdata_buf = RegEnable(rdata, ren_reg)
+  val refill_buf = RegInit(VecInit(Seq.fill(nData)(0.U(Axi_param.dataBits.W))))
+//  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
-
-  def addrToSet( addr:UInt ): UInt={
-    val set = addr(slen + blen + wBytes, blen + wBytes + 1)
-    set.asUInt()
-  }
+   //hit := (valid(idx_reg) & rmeta.tag === tag_reg)
 
 
-  def addrToTag(addr :UInt): UInt= {
-    val tag = UInt(taglen.W)
-    tag := addr(addrLen - 1, slen + blen + wBytes + 1)
-    tag.asUInt()
-  }
-
-  def addrToLoc ( addr:UInt ): (UInt, UInt)= {
-    val set = addrToSet(addr)
-    val selFlag = false.B
-    val way = UInt()
-    for (i <- 0 until nWays) {
-       when (validTag(set)(i, i).asUInt() === 0.U && !selFlag){
-        way := i.asUInt()
-        selFlag := true.B
-      }
-    }
-    (set.asUInt(), way.asUInt())
-  }
-
-  def findInSet (set:UInt , tag: UInt) {
-    val way = nWays.U
+  def tagging ( tag:UInt, set:UInt, way:UInt){
     val MD = new MetaData()
     MD.tag := tag
-    for (i <- 0 until nWays) yield {
-      when (validTag(set)(i, i).asUInt() === 1.U && metaMem.read(set*nSets + i) === MD.tag){
-        way := i.asUInt()
-      }
-    }
-    way.asUInt()
-
-  }
-
-  def tagValidation(set: UInt, way: UInt){
-    validTag(set).bitSet(way, true.B)
-  }
-
-  def tagInvalidation(set: UInt, way: UInt){
-    validTag(set).bitSet(way, false.B)
-  }
-
-  def tagging ( addr:UInt, set:UInt, way:UInt){
-    val MD = new MetaData()
-    MD.tag := addrToTag(addr)
-    metaMem.write(set * nSets.asUInt() + way, MD)
+    metaMem(way)(set) := MD
     tagValidation(set, way)
   }
 
   def detaggin( set:UInt, way:UInt){
     tagInvalidation(set,way)
   }
-
-  def allocate (addr: UInt){
-    val (set , way) = addrToLoc (addr)
-    tagging(addr, set, way)
+  def allocate (addr:UInt, set:UInt, tag:UInt){
+    val (way) = addrToLoc (set)
+    tagging(tag, set, way)
   }
 
-  def deallocate (addr:UInt) {
-    val (set , way) = addrToLoc (addr)
+  def deallocate (set:UInt) {
+    val (way) = addrToLoc (set)
     detaggin(set, way)
   }
 
+  //  def Probing (addr:UInt): (UInt,UInt) ={
+  //    val set = addrToSet(addr)
+  //    val way = rplPolicy (set)
+  //    (set, way)
+  //  }
 
-  def Probing (addr:UInt): (UInt,UInt) ={
-    val set = addrToSet(addr)
-    val way = rplPolicy (set)
-    (set, way)
-  }
-
-  def load (addr:UInt) {
-    val set = addrToSet(addr)
-    val tag = addrToTag(addr)
-    val way = findInSet (set, tag)
-
-
+  def Read (set: UInt, way: UInt) {
+//    val way = findInSet (set, tag)
+    val cache_block = Cat((dataMem map (_.read( set * nSets.U + way).asUInt)).reverse)
+    val cache_block_size = bBits
 
   }
-
-
 
 
 
   // Read Mux
-  io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i + 1) * xlen - 1, i * xlen))(off_reg)
+//  io.cpu.resp.bits.data := VecInit.tabulate(nWords)(i => read((i + 1) * xlen - 1, i * xlen))(offset)
   io.cpu.resp.bits.tag := cpu_tag
   io.cpu.resp.bits.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.resp.bits.iswrite := cpu_iswrite
@@ -267,41 +285,34 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   io.cpu.resp.valid := (is_write && hit) || (is_read && hit) || (is_alloc_reg && !cpu_iswrite)
   io.cpu.req.ready := is_idle || (state === s_READ_CACHE && hit)
 
-  // Latch the cpu request
-  when(io.cpu.req.fire()) {
-    addr_reg := addr
-    cpu_tag := io.cpu.req.bits.tag
-    cpu_data := io.cpu.req.bits.data
-    cpu_mask := io.cpu.req.bits.mask
-    cpu_iswrite := io.cpu.req.bits.iswrite
-  }
 
-  val wmeta = MetaData(tag_reg)
+
+//  val wmeta = MetaData(tag_reg)
 
   // is_alloc means cache hit, hence, if is_alloc is false, it means our mask should consider only the modified byte
   // and since wdata is masked with wmask we only duplicate the write data, otherwise, since mask doesn't do anything
   // with write data we make the proper wdata using refill_buf
-  val wmask = Mux(!is_alloc, (cpu_mask << Cat(off_reg, 0.U(byteOffsetBits.W))).asUInt.zext, (-1).asSInt()).asUInt()
-  val wdata = Mux(!is_alloc, Fill(nWords, cpu_data),
-    if (refill_buf.size == 1) io.mem.r.bits.data
-    else Cat(io.mem.r.bits.data, Cat(refill_buf.init.reverse)))
+//  val wmask = Mux(!is_alloc, (cpu_mask << Cat(off_reg, 0.U(byteOffsetBits.W))).asUInt.zext, (-1).asSInt()).asUInt()
+  //val wdata = Mux(!is_alloc, Fill(nWords, cpu_data),
+    //if (refill_buf.size == 1) io.mem.r.bits.data
+    //else Cat(io.mem.r.bits.data, Cat(refill_buf.init.reverse)))
 
 
-  when(wen) {
-    valid := valid.bitSet(idx_reg, true.B)
-    dirty := dirty.bitSet(idx_reg, !is_alloc)
+//  when(wen) {
+//    valid := valid.bitSet(set_reg, true.B)
+//    dirty := dirty.bitSet(set_reg, !is_alloc)
 
     //    dirty_mem(dirty_block) := dirty_mem(dirty_block).bitSet(dirty_offset, !is_alloc)
 
-    when(is_alloc) {
-      metaMem.write(idx_reg, wmeta)
-    }
-    dataMem.zipWithIndex foreach { case (mem, i) =>
-      val data = VecInit.tabulate(wBytes)(k => wdata(i * xlen + (k + 1) * 8 - 1, i * xlen + k * 8))
-      mem.write(idx_reg, data, (wmask((i + 1) * wBytes - 1, i * wBytes)).asBools)
-      mem suggestName s"dataMem_${i}"
-    }
-  }
+//    when(is_alloc) {
+//      metaMem.write(set_reg, wmeta)
+//    }
+//    dataMem.zipWithIndex foreach { case (mem, i) =>
+//      val data = VecInit.tabulate(wBytes)(k => wdata(i * xlen + (k + 1) * 8 - 1, i * xlen + k * 8))
+//      mem.write(set_reg, data, (wmask((i + 1) * wBytes - 1, i * wBytes)).asBools)
+//      mem suggestName s"dataMem_${i}"
+//    }
+//  }
 
   //First elemt is ID and it looks like ID tags a memory request
   // ID : Is AXI request ID
@@ -311,50 +322,51 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   io.mem.setConst()
 
   // read request
-  io.mem.ar.bits.addr := Cat(tag_reg, idx_reg) << blen.U
-  io.mem.ar.bits.len := (dataBeats - 1).U
-  io.mem.ar.valid := false.B
+//  io.mem.ar.bits.addr := Cat(tag_reg, set_reg) << blen.U
+//  io.mem.ar.bits.len := (nData - 1).U
+//  io.mem.ar.valid := false.B
 
   // read data
-  io.mem.r.ready := state === s_REFILL
-  when(io.mem.r.fire()) {
-    refill_buf(read_count) := io.mem.r.bits.data
-  }
+//  io.mem.r.ready := state === s_REFILL
+//  when(io.mem.r.fire()) {
+//    refill_buf(read_count) := io.mem.r.bits.data
+//  }
 
 
-  // Info
-  val is_block_dirty = valid(set_count) && dirty(set_count)
-  val block_addr = Cat(block_rmeta.tag, set_count - 1.U) << blen.U
+//  // Info
+//  val is_block_dirty = valid(set_count) && dirty(set_count)
+//  val block_addr = Cat(block_rmeta.tag, set_count - 1.U) << blen.U
 
   // write addr
   //io.mem.aw.bits.addr := Cat(rmeta.tag, idx_reg) << blen.U
-  io.mem.aw.bits.addr := Mux(flush_mode, block_addr, Cat(rmeta.tag, idx_reg) << blen.U)
-  io.mem.aw.bits.len := (dataBeats - 1).U
-  io.mem.aw.valid := false.B
+//  io.mem.aw.bits.addr := Mux(flush_mode, block_addr, Cat(rmeta.tag, set_reg) << blen.U)
+//  io.mem.aw.bits.len := (nData - 1).U
+//  io.mem.aw.valid := false.B
 
   // Write resp
   //io.mem.w.bits.data := VecInit.tabulate(dataBeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)
-  io.mem.w.bits.data :=
-    Mux(flush_mode,
-      VecInit.tabulate(dataBeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count),
-      VecInit.tabulate(dataBeats)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count))
-
-  io.mem.w.bits.last := write_wrap_out
-  io.mem.w.valid := false.B
-  io.mem.b.ready := false.B
-
-  io.cpu.flush_done := false.B
+//  io.mem.w.bits.data :=
+//    Mux(flush_mode,
+//      VecInit.tabulate(nData)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count),
+//      VecInit.tabulate(nData)(i => read((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count))
+//
+//  io.mem.w.bits.last := write_wrap_out
+//  io.mem.w.valid := false.B
+//  io.mem.b.ready := false.B
+//
+//  io.cpu.flush_done := false.B
 
   /**
     * Dumping cache state should add for debugging purpose
     */
+    /*
   // io.stat := state.asUInt()
   // Cache FSM
   val countOn = true.B // increment counter every clock cycle
   val (counterValue, counterWrap) = Counter(countOn, 64 * 1024)
   //clockCycles := clockCycles + 1.U
 
-  val is_dirty = valid(idx_reg) && dirty(idx_reg)
+  val is_dirty = valid(set_reg) && dirty(set_reg)
   switch(state) {
     is(s_IDLE) {
       when(io.cpu.req.valid) {
@@ -488,7 +500,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     }
     is(s_flush_WRITE_BACK) {
       if (clog) {
-        printf(p"Write data: ${VecInit.tabulate(dataBeats)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)}\n")
+        printf(p"Write data: ${VecInit.tabulate(nData)(i => dirty_cache_block((i + 1) * Axi_param.dataBits - 1, i * Axi_param.dataBits))(write_count)}\n")
       }
       io.mem.w.valid := true.B
       when(write_wrap_out) {
@@ -502,8 +514,9 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
       }
     }
   }
-
+*/
 }
+/*
 class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
   with HasCacheAccelParams
   with HasAccelShellParams {
@@ -847,6 +860,8 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
  * @param debug
  * @param p
  */
+
+
 class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
   with HasAccelParams
   with HasCacheAccelParams
@@ -1425,4 +1440,4 @@ class DMECache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Para
   }
 }
 
-
+*/
