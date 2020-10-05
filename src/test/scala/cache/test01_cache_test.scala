@@ -116,11 +116,9 @@ class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPoke
 
   }
   def testAllocate(addr:UInt) = {
-
     while (peek(c.io.cpu.req.ready) == false.B) {
       step(1)
     }
-
     poke(c.io.cpu.req.bits.addr, addr)
     poke(c.io.cpu.req.bits.command, 1.U)
     poke(c.io.cpu.req.valid, true.B)
@@ -131,6 +129,8 @@ class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPoke
 
   }
   testAllocate(0.U)
+  testAllocate(1.U)
+  testAllocate(5.U)
 
   val inAddrVec = List.range(0, (4 * 8), 4)
   val inDataVec = List(10, 20, 30, 40, 50, 60, 70, 80)
