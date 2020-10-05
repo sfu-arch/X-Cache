@@ -288,11 +288,11 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   io.cpu.resp.valid := false.B
 
   switch(cpu_command) {
-    is(1.U) {
+    is(cAlloc) {
       val res = allocate(set, tag)
       io.cpu.resp.valid := res
     }
-    is(2.U){
+    is(cDealloc){
       val res = deallocate(set, tag)
       io.cpu.resp.valid := res
     }
