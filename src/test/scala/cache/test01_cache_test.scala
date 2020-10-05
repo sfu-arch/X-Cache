@@ -121,7 +121,7 @@ class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPoke
     }
     poke(c.io.cpu.req.bits.addr, addr)
     poke(c.io.cpu.req.bits.command, 1.U)
-    poke(c.io.cpu.req.valid, true.B)
+    poke(c.io.cpu.req .valid, true.B)
     step(1)
     poke(c.io.cpu.req.valid, false.B)
     step(1)

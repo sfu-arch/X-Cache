@@ -17,6 +17,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nSets = accelParams.nsets
   val nStates = accelParams.nstates
   val addrLen = accelParams.addrlen
+  val nCom = accelParams.nCommand
 
   val stateLen = log2Ceil(nStates)
   val wBytes = xlen / 8
@@ -25,7 +26,6 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val blen = log2Ceil(bBytes)
   val nData = bBits / memParams.dataBits
   val dataBeats = nData
-//  val cNone :: cAlloc :: cDealloc :: cProbe :: cRead :: cWrite::Nil = Enum(accelParams.nCommand + 1)
 
 
 
@@ -154,12 +154,12 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     (way.asUInt())
   }
 
-  def findInSet(set: UInt, tag: UInt) {
-    val way = nWays.U
+  def findInSet(set: UInt, tag: UInt): UInt={
+    val way = Wire(UInt((nWays+1).W))
+    way := nWays.U
     val MD = new MetaData()
-    MD.tag := tag
     for (i <- 0 until nWays) yield {
-      when(validTag(set)(i, i).asUInt() === 1.U && metaMem.read(set)(i).asUInt() === MD.tag) {
+      when(validTag(set)(i, i).asUInt() === 1.U && metaMem.read(set)(i).asUInt() === tag) {
         way := i.asUInt()
       }
     }
@@ -264,9 +264,10 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     res.asBool()
   }
 
-  def deallocate(set: UInt) {
-    val (way) = addrToLoc(set)
+  def deallocate(set: UInt, tag:UInt): Bool={
+    val (way) = findInSet(set,tag)
     detaggin(set, way)
+    true.B
   }
 
   //  def Probing (addr:UInt): (UInt,UInt) ={
@@ -274,7 +275,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   //    val way = rplPolicy (set)
   //    (set, way)
   //  }
-
+//@todo should be completed
   def Read(set: UInt, way: UInt) {
     //    val way = findInSet (set, tag)
     val cache_block = Cat((dataMem map (_.read(set * nSets.U + way).asUInt)).reverse)
@@ -282,13 +283,20 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   }
 
+  val cNone :: cAlloc :: cDealloc :: cProbe :: cRead :: cWrite::Nil = Enum(nCom)
+
   io.cpu.resp.valid := false.B
-  
+
   switch(cpu_command) {
     is(1.U) {
       val res = allocate(set, tag)
       io.cpu.resp.valid := res
     }
+    is(2.U){
+      val res = deallocate(set, tag)
+      io.cpu.resp.valid := res
+    }
+
   }
 
 
