@@ -42,65 +42,66 @@ class test_cache01Main(implicit p: Parameters) extends test_cache01MainIO {
   memModel.io.init.bits.addr := 0.U
   memModel.io.init.bits.data := 0.U
   memModel.io.init.valid := false.B
-    cache.io.cpu.abort := false.B
+  cache.io.cpu.abort := false.B
   cache.io.cpu.flush := false.B
 
   // Wire up the cache and modules under test.
-  val test_cache01 = Module(new test_cache01DF())
-
-  //Put an arbiter infront of cache
-  val CacheArbiter = Module(new MemArbiter(2))
-
-  // Connect input signals to cache
-  CacheArbiter.io.cpu.MemReq(0) <> test_cache01.io.MemReq
-  test_cache01.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
-
-  //Connect main module to cache arbiter
-  CacheArbiter.io.cpu.MemReq(1) <> io.req
-  io.resp <> CacheArbiter.io.cpu.MemResp(1)
-
-  //Connect cache to the arbiter
-  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
-  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
-
-  //Connect in/out ports
-  test_cache01.io.in <> io.in
-  io.out <> test_cache01.io.out
+//  val test_cache01 = Module(new test_cache01DF())
+//
+//  //Put an arbiter infront of cache
+//  val CacheArbiter = Module(new MemArbiter(2))
+//
+//  // Connect input signals to cache
+//  CacheArbiter.io.cpu.MemReq(0) <> test_cache01.io.MemReq
+//  test_cache01.io.MemResp <> CacheArbiter.io.cpu.MemResp(0)
+//
+//  //Connect main module to cache arbiter
+//  CacheArbiter.io.cpu.MemReq(1) <> io.req
+//  io.resp <> CacheArbiter.io.cpu.MemResp(1)
+//
+//  //Connect cache to the arbiter
+//  cache.io.cpu.req <> CacheArbiter.io.cache.MemReq
+//  CacheArbiter.io.cache.MemResp <> cache.io.cpu.resp
+//
+//  //Connect in/out ports
+//  test_cache01.io.in <> io.in
+//  io.out <> test_cache01.io.out
 
 }
 
 
-class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c) with HasCacheAccelParams {
+class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPokeTester(c) {
+
 
   def MemRead(addr: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
+    while (peek(c.io.cpu.req.ready) == 0) {
       step(1)
     }
-    poke(c.io.req.valid, 1.U)
-    poke(c.io.req.bits.addr, addr.U)
-    poke(c.io.req.bits.iswrite, 0.U)
-    poke(c.io.req.bits.tag, 0.U)
-    poke(c.io.req.bits.mask, 0.U)
+    poke(c.io.cpu.req.valid, 1.U)
+    poke(c.io.cpu.req.bits.addr, addr.U)
+    poke(c.io.cpu.req.bits.iswrite, 0.U)
+    poke(c.io.cpu.req.bits.tag, 0.U)
+    poke(c.io.cpu.req.bits.mask, 0.U)
     step(1)
-    while (peek(c.io.resp.valid) == 0) {
+    while (peek(c.io.cpu.resp.valid) == 0) {
       step(1)
     }
-    val result = peek(c.io.resp.bits.data)
+    val result = peek(c.io.cpu.resp.bits.data)
     result
   }
 
   def MemWrite(addr: Int, data: Int): BigInt = {
-    while (peek(c.io.req.ready) == 0) {
+    while (peek(c.io.cpu.req.ready) == 0) {
       step(1)
     }
-    poke(c.io.req.valid, 1.U)
-    poke(c.io.req.bits.addr, addr.U)
-    poke(c.io.req.bits.data, data.U)
-    poke(c.io.req.bits.iswrite, 1.U)
-    poke(c.io.req.bits.tag, 0)
-    poke(c.io.req.bits.mask, "hF".U((c.xlen/ 8).W))
+    poke(c.io.cpu.req.valid, 1.U)
+    poke(c.io.cpu.req.bits.addr, addr.U)
+    poke(c.io.cpu.req.bits.data, data.U)
+    poke(c.io.cpu.req.bits.iswrite, 1.U)
+    poke(c.io.cpu.req.bits.tag, 0)
+    poke(c.io.cpu.req.bits.mask, "hF".U((c.xlen/ 8).W))
     step(1)
-    poke(c.io.req.valid, 0)
+    poke(c.io.cpu.req.valid, 0)
     1
   }
 
@@ -115,15 +116,20 @@ class test_cache01Test01[T <: test_cache01MainIO](c: T) extends PeekPokeTester(c
 
   }
   def testAllocate(addr:UInt) = {
-    poke(c.io.req.bits.addr, addr)
-    poke(c.io.req.bits.command, cAlloc)
-    step(2)
+
+    while (peek(c.io.cpu.req.ready) == false.B) {
+      step(1)
+    }
+
+    poke(c.io.cpu.req.bits.addr, addr)
+    poke(c.io.cpu.req.bits.command, 1.U)
+    poke(c.io.cpu.req.valid, true.B)
+    step(1)
+    poke(c.io.cpu.req.valid, false.B)
+    step(1)
+    expect(c.io.cpu.resp.valid, true.B)
+
   }
-
-
-
-
-
   testAllocate(0.U)
 
   val inAddrVec = List.range(0, (4 * 8), 4)
@@ -244,7 +250,7 @@ class test_cache01Tester1 extends FlatSpec with Matchers {
         "-tbn", "verilator",
         "-td", "test_run_dir/test_cache01",
         "-tts", "0001"),
-      () => new test_cache01Main()) {
+      () => new Gem5Cache()) {
       c => new test_cache01Test01(c)
     } should be(true)
   }
