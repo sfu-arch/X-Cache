@@ -28,9 +28,6 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val dataBeats = nData
 
 
-
-  // @//todo to a more generic way
-
   val slen = log2Ceil(nSets)
   val nWords = bBits / xlen
 
@@ -95,6 +92,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   with HasCacheAccelParams
   with HasAccelShellParams {
   val io = IO(new Bundle {
+    //@todo ports for state and metadata
     val cpu = new CacheCPUIO
     val mem = new AXIMaster(memParams)
   })
@@ -112,9 +110,9 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   // memory
   val valid = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
-
   val validTag =VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
   val dirty = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
+  //@todo generic state
   val stateBit = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
 
 //  val metaMem =  Wire(Vec(nWays, (Vec(nSets, (new MetaData)))))
@@ -288,6 +286,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   io.cpu.resp.valid := false.B
 
   switch(cpu_command) {
+
     is(cAlloc) {
       val res = allocate(set, tag)
       io.cpu.resp.valid := res
