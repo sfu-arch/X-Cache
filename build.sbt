@@ -25,7 +25,10 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq("org.scalacheck" %% "scalacheck" % "1.13.4"),
   libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel-iotesters" % "1.3-SNAPSHOT"),
   libraryDependencies ++= Seq("edu.berkeley.cs" %% "dsptools" % "1.2-SNAPSHOT"),
-  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+  libraryDependencies ++= Seq("edu.berkeley.cs" %% "chiseltest" % "0.2.1"),
+
+
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("snapshots"),
     Resolver.sonatypeRepo("releases"),
@@ -43,8 +46,11 @@ def dependOnChisel(prj: Project) = {
 
 def dependOnIoTesters(prj: Project) = {
   prj.settings(
-    libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel-iotesters" % "1.3-SNAPSHOT")
+    libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel-iotesters" % "1.3-SNAPSHOT"),
+      libraryDependencies ++= Seq("edu.berkeley.cs" %% "chiseltest" % "0.2.1")
     )
+
+
 }
 
 
