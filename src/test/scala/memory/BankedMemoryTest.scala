@@ -33,6 +33,7 @@ class MemBankTest extends FreeSpec with ChiselScalatestTester {
         }
       }
 
+      dut.clock.step()
       // read values out of memory banks
       dut.io.isRead.poke(true.B)
       for (bank <- 0 until dut.io.banks) {
