@@ -1,4 +1,4 @@
-package dandelion.memory
+package memory.banked
 
 import chisel3._
 import chisel3.util._
@@ -17,9 +17,9 @@ class MemBankIO (val banks: Int, val bankDepth: Int, val dataLen: Int, val addrL
 }
 
 
-class MemBank(val banks: Int, val bankDepth: Int, val dataLen: Int, val addrLen: Int)(implicit  val p: Parameters) extends Module
-with HasAccelParams
-with HasAccelShellParams{
+class MemBank(val banks: Int, val bankDepth: Int, val dataLen: Int, val addrLen: Int) extends Module{
+//with HasAccelParams
+//with HasAccelShellParams{
 
   val io = IO (new MemBankIO(banks, bankDepth, dataLen, addrLen))
 
