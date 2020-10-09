@@ -1,4 +1,4 @@
-package memory.banked
+package dandelion.memory.cache
 
 import chisel3._
 import chisel3.util._
@@ -8,30 +8,43 @@ import dandelion.util._
 import dandelion.interfaces._
 import dandelion.interfaces.axi._
 
-class MemBankIO (val banks: Int, val bankDepth: Int, val dataLen: Int, val addrLen: Int) extends Bundle{
-  val bank = Input(UInt(addrLen.W))
+
+trait HasBankedMemAccelParams extends HasCacheAccelParams {
+
+  val dataLen = xlen
+  override val addrLen: Int = setLen
+  val banks = nWays
+  val bankDepth = nSets
+  val bankLen = wayLen
+
+}
+
+class MemBankIO[T <: Data] (D: T)(implicit val p: Parameters) extends Bundle with HasBankedMemAccelParams{
+
+  val bank = Input(UInt(bankLen.W))
   val address = Input(UInt(addrLen.W))
   val isRead = Input(Bool())
-  val inputValue = Input(UInt(dataLen.W))
-  val outputValue = Output(UInt(dataLen.W))
+  val inputValue = Input( D.cloneType)
+  val outputValue = Output(Vec(banks, D.cloneType))
 }
 
 
-class MemBank(val banks: Int, val bankDepth: Int, val dataLen: Int, val addrLen: Int) extends Module{
-//with HasAccelParams
+class MemBank[T <: Data] (D:T) (implicit val p: Parameters)
+    extends Module
+    with HasBankedMemAccelParams {
 //with HasAccelShellParams{
 
-  val io = IO (new MemBankIO(banks, bankDepth, dataLen, addrLen))
+  val mt = D.cloneType
+  val io = IO (new MemBankIO(mt))
 
-  val mems = Seq.fill(banks) { Mem(bankDepth, UInt(dataLen.W)) }
+  val mems = Seq.fill(banks) { Mem(bankDepth, mt) }
 
   io.outputValue := DontCare
 
   when(io.isRead) {
-    (0 until banks).foldLeft(when(false.B) {}) {
-      case (whenContext, bankIndex) =>
-        whenContext.elsewhen(io.bank === bankIndex.U) {
-          io.outputValue := mems(bankIndex)(io.address)
+    (0 until banks).foldLeft() {
+      case (_, bankIndex) => {
+          io.outputValue(bankIndex.U) := mems(bankIndex)(io.address)
         }
     }
   }.otherwise {
