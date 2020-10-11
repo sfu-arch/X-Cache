@@ -21,7 +21,8 @@ class State(implicit p: Parameters) extends AXIAccelBundle with HasCacheAccelPar
   val state = UInt(stateLen.W)
 }
 
-object MetaData {
+object MetaData  {
+
 
   def apply(tag_len: Int)(implicit p: Parameters): MetaData = {
     val wire = Wire(new MetaData)
@@ -40,6 +41,7 @@ object MetaData {
     wire.tag := 0.U
     wire
   }
+
 }
 
 object State {
