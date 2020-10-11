@@ -1,4 +1,4 @@
-package memory.banked
+package dandelion.memory.cache
 
 import java.io.PrintWriter
 import java.io.File
@@ -17,11 +17,13 @@ import dandelion.memory.cache.{HasCacheAccelParams, Gem5Cache}
 import org.scalatest.{FlatSpec, Matchers,FreeSpec}
 
 
-class MemBankTest extends FreeSpec with ChiselScalatestTester {
+abstract class MemBankTest extends FreeSpec with ChiselScalatestTester {
 
+  implicit val p: Parameters
 
+  def accelParams: DandelionAccelParams = p(DandelionConfigKey)
     "MemBankSimulation should work" in {
-    test(new MemBank(banks = 3, bankDepth = 3 , 32, 32)) { dut =>
+    test(new MemBank(0.U)) { dut =>
       // write values into memory
       dut.io.isRead.poke(false.B)
       for (bank <- 0 until dut.io.banks) {
