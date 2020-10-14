@@ -95,8 +95,8 @@ case class DandelionAccelParams(
   val nCommand = nCom
   var comlen:Int = math.ceil(math.log(nCommand)/math.log(2)).toInt
 
-  def cacheBlockBytes: Int = 4 * (xlen >> 3) // 4 x 64 bits = 32B
-
+    def cacheBlockBytes: Int = 4 * (xlen >> 3) // 4 x 32 bits = 16B
+//   def cacheBlockBytes: Int = xlen >> 3
   // Debugging dumps
   val log: Boolean = printLog
   val memLog: Boolean = printMemLog
