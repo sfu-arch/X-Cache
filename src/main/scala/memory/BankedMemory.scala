@@ -9,17 +9,8 @@ import dandelion.interfaces._
 import dandelion.interfaces.axi._
 
 
-trait HasBankedMemAccelParams extends HasCacheAccelParams {
 
-  val dataLen = xlen
-  override val addrLen: Int = setLen
-  val banks = nWays
-  val bankDepth = nSets
-  val bankLen = wayLen
-
-}
-
-class MemBankIO[T <: Data] (D: T)(implicit val p: Parameters) extends Bundle with HasBankedMemAccelParams{
+class MemBankIO[T <: Data] (D: T)(val dataLen:Int, val addrLen : Int, val banks: Int, val bankDepth:Int, val bankLen:Int)(implicit val p: Parameters) extends Bundle{
 
   val bank = Input(UInt(bankLen.W))
   val address = Input(UInt(addrLen.W))
@@ -29,13 +20,12 @@ class MemBankIO[T <: Data] (D: T)(implicit val p: Parameters) extends Bundle wit
 }
 
 
-class MemBank[T <: Data] (D:T) (implicit val p: Parameters)
-    extends Module
-    with HasBankedMemAccelParams {
-//with HasAccelShellParams{
+class MemBank[T <: Data] (D:T) (val dataLen:Int, val addrLen : Int, val banks: Int, val bankDepth:Int, val bankLen:Int)(implicit val p: Parameters)
+    extends Module {
+  //with HasAccelShellParams{
 
   val mt = D.cloneType
-  val io = IO (new MemBankIO(mt))
+  val io = IO (new MemBankIO(mt)(dataLen, addrLen, banks, bankDepth, bankLen))
 
   val mems = Seq.fill(banks) { Mem(bankDepth, mt) }
 
