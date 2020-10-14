@@ -46,6 +46,11 @@ object MetaData  {
 
 object State {
 
+  def apply(state_len: Int)(implicit p: Parameters): State = {
+    val wire = Wire(new State)
+    wire.state := state_len.U
+    wire
+  }
   def default(implicit p: Parameters): State= {
     val wire = Wire(new State)
     wire.state := 0.U
@@ -66,9 +71,11 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   val Axi_param = memParams
 
-  val metaMemory = Module(new MemBank(new MetaData()))
-  val dataMemory = Module(new MemBank( UInt(xlen.W)))
+  val metaMemory = Module(new MemBank(new MetaData())(xlen, setLen, nWays, nSets, wayLen))
+  val dataMemory = Module(new MemBank( UInt(xlen.W)) (xlen, addrLen, nWords, nSets * nWays, wordLen))
   val cacheLogic = Module(new Gem5CacheLogic())
+  //@todo generic state
+  val stateBit = VecInit(Seq.fill(nSets*nWays)( (State.default)))
 
 //  cacheLogic.io.metaMem.inputValue <> metaMemory.io.outputValue
 //  cacheLogic.io.metaMem.inputValue <> dataMemory.io.outputValue
