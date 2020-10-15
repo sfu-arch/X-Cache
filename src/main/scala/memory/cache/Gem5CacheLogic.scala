@@ -60,16 +60,27 @@ class CacheBankedMemIO[T <: Data](D: T, nInput :Int) (implicit val p: Parameters
   val inputValue = Input(Vec(nInput, D.cloneType))
 }
 
+class StateMemIO() (implicit val p: Parameters) extends Bundle
+  with HasCacheAccelParams
+  with HasAccelShellParams {
+
+  val isSet = Output(Bool())
+  val stateIn = Input(new State)
+  val stateOut = Output(new State)
+  val addr = Output(UInt(addrLen.W))
+
+}
 class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   with HasCacheAccelParams
   with HasAccelShellParams {
 
   val io = IO(new Bundle {
-    //@todo ports for state and metadata
+    //@todo ports for state and metadata -- Done
     val cpu = new CacheCPUIO
     val mem = new AXIMaster(memParams)
     val dataMem = new CacheBankedMemIO(UInt(xlen.W), nWords)
     val metaMem = new CacheBankedMemIO(new MetaData(), nWays)
+    val stateMem = new StateMemIO()
 
   })
 
@@ -77,12 +88,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.mem <> DontCare
   io.metaMem <> DontCare
   io.dataMem <> DontCare
+  io.stateMem <> DontCare
 
   val Axi_param = memParams
 
   // cache states
   val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
-  val state = RegInit(s_IDLE)
+  val st = RegInit(s_IDLE)
 
   val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
   val flush_state = RegInit(s_flush_IDLE)
@@ -156,6 +168,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val set = RegInit(0.U(setLen.W))
   val offset = RegInit(0.U(byteOffsetBits.W))
   val way = RegInit(0.U((nWays+1).W))
+  val state = RegInit(State.default)
 
   val findInSetSig = Wire(Bool())
   val addrToLocSig = Wire (Bool())
@@ -175,6 +188,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val loadWaysMeta = Wire(Bool())
   val loadLineData = Wire(Bool())
+  val loadState = Wire (Bool())
 
   val waysInASet = Reg(Vec(nWays, new MetaData()))
   val cacheLine = Reg(Vec(nWords, UInt(xlen.W)))
@@ -194,6 +208,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     cacheLine := io.dataMem.inputValue
   }
 
+  when (loadState){
+    state := io.stateMem.stateIn
+  }
+
   // Counters
   require(nData > 0)
   val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), nData)
@@ -208,10 +226,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  val block_rmeta = RegInit(init = MetaData.default)
 //  val flush_mode = RegInit(false.B)
 
-  val is_idle = state === s_IDLE
-  val is_read = state === s_READ_CACHE
-  val is_write = state === s_WRITE_CACHE
-  val is_alloc = state === s_REFILL && read_wrap_out
+  val is_idle = st === s_IDLE
+  val is_read = st === s_READ_CACHE
+  val is_write = st === s_WRITE_CACHE
+  val is_alloc = st === s_REFILL && read_wrap_out
   val is_alloc_reg = RegNext(is_alloc)
 
 //  val hit = Wire(Bool())
@@ -232,6 +250,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   loadLineData := false.B
   findInSetSig := false.B
   addrToLocSig := false.B
+  loadState := false.B
+
 
   def prepForRead[T <: Data] (D: CacheBankedMemIO[T]): Unit ={
     D.isRead := true.B
@@ -326,8 +346,19 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   def SetState (state: State): Unit = {
     val addr = Wire(UInt(addrLen.W))
     addr := set*nSets.U + way
-
+    io.stateMem.addr:= addr
+    io.stateMem.stateOut := state
+    io.stateMem.isSet := true.B
   }
+
+  def GetState (): Unit ={
+    val addr = Wire(UInt(addrLen.W))
+    addr := set*nSets.U + way
+    io.stateMem.addr := addr
+    io.stateMem.addr := false.B
+    loadState := true.B
+  }
+
 
 
   val cNone :: cAlloc :: cDealloc :: cProbe :: cRead :: cWrite::Nil = Enum(nCom)
