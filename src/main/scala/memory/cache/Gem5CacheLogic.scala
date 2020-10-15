@@ -158,6 +158,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val way = RegInit(0.U((nWays+1).W))
 
   val findInSetSig = Wire(Bool())
+  val addrToLocSig = Wire (Bool())
 
 
   when(io.cpu.req.fire()) {
@@ -180,6 +181,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   when (findInSetSig){
     way := findInSet(set,tag)
+  }.elsewhen(!findInSetSig & addrToLocSig){
+    way := addrToLoc(set)
   }
 
 //  val cache_block_size = bBits
@@ -228,6 +231,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   loadWaysMeta := false.B
   loadLineData := false.B
   findInSetSig := false.B
+  addrToLocSig := false.B
 
   def prepForRead[T <: Data] (D: CacheBankedMemIO[T]): Unit ={
     D.isRead := true.B
@@ -257,7 +261,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //    io.metaMem.bank := 0.U
 //    io.metaMem.address := set
 //    io.metaMem.isRead := true.B
-
     for (i <- 0 until nWays) yield {
       when(validTag(set)(i, i).asUInt() === 1.U && waysInASet(i).tag.asUInt() === MD.tag) {
         wayWire := i.asUInt()
@@ -280,13 +283,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   def allocate(set: UInt, tag: UInt): Bool = {
-    val (way) = addrToLoc(set)
     val res = Wire(Bool())
     when(way === nWays.U) { //means error in finding a way
       res := false.B
+      addrToLocSig := false.B
     }.otherwise {
       tagging(tag, set, way)
       res := true.B
+      addrToLocSig := true.B
     }
     res.asBool()
   }
@@ -318,6 +322,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     io.dataMem.isRead := true.B
     loadLineData := true.B
   }
+
+  def SetState (state: State): Unit = {
+    val addr = Wire(UInt(addrLen.W))
+    addr := set*nSets.U + way
+
+  }
+
 
   val cNone :: cAlloc :: cDealloc :: cProbe :: cRead :: cWrite::Nil = Enum(nCom)
 //
