@@ -164,6 +164,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
   val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
   val count_set = RegInit(false.B)
+  val inputState = RegInit(State.default)
 
   val tag = RegInit(0.U(taglen.W))
   val set = RegInit(0.U(setLen.W))
@@ -185,6 +186,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     tag := addrToTag(io.cpu.req.bits.addr)
     set := addrToSet(io.cpu.req.bits.addr)
     offset := addrToOffset(io.cpu.req.bits.addr)
+//    inputState := io.cpu.req.bits.state
   }
 
   val loadWaysMeta = Wire(Bool())
@@ -342,20 +344,22 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //    io.dataMem.isRead := true.B
   }
 
-  def SetState (state: State): Unit = {
+  def SetState (state: State): Bool = {
     val addr = Wire(UInt(addrLen.W))
     addr := set*nSets.U + way
     io.stateMem.addr:= addr
     io.stateMem.stateOut := state
     io.stateMem.isSet := true.B
+    true.B
   }
 
-  def GetState (): Unit ={
+  def GetState (): Bool ={
     val addr = Wire(UInt(addrLen.W))
     addr := set*nSets.U + way
     io.stateMem.addr := addr
     io.stateMem.addr := false.B
     loadState := true.B
+    true.B
   }
 
 
@@ -376,6 +380,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     is(cDealloc){
       val res = deallocate(set, tag)
       io.cpu.resp.valid := res
+
+      
     }
     is (cReadInternal){
       st := s_READ_CACHE
@@ -393,7 +399,16 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       }
     }
 
-    is ()
+    is (cGetState){
+      val res = GetState()
+      io.cpu.resp.valid := res
+
+    }
+    is (cSetState){
+      val res = SetState(inputState)
+      io.cpu.resp.valid := res
+
+    }
 
 //    is (cWrite){
 //      val res = W

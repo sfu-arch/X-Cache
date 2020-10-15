@@ -207,6 +207,7 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
   val iswrite = Bool()
   val tile = UInt(xlen.W)
   val command = UInt(4.W)
+//  val state = UInt(4.W)
 
 
 
@@ -221,6 +222,7 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
     wire.iswrite := this.iswrite
     wire.command := this.command
     wire.tile := tile
+//    wire.state := this.state
     wire
   }
 }
@@ -245,6 +247,7 @@ class MemResp(implicit p: Parameters) extends AccelBundle()(p) with ValidT {
   val tag = UInt((List(1, mshrLen).max).W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
+//  val state = UInt(4.W)
 
   def clone_and_set_tile_id(tile: UInt): MemResp = {
     val wire = Wire(new MemResp())
@@ -264,6 +267,7 @@ object MemResp {
     wire.tag := 0.U
     wire.iswrite := false.B
     wire.tile := 0.U
+//    wire.state := 0.U
     wire
   }
 }
