@@ -58,6 +58,7 @@ class CacheBankedMemIO[T <: Data](D: T, nInput :Int) (implicit val p: Parameters
   val isRead = Output(Bool())
   val outputValue = Output(D.cloneType)
   val inputValue = Input(Vec(nInput, D.cloneType))
+  val valid = Input(Bool())
 }
 
 class StateMemIO() (implicit val p: Parameters) extends Bundle
@@ -333,14 +334,12 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   //    val way = rplPolicy (set)
   //    (set, way)
   //  }
-  def Read(set: UInt, way: UInt): Bool= {
+  def ReadInternal(set: UInt, way: UInt): Unit= {
     findInSetSig := true.B
     prepForRead(io.dataMem)
 //    io.dataMem.address := set*nSets.U + way
 //    io.dataMem.bank := 0.U
 //    io.dataMem.isRead := true.B
-    loadLineData := true.B
-    true.B
   }
 
   def SetState (state: State): Unit = {
@@ -364,7 +363,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
 
-  val cNone :: cAlloc :: cDealloc :: cGetState :: cSetState :: cRead :: cWrite::Nil = Enum(nCom)
+  val cNone :: cAlloc :: cDealloc :: cGetState :: cSetState :: cReadInternal :: cWrite::Nil = Enum(nCom)
 //
   io.cpu.resp.valid := false.B
 //
@@ -378,10 +377,24 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       val res = deallocate(set, tag)
       io.cpu.resp.valid := res
     }
-    is (cRead){
-      val res =  Read (set, way)
-      io.cpu.resp.valid := res
+    is (cReadInternal){
+      st := s_READ_CACHE
+      switch(st){
+        is (s_READ_CACHE){
+          ReadInternal (set, way)
+          when(io.dataMem.valid){
+             loadLineData := true.B
+             io.cpu.resp.valid := true.B
+             st := is_idle
+          }.otherwise{
+             st := s_READ_CACHE
+          }
+      }
+      }
     }
+
+    is ()
+
 //    is (cWrite){
 //      val res = W
 //    }
@@ -442,9 +455,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  io.mem.setConst()
 //
 //  // read request
-//  io.mem.ar.bits.addr := Cat(tag, set) << blen.U
-//  io.mem.ar.bits.len := (nData - 1).U
-//  io.mem.ar.valid := false.B
+
 //
 //  //   read data
 //  io.mem.r.ready := state === s_REFILL

@@ -17,6 +17,7 @@ class MemBankIO[T <: Data] (D: T)(val dataLen:Int, val addrLen : Int, val banks:
   val isRead = Input(Bool())
   val inputValue = Input( D.cloneType)
   val outputValue = Output(Vec(banks, D.cloneType))
+  val valid = Output (Bool())
 }
 
 
@@ -30,12 +31,13 @@ class MemBank[T <: Data] (D:T) (val dataLen:Int, val addrLen : Int, val banks: I
   val mems = Seq.fill(banks) { Mem(bankDepth, mt) }
 
   io.outputValue := DontCare
-
+  io.valid := DontCare
   when(io.isRead) {
     (0 until banks).foldLeft() {
       case (_, bankIndex) => {
           io.outputValue(bankIndex.U) := mems(bankIndex)(io.address)
         }
+        io.valid := true.B
     }
   }.otherwise {
     (0 until banks).foldLeft(when(false.B) {}) {

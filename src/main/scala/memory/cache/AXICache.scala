@@ -91,6 +91,8 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   cacheLogic.io.metaMem.bank <> metaMemory.io.bank
   cacheLogic.io.metaMem.address <> metaMemory.io.address
   cacheLogic.io.metaMem.isRead <>metaMemory.io.isRead
+  cacheLogic.io.dataMem.valid := dataMemory.io.valid
+  cacheLogic.io.metaMem.valid := metaMemory.io.valid
 
 
   when (cacheLogic.io.stateMem.isSet){
@@ -106,21 +108,6 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   this.io.cpu <> cacheLogic.io.cpu
   this.io.mem <> cacheLogic.io.mem
-//  // memory
-//  val valid = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
-//  val validTag =VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
-//  val dirty = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
-//  //@todo generic state
-//  val stateBit = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
-//
-//
-//  val metaMem= Mem( nSets, (Vec(nWays, (new MetaData))))
-//  val dataMem = Seq.fill(nWords) {
-//    Mem(nSets * nWays, Vec(wBytes, UInt(8.W)))
-//  }
-//
-
-
 
 }
 
