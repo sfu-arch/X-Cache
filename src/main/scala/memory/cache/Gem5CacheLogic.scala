@@ -333,13 +333,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   //    val way = rplPolicy (set)
   //    (set, way)
   //  }
-  def Read(set: UInt, way: UInt) {
+  def Read(set: UInt, way: UInt): Bool= {
     findInSetSig := true.B
     prepForRead(io.dataMem)
 //    io.dataMem.address := set*nSets.U + way
 //    io.dataMem.bank := 0.U
 //    io.dataMem.isRead := true.B
     loadLineData := true.B
+    true.B
   }
 
   def SetState (state: State): Unit = {
@@ -360,7 +361,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
 
-  val cNone :: cAlloc :: cDealloc :: cProbe :: cRead :: cWrite::Nil = Enum(nCom)
+
+
+
+  val cNone :: cAlloc :: cDealloc :: cGetState :: cSetState :: cRead :: cWrite::Nil = Enum(nCom)
 //
   io.cpu.resp.valid := false.B
 //
@@ -374,6 +378,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       val res = deallocate(set, tag)
       io.cpu.resp.valid := res
     }
+    is (cRead){
+      val res =  Read (set, way)
+      io.cpu.resp.valid := res
+    }
+//    is (cWrite){
+//      val res = W
+//    }
+
 
   }
 //
