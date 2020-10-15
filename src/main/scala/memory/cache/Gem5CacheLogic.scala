@@ -333,13 +333,12 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   //    val way = rplPolicy (set)
   //    (set, way)
   //  }
-  //@todo should be completed
   def Read(set: UInt, way: UInt) {
     findInSetSig := true.B
-//    prepForRead(io.dataMem)
-    io.dataMem.address := set*nSets.U + way
-    io.dataMem.bank := 0.U
-    io.dataMem.isRead := true.B
+    prepForRead(io.dataMem)
+//    io.dataMem.address := set*nSets.U + way
+//    io.dataMem.bank := 0.U
+//    io.dataMem.isRead := true.B
     loadLineData := true.B
   }
 
