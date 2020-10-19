@@ -381,7 +381,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       val res = deallocate(set, tag)
       io.cpu.resp.valid := res
 
-      
+
     }
     is (cReadInternal){
       st := s_READ_CACHE
