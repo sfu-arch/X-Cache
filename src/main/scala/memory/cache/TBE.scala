@@ -9,6 +9,7 @@ import chisel3.util.Enum
 
 
 class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelParams {
+  //@todo lockbit should be added
   val state = new State()
   val data = UInt (xlen.W)
 }
@@ -44,6 +45,8 @@ class   TBETable(Size: Int )(implicit  val p: Parameters) extends Module
   val TBEValid = VecInit(Seq.fill(Size)(RegInit(false.B)))
   val TBEAddr = VecInit(Seq.fill(Size)(RegInit(0.U)))
 
+
+  // @todo lookup method
   val isAlloc = Wire(Bool())
   val isDealloc = Wire(Bool())
   val isRead = Wire(Bool())
