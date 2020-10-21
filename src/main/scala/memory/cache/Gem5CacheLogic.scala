@@ -71,6 +71,8 @@ class StateMemIO() (implicit val p: Parameters) extends Bundle
   val addr = Output(UInt(addrLen.W))
 
 }
+
+// @todo bipass for reading
 class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   with HasCacheAccelParams
   with HasAccelShellParams {
@@ -169,7 +171,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val tag = RegInit(0.U(taglen.W))
   val set = RegInit(0.U(setLen.W))
   val offset = RegInit(0.U(byteOffsetBits.W))
-  val way = RegInit(0.U((nWays+1).W))
+  val way = RegInit(0.U((nWays + 1).W))
   val state = RegInit(State.default)
 
   val findInSetSig = Wire(Bool())
@@ -277,7 +279,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   def findInSet(set: UInt, tag: UInt): UInt={
     val MD = Wire(new MetaData())
     MD.tag := tag
-    val wayWire = Wire(UInt((nWays+1).W))
+    val wayWire = Wire(UInt((nWays + 1).W))
     wayWire := nWays.U
     prepForRead(io.metaMem)
 //    loadWaysMeta := true.B
@@ -380,7 +382,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     is(cDealloc){
       val res = deallocate(set, tag)
       io.cpu.resp.valid := res
-
 
     }
     is (cReadInternal){
