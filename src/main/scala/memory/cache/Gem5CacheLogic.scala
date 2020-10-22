@@ -33,7 +33,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nWords = bBits / xlen
   val wordLen = log2Ceil(nWords)
   //val taglen = xlen - (setLen + blen)
-  val taglen = addrLen - (setLen + blen + wBytes )
+  val taglen = addrLen - (setLen + blen + byteOffsetBits )
 
   val byteOffsetBits = log2Ceil(wBytes)
   //
@@ -107,7 +107,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   // memory
   val valid = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
-  val validTag =VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
+//  val validTag =VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
+  val validTag = RegInit(VecInit(Seq.fill(nSets*nWays)(false.B)))
   val dirty = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
 
 
@@ -120,7 +121,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   def addrToSet(addr: UInt): UInt = {
-    val set = addr(setLen + blen + wBytes, blen + wBytes + 1)
+    val set = addr(setLen + blen + byteOffsetBits, blen + byteOffsetBits)
     set.asUInt()
   }
 
@@ -131,17 +132,17 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   def addrToTag(addr: UInt): UInt = {
     val tag = Wire(UInt(taglen.W))
-    tag := (addr(addrLen - 1, setLen + blen + wBytes + 1))
+    tag := (addr(addrLen - 1, setLen + blen + byteOffsetBits))
     tag.asUInt()
   }
 
   def addrToLoc(set: UInt): (UInt) = {
     //    val selFlag = Wire(Bool())
     //    selFlag := false.B
-    val way = Wire(UInt(nWays.W))
+    val way = Wire(UInt((nWays + 1).W))
     way := nWays.U
-    for (i <- 0 until nWays) {
-      when(validTag(set)(i,i) === 0.U(1.W)) {
+    for (i <- 0 until nWays) yield {
+      when(validTag(set*nWays.U + i.U) === false.B) {
         way := i.asUInt()
       }
     }
@@ -149,7 +150,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   def tagValidation(set: UInt, way: UInt): Bool={
-    validTag(set).bitSet(way, true.B)
+    validTag(set*nWays.U + way) := true.B
+//    printf(p"Valid Tag: ${validTag(set*nWays.U + way)}\n")
     true.B
   }
 
@@ -202,6 +204,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     way := findInSet(set,tag)
   }.elsewhen(!findInSetSig & addrToLocSig){
     way := addrToLoc(set)
+    printf(p" way: ${way} set: ${set}\n")
   }
 
 //  val cache_block_size = bBits
@@ -287,7 +290,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //    io.metaMem.address := set
 //    io.metaMem.isRead := true.B
     for (i <- 0 until nWays) yield {
-      when(validTag(set)(i, i).asUInt() === 1.U && waysInASet(i).tag.asUInt() === MD.tag) {
+      when(validTag(set*nWays.U + i.U).asUInt() === 1.U && waysInASet(i).tag.asUInt() === MD.tag) {
         wayWire := i.asUInt()
       }
     }
@@ -307,15 +310,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     tagInvalidation(set, way)
   }
 
-  def allocate(set: UInt, tag: UInt): Bool = {
+  def allocate(set: UInt, tag: UInt, way: UInt): Bool = {
     val res = Wire(Bool())
+    addrToLocSig := true.B
     when(way === nWays.U) { //means error in finding a way
       res := false.B
-      addrToLocSig := false.B
     }.otherwise {
       tagging(tag, set, way)
       res := true.B
-      addrToLocSig := true.B
     }
     res.asBool()
   }
@@ -376,7 +378,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   switch(cpu_command) {
 
     is(cAlloc) {
-      val res = allocate(set, tag)
+      val res = allocate(set, tag, way)
       io.cpu.resp.valid := res
     }
     is(cDealloc){
