@@ -133,8 +133,8 @@ class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPoke
 //  val data = c.metaMemory.io.outputValue
 //  val addr = Wire(UInt())
 //  addr := 0.U
-  poke( c.metaMemory.io.address, 0.U)
-  poke( c.metaMemory.io.isRead, true.B)
+//  poke( c.metaMemory.io.address, 0.U)
+//  poke( c.metaMemory.io.isRead, true.B)
   testAllocate(4100.U)
   step(2)
   testAllocate(1.U)

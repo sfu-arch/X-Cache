@@ -179,10 +179,16 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val findInSetSig = Wire(Bool())
   val addrToLocSig = Wire (Bool())
 
-  val startAl = Wire(Bool())
-  startAl := false.B
-  val resAl = Wire(Bool())
-  resAl := false.B
+
+
+  val start = WireInit(VecInit(Seq.fill(nCom)(false.B)))
+  val res   = WireInit(VecInit(Seq.fill(nCom)(false.B)))
+
+
+
+//  val resAl = Wire(Bool())
+//  resAl := false.B
+
   val commandValid = Reg(Bool())
   commandValid := io.cpu.req.fire()
 
@@ -336,10 +342,12 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //    res.asBool()
 //  }
 
-  switch(stAlReg){
 
+  val cNone :: cAlloc :: cDealloc :: cGetState :: cSetState :: cReadInternal :: cWrite::Nil = Enum(nCom)
+
+  switch(stAlReg){
     is (stAlIdle){
-      when(startAl){
+      when(start(cAlloc).toBool()){
         stAlReg := stAlLookMeta
         loadWaysMeta := true.B
       }.otherwise{
@@ -352,7 +360,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
         stAlReg := stAlCreate
       }.otherwise{
         stAlReg := stAlIdle
-        resAl := true.B
+//        resAl := true.B
+        res(cAlloc) := true.B
       }
     }
     is (stAlCreate){
@@ -360,7 +369,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       when(way === nWays.U){
         stAlReg := stAlIdle
       }.otherwise{
-        resAl := true.B
+//        resAl := true.B
+        res(cAlloc) := true.B
         tagging(tag,set,way)
         stAlReg := stAlIdle
         printf(p" way: ${way} set: ${set}\n")
@@ -369,15 +379,32 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     }
   }
 
-  def deallocate(set: UInt, tag:UInt): Bool= {
-    val res = Wire(Bool())
-    findInSetSig := true.B
-      when(way === nWays.U) {
-        res :=false.B
-      }.otherwise {
-        res := detaggin(set, way)
+  val (stDeAlIdle:: stDeAlLookMeta :: stDeAlRemove:: Nil) = Enum(3)
+  val stDeAlReg = RegInit(stDeAlIdle)
+
+//  def deallocate(set: UInt, tag:UInt): Bool= {
+//    val res = Wire(Bool())
+//    findInSetSig := true.B
+//      when(way === nWays.U) {
+//        res :=false.B
+//      }.otherwise {
+//        res := detaggin(set, way)
+//      }
+//    res.asBool()
+//  }
+
+  switch (stDeAlReg){
+    is (stDeAlIdle){
+      when(start(cDealloc).toBool()) {
+        stDeAlReg := stDeAlLookMeta
+        loadWaysMeta := true.B
+      }.otherwise{
+        stDeAlReg := stDeAlIdle
       }
-    res.asBool()
+    }
+    is(stDeAlLookMeta){
+      findInSetSig := true.B
+    }
   }
 
 
@@ -413,28 +440,19 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     true.B
   }
 
-
-
-
-
-
-  val cNone :: cAlloc :: cDealloc :: cGetState :: cSetState :: cReadInternal :: cWrite::Nil = Enum(nCom)
-//
   io.cpu.resp.valid := false.B
-//
-
 
   switch(cpu_command) {
 
     is(cAlloc) {
-//      val res = allocate(set, tag, way)
-      startAl := (true.B & commandValid)
-      io.cpu.resp.valid := resAl
+
+        start(cAlloc) := commandValid
+        io.cpu.resp.valid := res(cAlloc)
     }
     is(cDealloc){
-      val res = deallocate(set, tag)
-      io.cpu.resp.valid := res
 
+      start(cDealloc) := commandValid
+      io.cpu.resp.valid := res(cDealloc)
     }
     is (cReadInternal){
       st := s_READ_CACHE
