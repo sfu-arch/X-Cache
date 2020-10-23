@@ -137,12 +137,11 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   def addrToLoc(set: UInt): (UInt) = {
-    //    val selFlag = Wire(Bool())
-    //    selFlag := false.B
+
     val way = Wire(UInt((nWays + 1).W))
     way := nWays.U
-    for (i <- 0 until nWays) yield {
-      when(validTag(set*nWays.U + i.U) === false.B) {
+    for (i <- 0 until nWays) {
+      when(validTag(set*nWays.U + i.U) === false.B ) {
         way := i.asUInt()
       }
     }
@@ -173,12 +172,19 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val tag = RegInit(0.U(taglen.W))
   val set = RegInit(0.U(setLen.W))
   val offset = RegInit(0.U(byteOffsetBits.W))
-  val way = RegInit(0.U((nWays + 1).W))
+//  val way = RegInit(0.U((nWays + 1).W))
+  val way = WireInit(0.U((nWays + 1).W))
   val state = RegInit(State.default)
 
   val findInSetSig = Wire(Bool())
   val addrToLocSig = Wire (Bool())
 
+  val startAl = Wire(Bool())
+  startAl := false.B
+  val resAl = Wire(Bool())
+  resAl := false.B
+  val commandValid = Reg(Bool())
+  commandValid := io.cpu.req.fire()
 
   when(io.cpu.req.fire()) {
     addr_reg := io.cpu.req.bits.addr
@@ -200,12 +206,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val waysInASet = Reg(Vec(nWays, new MetaData()))
   val cacheLine = Reg(Vec(nWords, UInt(xlen.W)))
 
-  when (findInSetSig){
-    way := findInSet(set,tag)
-  }.elsewhen(!findInSetSig & addrToLocSig){
-    way := addrToLoc(set)
-    printf(p" way: ${way} set: ${set}\n")
-  }
+//  when (findInSetSig){
+//    way := findInSet(set,tag)
+//  }.elsewhen(!findInSetSig & addrToLocSig){
+//    way := addrToLoc(set)
+//    printf(p" way: ${way} set: ${set}\n")
+//  }
+  way := Mux(addrToLocSig, addrToLoc(set),(Mux(findInSetSig, findInSet(set,tag), 0.U((nWays + 1).W) )))
 
 //  val cache_block_size = bBits
   when (loadWaysMeta){
@@ -290,7 +297,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //    io.metaMem.address := set
 //    io.metaMem.isRead := true.B
     for (i <- 0 until nWays) yield {
-      when(validTag(set*nWays.U + i.U).asUInt() === 1.U && waysInASet(i).tag.asUInt() === MD.tag) {
+      when(validTag(set*nWays.U + i.U) === true.B && waysInASet(i).tag.asUInt() === MD.tag) {
         wayWire := i.asUInt()
       }
     }
@@ -309,17 +316,57 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   def detaggin(set: UInt, way: UInt): Bool= {
     tagInvalidation(set, way)
   }
+  val (stAlIdle:: stAlLookMeta :: stAlCreate:: Nil) = Enum(3)
+  val stAlReg = RegInit(stAlIdle)
+//
+//  def allocate(set: UInt, tag: UInt, way: UInt): Bool = {
+//    val res = WireInit(false.B)
+//    findInSetSig := true.B
+//    loadWaysMeta := true.B
+//    when(way === nWays.U) { //means no such a tag in the set
+//      addrToLocSig := true.B
+////      when(way === nWays.U){ // means set is full
+////          res := false.B
+////        }.otherwise{
+////          res := true.B
+////        }
+//    }.otherwise {
+//      res := true.B
+//    }
+//    res.asBool()
+//  }
 
-  def allocate(set: UInt, tag: UInt, way: UInt): Bool = {
-    val res = Wire(Bool())
-    addrToLocSig := true.B
-    when(way === nWays.U) { //means error in finding a way
-      res := false.B
-    }.otherwise {
-      tagging(tag, set, way)
-      res := true.B
+  switch(stAlReg){
+
+    is (stAlIdle){
+      when(startAl){
+        stAlReg := stAlLookMeta
+        loadWaysMeta := true.B
+      }.otherwise{
+        stAlReg := stAlIdle
+      }
     }
-    res.asBool()
+    is(stAlLookMeta){
+      findInSetSig := true.B
+      when(way === nWays.U){
+        stAlReg := stAlCreate
+      }.otherwise{
+        stAlReg := stAlIdle
+        resAl := true.B
+      }
+    }
+    is (stAlCreate){
+      addrToLocSig := true.B
+      when(way === nWays.U){
+        stAlReg := stAlIdle
+      }.otherwise{
+        resAl := true.B
+        tagging(tag,set,way)
+        stAlReg := stAlIdle
+        printf(p" way: ${way} set: ${set}\n")
+
+      }
+    }
   }
 
   def deallocate(set: UInt, tag:UInt): Bool= {
@@ -375,11 +422,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //
   io.cpu.resp.valid := false.B
 //
+
+
   switch(cpu_command) {
 
     is(cAlloc) {
-      val res = allocate(set, tag, way)
-      io.cpu.resp.valid := res
+//      val res = allocate(set, tag, way)
+      startAl := (true.B & commandValid)
+      io.cpu.resp.valid := resAl
     }
     is(cDealloc){
       val res = deallocate(set, tag)

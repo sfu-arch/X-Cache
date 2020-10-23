@@ -124,13 +124,24 @@ class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPoke
     poke(c.io.cpu.req.valid, true.B)
     step(1)
     poke(c.io.cpu.req.valid, false.B)
+  while (peek(c.io.cpu.resp.valid) == false.B) {
     step(1)
-    expect(c.io.cpu.resp.valid, true.B)
-
   }
-  testAllocate(0.U)
+//    step(2)
+//    expect(c.io.cpu.resp.valid, true.B)
+  }
+//  val data = c.metaMemory.io.outputValue
+//  val addr = Wire(UInt())
+//  addr := 0.U
+  poke( c.metaMemory.io.address, 0.U)
+  poke( c.metaMemory.io.isRead, true.B)
+  testAllocate(4100.U)
+  step(2)
   testAllocate(1.U)
+  step(2)
   testAllocate(5.U)
+  step(2)
+//  val metaMem = c
 
   val inAddrVec = List.range(0, (4 * 8), 4)
   val inDataVec = List(10, 20, 30, 40, 50, 60, 70, 80)
@@ -249,7 +260,8 @@ class test_cache01Tester1 extends FlatSpec with Matchers {
         "-tn", "test_cache01Main",
         "-tbn", "verilator",
         "-td", "test_run_dir/test_cache01",
-        "-tts", "0001"),
+        "-tts", "0001",
+        "--generate-vcd-output", "on"),
       () => new Gem5Cache()) {
       c => new test_cache01Test01(c)
     } should be(true)
