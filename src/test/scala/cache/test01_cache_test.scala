@@ -124,23 +124,40 @@ class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPoke
     poke(c.io.cpu.req.valid, true.B)
     step(1)
     poke(c.io.cpu.req.valid, false.B)
-  while (peek(c.io.cpu.resp.valid) == false.B) {
-    step(1)
+    while (peek(c.io.cpu.resp.valid) == false.B) {
+      step(1)
+    }
   }
-//    step(2)
-//    expect(c.io.cpu.resp.valid, true.B)
+
+  def testDeAllocate(addr:UInt) = {
+    while (peek(c.io.cpu.req.ready) == false.B) {
+      step(1)
+    }
+    poke(c.io.cpu.req.bits.addr, addr)
+    poke(c.io.cpu.req.bits.command, 2.U)
+    poke(c.io.cpu.req.valid, true.B)
+    step(1)
+    poke(c.io.cpu.req.valid, false.B)
+    while (peek(c.io.cpu.resp.valid) == false.B) {
+      step(1)
+    }
   }
 //  val data = c.metaMemory.io.outputValue
 //  val addr = Wire(UInt())
 //  addr := 0.U
 //  poke( c.metaMemory.io.address, 0.U)
 //  poke( c.metaMemory.io.isRead, true.B)
+
   testAllocate(4100.U)
   step(2)
   testAllocate(1.U)
   step(2)
   testAllocate(5.U)
   step(2)
+  testAllocate(4100.U)
+  testDeAllocate(4100.U)
+  testAllocate(4101.U)
+
 //  val metaMem = c
 
   val inAddrVec = List.range(0, (4 * 8), 4)
