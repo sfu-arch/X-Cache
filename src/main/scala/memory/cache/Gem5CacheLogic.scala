@@ -183,11 +183,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val start = WireInit(VecInit(Seq.fill(nCom)(false.B)))
   val res   = WireInit(VecInit(Seq.fill(nCom)(false.B)))
+  val done = WireInit(false.B)
 
 
 
 //  val resAl = Wire(Bool())
 //  resAl := false.B
+val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cWrite::Nil = Enum(nCom)
 
   val commandValid = Reg(Bool())
   commandValid := io.cpu.req.fire()
@@ -204,6 +206,17 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     offset := addrToOffset(io.cpu.req.bits.addr)
 //    inputState := io.cpu.req.bits.state
   }
+
+  val readyForCom = RegInit(true.B)
+
+  when (done){
+    readyForCom := true.B
+  }.elsewhen( commandValid) {
+    readyForCom := false.B
+  }
+
+  io.cpu.req.ready := readyForCom
+
 
   val loadWaysMeta = Wire(Bool())
   val loadLineData = Wire(Bool())
@@ -266,7 +279,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 //  hit := (valid(set) & rmeta.tag === tag)
 
-  io.cpu.req.ready := true.B
+//  io.cpu.req.ready := true.B
   loadWaysMeta := false.B
   loadLineData := false.B
   findInSetSig := false.B
@@ -342,12 +355,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //    res.asBool()
 //  }
 
-
-  val cNone :: cAlloc :: cDealloc :: cGetState :: cSetState :: cReadInternal :: cWrite::Nil = Enum(nCom)
-
   switch(stAlReg){
     is (stAlIdle){
-      when(start(cAlloc).toBool()){
+      when(start(cAlloc)){
         stAlReg := stAlLookMeta
         loadWaysMeta := true.B
       }.otherwise{
@@ -362,15 +372,18 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
         stAlReg := stAlIdle
 //        resAl := true.B
         res(cAlloc) := true.B
+        done := true.B
       }
     }
     is (stAlCreate){
       addrToLocSig := true.B
       when(way === nWays.U){
         stAlReg := stAlIdle
+        done := true.B
       }.otherwise{
 //        resAl := true.B
         res(cAlloc) := true.B
+        done := true.B
         tagging(tag,set,way)
         stAlReg := stAlIdle
         printf(p" way: ${way} set: ${set}\n")
@@ -394,8 +407,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  }
 
   switch (stDeAlReg){
+
     is (stDeAlIdle){
-      when(start(cDealloc).toBool()) {
+      when(start(cDeAlloc)) {
         stDeAlReg := stDeAlLookMeta
         loadWaysMeta := true.B
       }.otherwise{
@@ -404,6 +418,17 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     }
     is(stDeAlLookMeta){
       findInSetSig := true.B
+      when(way === nWays.U){
+        stDeAlReg := stDeAlIdle
+        res(cDeAlloc) := false.B
+        done := true.B
+      }.otherwise{
+        stDeAlReg := stDeAlIdle
+        detaggin(set,way)
+        res(cDeAlloc) := true.B
+        done := true.B
+      }
+
     }
   }
 
@@ -447,12 +472,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     is(cAlloc) {
 
         start(cAlloc) := commandValid
-        io.cpu.resp.valid := res(cAlloc)
+        io.cpu.resp.valid := done
+//        io.cpu.req.ready := res(cAlloc)
     }
-    is(cDealloc){
 
-      start(cDealloc) := commandValid
-      io.cpu.resp.valid := res(cDealloc)
+    is(cDeAlloc){
+      start(cDeAlloc) := commandValid
+      io.cpu.resp.valid := done
+//      io.cpu.req.ready := res(cDeAlloc)
     }
     is (cReadInternal){
       st := s_READ_CACHE
