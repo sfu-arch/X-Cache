@@ -84,7 +84,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     val dataMem = new CacheBankedMemIO(UInt(xlen.W), nWords)
     val metaMem = new CacheBankedMemIO(new MetaData(), nWays)
     val stateMem = new StateMemIO()
-
   })
 
   io.cpu <> DontCare
@@ -102,23 +101,136 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
   val flush_state = RegInit(s_flush_IDLE)
 
+  val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cWrite::Nil = Enum(nCom)
+
+  val (stAlIdle:: stAlLookMeta :: stAlCreate:: Nil) = Enum(3)
+  val stAlReg = RegInit(stAlIdle)
+
+  val (stDeAlIdle:: stDeAlLookMeta :: stDeAlRemove:: Nil) = Enum(3)
+  val stDeAlReg = RegInit(stDeAlIdle)
+
   //Flush Logic
   val dirty_block = nSets
 
   // memory
   val valid = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
-//  val validTag =VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
   val validTag = RegInit(VecInit(Seq.fill(nSets*nWays)(false.B)))
   val dirty = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
 
+  val addr_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
+  val cpu_data = RegInit(0.U(io.cpu.req.bits.data.getWidth.W))
+  val cpu_mask = RegInit(0.U(io.cpu.req.bits.mask.getWidth.W))
+  val cpu_tag = RegInit(0.U(io.cpu.req.bits.tag.getWidth.W))
+  val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
+  val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
+  val count_set = RegInit(false.B)
+  val inputState = RegInit(State.default)
 
-//  //  val metaMem =  Wire(Vec(nWays, (Vec(nSets, (new MetaData)))))
-//  //  val metaMem = VecInit(Seq.fill(nWays) (Mem((nSets),  new MetaData())))
-//  val metaMem= Mem( nSets, (Vec(nWays, (new MetaData))))
-//  val dataMem = Seq.fill(nWords) {
-//    Mem(nSets * nWays, Vec(wBytes, UInt(8.W)))
-//  }
+  val tag = RegInit(0.U(taglen.W))
+  val set = RegInit(0.U(setLen.W))
+  val offset = RegInit(0.U(byteOffsetBits.W))
+//  val way = RegInit(0.U((nWays + 1).W))
+  val way = WireInit(0.U((nWays + 1).W))
+  val state = RegInit(State.default)
 
+  val findInSetSig = Wire(Bool())
+  val addrToLocSig = Wire (Bool())
+
+  val start = WireInit(VecInit(Seq.fill(nCom)(false.B)))
+  val res   = WireInit(VecInit(Seq.fill(nCom)(false.B)))
+  val done = WireInit(false.B)
+
+  val commandValid = Reg(Bool())
+
+  // Counters
+  require(nData > 0)
+  val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), nData)
+  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), nData)
+
+
+  commandValid := io.cpu.req.fire()
+
+  when(io.cpu.req.fire()) {
+    addr_reg := io.cpu.req.bits.addr
+    cpu_command := io.cpu.req.bits.command
+    cpu_tag := io.cpu.req.bits.tag
+    cpu_data := io.cpu.req.bits.data
+    cpu_mask := io.cpu.req.bits.mask
+    cpu_iswrite := io.cpu.req.bits.iswrite
+    tag := addrToTag(io.cpu.req.bits.addr)
+    set := addrToSet(io.cpu.req.bits.addr)
+    offset := addrToOffset(io.cpu.req.bits.addr)
+//    inputState := io.cpu.req.bits.state
+  }
+
+  val readyForCom = RegInit(true.B)
+
+  val loadWaysMeta = Wire(Bool())
+  val loadLineData = Wire(Bool())
+  val loadState = Wire (Bool())
+
+  val waysInASet = Reg(Vec(nWays, new MetaData()))
+  val cacheLine = Reg(Vec(nWords, UInt(xlen.W)))
+
+  way := Mux(addrToLocSig, addrToLoc(set),(Mux(findInSetSig, findInSet(set,tag), 0.U((nWays + 1).W) )))
+
+//  val cache_block_size = bBits
+  when (loadWaysMeta){
+    waysInASet := io.metaMem.inputValue
+  }
+
+  when (loadLineData){
+    cacheLine := io.dataMem.inputValue
+  }
+
+  when (loadState){
+    state := io.stateMem.stateIn
+  }
+
+  when (done){
+    readyForCom := true.B
+  }.elsewhen( commandValid) {
+    readyForCom := false.B
+  }
+
+  io.cpu.req.ready := readyForCom
+
+  loadWaysMeta := false.B
+  loadLineData := false.B
+  findInSetSig := false.B
+  addrToLocSig := false.B
+  loadState := false.B
+
+  //  val (block_count, block_wrap) = Counter(flush_state === s_flush_BLOCK, nWords)
+//  val (way_count, way_wrap) = Counter(flush_state === s_flush_START, nWays)
+//  val (set_count, set_wrap) = Counter(flush_state === s_flush_START && way_wrap , nSets)
+
+
+  //val block_addr_tag_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
+//  val dirty_cache_block = Cat((dataMem map (_.read(set_count - 1.U).asUInt)).reverse)
+//  val block_rmeta = RegInit(init = MetaData.default)
+//  val flush_mode = RegInit(false.B)
+
+  val is_idle = st === s_IDLE
+  val is_read = st === s_READ_CACHE
+  val is_write = st === s_WRITE_CACHE
+  val is_alloc = st === s_REFILL && read_wrap_out
+  val is_alloc_reg = RegNext(is_alloc)
+
+//  val hit = Wire(Bool())
+//  val wen = is_write && (hit || is_alloc_reg) && !io.cpu.abort || is_alloc
+//  val ren = !wen && (is_idle || is_read) && io.cpu.req.valid
+//  val ren_reg = RegNext(ren)
+
+//  val rmeta = RegNext(next = metaMem.read(addrToSet(io.cpu.req.bits.addr))(0), init = MetaData.default)
+//  val rdata = RegNext(next = cache_block, init = 0.U(cache_block_size.W))
+//  val rdata_buf = RegEnable(rdata, ren_reg)
+//  val refill_buf = RegInit(VecInit(Seq.fill(nData)(0.U(Axi_param.dataBits.W))))
+//  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
+
+//  hit := (valid(set) & rmeta.tag === tag)
+
+//  io.cpu.req.ready := true.B
 
   def addrToSet(addr: UInt): UInt = {
     val set = addr(setLen + blen + byteOffsetBits, blen + byteOffsetBits)
@@ -150,7 +262,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   def tagValidation(set: UInt, way: UInt): Bool={
     validTag(set*nWays.U + way) := true.B
-//    printf(p"Valid Tag: ${validTag(set*nWays.U + way)}\n")
+    //    printf(p"Valid Tag: ${validTag(set*nWays.U + way)}\n")
     true.B
   }
 
@@ -158,133 +270,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     validTag(set).bitSet(way, false.B)
     true.B
   }
-
-
-  val addr_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
-  val cpu_data = RegInit(0.U(io.cpu.req.bits.data.getWidth.W))
-  val cpu_mask = RegInit(0.U(io.cpu.req.bits.mask.getWidth.W))
-  val cpu_tag = RegInit(0.U(io.cpu.req.bits.tag.getWidth.W))
-  val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
-  val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
-  val count_set = RegInit(false.B)
-  val inputState = RegInit(State.default)
-
-  val tag = RegInit(0.U(taglen.W))
-  val set = RegInit(0.U(setLen.W))
-  val offset = RegInit(0.U(byteOffsetBits.W))
-//  val way = RegInit(0.U((nWays + 1).W))
-  val way = WireInit(0.U((nWays + 1).W))
-  val state = RegInit(State.default)
-
-  val findInSetSig = Wire(Bool())
-  val addrToLocSig = Wire (Bool())
-
-
-
-  val start = WireInit(VecInit(Seq.fill(nCom)(false.B)))
-  val res   = WireInit(VecInit(Seq.fill(nCom)(false.B)))
-  val done = WireInit(false.B)
-
-
-
-//  val resAl = Wire(Bool())
-//  resAl := false.B
-val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cWrite::Nil = Enum(nCom)
-
-  val commandValid = Reg(Bool())
-  commandValid := io.cpu.req.fire()
-
-  when(io.cpu.req.fire()) {
-    addr_reg := io.cpu.req.bits.addr
-    cpu_command := io.cpu.req.bits.command
-    cpu_tag := io.cpu.req.bits.tag
-    cpu_data := io.cpu.req.bits.data
-    cpu_mask := io.cpu.req.bits.mask
-    cpu_iswrite := io.cpu.req.bits.iswrite
-    tag := addrToTag(io.cpu.req.bits.addr)
-    set := addrToSet(io.cpu.req.bits.addr)
-    offset := addrToOffset(io.cpu.req.bits.addr)
-//    inputState := io.cpu.req.bits.state
-  }
-
-  val readyForCom = RegInit(true.B)
-
-  when (done){
-    readyForCom := true.B
-  }.elsewhen( commandValid) {
-    readyForCom := false.B
-  }
-
-  io.cpu.req.ready := readyForCom
-
-
-  val loadWaysMeta = Wire(Bool())
-  val loadLineData = Wire(Bool())
-  val loadState = Wire (Bool())
-
-  val waysInASet = Reg(Vec(nWays, new MetaData()))
-  val cacheLine = Reg(Vec(nWords, UInt(xlen.W)))
-
-//  when (findInSetSig){
-//    way := findInSet(set,tag)
-//  }.elsewhen(!findInSetSig & addrToLocSig){
-//    way := addrToLoc(set)
-//    printf(p" way: ${way} set: ${set}\n")
-//  }
-  way := Mux(addrToLocSig, addrToLoc(set),(Mux(findInSetSig, findInSet(set,tag), 0.U((nWays + 1).W) )))
-
-//  val cache_block_size = bBits
-  when (loadWaysMeta){
-    waysInASet := io.metaMem.inputValue
-  }
-
-  when (loadLineData){
-    cacheLine := io.dataMem.inputValue
-  }
-
-  when (loadState){
-    state := io.stateMem.stateIn
-  }
-
-  // Counters
-  require(nData > 0)
-  val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), nData)
-  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), nData)
-  //  val (block_count, block_wrap) = Counter(flush_state === s_flush_BLOCK, nWords)
-//  val (way_count, way_wrap) = Counter(flush_state === s_flush_START, nWays)
-//  val (set_count, set_wrap) = Counter(flush_state === s_flush_START && way_wrap , nSets)
-
-
-  //val block_addr_tag_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
-//  val dirty_cache_block = Cat((dataMem map (_.read(set_count - 1.U).asUInt)).reverse)
-//  val block_rmeta = RegInit(init = MetaData.default)
-//  val flush_mode = RegInit(false.B)
-
-  val is_idle = st === s_IDLE
-  val is_read = st === s_READ_CACHE
-  val is_write = st === s_WRITE_CACHE
-  val is_alloc = st === s_REFILL && read_wrap_out
-  val is_alloc_reg = RegNext(is_alloc)
-
-//  val hit = Wire(Bool())
-//  val wen = is_write && (hit || is_alloc_reg) && !io.cpu.abort || is_alloc
-//  val ren = !wen && (is_idle || is_read) && io.cpu.req.valid
-//  val ren_reg = RegNext(ren)
-
-//  val rmeta = RegNext(next = metaMem.read(addrToSet(io.cpu.req.bits.addr))(0), init = MetaData.default)
-//  val rdata = RegNext(next = cache_block, init = 0.U(cache_block_size.W))
-//  val rdata_buf = RegEnable(rdata, ren_reg)
-//  val refill_buf = RegInit(VecInit(Seq.fill(nData)(0.U(Axi_param.dataBits.W))))
-//  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
-
-//  hit := (valid(set) & rmeta.tag === tag)
-
-//  io.cpu.req.ready := true.B
-  loadWaysMeta := false.B
-  loadLineData := false.B
-  findInSetSig := false.B
-  addrToLocSig := false.B
-  loadState := false.B
 
 
   def prepForRead[T <: Data] (D: CacheBankedMemIO[T]): Unit ={
@@ -303,7 +288,6 @@ val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cW
       }
     }
   }
-
 
   def findInSet(set: UInt, tag: UInt): UInt={
     val MD = Wire(new MetaData())
@@ -335,25 +319,39 @@ val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cW
   def detaggin(set: UInt, way: UInt): Bool= {
     tagInvalidation(set, way)
   }
-  val (stAlIdle:: stAlLookMeta :: stAlCreate:: Nil) = Enum(3)
-  val stAlReg = RegInit(stAlIdle)
-//
-//  def allocate(set: UInt, tag: UInt, way: UInt): Bool = {
-//    val res = WireInit(false.B)
-//    findInSetSig := true.B
-//    loadWaysMeta := true.B
-//    when(way === nWays.U) { //means no such a tag in the set
-//      addrToLocSig := true.B
-////      when(way === nWays.U){ // means set is full
-////          res := false.B
-////        }.otherwise{
-////          res := true.B
-////        }
-//    }.otherwise {
-//      res := true.B
-//    }
-//    res.asBool()
-//  }
+
+  //  def Probing (addr:UInt): (UInt,UInt) ={
+  //    val set = addrToSet(addr)
+  //    val way = rplPolicy (set)
+  //    (set, way)
+  //  }
+  def ReadInternal(set: UInt, way: UInt): Unit= {
+    findInSetSig := true.B
+    prepForRead(io.dataMem)
+    //    io.dataMem.address := set*nSets.U + way
+    //    io.dataMem.bank := 0.U
+    //    io.dataMem.isRead := true.B
+  }
+
+  def SetState (state: State): Bool = {
+    val addr = Wire(UInt(addrLen.W))
+    addr := set*nSets.U + way
+    io.stateMem.addr:= addr
+    io.stateMem.stateOut := state
+    io.stateMem.isSet := true.B
+    true.B
+  }
+
+  def GetState (): Bool ={
+    val addr = Wire(UInt(addrLen.W))
+    addr := set*nSets.U + way
+    io.stateMem.addr := addr
+    io.stateMem.addr := false.B
+    loadState := true.B
+    true.B
+  }
+
+  // FSM for each command
 
   switch(stAlReg){
     is (stAlIdle){
@@ -366,7 +364,7 @@ val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cW
     }
     is(stAlLookMeta){
       findInSetSig := true.B
-      when(way === nWays.U){
+      when(way === nWays.U){ // it's not there
         stAlReg := stAlCreate
       }.otherwise{
         stAlReg := stAlIdle
@@ -392,19 +390,6 @@ val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cW
     }
   }
 
-  val (stDeAlIdle:: stDeAlLookMeta :: stDeAlRemove:: Nil) = Enum(3)
-  val stDeAlReg = RegInit(stDeAlIdle)
-
-//  def deallocate(set: UInt, tag:UInt): Bool= {
-//    val res = Wire(Bool())
-//    findInSetSig := true.B
-//      when(way === nWays.U) {
-//        res :=false.B
-//      }.otherwise {
-//        res := detaggin(set, way)
-//      }
-//    res.asBool()
-//  }
 
   switch (stDeAlReg){
 
@@ -430,39 +415,6 @@ val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cW
       }
 
     }
-  }
-
-
-
-  //  def Probing (addr:UInt): (UInt,UInt) ={
-  //    val set = addrToSet(addr)
-  //    val way = rplPolicy (set)
-  //    (set, way)
-  //  }
-  def ReadInternal(set: UInt, way: UInt): Unit= {
-    findInSetSig := true.B
-    prepForRead(io.dataMem)
-//    io.dataMem.address := set*nSets.U + way
-//    io.dataMem.bank := 0.U
-//    io.dataMem.isRead := true.B
-  }
-
-  def SetState (state: State): Bool = {
-    val addr = Wire(UInt(addrLen.W))
-    addr := set*nSets.U + way
-    io.stateMem.addr:= addr
-    io.stateMem.stateOut := state
-    io.stateMem.isSet := true.B
-    true.B
-  }
-
-  def GetState (): Bool ={
-    val addr = Wire(UInt(addrLen.W))
-    addr := set*nSets.U + way
-    io.stateMem.addr := addr
-    io.stateMem.addr := false.B
-    loadState := true.B
-    true.B
   }
 
   io.cpu.resp.valid := false.B
@@ -511,7 +463,6 @@ val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cW
 //    is (cWrite){
 //      val res = W
 //    }
-
 
   }
 //
