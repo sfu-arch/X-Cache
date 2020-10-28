@@ -101,13 +101,16 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
   val flush_state = RegInit(s_flush_IDLE)
 
-  val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cReadInternal :: cWrite::Nil = Enum(nCom)
+  val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cIntRead :: cWrite::Nil = Enum(nCom)
 
   val (stAlIdle:: stAlLookMeta :: stAlCreate:: Nil) = Enum(3)
   val stAlReg = RegInit(stAlIdle)
 
   val (stDeAlIdle:: stDeAlLookMeta :: stDeAlRemove:: Nil) = Enum(3)
   val stDeAlReg = RegInit(stDeAlIdle)
+
+  val (stIntRdIdle :: stIntRdLookMeta :: stIntRdPassData:: Nil) = Enum(3)
+  val stIntRdReg = RegInit(stIntRdIdle)
 
   //Flush Logic
   val dirty_block = nSets
@@ -277,12 +280,12 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
     D match {
       case io.dataMem =>{
-        loadLineData := true.B
+//        loadLineData := true.B
         D.address := set*nSets.U + way
         D.bank := 0.U
       }
       case io.metaMem => {
-        loadWaysMeta := true.B
+//        loadWaysMeta := true.B
         D.bank := 0.U
         D.address := set
       }
@@ -350,7 +353,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     loadState := true.B
     true.B
   }
-
   // FSM for each command
 
   switch(stAlReg){
@@ -390,7 +392,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     }
   }
 
-
   switch (stDeAlReg){
 
     is (stDeAlIdle){
@@ -413,7 +414,34 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
         res(cDeAlloc) := true.B
         done := true.B
       }
+    }
+  }
 
+  switch(stIntRdReg){
+    is (stIntRdIdle) {
+      when(start(cIntRead)) {
+        stIntRdReg := stIntRdLookMeta
+        loadWaysMeta := true.B
+      }.otherwise {
+        stIntRdReg := stIntRdIdle
+      }
+    }
+    is (stIntRdLookMeta){
+      findInSetSig := true.B
+      when(way === nWays.U){
+        res(cIntRead) := false.B
+        done := true.B
+        stIntRdReg := stIntRdIdle
+      }.otherwise{
+        prepForRead(io.dataMem)
+        stIntRdReg := stIntRdPassData
+      }
+    }
+    is (stIntRdPassData){
+      loadLineData := true.B
+      stIntRdReg := stIntRdIdle
+      done := true.B
+      res(cIntRead) := true.B
     }
   }
 
@@ -425,28 +453,15 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
         start(cAlloc) := commandValid
         io.cpu.resp.valid := done
-//        io.cpu.req.ready := res(cAlloc)
     }
 
     is(cDeAlloc){
       start(cDeAlloc) := commandValid
       io.cpu.resp.valid := done
-//      io.cpu.req.ready := res(cDeAlloc)
     }
-    is (cReadInternal){
-      st := s_READ_CACHE
-      switch(st){
-        is (s_READ_CACHE){
-          ReadInternal (set, way)
-          when(io.dataMem.valid){
-             loadLineData := true.B
-             io.cpu.resp.valid := true.B
-             st := is_idle
-          }.otherwise{
-             st := s_READ_CACHE
-          }
-      }
-      }
+    is (cIntRead){
+        start(cIntRead) := commandValid
+        io.cpu.resp.valid := done
     }
 
     is (cGetState){
