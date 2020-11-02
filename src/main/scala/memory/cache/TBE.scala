@@ -12,6 +12,10 @@ class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelPar
   //@todo lockbit should be added
   val state = new State()
   val data = UInt (xlen.W)
+  val way = UInt (wayLen.W)
+  val set = UInt (setLen.W)
+  val cmdPtr = UInt (nCom.W)
+
 }
 object TBE {
 
@@ -19,6 +23,9 @@ object TBE {
     val tbe = Wire(new TBE)
     tbe.state := State.default
     tbe.data := 0.U
+    tbe.set := 0.U
+    tbe.way := 0.U
+    tbe.cmdPtr := 0.U
   }
 }
 
