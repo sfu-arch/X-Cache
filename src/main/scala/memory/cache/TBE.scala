@@ -38,6 +38,7 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
   val inputTBE= Input(new TBE)
   val outputTBE = Output(new TBE)
 
+
 }
 
 class   TBETable(Size: Int )(implicit  val p: Parameters) extends Module
@@ -87,7 +88,6 @@ class   TBETable(Size: Int )(implicit  val p: Parameters) extends Module
       }
     }
     io.outputTBE := TBEMemory(idx)
-
   }
 
 
