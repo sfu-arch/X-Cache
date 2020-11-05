@@ -9,7 +9,6 @@ import chisel3.util.Enum
 
 
 class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelParams {
-  //@todo lockbit should be added
   val state = new State()
   val data = UInt (xlen.W)
   val way = UInt (wayLen.W)

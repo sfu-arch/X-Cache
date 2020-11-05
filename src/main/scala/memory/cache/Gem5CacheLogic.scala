@@ -101,7 +101,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
   val flush_state = RegInit(s_flush_IDLE)
 
-  val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cIntRead :: cWrite::Nil = Enum(nCom)
+  val cNone :: cAlloc :: cDeAlloc :: cIntRead ::cExtRead :: cSetState :: cWrite::Nil = Enum(nCom)
 
   val (stAlIdle:: stAlLookMeta :: stAlCreate:: Nil) = Enum(3)
   val stAlReg = RegInit(stAlIdle)
@@ -112,11 +112,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val (stIntRdIdle :: stIntRdLookMeta :: stIntRdPassData:: Nil) = Enum(3)
   val stIntRdReg = RegInit(stIntRdIdle)
 
+  val (stExtRdIdle :: stExtRdAddr :: stExtRdData :: Nil) = Enum (3)
+  val stExtRdReg = RegInit (stExtRdIdle)
+
   //Flush Logic
   val dirty_block = nSets
 
   // memory
-  val valid = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
+  val valid = RegInit(VecInit(Seq.fill(nSets*nWays)(false.B)))
   val validTag = RegInit(VecInit(Seq.fill(nSets*nWays)(false.B)))
   val dirty = VecInit(Seq.fill(nSets)( 0.U(nWays.W)))
 
@@ -132,16 +135,20 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val tag = RegInit(0.U(taglen.W))
   val set = RegInit(0.U(setLen.W))
   val offset = RegInit(0.U(byteOffsetBits.W))
-//  val way = RegInit(0.U((nWays + 1).W))
   val way = WireInit(0.U((nWays + 1).W))
   val state = RegInit(State.default)
 
+  val dataBuffer = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
+
   val findInSetSig = Wire(Bool())
   val addrToLocSig = Wire (Bool())
+  val dataValidCheckSig = Wire(Bool())
 
   val start = WireInit(VecInit(Seq.fill(nCom)(false.B)))
   val res   = WireInit(VecInit(Seq.fill(nCom)(false.B)))
   val done = WireInit(false.B)
+
+  val dataValid = WireInit (false.B)
 
   val commandValid = Reg(Bool())
 
@@ -172,8 +179,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val loadLineData = Wire(Bool())
   val loadState = Wire (Bool())
 
+  val loadFromMemSig = Wire(Bool())
+  val loadDataBuffer = Wire(Bool())
+
   val waysInASet = Reg(Vec(nWays, new MetaData()))
   val cacheLine = Reg(Vec(nWords, UInt(xlen.W)))
+
+  val addrReadValid = Wire(Bool())
+  val dataReadReady = Wire(Bool())
 
   way := Mux(addrToLocSig, addrToLoc(set),(Mux(findInSetSig, findInSet(set,tag), 0.U((nWays + 1).W) )))
 
@@ -190,10 +203,21 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     state := io.stateMem.stateIn
   }
 
+  when (dataValidCheckSig){
+    dataValid := valid(set*nSets.U + way)
+  }
   when (done){
     readyForCom := true.B
   }.elsewhen( commandValid) {
     readyForCom := false.B
+  }
+
+  io.mem.ar.bits.addr := addr_reg
+  io.mem.ar.valid := addrReadValid
+  io.mem.r.ready :=  dataReadReady
+
+  when (loadDataBuffer) {
+    dataBuffer(read_count) := io.mem.r.bits.data
   }
 
   io.cpu.req.ready := readyForCom
@@ -202,7 +226,12 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   loadLineData := false.B
   findInSetSig := false.B
   addrToLocSig := false.B
+  dataValidCheckSig := false.B
   loadState := false.B
+
+  addrReadValid := false.B
+  dataReadReady := false.B
+  loadDataBuffer := false.B
 
   //  val (block_count, block_wrap) = Counter(flush_state === s_flush_BLOCK, nWords)
 //  val (way_count, way_wrap) = Counter(flush_state === s_flush_START, nWays)
@@ -232,8 +261,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
 
 //  hit := (valid(set) & rmeta.tag === tag)
-
-//  io.cpu.req.ready := true.B
 
   def addrToSet(addr: UInt): UInt = {
     val set = addr(setLen + blen + byteOffsetBits, blen + byteOffsetBits)
@@ -373,6 +400,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //        resAl := true.B
         res(cAlloc) := true.B
         done := true.B
+
       }
     }
     is (stAlCreate){
@@ -428,15 +456,22 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     }
     is (stIntRdLookMeta){
       findInSetSig := true.B
+      dataValidCheckSig := true.B
       when(way === nWays.U){
         res(cIntRead) := false.B
         done := true.B
         stIntRdReg := stIntRdIdle
       }.otherwise{
-        prepForRead(io.dataMem)
-        stIntRdReg := stIntRdPassData
+        when(dataValid){
+          prepForRead(io.dataMem)
+          stIntRdReg := stIntRdPassData
+        }.otherwise{
+          res(cIntRead) := false.B
+          done := true.B
+        }
       }
     }
+
     is (stIntRdPassData){
       loadLineData := true.B
       stIntRdReg := stIntRdIdle
@@ -444,6 +479,45 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       res(cIntRead) := true.B
     }
   }
+
+  switch(stExtRdReg){
+    is(stExtRdIdle){
+      when(start(cExtRead) ){
+        stExtRdReg := stExtRdAddr
+        addrReadValid := true.B
+      }.otherwise{
+        stExtRdReg := stExtRdIdle
+      }
+    }
+    is (stExtRdAddr){
+      when (io.mem.ar.fire()){
+        dataReadReady := true.B
+        stExtRdReg := stExtRdData
+      }.otherwise{
+        stExtRdReg := stExtRdAddr
+      }
+    }
+    is (stExtRdData){
+      when(io.mem.r.fire()){
+        loadDataBuffer := true.B
+        when(read_wrap_out){
+          stExtRdReg := stExtRdIdle
+          done := true.B
+          res(cExtRead) := true.B
+        }.otherwise {
+          stExtRdReg := stExtRdData
+        }
+      }
+    }
+
+
+  }
+
+
+
+
+
+
 
   io.cpu.resp.valid := false.B
 
@@ -463,12 +537,16 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
         start(cIntRead) := commandValid
         io.cpu.resp.valid := done
     }
-
-    is (cGetState){
-      val res = GetState()
-      io.cpu.resp.valid := res
-
+    is(cExtRead){
+      start(cExtRead) := commandValid
+      io.cpu.resp.valid := done
     }
+
+//    is (cGetState){
+//      val res = GetState()
+//      io.cpu.resp.valid := res
+//
+//    }
     is (cSetState){
       val res = SetState(inputState)
       io.cpu.resp.valid := res

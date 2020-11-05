@@ -142,6 +142,21 @@ class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPoke
       step(1)
     }
   }
+
+  def testReadInternal (addr:UInt) ={
+    while (peek(c.io.cpu.req.ready) == 0) {
+      step(1)
+    }
+    poke(c.io.cpu.req.valid, 1.U)
+    poke(c.io.cpu.req.bits.addr, addr)
+    poke(c.io.cpu.req.bits.command, 3.U)
+    step(1)
+    poke(c.io.cpu.req.valid, 0.U)
+    while (peek(c.io.cpu.resp.valid) == 0) {
+      step(1)
+    }
+  }
+
 //  val data = c.metaMemory.io.outputValue
 //  val addr = Wire(UInt())
 //  addr := 0.U
@@ -165,6 +180,9 @@ class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPoke
 //  step(2)
   testDeAllocate(1052676.U)
 //  step(2)
+  testReadInternal(100.U)
+  step(2)
+  testReadInternal(1052676.U)
 //  val metaMem = c
 
   val inAddrVec = List.range(0, (4 * 8), 4)
