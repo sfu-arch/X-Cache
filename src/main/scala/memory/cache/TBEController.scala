@@ -8,27 +8,6 @@ import chisel3.util._
 import chisel3.util.Enum
 
 
-class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelParams {
-  //@todo lockbit should be added
-  val state = new State()
-  val data = UInt (xlen.W)
-  val way = UInt (wayLen.W)
-  val set = UInt (setLen.W)
-  val cmdPtr = UInt (nCom.W)
-
-}
-object TBE {
-
-  def default (implicit p: Parameters){
-    val tbe = Wire(new TBE)
-    tbe.state := State.default
-    tbe.data := 0.U
-    tbe.set := 0.U
-    tbe.way := 0.U
-    tbe.cmdPtr := 0.U
-  }
-}
-
 class TBEControllerIO (implicit val p: Parameters) extends Bundle
   with HasCacheAccelParams
   with HasAccelShellParams {
@@ -43,23 +22,45 @@ class   TBEController(implicit  val p: Parameters) extends Module
   with HasCacheAccelParams
   with HasAccelShellParams {
 
-
-  val (idle::alloc :: dealloc :: read :: Nil) = Enum(4)
+  val cNone :: cAlloc :: cDeAlloc :: cGetState :: cSetState :: cIntRead :: cWrite::Nil = Enum(nCom)
+  val none :: wayFail :: metaFail :: Nil = Enum(3)
 
   val io = IO(new TBEControllerIO())
 
   val way = WireInit(io.inputTBE.way)
   val set = WireInit(io.inputTBE.set)
-  val state = WireInit(io.inputTBE.state)
+  val state = WireInit(io.inputTBE.state.state)
+  val cmd = WireInit(io.command)
 
   val nextCmd = Wire(UInt(nCom.W))
+
   io.outputTBE.way := way
   io.outputTBE.set := set
-  io.outputTBE.state := state
+  io.outputTBE.state.state := state
   io.outputTBE.data := io.inputTBE.data
 
   io.outputTBE.cmdPtr := nextCmd
 
-  
+//  val switchVal = WireInit(Cat(cmd , state.state))
+
+//  val allocFailed = Cat (cAlloc, wayFail)
+
+//  switch(switchVal){
+//    //@todo Should be completed
+//    is (Cat (cAlloc, wayFail)){
+//      nextCmd := replPolicy
+//    }
+//    is (Cat (cIntRead, metaFail))
+//    {
+//       nextCmd := cAlloc
+//    }
+//
+////    is (Cat (cAlloc, hit))
+////    {
+////      nextCmd :=
+////    }
+//
+//  }
+
 
 }
