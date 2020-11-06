@@ -7,6 +7,8 @@ import dandelion.config._
 import dandelion.util._
 import dandelion.interfaces._
 import dandelion.interfaces.axi._
+import chisel3.util.experimental.loadMemoryFromFile
+
 import dandelion.junctions._
 import dandelion.shell._
 
@@ -179,7 +181,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val loadLineData = Wire(Bool())
   val loadState = Wire (Bool())
 
-  val loadFromMemSig = Wire(Bool())
+//  val loadFromMemSig = Wire(Bool())
   val loadDataBuffer = Wire(Bool())
 
   val waysInASet = Reg(Vec(nWays, new MetaData()))
@@ -481,6 +483,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   switch(stExtRdReg){
+
     is(stExtRdIdle){
       when(start(cExtRead) ){
         stExtRdReg := stExtRdAddr
@@ -489,6 +492,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
         stExtRdReg := stExtRdIdle
       }
     }
+
     is (stExtRdAddr){
       when (io.mem.ar.fire()){
         dataReadReady := true.B
@@ -497,6 +501,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
         stExtRdReg := stExtRdAddr
       }
     }
+
     is (stExtRdData){
       when(io.mem.r.fire()){
         loadDataBuffer := true.B
@@ -509,10 +514,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
         }
       }
     }
-
-
   }
-
 
 
 
