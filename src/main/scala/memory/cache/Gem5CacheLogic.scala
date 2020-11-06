@@ -103,7 +103,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
   val flush_state = RegInit(s_flush_IDLE)
 
-  val cNone :: cAlloc :: cDeAlloc :: cIntRead ::cExtRead :: cSetState :: cWrite::Nil = Enum(nCom)
+  val cNone :: cAlloc :: cDeAlloc :: cIntRead ::cExtRead :: cSetState :: cIntWrite::Nil = Enum(nCom)
 
   val (stAlIdle:: stAlLookMeta :: stAlCreate:: Nil) = Enum(3)
   val stAlReg = RegInit(stAlIdle)
@@ -116,6 +116,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val (stExtRdIdle :: stExtRdAddr :: stExtRdData :: Nil) = Enum (3)
   val stExtRdReg = RegInit (stExtRdIdle)
+
+  val (stIntWrIdle :: stIntWrAddr :: stIntWrData :: Nil) = Enum (3)
+  val stIntWrReg = RegInit (stIntWrIdle)
 
   //Flush Logic
   val dirty_block = nSets
@@ -516,6 +519,15 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     }
   }
 
+  switch (stIntWrReg){
+    is (stIntWrIdle){
+      when(start(cIntWrite)){
+        stIntWrReg := stIntWrAddr
+      }
+    }
+
+  }
+
 
 
 
@@ -555,9 +567,11 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
     }
 
-//    is (cWrite){
-//      val res = W
-//    }
+    is (cIntWrite){
+      //@todo should be completed
+      start(cIntWrite) := commandValid
+      io.cpu.resp.valid := done
+    }
 
   }
 //
