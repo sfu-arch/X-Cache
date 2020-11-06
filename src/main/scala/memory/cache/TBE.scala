@@ -12,7 +12,7 @@ class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelPar
   val state = new State()
   val data = UInt (xlen.W)
   val way = UInt (wayLen.W)
-  val set = UInt (setLen.W)
+  val addr = UInt (addrLen.W)
   val cmdPtr = UInt (nCom.W)
 
 }
@@ -22,7 +22,7 @@ object TBE {
     val tbe = Wire(new TBE)
     tbe.state := State.default
     tbe.data := 0.U
-    tbe.set := 0.U
+    tbe.addr := 0.U
     tbe.way := 0.U
     tbe.cmdPtr := 0.U
   }
