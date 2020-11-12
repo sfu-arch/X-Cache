@@ -314,7 +314,7 @@ object DandelionF1AccelMain extends App {
   lazy val accel_module = DandelionTestDebugDCRAccel(accel_name, num_dbgs, bore_ids)
 
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(
-    () => new DandelionF1Accel(accel_module._1)(accel_module._2)
+    () => new F1Shell(accel_module._1)(accel_module._2)
     (nPtrs = num_ptrs, nDbgs = num_dbgs, nVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls)))
 
   val verilogFile = new File(dir, s"${chirrtl.main}.v")
