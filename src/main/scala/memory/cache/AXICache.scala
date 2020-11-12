@@ -50,6 +50,7 @@ object State {
     wire.state := state_len.U
     wire
   }
+
   def default(implicit p: Parameters): State= {
     val wire = Wire(new State)
     wire.state := 0.U

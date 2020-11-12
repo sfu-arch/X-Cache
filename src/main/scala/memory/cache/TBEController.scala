@@ -1,4 +1,4 @@
-package memory.cache
+package dandelion.memory.TBE
 
 import chipsalliance.rocketchip.config._
 import chisel3._
@@ -28,14 +28,14 @@ class   TBEController(implicit  val p: Parameters) extends Module
   val io = IO(new TBEControllerIO())
 
   val way = WireInit(io.inputTBE.way)
-  val set = WireInit(io.inputTBE.set)
+  val addr = WireInit(io.inputTBE.addr)
   val state = WireInit(io.inputTBE.state.state)
   val cmd = WireInit(io.command)
 
   val nextCmd = Wire(UInt(nCom.W))
 
   io.outputTBE.way := way
-  io.outputTBE.set := set
+  io.outputTBE.addr := addr
   io.outputTBE.state.state := state
   io.outputTBE.data := io.inputTBE.data
 
