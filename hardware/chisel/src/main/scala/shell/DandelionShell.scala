@@ -797,7 +797,8 @@ class DandelionDebugFPGAShell(accelModule: () => DandelionAccelDCRModule)
                          (numPtrs: Int, numDbgs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
                          (implicit val p: Parameters) extends Module with HasAccelParams with HasAccelShellParams {
   val io = IO(new Bundle {
-    val host = new AXIClient(hostParams)
+//    val host = new AXIClient(hostParams)
+    val host = new ConfigBusMaster(hostParams)
     val mem = new AXIMaster(memParams)
   })
 
@@ -814,7 +815,8 @@ class DandelionDebugFPGAShell(accelModule: () => DandelionAccelDCRModule)
       regBits
 
 
-  val dcr = Module(new DCR)
+//  val dcr = Module(new DCR)
+  val dcr = Module(new DCRF1)
   val dmem = Module(new DME())
   val cache = Module(new DMECache())
 
@@ -970,11 +972,12 @@ class DandelionDebugFPGAShell(accelModule: () => DandelionAccelDCRModule)
   io.host <> dcr.io.host
 
   //Specific for FPGA
-  io.host.b.bits.id := io.host.w.bits.id
-  io.host.r.bits.id := io.host.ar.bits.id
-
-  io.host.b.bits.user <> DontCare
-  io.host.r.bits.user <> DontCare
-  io.host.r.bits.last := 1.U
+//  io.host.b.bits.id := io.host.w.bits.id
+//  io.host.r.bits.id := io.host.ar.bits.id
+//
+//  io.host.b.bits.user <> DontCare
+//  io.host.r.bits.user <> DontCare
+//  io.host.r.bits.last := 1.U
 
 }
+

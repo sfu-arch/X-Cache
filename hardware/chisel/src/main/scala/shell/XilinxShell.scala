@@ -3,19 +3,22 @@ package dandelion.shell
 import chisel3._
 import chisel3.{RawModule, withClockAndReset}
 import chipsalliance.rocketchip.config._
-import dandelion.accel.{DandelionAccelDCRModule, DandelionAccelModule}
+import dandelion.accel.{DandelionAccelDCRModule, DandelionAccelDebugModule, DandelionAccelModule}
 import dandelion.config._
 import dandelion.interfaces.axi._
 
 /** XilinxShell.
- *
- * This is a wrapper shell mostly used to match Xilinx convention naming,
- * therefore we can pack Dandelion as an IP for IPI based flows.
- */
+  *
+  * This is a wrapper shell mostly used to match Xilinx convention naming,
+  * therefore we can pack Dandelion as an IP for IPI based flows.
+  */
 
-class DandelionF1Accel[T <: DandelionAccelDCRModule](accelModule: () => T)
-                                                 (nPtrs: Int, nVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
-                                                 (implicit val p: Parameters) extends RawModule with HasAccelShellParams {
+//class DandelionDebugFPGAShell(accelModule: () => DandelionAccelDCRModule)
+//                             (debugModule: () => DandelionAccelDebugModule)
+class DandelionF1Accel(accelModule: () => DandelionAccelDCRModule)
+                      (debugModule: () => DandelionAccelDebugModule)
+                      (nPtrs: Int, nDbgs: Int, nVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+                      (implicit val p: Parameters) extends RawModule with HasAccelShellParams {
 
   val hp = hostParams
   val mp = memParams
@@ -26,7 +29,11 @@ class DandelionF1Accel[T <: DandelionAccelDCRModule](accelModule: () => T)
   val axi_mstr_cfg_bus = IO(new ConfigBusMaster(hp))
 
   val shell = withClockAndReset(clock = ap_clk, reset = ~ap_rst_n) {
-    Module(new DandelionF1DTAShell())
+    //    Module(new DandelionF1DTAShell())
+    Module(new DandelionDebugFPGAShell(accelModule)
+                                      (debugModule)
+    (numPtrs = nPtrs, numDbgs = nDbgs, numVals = nVals, numRets = numRets, numEvents = numEvents, numCtrls = numCtrls))
+
   }
 
   // memory
