@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.MultiIOModule
 import dandelion.shell._
 import chipsalliance.rocketchip.config._
+import dandelion.GuardReader
 import dandelion.config._
 import dandelion.generator._
 import dandelion.accel.{DandelionAccelDCRModule, DandelionAccelDebugModule, DandelionAccelModule}
@@ -311,11 +312,6 @@ object DandelionF1AccelMain extends App {
       nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls, nDbgs = num_dbgs)
 
   lazy val accel_module = DandelionTestDebugDCRAccel(accel_name, num_dbgs, bore_ids)
-
-  //  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(
-  //    () => new DandelionDebugFPGAShell(accel_module._1)(accel_module._2)
-  //    (numPtrs = num_ptrs, numDbgs = num_dbgs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls)))
-
 
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(
     () => new DandelionF1Accel(accel_module._1)(accel_module._2)
