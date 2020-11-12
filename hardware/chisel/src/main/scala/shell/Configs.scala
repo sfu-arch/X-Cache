@@ -96,9 +96,9 @@ class WithF1Config(vcrParams: DandelionDCRParams = DandelionDCRParams(),
                      hostParams: AXIParams = AXIParams(
                        addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
                      memParams: AXIParams = AXIParams(
-                       addrBits = 32, dataBits = 64, userBits = 5,
+                       addrBits = 64, dataBits = 512, userBits = 10,
                        lenBits = 8, // limit to 16 beats, instead of 256 beats in AXI4
-                       coherent = true),
+                       coherent = false),
                      nastiParams: NastiParameters = NastiParameters(dataBits = 64, addrBits = 32, idBits = 13),
                      dbgParams: DebugParams = DebugParams())
   extends Config((site, here, up) => {

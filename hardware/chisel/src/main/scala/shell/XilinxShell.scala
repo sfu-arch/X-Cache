@@ -15,10 +15,10 @@ import dandelion.interfaces.axi._
 
 //class DandelionDebugFPGAShell(accelModule: () => DandelionAccelDCRModule)
 //                             (debugModule: () => DandelionAccelDebugModule)
-class DandelionF1Accel(accelModule: () => DandelionAccelDCRModule)
-                      (debugModule: () => DandelionAccelDebugModule)
-                      (nPtrs: Int, nDbgs: Int, nVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
-                      (implicit val p: Parameters) extends RawModule with HasAccelShellParams {
+class F1Shell(accelModule: () => DandelionAccelDCRModule)
+             (debugModule: () => DandelionAccelDebugModule)
+             (nPtrs: Int, nDbgs: Int, nVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
+             (implicit val p: Parameters) extends RawModule with HasAccelShellParams {
 
   val hp = hostParams
   val mp = memParams
