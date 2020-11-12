@@ -63,6 +63,7 @@ verilator_opt += +define+RANDOMIZE_MEM_INIT
 verilator_opt += --x-assign unique
 verilator_opt += --output-split 20000
 verilator_opt += --output-split-cfuncs 20000
+verilator_opt += --max-num-width 1000000
 verilator_opt += --top-module ${TOP}
 verilator_opt += -Mdir ${verilator_build_dir}
 verilator_opt += -I$(chisel_build_dir)

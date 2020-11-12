@@ -29,9 +29,10 @@ b = np.zeros(N * N)
 b_s = dsim.DArray(b, dsim.DArray.DType.UInt64)
 
 
-d_s = dsim.DArray(np.zeros(N * N), dsim.DArray.DType.UInt64)
+# Enable for debugggin
+# d_s = dsim.DArray(np.zeros(N * N), dsim.DArray.DType.UInt64)
 
-events = dsim.sim(ptrs = [a_s, b_s], vars= [N], debugs=[d_s], numRets=0, numEvents=1, hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [a_s, b_s], vars= [N], debugs=[  ], numRets=0, numEvents=1, hwlib = hw_lib_path)
 
 print("Cycle: " + str(events[0]))
 if list(b_s.getData_UInt64()) == relu(a):
