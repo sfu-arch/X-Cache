@@ -229,6 +229,19 @@ instruction of Verilator wiki.
 https://www.veripool.org/projects/verilator/wiki/Installing
 
 
+# Debug
+
+How to extract trace?
+
+```
+python3 scripts/extract_trace.py --log scripts/log_example.txt --output trace_output --nodes 19
+```
+
+output files would be:
+
+1. 19_data.trace
+1. 19_cycle.trace
+
 ## Notes
 * Some pointers
     * Verilog and Chisel3 tests in `python/`
