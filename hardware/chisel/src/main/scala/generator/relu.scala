@@ -21,6 +21,7 @@ import muxes._
 import org.scalatest._
 import regfile._
 import util._
+import dandelion.GuardReader
 
 
 class reluDF(PtrsIn: Seq[Int] = List(64, 64), ValsIn: Seq[Int] = List(64), Returns: Seq[Int] = List())
@@ -95,16 +96,16 @@ class reluDF(PtrsIn: Seq[Int] = List(64, 64), ValsIn: Seq[Int] = List(64), Retur
   val ret_10 = Module(new RetNode2(retTypes = List(), ID = 10))
 
   //  %j.032 = phi i32 [ 0, %for.body.lr.ph ], [ %inc13, %for.cond.cleanup3 ], !UID !49
-  val phij_03212 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 12, Res = true))
+  val phij_03212 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 12, Res = true, Debug = true, GuardVals=Seq.tabulate(100)(n => n)))
 
   //  %mul = mul i32 %j.032, %N, !UID !51
-  val binaryOp_mul13 = Module(new ComputeNode(NumOuts = 1, ID = 13, opCode = "mul")(sign = false, Debug = false))
+  val binaryOp_mul13 = Module(new ComputeNode(NumOuts = 1, ID = 13, opCode = "mul")(sign = false, Debug = true, GuardVals=GuardReader("relu.dbg"){13}))
 
   //  br label %for.body4, !dbg !52, !UID !53, !BB_UID !54
   val br_14 = Module(new UBranchNode(ID = 14))
 
   //  %inc13 = add nuw i32 %j.032, 1, !dbg !55, !UID !56
-  val binaryOp_inc1316 = Module(new ComputeNode(NumOuts = 2, ID = 16, opCode = "add")(sign = false, Debug = false))
+  val binaryOp_inc1316 = Module(new ComputeNode(NumOuts = 2, ID = 16, opCode = "add")(sign = false, Debug = true, GuardVals=GuardReader("relu.dbg"){16}))
 
   //  %exitcond33 = icmp eq i32 %inc13, %N, !dbg !36, !UID !57
   val icmp_exitcond3310 = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "eq")(sign = false, Debug = false))

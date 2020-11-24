@@ -101,16 +101,16 @@ class conv2dDF(PtrsIn: Seq[Int] = List(64, 64, 64), ValsIn: Seq[Int] = List(64, 
    * ================================================================== */
 
   //  %shr = ashr i32 %K, 1, !dbg !70, !UID !71
-  val binaryOp_shr2 = Module(new ComputeNode(NumOuts = 7, ID = 2, opCode = "ashr")(sign = false, Debug = false))
+  val binaryOp_shr2 = Module(new ComputeNode(NumOuts = 7, ID = 2, opCode = "ashr")(sign = false, Debug = true, GuardVals=Seq.tabulate(100)(n => n)))
 
   //  %mul = mul nsw i32 %shr, %W, !dbg !73, !UID !74
-  val binaryOp_mul3 = Module(new ComputeNode(NumOuts = 2, ID = 3, opCode = "mul")(sign = false, Debug = false))
+  val binaryOp_mul3 = Module(new ComputeNode(NumOuts = 2, ID = 3, opCode = "mul")(sign = false,  Debug = true, GuardVals=Seq.tabulate(100)(n => n)))
 
   //  %sub = sub nsw i32 %H, %shr, !dbg !77, !UID !78
-  val binaryOp_sub4 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "sub")(sign = false, Debug = false))
+  val binaryOp_sub4 = Module(new ComputeNode(NumOuts = 2, ID = 4, opCode = "sub")(sign = false,  Debug = true, GuardVals=Seq.tabulate(100)(n => n)))
 
   //  %cmp84 = icmp slt i32 %shr, %sub, !dbg !79, !UID !80
-  val icmp_cmp843 = Module(new ComputeNode(NumOuts = 1, ID = 3, opCode = "slt")(sign = true, Debug = false))
+  val icmp_cmp843 = Module(new ComputeNode(NumOuts = 1, ID = 33, opCode = "slt")(sign = true,  Debug = true, GuardVals=Seq.tabulate(100)(n => n)))
 
   //  br i1 %cmp84, label %for.body.lr.ph, label %for.cond.cleanup, !dbg !81, !UID !82, !BB_UID !83
   val br_6 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 0, ID = 6))

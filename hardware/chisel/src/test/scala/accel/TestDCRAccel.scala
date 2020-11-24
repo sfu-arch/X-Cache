@@ -80,7 +80,8 @@ object DandelionTestDebugDCRAccel {
 
       //Real examples
       case "relu" => (() => new reluDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
-      case "stencil" => (() => new stencilDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "vadd" => (() => new vaddRootDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
+      case "stencil" => (() => new stencilRootDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "saxpy" => (() => new saxpyDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "conv2d" => (() => new conv2dDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))
       case "conv2dUnroll" => (() => new conv2dUnrollDF(), () => new DebugBufferWriters(numDbgs, boreIDsList))

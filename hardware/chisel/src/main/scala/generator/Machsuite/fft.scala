@@ -100,10 +100,10 @@ class fftDF(PtrsIn: Seq[Int] = List(32, 32, 32, 32), ValsIn: Seq[Int] = List(), 
   val phiodd_01126 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 1, ID = 6, Res = false))
 
   //  %or = or i32 %odd.0112, %span.0113, !UID !13
-  val binaryOp_or7 = Module(new ComputeNode(NumOuts = 4, ID = 7, opCode = "or")(sign = false, Debug = false))
+  val binaryOp_or7 = Module(new ComputeNode(NumOuts = 4, ID = 7, opCode = "or")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %xor = xor i32 %or, %span.0113, !UID !14
-  val binaryOp_xor8 = Module(new ComputeNode(NumOuts = 2, ID = 8, opCode = "xor")(sign = false, Debug = false))
+  val binaryOp_xor8 = Module(new ComputeNode(NumOuts = 2, ID = 8, opCode = "xor")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %idxprom = sext i32 %xor to i64, !UID !15
   val sextidxprom9 = Module(new SextNode(NumOuts = 2))
@@ -160,13 +160,13 @@ class fftDF(PtrsIn: Seq[Int] = List(32, 32, 32, 32), ValsIn: Seq[Int] = List(), 
   val st_26 = Module(new UnTypStoreCache(NumPredOps = 0, NumSuccOps = 1, ID = 26, RouteID = 11))
 
   //  %shl = shl i32 %xor, %log.0115, !UID !37
-  val binaryOp_shl27 = Module(new ComputeNode(NumOuts = 1, ID = 27, opCode = "shl")(sign = false, Debug = false))
+  val binaryOp_shl27 = Module(new ComputeNode(NumOuts = 1, ID = 27, opCode = "shl")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %and = and i32 %shl, 1023, !UID !38
-  val binaryOp_and28 = Module(new ComputeNode(NumOuts = 2, ID = 28, opCode = "and")(sign = false, Debug = false))
+  val binaryOp_and28 = Module(new ComputeNode(NumOuts = 2, ID = 28, opCode = "and")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %tobool27 = icmp eq i32 %and, 0, !UID !39
-  val icmp_tobool2729 = Module(new ComputeNode(NumOuts = 1, ID = 29, opCode = "eq")(sign = false, Debug = false))
+  val icmp_tobool2729 = Module(new ComputeNode(NumOuts = 1, ID = 29, opCode = "eq")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  br i1 %tobool27, label %for.inc, label %if.then, !UID !40, !BB_UID !41
   val br_30 = Module(new CBranchNodeVariable(NumTrue = 1, NumFalse = 1, NumPredecessor = 4, ID = 30))

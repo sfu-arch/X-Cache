@@ -107,7 +107,7 @@ class bbgemmDF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
   val phiindvars_iv785 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 2, ID = 5, Res = true))
 
   //  %0 = shl nsw i64 %indvars.iv78, 4, !UID !12
-  val binaryOp_6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "shl")(sign = false, Debug = false))
+  val binaryOp_6 = Module(new ComputeNode(NumOuts = 1, ID = 6, opCode = "shl")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  br label %for.body9, !UID !13, !BB_UID !14
   val br_7 = Module(new UBranchNode(ID = 7))
@@ -116,16 +116,16 @@ class bbgemmDF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
   val phiindvars_iv718 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 8, Res = true))
 
   //  %1 = add nuw nsw i64 %indvars.iv71, %indvars.iv82, !UID !16
-  val binaryOp_9 = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "add")(sign = false, Debug = false))
+  val binaryOp_9 = Module(new ComputeNode(NumOuts = 1, ID = 9, opCode = "add")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %2 = shl i64 %1, 4, !UID !17
-  val binaryOp_10 = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "shl")(sign = false, Debug = false))
+  val binaryOp_10 = Module(new ComputeNode(NumOuts = 1, ID = 10, opCode = "shl")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %3 = add nuw nsw i64 %indvars.iv71, %indvars.iv82, !UID !18
-  val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "add")(sign = false, Debug = false))
+  val binaryOp_11 = Module(new ComputeNode(NumOuts = 1, ID = 11, opCode = "add")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %4 = add nuw nsw i64 %3, %0, !UID !19
-  val binaryOp_12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign = false, Debug = false))
+  val binaryOp_12 = Module(new ComputeNode(NumOuts = 1, ID = 12, opCode = "add")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %arrayidx = getelementptr inbounds double, double* %m1, i64 %4, !UID !20
   val Gep_arrayidx13 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 13)(ElementSize = 8, ArraySize = List()))
@@ -140,10 +140,10 @@ class bbgemmDF(PtrsIn: Seq[Int] = List(32, 32, 32), ValsIn: Seq[Int] = List(), R
   val phiindvars_iv16 = Module(new PhiFastNode(NumInputs = 2, NumOutputs = 3, ID = 16, Res = true))
 
   //  %6 = add nuw nsw i64 %indvars.iv, %indvars.iv84, !UID !29
-  val binaryOp_17 = Module(new ComputeNode(NumOuts = 1, ID = 17, opCode = "add")(sign = false, Debug = false))
+  val binaryOp_17 = Module(new ComputeNode(NumOuts = 1, ID = 17, opCode = "add")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %7 = add nuw nsw i64 %6, %2, !UID !30
-  val binaryOp_18 = Module(new ComputeNode(NumOuts = 1, ID = 18, opCode = "add")(sign = false, Debug = false))
+  val binaryOp_18 = Module(new ComputeNode(NumOuts = 1, ID = 18, opCode = "add")(sign = false, Debug = true, GuardVals=Seq.tabulate(1000)(n => n)))
 
   //  %arrayidx20 = getelementptr inbounds double, double* %m2, i64 %7, !UID !31
   val Gep_arrayidx2019 = Module(new GepNode(NumIns = 1, NumOuts = 1, ID = 19)(ElementSize = 8, ArraySize = List()))

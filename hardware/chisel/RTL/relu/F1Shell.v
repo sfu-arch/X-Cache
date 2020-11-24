@@ -2023,19 +2023,19 @@ module DMECache(
   wire [63:0] _GEN_377 = {_T_412, 6'h0}; // @[AXICache.scala 835:82]
   wire [64:0] _T_413 = {{1'd0}, _GEN_377}; // @[AXICache.scala 835:82]
   wire [64:0] _T_414 = flush_mode ? block_addr : _T_413; // @[AXICache.scala 835:33]
-  wire [255:0] _T_422 = d >> idx_reg; // @[AXICache.scala 849:33]
-  wire  is_dirty = _T_198[0] & _T_422[0]; // @[AXICache.scala 849:29]
+  wire [255:0] _T_422 = d >> idx_reg; // @[AXICache.scala 853:33]
+  wire  is_dirty = _T_198[0] & _T_422[0]; // @[AXICache.scala 853:29]
   wire  _T_424 = 3'h0 == state; // @[Conditional.scala 37:30]
-  wire  _T_425 = |io_cpu_req_bits_mask; // @[AXICache.scala 853:43]
+  wire  _T_425 = |io_cpu_req_bits_mask; // @[AXICache.scala 857:43]
   wire  _T_427 = 3'h1 == state; // @[Conditional.scala 37:30]
-  wire  _T_430 = ~is_dirty; // @[AXICache.scala 865:32]
+  wire  _T_430 = ~is_dirty; // @[AXICache.scala 869:32]
   wire  _T_431 = io_mem_wr_cmd_ready & io_mem_wr_cmd_valid; // @[Decoupled.scala 40:37]
   wire  _T_432 = io_mem_rd_cmd_ready & io_mem_rd_cmd_valid; // @[Decoupled.scala 40:37]
-  wire  _GEN_311 = hit ? 1'h0 : is_dirty; // @[AXICache.scala 857:17]
-  wire  _GEN_312 = hit ? 1'h0 : _T_430; // @[AXICache.scala 857:17]
+  wire  _GEN_311 = hit ? 1'h0 : is_dirty; // @[AXICache.scala 861:17]
+  wire  _GEN_312 = hit ? 1'h0 : _T_430; // @[AXICache.scala 861:17]
   wire  _T_433 = 3'h2 == state; // @[Conditional.scala 37:30]
-  wire  _GEN_316 = _T_93 ? 1'h0 : is_dirty; // @[AXICache.scala 874:49]
-  wire  _GEN_317 = _T_93 ? 1'h0 : _T_430; // @[AXICache.scala 874:49]
+  wire  _GEN_316 = _T_93 ? 1'h0 : is_dirty; // @[AXICache.scala 878:49]
+  wire  _GEN_317 = _T_93 ? 1'h0 : _T_430; // @[AXICache.scala 878:49]
   wire  _T_439 = 3'h3 == state; // @[Conditional.scala 37:30]
   wire  _T_440 = 3'h4 == state; // @[Conditional.scala 37:30]
   wire  _T_441 = 3'h5 == state; // @[Conditional.scala 37:30]
@@ -2052,7 +2052,7 @@ module DMECache(
   wire  _GEN_340 = _T_424 ? 1'h0 : _GEN_336; // @[Conditional.scala 40:58]
   wire  _GEN_341 = _T_424 ? 1'h0 : _GEN_337; // @[Conditional.scala 40:58]
   wire  _T_446 = 3'h0 == flush_state; // @[Conditional.scala 37:30]
-  wire  _GEN_343 = io_cpu_flush | flush_mode; // @[AXICache.scala 913:26]
+  wire  _GEN_343 = io_cpu_flush | flush_mode; // @[AXICache.scala 917:26]
   wire  _T_447 = 3'h1 == flush_state; // @[Conditional.scala 37:30]
   wire  _T_448 = 3'h2 == flush_state; // @[Conditional.scala 37:30]
   wire  _T_449 = 3'h3 == flush_state; // @[Conditional.scala 37:30]
@@ -2589,17 +2589,17 @@ module DMECache(
   assign dataMem_7_7__T_394_addr = addr_reg[13:6];
   assign dataMem_7_7__T_394_mask = wmask[63];
   assign dataMem_7_7__T_394_en = _T_94 | is_alloc;
-  assign io_cpu_flush_done = _T_446 ? 1'h0 : _GEN_362; // @[AXICache.scala 846:21 AXICache.scala 920:27]
+  assign io_cpu_flush_done = _T_446 ? 1'h0 : _GEN_362; // @[AXICache.scala 850:21 AXICache.scala 924:27]
   assign io_cpu_req_ready = is_idle | _T_203; // @[AXICache.scala 765:20]
   assign io_cpu_resp_valid = _T_204 | _T_218; // @[AXICache.scala 769:21]
   assign io_cpu_resp_bits_data = 3'h7 == off_reg ? read[511:448] : _GEN_23; // @[AXICache.scala 768:25]
   assign io_cpu_resp_bits_tag = cpu_tag_reg; // @[AXICache.scala 771:24]
-  assign io_mem_rd_cmd_valid = _T_446 ? _GEN_340 : _GEN_366; // @[AXICache.scala 814:23 AXICache.scala 865:29 AXICache.scala 878:29 AXICache.scala 898:27 AXICache.scala 952:27]
+  assign io_mem_rd_cmd_valid = _T_446 ? _GEN_340 : _GEN_366; // @[AXICache.scala 814:23 AXICache.scala 869:29 AXICache.scala 882:29 AXICache.scala 902:27 AXICache.scala 956:27]
   assign io_mem_rd_cmd_bits_addr = _T_396[63:0]; // @[AXICache.scala 812:27]
   assign io_mem_rd_data_ready = state == 3'h6; // @[AXICache.scala 817:24]
-  assign io_mem_wr_cmd_valid = _T_446 ? _GEN_339 : _GEN_365; // @[AXICache.scala 837:23 AXICache.scala 864:29 AXICache.scala 877:29 AXICache.scala 951:27]
+  assign io_mem_wr_cmd_valid = _T_446 ? _GEN_339 : _GEN_365; // @[AXICache.scala 837:23 AXICache.scala 868:29 AXICache.scala 881:29 AXICache.scala 955:27]
   assign io_mem_wr_cmd_bits_addr = _T_414[63:0]; // @[AXICache.scala 835:27]
-  assign io_mem_wr_data_valid = _T_446 ? _GEN_341 : _GEN_367; // @[AXICache.scala 843:24 AXICache.scala 887:28 AXICache.scala 962:28]
+  assign io_mem_wr_data_valid = _T_446 ? _GEN_341 : _GEN_367; // @[AXICache.scala 847:24 AXICache.scala 891:28 AXICache.scala 966:28]
   assign io_mem_wr_data_bits = flush_mode ? dirty_cache_block : read; // @[AXICache.scala 840:23]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
@@ -9211,24 +9211,24 @@ module ComputeNode(
   wire  _T_14 = io_RightIO_ready & io_RightIO_valid; // @[Decoupled.scala 40:37]
   wire  _GEN_15 = _T_14 | right_valid_R; // @[ComputeNode.scala 111:27]
   wire  _T_22 = ~state; // @[ComputeNode.scala 75:67]
-  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 144:27]
-  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 144:43]
+  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 147:27]
+  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 147:43]
   wire  _T_32 = _T_1 ^ 1'h1; // @[HandShaking.scala 274:72]
-  wire  _T_34 = ~reset; // @[ComputeNode.scala 174:17]
+  wire  _T_34 = ~reset; // @[ComputeNode.scala 178:17]
   wire [63:0] _T_30_data = FU_io_out; // @[interfaces.scala 289:20 interfaces.scala 290:15]
-  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 144:81]
-  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 144:81]
-  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 144:81]
+  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 147:81]
+  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 147:81]
+  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 147:81]
   wire  _T_37 = out_ready_R_0 | _T_1; // @[HandShaking.scala 251:83]
-  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 174:17]
+  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 178:17]
   UALU FU ( // @[ComputeNode.scala 61:18]
     .io_in1(FU_io_in1),
     .io_in2(FU_io_in2),
     .io_out(FU_io_out)
   );
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 205:19]
-  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
+  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
   assign io_LeftIO_ready = ~left_valid_R; // @[ComputeNode.scala 104:19]
   assign io_RightIO_ready = ~right_valid_R; // @[ComputeNode.scala 110:20]
   assign FU_io_in1 = left_R_data; // @[ComputeNode.scala 101:13]
@@ -9409,7 +9409,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_47 & _T_34) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: icmp_cmp310] [ID: 0] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: eq] [Cycle: %d]\n",5'h0,enable_R_control,left_R_data,64'h0,FU_io_out,cycleCount); // @[ComputeNode.scala 174:17]
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: icmp_cmp310] [ID: 0] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: eq] [Cycle: %d]\n",5'h0,enable_R_control,left_R_data,64'h0,FU_io_out,cycleCount); // @[ComputeNode.scala 178:17]
         end
     `ifdef PRINTF_COND
       end
@@ -11155,40 +11155,40 @@ module ComputeNode_1(
   wire  _T_14 = io_RightIO_ready & io_RightIO_valid; // @[Decoupled.scala 40:37]
   wire  _GEN_15 = _T_14 | right_valid_R; // @[ComputeNode.scala 111:27]
   wire  _T_32 = ~state; // @[Conditional.scala 37:30]
-  wire  _T_33 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 144:27]
-  wire  _T_34 = _T_33 & right_valid_R; // @[ComputeNode.scala 144:43]
+  wire  _T_33 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 147:27]
+  wire  _T_34 = _T_33 & right_valid_R; // @[ComputeNode.scala 147:43]
   reg [2:0] guard_index; // @[Counter.scala 29:33]
-  wire [63:0] _GEN_19 = 3'h1 == guard_index ? 64'h8 : 64'h0; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_20 = 3'h2 == guard_index ? 64'h10 : _GEN_19; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_21 = 3'h3 == guard_index ? 64'h18 : _GEN_20; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_22 = 3'h4 == guard_index ? 64'h20 : _GEN_21; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_23 = 3'h5 == guard_index ? 64'h28 : _GEN_22; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_24 = 3'h6 == guard_index ? 64'h30 : _GEN_23; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_25 = 3'h7 == guard_index ? 64'h38 : _GEN_24; // @[ComputeNode.scala 151:26]
-  wire  _T_36 = FU_io_out != _GEN_25; // @[ComputeNode.scala 151:26]
+  wire [63:0] _GEN_19 = 3'h1 == guard_index ? 64'h8 : 64'h0; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_20 = 3'h2 == guard_index ? 64'h10 : _GEN_19; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_21 = 3'h3 == guard_index ? 64'h18 : _GEN_20; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_22 = 3'h4 == guard_index ? 64'h20 : _GEN_21; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_23 = 3'h5 == guard_index ? 64'h28 : _GEN_22; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_24 = 3'h6 == guard_index ? 64'h30 : _GEN_23; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_25 = 3'h7 == guard_index ? 64'h38 : _GEN_24; // @[ComputeNode.scala 155:26]
+  wire  _T_36 = FU_io_out != _GEN_25; // @[ComputeNode.scala 155:26]
   wire  _T_22 = right_valid_R & left_valid_R; // @[ComputeNode.scala 71:19]
   wire  _T_23 = enable_valid_R & _T_22; // @[ComputeNode.scala 75:20]
   wire  _T_24 = _T_23 & enable_R_control; // @[ComputeNode.scala 75:38]
   wire  _T_26 = _T_24 & _T_32; // @[ComputeNode.scala 75:58]
   wire [2:0] _T_30 = guard_index + 3'h1; // @[Counter.scala 39:22]
-  wire  _T_39 = ~reset; // @[ComputeNode.scala 157:21]
+  wire  _T_39 = ~reset; // @[ComputeNode.scala 161:21]
   wire [63:0] _T_40_data = FU_io_out; // @[interfaces.scala 289:20 interfaces.scala 290:15]
-  wire [63:0] _GEN_28 = _T_36 ? _GEN_25 : _T_40_data; // @[ComputeNode.scala 151:61]
+  wire [63:0] _GEN_28 = _T_36 ? _GEN_25 : _T_40_data; // @[ComputeNode.scala 155:61]
   wire  _T_42 = _T_1 ^ 1'h1; // @[HandShaking.scala 274:72]
-  wire [63:0] _GEN_33 = _T_34 ? _GEN_28 : out_data_R; // @[ComputeNode.scala 144:81]
-  wire  _GEN_36 = _T_34 | out_valid_R_0; // @[ComputeNode.scala 144:81]
-  wire  _GEN_40 = _T_34 | state; // @[ComputeNode.scala 144:81]
+  wire [63:0] _GEN_33 = _T_34 ? _GEN_28 : out_data_R; // @[ComputeNode.scala 147:81]
+  wire  _GEN_36 = _T_34 | out_valid_R_0; // @[ComputeNode.scala 147:81]
+  wire  _GEN_40 = _T_34 | state; // @[ComputeNode.scala 147:81]
   wire  _T_47 = out_ready_R_0 | _T_1; // @[HandShaking.scala 251:83]
-  wire  _GEN_64 = _T_32 & _T_34; // @[ComputeNode.scala 157:21]
-  wire  _GEN_65 = _GEN_64 & _T_36; // @[ComputeNode.scala 157:21]
+  wire  _GEN_64 = _T_32 & _T_34; // @[ComputeNode.scala 161:21]
+  wire  _GEN_65 = _GEN_64 & _T_36; // @[ComputeNode.scala 161:21]
   UALU_1 FU ( // @[ComputeNode.scala 61:18]
     .io_in1(FU_io_in1),
     .io_in2(FU_io_in2),
     .io_out(FU_io_out)
   );
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 205:19]
-  assign io_Out_0_valid = _T_32 ? _GEN_36 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_0_bits_data = _T_32 ? _GEN_33 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 154:35 ComputeNode.scala 162:35]
+  assign io_Out_0_valid = _T_32 ? _GEN_36 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_0_bits_data = _T_32 ? _GEN_33 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 158:35 ComputeNode.scala 166:35]
   assign io_LeftIO_ready = ~left_valid_R; // @[ComputeNode.scala 104:19]
   assign io_RightIO_ready = ~right_valid_R; // @[ComputeNode.scala 110:20]
   assign FU_io_in1 = left_R_data; // @[ComputeNode.scala 101:13]
@@ -11390,7 +11390,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_65 & _T_39) begin
-          $fwrite(32'h80000002,"[LOG] [DEBUG] [Relu] [TID: %d] [COMPUTE] [binaryOp_mul13]  [Out:%d ] [Correct:%d ] [Cycle: %d]\n",taskID,FU_io_out,_GEN_25,cycleCount); // @[ComputeNode.scala 157:21]
+          $fwrite(32'h80000002,"[LOG] [DEBUG] [Relu] [TID: %d] [COMPUTE] [binaryOp_mul13]  [Out:%d ] [Correct:%d ] [Cycle: %d]\n",taskID,FU_io_out,_GEN_25,cycleCount); // @[ComputeNode.scala 161:21]
         end
     `ifdef PRINTF_COND
       end
@@ -11401,7 +11401,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_64 & _T_39) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: binaryOp_mul13] [ID: 13] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: mul] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 174:17]
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: binaryOp_mul13] [ID: 13] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: mul] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 178:17]
         end
     `ifdef PRINTF_COND
       end
@@ -11679,47 +11679,47 @@ module ComputeNode_2(
   wire  _T_15 = io_RightIO_ready & io_RightIO_valid; // @[Decoupled.scala 40:37]
   wire  _GEN_17 = _T_15 | right_valid_R; // @[ComputeNode.scala 111:27]
   wire  _T_34 = ~state; // @[Conditional.scala 37:30]
-  wire  _T_35 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 144:27]
-  wire  _T_36 = _T_35 & right_valid_R; // @[ComputeNode.scala 144:43]
+  wire  _T_35 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 147:27]
+  wire  _T_36 = _T_35 & right_valid_R; // @[ComputeNode.scala 147:43]
   reg [2:0] guard_index; // @[Counter.scala 29:33]
-  wire [63:0] _GEN_21 = 3'h1 == guard_index ? 64'h2 : 64'h1; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_22 = 3'h2 == guard_index ? 64'h3 : _GEN_21; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_23 = 3'h3 == guard_index ? 64'h4 : _GEN_22; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_24 = 3'h4 == guard_index ? 64'h5 : _GEN_23; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_25 = 3'h5 == guard_index ? 64'h6 : _GEN_24; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_26 = 3'h6 == guard_index ? 64'h7 : _GEN_25; // @[ComputeNode.scala 151:26]
-  wire [63:0] _GEN_27 = 3'h7 == guard_index ? 64'h8 : _GEN_26; // @[ComputeNode.scala 151:26]
-  wire  _T_38 = FU_io_out != _GEN_27; // @[ComputeNode.scala 151:26]
+  wire [63:0] _GEN_21 = 3'h1 == guard_index ? 64'h2 : 64'h1; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_22 = 3'h2 == guard_index ? 64'h3 : _GEN_21; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_23 = 3'h3 == guard_index ? 64'h4 : _GEN_22; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_24 = 3'h4 == guard_index ? 64'h5 : _GEN_23; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_25 = 3'h5 == guard_index ? 64'h6 : _GEN_24; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_26 = 3'h6 == guard_index ? 64'h7 : _GEN_25; // @[ComputeNode.scala 155:26]
+  wire [63:0] _GEN_27 = 3'h7 == guard_index ? 64'h8 : _GEN_26; // @[ComputeNode.scala 155:26]
+  wire  _T_38 = FU_io_out != _GEN_27; // @[ComputeNode.scala 155:26]
   wire  _T_23 = right_valid_R & left_valid_R; // @[ComputeNode.scala 71:19]
   wire  _T_24 = enable_valid_R & _T_23; // @[ComputeNode.scala 75:20]
   wire  _T_25 = _T_24 & enable_R_control; // @[ComputeNode.scala 75:38]
   wire  _T_27 = _T_25 & _T_34; // @[ComputeNode.scala 75:58]
   wire [2:0] _T_31 = guard_index + 3'h1; // @[Counter.scala 39:22]
-  wire  _T_42 = ~reset; // @[ComputeNode.scala 157:21]
+  wire  _T_42 = ~reset; // @[ComputeNode.scala 161:21]
   wire [63:0] _T_43_data = FU_io_out; // @[interfaces.scala 289:20 interfaces.scala 290:15]
-  wire [63:0] _GEN_30 = _T_38 ? _GEN_27 : _T_43_data; // @[ComputeNode.scala 151:61]
+  wire [63:0] _GEN_30 = _T_38 ? _GEN_27 : _T_43_data; // @[ComputeNode.scala 155:61]
   wire  _T_47 = _T_1 ^ 1'h1; // @[HandShaking.scala 274:72]
   wire  _T_48 = _T_2 ^ 1'h1; // @[HandShaking.scala 274:72]
-  wire [63:0] _GEN_38 = _T_36 ? _GEN_30 : out_data_R; // @[ComputeNode.scala 144:81]
-  wire  _GEN_44 = _T_36 | out_valid_R_0; // @[ComputeNode.scala 144:81]
-  wire  _GEN_45 = _T_36 | out_valid_R_1; // @[ComputeNode.scala 144:81]
-  wire  _GEN_50 = _T_36 | state; // @[ComputeNode.scala 144:81]
+  wire [63:0] _GEN_38 = _T_36 ? _GEN_30 : out_data_R; // @[ComputeNode.scala 147:81]
+  wire  _GEN_44 = _T_36 | out_valid_R_0; // @[ComputeNode.scala 147:81]
+  wire  _GEN_45 = _T_36 | out_valid_R_1; // @[ComputeNode.scala 147:81]
+  wire  _GEN_50 = _T_36 | state; // @[ComputeNode.scala 147:81]
   wire  _T_54 = out_ready_R_0 | _T_1; // @[HandShaking.scala 251:83]
   wire  _T_55 = out_ready_R_1 | _T_2; // @[HandShaking.scala 251:83]
   wire  _T_56 = _T_54 & _T_55; // @[HandShaking.scala 252:27]
-  wire  _GEN_82 = _T_34 & _T_36; // @[ComputeNode.scala 157:21]
-  wire  _GEN_83 = _GEN_82 & _T_38; // @[ComputeNode.scala 157:21]
+  wire  _GEN_82 = _T_34 & _T_36; // @[ComputeNode.scala 161:21]
+  wire  _GEN_83 = _GEN_82 & _T_38; // @[ComputeNode.scala 161:21]
   UALU_2 FU ( // @[ComputeNode.scala 61:18]
     .io_in1(FU_io_in1),
     .io_in2(FU_io_in2),
     .io_out(FU_io_out)
   );
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 205:19]
-  assign io_Out_0_valid = _T_34 ? _GEN_44 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_0_bits_taskID = enable_valid_R ? enable_R_taskID : io_enable_bits_taskID; // @[ComputeNode.scala 137:25 ComputeNode.scala 154:35 ComputeNode.scala 162:35]
-  assign io_Out_0_bits_data = _T_34 ? _GEN_38 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 154:35 ComputeNode.scala 162:35]
-  assign io_Out_1_valid = _T_34 ? _GEN_45 : out_valid_R_1; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_1_bits_data = _T_34 ? _GEN_38 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 154:35 ComputeNode.scala 162:35]
+  assign io_Out_0_valid = _T_34 ? _GEN_44 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_0_bits_taskID = enable_valid_R ? enable_R_taskID : io_enable_bits_taskID; // @[ComputeNode.scala 137:25 ComputeNode.scala 158:35 ComputeNode.scala 166:35]
+  assign io_Out_0_bits_data = _T_34 ? _GEN_38 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 158:35 ComputeNode.scala 166:35]
+  assign io_Out_1_valid = _T_34 ? _GEN_45 : out_valid_R_1; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_1_bits_data = _T_34 ? _GEN_38 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 158:35 ComputeNode.scala 166:35]
   assign io_LeftIO_ready = ~left_valid_R; // @[ComputeNode.scala 104:19]
   assign io_RightIO_ready = ~right_valid_R; // @[ComputeNode.scala 110:20]
   assign FU_io_in1 = left_R_data; // @[ComputeNode.scala 101:13]
@@ -11951,7 +11951,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_83 & _T_42) begin
-          $fwrite(32'h80000002,"[LOG] [DEBUG] [Relu] [TID: %d] [COMPUTE] [binaryOp_inc1316]  [Out:%d ] [Correct:%d ] [Cycle: %d]\n",taskID,FU_io_out,_GEN_27,cycleCount); // @[ComputeNode.scala 157:21]
+          $fwrite(32'h80000002,"[LOG] [DEBUG] [Relu] [TID: %d] [COMPUTE] [binaryOp_inc1316]  [Out:%d ] [Correct:%d ] [Cycle: %d]\n",taskID,FU_io_out,_GEN_27,cycleCount); // @[ComputeNode.scala 161:21]
         end
     `ifdef PRINTF_COND
       end
@@ -11962,7 +11962,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_82 & _T_42) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: binaryOp_inc1316] [ID: 16] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: add] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 174:17]
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: binaryOp_inc1316] [ID: 16] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: add] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 178:17]
         end
     `ifdef PRINTF_COND
       end
@@ -12026,25 +12026,25 @@ module ComputeNode_3(
   wire  _T_14 = io_RightIO_ready & io_RightIO_valid; // @[Decoupled.scala 40:37]
   wire  _GEN_15 = _T_14 | right_valid_R; // @[ComputeNode.scala 111:27]
   wire  _T_22 = ~state; // @[ComputeNode.scala 75:67]
-  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 144:27]
-  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 144:43]
+  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 147:27]
+  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 147:43]
   wire  _T_32 = _T_1 ^ 1'h1; // @[HandShaking.scala 274:72]
-  wire  _T_34 = ~reset; // @[ComputeNode.scala 174:17]
+  wire  _T_34 = ~reset; // @[ComputeNode.scala 178:17]
   wire [63:0] _T_30_data = FU_io_out; // @[interfaces.scala 289:20 interfaces.scala 290:15]
-  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 144:81]
-  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 144:81]
-  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 144:81]
+  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 147:81]
+  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 147:81]
+  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 147:81]
   wire  _T_37 = out_ready_R_0 | _T_1; // @[HandShaking.scala 251:83]
-  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 174:17]
+  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 178:17]
   UALU FU ( // @[ComputeNode.scala 61:18]
     .io_in1(FU_io_in1),
     .io_in2(FU_io_in2),
     .io_out(FU_io_out)
   );
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 205:19]
-  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_0_bits_taskID = enable_valid_R ? enable_R_taskID : io_enable_bits_taskID; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
-  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
+  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_0_bits_taskID = enable_valid_R ? enable_R_taskID : io_enable_bits_taskID; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
+  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
   assign io_LeftIO_ready = ~left_valid_R; // @[ComputeNode.scala 104:19]
   assign io_RightIO_ready = ~right_valid_R; // @[ComputeNode.scala 110:20]
   assign FU_io_in1 = left_R_data; // @[ComputeNode.scala 101:13]
@@ -12239,7 +12239,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_47 & _T_34) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: icmp_exitcond3310] [ID: 10] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: eq] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 174:17]
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: icmp_exitcond3310] [ID: 10] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: eq] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 178:17]
         end
     `ifdef PRINTF_COND
       end
@@ -13334,24 +13334,24 @@ module ComputeNode_4(
   wire  _T_14 = io_RightIO_ready & io_RightIO_valid; // @[Decoupled.scala 40:37]
   wire  _GEN_15 = _T_14 | right_valid_R; // @[ComputeNode.scala 111:27]
   wire  _T_22 = ~state; // @[ComputeNode.scala 75:67]
-  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 144:27]
-  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 144:43]
+  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 147:27]
+  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 147:43]
   wire  _T_32 = _T_1 ^ 1'h1; // @[HandShaking.scala 274:72]
-  wire  _T_34 = ~reset; // @[ComputeNode.scala 174:17]
+  wire  _T_34 = ~reset; // @[ComputeNode.scala 178:17]
   wire [63:0] _T_30_data = FU_io_out; // @[interfaces.scala 289:20 interfaces.scala 290:15]
-  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 144:81]
-  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 144:81]
-  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 144:81]
+  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 147:81]
+  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 147:81]
+  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 147:81]
   wire  _T_37 = out_ready_R_0 | _T_1; // @[HandShaking.scala 251:83]
-  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 174:17]
+  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 178:17]
   UALU_2 FU ( // @[ComputeNode.scala 61:18]
     .io_in1(FU_io_in1),
     .io_in2(FU_io_in2),
     .io_out(FU_io_out)
   );
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 205:19]
-  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
+  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
   assign io_LeftIO_ready = ~left_valid_R; // @[ComputeNode.scala 104:19]
   assign io_RightIO_ready = ~right_valid_R; // @[ComputeNode.scala 110:20]
   assign FU_io_in1 = left_R_data; // @[ComputeNode.scala 101:13]
@@ -13546,7 +13546,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_47 & _T_34) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: binaryOp_add22] [ID: 22] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: add] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 174:17]
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: binaryOp_add22] [ID: 22] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: add] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 178:17]
         end
     `ifdef PRINTF_COND
       end
@@ -14139,10 +14139,11 @@ module UnTypLoadCache(
   reg [31:0] _RAND_5;
   reg [31:0] _RAND_6;
   reg [31:0] _RAND_7;
-  reg [63:0] _RAND_8;
-  reg [31:0] _RAND_9;
-  reg [63:0] _RAND_10;
-  reg [31:0] _RAND_11;
+  reg [31:0] _RAND_8;
+  reg [63:0] _RAND_9;
+  reg [31:0] _RAND_10;
+  reg [63:0] _RAND_11;
+  reg [31:0] _RAND_12;
 `endif // RANDOMIZE_REG_INIT
   reg [4:0] enable_R_taskID; // @[HandShaking.scala 592:31]
   reg  enable_R_control; // @[HandShaking.scala 592:31]
@@ -14158,14 +14159,15 @@ module UnTypLoadCache(
   wire  _T_7 = io_enable_ready & io_enable_valid; // @[Decoupled.scala 40:37]
   reg [14:0] cycleCount; // @[Counter.scala 29:33]
   wire [14:0] _T_11 = cycleCount + 15'h1; // @[Counter.scala 39:22]
-  reg [63:0] addr_R_data; // @[LoadCache.scala 56:23]
-  reg  addr_valid_R; // @[LoadCache.scala 57:29]
-  reg [63:0] data_R_data; // @[LoadCache.scala 60:23]
-  reg [1:0] state; // @[LoadCache.scala 65:22]
+  reg [14:0] value; // @[Counter.scala 29:33]
+  reg [63:0] addr_R_data; // @[LoadCache.scala 58:23]
+  reg  addr_valid_R; // @[LoadCache.scala 59:29]
+  reg [63:0] data_R_data; // @[LoadCache.scala 62:23]
+  reg [1:0] state; // @[LoadCache.scala 67:22]
   wire  _T_15 = io_GepAddr_ready & io_GepAddr_valid; // @[Decoupled.scala 40:37]
-  wire  _GEN_13 = _T_15 | addr_valid_R; // @[LoadCache.scala 74:27]
-  wire  _T_16 = enable_valid_R & addr_valid_R; // @[LoadCache.scala 93:20]
-  wire  _T_17 = _T_16 & enable_R_control; // @[LoadCache.scala 93:36]
+  wire  _GEN_13 = _T_15 | addr_valid_R; // @[LoadCache.scala 76:27]
+  wire  _T_16 = enable_valid_R & addr_valid_R; // @[LoadCache.scala 95:20]
+  wire  _T_17 = _T_16 & enable_R_control; // @[LoadCache.scala 95:36]
   wire [1:0] _T_24 = {out_ready_R_1,out_ready_R_0}; // @[HandShaking.scala 725:17]
   wire  _T_25 = &_T_24; // @[HandShaking.scala 725:24]
   wire [1:0] _T_26 = {io_Out_1_ready,io_Out_0_ready}; // @[HandShaking.scala 725:43]
@@ -14175,23 +14177,24 @@ module UnTypLoadCache(
   wire  _T_54 = _T_4 ^ 1'h1; // @[HandShaking.scala 729:72]
   wire  _T_55 = _T_5 ^ 1'h1; // @[HandShaking.scala 729:72]
   wire  _T_56 = 2'h1 == state; // @[Conditional.scala 37:30]
-  wire  _GEN_29 = io_MemResp_valid | _GEN_1; // @[LoadCache.scala 212:30]
-  wire  _GEN_30 = io_MemResp_valid | _GEN_3; // @[LoadCache.scala 212:30]
+  wire  _GEN_29 = io_MemResp_valid | _GEN_1; // @[LoadCache.scala 214:30]
+  wire  _GEN_30 = io_MemResp_valid | _GEN_3; // @[LoadCache.scala 214:30]
   wire  _T_57 = 2'h2 == state; // @[Conditional.scala 37:30]
-  wire  _T_69 = ~reset; // @[LoadCache.scala 251:17]
-  wire  _GEN_85 = ~_T_48; // @[LoadCache.scala 251:17]
-  wire  _GEN_86 = ~_T_56; // @[LoadCache.scala 251:17]
-  wire  _GEN_87 = _GEN_85 & _GEN_86; // @[LoadCache.scala 251:17]
-  wire  _GEN_88 = _GEN_87 & _T_57; // @[LoadCache.scala 251:17]
-  wire  _GEN_89 = _GEN_88 & _T_28; // @[LoadCache.scala 251:17]
+  wire [14:0] _T_70 = value + 15'h1; // @[Counter.scala 39:22]
+  wire  _T_72 = ~reset; // @[LoadCache.scala 254:17]
+  wire  _GEN_89 = ~_T_48; // @[LoadCache.scala 254:17]
+  wire  _GEN_90 = ~_T_56; // @[LoadCache.scala 254:17]
+  wire  _GEN_91 = _GEN_89 & _GEN_90; // @[LoadCache.scala 254:17]
+  wire  _GEN_92 = _GEN_91 & _T_57; // @[LoadCache.scala 254:17]
+  wire  _GEN_93 = _GEN_92 & _T_28; // @[LoadCache.scala 254:17]
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 650:19]
   assign io_Out_0_valid = out_valid_R_0; // @[HandShaking.scala 630:21]
-  assign io_Out_0_bits_data = data_R_data; // @[LoadCache.scala 156:20]
+  assign io_Out_0_bits_data = data_R_data; // @[LoadCache.scala 158:20]
   assign io_Out_1_valid = out_valid_R_1; // @[HandShaking.scala 630:21]
-  assign io_Out_1_bits_data = data_R_data; // @[LoadCache.scala 156:20]
-  assign io_GepAddr_ready = ~addr_valid_R; // @[LoadCache.scala 73:20]
-  assign io_MemReq_valid = _T_48 & _T_17; // @[LoadCache.scala 160:19 LoadCache.scala 183:27]
-  assign io_MemReq_bits_addr = addr_R_data; // @[LoadCache.scala 162:23]
+  assign io_Out_1_bits_data = data_R_data; // @[LoadCache.scala 158:20]
+  assign io_GepAddr_ready = ~addr_valid_R; // @[LoadCache.scala 75:20]
+  assign io_MemReq_valid = _T_48 & _T_17; // @[LoadCache.scala 162:19 LoadCache.scala 185:27]
+  assign io_MemReq_bits_addr = addr_R_data; // @[LoadCache.scala 164:23]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -14243,14 +14246,16 @@ initial begin
   out_valid_R_1 = _RAND_6[0:0];
   _RAND_7 = {1{`RANDOM}};
   cycleCount = _RAND_7[14:0];
-  _RAND_8 = {2{`RANDOM}};
-  addr_R_data = _RAND_8[63:0];
-  _RAND_9 = {1{`RANDOM}};
-  addr_valid_R = _RAND_9[0:0];
-  _RAND_10 = {2{`RANDOM}};
-  data_R_data = _RAND_10[63:0];
-  _RAND_11 = {1{`RANDOM}};
-  state = _RAND_11[1:0];
+  _RAND_8 = {1{`RANDOM}};
+  value = _RAND_8[14:0];
+  _RAND_9 = {2{`RANDOM}};
+  addr_R_data = _RAND_9[63:0];
+  _RAND_10 = {1{`RANDOM}};
+  addr_valid_R = _RAND_10[0:0];
+  _RAND_11 = {2{`RANDOM}};
+  data_R_data = _RAND_11[63:0];
+  _RAND_12 = {1{`RANDOM}};
+  state = _RAND_12[1:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -14370,6 +14375,17 @@ end // initial
       cycleCount <= _T_11;
     end
     if (reset) begin
+      value <= 15'h0;
+    end else if (!(_T_48)) begin
+      if (!(_T_56)) begin
+        if (_T_57) begin
+          if (_T_28) begin
+            value <= _T_70;
+          end
+        end
+      end
+    end
+    if (reset) begin
       addr_R_data <= 64'h0;
     end else if (_T_48) begin
       if (_T_15) begin
@@ -14441,8 +14457,8 @@ end // initial
     `ifdef PRINTF_COND
       if (`PRINTF_COND) begin
     `endif
-        if (_GEN_89 & _T_69) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [LOAD] [Name: ld_25] [ID: 25] [Pred: %d] [Addr: 0x%x] [Data: 0x%x] [Cycle: %d]\n",enable_R_taskID,enable_R_control,addr_R_data,data_R_data,cycleCount); // @[LoadCache.scala 251:17]
+        if (_GEN_93 & _T_72) begin
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [LOAD] [Name: ld_25] [ID: 25] [Pred: %d] [Iter: %d] [Addr: %d] [Data: %d] [Cycle: %d]\n",enable_R_taskID,enable_R_control,value,addr_R_data,data_R_data,cycleCount); // @[LoadCache.scala 254:17]
         end
     `ifdef PRINTF_COND
       end
@@ -14773,23 +14789,23 @@ module ComputeNode_5(
   wire  _T_14 = io_RightIO_ready & io_RightIO_valid; // @[Decoupled.scala 40:37]
   wire  _GEN_15 = _T_14 | right_valid_R; // @[ComputeNode.scala 111:27]
   wire  _T_22 = ~state; // @[ComputeNode.scala 75:67]
-  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 144:27]
-  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 144:43]
+  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 147:27]
+  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 147:43]
   wire  _T_32 = _T_1 ^ 1'h1; // @[HandShaking.scala 274:72]
-  wire  _T_34 = ~reset; // @[ComputeNode.scala 174:17]
+  wire  _T_34 = ~reset; // @[ComputeNode.scala 178:17]
   wire [63:0] _T_30_data = FU_io_out; // @[interfaces.scala 289:20 interfaces.scala 290:15]
-  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 144:81]
-  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 144:81]
-  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 144:81]
+  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 147:81]
+  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 147:81]
+  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 147:81]
   wire  _T_37 = out_ready_R_0 | _T_1; // @[HandShaking.scala 251:83]
-  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 174:17]
+  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 178:17]
   UALU_5 FU ( // @[ComputeNode.scala 61:18]
     .io_in1(FU_io_in1),
     .io_out(FU_io_out)
   );
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 205:19]
-  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
+  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
   assign io_LeftIO_ready = ~left_valid_R; // @[ComputeNode.scala 104:19]
   assign io_RightIO_ready = ~right_valid_R; // @[ComputeNode.scala 110:20]
   assign FU_io_in1 = left_R_data; // @[ComputeNode.scala 101:13]
@@ -14976,7 +14992,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_47 & _T_34) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: icmp_19] [ID: 19] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: sgt] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,64'h0,FU_io_out,cycleCount); // @[ComputeNode.scala 174:17]
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: icmp_19] [ID: 19] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: sgt] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,64'h0,FU_io_out,cycleCount); // @[ComputeNode.scala 178:17]
         end
     `ifdef PRINTF_COND
       end
@@ -15279,11 +15295,12 @@ module UnTypStoreCache(
   reg [31:0] _RAND_3;
   reg [31:0] _RAND_4;
   reg [31:0] _RAND_5;
-  reg [63:0] _RAND_6;
+  reg [31:0] _RAND_6;
   reg [63:0] _RAND_7;
-  reg [31:0] _RAND_8;
+  reg [63:0] _RAND_8;
   reg [31:0] _RAND_9;
   reg [31:0] _RAND_10;
+  reg [31:0] _RAND_11;
 `endif // RANDOMIZE_REG_INIT
   reg [4:0] enable_R_taskID; // @[HandShaking.scala 592:31]
   reg  enable_R_control; // @[HandShaking.scala 592:31]
@@ -15295,40 +15312,42 @@ module UnTypStoreCache(
   wire  _T_8 = io_enable_ready & io_enable_valid; // @[Decoupled.scala 40:37]
   reg [14:0] cycleCount; // @[Counter.scala 29:33]
   wire [14:0] _T_12 = cycleCount + 15'h1; // @[Counter.scala 39:22]
-  reg [63:0] addr_R_data; // @[StoreCache.scala 57:23]
-  reg [63:0] data_R_data; // @[StoreCache.scala 58:23]
-  reg  addr_valid_R; // @[StoreCache.scala 59:29]
-  reg  data_valid_R; // @[StoreCache.scala 60:29]
-  reg [1:0] state; // @[StoreCache.scala 64:22]
+  reg [14:0] value; // @[Counter.scala 29:33]
+  reg [63:0] addr_R_data; // @[StoreCache.scala 59:23]
+  reg [63:0] data_R_data; // @[StoreCache.scala 60:23]
+  reg  addr_valid_R; // @[StoreCache.scala 61:29]
+  reg  data_valid_R; // @[StoreCache.scala 62:29]
+  reg [1:0] state; // @[StoreCache.scala 66:22]
   wire  _T_18 = io_GepAddr_ready & io_GepAddr_valid; // @[Decoupled.scala 40:37]
-  wire  _GEN_13 = _T_18 | addr_valid_R; // @[StoreCache.scala 78:27]
+  wire  _GEN_13 = _T_18 | addr_valid_R; // @[StoreCache.scala 80:27]
   wire  _T_19 = io_inData_ready & io_inData_valid; // @[Decoupled.scala 40:37]
-  wire  _GEN_17 = _T_19 | data_valid_R; // @[StoreCache.scala 83:26]
-  wire  mem_req_fire = addr_valid_R & data_valid_R; // @[StoreCache.scala 100:51]
+  wire  _GEN_17 = _T_19 | data_valid_R; // @[StoreCache.scala 85:26]
+  wire  mem_req_fire = addr_valid_R & data_valid_R; // @[StoreCache.scala 102:51]
   wire  _T_38 = 2'h0 == state; // @[Conditional.scala 37:30]
-  wire  _T_40 = data_valid_R & addr_valid_R; // @[StoreCache.scala 152:27]
-  wire  _T_41 = enable_R_control & mem_req_fire; // @[StoreCache.scala 153:33]
-  wire  _GEN_28 = _T_40 & _T_41; // @[StoreCache.scala 152:44]
-  wire  _GEN_33 = enable_valid_R & _GEN_28; // @[StoreCache.scala 151:51]
+  wire  _T_40 = data_valid_R & addr_valid_R; // @[StoreCache.scala 154:27]
+  wire  _T_41 = enable_R_control & mem_req_fire; // @[StoreCache.scala 155:33]
+  wire  _GEN_28 = _T_40 & _T_41; // @[StoreCache.scala 154:44]
+  wire  _GEN_33 = enable_valid_R & _GEN_28; // @[StoreCache.scala 153:51]
   wire  _T_44 = 2'h1 == state; // @[Conditional.scala 37:30]
-  wire  _GEN_38 = io_MemResp_valid | _GEN_1; // @[StoreCache.scala 186:30]
+  wire  _GEN_38 = io_MemResp_valid | _GEN_1; // @[StoreCache.scala 188:30]
   wire  _T_47 = 2'h2 == state; // @[Conditional.scala 37:30]
   wire  _T_49 = &succ_ready_R_0; // @[HandShaking.scala 707:36]
   wire  _T_51 = &io_SuccOp_0_ready; // @[HandShaking.scala 707:72]
   wire  _T_52 = _T_49 | _T_51; // @[HandShaking.scala 707:41]
-  wire  _T_61 = ~reset; // @[StoreCache.scala 207:17]
-  wire  _GEN_94 = ~_T_38; // @[StoreCache.scala 207:17]
-  wire  _GEN_95 = ~_T_44; // @[StoreCache.scala 207:17]
-  wire  _GEN_96 = _GEN_94 & _GEN_95; // @[StoreCache.scala 207:17]
-  wire  _GEN_97 = _GEN_96 & _T_47; // @[StoreCache.scala 207:17]
-  wire  _GEN_98 = _GEN_97 & _T_52; // @[StoreCache.scala 207:17]
+  wire [14:0] _T_62 = value + 15'h1; // @[Counter.scala 39:22]
+  wire  _T_64 = ~reset; // @[StoreCache.scala 210:17]
+  wire  _GEN_98 = ~_T_38; // @[StoreCache.scala 210:17]
+  wire  _GEN_99 = ~_T_44; // @[StoreCache.scala 210:17]
+  wire  _GEN_100 = _GEN_98 & _GEN_99; // @[StoreCache.scala 210:17]
+  wire  _GEN_101 = _GEN_100 & _T_47; // @[StoreCache.scala 210:17]
+  wire  _GEN_102 = _GEN_101 & _T_52; // @[StoreCache.scala 210:17]
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 650:19]
   assign io_SuccOp_0_valid = succ_valid_R_0; // @[HandShaking.scala 619:24]
-  assign io_GepAddr_ready = ~addr_valid_R; // @[StoreCache.scala 73:20 StoreCache.scala 77:20]
-  assign io_inData_ready = ~data_valid_R; // @[StoreCache.scala 74:19]
-  assign io_MemReq_valid = _T_38 & _GEN_33; // @[StoreCache.scala 143:19 StoreCache.scala 154:29]
-  assign io_MemReq_bits_addr = addr_R_data; // @[StoreCache.scala 137:23]
-  assign io_MemReq_bits_data = data_R_data; // @[StoreCache.scala 138:23]
+  assign io_GepAddr_ready = ~addr_valid_R; // @[StoreCache.scala 75:20 StoreCache.scala 79:20]
+  assign io_inData_ready = ~data_valid_R; // @[StoreCache.scala 76:19]
+  assign io_MemReq_valid = _T_38 & _GEN_33; // @[StoreCache.scala 145:19 StoreCache.scala 156:29]
+  assign io_MemReq_bits_addr = addr_R_data; // @[StoreCache.scala 139:23]
+  assign io_MemReq_bits_data = data_R_data; // @[StoreCache.scala 140:23]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -15376,16 +15395,18 @@ initial begin
   succ_valid_R_0 = _RAND_4[0:0];
   _RAND_5 = {1{`RANDOM}};
   cycleCount = _RAND_5[14:0];
-  _RAND_6 = {2{`RANDOM}};
-  addr_R_data = _RAND_6[63:0];
+  _RAND_6 = {1{`RANDOM}};
+  value = _RAND_6[14:0];
   _RAND_7 = {2{`RANDOM}};
-  data_R_data = _RAND_7[63:0];
-  _RAND_8 = {1{`RANDOM}};
-  addr_valid_R = _RAND_8[0:0];
+  addr_R_data = _RAND_7[63:0];
+  _RAND_8 = {2{`RANDOM}};
+  data_R_data = _RAND_8[63:0];
   _RAND_9 = {1{`RANDOM}};
-  data_valid_R = _RAND_9[0:0];
+  addr_valid_R = _RAND_9[0:0];
   _RAND_10 = {1{`RANDOM}};
-  state = _RAND_10[1:0];
+  data_valid_R = _RAND_10[0:0];
+  _RAND_11 = {1{`RANDOM}};
+  state = _RAND_11[1:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -15469,6 +15490,17 @@ end // initial
       cycleCount <= 15'h0;
     end else begin
       cycleCount <= _T_12;
+    end
+    if (reset) begin
+      value <= 15'h0;
+    end else if (!(_T_38)) begin
+      if (!(_T_44)) begin
+        if (_T_47) begin
+          if (_T_52) begin
+            value <= _T_62;
+          end
+        end
+      end
     end
     if (reset) begin
       addr_R_data <= 64'h0;
@@ -15565,8 +15597,8 @@ end // initial
     `ifdef PRINTF_COND
       if (`PRINTF_COND) begin
     `endif
-        if (_GEN_98 & _T_61) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [STORE] [Name: st_29] [ID: 29] [Pred: %d] [Addr: 0x%x] [Data: 0x%x] [Cycle: %d]\n",enable_R_taskID,enable_R_control,addr_R_data,data_R_data,cycleCount); // @[StoreCache.scala 207:17]
+        if (_GEN_102 & _T_64) begin
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [STORE] [Name: st_29] [ID: 29] [Pred: %d] [Iter: %d] [Addr: %d] [Data: %d] [Cycle: %d]\n",enable_R_taskID,enable_R_control,value,addr_R_data,data_R_data,cycleCount); // @[StoreCache.scala 210:17]
         end
     `ifdef PRINTF_COND
       end
@@ -15637,31 +15669,31 @@ module ComputeNode_6(
   wire  _T_15 = io_RightIO_ready & io_RightIO_valid; // @[Decoupled.scala 40:37]
   wire  _GEN_17 = _T_15 | right_valid_R; // @[ComputeNode.scala 111:27]
   wire  _T_23 = ~state; // @[ComputeNode.scala 75:67]
-  wire  _T_29 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 144:27]
-  wire  _T_30 = _T_29 & right_valid_R; // @[ComputeNode.scala 144:43]
+  wire  _T_29 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 147:27]
+  wire  _T_30 = _T_29 & right_valid_R; // @[ComputeNode.scala 147:43]
   wire  _T_36 = _T_1 ^ 1'h1; // @[HandShaking.scala 274:72]
   wire  _T_37 = _T_2 ^ 1'h1; // @[HandShaking.scala 274:72]
-  wire  _T_39 = ~reset; // @[ComputeNode.scala 174:17]
+  wire  _T_39 = ~reset; // @[ComputeNode.scala 178:17]
   wire [63:0] _T_32_data = FU_io_out; // @[interfaces.scala 289:20 interfaces.scala 290:15]
-  wire [63:0] _GEN_19 = _T_30 ? _T_32_data : out_data_R; // @[ComputeNode.scala 144:81]
-  wire  _GEN_25 = _T_30 | out_valid_R_0; // @[ComputeNode.scala 144:81]
-  wire  _GEN_26 = _T_30 | out_valid_R_1; // @[ComputeNode.scala 144:81]
-  wire  _GEN_31 = _T_30 | state; // @[ComputeNode.scala 144:81]
+  wire [63:0] _GEN_19 = _T_30 ? _T_32_data : out_data_R; // @[ComputeNode.scala 147:81]
+  wire  _GEN_25 = _T_30 | out_valid_R_0; // @[ComputeNode.scala 147:81]
+  wire  _GEN_26 = _T_30 | out_valid_R_1; // @[ComputeNode.scala 147:81]
+  wire  _GEN_31 = _T_30 | state; // @[ComputeNode.scala 147:81]
   wire  _T_43 = out_ready_R_0 | _T_1; // @[HandShaking.scala 251:83]
   wire  _T_44 = out_ready_R_1 | _T_2; // @[HandShaking.scala 251:83]
   wire  _T_45 = _T_43 & _T_44; // @[HandShaking.scala 252:27]
-  wire  _GEN_62 = _T_23 & _T_30; // @[ComputeNode.scala 174:17]
+  wire  _GEN_62 = _T_23 & _T_30; // @[ComputeNode.scala 178:17]
   UALU_2 FU ( // @[ComputeNode.scala 61:18]
     .io_in1(FU_io_in1),
     .io_in2(FU_io_in2),
     .io_out(FU_io_out)
   );
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 205:19]
-  assign io_Out_0_valid = _T_23 ? _GEN_25 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_0_bits_taskID = enable_valid_R ? enable_R_taskID : io_enable_bits_taskID; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
-  assign io_Out_0_bits_data = _T_23 ? _GEN_19 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
-  assign io_Out_1_valid = _T_23 ? _GEN_26 : out_valid_R_1; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_1_bits_data = _T_23 ? _GEN_19 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
+  assign io_Out_0_valid = _T_23 ? _GEN_25 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_0_bits_taskID = enable_valid_R ? enable_R_taskID : io_enable_bits_taskID; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
+  assign io_Out_0_bits_data = _T_23 ? _GEN_19 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
+  assign io_Out_1_valid = _T_23 ? _GEN_26 : out_valid_R_1; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_1_bits_data = _T_23 ? _GEN_19 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
   assign io_LeftIO_ready = ~left_valid_R; // @[ComputeNode.scala 104:19]
   assign io_RightIO_ready = ~right_valid_R; // @[ComputeNode.scala 110:20]
   assign FU_io_in1 = left_R_data; // @[ComputeNode.scala 101:13]
@@ -15886,7 +15918,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_62 & _T_39) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: binaryOp_indvars_iv_next30] [ID: 30] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: add] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 174:17]
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: binaryOp_indvars_iv_next30] [ID: 30] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: add] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 178:17]
         end
     `ifdef PRINTF_COND
       end
@@ -15950,25 +15982,25 @@ module ComputeNode_7(
   wire  _T_14 = io_RightIO_ready & io_RightIO_valid; // @[Decoupled.scala 40:37]
   wire  _GEN_15 = _T_14 | right_valid_R; // @[ComputeNode.scala 111:27]
   wire  _T_22 = ~state; // @[ComputeNode.scala 75:67]
-  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 144:27]
-  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 144:43]
+  wire  _T_27 = enable_valid_R & left_valid_R; // @[ComputeNode.scala 147:27]
+  wire  _T_28 = _T_27 & right_valid_R; // @[ComputeNode.scala 147:43]
   wire  _T_32 = _T_1 ^ 1'h1; // @[HandShaking.scala 274:72]
-  wire  _T_34 = ~reset; // @[ComputeNode.scala 174:17]
+  wire  _T_34 = ~reset; // @[ComputeNode.scala 178:17]
   wire [63:0] _T_30_data = FU_io_out; // @[interfaces.scala 289:20 interfaces.scala 290:15]
-  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 144:81]
-  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 144:81]
-  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 144:81]
+  wire [63:0] _GEN_17 = _T_28 ? _T_30_data : out_data_R; // @[ComputeNode.scala 147:81]
+  wire  _GEN_20 = _T_28 | out_valid_R_0; // @[ComputeNode.scala 147:81]
+  wire  _GEN_24 = _T_28 | state; // @[ComputeNode.scala 147:81]
   wire  _T_37 = out_ready_R_0 | _T_1; // @[HandShaking.scala 251:83]
-  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 174:17]
+  wire  _GEN_47 = _T_22 & _T_28; // @[ComputeNode.scala 178:17]
   UALU FU ( // @[ComputeNode.scala 61:18]
     .io_in1(FU_io_in1),
     .io_in2(FU_io_in2),
     .io_out(FU_io_out)
   );
   assign io_enable_ready = ~enable_valid_R; // @[HandShaking.scala 205:19]
-  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 168:32]
-  assign io_Out_0_bits_taskID = enable_valid_R ? enable_R_taskID : io_enable_bits_taskID; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
-  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 166:33]
+  assign io_Out_0_valid = _T_22 ? _GEN_20 : out_valid_R_0; // @[HandShaking.scala 194:21 ComputeNode.scala 172:32]
+  assign io_Out_0_bits_taskID = enable_valid_R ? enable_R_taskID : io_enable_bits_taskID; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
+  assign io_Out_0_bits_data = _T_22 ? _GEN_17 : out_data_R; // @[ComputeNode.scala 137:25 ComputeNode.scala 170:33]
   assign io_LeftIO_ready = ~left_valid_R; // @[ComputeNode.scala 104:19]
   assign io_RightIO_ready = ~right_valid_R; // @[ComputeNode.scala 110:20]
   assign FU_io_in1 = left_R_data; // @[ComputeNode.scala 101:13]
@@ -16163,7 +16195,7 @@ end // initial
       if (`PRINTF_COND) begin
     `endif
         if (_GEN_47 & _T_34) begin
-          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: icmp_exitcond23] [ID: 23] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: eq] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 174:17]
+          $fwrite(32'h80000002,"[LOG] [Relu] [TID: %d] [COMPUTE] [Name: icmp_exitcond23] [ID: 23] [Pred: %d] [In(0): 0x%x] [In(1) 0x%x] [Out: 0x%x] [OpCode: eq] [Cycle: %d]\n",taskID,enable_R_control,left_R_data,right_R_data,FU_io_out,cycleCount); // @[ComputeNode.scala 178:17]
         end
     `ifdef PRINTF_COND
       end
@@ -19879,31 +19911,31 @@ module DebugVMEBufferNode(
   reg [31:0] _RAND_1;
   reg [31:0] _RAND_2;
 `endif // RANDOMIZE_REG_INIT
-  wire  LogData_clock; // @[DebugStore.scala 243:23]
-  wire  LogData_reset; // @[DebugStore.scala 243:23]
-  wire  LogData_io_enq_valid; // @[DebugStore.scala 243:23]
-  wire  LogData_io_deq_ready; // @[DebugStore.scala 243:23]
-  wire  LogData_io_deq_valid; // @[DebugStore.scala 243:23]
-  wire [63:0] LogData_io_deq_bits; // @[DebugStore.scala 243:23]
-  wire [6:0] LogData_io_count; // @[DebugStore.scala 243:23]
-  reg [63:0] addr_debug_reg; // @[DebugStore.scala 238:31]
-  reg [1:0] wState; // @[DebugStore.scala 240:23]
-  reg [6:0] queue_count; // @[DebugStore.scala 245:28]
+  wire  LogData_clock; // @[DebugStore.scala 335:23]
+  wire  LogData_reset; // @[DebugStore.scala 335:23]
+  wire  LogData_io_enq_valid; // @[DebugStore.scala 335:23]
+  wire  LogData_io_deq_ready; // @[DebugStore.scala 335:23]
+  wire  LogData_io_deq_valid; // @[DebugStore.scala 335:23]
+  wire [63:0] LogData_io_deq_bits; // @[DebugStore.scala 335:23]
+  wire [6:0] LogData_io_count; // @[DebugStore.scala 335:23]
+  reg [63:0] addr_debug_reg; // @[DebugStore.scala 330:31]
+  reg [1:0] wState; // @[DebugStore.scala 332:23]
+  reg [6:0] queue_count; // @[DebugStore.scala 338:28]
   wire  _T_4 = LogData_io_enq_valid; // @[Decoupled.scala 40:37]
-  wire [6:0] _T_6 = queue_count + 7'h1; // @[DebugStore.scala 247:32]
-  wire [6:0] _T_15 = queue_count - 7'h1; // @[DebugStore.scala 259:41]
+  wire [6:0] _T_6 = queue_count + 7'h1; // @[DebugStore.scala 340:32]
+  wire [6:0] _T_15 = queue_count - 7'h1; // @[DebugStore.scala 352:41]
   wire  _T_17 = 2'h0 == wState; // @[Conditional.scala 37:30]
-  wire [6:0] _T_19 = 7'h64 / 7'h2; // @[DebugStore.scala 265:98]
-  wire  _T_20 = LogData_io_count == _T_19; // @[DebugStore.scala 265:82]
+  wire [6:0] _T_19 = 7'h64 / 7'h2; // @[DebugStore.scala 358:98]
+  wire  _T_20 = LogData_io_count == _T_19; // @[DebugStore.scala 358:82]
   wire  _T_22 = 2'h1 == wState; // @[Conditional.scala 37:30]
   wire  _T_23 = io_vmeOut_cmd_ready & io_vmeOut_cmd_valid; // @[Decoupled.scala 40:37]
   wire  _T_24 = 2'h2 == wState; // @[Conditional.scala 37:30]
-  wire [10:0] _T_25 = queue_count * 7'h8; // @[DebugStore.scala 278:57]
-  wire [63:0] _GEN_20 = {{53'd0}, _T_25}; // @[DebugStore.scala 278:42]
-  wire [63:0] _T_27 = addr_debug_reg + _GEN_20; // @[DebugStore.scala 278:42]
-  wire  _T_28 = wState == 2'h2; // @[DebugStore.scala 288:15]
-  wire [63:0] _GEN_17 = _T_28 ? LogData_io_deq_bits : 64'h0; // @[DebugStore.scala 288:26]
-  Queue_1 LogData ( // @[DebugStore.scala 243:23]
+  wire [10:0] _T_25 = queue_count * 7'h8; // @[DebugStore.scala 371:57]
+  wire [63:0] _GEN_20 = {{53'd0}, _T_25}; // @[DebugStore.scala 371:42]
+  wire [63:0] _T_27 = addr_debug_reg + _GEN_20; // @[DebugStore.scala 371:42]
+  wire  _T_28 = wState == 2'h2; // @[DebugStore.scala 381:15]
+  wire [63:0] _GEN_17 = _T_28 ? LogData_io_deq_bits : 64'h0; // @[DebugStore.scala 381:26]
+  Queue_1 LogData ( // @[DebugStore.scala 335:23]
     .clock(LogData_clock),
     .reset(LogData_reset),
     .io_enq_valid(LogData_io_enq_valid),
@@ -19912,15 +19944,15 @@ module DebugVMEBufferNode(
     .io_deq_bits(LogData_io_deq_bits),
     .io_count(LogData_io_count)
   );
-  assign io_vmeOut_cmd_valid = wState == 2'h1; // @[DebugStore.scala 260:23]
-  assign io_vmeOut_cmd_bits_addr = io_addrDebug + addr_debug_reg; // @[DebugStore.scala 258:27]
-  assign io_vmeOut_cmd_bits_len = {{1'd0}, _T_15}; // @[DebugStore.scala 259:26]
-  assign io_vmeOut_data_valid = _T_28 & LogData_io_deq_valid; // @[DebugStore.scala 285:24 DebugStore.scala 290:26]
-  assign io_vmeOut_data_bits = {{448'd0}, _GEN_17}; // @[DebugStore.scala 284:23 DebugStore.scala 289:25]
+  assign io_vmeOut_cmd_valid = wState == 2'h1; // @[DebugStore.scala 353:23]
+  assign io_vmeOut_cmd_bits_addr = io_addrDebug + addr_debug_reg; // @[DebugStore.scala 351:27]
+  assign io_vmeOut_cmd_bits_len = {{1'd0}, _T_15}; // @[DebugStore.scala 352:26]
+  assign io_vmeOut_data_valid = _T_28 & LogData_io_deq_valid; // @[DebugStore.scala 378:24 DebugStore.scala 383:26]
+  assign io_vmeOut_data_bits = {{448'd0}, _GEN_17}; // @[DebugStore.scala 377:23 DebugStore.scala 382:25]
   assign LogData_clock = clock;
   assign LogData_reset = reset;
-  assign LogData_io_enq_valid = 1'h0; // @[DebugStore.scala 255:24]
-  assign LogData_io_deq_ready = _T_28 & io_vmeOut_data_ready; // @[DebugStore.scala 286:24 DebugStore.scala 291:26]
+  assign LogData_io_enq_valid = 1'h0; // @[DebugStore.scala 348:24]
+  assign LogData_io_deq_ready = _T_28 & io_vmeOut_data_ready; // @[DebugStore.scala 379:24 DebugStore.scala 384:26]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif

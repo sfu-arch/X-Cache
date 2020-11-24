@@ -76,23 +76,28 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     hw_lib_path = "./hardware/chisel/build/libhw.dylib"
 
+time = cm.Timer()
 
+time.start()
 # Running Simulation
 events = dsim.sim(ptrs = [m1_s, m2_s, prod_s], vars= [], debugs=[], numRets=0, numEvents=1, hwlib = hw_lib_path)
+time.stop()
+
 
 # Get software result
 prod = bbgemm(input_data[0], input_data[1])
 
 
 
-cm.dump_output('sim_prod.data', prod_s.getData_Double())
-cm.dump_output('prod.data', prod)
+# cm.dump_output('sim_prod.data', prod_s.getData_Double())
+# cm.dump_output('prod.data', prod)
 
 print("Cycle: " + str(events[0]))
-if len(prod) == sum([1 for i, j in zip(prod_s.getData_Double(), prod) if isclose(i,j)]):
-    print("Final output matched -- Success!")
-else:
-    print("Final output doesn't match -- Failed!")
+print("Simulation time: " + str(time.elapsed * 10**9) + "ns")
+# if len(prod) == sum([1 for i, j in zip(prod_s.getData_Double(), prod) if isclose(i,j)]):
+    # print("Final output matched -- Success!")
+# else:
+    # print("Final output doesn't match -- Failed!")
 
 
 

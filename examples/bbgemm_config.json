@@ -2,16 +2,16 @@
     "Accel" : {
         "nameAccel" : "bbgemm",
         "numPtrs"  : 3,
-        "numDbgs"  : 0,
+        "numDbgs"  : 7,
         "numVals"  : 0,
         "numRets"  : 0,
         "numEnts"  : 1,
         "numCtrls" : 1,
         "dataLen"  : 64,
-        "boreIDs"  : [],
+        "boreIDs"  : [6,9,10,11,12,17,18],
 
         "Build" : {
-            "printLog" : true,
+            "printLog" : false,
             "cacheLog" : false
         }
     }

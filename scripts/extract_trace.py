@@ -81,7 +81,8 @@ def get_args():
     parser.add_argument('-l', '--log', required=True, help="Input path of muir trace")
     parser.add_argument('-o', '--output', required=True, help="Output path for node values")
     parser.add_argument('-p', '--print', action='store_true', help="Print log elements")
-    parser.add_argument('-n', '--nodes', required=True, dest='nodes', nargs='+', default=[], help="List nodes to dump")
+    parser.add_argument('--dump_all', dest='dump', action='store_true', help="dump all the nodes")
+    parser.add_argument('-n', '--nodes', dest='nodes', nargs='+', default=[], help="List nodes to dump")
 
     args = parser.parse_args()
     return args
@@ -99,21 +100,38 @@ if __name__ == "__main__":
         except OSError:
             print ("Creation of the directory %s failed" % path)
 
-    # Dump outputs for nod ids
-    for node_id in args.nodes:
-        node_trace = list(filter(lambda x: x.id == node_id, nodes))
-        if node_trace:
+    if args.dump:
+        # Dump outputs for nod ids
+        trace_node_data_file = open(args.output + "/node_data.trace", 'a+')
+        trace_node_cycle_file = open(args.output + "/node_cycle.trace", 'a+')
+        for node in nodes:
             # Write node data
-            trace_node_data_file = open(args.output + "/" + node_id + "_data.trace", 'w+')
-            with trace_node_data_file:
-                write = csv.writer(trace_node_data_file)
-                write.writerow(node_trace[0].output)
+            write = csv.writer(trace_node_data_file)
+            write.writerow([node.id] + node.output)
 
             # Write node cycle
-            trace_node_cycle_file = open(args.output + "/" + node_id + "_cycle.trace", 'w+')
-            with trace_node_cycle_file:
+            write = csv.writer(trace_node_cycle_file)
+            write.writerow([node.id] + node.cycle)
+
+        trace_node_data_file.close()
+        trace_node_cycle_file.close()
+    else:
+        # Dump outputs for nod ids
+        trace_node_data_file = open(args.output + "/node_data.trace", 'a+')
+        trace_node_cycle_file = open(args.output + "/node_cycle.trace", 'a+')
+        for node_id in args.nodes:
+            node_trace = list(filter(lambda x: x.id == node_id, nodes))
+            if node_trace:
+                # Write node data
+                write = csv.writer(trace_node_data_file)
+                write.writerow([node_id] + node_trace[0].output)
+
+                # Write node cycle
                 write = csv.writer(trace_node_cycle_file)
-                write.writerow(node_trace[0].cycle)
+                write.writerow([node_id] + node_trace[0].cycle)
+
+        trace_node_data_file.close()
+        trace_node_cycle_file.close()
 
     if args.print:
         for node in nodes:

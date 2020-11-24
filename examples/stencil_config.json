@@ -11,7 +11,7 @@
         "boreIDs"  : [],
 
         "Build" : {
-            "printLog" : true,
+            "printLog" : false,
             "cacheLog" : false
         }
     }

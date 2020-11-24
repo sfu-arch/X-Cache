@@ -69,14 +69,18 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     hw_lib_path = "./hardware/chisel/build/libhw.dylib"
 
+time = cm.Timer()
 
+time.start()
 # Running Simulation
 events = dsim.sim(ptrs = [real_s, img_s, real_twid_s, img_twid_s], vars= [], debugs=[], numRets=0, numEvents=1, hwlib = hw_lib_path)
 
 # Get software result
 data_x, data_y = fftStrided(input_data[0], input_data[1], input_data[2], input_data[3])
+time.stop()
 
 
+print("Simulation time: " + str(time.elapsed * 10**9) + "ns")
 print("Cycle: " + str(events[0]))
 
 cm.dump_output('sim_real.data', real_s.getData_Double())

@@ -2,13 +2,13 @@
     "Accel" : {
         "nameAccel" : "fftStrided",
         "numPtrs"  : 4,
-        "numDbgs"  : 0,
+        "numDbgs"  : 5,
         "numVals"  : 0,
         "numRets"  : 0,
         "numEnts"  : 1,
         "numCtrls" : 1,
         "dataLen"  : 64,
-        "boreIDs"  : [],
+        "boreIDs"  : [7,8,27,28,29],
 
         "Build" : {
             "printLog" : false,
