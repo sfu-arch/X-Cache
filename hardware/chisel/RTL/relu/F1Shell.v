@@ -19754,35 +19754,46 @@ module Queue_1(
   input         io_deq_ready,
   output        io_deq_valid,
   output [63:0] io_deq_bits,
-  output [1:0]  io_count
+  output [6:0]  io_count
 );
+`ifdef RANDOMIZE_GARBAGE_ASSIGN
+  reg [63:0] _RAND_1;
+`endif // RANDOMIZE_GARBAGE_ASSIGN
 `ifdef RANDOMIZE_MEM_INIT
   reg [63:0] _RAND_0;
 `endif // RANDOMIZE_MEM_INIT
 `ifdef RANDOMIZE_REG_INIT
-  reg [31:0] _RAND_1;
+  reg [31:0] _RAND_2;
 `endif // RANDOMIZE_REG_INIT
-  reg [63:0] ram [0:1]; // @[Decoupled.scala 218:16]
+  reg [63:0] ram [0:99]; // @[Decoupled.scala 218:16]
   wire [63:0] ram__T_11_data; // @[Decoupled.scala 218:16]
-  wire  ram__T_11_addr; // @[Decoupled.scala 218:16]
+  wire [6:0] ram__T_11_addr; // @[Decoupled.scala 218:16]
   wire [63:0] ram__T_3_data; // @[Decoupled.scala 218:16]
-  wire  ram__T_3_addr; // @[Decoupled.scala 218:16]
+  wire [6:0] ram__T_3_addr; // @[Decoupled.scala 218:16]
   wire  ram__T_3_mask; // @[Decoupled.scala 218:16]
   wire  ram__T_3_en; // @[Decoupled.scala 218:16]
-  reg  deq_ptr_value; // @[Counter.scala 29:33]
-  wire  ptr_match = ~deq_ptr_value; // @[Decoupled.scala 223:33]
+  reg [6:0] deq_ptr_value; // @[Counter.scala 29:33]
+  wire  ptr_match = 7'h0 == deq_ptr_value; // @[Decoupled.scala 223:33]
   wire  do_deq = io_deq_ready & io_deq_valid; // @[Decoupled.scala 40:37]
-  wire  _T_7 = deq_ptr_value + 1'h1; // @[Counter.scala 39:22]
-  wire  ptr_diff = 1'h0 - deq_ptr_value; // @[Decoupled.scala 257:32]
+  wire  wrap_1 = deq_ptr_value == 7'h63; // @[Counter.scala 38:24]
+  wire [6:0] _T_7 = deq_ptr_value + 7'h1; // @[Counter.scala 39:22]
+  wire [6:0] ptr_diff = 7'h0 - deq_ptr_value; // @[Decoupled.scala 257:32]
+  wire  _T_14 = deq_ptr_value > 7'h0; // @[Decoupled.scala 264:39]
+  wire [6:0] _T_16 = 7'h64 + ptr_diff; // @[Decoupled.scala 265:38]
+  wire [6:0] _T_17 = _T_14 ? _T_16 : ptr_diff; // @[Decoupled.scala 264:24]
   assign ram__T_11_addr = deq_ptr_value;
+  `ifndef RANDOMIZE_GARBAGE_ASSIGN
   assign ram__T_11_data = ram[ram__T_11_addr]; // @[Decoupled.scala 218:16]
+  `else
+  assign ram__T_11_data = ram__T_11_addr >= 7'h64 ? _RAND_1[63:0] : ram[ram__T_11_addr]; // @[Decoupled.scala 218:16]
+  `endif // RANDOMIZE_GARBAGE_ASSIGN
   assign ram__T_3_data = 64'h0;
-  assign ram__T_3_addr = 1'h0;
+  assign ram__T_3_addr = 7'h0;
   assign ram__T_3_mask = 1'h1;
   assign ram__T_3_en = 1'h0;
   assign io_deq_valid = ~ptr_match; // @[Decoupled.scala 240:16]
   assign io_deq_bits = ram__T_11_data; // @[Decoupled.scala 242:15]
-  assign io_count = {{1'd0}, ptr_diff}; // @[Decoupled.scala 259:14]
+  assign io_count = ptr_match ? 7'h0 : _T_17; // @[Decoupled.scala 261:14]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -19817,14 +19828,17 @@ initial begin
         #0.002 begin end
       `endif
     `endif
+`ifdef RANDOMIZE_GARBAGE_ASSIGN
+  _RAND_1 = {2{`RANDOM}};
+`endif // RANDOMIZE_GARBAGE_ASSIGN
 `ifdef RANDOMIZE_MEM_INIT
   _RAND_0 = {2{`RANDOM}};
-  for (initvar = 0; initvar < 2; initvar = initvar+1)
+  for (initvar = 0; initvar < 100; initvar = initvar+1)
     ram[initvar] = _RAND_0[63:0];
 `endif // RANDOMIZE_MEM_INIT
 `ifdef RANDOMIZE_REG_INIT
-  _RAND_1 = {1{`RANDOM}};
-  deq_ptr_value = _RAND_1[0:0];
+  _RAND_2 = {1{`RANDOM}};
+  deq_ptr_value = _RAND_2[6:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -19837,9 +19851,13 @@ end // initial
       ram[ram__T_3_addr] <= ram__T_3_data; // @[Decoupled.scala 218:16]
     end
     if (reset) begin
-      deq_ptr_value <= 1'h0;
+      deq_ptr_value <= 7'h0;
     end else if (do_deq) begin
-      deq_ptr_value <= _T_7;
+      if (wrap_1) begin
+        deq_ptr_value <= 7'h0;
+      end else begin
+        deq_ptr_value <= _T_7;
+      end
     end
   end
 endmodule
@@ -19867,22 +19885,22 @@ module DebugVMEBufferNode(
   wire  LogData_io_deq_ready; // @[DebugStore.scala 243:23]
   wire  LogData_io_deq_valid; // @[DebugStore.scala 243:23]
   wire [63:0] LogData_io_deq_bits; // @[DebugStore.scala 243:23]
-  wire [1:0] LogData_io_count; // @[DebugStore.scala 243:23]
+  wire [6:0] LogData_io_count; // @[DebugStore.scala 243:23]
   reg [63:0] addr_debug_reg; // @[DebugStore.scala 238:31]
   reg [1:0] wState; // @[DebugStore.scala 240:23]
-  reg  queue_count; // @[DebugStore.scala 245:28]
+  reg [6:0] queue_count; // @[DebugStore.scala 245:28]
   wire  _T_4 = LogData_io_enq_valid; // @[Decoupled.scala 40:37]
-  wire  _T_6 = queue_count + 1'h1; // @[DebugStore.scala 247:32]
-  wire  _T_15 = queue_count - 1'h1; // @[DebugStore.scala 259:41]
+  wire [6:0] _T_6 = queue_count + 7'h1; // @[DebugStore.scala 247:32]
+  wire [6:0] _T_15 = queue_count - 7'h1; // @[DebugStore.scala 259:41]
   wire  _T_17 = 2'h0 == wState; // @[Conditional.scala 37:30]
-  wire  _T_20 = LogData_io_count == 2'h1; // @[DebugStore.scala 265:82]
+  wire [6:0] _T_19 = 7'h64 / 7'h2; // @[DebugStore.scala 265:98]
+  wire  _T_20 = LogData_io_count == _T_19; // @[DebugStore.scala 265:82]
   wire  _T_22 = 2'h1 == wState; // @[Conditional.scala 37:30]
   wire  _T_23 = io_vmeOut_cmd_ready & io_vmeOut_cmd_valid; // @[Decoupled.scala 40:37]
   wire  _T_24 = 2'h2 == wState; // @[Conditional.scala 37:30]
-  wire [3:0] _GEN_20 = {{3'd0}, queue_count}; // @[DebugStore.scala 278:57]
-  wire [4:0] _T_25 = _GEN_20 * 4'h8; // @[DebugStore.scala 278:57]
-  wire [63:0] _GEN_21 = {{59'd0}, _T_25}; // @[DebugStore.scala 278:42]
-  wire [63:0] _T_27 = addr_debug_reg + _GEN_21; // @[DebugStore.scala 278:42]
+  wire [10:0] _T_25 = queue_count * 7'h8; // @[DebugStore.scala 278:57]
+  wire [63:0] _GEN_20 = {{53'd0}, _T_25}; // @[DebugStore.scala 278:42]
+  wire [63:0] _T_27 = addr_debug_reg + _GEN_20; // @[DebugStore.scala 278:42]
   wire  _T_28 = wState == 2'h2; // @[DebugStore.scala 288:15]
   wire [63:0] _GEN_17 = _T_28 ? LogData_io_deq_bits : 64'h0; // @[DebugStore.scala 288:26]
   Queue_1 LogData ( // @[DebugStore.scala 243:23]
@@ -19896,7 +19914,7 @@ module DebugVMEBufferNode(
   );
   assign io_vmeOut_cmd_valid = wState == 2'h1; // @[DebugStore.scala 260:23]
   assign io_vmeOut_cmd_bits_addr = io_addrDebug + addr_debug_reg; // @[DebugStore.scala 258:27]
-  assign io_vmeOut_cmd_bits_len = {{7'd0}, _T_15}; // @[DebugStore.scala 259:26]
+  assign io_vmeOut_cmd_bits_len = {{1'd0}, _T_15}; // @[DebugStore.scala 259:26]
   assign io_vmeOut_data_valid = _T_28 & LogData_io_deq_valid; // @[DebugStore.scala 285:24 DebugStore.scala 290:26]
   assign io_vmeOut_data_bits = {{448'd0}, _GEN_17}; // @[DebugStore.scala 284:23 DebugStore.scala 289:25]
   assign LogData_clock = clock;
@@ -19943,7 +19961,7 @@ initial begin
   _RAND_1 = {1{`RANDOM}};
   wState = _RAND_1[1:0];
   _RAND_2 = {1{`RANDOM}};
-  queue_count = _RAND_2[0:0];
+  queue_count = _RAND_2[6:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -19979,7 +19997,7 @@ end // initial
       end
     end
     if (reset) begin
-      queue_count <= 1'h0;
+      queue_count <= 7'h0;
     end else if (_T_17) begin
       if (_T_4) begin
         queue_count <= _T_6;
@@ -19990,7 +20008,7 @@ end // initial
       end
     end else if (_T_24) begin
       if (io_vmeOut_ack) begin
-        queue_count <= 1'h0;
+        queue_count <= 7'h0;
       end else if (_T_4) begin
         queue_count <= _T_6;
       end
