@@ -1,0 +1,29 @@
+digraph "CFG for 'parse_uint16_t_array' function" {
+	label="CFG for 'parse_uint16_t_array' function";
+
+	Node0x563f70033540 [shape=record,label="{entry:\l  %endptr = alloca i8*, align 8, !UID !3\l  %0 = bitcast i8** %endptr to i8*, !UID !4\l  call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %0) #9\l  %cmp = icmp eq i8* %s, null, !UID !5\l  br i1 %cmp, label %if.else, label %if.end, !UID !6, !BB_UID !7\l|{<s0>T|<s1>F}}"];
+	Node0x563f70033540:s0 -> Node0x563f70033ff0;
+	Node0x563f70033540:s1 -> Node0x563f70034040;
+	Node0x563f70033ff0 [shape=record,label="{if.else:                                          \l  tail call void @__assert_fail(i8* getelementptr inbounds ([34 x i8], [34 x\l... i8]* @.str.12, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x\l... i8]* @.str.2, i64 0, i64 0), i32 133, i8* getelementptr inbounds ([50 x i8],\l... [50 x i8]* @__PRETTY_FUNCTION__.parse_uint16_t_array, i64 0, i64 0)) #10\l  unreachable, !UID !8, !BB_UID !9\l}"];
+	Node0x563f70034040 [shape=record,label="{if.end:                                           \l  %call = tail call i8* @strtok(i8* nonnull %s, i8* getelementptr inbounds ([2\l... x i8], [2 x i8]* @.str.13, i64 0, i64 0)) #9\l  %cmp132 = icmp ne i8* %call, null, !UID !10\l  %cmp233 = icmp sgt i32 %n, 0, !UID !11\l  %spec.select34 = and i1 %cmp233, %cmp132, !UID !12\l  br i1 %spec.select34, label %while.body.lr.ph, label %while.end, !UID !13,\l... !BB_UID !14\l|{<s0>T|<s1>F}}"];
+	Node0x563f70034040:s0 -> Node0x563f70034090;
+	Node0x563f70034040:s1 -> Node0x563f70034220;
+	Node0x563f70034090 [shape=record,label="{while.body.lr.ph:                                 \l  %1 = sext i32 %n to i64, !UID !15\l  br label %while.body, !UID !16, !BB_UID !17\l}"];
+	Node0x563f70034090 -> Node0x563f700340e0;
+	Node0x563f700340e0 [shape=record,label="{while.body:                                       \l  %indvars.iv = phi i64 [ 0, %while.body.lr.ph ], [ %indvars.iv.next, %if.end9\l... ], !UID !18\l  %line.036 = phi i8* [ %call, %while.body.lr.ph ], [ %call12, %if.end9 ],\l... !UID !19\l  store i8* %line.036, i8** %endptr, align 8, !tbaa !20, !UID !24\l  %call3 = call i64 @strtol(i8* nonnull %line.036, i8** nonnull %endptr, i32\l... 10) #9\l  %conv = trunc i64 %call3 to i16, !UID !25\l  %2 = load i8*, i8** %endptr, align 8, !tbaa !20, !UID !26\l  %3 = load i8, i8* %2, align 1, !tbaa !27, !UID !28\l  %cmp5 = icmp eq i8 %3, 0, !UID !29\l  br i1 %cmp5, label %if.end9, label %if.then7, !UID !30, !BB_UID !31\l|{<s0>T|<s1>F}}"];
+	Node0x563f700340e0:s0 -> Node0x563f70034180;
+	Node0x563f700340e0:s1 -> Node0x563f70034130;
+	Node0x563f70034130 [shape=record,label="{if.then7:                                         \l  %4 = load %struct._IO_FILE*, %struct._IO_FILE** @stderr, align 8, !tbaa !20,\l... !UID !32\l  %5 = trunc i64 %indvars.iv to i32, !UID !33\l  %call8 = tail call i32 (%struct._IO_FILE*, i8*, ...)\l... @fprintf(%struct._IO_FILE* %4, i8* getelementptr inbounds ([35 x i8], [35 x\l... i8]* @.str.14, i64 0, i64 0), i32 %5) #11\l  br label %if.end9, !UID !34, !BB_UID !35\l}"];
+	Node0x563f70034130 -> Node0x563f70034180;
+	Node0x563f70034180 [shape=record,label="{if.end9:                                          \l  %arrayidx = getelementptr inbounds i16, i16* %arr, i64 %indvars.iv, !UID !36\l  store i16 %conv, i16* %arrayidx, align 2, !tbaa !37, !UID !39\l  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !UID !40\l  %call10 = tail call i64 @strlen(i8* nonnull %line.036) #12\l  %arrayidx11 = getelementptr inbounds i8, i8* %line.036, i64 %call10, !UID !41\l  store i8 10, i8* %arrayidx11, align 1, !tbaa !27, !UID !42\l  %call12 = tail call i8* @strtok(i8* null, i8* getelementptr inbounds ([2 x\l... i8], [2 x i8]* @.str.13, i64 0, i64 0)) #9\l  %cmp1 = icmp ne i8* %call12, null, !UID !43\l  %cmp2 = icmp slt i64 %indvars.iv.next, %1, !UID !44\l  %spec.select = and i1 %cmp2, %cmp1, !UID !45\l  br i1 %spec.select, label %while.body, label %while.end.loopexit, !UID !46,\l... !BB_UID !47\l|{<s0>T|<s1>F}}"];
+	Node0x563f70034180:s0 -> Node0x563f700340e0;
+	Node0x563f70034180:s1 -> Node0x563f700341d0;
+	Node0x563f700341d0 [shape=record,label="{while.end.loopexit:                               \l  br label %while.end, !UID !48, !BB_UID !49\l}"];
+	Node0x563f700341d0 -> Node0x563f70034220;
+	Node0x563f70034220 [shape=record,label="{while.end:                                        \l  %line.0.lcssa = phi i8* [ %call, %if.end ], [ %call12, %while.end.loopexit\l... ], !UID !50\l  %cmp1.lcssa = phi i1 [ %cmp132, %if.end ], [ %cmp1, %while.end.loopexit ],\l... !UID !51\l  br i1 %cmp1.lcssa, label %if.then15, label %if.end18, !UID !52, !BB_UID !53\l|{<s0>T|<s1>F}}"];
+	Node0x563f70034220:s0 -> Node0x563f70034270;
+	Node0x563f70034220:s1 -> Node0x563f700342c0;
+	Node0x563f70034270 [shape=record,label="{if.then15:                                        \l  %call16 = tail call i64 @strlen(i8* nonnull %line.0.lcssa) #12\l  %arrayidx17 = getelementptr inbounds i8, i8* %line.0.lcssa, i64 %call16,\l... !UID !54\l  store i8 10, i8* %arrayidx17, align 1, !tbaa !27, !UID !55\l  br label %if.end18, !UID !56, !BB_UID !57\l}"];
+	Node0x563f70034270 -> Node0x563f700342c0;
+	Node0x563f700342c0 [shape=record,label="{if.end18:                                         \l  call void @llvm.lifetime.end.p0i8(i64 8, i8* nonnull %0) #9\l  ret i32 0, !UID !58, !BB_UID !59\l}"];
+}

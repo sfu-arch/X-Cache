@@ -1,0 +1,5 @@
+digraph "CFG for 'output_to_data' function" {
+	label="CFG for 'output_to_data' function";
+
+	Node0x55f01448b5e0 [shape=record,label="{entry:\l  tail call void @llvm.memset.p0i8.i64(i8* %vdata, i8 0, i64 24576, i32 1, i1\l... false)\l  %call = tail call i8* @readfile(i32 %fd) #9, !UID !3\l  %call1 = tail call i8* @find_section_start(i8* %call, i32 1) #9, !UID !4\l  %arraydecay = bitcast i8* %vdata to double*, !UID !5\l  %call2 = tail call i32 @parse_double_array(i8* %call1, double* %arraydecay,\l... i32 1024) #9, !UID !6\l  %call3 = tail call i8* @find_section_start(i8* %call, i32 2) #9, !UID !7\l  %img = getelementptr inbounds i8, i8* %vdata, i64 8192, !UID !8\l  %arraydecay4 = bitcast i8* %img to double*, !UID !9\l  %call5 = tail call i32 @parse_double_array(i8* %call3, double* nonnull\l... %arraydecay4, i32 1024) #9, !UID !10\l  tail call void @free(i8* %call) #9\l  ret void, !UID !11, !BB_UID !12\l}"];
+}

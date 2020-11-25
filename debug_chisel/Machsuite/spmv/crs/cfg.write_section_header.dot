@@ -1,0 +1,9 @@
+digraph "CFG for 'write_section_header' function" {
+	label="CFG for 'write_section_header' function";
+
+	Node0x563f70051dd0 [shape=record,label="{entry:\l  %cmp = icmp sgt i32 %fd, 1, !UID !3\l  br i1 %cmp, label %if.end, label %if.else, !UID !4, !BB_UID !5\l|{<s0>T|<s1>F}}"];
+	Node0x563f70051dd0:s0 -> Node0x563f70052340;
+	Node0x563f70051dd0:s1 -> Node0x563f700522f0;
+	Node0x563f700522f0 [shape=record,label="{if.else:                                          \l  tail call void @__assert_fail(i8* getelementptr inbounds ([34 x i8], [34 x\l... i8]* @.str.1, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x\l... i8]* @.str.2, i64 0, i64 0), i32 190, i8* getelementptr inbounds ([30 x i8],\l... [30 x i8]* @__PRETTY_FUNCTION__.write_section_header, i64 0, i64 0)) #10\l  unreachable, !UID !6, !BB_UID !7\l}"];
+	Node0x563f70052340 [shape=record,label="{if.end:                                           \l  tail call void (i32, i8*, ...) @fd_printf(i32 %fd, i8* getelementptr\l... inbounds ([6 x i8], [6 x i8]* @.str.22, i64 0, i64 0)), !UID !8\l  ret i32 0, !UID !9, !BB_UID !10\l}"];
+}

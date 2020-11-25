@@ -1,0 +1,15 @@
+digraph "CFG for 'check_data' function" {
+	label="CFG for 'check_data' function";
+
+	Node0x55f971c86610 [shape=record,label="{entry:\l  %prod = getelementptr inbounds i8, i8* %vdata, i64 65536, !UID !3\l  %0 = bitcast i8* %prod to [4096 x double]*, !UID !4\l  %prod4 = getelementptr inbounds i8, i8* %vref, i64 65536, !UID !5\l  %1 = bitcast i8* %prod4 to [4096 x double]*, !UID !6\l  br label %for.body, !UID !7, !BB_UID !8\l}"];
+	Node0x55f971c86610 -> Node0x55f971c72fc0;
+	Node0x55f971c72fc0 [shape=record,label="{for.body:                                         \l  %indvars.iv33 = phi i64 [ 0, %entry ], [ %indvars.iv.next34, %for.inc11 ],\l... !UID !9\l  %has_errors.031 = phi i32 [ 0, %entry ], [ %or, %for.inc11 ], !UID !10\l  %2 = shl i64 %indvars.iv33, 6, !UID !11\l  br label %for.body3, !UID !12, !BB_UID !13\l}"];
+	Node0x55f971c72fc0 -> Node0x55f971c73010;
+	Node0x55f971c73010 [shape=record,label="{for.body3:                                        \l  %indvars.iv = phi i64 [ 0, %for.body ], [ %indvars.iv.next, %for.body3 ],\l... !UID !14\l  %has_errors.129 = phi i32 [ %has_errors.031, %for.body ], [ %or, %for.body3\l... ], !UID !15\l  %3 = add nuw nsw i64 %indvars.iv, %2, !UID !16\l  %arrayidx = getelementptr inbounds [4096 x double], [4096 x double]* %0, i64\l... 0, i64 %3, !UID !17\l  %4 = load double, double* %arrayidx, align 8, !tbaa !18, !UID !22\l  %arrayidx8 = getelementptr inbounds [4096 x double], [4096 x double]* %1,\l... i64 0, i64 %3, !UID !23\l  %5 = load double, double* %arrayidx8, align 8, !tbaa !18, !UID !24\l  %sub = fsub double %4, %5, !UID !25\l  %cmp9 = fcmp olt double %sub, 0xBEB0C6F7A0B5ED8D, !UID !26\l  %cmp10 = fcmp ogt double %sub, 0x3EB0C6F7A0B5ED8D, !UID !27\l  %6 = or i1 %cmp9, %cmp10, !UID !28\l  %lor.ext = zext i1 %6 to i32, !UID !29\l  %or = or i32 %has_errors.129, %lor.ext, !UID !30\l  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !UID !31\l  %exitcond = icmp eq i64 %indvars.iv.next, 64, !UID !32\l  br i1 %exitcond, label %for.inc11, label %for.body3, !UID !33, !BB_UID !34\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c73010:s0 -> Node0x55f971c73060;
+	Node0x55f971c73010:s1 -> Node0x55f971c73010;
+	Node0x55f971c73060 [shape=record,label="{for.inc11:                                        \l  %indvars.iv.next34 = add nuw nsw i64 %indvars.iv33, 1, !UID !35\l  %exitcond36 = icmp eq i64 %indvars.iv.next34, 64, !UID !36\l  br i1 %exitcond36, label %for.end13, label %for.body, !UID !37, !BB_UID !38\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c73060:s0 -> Node0x55f971c730b0;
+	Node0x55f971c73060:s1 -> Node0x55f971c72fc0;
+	Node0x55f971c730b0 [shape=record,label="{for.end13:                                        \l  %tobool = icmp eq i32 %or, 0, !UID !39\l  %lnot.ext = zext i1 %tobool to i32, !UID !40\l  ret i32 %lnot.ext, !UID !41, !BB_UID !42\l}"];
+}

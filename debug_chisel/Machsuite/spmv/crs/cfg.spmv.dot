@@ -1,0 +1,20 @@
+digraph "CFG for 'spmv' function" {
+	label="CFG for 'spmv' function";
+
+	Node0x563f7001b540 [shape=record,label="{entry:\l  br label %for.body, !UID !3, !BB_UID !4\l}"];
+	Node0x563f7001b540 -> Node0x563f700267f0;
+	Node0x563f700267f0 [shape=record,label="{for.body:                                         \l  %indvars.iv37 = phi i64 [ 0, %entry ], [ %indvars.iv.next38, %for.end ],\l... !UID !5\l  %arrayidx = getelementptr inbounds i32, i32* %rowDelimiters, i64\l... %indvars.iv37, !UID !6\l  %0 = load i32, i32* %arrayidx, align 4, !tbaa !7, !UID !11\l  %indvars.iv.next38 = add nuw nsw i64 %indvars.iv37, 1, !UID !12\l  %arrayidx2 = getelementptr inbounds i32, i32* %rowDelimiters, i64\l... %indvars.iv.next38, !UID !13\l  %1 = load i32, i32* %arrayidx2, align 4, !tbaa !7, !UID !14\l  %cmp433 = icmp slt i32 %0, %1, !UID !15\l  br i1 %cmp433, label %for.body5.lr.ph, label %for.end, !UID !16, !BB_UID !17\l|{<s0>T|<s1>F}}"];
+	Node0x563f700267f0:s0 -> Node0x563f70026840;
+	Node0x563f700267f0:s1 -> Node0x563f70026930;
+	Node0x563f70026840 [shape=record,label="{for.body5.lr.ph:                                  \l  %2 = sext i32 %0 to i64, !UID !18\l  %wide.trip.count = sext i32 %1 to i64, !UID !19\l  br label %for.body5, !UID !20, !BB_UID !21\l}"];
+	Node0x563f70026840 -> Node0x563f70026890;
+	Node0x563f70026890 [shape=record,label="{for.body5:                                        \l  %indvars.iv = phi i64 [ %2, %for.body5.lr.ph ], [ %indvars.iv.next,\l... %for.body5 ], !UID !22\l  %sum.034 = phi double [ 0.000000e+00, %for.body5.lr.ph ], [ %add12,\l... %for.body5 ], !UID !23\l  %arrayidx7 = getelementptr inbounds double, double* %val, i64 %indvars.iv,\l... !UID !24\l  %3 = load double, double* %arrayidx7, align 8, !tbaa !25, !UID !27\l  %arrayidx9 = getelementptr inbounds i32, i32* %cols, i64 %indvars.iv, !UID\l... !28\l  %4 = load i32, i32* %arrayidx9, align 4, !tbaa !7, !UID !29\l  %idxprom10 = sext i32 %4 to i64, !UID !30\l  %arrayidx11 = getelementptr inbounds double, double* %vec, i64 %idxprom10,\l... !UID !31\l  %5 = load double, double* %arrayidx11, align 8, !tbaa !25, !UID !32\l  %mul = fmul double %3, %5, !UID !33\l  %add12 = fadd double %sum.034, %mul, !UID !34\l  %indvars.iv.next = add nsw i64 %indvars.iv, 1, !UID !35\l  %exitcond = icmp eq i64 %indvars.iv.next, %wide.trip.count, !UID !36\l  br i1 %exitcond, label %for.end.loopexit, label %for.body5, !UID !37,\l... !BB_UID !38\l|{<s0>T|<s1>F}}"];
+	Node0x563f70026890:s0 -> Node0x563f700268e0;
+	Node0x563f70026890:s1 -> Node0x563f70026890;
+	Node0x563f700268e0 [shape=record,label="{for.end.loopexit:                                 \l  br label %for.end, !UID !39, !BB_UID !40\l}"];
+	Node0x563f700268e0 -> Node0x563f70026930;
+	Node0x563f70026930 [shape=record,label="{for.end:                                          \l  %sum.0.lcssa = phi double [ 0.000000e+00, %for.body ], [ %add12,\l... %for.end.loopexit ], !UID !41\l  %arrayidx14 = getelementptr inbounds double, double* %out, i64\l... %indvars.iv37, !UID !42\l  store double %sum.0.lcssa, double* %arrayidx14, align 8, !tbaa !25, !UID !43\l  %exitcond39 = icmp eq i64 %indvars.iv.next38, 494, !UID !44\l  br i1 %exitcond39, label %for.end17, label %for.body, !UID !45, !BB_UID !46\l|{<s0>T|<s1>F}}"];
+	Node0x563f70026930:s0 -> Node0x563f70026980;
+	Node0x563f70026930:s1 -> Node0x563f700267f0;
+	Node0x563f70026980 [shape=record,label="{for.end17:                                        \l  ret void, !UID !47, !BB_UID !48\l}"];
+}

@@ -1,0 +1,27 @@
+digraph "CFG for 'fd_printf' function" {
+	label="CFG for 'fd_printf' function";
+
+	Node0x55f0144a2340 [shape=record,label="{entry:\l  %args = alloca [1 x %struct.__va_list_tag], align 16, !UID !3\l  %buffer = alloca [256 x i8], align 16, !UID !4\l  %0 = bitcast [1 x %struct.__va_list_tag]* %args to i8*, !UID !5\l  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %0) #9\l  %1 = getelementptr inbounds [256 x i8], [256 x i8]* %buffer, i64 0, i64 0,\l... !UID !6\l  call void @llvm.lifetime.start.p0i8(i64 256, i8* nonnull %1) #9\l  %arraydecay = getelementptr inbounds [1 x %struct.__va_list_tag], [1 x\l... %struct.__va_list_tag]* %args, i64 0, i64 0, !UID !7\l  call void @llvm.va_start(i8* nonnull %0)\l  %call = call i32 @vsnprintf(i8* nonnull %1, i64 256, i8* %format,\l... %struct.__va_list_tag* nonnull %arraydecay) #9\l  call void @llvm.va_end(i8* nonnull %0)\l  %cmp = icmp slt i32 %call, 256, !UID !8\l  br i1 %cmp, label %if.end, label %if.else, !UID !9, !BB_UID !10\l|{<s0>T|<s1>F}}"];
+	Node0x55f0144a2340:s0 -> Node0x55f0144a2950;
+	Node0x55f0144a2340:s1 -> Node0x55f0144a2900;
+	Node0x55f0144a2900 [shape=record,label="{if.else:                                          \l  call void @__assert_fail(i8* getelementptr inbounds ([90 x i8], [90 x i8]*\l... @.str.24, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x i8]*\l... @.str.2, i64 0, i64 0), i32 22, i8* getelementptr inbounds ([38 x i8], [38 x\l... i8]* @__PRETTY_FUNCTION__.fd_printf, i64 0, i64 0)) #10\l  unreachable, !UID !11, !BB_UID !12\l}"];
+	Node0x55f0144a2950 [shape=record,label="{if.end:                                           \l  %cmp62 = icmp sgt i32 %call, 0, !UID !13\l  br i1 %cmp62, label %while.body.preheader, label %while.end, !UID !14,\l... !BB_UID !15\l|{<s0>T|<s1>F}}"];
+	Node0x55f0144a2950:s0 -> Node0x55f0144a29a0;
+	Node0x55f0144a2950:s1 -> Node0x55f0144a2b30;
+	Node0x55f0144a29a0 [shape=record,label="{while.body.preheader:                             \l  br label %while.body, !UID !16, !BB_UID !17\l}"];
+	Node0x55f0144a29a0 -> Node0x55f0144a2a40;
+	Node0x55f0144a29f0 [shape=record,label="{while.cond:                                       \l  %cmp6 = icmp sgt i32 %call, %add, !UID !18\l  br i1 %cmp6, label %while.body, label %while.end.loopexit, !UID !19, !BB_UID\l... !20\l|{<s0>T|<s1>F}}"];
+	Node0x55f0144a29f0:s0 -> Node0x55f0144a2a40;
+	Node0x55f0144a29f0:s1 -> Node0x55f0144a2ae0;
+	Node0x55f0144a2a40 [shape=record,label="{while.body:                                       \l  %written.03 = phi i32 [ %add, %while.cond ], [ 0, %while.body.preheader ],\l... !UID !21\l  %idxprom = sext i32 %written.03 to i64, !UID !22\l  %arrayidx = getelementptr inbounds [256 x i8], [256 x i8]* %buffer, i64 0,\l... i64 %idxprom, !UID !23\l  %sub = sub nsw i32 %call, %written.03, !UID !24\l  %conv = sext i32 %sub to i64, !UID !25\l  %call7 = call i64 @write(i32 %fd, i8* nonnull %arrayidx, i64 %conv) #9\l  %conv8 = trunc i64 %call7 to i32, !UID !26\l  %cmp9 = icmp sgt i32 %conv8, -1, !UID !27\l  %add = add nsw i32 %written.03, %conv8, !UID !28\l  br i1 %cmp9, label %while.cond, label %if.else13, !UID !29, !BB_UID !30\l|{<s0>T|<s1>F}}"];
+	Node0x55f0144a2a40:s0 -> Node0x55f0144a29f0;
+	Node0x55f0144a2a40:s1 -> Node0x55f0144a2a90;
+	Node0x55f0144a2a90 [shape=record,label="{if.else13:                                        \l  call void @__assert_fail(i8* getelementptr inbounds ([28 x i8], [28 x i8]*\l... @.str.16, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x i8]*\l... @.str.2, i64 0, i64 0), i32 26, i8* getelementptr inbounds ([38 x i8], [38 x\l... i8]* @__PRETTY_FUNCTION__.fd_printf, i64 0, i64 0)) #10\l  unreachable, !UID !31, !BB_UID !32\l}"];
+	Node0x55f0144a2ae0 [shape=record,label="{while.end.loopexit:                               \l  br label %while.end, !UID !33, !BB_UID !34\l}"];
+	Node0x55f0144a2ae0 -> Node0x55f0144a2b30;
+	Node0x55f0144a2b30 [shape=record,label="{while.end:                                        \l  %written.0.lcssa = phi i32 [ 0, %if.end ], [ %add, %while.end.loopexit ],\l... !UID !35\l  %cmp15 = icmp eq i32 %call, %written.0.lcssa, !UID !36\l  br i1 %cmp15, label %if.end20, label %if.else19, !UID !37, !BB_UID !38\l|{<s0>T|<s1>F}}"];
+	Node0x55f0144a2b30:s0 -> Node0x55f0144a2bd0;
+	Node0x55f0144a2b30:s1 -> Node0x55f0144a2b80;
+	Node0x55f0144a2b80 [shape=record,label="{if.else19:                                        \l  call void @__assert_fail(i8* getelementptr inbounds ([50 x i8], [50 x i8]*\l... @.str.26, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x i8]*\l... @.str.2, i64 0, i64 0), i32 29, i8* getelementptr inbounds ([38 x i8], [38 x\l... i8]* @__PRETTY_FUNCTION__.fd_printf, i64 0, i64 0)) #10\l  unreachable, !UID !39, !BB_UID !40\l}"];
+	Node0x55f0144a2bd0 [shape=record,label="{if.end20:                                         \l  call void @llvm.lifetime.end.p0i8(i64 256, i8* nonnull %1) #9\l  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %0) #9\l  ret void, !UID !41, !BB_UID !42\l}"];
+}

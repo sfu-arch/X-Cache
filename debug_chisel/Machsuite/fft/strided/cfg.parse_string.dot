@@ -1,0 +1,44 @@
+digraph "CFG for 'parse_string' function" {
+	label="CFG for 'parse_string' function";
+
+	Node0x55f014497cd0 [shape=record,label="{entry:\l  %cmp = icmp eq i8* %s, null, !UID !3\l  br i1 %cmp, label %if.else, label %if.end, !UID !4, !BB_UID !5\l|{<s0>T|<s1>F}}"];
+	Node0x55f014497cd0:s0 -> Node0x55f01448e000;
+	Node0x55f014497cd0:s1 -> Node0x55f01448e050;
+	Node0x55f01448e000 [shape=record,label="{if.else:                                          \l  tail call void @__assert_fail(i8* getelementptr inbounds ([34 x i8], [34 x\l... i8]* @.str.12, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x\l... i8]* @.str.2, i64 0, i64 0), i32 79, i8* getelementptr inbounds ([38 x i8],\l... [38 x i8]* @__PRETTY_FUNCTION__.parse_string, i64 0, i64 0)) #10\l  unreachable, !UID !6, !BB_UID !7\l}"];
+	Node0x55f01448e050 [shape=record,label="{if.end:                                           \l  %cmp1 = icmp slt i32 %n, 0, !UID !8\l  br i1 %cmp1, label %if.then2, label %if.end39.thread, !UID !9, !BB_UID !10\l|{<s0>T|<s1>F}}"];
+	Node0x55f01448e050:s0 -> Node0x55f01448e0f0;
+	Node0x55f01448e050:s1 -> Node0x55f01448e0a0;
+	Node0x55f01448e0a0 [shape=record,label="{if.end39.thread:                                  \l  %conv4069 = sext i32 %n to i64, !UID !11\l  tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* %arr, i8* nonnull %s, i64\l... %conv4069, i32 1, i1 false)\l  br label %if.end46, !UID !12, !BB_UID !13\l}"];
+	Node0x55f01448e0a0 -> Node0x55f01448e4b0;
+	Node0x55f01448e0f0 [shape=record,label="{if.then2:                                         \l  %0 = load i8, i8* %s, align 1, !tbaa !14, !UID !17\l  %cmp370 = icmp eq i8 %0, 0, !UID !18\l  br i1 %cmp370, label %if.then43, label %land.lhs.true5.preheader, !UID !19,\l... !BB_UID !20\l|{<s0>T|<s1>F}}"];
+	Node0x55f01448e0f0:s0 -> Node0x55f01448e460;
+	Node0x55f01448e0f0:s1 -> Node0x55f01448e140;
+	Node0x55f01448e140 [shape=record,label="{land.lhs.true5.preheader:                         \l  br label %land.lhs.true5, !UID !21, !BB_UID !22\l}"];
+	Node0x55f01448e140 -> Node0x55f01448e1e0;
+	Node0x55f01448e190 [shape=record,label="{while.cond:                                       \l  %arrayidx = getelementptr inbounds i8, i8* %s, i64 %indvars.iv.next, !UID !23\l  %1 = load i8, i8* %arrayidx, align 1, !tbaa !14, !UID !24\l  %cmp3 = icmp eq i8 %1, 0, !UID !25\l  br i1 %cmp3, label %if.end39.loopexit, label %land.lhs.true5, !UID !26,\l... !BB_UID !27\l|{<s0>T|<s1>F}}"];
+	Node0x55f01448e190:s0 -> Node0x55f01448e3c0;
+	Node0x55f01448e190:s1 -> Node0x55f01448e1e0;
+	Node0x55f01448e1e0 [shape=record,label="{land.lhs.true5:                                   \l  %indvars.iv = phi i64 [ %indvars.iv.next, %while.cond ], [ 0,\l... %land.lhs.true5.preheader ], !UID !28\l  %2 = phi i8 [ %1, %while.cond ], [ %0, %land.lhs.true5.preheader ], !UID !29\l  %k.071 = phi i32 [ %add, %while.cond ], [ 0, %land.lhs.true5.preheader ],\l... !UID !30\l  %indvars.iv.next = add nuw i64 %indvars.iv, 1, !UID !31\l  %add = add nuw nsw i32 %k.071, 1, !UID !32\l  %arrayidx7 = getelementptr inbounds i8, i8* %s, i64 %indvars.iv.next, !UID\l... !33\l  %3 = load i8, i8* %arrayidx7, align 1, !tbaa !14, !UID !34\l  %cmp9 = icmp eq i8 %3, 0, !UID !35\l  br i1 %cmp9, label %if.end39.split.loop.exit77, label %land.lhs.true11, !UID\l... !36, !BB_UID !37\l|{<s0>T|<s1>F}}"];
+	Node0x55f01448e1e0:s0 -> Node0x55f01448e2d0;
+	Node0x55f01448e1e0:s1 -> Node0x55f01448e230;
+	Node0x55f01448e230 [shape=record,label="{land.lhs.true11:                                  \l  %4 = add nuw nsw i64 %indvars.iv, 2, !UID !38\l  %arrayidx14 = getelementptr inbounds i8, i8* %s, i64 %4, !UID !39\l  %5 = load i8, i8* %arrayidx14, align 1, !tbaa !14, !UID !40\l  %cmp16 = icmp eq i8 %5, 0, !UID !41\l  br i1 %cmp16, label %if.end39.split.loop.exit79, label %land.rhs, !UID !42,\l... !BB_UID !43\l|{<s0>T|<s1>F}}"];
+	Node0x55f01448e230:s0 -> Node0x55f01448e320;
+	Node0x55f01448e230:s1 -> Node0x55f01448e280;
+	Node0x55f01448e280 [shape=record,label="{land.rhs:                                         \l  %cmp21 = icmp eq i8 %2, 10, !UID !44\l  %cmp28 = icmp eq i8 %3, 37, !UID !45\l  %or.cond = and i1 %cmp21, %cmp28, !UID !46\l  %cmp35 = icmp eq i8 %5, 37, !UID !47\l  %or.cond68 = and i1 %or.cond, %cmp35, !UID !48\l  br i1 %or.cond68, label %if.end39.split.loop.exit81, label %while.cond, !UID\l... !49, !BB_UID !50\l|{<s0>T|<s1>F}}"];
+	Node0x55f01448e280:s0 -> Node0x55f01448e370;
+	Node0x55f01448e280:s1 -> Node0x55f01448e190;
+	Node0x55f01448e2d0 [shape=record,label="{if.end39.split.loop.exit77:                       \l  %6 = trunc i64 %indvars.iv to i32, !UID !51\l  br label %if.end39, !UID !52, !BB_UID !53\l}"];
+	Node0x55f01448e2d0 -> Node0x55f01448e410;
+	Node0x55f01448e320 [shape=record,label="{if.end39.split.loop.exit79:                       \l  %7 = trunc i64 %indvars.iv to i32, !UID !54\l  br label %if.end39, !UID !55, !BB_UID !56\l}"];
+	Node0x55f01448e320 -> Node0x55f01448e410;
+	Node0x55f01448e370 [shape=record,label="{if.end39.split.loop.exit81:                       \l  %8 = trunc i64 %indvars.iv to i32, !UID !57\l  br label %if.end39, !UID !58, !BB_UID !59\l}"];
+	Node0x55f01448e370 -> Node0x55f01448e410;
+	Node0x55f01448e3c0 [shape=record,label="{if.end39.loopexit:                                \l  br label %if.end39, !UID !60, !BB_UID !61\l}"];
+	Node0x55f01448e3c0 -> Node0x55f01448e410;
+	Node0x55f01448e410 [shape=record,label="{if.end39:                                         \l  %k.0.lcssa = phi i32 [ %6, %if.end39.split.loop.exit77 ], [ %7,\l... %if.end39.split.loop.exit79 ], [ %8, %if.end39.split.loop.exit81 ], [ %add,\l... %if.end39.loopexit ], !UID !62\l  %9 = zext i32 %k.0.lcssa to i64, !UID !63\l  tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* %arr, i8* nonnull %s, i64 %9,\l... i32 1, i1 false)\l  br i1 %cmp1, label %if.then43, label %if.end46, !UID !64, !BB_UID !65\l|{<s0>T|<s1>F}}"];
+	Node0x55f01448e410:s0 -> Node0x55f01448e460;
+	Node0x55f01448e410:s1 -> Node0x55f01448e4b0;
+	Node0x55f01448e460 [shape=record,label="{if.then43:                                        \l  %10 = phi i64 [ %9, %if.end39 ], [ 0, %if.then2 ], !UID !66\l  %arrayidx45 = getelementptr inbounds i8, i8* %arr, i64 %10, !UID !67\l  store i8 0, i8* %arrayidx45, align 1, !tbaa !14, !UID !68\l  br label %if.end46, !UID !69, !BB_UID !70\l}"];
+	Node0x55f01448e460 -> Node0x55f01448e4b0;
+	Node0x55f01448e4b0 [shape=record,label="{if.end46:                                         \l  ret i32 0, !UID !71, !BB_UID !72\l}"];
+}

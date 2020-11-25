@@ -1,0 +1,5 @@
+digraph "CFG for 'fstat' function" {
+	label="CFG for 'fstat' function";
+
+	Node0x55f971c8f080 [shape=record,label="{entry:\l  %call = tail call i32 @__fxstat(i32 1, i32 %__fd, %struct.stat* nonnull\l... %__statbuf) #9\l  ret i32 %call, !UID !3, !BB_UID !4\l}"];
+}

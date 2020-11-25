@@ -1,0 +1,10 @@
+digraph "CFG for 'check_data' function" {
+	label="CFG for 'check_data' function";
+
+	Node0x563f7001a500 [shape=record,label="{entry:\l  %out = getelementptr inbounds i8, i8* %vdata, i64 25928, !UID !3\l  %0 = bitcast i8* %out to [494 x double]*, !UID !4\l  %out1 = getelementptr inbounds i8, i8* %vref, i64 25928, !UID !5\l  %1 = bitcast i8* %out1 to [494 x double]*, !UID !6\l  br label %for.body, !UID !7, !BB_UID !8\l}"];
+	Node0x563f7001a500 -> Node0x563f7001aa20;
+	Node0x563f7001aa20 [shape=record,label="{for.body:                                         \l  %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ], !UID !9\l  %has_errors.017 = phi i32 [ 0, %entry ], [ %or, %for.body ], !UID !10\l  %arrayidx = getelementptr inbounds [494 x double], [494 x double]* %0, i64\l... 0, i64 %indvars.iv, !UID !11\l  %2 = load double, double* %arrayidx, align 8, !tbaa !12, !UID !16\l  %arrayidx3 = getelementptr inbounds [494 x double], [494 x double]* %1, i64\l... 0, i64 %indvars.iv, !UID !17\l  %3 = load double, double* %arrayidx3, align 8, !tbaa !12, !UID !18\l  %sub = fsub double %2, %3, !UID !19\l  %cmp4 = fcmp olt double %sub, 0xBEB0C6F7A0B5ED8D, !UID !20\l  %cmp5 = fcmp ogt double %sub, 0x3EB0C6F7A0B5ED8D, !UID !21\l  %4 = or i1 %cmp4, %cmp5, !UID !22\l  %lor.ext = zext i1 %4 to i32, !UID !23\l  %or = or i32 %has_errors.017, %lor.ext, !UID !24\l  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !UID !25\l  %exitcond = icmp eq i64 %indvars.iv.next, 494, !UID !26\l  br i1 %exitcond, label %for.end, label %for.body, !UID !27, !BB_UID !28\l|{<s0>T|<s1>F}}"];
+	Node0x563f7001aa20:s0 -> Node0x563f7001aa70;
+	Node0x563f7001aa20:s1 -> Node0x563f7001aa20;
+	Node0x563f7001aa70 [shape=record,label="{for.end:                                          \l  %tobool = icmp eq i32 %or, 0, !UID !29\l  %lnot.ext = zext i1 %tobool to i32, !UID !30\l  ret i32 %lnot.ext, !UID !31, !BB_UID !32\l}"];
+}

@@ -1,0 +1,37 @@
+digraph "CFG for 'write_string' function" {
+	label="CFG for 'write_string' function";
+
+	Node0x563f70061180 [shape=record,label="{entry:\l  %cmp = icmp sgt i32 %fd, 1, !UID !3\l  br i1 %cmp, label %if.end, label %if.else, !UID !4, !BB_UID !5\l|{<s0>T|<s1>F}}"];
+	Node0x563f70061180:s0 -> Node0x563f70061c10;
+	Node0x563f70061180:s1 -> Node0x563f70061bc0;
+	Node0x563f70061bc0 [shape=record,label="{if.else:                                          \l  tail call void @__assert_fail(i8* getelementptr inbounds ([34 x i8], [34 x\l... i8]* @.str.1, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x\l... i8]* @.str.2, i64 0, i64 0), i32 147, i8* getelementptr inbounds ([35 x i8],\l... [35 x i8]* @__PRETTY_FUNCTION__.write_string, i64 0, i64 0)) #10\l  unreachable, !UID !6, !BB_UID !7\l}"];
+	Node0x563f70061c10 [shape=record,label="{if.end:                                           \l  %cmp1 = icmp slt i32 %n, 0, !UID !8\l  br i1 %cmp1, label %if.then2, label %if.end3, !UID !9, !BB_UID !10\l|{<s0>T|<s1>F}}"];
+	Node0x563f70061c10:s0 -> Node0x563f70061c60;
+	Node0x563f70061c10:s1 -> Node0x563f70061cb0;
+	Node0x563f70061c60 [shape=record,label="{if.then2:                                         \l  %call = tail call i64 @strlen(i8* %arr) #11\l  %conv = trunc i64 %call to i32, !UID !11\l  br label %if.end3, !UID !12, !BB_UID !13\l}"];
+	Node0x563f70061c60 -> Node0x563f70061cb0;
+	Node0x563f70061cb0 [shape=record,label="{if.end3:                                          \l  %n.addr.0 = phi i32 [ %conv, %if.then2 ], [ %n, %if.end ], !UID !14\l  %cmp438 = icmp sgt i32 %n.addr.0, 0, !UID !15\l  br i1 %cmp438, label %while.body.preheader, label %do.body.preheader, !UID\l... !16, !BB_UID !17\l|{<s0>T|<s1>F}}"];
+	Node0x563f70061cb0:s0 -> Node0x563f70061d00;
+	Node0x563f70061cb0:s1 -> Node0x563f70061da0;
+	Node0x563f70061d00 [shape=record,label="{while.body.preheader:                             \l  br label %while.body, !UID !18, !BB_UID !19\l}"];
+	Node0x563f70061d00 -> Node0x563f70061e40;
+	Node0x563f70061d50 [shape=record,label="{do.body.preheader.loopexit:                       \l  br label %do.body.preheader, !UID !20, !BB_UID !21\l}"];
+	Node0x563f70061d50 -> Node0x563f70061da0;
+	Node0x563f70061da0 [shape=record,label="{do.body.preheader:                                \l  br label %do.body, !UID !22, !BB_UID !23\l}"];
+	Node0x563f70061da0 -> Node0x563f70061ee0;
+	Node0x563f70061df0 [shape=record,label="{while.cond:                                       \l  %cmp4 = icmp sgt i32 %n.addr.0, %add, !UID !24\l  br i1 %cmp4, label %while.body, label %do.body.preheader.loopexit, !UID !25,\l... !BB_UID !26\l|{<s0>T|<s1>F}}"];
+	Node0x563f70061df0:s0 -> Node0x563f70061e40;
+	Node0x563f70061df0:s1 -> Node0x563f70061d50;
+	Node0x563f70061e40 [shape=record,label="{while.body:                                       \l  %written.039 = phi i32 [ %add, %while.cond ], [ 0, %while.body.preheader ],\l... !UID !27\l  %idxprom = sext i32 %written.039 to i64, !UID !28\l  %arrayidx = getelementptr inbounds i8, i8* %arr, i64 %idxprom, !UID !29\l  %sub = sub nsw i32 %n.addr.0, %written.039, !UID !30\l  %conv6 = sext i32 %sub to i64, !UID !31\l  %call7 = tail call i64 @write(i32 %fd, i8* %arrayidx, i64 %conv6) #9\l  %conv8 = trunc i64 %call7 to i32, !UID !32\l  %cmp9 = icmp sgt i32 %conv8, -1, !UID !33\l  %add = add nsw i32 %written.039, %conv8, !UID !34\l  br i1 %cmp9, label %while.cond, label %if.else13, !UID !35, !BB_UID !36\l|{<s0>T|<s1>F}}"];
+	Node0x563f70061e40:s0 -> Node0x563f70061df0;
+	Node0x563f70061e40:s1 -> Node0x563f70061e90;
+	Node0x563f70061e90 [shape=record,label="{if.else13:                                        \l  tail call void @__assert_fail(i8* getelementptr inbounds ([28 x i8], [28 x\l... i8]* @.str.16, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x\l... i8]* @.str.2, i64 0, i64 0), i32 154, i8* getelementptr inbounds ([35 x i8],\l... [35 x i8]* @__PRETTY_FUNCTION__.write_string, i64 0, i64 0)) #10\l  unreachable, !UID !37, !BB_UID !38\l}"];
+	Node0x563f70061ee0 [shape=record,label="{do.body:                                          \l  %call15 = tail call i64 @write(i32 %fd, i8* getelementptr inbounds ([2 x\l... i8], [2 x i8]* @.str.13, i64 0, i64 0), i64 1) #9\l  %conv16 = trunc i64 %call15 to i32, !UID !39\l  %cmp17 = icmp sgt i32 %conv16, -1, !UID !40\l  br i1 %cmp17, label %do.cond, label %if.else21, !UID !41, !BB_UID !42\l|{<s0>T|<s1>F}}"];
+	Node0x563f70061ee0:s0 -> Node0x563f70061f80;
+	Node0x563f70061ee0:s1 -> Node0x563f70061f30;
+	Node0x563f70061f30 [shape=record,label="{if.else21:                                        \l  tail call void @__assert_fail(i8* getelementptr inbounds ([28 x i8], [28 x\l... i8]* @.str.16, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x\l... i8]* @.str.2, i64 0, i64 0), i32 160, i8* getelementptr inbounds ([35 x i8],\l... [35 x i8]* @__PRETTY_FUNCTION__.write_string, i64 0, i64 0)) #10\l  unreachable, !UID !43, !BB_UID !44\l}"];
+	Node0x563f70061f80 [shape=record,label="{do.cond:                                          \l  %cmp23 = icmp eq i32 %conv16, 0, !UID !45\l  br i1 %cmp23, label %do.body, label %do.end, !UID !46, !BB_UID !47\l|{<s0>T|<s1>F}}"];
+	Node0x563f70061f80:s0 -> Node0x563f70061ee0;
+	Node0x563f70061f80:s1 -> Node0x563f70061fd0;
+	Node0x563f70061fd0 [shape=record,label="{do.end:                                           \l  ret i32 0, !UID !48, !BB_UID !49\l}"];
+}

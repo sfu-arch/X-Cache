@@ -1,0 +1,25 @@
+digraph "CFG for 'fft' function" {
+	label="CFG for 'fft' function";
+
+	Node0x55f014484620 [shape=record,label="{entry:\l  br label %inner, !UID !3, !BB_UID !4\l}"];
+	Node0x55f014484620 -> Node0x55f014484670;
+	Node0x55f014484670 [shape=record,label="{inner:                                            \l  %log.0115 = phi i32 [ 0, %entry ], [ %inc54, %for.inc53 ], !UID !5\l  %span.0113 = phi i32 [ 512, %entry ], [ %shr, %for.inc53 ], !UID !6\l  %cmp111 = icmp slt i32 %span.0113, 1024, !UID !7\l  br i1 %cmp111, label %for.body2.preheader, label %for.inc53, !UID !8,\l... !BB_UID !9\l|{<s0>T|<s1>F}}"];
+	Node0x55f014484670:s0 -> Node0x55f0144846c0;
+	Node0x55f014484670:s1 -> Node0x55f014484850;
+	Node0x55f0144846c0 [shape=record,label="{for.body2.preheader:                              \l  br label %for.body2, !UID !10, !BB_UID !11\l}"];
+	Node0x55f0144846c0 -> Node0x55f014484710;
+	Node0x55f014484710 [shape=record,label="{for.body2:                                        \l  %odd.0112 = phi i32 [ %inc, %for.inc ], [ %span.0113, %for.body2.preheader\l... ], !UID !12\l  %or = or i32 %odd.0112, %span.0113, !UID !13\l  %xor = xor i32 %or, %span.0113, !UID !14\l  %idxprom = sext i32 %xor to i64, !UID !15\l  %arrayidx = getelementptr inbounds double, double* %real, i64 %idxprom, !UID\l... !16\l  %0 = load double, double* %arrayidx, align 8, !tbaa !17, !UID !21\l  %idxprom3 = sext i32 %or to i64, !UID !22\l  %arrayidx4 = getelementptr inbounds double, double* %real, i64 %idxprom3,\l... !UID !23\l  %1 = load double, double* %arrayidx4, align 8, !tbaa !17, !UID !24\l  %add = fadd double %0, %1, !UID !25\l  %sub = fsub double %0, %1, !UID !26\l  store double %sub, double* %arrayidx4, align 8, !tbaa !17, !UID !27\l  store double %add, double* %arrayidx, align 8, !tbaa !17, !UID !28\l  %arrayidx14 = getelementptr inbounds double, double* %img, i64 %idxprom,\l... !UID !29\l  %2 = load double, double* %arrayidx14, align 8, !tbaa !17, !UID !30\l  %arrayidx16 = getelementptr inbounds double, double* %img, i64 %idxprom3,\l... !UID !31\l  %3 = load double, double* %arrayidx16, align 8, !tbaa !17, !UID !32\l  %add17 = fadd double %2, %3, !UID !33\l  %sub22 = fsub double %2, %3, !UID !34\l  store double %sub22, double* %arrayidx16, align 8, !tbaa !17, !UID !35\l  store double %add17, double* %arrayidx14, align 8, !tbaa !17, !UID !36\l  %shl = shl i32 %xor, %log.0115, !UID !37\l  %and = and i32 %shl, 1023, !UID !38\l  %tobool27 = icmp eq i32 %and, 0, !UID !39\l  br i1 %tobool27, label %for.inc, label %if.then, !UID !40, !BB_UID !41\l|{<s0>T|<s1>F}}"];
+	Node0x55f014484710:s0 -> Node0x55f0144847b0;
+	Node0x55f014484710:s1 -> Node0x55f014484760;
+	Node0x55f014484760 [shape=record,label="{if.then:                                          \l  %4 = zext i32 %and to i64, !UID !42\l  %arrayidx29 = getelementptr inbounds double, double* %real_twid, i64 %4,\l... !UID !43\l  %5 = load double, double* %arrayidx29, align 8, !tbaa !17, !UID !44\l  %6 = load double, double* %arrayidx4, align 8, !tbaa !17, !UID !45\l  %mul = fmul double %5, %6, !UID !46\l  %arrayidx33 = getelementptr inbounds double, double* %img_twid, i64 %4, !UID\l... !47\l  %7 = load double, double* %arrayidx33, align 8, !tbaa !17, !UID !48\l  %8 = load double, double* %arrayidx16, align 8, !tbaa !17, !UID !49\l  %mul36 = fmul double %7, %8, !UID !50\l  %sub37 = fsub double %mul, %mul36, !UID !51\l  %mul42 = fmul double %5, %8, !UID !52\l  %mul47 = fmul double %6, %7, !UID !53\l  %add48 = fadd double %mul47, %mul42, !UID !54\l  store double %add48, double* %arrayidx16, align 8, !tbaa !17, !UID !55\l  store double %sub37, double* %arrayidx4, align 8, !tbaa !17, !UID !56\l  br label %for.inc, !UID !57, !BB_UID !58\l}"];
+	Node0x55f014484760 -> Node0x55f0144847b0;
+	Node0x55f0144847b0 [shape=record,label="{for.inc:                                          \l  %inc = add nsw i32 %or, 1, !UID !59\l  %cmp = icmp slt i32 %or, 1023, !UID !60\l  br i1 %cmp, label %for.body2, label %for.inc53.loopexit, !UID !61, !BB_UID\l... !62\l|{<s0>T|<s1>F}}"];
+	Node0x55f0144847b0:s0 -> Node0x55f014484710;
+	Node0x55f0144847b0:s1 -> Node0x55f014484800;
+	Node0x55f014484800 [shape=record,label="{for.inc53.loopexit:                               \l  br label %for.inc53, !UID !63, !BB_UID !64\l}"];
+	Node0x55f014484800 -> Node0x55f014484850;
+	Node0x55f014484850 [shape=record,label="{for.inc53:                                        \l  %shr = ashr i32 %span.0113, 1, !UID !65\l  %inc54 = add nuw nsw i32 %log.0115, 1, !UID !66\l  %exitcond = icmp eq i32 %inc54, 10, !UID !67\l  br i1 %exitcond, label %for.end55, label %inner, !UID !68, !BB_UID !69\l|{<s0>T|<s1>F}}"];
+	Node0x55f014484850:s0 -> Node0x55f0144848a0;
+	Node0x55f014484850:s1 -> Node0x55f014484670;
+	Node0x55f0144848a0 [shape=record,label="{for.end55:                                        \l  ret void, !UID !70, !BB_UID !71\l}"];
+}

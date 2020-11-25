@@ -1,0 +1,5 @@
+digraph "CFG for 'output_to_data' function" {
+	label="CFG for 'output_to_data' function";
+
+	Node0x563f70029a10 [shape=record,label="{entry:\l  %call = tail call i8* @readfile(i32 %fd) #9, !UID !3\l  %call1 = tail call i8* @find_section_start(i8* %call, i32 1) #9, !UID !4\l  %out = getelementptr inbounds i8, i8* %vdata, i64 25928, !UID !5\l  %arraydecay = bitcast i8* %out to double*, !UID !6\l  %call2 = tail call i32 @parse_double_array(i8* %call1, double* nonnull\l... %arraydecay, i32 494) #9, !UID !7\l  tail call void @free(i8* %call) #9\l  ret void, !UID !8, !BB_UID !9\l}"];
+}

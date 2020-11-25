@@ -1,0 +1,30 @@
+digraph "CFG for 'bbgemm' function" {
+	label="CFG for 'bbgemm' function";
+
+	Node0x55f971c743b0 [shape=record,label="{entry:\l  br label %loopkk, !UID !3, !BB_UID !4\l}"];
+	Node0x55f971c743b0 -> Node0x55f971c7f6c0;
+	Node0x55f971c7f6c0 [shape=record,label="{loopkk:                                           \l  %indvars.iv84 = phi i64 [ 0, %entry ], [ %indvars.iv.next85, %for.inc36 ],\l... !UID !5\l  br label %loopi, !UID !6, !BB_UID !7\l}"];
+	Node0x55f971c7f6c0 -> Node0x55f971c7f710;
+	Node0x55f971c7f710 [shape=record,label="{loopi:                                            \l  %indvars.iv82 = phi i64 [ 0, %loopkk ], [ %indvars.iv.next83, %for.inc33 ],\l... !UID !8\l  br label %loopk, !UID !9, !BB_UID !10\l}"];
+	Node0x55f971c7f710 -> Node0x55f971c7f760;
+	Node0x55f971c7f760 [shape=record,label="{loopk:                                            \l  %indvars.iv78 = phi i64 [ 0, %loopi ], [ %indvars.iv.next79, %for.inc30 ],\l... !UID !11\l  %0 = shl nsw i64 %indvars.iv78, 6, !UID !12\l  br label %for.body9, !UID !13, !BB_UID !14\l}"];
+	Node0x55f971c7f760 -> Node0x55f971c7f7b0;
+	Node0x55f971c7f7b0 [shape=record,label="{for.body9:                                        \l  %indvars.iv71 = phi i64 [ 0, %loopk ], [ %indvars.iv.next72, %for.inc27 ],\l... !UID !15\l  %1 = add nuw nsw i64 %indvars.iv71, %indvars.iv82, !UID !16\l  %2 = shl i64 %1, 6, !UID !17\l  %3 = add nuw nsw i64 %indvars.iv71, %indvars.iv82, !UID !18\l  %4 = add nuw nsw i64 %3, %0, !UID !19\l  %arrayidx = getelementptr inbounds double, double* %m1, i64 %4, !UID !20\l  %5 = load double, double* %arrayidx, align 8, !tbaa !21, !UID !25\l  br label %for.body16, !UID !26, !BB_UID !27\l}"];
+	Node0x55f971c7f7b0 -> Node0x55f971c7f800;
+	Node0x55f971c7f800 [shape=record,label="{for.body16:                                       \l  %indvars.iv = phi i64 [ 0, %for.body9 ], [ %indvars.iv.next, %for.body16 ],\l... !UID !28\l  %6 = add nuw nsw i64 %indvars.iv, %indvars.iv84, !UID !29\l  %7 = add nuw nsw i64 %6, %2, !UID !30\l  %arrayidx20 = getelementptr inbounds double, double* %m2, i64 %7, !UID !31\l  %8 = load double, double* %arrayidx20, align 8, !tbaa !21, !UID !32\l  %mul21 = fmul double %5, %8, !UID !33\l  %9 = add nuw nsw i64 %indvars.iv, %indvars.iv84, !UID !34\l  %10 = add nuw nsw i64 %9, %0, !UID !35\l  %arrayidx25 = getelementptr inbounds double, double* %prod, i64 %10, !UID !36\l  %11 = load double, double* %arrayidx25, align 8, !tbaa !21, !UID !37\l  %add26 = fadd double %11, %mul21, !UID !38\l  store double %add26, double* %arrayidx25, align 8, !tbaa !21, !UID !39\l  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !UID !40\l  %exitcond = icmp eq i64 %indvars.iv.next, 8, !UID !41\l  br i1 %exitcond, label %for.inc27, label %for.body16, !UID !42, !BB_UID !43\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c7f800:s0 -> Node0x55f971c7f850;
+	Node0x55f971c7f800:s1 -> Node0x55f971c7f800;
+	Node0x55f971c7f850 [shape=record,label="{for.inc27:                                        \l  %indvars.iv.next72 = add nuw nsw i64 %indvars.iv71, 1, !UID !44\l  %exitcond77 = icmp eq i64 %indvars.iv.next72, 8, !UID !45\l  br i1 %exitcond77, label %for.inc30, label %for.body9, !UID !46, !BB_UID !47\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c7f850:s0 -> Node0x55f971c7f8a0;
+	Node0x55f971c7f850:s1 -> Node0x55f971c7f7b0;
+	Node0x55f971c7f8a0 [shape=record,label="{for.inc30:                                        \l  %indvars.iv.next79 = add nuw nsw i64 %indvars.iv78, 1, !UID !48\l  %exitcond81 = icmp eq i64 %indvars.iv.next79, 64, !UID !49\l  br i1 %exitcond81, label %for.inc33, label %loopk, !UID !50, !BB_UID !51\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c7f8a0:s0 -> Node0x55f971c7f8f0;
+	Node0x55f971c7f8a0:s1 -> Node0x55f971c7f760;
+	Node0x55f971c7f8f0 [shape=record,label="{for.inc33:                                        \l  %indvars.iv.next83 = add nuw nsw i64 %indvars.iv82, 8, !UID !52\l  %cmp2 = icmp ult i64 %indvars.iv.next83, 64, !UID !53\l  br i1 %cmp2, label %loopi, label %for.inc36, !UID !54, !BB_UID !55\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c7f8f0:s0 -> Node0x55f971c7f710;
+	Node0x55f971c7f8f0:s1 -> Node0x55f971c7f940;
+	Node0x55f971c7f940 [shape=record,label="{for.inc36:                                        \l  %indvars.iv.next85 = add nuw nsw i64 %indvars.iv84, 8, !UID !56\l  %cmp = icmp ult i64 %indvars.iv.next85, 64, !UID !57\l  br i1 %cmp, label %loopkk, label %for.end38, !UID !58, !BB_UID !59\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c7f940:s0 -> Node0x55f971c7f6c0;
+	Node0x55f971c7f940:s1 -> Node0x55f971c7f990;
+	Node0x55f971c7f990 [shape=record,label="{for.end38:                                        \l  ret void, !UID !60, !BB_UID !61\l}"];
+}

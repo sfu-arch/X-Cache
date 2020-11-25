@@ -1,0 +1,5 @@
+digraph "CFG for 'run_benchmark' function" {
+	label="CFG for 'run_benchmark' function";
+
+	Node0x55f971c80c50 [shape=record,label="{entry:\l  %arraydecay = bitcast i8* %vargs to double*, !UID !3\l  %m2 = getelementptr inbounds i8, i8* %vargs, i64 32768, !UID !4\l  %arraydecay1 = bitcast i8* %m2 to double*, !UID !5\l  %prod = getelementptr inbounds i8, i8* %vargs, i64 65536, !UID !6\l  %arraydecay2 = bitcast i8* %prod to double*, !UID !7\l  tail call void @bbgemm(double* %arraydecay, double* nonnull %arraydecay1,\l... double* nonnull %arraydecay2) #9, !UID !8\l  ret void, !UID !9, !BB_UID !10\l}"];
+}

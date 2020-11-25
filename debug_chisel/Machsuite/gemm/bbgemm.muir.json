@@ -1,0 +1,993 @@
+{
+	"module" : 
+	{
+		"argument" : 
+		[
+			{
+				"id" : "0",
+				"name" : "m1",
+				"type" : "Pointers"
+			},
+			{
+				"id" : "1",
+				"name" : "m2",
+				"type" : "Pointers"
+			},
+			{
+				"id" : "2",
+				"name" : "prod",
+				"type" : "Pointers"
+			}
+		],
+		"loop" : 
+		[
+			{
+				"basic_blocks" : 
+				[
+					22
+				],
+				"carries" : 
+				[
+					35
+				],
+				"id" : "0",
+				"induction_id" : 23,
+				"loop_parent" : 1,
+				"name" : "Loop_0"
+			},
+			{
+				"basic_blocks" : 
+				[
+					13,
+					22,
+					38
+				],
+				"carries" : 
+				[
+					39
+				],
+				"id" : "1",
+				"induction_id" : 14,
+				"loop_parent" : 2,
+				"name" : "Loop_1"
+			},
+			{
+				"basic_blocks" : 
+				[
+					9,
+					13,
+					22,
+					38,
+					42
+				],
+				"carries" : 
+				[
+					43
+				],
+				"id" : "2",
+				"induction_id" : 10,
+				"loop_parent" : 3,
+				"name" : "Loop_2"
+			},
+			{
+				"basic_blocks" : 
+				[
+					6,
+					9,
+					13,
+					22,
+					38,
+					42,
+					46
+				],
+				"carries" : 
+				[
+					47
+				],
+				"id" : "3",
+				"induction_id" : null,
+				"loop_parent" : 4,
+				"name" : "Loop_3"
+			},
+			{
+				"basic_blocks" : 
+				[
+					3,
+					6,
+					9,
+					13,
+					22,
+					38,
+					42,
+					46,
+					50
+				],
+				"carries" : 
+				[
+					51
+				],
+				"id" : "4",
+				"induction_id" : null,
+				"loop_parent" : null,
+				"name" : "Loop_4"
+			}
+		],
+		"name" : "bbgemm",
+		"node" : 
+		[
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 2,
+				"instruction" : "  br label %loopkk, !UID !3, !BB_UID !4",
+				"name" : "br_2",
+				"operands" : null,
+				"parent_bb" : 1,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 4,
+				"instruction" : "  %indvars.iv84 = phi i64 [ 0, %entry ], [ %indvars.iv.next85, %for.inc36 ], !UID !5",
+				"name" : "phiindvars_iv844",
+				"operands" : 
+				[
+					"CINT_0",
+					"INST_51"
+				],
+				"parent_bb" : 3,
+				"type" : "Phi"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 5,
+				"instruction" : "  br label %loopi, !UID !6, !BB_UID !7",
+				"name" : "br_5",
+				"operands" : null,
+				"parent_bb" : 3,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 7,
+				"instruction" : "  %indvars.iv82 = phi i64 [ 0, %loopkk ], [ %indvars.iv.next83, %for.inc33 ], !UID !8",
+				"name" : "phiindvars_iv827",
+				"operands" : 
+				[
+					"CINT_0",
+					"INST_47"
+				],
+				"parent_bb" : 6,
+				"type" : "Phi"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 8,
+				"instruction" : "  br label %loopk, !UID !9, !BB_UID !10",
+				"name" : "br_8",
+				"operands" : null,
+				"parent_bb" : 6,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 10,
+				"instruction" : "  %indvars.iv78 = phi i64 [ 0, %loopi ], [ %indvars.iv.next79, %for.inc30 ], !UID !11",
+				"name" : "phiindvars_iv7810",
+				"operands" : 
+				[
+					"CINT_0",
+					"INST_43"
+				],
+				"parent_bb" : 9,
+				"type" : "Phi"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					10
+				],
+				"id" : 11,
+				"instruction" : "  %0 = shl nsw i64 %indvars.iv78, 6, !UID !12",
+				"name" : "binaryOp_11",
+				"operands" : 
+				[
+					"INS_10",
+					"CINT_6"
+				],
+				"parent_bb" : 9,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 12,
+				"instruction" : "  br label %for.body9, !UID !13, !BB_UID !14",
+				"name" : "br_12",
+				"operands" : null,
+				"parent_bb" : 9,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 14,
+				"instruction" : "  %indvars.iv71 = phi i64 [ 0, %loopk ], [ %indvars.iv.next72, %for.inc27 ], !UID !15",
+				"name" : "phiindvars_iv7114",
+				"operands" : 
+				[
+					"CINT_0",
+					"INST_39"
+				],
+				"parent_bb" : 13,
+				"type" : "Phi"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					14
+				],
+				"id" : 15,
+				"instruction" : "  %1 = add nuw nsw i64 %indvars.iv71, %indvars.iv82, !UID !16",
+				"name" : "binaryOp_15",
+				"operands" : 
+				[
+					"INS_14",
+					"INS_7"
+				],
+				"parent_bb" : 13,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					14,
+					15
+				],
+				"id" : 16,
+				"instruction" : "  %2 = shl i64 %1, 6, !UID !17",
+				"name" : "binaryOp_16",
+				"operands" : 
+				[
+					"INS_15",
+					"CINT_6"
+				],
+				"parent_bb" : 13,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					14
+				],
+				"id" : 17,
+				"instruction" : "  %3 = add nuw nsw i64 %indvars.iv71, %indvars.iv82, !UID !18",
+				"name" : "binaryOp_17",
+				"operands" : 
+				[
+					"INS_14",
+					"INS_7"
+				],
+				"parent_bb" : 13,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					14,
+					17
+				],
+				"id" : 18,
+				"instruction" : "  %4 = add nuw nsw i64 %3, %0, !UID !19",
+				"name" : "binaryOp_18",
+				"operands" : 
+				[
+					"INS_17",
+					"INS_11"
+				],
+				"parent_bb" : 13,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					14,
+					17,
+					18
+				],
+				"id" : 19,
+				"instruction" : "  %arrayidx = getelementptr inbounds double, double* %m1, i64 %4, !UID !20",
+				"name" : "Gep_arrayidx19",
+				"operands" : 
+				[
+					"ARG_0",
+					"INS_18"
+				],
+				"parent_bb" : 13,
+				"type" : "Gep"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					14,
+					17,
+					18,
+					19
+				],
+				"id" : 20,
+				"instruction" : "  %5 = load double, double* %arrayidx, align 8, !tbaa !21, !UID !25",
+				"name" : "ld_20",
+				"operands" : 
+				[
+					"INS_19"
+				],
+				"parent_bb" : 13,
+				"type" : "Load"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 21,
+				"instruction" : "  br label %for.body16, !UID !26, !BB_UID !27",
+				"name" : "br_21",
+				"operands" : null,
+				"parent_bb" : 13,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 23,
+				"instruction" : "  %indvars.iv = phi i64 [ 0, %for.body9 ], [ %indvars.iv.next, %for.body16 ], !UID !28",
+				"name" : "phiindvars_iv23",
+				"operands" : 
+				[
+					"CINT_0",
+					"INST_35"
+				],
+				"parent_bb" : 22,
+				"type" : "Phi"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23
+				],
+				"id" : 24,
+				"instruction" : "  %6 = add nuw nsw i64 %indvars.iv, %indvars.iv84, !UID !29",
+				"name" : "binaryOp_24",
+				"operands" : 
+				[
+					"INS_23",
+					"INS_4"
+				],
+				"parent_bb" : 22,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					24
+				],
+				"id" : 25,
+				"instruction" : "  %7 = add nuw nsw i64 %6, %2, !UID !30",
+				"name" : "binaryOp_25",
+				"operands" : 
+				[
+					"INS_24",
+					"INS_16"
+				],
+				"parent_bb" : 22,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					24,
+					25
+				],
+				"id" : 26,
+				"instruction" : "  %arrayidx20 = getelementptr inbounds double, double* %m2, i64 %7, !UID !31",
+				"name" : "Gep_arrayidx2026",
+				"operands" : 
+				[
+					"ARG_1",
+					"INS_25"
+				],
+				"parent_bb" : 22,
+				"type" : "Gep"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					24,
+					25,
+					26
+				],
+				"id" : 27,
+				"instruction" : "  %8 = load double, double* %arrayidx20, align 8, !tbaa !21, !UID !32",
+				"name" : "ld_27",
+				"operands" : 
+				[
+					"INS_26"
+				],
+				"parent_bb" : 22,
+				"type" : "Load"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					24,
+					25,
+					26,
+					27
+				],
+				"id" : 28,
+				"instruction" : "  %mul21 = fmul double %5, %8, !UID !33",
+				"name" : "FP_mul2128",
+				"operands" : 
+				[
+					"INS_20",
+					"INS_27"
+				],
+				"parent_bb" : 22,
+				"type" : "Uknown"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23
+				],
+				"id" : 29,
+				"instruction" : "  %9 = add nuw nsw i64 %indvars.iv, %indvars.iv84, !UID !34",
+				"name" : "binaryOp_29",
+				"operands" : 
+				[
+					"INS_23",
+					"INS_4"
+				],
+				"parent_bb" : 22,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					29
+				],
+				"id" : 30,
+				"instruction" : "  %10 = add nuw nsw i64 %9, %0, !UID !35",
+				"name" : "binaryOp_30",
+				"operands" : 
+				[
+					"INS_29",
+					"INS_11"
+				],
+				"parent_bb" : 22,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					29,
+					30
+				],
+				"id" : 31,
+				"instruction" : "  %arrayidx25 = getelementptr inbounds double, double* %prod, i64 %10, !UID !36",
+				"name" : "Gep_arrayidx2531",
+				"operands" : 
+				[
+					"ARG_2",
+					"INS_30"
+				],
+				"parent_bb" : 22,
+				"type" : "Gep"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					29,
+					30,
+					31
+				],
+				"id" : 32,
+				"instruction" : "  %11 = load double, double* %arrayidx25, align 8, !tbaa !21, !UID !37",
+				"name" : "ld_32",
+				"operands" : 
+				[
+					"INS_31"
+				],
+				"parent_bb" : 22,
+				"type" : "Load"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					28,
+					29,
+					30,
+					31,
+					32
+				],
+				"id" : 33,
+				"instruction" : "  %add26 = fadd double %11, %mul21, !UID !38",
+				"name" : "FP_add2633",
+				"operands" : 
+				[
+					"INS_32",
+					"INS_28"
+				],
+				"parent_bb" : 22,
+				"type" : "Uknown"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					28,
+					29,
+					30,
+					31,
+					32,
+					33
+				],
+				"id" : 34,
+				"instruction" : "  store double %add26, double* %arrayidx25, align 8, !tbaa !21, !UID !39",
+				"name" : "st_34",
+				"operands" : 
+				[
+					"INS_33",
+					"INS_31"
+				],
+				"parent_bb" : 22,
+				"type" : "Store"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23
+				],
+				"id" : 35,
+				"instruction" : "  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !UID !40",
+				"name" : "binaryOp_indvars_iv_next35",
+				"operands" : 
+				[
+					"INS_23",
+					"CINT_1"
+				],
+				"parent_bb" : 22,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					35
+				],
+				"id" : 36,
+				"instruction" : "  %exitcond = icmp eq i64 %indvars.iv.next, 8, !UID !41",
+				"name" : "icmp_exitcond36",
+				"operands" : 
+				[
+					"INS_35",
+					"CINT_8"
+				],
+				"parent_bb" : 22,
+				"type" : "Icmp"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					23,
+					35,
+					36
+				],
+				"id" : 37,
+				"instruction" : "  br i1 %exitcond, label %for.inc27, label %for.body16, !UID !42, !BB_UID !43",
+				"name" : "br_37",
+				"operands" : 
+				[
+					"INS_36"
+				],
+				"parent_bb" : 22,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 39,
+				"instruction" : "  %indvars.iv.next72 = add nuw nsw i64 %indvars.iv71, 1, !UID !44",
+				"name" : "binaryOp_indvars_iv_next7239",
+				"operands" : 
+				[
+					"INS_14",
+					"CINT_1"
+				],
+				"parent_bb" : 38,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					39
+				],
+				"id" : 40,
+				"instruction" : "  %exitcond77 = icmp eq i64 %indvars.iv.next72, 8, !UID !45",
+				"name" : "icmp_exitcond7740",
+				"operands" : 
+				[
+					"INS_39",
+					"CINT_8"
+				],
+				"parent_bb" : 38,
+				"type" : "Icmp"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					39,
+					40
+				],
+				"id" : 41,
+				"instruction" : "  br i1 %exitcond77, label %for.inc30, label %for.body9, !UID !46, !BB_UID !47",
+				"name" : "br_41",
+				"operands" : 
+				[
+					"INS_40"
+				],
+				"parent_bb" : 38,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 43,
+				"instruction" : "  %indvars.iv.next79 = add nuw nsw i64 %indvars.iv78, 1, !UID !48",
+				"name" : "binaryOp_indvars_iv_next7943",
+				"operands" : 
+				[
+					"INS_10",
+					"CINT_1"
+				],
+				"parent_bb" : 42,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					43
+				],
+				"id" : 44,
+				"instruction" : "  %exitcond81 = icmp eq i64 %indvars.iv.next79, 64, !UID !49",
+				"name" : "icmp_exitcond8144",
+				"operands" : 
+				[
+					"INS_43",
+					"CINT_64"
+				],
+				"parent_bb" : 42,
+				"type" : "Icmp"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					43,
+					44
+				],
+				"id" : 45,
+				"instruction" : "  br i1 %exitcond81, label %for.inc33, label %loopk, !UID !50, !BB_UID !51",
+				"name" : "br_45",
+				"operands" : 
+				[
+					"INS_44"
+				],
+				"parent_bb" : 42,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 47,
+				"instruction" : "  %indvars.iv.next83 = add nuw nsw i64 %indvars.iv82, 8, !UID !52",
+				"name" : "binaryOp_indvars_iv_next8347",
+				"operands" : 
+				[
+					"INS_7",
+					"CINT_8"
+				],
+				"parent_bb" : 46,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					47
+				],
+				"id" : 48,
+				"instruction" : "  %cmp2 = icmp ult i64 %indvars.iv.next83, 64, !UID !53",
+				"name" : "icmp_cmp248",
+				"operands" : 
+				[
+					"INS_47",
+					"CINT_64"
+				],
+				"parent_bb" : 46,
+				"type" : "Icmp"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					47,
+					48
+				],
+				"id" : 49,
+				"instruction" : "  br i1 %cmp2, label %loopi, label %for.inc36, !UID !54, !BB_UID !55",
+				"name" : "br_49",
+				"operands" : 
+				[
+					"INS_48"
+				],
+				"parent_bb" : 46,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 51,
+				"instruction" : "  %indvars.iv.next85 = add nuw nsw i64 %indvars.iv84, 8, !UID !56",
+				"name" : "binaryOp_indvars_iv_next8551",
+				"operands" : 
+				[
+					"INS_4",
+					"CINT_8"
+				],
+				"parent_bb" : 50,
+				"type" : "Binary"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					51
+				],
+				"id" : 52,
+				"instruction" : "  %cmp = icmp ult i64 %indvars.iv.next85, 64, !UID !57",
+				"name" : "icmp_cmp52",
+				"operands" : 
+				[
+					"INS_51",
+					"CINT_64"
+				],
+				"parent_bb" : 50,
+				"type" : "Icmp"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : 
+				[
+					51,
+					52
+				],
+				"id" : 53,
+				"instruction" : "  br i1 %cmp, label %loopkk, label %for.end38, !UID !58, !BB_UID !59",
+				"name" : "br_53",
+				"operands" : 
+				[
+					"INS_52"
+				],
+				"parent_bb" : 50,
+				"type" : "Branch"
+			},
+			{
+				"debug" : "false",
+				"debug_parent_info" : null,
+				"id" : 55,
+				"instruction" : "  ret void, !UID !60, !BB_UID !61",
+				"name" : "ret_55",
+				"operands" : null,
+				"parent_bb" : 54,
+				"type" : "Return"
+			}
+		],
+		"super_node" : 
+		[
+			{
+				"debug" : "false",
+				"id" : 1,
+				"name" : "bb_entry1",
+				"nodes" : 
+				[
+					2
+				],
+				"phis" : null
+			},
+			{
+				"debug" : "false",
+				"id" : 3,
+				"name" : "bb_loopkk3",
+				"nodes" : 
+				[
+					4,
+					5
+				],
+				"phis" : 
+				[
+					4
+				]
+			},
+			{
+				"debug" : "false",
+				"id" : 6,
+				"name" : "bb_loopi6",
+				"nodes" : 
+				[
+					7,
+					8
+				],
+				"phis" : 
+				[
+					7
+				]
+			},
+			{
+				"debug" : "false",
+				"id" : 9,
+				"name" : "bb_loopk9",
+				"nodes" : 
+				[
+					10,
+					11,
+					12
+				],
+				"phis" : 
+				[
+					10
+				]
+			},
+			{
+				"debug" : "false",
+				"id" : 13,
+				"name" : "bb_for_body913",
+				"nodes" : 
+				[
+					14,
+					15,
+					16,
+					17,
+					18,
+					19,
+					20,
+					21
+				],
+				"phis" : 
+				[
+					14
+				]
+			},
+			{
+				"debug" : "false",
+				"id" : 22,
+				"name" : "bb_for_body1622",
+				"nodes" : 
+				[
+					23,
+					24,
+					25,
+					26,
+					27,
+					28,
+					29,
+					30,
+					31,
+					32,
+					33,
+					34,
+					35,
+					36,
+					37
+				],
+				"phis" : 
+				[
+					23
+				]
+			},
+			{
+				"debug" : "false",
+				"id" : 38,
+				"name" : "bb_for_inc2738",
+				"nodes" : 
+				[
+					39,
+					40,
+					41
+				],
+				"phis" : null
+			},
+			{
+				"debug" : "false",
+				"id" : 42,
+				"name" : "bb_for_inc3042",
+				"nodes" : 
+				[
+					43,
+					44,
+					45
+				],
+				"phis" : null
+			},
+			{
+				"debug" : "false",
+				"id" : 46,
+				"name" : "bb_for_inc3346",
+				"nodes" : 
+				[
+					47,
+					48,
+					49
+				],
+				"phis" : null
+			},
+			{
+				"debug" : "false",
+				"id" : 50,
+				"name" : "bb_for_inc3650",
+				"nodes" : 
+				[
+					51,
+					52,
+					53
+				],
+				"phis" : null
+			},
+			{
+				"debug" : "false",
+				"id" : 54,
+				"name" : "bb_for_end3854",
+				"nodes" : 
+				[
+					55
+				],
+				"phis" : null
+			}
+		]
+	}
+}

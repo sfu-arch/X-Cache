@@ -1,0 +1,5 @@
+digraph "CFG for 'run_benchmark' function" {
+	label="CFG for 'run_benchmark' function";
+
+	Node0x563f700280c0 [shape=record,label="{entry:\l  %arraydecay = bitcast i8* %vargs to double*, !UID !3\l  %cols = getelementptr inbounds i8, i8* %vargs, i64 13328, !UID !4\l  %arraydecay1 = bitcast i8* %cols to i32*, !UID !5\l  %rowDelimiters = getelementptr inbounds i8, i8* %vargs, i64 19992, !UID !6\l  %arraydecay2 = bitcast i8* %rowDelimiters to i32*, !UID !7\l  %vec = getelementptr inbounds i8, i8* %vargs, i64 21976, !UID !8\l  %arraydecay3 = bitcast i8* %vec to double*, !UID !9\l  %out = getelementptr inbounds i8, i8* %vargs, i64 25928, !UID !10\l  %arraydecay4 = bitcast i8* %out to double*, !UID !11\l  tail call void @spmv(double* %arraydecay, i32* nonnull %arraydecay1, i32*\l... nonnull %arraydecay2, double* nonnull %arraydecay3, double* nonnull\l... %arraydecay4) #9, !UID !12\l  ret void, !UID !13, !BB_UID !14\l}"];
+}

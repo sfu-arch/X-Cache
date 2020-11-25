@@ -1,0 +1,19 @@
+digraph "CFG for 'write_uint64_t_array' function" {
+	label="CFG for 'write_uint64_t_array' function";
+
+	Node0x563f70046cd0 [shape=record,label="{entry:\l  %cmp = icmp sgt i32 %fd, 1, !UID !3\l  br i1 %cmp, label %if.end, label %if.else, !UID !4, !BB_UID !5\l|{<s0>T|<s1>F}}"];
+	Node0x563f70046cd0:s0 -> Node0x563f700472a0;
+	Node0x563f70046cd0:s1 -> Node0x563f70047250;
+	Node0x563f70047250 [shape=record,label="{if.else:                                          \l  tail call void @__assert_fail(i8* getelementptr inbounds ([34 x i8], [34 x\l... i8]* @.str.1, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x\l... i8]* @.str.2, i64 0, i64 0), i32 180, i8* getelementptr inbounds ([47 x i8],\l... [47 x i8]* @__PRETTY_FUNCTION__.write_uint64_t_array, i64 0, i64 0)) #10\l  unreachable, !UID !6, !BB_UID !7\l}"];
+	Node0x563f700472a0 [shape=record,label="{if.end:                                           \l  %cmp16 = icmp sgt i32 %n, 0, !UID !8\l  br i1 %cmp16, label %for.body.lr.ph, label %for.end, !UID !9, !BB_UID !10\l|{<s0>T|<s1>F}}"];
+	Node0x563f700472a0:s0 -> Node0x563f700472f0;
+	Node0x563f700472a0:s1 -> Node0x563f700473e0;
+	Node0x563f700472f0 [shape=record,label="{for.body.lr.ph:                                   \l  %wide.trip.count = zext i32 %n to i64, !UID !11\l  br label %for.body, !UID !12, !BB_UID !13\l}"];
+	Node0x563f700472f0 -> Node0x563f70047340;
+	Node0x563f70047340 [shape=record,label="{for.body:                                         \l  %indvars.iv = phi i64 [ 0, %for.body.lr.ph ], [ %indvars.iv.next, %for.body\l... ], !UID !14\l  %arrayidx = getelementptr inbounds i64, i64* %arr, i64 %indvars.iv, !UID !15\l  %0 = load i64, i64* %arrayidx, align 8, !tbaa !16, !UID !20\l  tail call void (i32, i8*, ...) @fd_printf(i32 %fd, i8* getelementptr\l... inbounds ([5 x i8], [5 x i8]* @.str.18, i64 0, i64 0), i64 %0), !UID !21\l  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1, !UID !22\l  %exitcond = icmp eq i64 %indvars.iv.next, %wide.trip.count, !UID !23\l  br i1 %exitcond, label %for.end.loopexit, label %for.body, !UID !24, !BB_UID\l... !25\l|{<s0>T|<s1>F}}"];
+	Node0x563f70047340:s0 -> Node0x563f70047390;
+	Node0x563f70047340:s1 -> Node0x563f70047340;
+	Node0x563f70047390 [shape=record,label="{for.end.loopexit:                                 \l  br label %for.end, !UID !26, !BB_UID !27\l}"];
+	Node0x563f70047390 -> Node0x563f700473e0;
+	Node0x563f700473e0 [shape=record,label="{for.end:                                          \l  ret i32 0, !UID !28, !BB_UID !29\l}"];
+}

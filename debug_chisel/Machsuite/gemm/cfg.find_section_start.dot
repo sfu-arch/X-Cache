@@ -1,0 +1,27 @@
+digraph "CFG for 'find_section_start' function" {
+	label="CFG for 'find_section_start' function";
+
+	Node0x55f971c8f9e0 [shape=record,label="{entry:\l  %cmp = icmp sgt i32 %n, -1, !UID !3\l  br i1 %cmp, label %if.end, label %if.else, !UID !4, !BB_UID !5\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c8f9e0:s0 -> Node0x55f971c8fcc0;
+	Node0x55f971c8f9e0:s1 -> Node0x55f971c8fc70;
+	Node0x55f971c8fc70 [shape=record,label="{if.else:                                          \l  tail call void @__assert_fail(i8* getelementptr inbounds ([33 x i8], [33 x\l... i8]* @.str.10, i64 0, i64 0), i8* getelementptr inbounds ([23 x i8], [23 x\l... i8]* @.str.2, i64 0, i64 0), i32 59, i8* getelementptr inbounds ([38 x i8],\l... [38 x i8]* @__PRETTY_FUNCTION__.find_section_start, i64 0, i64 0)) #10\l  unreachable, !UID !6, !BB_UID !7\l}"];
+	Node0x55f971c8fcc0 [shape=record,label="{if.end:                                           \l  %cmp1 = icmp eq i32 %n, 0, !UID !8\l  br i1 %cmp1, label %cleanup, label %land.end.lr.ph, !UID !9, !BB_UID !10\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c8fcc0:s0 -> Node0x55f971c8fef0;
+	Node0x55f971c8fcc0:s1 -> Node0x55f971c8fd10;
+	Node0x55f971c8fd10 [shape=record,label="{land.end.lr.ph:                                   \l  %0 = load i8, i8* %s, align 1, !tbaa !11, !UID !14\l  br label %land.end, !UID !15, !BB_UID !16\l}"];
+	Node0x55f971c8fd10 -> Node0x55f971c8fd60;
+	Node0x55f971c8fd60 [shape=record,label="{land.end:                                         \l  %1 = phi i8 [ %0, %land.end.lr.ph ], [ %4, %if.end21 ], !UID !17\l  %i.040 = phi i32 [ 0, %land.end.lr.ph ], [ %i.1, %if.end21 ], !UID !18\l  %s.addr.039 = phi i8* [ %s, %land.end.lr.ph ], [ %incdec.ptr, %if.end21 ],\l... !UID !19\l  switch i8 %1, label %if.end21 [\l    i8 0, label %while.end\l    i8 37, label %land.lhs.true10\l  ], !UID !20, !BB_UID !21\l|{<s0>def|<s1>0|<s2>37}}"];
+	Node0x55f971c8fd60:s0 -> Node0x55f971c8fe50;
+	Node0x55f971c8fd60:s1 -> Node0x55f971c8fea0;
+	Node0x55f971c8fd60:s2 -> Node0x55f971c8fdb0;
+	Node0x55f971c8fdb0 [shape=record,label="{land.lhs.true10:                                  \l  %arrayidx11 = getelementptr inbounds i8, i8* %s.addr.039, i64 1, !UID !22\l  %2 = load i8, i8* %arrayidx11, align 1, !tbaa !11, !UID !23\l  %cmp13 = icmp eq i8 %2, 37, !UID !24\l  br i1 %cmp13, label %land.lhs.true15, label %if.end21, !UID !25, !BB_UID !26\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c8fdb0:s0 -> Node0x55f971c8fe00;
+	Node0x55f971c8fdb0:s1 -> Node0x55f971c8fe50;
+	Node0x55f971c8fe00 [shape=record,label="{land.lhs.true15:                                  \l  %arrayidx16 = getelementptr inbounds i8, i8* %s.addr.039, i64 2, !UID !27\l  %3 = load i8, i8* %arrayidx16, align 1, !tbaa !11, !UID !28\l  %cmp18 = icmp eq i8 %3, 10, !UID !29\l  %inc = zext i1 %cmp18 to i32, !UID !30\l  %spec.select = add nsw i32 %i.040, %inc, !UID !31\l  br label %if.end21, !UID !32, !BB_UID !33\l}"];
+	Node0x55f971c8fe00 -> Node0x55f971c8fe50;
+	Node0x55f971c8fe50 [shape=record,label="{if.end21:                                         \l  %i.1 = phi i32 [ %i.040, %land.lhs.true10 ], [ %spec.select,\l... %land.lhs.true15 ], [ %i.040, %land.end ], !UID !34\l  %incdec.ptr = getelementptr inbounds i8, i8* %s.addr.039, i64 1, !UID !35\l  %cmp4 = icmp slt i32 %i.1, %n, !UID !36\l  %4 = load i8, i8* %incdec.ptr, align 1, !tbaa !11, !UID !37\l  br i1 %cmp4, label %land.end, label %while.end, !UID !38, !BB_UID !39\l|{<s0>T|<s1>F}}"];
+	Node0x55f971c8fe50:s0 -> Node0x55f971c8fd60;
+	Node0x55f971c8fe50:s1 -> Node0x55f971c8fea0;
+	Node0x55f971c8fea0 [shape=record,label="{while.end:                                        \l  %s.addr.0.lcssa = phi i8* [ %incdec.ptr, %if.end21 ], [ %s.addr.039,\l... %land.end ], !UID !40\l  %5 = phi i8 [ %4, %if.end21 ], [ %1, %land.end ], !UID !41\l  %cmp23 = icmp eq i8 %5, 0, !UID !42\l  %add.ptr = getelementptr inbounds i8, i8* %s.addr.0.lcssa, i64 2, !UID !43\l  %spec.select37 = select i1 %cmp23, i8* %s.addr.0.lcssa, i8* %add.ptr, !UID\l... !44\l  ret i8* %spec.select37, !UID !45, !BB_UID !46\l}"];
+	Node0x55f971c8fef0 [shape=record,label="{cleanup:                                          \l  ret i8* %s, !UID !47, !BB_UID !48\l}"];
+}
