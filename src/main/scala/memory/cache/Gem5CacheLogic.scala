@@ -80,7 +80,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   with HasAccelShellParams {
 
   val io = IO(new Bundle {
-    //@todo ports for state and metadata -- Done
+    
     val cpu = new CacheCPUIO
     val mem = new AXIMaster(memParams)
     val dataMem = new CacheBankedMemIO(UInt(xlen.W), nWords)
@@ -193,6 +193,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val addrReadValid = Wire(Bool())
   val dataReadReady = Wire(Bool())
 
+  val addrWriteValid = Wire(Bool())
+  val dataWriteValid = Wire(Bool())
+
   way := Mux(addrToLocSig, addrToLoc(set),(Mux(findInSetSig, findInSet(set,tag), 0.U((nWays + 1).W) )))
 
 //  val cache_block_size = bBits
@@ -220,6 +223,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.mem.ar.bits.addr := addr_reg
   io.mem.ar.valid := addrReadValid
   io.mem.r.ready :=  dataReadReady
+
+  io.mem.aw.bit.addr := addr_reg
+  io.mem.aw.valid := addrWriteValid
+  io.mem.w.valid := dataWriteValid
+
+
+
 
   when (loadDataBuffer) {
     dataBuffer(read_count) := io.mem.r.bits.data
@@ -523,7 +533,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     is (stIntWrIdle){
       when(start(cIntWrite)){
         stIntWrReg := stIntWrAddr
+      }.otherwise(){
+        stIntWrReg := stIntWrIdle
       }
+    }
+
+    is (stIntWrAddr){
+
     }
 
   }

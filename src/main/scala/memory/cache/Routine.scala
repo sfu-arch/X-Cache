@@ -9,9 +9,20 @@ import chisel3.util.Enum
 
 object RoutineROM {
 
-  val routineSel = Array [RoutinePC](
+  val routineActions = Array [RoutinePC](
 
     Routine ("LOAD_I") , Actions(Seq("Allocate, ReadExt"))
+
+    /*
+    Allocate
+    Beq allocPassed PASSED
+    replace
+    PASSED :
+    ReadExt
+
+     */
+
+
 
   )
 

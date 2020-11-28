@@ -9,9 +9,10 @@ import chisel3.util.Enum
 
 object nextRoutine {
 
-    val routineSel = Array [RoutinePC](
+    val routineTriggerList = Array [RoutinePC](
 
-                    Routine ("LOAD_I") , Trigger( Seq ("LOAD" , "I")),
+                    Routine ("LOAD_I") , Trigger( Seq ("LOAD" , "I"))
+
 
     )
 

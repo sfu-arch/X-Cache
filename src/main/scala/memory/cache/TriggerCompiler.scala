@@ -1,11 +1,15 @@
 package dandelion.memory.TBE
 
+import scala.collection.mutable.ArrayBuffer
+
 import chipsalliance.rocketchip.config._
 import chisel3._
 import dandelion.config._
 import dandelion.memory.cache.{HasCacheAccelParams, State}
 import chisel3.util._
 import chisel3.util.Enum
+import dandelion.memory.TBE.Events._
+
 
 abstract class RoutinePC ()
 case class Routine (name : String) extends RoutinePC
@@ -32,8 +36,51 @@ object RoutinePtr {
 
 
 
-  def gereateTable (triggerList : (Map[selBlock, String]) , ) :  = {
+//  def gereateEventList () : Map[String, Int] = {
+//
+//    var eventList = Map[String,Int]()
+//    val events = Events.EventArray
+//    val IntValue = 0
+//    val IntClass = IntValue.getClass()
+//
+//    for (event <- events) {
+//      event._1
+//      val name = Event.getName()
+//      val rtype = Event.getReturnType()
+//      if (rtype == IntClass) {
+////        val value = Event.
+//      }
+//    }
+//    eventList
+//  }
+
+
+  def generateTriggerRoutineBit (routineAddrMap : Map[String, Int], routineTrigger: Array[RoutinePC]) : Array[Bits] = {
+
+    val events = Events.EventArray
+    val states = States.StateArray
+    var routineTriggerBit = ArrayBuffer[Bits]()
+      var lineName = 0
+      for (routine <- routineTrigger){
+      routine match{
+        case Routine(name) =>
+            lineName = routineAddrMap(name)
+
+        case Trigger(list) =>
+            val event = events(list(0))
+            val state = states(list(1))
+            val line = Cat(lineName.U, event.U ,state.U )
+            routineTriggerBit += (line)
+            println("Line " + line)
+
+      }
+
+    }
+      routineTriggerBit.toArray
 
   }
+
+
+
 
 }
