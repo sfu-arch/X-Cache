@@ -202,9 +202,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val wayInvalid = Wire(false.B)
 
-  when(loadWaysMeta){
-    waysInASet := io.metaMem.inputValue
-  }
 
   when (loadLineData){
     cacheLine := io.dataMem.inputValue
@@ -400,25 +397,65 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     true.B
   }
 
-  def Replace (set: UInt): UInt={
-
-  }
+//  def Replace (set: UInt): UInt={
+//
+//  }
   // FSM for each command
+//  way :=
 
-  val targetWay = Reg(UInt((nWays + 1).W))
+  val targetWay = Reg(UInt((wayLen + 1).W))
+  wayInvalid := (targetWay === nWays.U)
 
-  when(findTargetWay){
-    targetWay := Replace (set)
+  when(findInSetSig){
+    targetWay := findInSet(set,tag)
   }
-  val signals = WireInit(VecInit(Seq.fill(nSigs)(false.B)))
 
+
+  val readMetaData = Wire(Bool())
+  val MD = Wire(new MetaData())
+
+  val signals = WireInit(VecInit(Seq.fill(nSigs)(false.B)))
   val allocate = WireInit(signals(sigAllocate))
   val deallocate = WireInit(signals(sigDeallocate))
 
 
+  readMetaData := !(sigAllocate | sigDeallocate)
 
   loadWaysMeta := signals(sigLoadWays)
   findInSetSig := Reg(signals(sigFindInSet))
+
+
+
+  way := Mux(wayInvalid, nWays.U, targetWay)
+  MD.tag := tag
+
+  io.metaMem.bank := (way)
+  io.metaMem.address := (set)
+
+  when(allocate | deallocate){
+    io.metaMem.isRead := false.B
+  }.otherwise{
+    io.metaMem.isRead := true.B
+  }
+  io.metaMem.outputValue := MD
+
+  when(loadWaysMeta){
+    waysInASet := io.metaMem.inputValue
+  }.otherwise{
+    waysInASet := waysInASet
+  }
+
+  when(allocate & !wayInvalid) {
+    validTag(set * nWays.U + way) := true.B
+  }.elsewhen(deallocate & !wayInvalid){
+    validTag(set * nWays.U + way) := false.B
+  }.otherwise{
+    validTag(set * nWays.U + way) := validTag(set * nWays.U + way)
+  }
+
+  
+
+
 
 
 
