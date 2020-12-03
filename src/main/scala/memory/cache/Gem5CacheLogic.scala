@@ -38,6 +38,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val taglen = addrLen - (setLen + blen + byteOffsetBits )
 
   val byteOffsetBits = log2Ceil(wBytes)
+  val nSigs = 4
   //
 
 }
@@ -97,13 +98,16 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val Axi_param = memParams
 
   // cache states
+
+  val (sigLoadWays :: sigFindInSet :: sigAllocate :: sigDeallocate:: Nil) = Enum(nSigs)
+
   val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
   val st = RegInit(s_IDLE)
 
   val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
   val flush_state = RegInit(s_flush_IDLE)
 
-  val cNone :: cAlloc :: cDeAlloc :: cIntRead ::cExtRead :: cSetState :: cIntWrite::Nil = Enum(nCom)
+  val cNone :: cProbe ::cAlloc :: cDeAlloc :: cIntRead ::cExtRead :: cSetState :: cIntWrite::Nil = Enum(nCom)
 
   val (stAlIdle:: stAlLookMeta :: stAlCreate:: Nil) = Enum(3)
   val stAlReg = RegInit(stAlIdle)
@@ -196,10 +200,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val addrWriteValid = Wire(Bool())
   val dataWriteValid = Wire(Bool())
 
-  way := Mux(addrToLocSig, addrToLoc(set),(Mux(findInSetSig, findInSet(set,tag), 0.U((nWays + 1).W) )))
+  val wayInvalid = Wire(false.B)
 
-//  val cache_block_size = bBits
-  when (loadWaysMeta){
+  when(loadWaysMeta){
     waysInASet := io.metaMem.inputValue
   }
 
@@ -224,7 +227,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.mem.ar.valid := addrReadValid
   io.mem.r.ready :=  dataReadReady
 
-  io.mem.aw.bit.addr := addr_reg
+  io.mem.aw.bits.addr := addr_reg
   io.mem.aw.valid := addrWriteValid
   io.mem.w.valid := dataWriteValid
 
@@ -293,7 +296,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     tag.asUInt()
   }
 
-  def addrToLoc(set: UInt): (UInt) = {
+
+  def findTargetWay(set: UInt): (UInt) = {
 
     val way = Wire(UInt((nWays + 1).W))
     way := nWays.U
@@ -395,7 +399,35 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     loadState := true.B
     true.B
   }
+
+  def Replace (set: UInt): UInt={
+
+  }
   // FSM for each command
+
+  val targetWay = Reg(UInt((nWays + 1).W))
+
+  when(findTargetWay){
+    targetWay := Replace (set)
+  }
+  val signals = WireInit(VecInit(Seq.fill(nSigs)(false.B)))
+
+  val allocate = WireInit(signals(sigAllocate))
+  val deallocate = WireInit(signals(sigDeallocate))
+
+
+
+  loadWaysMeta := signals(sigLoadWays)
+  findInSetSig := Reg(signals(sigFindInSet))
+
+
+
+
+
+
+
+
+
 
   switch(stAlReg){
     is (stAlIdle){
@@ -529,24 +561,21 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     }
   }
 
-  switch (stIntWrReg){
-    is (stIntWrIdle){
-      when(start(cIntWrite)){
-        stIntWrReg := stIntWrAddr
-      }.otherwise(){
-        stIntWrReg := stIntWrIdle
-      }
-    }
-
-    is (stIntWrAddr){
-
-    }
-
-  }
-
-
-
-
+//  switch (stIntWrReg){
+//    is (stIntWrIdle){
+//      when(start(cIntWrite)){
+//        stIntWrReg := stIntWrAddr
+//      }.otherwise{
+//        stIntWrReg := stIntWrIdle
+//      }
+//    }
+//
+//    is (stIntWrAddr){
+//
+//
+//    }
+//
+//  }
 
 
   io.cpu.resp.valid := false.B
