@@ -43,6 +43,20 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
 }
 
+class DecoderIO ()(implicit p:Parameters) extends HasCacheAccelParams(p) {
+
+    val inAction = Input(UInt(nSigs.W))
+    val outSignals = Output(Wire(Vec(nSigs, Bool())))
+
+}
+
+class Decoder () (implicit p:Parameters) extends Module{
+
+    val io = IO(new DecoderIO())
+
+    io.outSignals := VecInit(io.inAction.asBools())
+
+}
 class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBundle(p) {
   val abort = Input(Bool())
   val flush = Input(Bool())
