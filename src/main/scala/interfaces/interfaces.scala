@@ -206,7 +206,7 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
   val taskID = UInt(tlen.W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
-  val command = UInt(4.W)
+  val command = UInt(nSigs.W)
 //  val state = UInt(4.W)
 
 

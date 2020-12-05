@@ -19,7 +19,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nSets = accelParams.nsets
   val nStates = accelParams.nstates
   val addrLen = accelParams.addrlen
-  val nCom = accelParams.nCommand
+  val nCom = 8
 
   val stateLen = log2Ceil(nStates)
   val wBytes = xlen / 8
@@ -38,23 +38,26 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val taglen = addrLen - (setLen + blen + byteOffsetBits )
 
   val byteOffsetBits = log2Ceil(wBytes)
-  val nSigs = 7
+  override val nSigs = accelParams.nSigs
   //
 
 }
 
-class DecoderIO ()(implicit p:Parameters) extends HasCacheAccelParams(p) {
+class DecoderIO (nSigs: Int)(implicit val p:Parameters) extends Bundle {
 
     val inAction = Input(UInt(nSigs.W))
-    val outSignals = Output(Wire(Vec(nSigs, Bool())))
+    val outSignals = Output(Vec(nSigs, Bool()))
 
 }
 
-class Decoder () (implicit p:Parameters) extends Module{
+class Decoder (implicit val p:Parameters) extends Module
+with HasCacheAccelParams
+with HasAccelShellParams {
 
-    val io = IO(new DecoderIO())
 
-    io.outSignals := VecInit(io.inAction.asBools())
+    val io = IO(new DecoderIO(nSigs))
+
+    io.outSignals := io.inAction.asBools()
 
 }
 class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBundle(p) {
@@ -102,6 +105,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     val metaMem = new CacheBankedMemIO(new MetaData(), nWays)
     val stateMem = new StateMemIO()
   })
+
+
+  val decoder = Module(new Decoder)
 
   io.cpu <> DontCare
   io.mem <> DontCare
@@ -152,6 +158,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val cpu_tag = RegInit(0.U(io.cpu.req.bits.tag.getWidth.W))
   val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
   val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
+  printf (p" \n ******* \n len ${io.cpu.req.bits.command.getWidth.W } \n")
   val count_set = RegInit(false.B)
   val inputState = RegInit(State.default)
 
@@ -163,7 +170,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val dataBuffer = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
 
-  val findInSetSig = Wire(Bool())
+  val findInSetSig = Reg(Bool())
   val addrToLocSig = Wire(Bool())
   val dataValidCheckSig = Wire(Bool())
 
@@ -173,7 +180,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val dataValid = WireInit(false.B)
 
-  val commandValid = Reg(Bool())
+  val commandValid = RegInit(false.B)
 
   // Counters
   require(nData > 0)
@@ -195,6 +202,12 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     offset := addrToOffset(io.cpu.req.bits.addr)
     //    inputState := io.cpu.req.bits.state
   }
+  val signals = Wire(Vec(nSigs, Bool()))
+
+  decoder.io.inAction := cpu_command
+  signals := decoder.io.outSignals
+
+
 
   val readyForCom = RegInit(true.B)
 
@@ -214,7 +227,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val addrWriteValid = Wire(Bool())
   val dataWriteValid = Wire(Bool())
 
-  val wayInvalid = Wire(false.B)
+  val wayInvalid = Wire(Bool())
 
 
   when(loadLineData) {
@@ -256,6 +269,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   dataValidCheckSig := false.B
   loadState := false.B
 
+  addrWriteValid := false.B
+  dataWriteValid := false.B
   addrReadValid := false.B
   dataReadReady := false.B
   loadDataBuffer := false.B
@@ -357,7 +372,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       }
       case io.metaMem => {
         //        loadWaysMeta := true.B
-        D.bank := way.U
+        D.bank := way
         D.address := set
       }
     }
@@ -377,7 +392,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   def tagging(tag: UInt, set: UInt, way: UInt): Bool = {
-    val MD = Wire(new MetaData())
     MD.tag := tag
     io.metaMem.bank := (way)
     io.metaMem.address := (set)
@@ -429,9 +443,11 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   val readMetaData = Wire(Bool())
-  val MD = Wire(new MetaData())
 
-  val signals = WireInit(VecInit(Seq.fill(nSigs)(false.B)))
+  val MD = Wire(new MetaData())
+  MD.tag := 0.U
+
+//  val signals = WireInit(VecInit(Seq.fill(nSigs)(false.B)))
   val allocate = WireInit(signals(sigAllocate))
   val prepMDRead = WireInit(signals(sigPrepMDRead))
   val prepMDWrite = WireInit(signals(sigPrepMDWrite))
@@ -442,7 +458,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   readMetaData := !(sigAllocate | sigDeallocate)
 
   loadWaysMeta := signals(sigLoadWays)
-  findInSetSig := Reg(signals(sigFindInSet))
+  findInSetSig := signals(sigFindInSet)
 
   val targetWay = Reg(UInt((wayLen + 1).W))
   wayInvalid := (targetWay === nWays.U)
