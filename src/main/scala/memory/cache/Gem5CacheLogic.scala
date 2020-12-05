@@ -180,7 +180,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val dataValid = WireInit(false.B)
 
-  val commandValid = RegInit(false.B)
+  val commandValid = Reg(Bool())
 
   // Counters
   require(nData > 0)
