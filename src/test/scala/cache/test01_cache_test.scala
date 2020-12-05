@@ -73,6 +73,7 @@ class test_cache01Main(implicit p: Parameters) extends test_cache01MainIO {
 class test_cache01Test01(c: Gem5Cache)(implicit p: Parameters)  extends PeekPokeTester(c) {
 
 
+
   def MemRead(addr: Int): BigInt = {
     while (peek(c.io.cpu.req.ready) == 0) {
       step(1)
