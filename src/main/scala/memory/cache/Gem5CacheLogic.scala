@@ -209,7 +209,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
 
-  val readyForCom = RegInit(true.B)
+  val readyForCmd = RegInit(true.B)
 
   val loadWaysMeta = Wire(Bool())
   val loadLineData = Wire(Bool())
@@ -241,11 +241,12 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   when(dataValidCheckSig) {
     dataValid := valid(set * nSets.U + way)
   }
-  when(done) {
-    readyForCom := true.B
-  }.elsewhen(commandValid) {
-    readyForCom := false.B
-  }
+
+//  when(done) {
+//    readyForCmd := true.B
+//  }.elsewhen(commandValid) {
+//    readyForCmd := false.B
+//  }
 
   io.mem.ar.bits.addr := addr_reg
   io.mem.ar.valid := addrReadValid
@@ -260,7 +261,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     dataBuffer(read_count) := io.mem.r.bits.data
   }
 
-  io.cpu.req.ready := readyForCom
+//  io.cpu.req.ready := readyForCmd
+  io.cpu.req.ready := true.B
 
   loadWaysMeta := false.B
   loadLineData := false.B
@@ -515,137 +517,137 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
 
-  switch(stAlReg){
-    is (stAlIdle){
-      when(start(cAlloc)){
-        stAlReg := stAlLookMeta
-        loadWaysMeta := true.B
-      }.otherwise{
-        stAlReg := stAlIdle
-      }
-    }
-    is(stAlLookMeta){
-      findInSetSig := true.B
-      when(way === nWays.U){ // it's not there
-        stAlReg := stAlCreate
-      }.otherwise{
-        stAlReg := stAlIdle
-//        resAl := true.B
-        res(cAlloc) := true.B
-        done := true.B
-
-      }
-    }
-    is (stAlCreate){
-      addrToLocSig := true.B
-      when(way === nWays.U){
-        stAlReg := stAlIdle
-        done := true.B
-      }.otherwise{
-//        resAl := true.B
-        res(cAlloc) := true.B
-        done := true.B
-        tagging(tag,set,way)
-        stAlReg := stAlIdle
-        printf(p" way: ${way} set: ${set}\n")
-
-      }
-    }
-  }
-
-  switch (stDeAlReg){
-
-    is (stDeAlIdle){
-      when(start(cDeAlloc)) {
-        stDeAlReg := stDeAlLookMeta
-        loadWaysMeta := true.B
-      }.otherwise{
-        stDeAlReg := stDeAlIdle
-      }
-    }
-    is(stDeAlLookMeta){
-      findInSetSig := true.B
-      when(way === nWays.U){
-        stDeAlReg := stDeAlIdle
-        res(cDeAlloc) := false.B
-        done := true.B
-      }.otherwise{
-        stDeAlReg := stDeAlIdle
-        detaggin(set,way)
-        res(cDeAlloc) := true.B
-        done := true.B
-      }
-    }
-  }
-
-  switch(stIntRdReg){
-    is (stIntRdIdle) {
-      when(start(cIntRead)) {
-        stIntRdReg := stIntRdLookMeta
-        loadWaysMeta := true.B
-      }.otherwise {
-        stIntRdReg := stIntRdIdle
-      }
-    }
-    is (stIntRdLookMeta){
-      findInSetSig := true.B
-      dataValidCheckSig := true.B
-      when(way === nWays.U){
-        res(cIntRead) := false.B
-        done := true.B
-        stIntRdReg := stIntRdIdle
-      }.otherwise{
-        when(dataValid){
-          prepForRead(io.dataMem)
-          stIntRdReg := stIntRdPassData
-        }.otherwise{
-          res(cIntRead) := false.B
-          done := true.B
-        }
-      }
-    }
-
-    is (stIntRdPassData){
-      loadLineData := true.B
-      stIntRdReg := stIntRdIdle
-      done := true.B
-      res(cIntRead) := true.B
-    }
-  }
-
-  switch(stExtRdReg){
-
-    is(stExtRdIdle){
-      when(start(cExtRead) ){
-        stExtRdReg := stExtRdAddr
-        addrReadValid := true.B
-      }.otherwise{
-        stExtRdReg := stExtRdIdle
-      }
-    }
-
-    is (stExtRdAddr){
-      when (io.mem.ar.fire()){
-        dataReadReady := true.B
-        stExtRdReg := stExtRdData
-      }.otherwise{
-        stExtRdReg := stExtRdAddr
-      }
-    }
-
-    is (stExtRdData){
-      when(io.mem.r.fire()){
-        loadDataBuffer := true.B
-        when(read_wrap_out){
-          stExtRdReg := stExtRdIdle
-          done := true.B
-          res(cExtRead) := true.B
-        }.otherwise {
-          stExtRdReg := stExtRdData
-        }
-      }
-    }
-  }
+//  switch(stAlReg){
+//    is (stAlIdle){
+//      when(start(cAlloc)){
+//        stAlReg := stAlLookMeta
+//        loadWaysMeta := true.B
+//      }.otherwise{
+//        stAlReg := stAlIdle
+//      }
+//    }
+//    is(stAlLookMeta){
+//      findInSetSig := true.B
+//      when(way === nWays.U){ // it's not there
+//        stAlReg := stAlCreate
+//      }.otherwise{
+//        stAlReg := stAlIdle
+////        resAl := true.B
+//        res(cAlloc) := true.B
+//        done := true.B
+//
+//      }
+//    }
+//    is (stAlCreate){
+//      addrToLocSig := true.B
+//      when(way === nWays.U){
+//        stAlReg := stAlIdle
+//        done := true.B
+//      }.otherwise{
+////        resAl := true.B
+//        res(cAlloc) := true.B
+//        done := true.B
+//        tagging(tag,set,way)
+//        stAlReg := stAlIdle
+//        printf(p" way: ${way} set: ${set}\n")
+//
+//      }
+//    }
+//  }
+//
+//  switch (stDeAlReg){
+//
+//    is (stDeAlIdle){
+//      when(start(cDeAlloc)) {
+//        stDeAlReg := stDeAlLookMeta
+//        loadWaysMeta := true.B
+//      }.otherwise{
+//        stDeAlReg := stDeAlIdle
+//      }
+//    }
+//    is(stDeAlLookMeta){
+//      findInSetSig := true.B
+//      when(way === nWays.U){
+//        stDeAlReg := stDeAlIdle
+//        res(cDeAlloc) := false.B
+//        done := true.B
+//      }.otherwise{
+//        stDeAlReg := stDeAlIdle
+//        detaggin(set,way)
+//        res(cDeAlloc) := true.B
+//        done := true.B
+//      }
+//    }
+//  }
+//
+//  switch(stIntRdReg){
+//    is (stIntRdIdle) {
+//      when(start(cIntRead)) {
+//        stIntRdReg := stIntRdLookMeta
+//        loadWaysMeta := true.B
+//      }.otherwise {
+//        stIntRdReg := stIntRdIdle
+//      }
+//    }
+//    is (stIntRdLookMeta){
+//      findInSetSig := true.B
+//      dataValidCheckSig := true.B
+//      when(way === nWays.U){
+//        res(cIntRead) := false.B
+//        done := true.B
+//        stIntRdReg := stIntRdIdle
+//      }.otherwise{
+//        when(dataValid){
+//          prepForRead(io.dataMem)
+//          stIntRdReg := stIntRdPassData
+//        }.otherwise{
+//          res(cIntRead) := false.B
+//          done := true.B
+//        }
+//      }
+//    }
+//
+//    is (stIntRdPassData){
+//      loadLineData := true.B
+//      stIntRdReg := stIntRdIdle
+//      done := true.B
+//      res(cIntRead) := true.B
+//    }
+//  }
+//
+//  switch(stExtRdReg){
+//
+//    is(stExtRdIdle){
+//      when(start(cExtRead) ){
+//        stExtRdReg := stExtRdAddr
+//        addrReadValid := true.B
+//      }.otherwise{
+//        stExtRdReg := stExtRdIdle
+//      }
+//    }
+//
+//    is (stExtRdAddr){
+//      when (io.mem.ar.fire()){
+//        dataReadReady := true.B
+//        stExtRdReg := stExtRdData
+//      }.otherwise{
+//        stExtRdReg := stExtRdAddr
+//      }
+//    }
+//
+//    is (stExtRdData){
+//      when(io.mem.r.fire()){
+//        loadDataBuffer := true.B
+//        when(read_wrap_out){
+//          stExtRdReg := stExtRdIdle
+//          done := true.B
+//          res(cExtRead) := true.B
+//        }.otherwise {
+//          stExtRdReg := stExtRdData
+//        }
+//      }
+//    }
+//  }
 
 //  switch (stIntWrReg){
 //    is (stIntWrIdle){
@@ -665,46 +667,46 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   io.cpu.resp.valid := false.B
-
-  switch(cpu_command) {
-
-    is(cAlloc) {
-
-        start(cAlloc) := commandValid
-        io.cpu.resp.valid := done
-    }
-
-    is(cDeAlloc){
-      start(cDeAlloc) := commandValid
-      io.cpu.resp.valid := done
-    }
-    is (cIntRead){
-        start(cIntRead) := commandValid
-        io.cpu.resp.valid := done
-    }
-    is(cExtRead){
-      start(cExtRead) := commandValid
-      io.cpu.resp.valid := done
-    }
+//
+//  switch(cpu_command) {
+//
+//    is(cAlloc) {
+//
+//        start(cAlloc) := commandValid
+//        io.cpu.resp.valid := done
+//    }
+//
+//    is(cDeAlloc){
+//      start(cDeAlloc) := commandValid
+//      io.cpu.resp.valid := done
+//    }
+//    is (cIntRead){
+//        start(cIntRead) := commandValid
+//        io.cpu.resp.valid := done
+//    }
+//    is(cExtRead){
+//      start(cExtRead) := commandValid
+//      io.cpu.resp.valid := done
+//    }
 
 //    is (cGetState){
 //      val res = GetState()
 //      io.cpu.resp.valid := res
 //
 //    }
-    is (cSetState){
-      val res = SetState(inputState)
-      io.cpu.resp.valid := res
+//    is (cSetState){
+//      val res = SetState(inputState)
+//      io.cpu.resp.valid := res
+//
+//    }
+//
+//    is (cIntWrite){
+//      //@todo should be completed
+//      start(cIntWrite) := commandValid
+//      io.cpu.resp.valid := done
+//    }
 
-    }
-
-    is (cIntWrite){
-      //@todo should be completed
-      start(cIntWrite) := commandValid
-      io.cpu.resp.valid := done
-    }
-
-  }
+//  }
 //
 //
 //
