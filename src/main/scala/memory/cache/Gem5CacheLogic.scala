@@ -158,7 +158,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val cpu_tag = RegInit(0.U(io.cpu.req.bits.tag.getWidth.W))
   val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
   val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
-  printf (p" \n ******* \n len ${io.cpu.req.bits.command.getWidth.W } \n")
+  println (s" \n ******* \n len ${io.cpu.req.bits.command.getWidth.W } \n")
   val count_set = RegInit(false.B)
   val inputState = RegInit(State.default)
 
@@ -264,9 +264,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  io.cpu.req.ready := readyForCmd
   io.cpu.req.ready := true.B
 
-  loadWaysMeta := false.B
+  //loadWaysMeta := false.B
   loadLineData := false.B
-  findInSetSig := false.B
+  //findInSetSig := false.B
   addrToLocSig := false.B
   dataValidCheckSig := false.B
   loadState := false.B
@@ -445,11 +445,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   val readMetaData = Wire(Bool())
+  val targetWay = Reg(UInt((wayLen + 1).W))
 
   val MD = Wire(new MetaData())
   MD.tag := 0.U
+  wayInvalid := (targetWay === nWays.U)
 
-//  val signals = WireInit(VecInit(Seq.fill(nSigs)(false.B)))
+
+    //  val signals = WireInit(VecInit(Seq.fill(nSigs)(false.B)))
   val allocate = WireInit(signals(sigAllocate))
   val prepMDRead = WireInit(signals(sigPrepMDRead))
   val prepMDWrite = WireInit(signals(sigPrepMDWrite))
@@ -462,16 +465,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   loadWaysMeta := signals(sigLoadWays)
   findInSetSig := signals(sigFindInSet)
 
-  val targetWay = Reg(UInt((wayLen + 1).W))
-  wayInvalid := (targetWay === nWays.U)
 
-  when (!wayInvalid) {
-    way := targetWay
-  }.elsewhen(addrToWaySig){
-    way := addrToWay(set)
-  }.otherwise{
-    way := nWays.U
-  }
+//  when (!wayInvalid) {
+//    way := targetWay
+//  }.elsewhen(addrToWaySig){
+//    way := addrToWay(set)
+//  }.otherwise{
+//    way := nWays.U
+//  }
 
   when(prepMDRead){
     prepForRead(io.metaMem)
@@ -479,11 +480,11 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     prepForWrite(io.metaMem)
   }
 
-  when(prepMDWrite){
-      io.metaMem.outputValue := MD
-  }.otherwise{
-      io.metaMem.outputValue := DontCare
-  }
+//  when(prepMDWrite){
+//      io.metaMem.outputValue := MD
+//  }.otherwise{
+//      io.metaMem.outputValue := DontCare
+//  }
 
   when(findInSetSig){
     targetWay := findInSet(set,tag)
@@ -504,13 +505,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
 
-  when(allocate & !wayInvalid) {
-    validTag(set * nWays.U + way) := true.B
-  }.elsewhen(deallocate & !wayInvalid){
-    validTag(set * nWays.U + way) := false.B
-  }.otherwise{
-    validTag(set * nWays.U + way) := validTag(set * nWays.U + way)
-  }
+//  when(allocate & !wayInvalid) {
+//    validTag(set * nWays.U + way) := true.B
+//  }.elsewhen(deallocate & !wayInvalid){
+//    validTag(set * nWays.U + way) := false.B
+//  }.otherwise{
+//    validTag(set * nWays.U + way) := validTag(set * nWays.U + way)
+//  }
 
   
 
