@@ -125,7 +125,7 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
             step(1)
         }
         poke(c.io.cpu.req.bits.addr, addr)
-        poke(c.io.cpu.req.bits.command, "b1101000".U)
+        poke(c.io.cpu.req.bits.command, "b0001011".U)
         poke(c.io.cpu.req.valid, 1.U)
         step(1)
         poke(c.io.cpu.req.valid, 0.U)

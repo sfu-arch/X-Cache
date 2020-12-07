@@ -158,7 +158,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val cpu_tag = RegInit(0.U(io.cpu.req.bits.tag.getWidth.W))
   val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
   val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
-  println (s" \n ******* \n len ${io.cpu.req.bits.command.getWidth.W } \n")
+//  println (s" \n ******* \n len ${io.cpu.req.bits.command.getWidth.W } \n")
   val count_set = RegInit(false.B)
   val inputState = RegInit(State.default)
 
@@ -473,6 +473,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  }.otherwise{
 //    way := nWays.U
 //  }
+  printf(p"signals  ${signals}\n")
+  printf(p"loadMeta  ${loadWaysMeta}\n")
+  printf(p"findInSet ${findInSetSig}\n")
+  printf(p"targetWay ${targetWay} \n")
 
   when(prepMDRead){
     prepForRead(io.metaMem)
@@ -488,6 +492,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   when(findInSetSig){
     targetWay := findInSet(set,tag)
+  }.otherwise{
+    targetWay := targetWay
   }
 
 
