@@ -73,9 +73,16 @@ class test_cache01Main_ISA(implicit p: Parameters) extends test_cache01Main_ISA_
 class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends PeekPokeTester(c) {
 
 
-    /*                  sigLoadWays | sigFindInSet | sigAddrToWay | sigPrepMDRead | sigPrepMDWrite | sigAllocate | sigDeallocate
-    Probe= 0b0001011          1             1               0              1                0              0            0
-    Aloc = 0b0110100          0             0               1              0                1              1            0
+    /*                  sigLoadWays | sigFindInSet | sigAddrToWay | sigPrepMDRead | sigPrepMDWrite | sigAllocate | sigDeallocate | sigWrite |  sigRead
+  Probe= 0b000001011          1             1               0              1                0              0            0               0          0
+  Aloc = 0b000110100          0             0               1              0                1              1            0               0          0
+  DAloc= 0b001000000          0             0               0              0                0              0            1               0          0
+  WrInt= 0b010000000          0             0               0              0                0              0            0               1          0
+  RdInt= 0b100000000          0             0               0              0                0              0            0               0          1
+  WrExt = 0b
+
+
+
 
      */
 
@@ -150,12 +157,10 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
         }
         poke(c.io.cpu.req.valid, 1.U)
         poke(c.io.cpu.req.bits.addr, addr)
-        poke(c.io.cpu.req.bits.command, 2.U)
+        poke(c.io.cpu.req.bits.command, "b1000000".U)
         step(1)
         poke(c.io.cpu.req.valid, 0.U)
-        while (peek(c.io.cpu.resp.valid) == 0) {
-            step(1)
-        }
+        step(1)
     }
 
     def testReadInternal (addr:UInt) ={
@@ -164,12 +169,22 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
         }
         poke(c.io.cpu.req.valid, 1.U)
         poke(c.io.cpu.req.bits.addr, addr)
-        poke(c.io.cpu.req.bits.command, 3.U)
+        poke(c.io.cpu.req.bits.command, "b100000000".U)
         step(1)
         poke(c.io.cpu.req.valid, 0.U)
-        while (peek(c.io.cpu.resp.valid) == 0) {
+        step(1)
+    }
+    def testWriteInternal (addr:UInt, data: UInt) ={
+        while (peek(c.io.cpu.req.ready) == 0) {
             step(1)
         }
+        poke(c.io.cpu.req.valid, 1.U)
+        poke(c.io.cpu.req.bits.addr, addr)
+        poke(c.io.cpu.req.bits.command, "b010000000".U)
+        poke(c.io.cpu.req.bits.data, data)
+        step(1)
+        poke(c.io.cpu.req.valid, 0.U)
+        step(1)
     }
 
     //  val data = c.metaMemory.io.outputValue
@@ -182,6 +197,13 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
     testProbe(1.U)
 //    step(2)
     testAllocate(1.U)
+    testAllocate(5.U)
+    testAllocate(1052676.U)
+    testProbe(1052676.U)
+    testDeAllocate(1052676.U)
+    testProbe(1052676.U)
+    testWriteInternal(1052676.U , 100.U)
+    testReadInternal (1052676.U)
 
 //    testAllocate(1.U)
 //    //  step(2)

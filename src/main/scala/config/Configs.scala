@@ -71,7 +71,7 @@ case class DandelionAccelParams(
                                  cacheNSets: Int = 256,
                                  cacheNState:Int = 16,
                                  cacheAddrLen:Int = 32,
-                                 nSigs:Int = 7
+                                 nSigs:Int = 9
                                ) extends AccelParams {
 
   var xlen: Int = dataLen

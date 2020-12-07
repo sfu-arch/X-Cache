@@ -119,7 +119,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   // cache states
 
-  val (sigLoadWays :: sigFindInSet ::sigAddrToWay :: sigPrepMDRead ::sigPrepMDWrite:: sigAllocate :: sigDeallocate :: Nil) = Enum(nSigs)
+  val (sigLoadWays :: sigFindInSet ::sigAddrToWay :: sigPrepMDRead ::sigPrepMDWrite:: sigAllocate :: sigDeallocate :: sigWrite :: sigRead :: Nil) = Enum(nSigs)
 
   val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
   val st = RegInit(s_IDLE)
@@ -370,7 +370,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       case io.dataMem => {
         //        loadLineData := true.B
         D.address := set * nSets.U + way
-        D.bank := 0.U
+        D.bank := offset
       }
       case io.metaMem => {
         //        loadWaysMeta := true.B
@@ -448,7 +448,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val targetWay = Reg(UInt((wayLen + 1).W))
 
   val MD = Wire(new MetaData())
-  MD.tag := 0.U
+  MD.tag := tag
+
   wayInvalid := (targetWay === nWays.U)
 
 
@@ -458,6 +459,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val prepMDWrite = WireInit(signals(sigPrepMDWrite))
   val deallocate = WireInit(signals(sigDeallocate))
   val addrToWaySig = WireInit(signals(sigAddrToWay))
+  val writeSig = WireInit(signals(sigWrite))
+  val readSig = WireInit(signals(sigRead))
 
 
   readMetaData := !(sigAllocate | sigDeallocate)
@@ -475,10 +478,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   printf(p"signals  ${signals}\n")
-  printf(p"loadMeta  ${loadWaysMeta}\n")
-  printf(p"findInSet ${findInSetSig}\n")
+//  printf(p"loadMeta  ${loadWaysMeta}\n")
+//  printf(p"findInSet ${findInSetSig}\n")
   printf(p"targetWay ${targetWay} \n")
-  printf(p"prepMDWrite ${prepMDWrite} \n")
+//  printf(p"prepMDWrite ${prepMDWrite} \n")
   printf(p"way ${way}\n")
 
   when(prepMDRead){
@@ -487,9 +490,32 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     prepForWrite(io.metaMem)
   }
 
+  when(writeSig){
+    prepForWrite(io.dataMem)
+  }.elsewhen(readSig){
+    prepForRead(io.dataMem)
+  }
+
+  when(writeSig){
+    io.dataMem.outputValue := cpu_data
+  }.otherwise{
+    io.dataMem.outputValue := DontCare
+  }
+
+  when(writeSig){
+    valid(set * nWays.U + way) := true.B
+  }
+
+  when (readSig){
+    dataBuffer := io.dataMem.inputValue
+  }.otherwise{
+    dataBuffer := dataBuffer
+  }
   when(prepMDWrite){
       io.metaMem.outputValue := MD
-  }.otherwise{
+  }.elsewhen(writeSig){
+    io.dataMem.outputValue := cpu_data
+  } .otherwise{
       io.metaMem.outputValue := DontCare
   }
 
@@ -519,6 +545,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }.elsewhen(deallocate){
     validTag(set * nWays.U + way) := false.B
   }
+
+
 
   
 
