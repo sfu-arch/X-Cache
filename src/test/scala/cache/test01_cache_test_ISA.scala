@@ -73,8 +73,9 @@ class test_cache01Main_ISA(implicit p: Parameters) extends test_cache01Main_ISA_
 class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends PeekPokeTester(c) {
 
 
-    /*      sigLoadWays | sigFindInSet | sigAddrToWay | sigPrepMDRead | sigPrepMDWrite | sigAllocate | sigDeallocate
-    probe         1             1               0              1                0              0            0
+    /*                  sigLoadWays | sigFindInSet | sigAddrToWay | sigPrepMDRead | sigPrepMDWrite | sigAllocate | sigDeallocate
+    Probe= 0b0001011          1             1               0              1                0              0            0
+    Aloc = 0b0110100          0             0               1              0                1              1            0
 
      */
 
@@ -136,13 +137,11 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
             step(1)
         }
         poke(c.io.cpu.req.bits.addr, addr)
-        poke(c.io.cpu.req.bits.command, 1.U)
+        poke(c.io.cpu.req.bits.command, "b0110100".U )
         poke(c.io.cpu.req.valid, 1.U)
         step(1)
         poke(c.io.cpu.req.valid, 0.U)
-        while (peek(c.io.cpu.resp.valid) == 0) {
-            step(1)
-        }
+        step(1)
     }
 
     def testDeAllocate(addr:UInt) = {
@@ -181,7 +180,8 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
 
 
     testProbe(1.U)
-    step(2)
+//    step(2)
+    testAllocate(1.U)
 
 //    testAllocate(1.U)
 //    //  step(2)
