@@ -134,7 +134,7 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
         poke(c.io.cpu.req.valid, 1.U)
         step(1)
         poke(c.io.cpu.req.valid, 0.U)
-        step(2)
+        step(1)
     }
     def testAllocate(addr:UInt) = {
         while (peek(c.io.cpu.req.ready) == 0) {
@@ -145,7 +145,7 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
         poke(c.io.cpu.req.valid, 1.U)
         step(1)
         poke(c.io.cpu.req.valid, 0.U)
-        step(1)
+//        step(1)
     }
 
     def testDeAllocate(addr:UInt) = {

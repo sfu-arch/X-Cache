@@ -199,6 +199,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     cpu_tag := io.cpu.req.bits.tag
     cpu_data := io.cpu.req.bits.data
     cpu_mask := io.cpu.req.bits.mask
+    cpu_command := io.cpu.req.bits.command
     cpu_iswrite := io.cpu.req.bits.iswrite
     tag := addrToTag(io.cpu.req.bits.addr)
     set := addrToSet(io.cpu.req.bits.addr)
@@ -206,11 +207,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     //    inputState := io.cpu.req.bits.state
   }
 
-  when (io.cpu.req.fire()){
-    cpu_command := io.cpu.req.bits.command
-  }.otherwise{
-    cpu_command := 0.U(nSigs.W)
-  }
+//  when (io.cpu.req.fire()){
+//  }.otherwise{
+//    cpu_command := 0.U(nSigs.W)
+//  }
 
   val signals = Wire(Vec(nSigs, Bool()))
 
@@ -473,6 +473,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val addrToWaySig = WireInit(signals(sigAddrToWay))
   val writeSig = WireInit(signals(sigWrite))
   val readSig = WireInit(signals(sigRead))
+  loadWaysMeta := signals(sigLoadWays)
+  findInSetSig := signals(sigFindInSet)
 
   val hit = Wire(Bool())
   hit := (readSig & !wayInvalid)
@@ -482,8 +484,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   readMetaData := !(sigAllocate | sigDeallocate)
 
-  loadWaysMeta := signals(sigLoadWays)
-  findInSetSig := signals(sigFindInSet)
+
 
 
   when (!wayInvalid) {
