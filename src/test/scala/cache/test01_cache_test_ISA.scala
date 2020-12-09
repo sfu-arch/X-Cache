@@ -73,16 +73,13 @@ class test_cache01Main_ISA(implicit p: Parameters) extends test_cache01Main_ISA_
 class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends PeekPokeTester(c) {
 
 
-    /*                  sigLoadWays | sigFindInSet | sigAddrToWay | sigPrepMDRead | sigPrepMDWrite | sigAllocate | sigDeallocate | sigWrite |  sigRead
-  Probe= 0b000001011          1             1               0              1                0              0            0               0          0
-  Aloc = 0b000110100          0             0               1              0                1              1            0               0          0
-  DAloc= 0b001000000          0             0               0              0                0              0            1               0          0
-  WrInt= 0b010000000          0             0               0              0                0              0            0               1          0
-  RdInt= 0b100000000          0             0               0              0                0              0            0               0          1
-  WrExt = 0b
-
-
-
+    /*                  sigLoadWays | sigFindInSet | sigAddrToWay | sigPrepMDRead | sigPrepMDWrite | sigAllocate | sigDeallocate | sigWrite |  sigRead  | dataReq
+  Probe= 0b0000001011          1             1               0              1                0              0            0               0          0   |   0
+  Aloc = 0b0000110100          0             0               1              0                1              1            0               0          0   |   0
+  DAloc= 0b0001000000          0             0               0              0                0              0            1               0          0   |   0
+  WrInt= 0b0010000000          0             0               0              0                0              0            0               1          0   |   0
+  RdInt= 0b0100000000          0             0               0              0                0              0            0               0          1   |   0
+  DataRQ=0b1000000000          0             0               0              0                0              0            0               0          0   |   1
 
      */
 

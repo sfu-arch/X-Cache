@@ -58,8 +58,9 @@ with HasAccelShellParams {
     val io = IO(new DecoderIO(nSigs))
 
     io.outSignals := io.inAction.asBools()
-
 }
+
+
 class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBundle(p) {
   val abort = Input(Bool())
   val flush = Input(Bool())
@@ -188,11 +189,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), nData)
 
 
+
+
+
   commandValid := io.cpu.req.fire()
 
   when(io.cpu.req.fire()) {
     addr_reg := io.cpu.req.bits.addr
-    cpu_command := io.cpu.req.bits.command
     cpu_tag := io.cpu.req.bits.tag
     cpu_data := io.cpu.req.bits.data
     cpu_mask := io.cpu.req.bits.mask
@@ -202,6 +205,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     offset := addrToOffset(io.cpu.req.bits.addr)
     //    inputState := io.cpu.req.bits.state
   }
+
+  when (io.cpu.req.fire()){
+    cpu_command := io.cpu.req.bits.command
+  }.otherwise{
+    cpu_command := 0.U(nSigs.W)
+  }
+
   val signals = Wire(Vec(nSigs, Bool()))
 
   decoder.io.inAction := cpu_command
@@ -293,7 +303,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val is_alloc = st === s_REFILL && read_wrap_out
   val is_alloc_reg = RegNext(is_alloc)
 
-  //  val hit = Wire(Bool())
+
   //  val wen = is_write && (hit || is_alloc_reg) && !io.cpu.abort || is_alloc
   //  val ren = !wen && (is_idle || is_read) && io.cpu.req.valid
   //  val ren_reg = RegNext(ren)
@@ -437,6 +447,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     true.B
   }
 
+
+
   //  def Replace (set: UInt): UInt={
   //
   //  }
@@ -462,6 +474,11 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val writeSig = WireInit(signals(sigWrite))
   val readSig = WireInit(signals(sigRead))
 
+  val hit = Wire(Bool())
+  hit := (readSig & !wayInvalid)
+
+  val (missCount, _) = Counter(!hit, 1000)
+  val (hitCount,  _) = Counter( hit , 1000)
 
   readMetaData := !(sigAllocate | sigDeallocate)
 
