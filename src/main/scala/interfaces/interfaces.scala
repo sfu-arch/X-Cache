@@ -272,6 +272,8 @@ object MemResp {
   }
 }
 
+class
+
 //class RelayNode output
 class RelayOutput(implicit p: Parameters) extends AccelBundle()(p) {
   override def cloneType = new RelayOutput().asInstanceOf[this.type]

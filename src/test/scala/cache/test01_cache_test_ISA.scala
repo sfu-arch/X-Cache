@@ -157,7 +157,7 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
         poke(c.io.cpu.req.bits.command, "b1000000".U)
         step(1)
         poke(c.io.cpu.req.valid, 0.U)
-        step(1)
+//        step(1)
     }
 
     def testReadInternal (addr:UInt) ={
@@ -169,7 +169,7 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
         poke(c.io.cpu.req.bits.command, "b100000000".U)
         step(1)
         poke(c.io.cpu.req.valid, 0.U)
-        step(1)
+//        step(1)
     }
     def testWriteInternal (addr:UInt, data: UInt) ={
         while (peek(c.io.cpu.req.ready) == 0) {
@@ -181,7 +181,7 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
         poke(c.io.cpu.req.bits.data, data)
         step(1)
         poke(c.io.cpu.req.valid, 0.U)
-        step(1)
+//        step(1)
     }
 
     //  val data = c.metaMemory.io.outputValue
@@ -198,6 +198,8 @@ class test_cache01Test01_ISA(c: Gem5Cache)(implicit p: Parameters)  extends Peek
     testAllocate(1052676.U)
     testProbe(1052676.U)
     testDeAllocate(1052676.U)
+    testProbe(1052676.U)
+    testAllocate(1052676.U)
     testProbe(1052676.U)
     testWriteInternal(1052676.U , 100.U)
     testReadInternal (1052676.U)
