@@ -272,7 +272,7 @@ object MemResp {
   }
 }
 
-class
+
 
 //class RelayNode output
 class RelayOutput(implicit p: Parameters) extends AccelBundle()(p) {

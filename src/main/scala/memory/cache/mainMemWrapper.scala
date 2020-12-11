@@ -11,7 +11,7 @@ import chisel3.util.experimental.loadMemoryFromFile
 
 import dandelion.junctions._
 import dandelion.shell._
-class
+
 
 
 class memoryWrapperIO (implicit val p:Parameters) extends Bundle
@@ -32,8 +32,8 @@ with HasCacheAccelParams
 with HasAccelShellParams{
     val io = IO(new memoryWrapperIO)
 
-    val addrReg = Reg(VecInit(Seq.fill(nData)(0.U(xlen.W))))
-    val dataReg = RegInit(0.U(xlen.W))
+    val addrReg = RegInit(0.U(addrLen.W))
+    val dataReg = Reg(VecInit(Seq.fill(nData)(0.U(xlen.W))))
 
 
 
@@ -51,7 +51,7 @@ with HasAccelShellParams{
     val (stIdle :: stWrite :: stReadAddr :: stReadData :: stCmdIssue :: Nil) = Enum(5)
     val stReg = RegInit(stIdle)
 
-
+    // Reading
     val (readCount, readWrapped) = Counter (io.mem.r.fire(), nData)
 
     io.mem.ar.bits.addr := Mux(stReg === stReadAddr, addrReg , 0.U(addrLen))
