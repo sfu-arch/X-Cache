@@ -44,11 +44,8 @@ with HasAccelShellParams{
     when (io.address.fire()){
         addrReg := io.address.bits.asUInt()
     }
-    when(io.data.fire()){
-        dataReg := io.data.bits.asUInt()
-    }
 
-    val (stIdle :: stWrite :: stReadAddr :: stReadData :: stCmdIssue :: Nil) = Enum(5)
+    val (stIdle :: stWriteAddr :: stWriteData :: stReadAddr :: stReadData :: stCmdIssue :: Nil) = Enum(6)
     val stReg = RegInit(stIdle)
 
     // Reading
@@ -60,11 +57,21 @@ with HasAccelShellParams{
         dataReg(readCount) := io.mem.r.bits.data
     }
 
+
+    // Writing
+    val (writeCount, writeWrapped) = Counter(io.mem.w.fire(), nData)
+    when(io.data.fire()){
+        dataReg := io.data
+    }
+    io.mem.aw.bits.addr := Mux(stReg === stWriteAddr, addrReg, 0.U(addrLen.W))
+    io.mem.w.bits.data := Mux(stReg === stWriteData, dataReg(writeCount), 0.U(xlen.W))
+
+
     switch(stReg){
         is(stIdle){
             when (start){
                 when(io.data.fire()){
-                    stReg := stWrite
+                    stReg := stWriteAddr
                 }.otherwise{
                     stReg := stReadData
                 }
@@ -79,6 +86,18 @@ with HasAccelShellParams{
         is(stReadData) {
             io.mem.r.ready := true.B
             when(readWrapped) {
+                stReg := stIdle
+            }
+        }
+        is(stWriteAddr){
+            io.mem.aw.valid := true.B
+            when(io.mem.aw.fire()){
+                stReg := stWriteData
+            }
+        }
+        is (stWriteData){
+            io.mem.w.valid := true.B
+            when(writeWrapped){
                 stReg := stIdle
             }
         }
