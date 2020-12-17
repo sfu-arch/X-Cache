@@ -21,6 +21,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val addrLen = accelParams.addrlen
   val eventLen = 8
   val nCom = 8
+  val dataLen = 512
 
   val stateLen = log2Ceil(nStates)
   val wBytes = xlen / 8

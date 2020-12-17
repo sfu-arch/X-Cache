@@ -8,6 +8,7 @@ import chipsalliance.rocketchip.config._
 import utility.Constants._
 import dandelion.config._
 import chipsalliance.rocketchip.config._
+import dandelion.memory.cache.HasCacheAccelParams
 
 import scala.collection.immutable.ListMap
 
@@ -16,6 +17,25 @@ import scala.collection.immutable.ListMap
            1. AVOID DECLARING IOs, DECLARE BUNDLES. Create IOs within your node.
            2.             =
 ==============================================================================*/
+
+abstract class CoreBundle (implicit val p:Parameters) extends ParameterizedBundle()(p) with HasCacheAccelParams
+
+trait Event extends CoreBundle{
+  val event = UInt(eventLen.W)
+}
+trait Addr extends CoreBundle{
+  val addr = UInt(addrLen.W)
+}
+
+class InstBundle (implicit p: Parameters) extends Event with Addr{
+
+  val data = UInt(dataLen.W)
+  override def cloneType: this.type = new InstBundle().asInstanceOf[this.type]
+}
+
+
+
+
 
 trait ValidT extends AccelBundle {
   val valid = Bool()
