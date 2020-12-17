@@ -40,17 +40,17 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
 
 }
 
-class   TBETable(Size: Int )(implicit  val p: Parameters) extends Module
-  with HasCacheAccelParams
+class   TBETable(implicit  val p: Parameters) extends Module
+  with DandelionAccelParams
   with HasAccelShellParams {
 
 
   val (idle::alloc :: dealloc :: read :: Nil) = Enum(4)
 
   val io = IO(new TBETableIO())
-  val TBEMemory = VecInit(Seq.fill(Size)(new TBE))
-  val TBEValid = VecInit(Seq.fill(Size)(RegInit(false.B)))
-  val TBEAddr = VecInit(Seq.fill(Size)(RegInit(0.U)))
+  val TBEMemory = VecInit(Seq.fill(tbeDepth)(new TBE))
+  val TBEValid = VecInit(Seq.fill(tbeDepth)(RegInit(false.B)))
+  val TBEAddr = VecInit(Seq.fill(tbeDepth)(RegInit(0.U)))
 
 
   // @todo lookup method
@@ -60,11 +60,11 @@ class   TBETable(Size: Int )(implicit  val p: Parameters) extends Module
   val inc = Wire(Bool())
 
 
-  //val (idx,full) = Counter (inc, Size)
-  val idx = Wire(UInt(log2Ceil(Size).W))
+  //val (idx,full) = Counter (inc, tbetbeDepth)
+  val idx = Wire(UInt(log2Ceil(tbeDepth).W))
 
   when(isAlloc) {
-    for (i <- 0 until Size) {
+    for (i <- 0 until tbeDepth) {
       when(TBEValid(i) === false.B) {
         idx := i.asUInt()
       }
@@ -74,14 +74,14 @@ class   TBETable(Size: Int )(implicit  val p: Parameters) extends Module
     TBEValid(idx) := true.B
     //    inc := true.B
   }.elsewhen(isDealloc) {
-    for (i <- 0 until Size) {
+    for (i <- 0 until tbeDepth) {
       when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
         idx := i.asUInt()
       }
     }
     TBEValid(idx) := false.B
   }.elsewhen(isRead) {
-    for (i <- 0 until Size) {
+    for (i <- 0 until tbeDepth) {
       when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
         idx := i.asUInt()
       }
