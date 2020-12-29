@@ -85,6 +85,19 @@ object RoutinePtr {
   }
 
 
+    def generateActionRom(routineRom: Array[RoutinePC], actions: Map[String, Bits]): Array[Bits] ={
+        var routineAddr = 0
+        var actionBits = new ArrayBuffer[Bits]
+        for (elem <- routineRom) {
+            elem match {
+                case Actions(actionList) =>  actionList.map{ case action => actionBits +=actions(action)}
+                case Routine(name) => actionBits += (0.U)
+            }
+        }
+
+        actionBits.toArray
+    }
+
 
 
 }
