@@ -1,14 +1,14 @@
-package dandelion.memory.TBE
+package dandelion.memory.cache
 
 import scala.collection.mutable.ArrayBuffer
-
 import chipsalliance.rocketchip.config._
 import chisel3._
 import dandelion.config._
 import dandelion.memory.cache.{HasCacheAccelParams, State}
 import chisel3.util._
 import chisel3.util.Enum
-import dandelion.memory.TBE.Events._
+//import dandelion.memory.TBE.Events._
+import shapeless.ops.hlist.Length
 
 
 abstract class RoutinePC ()
@@ -59,7 +59,10 @@ object RoutinePtr {
 
     val events = Events.EventArray
     val states = States.StateArray
-    var routineTriggerBit = ArrayBuffer[Bits]()
+      val eventLen = log2Ceil(events.size)
+      val stateLen = log2Ceil(states.size)
+    var routineTriggerBit = new ArrayBuffer[Bits]((eventLen * stateLen))
+
       var lineName = 0
       for (routine <- routineTrigger){
       routine match{
@@ -67,11 +70,12 @@ object RoutinePtr {
             lineName = routineAddrMap(name)
 
         case Trigger(list) =>
-            val event = events(list(0))
-            val state = states(list(1))
-            val line = Cat(lineName.U, event.U ,state.U )
-            routineTriggerBit += (line)
-            println("Line " + line)
+            val event = events(list(0)).toString() + ""
+            val state = states(list(1)).toString() + ""
+//            val line = Cat(lineName.U, event.U ,state.U )
+
+            routineTriggerBit( (event ++ state).toInt) = (lineName.U)
+            println("Line " + lineName.U)
 
       }
 
