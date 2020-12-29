@@ -94,7 +94,6 @@ case class DandelionAccelParams(
   val nsets = cacheNSets
   val nstates = cacheNState
   val addrlen = cacheAddrLen
-  val tbeDepth = tbeSize
 //  val nCommand = nCom
 //  var comlen:Int = math.ceil(math.log(nCommand)/math.log(2)).toInt
 //  val nSigs = nSigs
@@ -147,7 +146,7 @@ class ParameterizedBundle(implicit p: Parameters) extends Bundle {
              this.getClass.getConstructors.head.newInstance(p).asInstanceOf[this.type]
            } catch {
           case e: java.lang.IllegalArgumentException =>
-                throwException("Unable to use ParamaterizedBundle.cloneType on " +
+                throw new Exception("Unable to use ParamaterizedBundle.cloneType on " +
                  this.getClass + ", probably because " + this.getClass +
                                 "() takes more than one argument.  Consider overriding " +
                                 "cloneType() on " + this.getClass, e)
@@ -232,6 +231,7 @@ trait HasAccelParams {
   val verb = accelParams.verb
   val comp = accelParams.comp
   val nSigs = accelParams.nSigs
+  val tbeDepth = accelParams.tbeSize
 
 
 }
