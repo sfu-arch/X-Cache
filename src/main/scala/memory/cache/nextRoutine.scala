@@ -1,4 +1,4 @@
-package dandelion.memory.TBE
+package dandelion.memory.cache
 
 import chipsalliance.rocketchip.config._
 import chisel3._
