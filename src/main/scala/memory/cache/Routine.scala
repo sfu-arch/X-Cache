@@ -1,4 +1,4 @@
-package dandelion.memory.TBE
+package dandelion.memory.cache
 
 import chipsalliance.rocketchip.config._
 import chisel3._
@@ -11,7 +11,7 @@ object RoutineROM {
 
   val routineActions = Array [RoutinePC](
 
-    Routine ("LOAD_I") , Actions(Seq("Allocate, ReadExt"))
+    Routine ("LOAD_I") , Actions(Seq("Allocate, ReadInt"))
 
     /*
     Allocate

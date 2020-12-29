@@ -18,13 +18,14 @@ class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelPar
 }
 object TBE {
 
-  def default (implicit p: Parameters){
+  def default (implicit p: Parameters): TBE = {
     val tbe = Wire(new TBE)
     tbe.state := State.default
     tbe.data := 0.U
     tbe.addr := 0.U
     tbe.way := 0.U
     tbe.cmdPtr := 0.U
+    tbe
   }
 }
 
@@ -35,14 +36,14 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
   val addr = Input(UInt(xlen.W))
   val command = Input(UInt())
   val inputTBE= Input(new TBE)
-  val outputTBE = Output(new TBE)
+  val outputTBE = Decoupled(new TBE)
 
 
 }
 
 class   TBETable(implicit  val p: Parameters) extends Module
-  with DandelionAccelParams
-  with HasAccelShellParams {
+  with HasAccelShellParams
+  with HasAccelParams {
 
 
   val (idle::alloc :: dealloc :: read :: Nil) = Enum(4)
