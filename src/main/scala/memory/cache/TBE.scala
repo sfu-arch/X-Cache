@@ -62,8 +62,14 @@ class   TBETable(implicit  val p: Parameters) extends Module
 
 
   //val (idx,full) = Counter (inc, tbetbeDepth)
-  val idx = Wire(UInt(log2Ceil(tbeDepth).W))
+  val idx = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
 
+  idx := tbeDepth.U
+  val idxValid = Bool()
+
+  idxValid := !(idx === tbeDepth.U )
+
+  io.outputTBE.valid := idxValid
   when(isAlloc) {
     for (i <- 0 until tbeDepth) {
       when(TBEValid(i) === false.B) {
@@ -87,7 +93,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
         idx := i.asUInt()
       }
     }
-    io.outputTBE := TBEMemory(idx)
+    io.outputTBE := Mux(idxValid , TBEMemory(idx), TBE.default)
   }
 
 
