@@ -59,43 +59,42 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val isAlloc = Wire(Bool())
   val isDealloc = Wire(Bool())
   val isRead = Wire(Bool())
-  val inc = Wire(Bool())
+//  val inc = Wire(Bool())
 
 
   //val (idx,full) = Counter (inc, tbetbeDepth)
-  val idx = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
+  val idx = Reg(UInt((log2Ceil(tbeDepth) + 1).W))
+  val idxValid = Wire(Bool())
 
   idx := tbeDepth.U
-  val idxValid = Bool()
-
   idxValid := !(idx === tbeDepth.U )
 
-  io.outputTBE.valid := idxValid
   when(isAlloc) {
     for (i <- 0 until tbeDepth) {
       when(TBEValid(i) === false.B) {
         idx := i.asUInt()
       }
     }
+
+  }.elsewhen(isDealloc || isRead) {
+    for (i <- 0 until tbeDepth) {
+      when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
+        idx := i.asUInt()
+      }
+    }
+  }
+
+  when (isAlloc){
     TBEMemory(idx) := io.inputTBE
     TBEAddr(idx) := io.addr
     TBEValid(idx) := true.B
-    //    inc := true.B
-  }.elsewhen(isDealloc) {
-    for (i <- 0 until tbeDepth) {
-      when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
-        idx := i.asUInt()
-      }
-    }
+  }.elsewhen(isDealloc){
     TBEValid(idx) := false.B
-  }.elsewhen(isRead) {
-    for (i <- 0 until tbeDepth) {
-      when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
-        idx := i.asUInt()
-      }
-    }
-    io.outputTBE := Mux(idxValid , TBEMemory(idx), TBE.default)
   }
+
+  io.outputTBE.valid := idxValid
+  io.outputTBE.bits := Mux(idxValid , TBEMemory(idx), TBE.default)
+
 
 
   isAlloc := Mux( io.command === alloc, true.B, false.B)
