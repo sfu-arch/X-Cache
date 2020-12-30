@@ -347,7 +347,7 @@ class test_cache01Tester1_routineLevel extends FlatSpec with Matchers {
         chisel3.iotesters.Driver.execute(
             Array(
                 // "-ll", "Info",
-                "-tn", "test_cache01Main_ISA",
+                "-tn", "test_cache01Main_routineLevel",
                 "-tbn", "verilator",
                 "-td", "test_run_dir/test_cache01",
                 "-tts", "0001",
