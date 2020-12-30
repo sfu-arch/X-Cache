@@ -10,8 +10,7 @@ object Events {
 //  val EventArray = Map[String, Int]()
 
   val EventArray = Map(
-                        (s"LOAD_I", 0x00),
-                        (s"LOAD_M",  0x01),
+                        (s"LOAD", 0x00),
   )
 
 
