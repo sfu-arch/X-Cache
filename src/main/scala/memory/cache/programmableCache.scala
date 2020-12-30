@@ -26,28 +26,33 @@ with HasAccelShellParams{
 
     val io = IO(new programmableCacheIO())
 
-    val cache = new Gem5Cache()
-    val tbe = new TBETable()
-    val state = UInt(stateLen.W)
+    val cache = Module(new Gem5Cache())
+    val tbe = Module(new TBETable())
+    val state = Wire(UInt(stateLen.W))
 
     val routineAddr = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
     val rombits = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
     val uCodedNextPtr = VecInit(rombits)
     val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions)
     val actionRom = VecInit(actions)
+    println(p"uCodedNextPtr ${uCodedNextPtr}\r\n")
+    println(p"actionRom ${actionRom}\r\n")
 //    val actionRom = VecInit()
 
 
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
 
-    val tbeAction = UInt(nCom.W)
-    val cacheAction = UInt(nCom.W)
-    val isCacheAction = Bool()
+    val tbeAction = Wire(UInt(nCom.W))
+    val cacheAction = Wire(UInt(nCom.W))
+    val isCacheAction = Wire(Bool())
 
     val readTBE = Wire(Bool())
-    val pc = UInt()
-    val action = UInt(nCom.W)
+    val pc = Reg(UInt())
+    val action = Wire(UInt(nCom.W))
+    val routineStart = Wire(Bool())
+
+    io.instruction.ready := true.B
 
     when(io.instruction.fire()){
         // latching
@@ -57,14 +62,21 @@ with HasAccelShellParams{
 
 
     readTBE := io.instruction.fire()
+    tbe.io <> DontCare
+
     tbe.io.command := Mux (readTBE, tbe.read, tbeAction )
     tbe.io.addr := addr
 
-    state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, State.default)
+    val defaultState = Wire(new State())
+    defaultState := State.default
+
+    state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, defaultState.state )
 
     val routine = WireInit( Cat (event, state))
 
-    pc := uCodedNextPtr(routine)
+    routineStart := true.B // @todo is not completed
+
+    pc := Mux(routineStart, uCodedNextPtr(routine), pc + 1.U)
     action := actionRom(pc)
 
     isCacheAction := (action(nCom-1, nCom-2) === true.B)
@@ -72,6 +84,8 @@ with HasAccelShellParams{
     tbeAction := Mux(!isCacheAction, action, tbe.idle )
     cacheAction := Mux(isCacheAction, action, 0.U(nCom.W))
 
+    cache.io.cpu <> DontCare
+    cache.io.mem <> DontCare
 
     cache.io.cpu.req.bits.command := cacheAction
     cache.io.cpu.req.bits.addr := addr
