@@ -35,8 +35,9 @@ with HasAccelShellParams{
     val uCodedNextPtr = VecInit(rombits)
     val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions)
     val actionRom = VecInit(actions)
-    printf(p"uCodedNextPtr ${uCodedNextPtr}\r\n")
-    printf(p"actionRom ${actionRom}\r\n")
+
+//    printf(p"uCodedNextPtr ${rombits}\r\n")
+//    printf(p"actionRom ${actionRom}\r\n")
 //    val actionRom = VecInit()
 
 
