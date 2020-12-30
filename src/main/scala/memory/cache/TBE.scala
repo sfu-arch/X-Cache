@@ -10,10 +10,10 @@ import chisel3.util.Enum
 
 class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelParams {
   val state = new State()
-  val data = UInt (xlen.W)
+//  val data = UInt (xlen.W)
   val way = UInt (wayLen.W)
-  val addr = UInt (addrLen.W)
-  val cmdPtr = UInt (nCom.W)
+//  val addr = UInt (addrLen.W)
+//  val cmdPtr = UInt (nCom.W)
 
 }
 object TBE {
@@ -21,10 +21,10 @@ object TBE {
   def default (implicit p: Parameters): TBE = {
     val tbe = Wire(new TBE)
     tbe.state := State.default
-    tbe.data := 0.U
-    tbe.addr := 0.U
+//    tbe.data := 0.U
+//    tbe.addr := 0.U
     tbe.way := 0.U
-    tbe.cmdPtr := 0.U
+//    tbe.cmdPtr := 0.U
     tbe
   }
 }
@@ -49,7 +49,8 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val (idle::alloc :: dealloc :: read :: Nil) = Enum(4)
 
   val io = IO(new TBETableIO())
-  val TBEMemory = VecInit(Seq.fill(tbeDepth)(new TBE))
+
+  val TBEMemory = VecInit(Seq.fill(tbeDepth)(TBE.default))
   val TBEValid = VecInit(Seq.fill(tbeDepth)(RegInit(false.B)))
   val TBEAddr = VecInit(Seq.fill(tbeDepth)(RegInit(0.U)))
 
