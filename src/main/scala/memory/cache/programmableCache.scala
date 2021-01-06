@@ -53,11 +53,19 @@ with HasAccelShellParams{
     val cacheAction = Wire(UInt(nSigs.W))
     val isCacheAction = Wire(Bool())
 
-    val readTBE = Wire(Bool())
+    val readTBE = Reg(Bool())
     val pc = Reg(UInt())
     val action = Wire(new ActionBundle())
 
+//    val tbeRdRdy = Wire(Bool())
+    val tbeResRdy = Reg(Bool())
+    val routineAddrResRdy = Reg(Bool())
+    val actionResRdy = Reg(Bool())
+
     val routineStart = Wire(Bool())
+
+    val defaultState = Wire(new State())
+    val startOfRoutine = Wire(Bool())
 
     io.instruction.ready := true.B
 
@@ -68,24 +76,29 @@ with HasAccelShellParams{
     }
 
 
+
     readTBE := io.instruction.fire()
     tbe.io <> DontCare
 
     tbe.io.command := Mux (readTBE, tbe.read, tbeAction )
     tbe.io.addr := addr
 
-    val defaultState = Wire(new State())
+    tbeResRdy := (readTBE)
+    routineAddrResRdy := (tbeResRdy)
+    actionResRdy := Mux(routineAddrResRdy, true.B , Mux (startOfRoutine, false.B, true.B))
+
     defaultState := State.default
 
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, defaultState.state )
 
     val routine = WireInit( Cat (event, state))
 
-    routineStart := true.B // @todo is not completed
+    routineStart := routineAddrResRdy
 
-    pc := Mux(routineStart, uCodedNextPtr(routine), pc + 1.U)
+    pc := Mux(routineStart, uCodedNextPtr(routine), Mux(startOfRoutine, pc, pc + 1.U))
 
     action.signals := actionRom(pc)(nSigs -1,0)
+    startOfRoutine := (action.signals === 0.U)
     action.isCacheAction := actionRom(pc)(nSigs)
 
     isCacheAction := (action.isCacheAction === true.B)
@@ -98,7 +111,7 @@ with HasAccelShellParams{
 
     cache.io.cpu.req.bits.command := cacheAction
     cache.io.cpu.req.bits.addr := addr
-    cache.io.cpu.req.valid := true.B
+    cache.io.cpu.req.valid := actionResRdy
 
 
 
