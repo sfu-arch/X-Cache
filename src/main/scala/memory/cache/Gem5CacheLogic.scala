@@ -454,8 +454,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   //  def Replace (set: UInt): UInt={
   //
   //  }
-  // FSM for each command
-  //  way :=
+
 
 
   val readMetaData = Wire(Bool())
