@@ -6,6 +6,7 @@ import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.util._
 import dandelion.interfaces._
+import dandelion.interfaces.ActionBundle
 import dandelion.memory.TBE
 import dandelion.interfaces.axi._
 import chisel3.util.experimental.loadMemoryFromFile
@@ -48,13 +49,14 @@ with HasAccelShellParams{
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
 
-    val tbeAction = Wire(UInt(nCom.W))
-    val cacheAction = Wire(UInt(nCom.W))
+    val tbeAction = Wire(UInt(nSigs.W))
+    val cacheAction = Wire(UInt(nSigs.W))
     val isCacheAction = Wire(Bool())
 
     val readTBE = Wire(Bool())
     val pc = Reg(UInt())
-    val action = Wire(UInt(nCom.W))
+    val action = Wire(new ActionBundle())
+
     val routineStart = Wire(Bool())
 
     io.instruction.ready := true.B
@@ -82,12 +84,14 @@ with HasAccelShellParams{
     routineStart := true.B // @todo is not completed
 
     pc := Mux(routineStart, uCodedNextPtr(routine), pc + 1.U)
-    action := actionRom(pc)
 
-    isCacheAction := (action(nCom-1, nCom-2) === true.B)
+    action.signals := actionRom(pc)(nSigs -1,0)
+    action.isCacheAction := actionRom(pc)(nSigs)
 
-    tbeAction := Mux(!isCacheAction, action, tbe.idle )
-    cacheAction := Mux(isCacheAction, action, 0.U(nCom.W))
+    isCacheAction := (action.isCacheAction === true.B)
+
+    tbeAction := Mux(!isCacheAction, action.signals, tbe.idle )
+    cacheAction := Mux(isCacheAction, action.signals, 0.U(nSigs.W))
 
     cache.io.cpu <> DontCare
     cache.io.mem <> DontCare
