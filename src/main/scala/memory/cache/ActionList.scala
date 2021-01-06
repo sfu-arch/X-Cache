@@ -11,14 +11,15 @@ object ActionList {
 
     val actions = Map[String, Bits](
 
-        ("Allocate" ,"b10000110100".U) ,
-        ("ReadInt" , "b10100000000".U),
-        ("Probe", "b10000001011".U),
-        ("Aloc" , "b10000110100".U),
-        ("DAloc", "b10001000000".U),
-        ("WrInt", "b10010000000".U),
-        ("RdInt", "b10100000000".U),
-        ("DataRQ", "b11000000000".U)
+        ("Allocate" ,   "b10000110100".U) ,
+        ("ReadInt" ,    "b10100000000".U),
+        ("Probe",       "b10000001011".U),
+        ("Aloc" ,       "b10000110100".U),
+        ("DAloc",       "b10001000000".U),
+        ("WrInt",       "b10010000000".U),
+        ("RdInt",       "b10100000000".U),
+        ("DataRQ",      "b11000000000".U),
+        ("Nop",         "b10000000000".U)
 
 
 
