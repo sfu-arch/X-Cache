@@ -87,7 +87,13 @@ with HasAccelShellParams{
 
     tbeResRdy := (readTBE)
     routineAddrResRdy := (tbeResRdy)
-    actionResRdy := Mux(routineAddrResRdy, true.B , Mux (startOfRoutine, false.B, true.B))
+
+    isProbe := (action.signals === ActionList.actions("Probe").asUInt()(nSigs-1 , 0))
+
+    val (probeHandled, _) = Counter(isProbe, 2)
+//    printf(p"${probeHandled} \n")
+
+    actionResRdy := Mux(routineAddrResRdy, true.B , Mux (startOfRoutine, false.B, Mux(isProbe, (probeHandled.asBool()), true.B)))
 
     defaultState := State.default
 
@@ -97,12 +103,12 @@ with HasAccelShellParams{
 
     routineStart := routineAddrResRdy
 
-    isProbe := (action.signals === ActionList.actions("Probe").asUInt())
 
-    pc := Mux(routineStart, uCodedNextPtr(routine), Mux(startOfRoutine, pc, pc + 1.U))
+
+    pc := Mux(routineStart, uCodedNextPtr(routine), Mux(startOfRoutine, pc,  Mux(isProbe, pc + probeHandled.asUInt(), pc+ 1.U  )))
 
     action.signals := actionRom(pc)(nSigs -1,0)
-    startOfRoutine := (action.signals === 0.U)
+    startOfRoutine := (action.signals === 0.U & action.isCacheAction === 0.U)
     action.isCacheAction := actionRom(pc)(nSigs)
 
     isCacheAction := (action.isCacheAction === true.B)
