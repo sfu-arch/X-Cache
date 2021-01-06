@@ -67,6 +67,8 @@ with HasAccelShellParams{
     val defaultState = Wire(new State())
     val startOfRoutine = Wire(Bool())
 
+    val isProbe = Wire(Bool())
+
     io.instruction.ready := true.B
 
     when(io.instruction.fire()){
@@ -94,6 +96,8 @@ with HasAccelShellParams{
     val routine = WireInit( Cat (event, state))
 
     routineStart := routineAddrResRdy
+
+    isProbe := (action.signals === ActionList.actions("Probe").asUInt())
 
     pc := Mux(routineStart, uCodedNextPtr(routine), Mux(startOfRoutine, pc, pc + 1.U))
 
