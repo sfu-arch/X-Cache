@@ -212,6 +212,14 @@ class test_cache01Test01_routineLevel(c: programmableCache)(implicit p: Paramete
     step(1)
     poke(c.io.instruction.valid, false.B)
     step(10)
+    poke(c.io.instruction.valid,true.B)
+    poke(c.io.instruction.bits.event,0.U)
+    poke(c.io.instruction.bits.addr,"b10".U)
+    step(1)
+    poke(c.io.instruction.valid, false.B)
+
+
+    step(10)
     //    testAllocate(1.U)
     //    //  step(2)
     //    testAllocate(5.U)
