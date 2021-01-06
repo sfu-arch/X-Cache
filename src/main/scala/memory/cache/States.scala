@@ -9,6 +9,7 @@ object States{
 
   val StateArray = Map(
     (s"I", 0x00),
-    (s"M",  0x01)
+    (s"S", 0x01),
+    (s"M",  0x02)
 
   )}

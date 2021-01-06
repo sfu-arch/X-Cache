@@ -11,7 +11,9 @@ object RoutineROM {
 
   val routineActions = Array [RoutinePC](
 
-    Routine ("LOAD_I") , Actions(Seq("Allocate", "ReadInt"))
+    Routine ("LOAD_I") , Actions(Seq("Allocate", "ReadInt")),
+    Routine ("LOAD_M"), Actions(Seq ("DataRQ")),
+    Routine("STORE_I"), Actions(Seq("Allocate")) // @todo incompleted
 
     /*
     Allocate

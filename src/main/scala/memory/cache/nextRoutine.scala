@@ -11,7 +11,11 @@ object nextRoutine {
 
     val routineTriggerList = Array [RoutinePC](
 
-                    Routine ("LOAD_I") , Trigger( Seq ("LOAD" , "I"))
+                    Routine ("LOAD_I") , Trigger( Seq ("LOAD" , "I")),
+                    Routine ("LOAD_M") , Trigger( Seq("LOAD", "M")),
+                    Routine ("STORE_i") , Trigger( Seq("STORE", "I")),
+
+
 
 
     )
