@@ -458,7 +458,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   val readMetaData = Wire(Bool())
-  val targetWay = Reg(UInt((wayLen + 1).W))
+  val targetWay = RegInit(nWays.U((wayLen + 1).W))
 
   val MD = Wire(new MetaData())
   MD.tag := tag
