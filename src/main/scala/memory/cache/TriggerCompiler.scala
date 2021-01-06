@@ -63,14 +63,14 @@ object RoutinePtr {
 
     val events = Events.EventArray
     val states = States.StateArray
-      val eventLen = if (events.size == 1) 1 else (log2Ceil(events.size))
+      val eventLen = if (events.size == 1) 1 else log2Ceil(events.size)
 
-      val stateLen =  if (states.size == 1) 1 else log2Ceil(states.size)
+      val stateLen =  if (states.size == 1 ) 1 else log2Ceil(states.size)
 
 //      println (p"${eventLen}  ${stateLen} \r\n")
 
     var routineTriggerBit = new ArrayBuffer[Bits]
-      for ( i <- 0 until eventLen * stateLen){
+      for ( i <- 0 until states.size * events.size){
           routineTriggerBit += 0.U
       }
 
@@ -86,8 +86,8 @@ object RoutinePtr {
             val state = states(list(1)).toString() + ""
 //            val line = Cat(lineName.U, event.U ,state.U )
 
-//            println(p"event, state ${event++state}\r\n")
-//            printf(p"event, state ${(event ++ state).toInt}\r\n")
+            println(p"event, state ${event++state}\n")
+            printf(p"event, state ${(event ++ state).toInt}\n")
 //            println(p"${routineTriggerBit(0)}\r\n")
             routineTriggerBit( (event ++ state).toInt) = (lineName.U)
 //            println("Line " + lineName.U)
