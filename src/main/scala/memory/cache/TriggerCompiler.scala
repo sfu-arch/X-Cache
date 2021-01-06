@@ -67,10 +67,10 @@ object RoutinePtr {
 
       val stateLen =  if (states.size == 1 ) 1 else log2Ceil(states.size)
 
-//      println (p"${eventLen}  ${stateLen} \r\n")
+//      println (p"${eventLen}  ${math.pow(2, log2Ceil(states.size * events.size)).toInt} \r\n")
 
     var routineTriggerBit = new ArrayBuffer[Bits]
-      for ( i <- 0 until states.size * events.size){
+      for ( i <- 0 until math.pow(2, log2Ceil(states.size * events.size)).toInt){
           routineTriggerBit += 0.U
       }
 
@@ -82,14 +82,15 @@ object RoutinePtr {
             lineName = routineAddrMap(name)
 
         case Trigger(list) =>
-            val event = events(list(0)).toString() + ""
-            val state = states(list(1)).toString() + ""
+            val event = events(list(0)) << stateLen
+            val state = states(list(1))
+            val idx= event | state
 //            val line = Cat(lineName.U, event.U ,state.U )
 
-            println(p"event, state ${event++state}\n")
-            printf(p"event, state ${(event ++ state).toInt}\n")
+            println(p"event, state ${idx}\n")
+//            printf(p"event, state ${(event ++ state).toInt}\n")
 //            println(p"${routineTriggerBit(0)}\r\n")
-            routineTriggerBit( (event ++ state).toInt) = (lineName.U)
+            routineTriggerBit( idx) = (lineName.U)
 //            println("Line " + lineName.U)
 
       }
