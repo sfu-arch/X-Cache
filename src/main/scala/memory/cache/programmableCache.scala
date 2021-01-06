@@ -32,9 +32,9 @@ with HasAccelShellParams{
 
 
     val routineAddr = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
-    printf(p"routine addr ${routineAddr} \n")
+//    printf(p"routine addr ${routineAddr} \n")
     val rombits = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
-    printf(p"romBits ${rombits} \n")
+//    printf(p"romBits ${rombits} \n")
 
     val uCodedNextPtr = VecInit(rombits)
 
@@ -42,8 +42,8 @@ with HasAccelShellParams{
     val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions)
     val actionRom = VecInit(actions)
 
-    printf(p"uCodedNextPtr ${uCodedNextPtr}\n")
-    printf(p"actionRom ${actionRom}\n")
+//    printf(p"uCodedNextPtr ${uCodedNextPtr}\n")
+//    printf(p"actionRom ${actionRom}\n")
 
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
