@@ -25,13 +25,17 @@ object RoutinePtr {
       var routineAddr = 0
       var mappedRoutine = Map[String, Int]()
       for (routine <- routineRom) {
-        routine match {
-          case Actions(actionList) => routineAddr += 1
-          case Routine(name) => mappedRoutine += ((name, routineAddr))
-        }
-      }
+          routine match {
+              case Actions(actionList) => routineAddr += actionList.length
+              case Routine(name) => {
+                  routineAddr += 1
+                  mappedRoutine += ((name, routineAddr))
+              }
+          }
 
-    mappedRoutine
+      }
+      mappedRoutine
+
   }
 
 
