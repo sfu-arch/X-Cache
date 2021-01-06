@@ -30,16 +30,20 @@ with HasAccelShellParams{
     val tbe = Module(new TBETable())
     val state = Wire(UInt(stateLen.W))
 
+
     val routineAddr = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
+    printf(p"routine addr ${routineAddr} \n")
     val rombits = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
+    printf(p"romBits ${rombits} \n")
+
     val uCodedNextPtr = VecInit(rombits)
+
+
     val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions)
     val actionRom = VecInit(actions)
 
-//    printf(p"uCodedNextPtr ${rombits}\r\n")
-//    printf(p"actionRom ${actionRom}\r\n")
-//    val actionRom = VecInit()
-
+    printf(p"uCodedNextPtr ${uCodedNextPtr}\n")
+    printf(p"actionRom ${actionRom}\n")
 
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
