@@ -19,7 +19,10 @@ object ActionList {
         ("WrInt",       "b10010000000".U),
         ("RdInt",       "b10100000000".U),
         ("DataRQ",      "b11000000000".U),
-        ("Nop",         "b10000000000".U)
+        ("Nop",         "b10000000000".U),
+        ("AllocateTBE", "b00000000001".U),
+        ("DeallocateTBE","b00000000010".U)/*,*/
+//        ("ReadTBE",     "b00000000011".U)
 
 
 
