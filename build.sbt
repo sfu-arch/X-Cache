@@ -26,6 +26,8 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel-iotesters" % "1.3-SNAPSHOT"),
   libraryDependencies ++= Seq("edu.berkeley.cs" %% "dsptools" % "1.2-SNAPSHOT"),
   libraryDependencies ++= Seq("edu.berkeley.cs" %% "chiseltest" % "0.2.1"),
+  libraryDependencies ++= Seq("edu.berkeley.cs" %% "treadle" % "1.1-SNAPSHOT"),
+
 
 
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
