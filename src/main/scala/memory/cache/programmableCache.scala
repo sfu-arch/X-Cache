@@ -31,6 +31,10 @@ with HasAccelShellParams{
     val tbe = Module(new TBETable())
     val state = Wire(UInt(stateLen.W))
 
+    val inputTBE = WireInit(TBE.default)
+
+
+
 
     val routineAddr = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
 //    printf(p"routine addr ${routineAddr} \n")
@@ -80,10 +84,18 @@ with HasAccelShellParams{
 
 
     readTBE := io.instruction.fire()
-    tbe.io <> DontCare
+//    tbe.io <> DontCare
+
+    printf(p"tbe command ${tbe.io.command} \n")
 
     tbe.io.command := Mux (readTBE, tbe.read, tbeAction )
     tbe.io.addr := addr
+
+    inputTBE.state := State.default // @todo should be changed
+    inputTBE.way := 1.U // @todo should be changed
+
+    tbe.io.inputTBE := inputTBE
+    tbe.io.outputTBE.ready := true.B
 
     tbeResRdy := (readTBE)
     routineAddrResRdy := (tbeResRdy)
