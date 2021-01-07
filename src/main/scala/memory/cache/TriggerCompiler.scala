@@ -87,7 +87,7 @@ object RoutinePtr {
             val idx= event | state
 //            val line = Cat(lineName.U, event.U ,state.U )
 
-            println(p"event, state ${idx}\n")
+//            println(p"event, state ${idx}\n")
 //            printf(p"event, state ${(event ++ state).toInt}\n")
 //            println(p"${routineTriggerBit(0)}\r\n")
             routineTriggerBit( idx) = (lineName.U)

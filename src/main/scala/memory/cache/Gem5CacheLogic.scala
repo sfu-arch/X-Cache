@@ -496,12 +496,12 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     way := nWays.U
   }
 
-//  printf(p"signals  ${signals}\n")
+  printf(p"signals  ${signals}\n")
 //  printf(p"loadMeta  ${loadWaysMeta}\n")
 //  printf(p"findInSet ${findInSetSig}\n")
-  printf(p"targetWay ${targetWay} \n")
+//  printf(p"targetWay ${targetWay} \n")
 //  printf(p"prepMDWrite ${prepMDWrite} \n")
-  printf(p"way ${way}\n")
+//  printf(p"way ${way}\n")
 
   when(prepMDRead){
     prepForRead(io.metaMem)

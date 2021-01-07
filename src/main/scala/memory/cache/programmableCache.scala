@@ -7,10 +7,10 @@ import dandelion.config._
 import dandelion.util._
 import dandelion.interfaces._
 import dandelion.interfaces.ActionBundle
-import dandelion.memory.TBE
+//import dandelion.memory.TBE
 import dandelion.interfaces.axi._
 import chisel3.util.experimental.loadMemoryFromFile
-import dandelion.memory.TBE.{ TBETable}
+//import dandelion.memory.TBE.{ TBETable, TBE}
 
 
 
@@ -92,6 +92,7 @@ with HasAccelShellParams{
 
     val (probeHandled, _) = Counter(isProbe, 2)
 //    printf(p"${probeHandled} \n")
+
 
     actionResRdy := Mux(routineAddrResRdy, true.B , Mux (startOfRoutine, false.B, Mux(isProbe, (probeHandled.asBool()), true.B)))
 

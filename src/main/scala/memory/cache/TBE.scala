@@ -1,4 +1,4 @@
-package dandelion.memory.TBE
+package dandelion.memory.cache
 
 import chipsalliance.rocketchip.config._
 import chisel3._
@@ -46,7 +46,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
   with HasAccelParams {
 
 
-  val (idle::alloc :: dealloc :: read :: Nil) = Enum(4)
+  val (idle:: alloc :: dealloc :: read :: Nil) = Enum(4)
 
   val io = IO(new TBETableIO())
 
