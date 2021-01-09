@@ -15,6 +15,7 @@ abstract class RoutinePC ()
 case class Routine (name : String) extends RoutinePC
 case class Actions (actionList: Seq[String]) extends RoutinePC
 case class Trigger (triggerList : Seq[String]) extends  RoutinePC
+case class DstState(name :String) extends  RoutinePC
 
 
 
@@ -59,7 +60,7 @@ object RoutinePtr {
 //  }
 
 
-  def generateTriggerRoutineBit (routineAddrMap : Map[String, Int], routineTrigger: Array[RoutinePC]) : Array[Bits] = {
+  def generateTriggerRoutineBit (routineAddrMap : Map[String, Int], routineTrigger: Array[RoutinePC]) : (Array[Bits] , Array[Bits]) = {
 
     val events = Events.EventArray
     val states = States.StateArray
@@ -70,33 +71,40 @@ object RoutinePtr {
 //      println (p"${eventLen}  ${math.pow(2, log2Ceil(states.size * events.size)).toInt} \r\n")
 
     var routineTriggerBit = new ArrayBuffer[Bits]
+      var routineDstStBit = new ArrayBuffer[Bits]
       for ( i <- 0 until math.pow(2, log2Ceil(states.size * events.size)).toInt){
           routineTriggerBit += 0.U
+          routineDstStBit += 0.U
+
       }
 
 
-      var lineName = 0
+      var routineStartAddr = 0
+      var routineDstState = 0
       for (routine <- routineTrigger){
       routine match{
         case Routine(name) =>
-            lineName = routineAddrMap(name)
+            routineStartAddr = routineAddrMap(name)
+        case DstState(name) =>
+            routineDstState = states(name)
 
         case Trigger(list) =>
             val event = events(list(0)) << stateLen
             val state = states(list(1))
-            val idx= event | state
+            val idx = event | state
+            routineTriggerBit( idx) = (routineStartAddr.U)
+            routineDstStBit (idx) = routineDstState.U
 //            val line = Cat(lineName.U, event.U ,state.U )
-
 //            println(p"event, state ${idx}\n")
 //            printf(p"event, state ${(event ++ state).toInt}\n")
 //            println(p"${routineTriggerBit(0)}\r\n")
-            routineTriggerBit( idx) = (lineName.U)
+
 //            println("Line " + lineName.U)
 
       }
 
     }
-      routineTriggerBit.toArray
+      (routineTriggerBit.toArray, routineDstStBit.toArray)
 
   }
 

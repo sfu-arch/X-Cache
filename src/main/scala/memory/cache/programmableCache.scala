@@ -38,10 +38,11 @@ with HasAccelShellParams{
 
     val routineAddr = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
 //    printf(p"routine addr ${routineAddr} \n")
-    val rombits = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
+    val (rombits, dstStateBits) = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
 //    printf(p"romBits ${rombits} \n")
 
     val uCodedNextPtr = VecInit(rombits)
+    val dstStateRom = VecInit(dstStateBits)
 
 
     val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions)
