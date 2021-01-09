@@ -63,17 +63,24 @@ with HasAccelShellParams{
     val action = Wire(new ActionBundle())
 
 //    val tbeRdRdy = Wire(Bool())
-    val tbeResRdy = Reg(Bool())
-    val routineAddrResRdy = Reg(Bool())
-    val actionResRdy = Reg(Bool())
+    val tbeResValid = Wire(Bool())
+    val routineAddrResValid = Reg(Bool())
+    val actionResValid = Reg(Bool())
 
     val routineStart = Wire(Bool())
 
     val defaultState = Wire(new State())
+    val dstState = Wire(new State())
+
     val startOfRoutine = Wire(Bool())
 
-    val isProbe = Wire(Bool())
 
+    val isProbe = Wire(Bool())
+    val routine = WireInit( Cat (event, state))
+
+    val (probeHandled, _) = Counter(isProbe, 2)
+
+    defaultState := State.default
     io.instruction.ready := true.B
 
     when(io.instruction.fire()){
@@ -82,49 +89,34 @@ with HasAccelShellParams{
         event := io.instruction.bits.event
     }
 
-
-
     readTBE := io.instruction.fire()
-//    tbe.io <> DontCare
 
-    printf(p"tbe command ${tbe.io.command} \n")
+    dstState.state := dstStateRom(routine)
+    inputTBE.state.state :=  Mux(actionResValid & !isCacheAction, dstState.state, State.default.state)  // @todo should be changed
+    inputTBE.way := 1.U //@todo should be changed to the way calculated by the same logic which is in charge of probing and resource chekcing
 
     tbe.io.command := Mux (readTBE, tbe.read, tbeAction )
     tbe.io.addr := addr
-
-    inputTBE.state := State.default // @todo should be changed
-    inputTBE.way := 1.U // @todo should be changed
-
     tbe.io.inputTBE := inputTBE
+
     tbe.io.outputTBE.ready := true.B
 
-    tbeResRdy := (readTBE)
-    routineAddrResRdy := (tbeResRdy)
+    tbeResValid := (readTBE)
+    routineAddrResValid := (tbeResValid)
+    routineStart := tbeResValid
 
     isProbe := (action.signals === ActionList.actions("Probe").asUInt()(nSigs-1 , 0))
 
-    val (probeHandled, _) = Counter(isProbe, 2)
-//    printf(p"${probeHandled} \n")
-
-
-    actionResRdy := Mux(routineAddrResRdy, true.B , Mux (startOfRoutine, false.B, Mux(isProbe, (probeHandled.asBool()), true.B)))
-
-    defaultState := State.default
+    actionResValid := Mux(routineAddrResValid, true.B , Mux (startOfRoutine, false.B, Mux(isProbe, (probeHandled.asBool()), true.B)))
 
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, defaultState.state )
-
-    val routine = WireInit( Cat (event, state))
-
-    routineStart := routineAddrResRdy
-
-
 
     pc := Mux(routineStart, uCodedNextPtr(routine), Mux(startOfRoutine, pc,  Mux(isProbe, pc + probeHandled.asUInt(), pc+ 1.U  )))
 
     action.signals := actionRom(pc)(nSigs -1,0)
-    startOfRoutine := (action.signals === 0.U & action.isCacheAction === 0.U)
     action.isCacheAction := actionRom(pc)(nSigs)
 
+    startOfRoutine := (action.signals === 0.U & action.isCacheAction === 0.U)
     isCacheAction := (action.isCacheAction === true.B)
 
     tbeAction := Mux(!isCacheAction, action.signals, tbe.idle )
@@ -135,7 +127,7 @@ with HasAccelShellParams{
 
     cache.io.cpu.req.bits.command := cacheAction
     cache.io.cpu.req.bits.addr := addr
-    cache.io.cpu.req.valid := actionResRdy
+    cache.io.cpu.req.valid := actionResValid
 
 
 

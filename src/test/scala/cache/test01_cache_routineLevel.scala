@@ -356,7 +356,7 @@ class test_cache01Tester1_routineLevel extends FlatSpec with Matchers {
             Array(
                  "-ll", "Error",
                 "-tn", "test_cache01Main_routineLevel",
-                "-tbn", "treadle",
+                "-tbn", "verilator",
                 "-td", "test_run_dir/test_cache01",
                 "-tts", "0001",
                 "--generate-vcd-output", "on"),
