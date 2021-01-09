@@ -50,9 +50,9 @@ class   TBETable(implicit  val p: Parameters) extends Module
 
   val io = IO(new TBETableIO())
 
-  val TBEMemory = VecInit(Seq.fill(tbeDepth)(TBE.default))
-  val TBEValid = VecInit(Seq.fill(tbeDepth)(RegInit(false.B)))
-  val TBEAddr = VecInit(Seq.fill(tbeDepth)(RegInit(0.U)))
+  val TBEMemory = RegInit(VecInit(Seq.fill(tbeDepth)(TBE.default)))
+  val TBEValid = RegInit(VecInit(Seq.fill(tbeDepth)(false.B)))
+  val TBEAddr = RegInit(VecInit(Seq.fill(tbeDepth)((0.U))))
 
 
   val isAlloc = Wire(Bool())
@@ -62,9 +62,11 @@ class   TBETable(implicit  val p: Parameters) extends Module
 
 
   //val (idx,full) = Counter (inc, tbetbeDepth)
-  val idx = Reg(UInt((log2Ceil(tbeDepth) + 1).W))
+  val idx = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
+  val idxReg = Reg(UInt((log2Ceil(tbeDepth) + 1).W))
   val idxValid = Wire(Bool())
 
+  idxReg := idx
   idx := tbeDepth.U
   idxValid := !(idx === tbeDepth.U )
 
@@ -75,20 +77,21 @@ class   TBETable(implicit  val p: Parameters) extends Module
       }
     }
 
-  }.elsewhen(isDealloc || isRead) {
-    for (i <- 0 until tbeDepth) {
+  }.elsewhen(isDealloc | isRead) {
+    for (i <- 0 until tbeDepth) yield {
       when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
         idx := i.asUInt()
       }
     }
   }
 
-  when (isAlloc){
-    TBEMemory(idx) := io.inputTBE
-    TBEAddr(idx) := io.addr
-    TBEValid(idx) := true.B
-  }.elsewhen(isDealloc){
-    TBEValid(idx) := false.B
+
+  when (RegNext(isAlloc)){
+    TBEMemory(idxReg) := io.inputTBE
+    TBEAddr(idxReg) := io.addr
+    TBEValid(idxReg) := true.B
+  }.elsewhen(RegNext(isDealloc)){
+    TBEValid(idxReg) := false.B
   }
 
   io.outputTBE.valid := idxValid
