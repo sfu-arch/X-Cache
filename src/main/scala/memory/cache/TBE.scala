@@ -55,7 +55,6 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val TBEAddr = VecInit(Seq.fill(tbeDepth)(RegInit(0.U)))
 
 
-  // @todo lookup method
   val isAlloc = Wire(Bool())
   val isDealloc = Wire(Bool())
   val isRead = Wire(Bool())
