@@ -161,7 +161,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val cpu_tag = RegInit(0.U(io.cpu.req.bits.tag.getWidth.W))
   val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
   val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
-//  println (s" \n ******* \n len ${io.cpu.req.bits.command.getWidth.W } \n")
   val count_set = RegInit(false.B)
   val inputState = RegInit(State.default)
 
@@ -190,10 +189,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), nData)
   val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), nData)
 
-
-
-
-
   commandValid := io.cpu.req.fire()
 
   when(io.cpu.req.fire()) {
@@ -206,20 +201,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     tag := addrToTag(io.cpu.req.bits.addr)
     set := addrToSet(io.cpu.req.bits.addr)
     offset := addrToOffset(io.cpu.req.bits.addr)
-    //    inputState := io.cpu.req.bits.state
   }
 
-//  when (io.cpu.req.fire()){
-//  }.otherwise{
-//    cpu_command := 0.U(nSigs.W)
-//  }
 
   val signals = Wire(Vec(nSigs, Bool()))
 
   decoder.io.inAction := cpu_command
   signals := decoder.io.outSignals
-
-
 
   val readyForCmd = RegInit(true.B)
 
@@ -254,12 +242,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     dataValid := valid(set * nSets.U + way)
   }
 
-//  when(done) {
-//    readyForCmd := true.B
-//  }.elsewhen(commandValid) {
-//    readyForCmd := false.B
-//  }
-
   io.mem.ar.bits.addr := addr_reg
   io.mem.ar.valid := addrReadValid
   io.mem.r.ready := dataReadReady
@@ -273,12 +255,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     dataBuffer(read_count) := io.mem.r.bits.data
   }
 
-//  io.cpu.req.ready := readyForCmd
   io.cpu.req.ready := true.B
 
-  //loadWaysMeta := false.B
   loadLineData := false.B
-  //findInSetSig := false.B
   addrToLocSig := false.B
   dataValidCheckSig := false.B
   loadState := false.B
@@ -349,7 +328,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   def tagValidation(set: UInt, way: UInt): Bool = {
     validTag(set * nWays.U + way) := true.B
-    //    printf(p"Valid Tag: ${validTag(set*nWays.U + way)}\n")
     true.B
   }
 
@@ -418,17 +396,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     tagInvalidation(set, way)
   }
 
-  //  def Probing (addr:UInt): (UInt,UInt) ={
-  //    val set = addrToSet(addr)
-  //    val way = rplPolicy (set)
-  //    (set, way)
-  //  }
+
   def ReadInternal(set: UInt, way: UInt): Unit = {
     findInSetSig := true.B
     prepForRead(io.dataMem)
-    //    io.dataMem.address := set*nSets.U + way
-    //    io.dataMem.bank := 0.U
-    //    io.dataMem.isRead := true.B
   }
 
   def SetState(state: State): Bool = {
@@ -450,13 +421,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
 
-
-  //  def Replace (set: UInt): UInt={
-  //
-  //  }
-
-
-
   val readMetaData = Wire(Bool())
   val targetWay = RegInit(nWays.U((wayLen + 1).W))
 
@@ -466,7 +430,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   wayInvalid := (targetWay === nWays.U)
 
 
-    //  val signals = WireInit(VecInit(Seq.fill(nSigs)(false.B)))
   val allocate = WireInit(signals(sigAllocate))
   val prepMDRead = WireInit(signals(sigPrepMDRead))
   val prepMDWrite = WireInit(signals(sigPrepMDWrite))
@@ -484,9 +447,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val (hitCount,  _) = Counter( hit , 1000)
 
   readMetaData := !(sigAllocate | sigDeallocate)
-
-
-
 
   when (!wayInvalid) {
     way := targetWay
@@ -564,12 +524,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }.elsewhen(deallocate){
     validTag(set * nWays.U + way) := false.B
   }
-
-
-
-  
-
-
 
 
 //  switch(stAlReg){
