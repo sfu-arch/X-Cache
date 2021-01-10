@@ -153,7 +153,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   // memory
   val valid = RegInit(VecInit(Seq.fill(nSets * nWays)(false.B)))
   val validTag = RegInit(VecInit(Seq.fill(nSets * nWays)(false.B)))
-  val dirty = VecInit(Seq.fill(nSets)(0.U(nWays.W)))
+  val dirty = RegInit(VecInit(Seq.fill(nSets * nWays)(false.B)))
+  val lock = RegInit(VecInit(Seq.fill(nSets * nWays)(false.B)))
 
   val addr_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
   val cpu_data = RegInit(0.U(io.cpu.req.bits.data.getWidth.W))
