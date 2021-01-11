@@ -37,19 +37,13 @@ with HasAccelShellParams{
 
 
     val routineAddr = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
-//    printf(p"routine addr ${routineAddr} \n")
     val (rombits, dstStateBits) = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
-//    printf(p"romBits ${rombits} \n")
 
     val uCodedNextPtr = VecInit(rombits)
     val dstStateRom = VecInit(dstStateBits)
 
-
     val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions)
     val actionRom = VecInit(actions)
-
-//    printf(p"uCodedNextPtr ${uCodedNextPtr}\n")
-//    printf(p"actionRom ${actionRom}\n")
 
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
@@ -80,6 +74,8 @@ with HasAccelShellParams{
 
     val (probeHandled, _) = Counter(isProbe, 2)
 
+    val targetWay = RegInit(nWays.U((wayLen+1).W))
+
     defaultState := State.default
     io.instruction.ready := true.B
 
@@ -89,11 +85,15 @@ with HasAccelShellParams{
         event := io.instruction.bits.event
     }
 
+    when (cache.io.cpu.resp.fire()){
+        targetWay := cache.io.cpu.resp.bits.way
+    }
+
     readTBE := io.instruction.fire()
 
     dstState.state := dstStateRom(routine)
     inputTBE.state.state :=  Mux(actionResValid & !isCacheAction, dstState.state, State.default.state)  // @todo should be changed
-    inputTBE.way := 1.U //@todo should be changed to the way calculated by the same logic which is in charge of probing and resource chekcing
+    inputTBE.way := targetWay //@todo should be changed to the way calculated by the same logic which is in charge of probing and resource chekcing
 
     tbe.io.command := Mux (readTBE, tbe.read, tbeAction )
     tbe.io.addr := addr

@@ -371,7 +371,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
 
-  def findInSet(set: UInt, tag: UInt): UInt = {
+  def findAddrInSet(set: UInt, tag: UInt): UInt = {
     MD.tag := tag
     val wayWire = Wire(UInt((nWays + 1).W))
     wayWire := nWays.U
@@ -422,12 +422,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   val readMetaData = Wire(Bool())
-  val targetWay = RegInit(nWays.U((wayLen + 1).W))
+  val targetWayReg = RegInit(nWays.U((wayLen + 1).W))
+  val targetWayWire = WireInit(nWays.U((wayLen + 1).W))
 
   val MD = Wire(new MetaData())
   MD.tag := tag
 
-  wayInvalid := (targetWay === nWays.U)
+  wayInvalid := (targetWayReg === nWays.U)
 
 
   val allocate = WireInit(signals(sigAllocate))
@@ -449,7 +450,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   readMetaData := !(sigAllocate | sigDeallocate)
 
   when (!wayInvalid) {
-    way := targetWay
+    way := targetWayReg
   }.elsewhen(addrToWaySig){
     way := addrToWay(set)
   }.otherwise{
@@ -498,10 +499,17 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       io.metaMem.outputValue := DontCare
   }
 
-  when(findInSetSig & loadWaysMeta){
-    targetWay := findInSet(set,tag)
+  when(findInSetSig & loadWaysMeta) { // probing way
+    targetWayReg := findAddrInSet(set,tag)
   }.otherwise{
-    targetWay := targetWay
+    targetWayReg := targetWayReg
+  }
+
+  when(findInSetSig & loadWaysMeta) { // probing lock
+    targetWayWire := findAddrInSet(set,tag)
+    targetWayReg := targetWayWire
+  }.otherwise{
+    targetWayReg := targetWayReg
   }
 
 
@@ -511,13 +519,11 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //    io.metaMem.isRead := true.B
 //  }
 
-
   when(loadWaysMeta){
     waysInASet := io.metaMem.inputValue
   }.otherwise{
     waysInASet := waysInASet
   }
-
 
   when(allocate ) {
     validTag(set * nWays.U + way) := true.B
@@ -525,6 +531,14 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     validTag(set * nWays.U + way) := false.B
   }
 
+  when(allocate ) {
+    lock(set * nWays.U + way) := true.B
+  }.elsewhen(deallocate){
+    lock(set * nWays.U + way) := false.B
+  }
+
+  io.cpu.resp.bits.way := targetWayReg
+  io.cpu.resp.valid := true.B
 
 //  switch(stAlReg){
 //    is (stAlIdle){
@@ -675,7 +689,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  }
 
 
-  io.cpu.resp.valid := false.B
+//  io.cpu.resp.valid := false.B
 //
 //  switch(cpu_command) {
 //
