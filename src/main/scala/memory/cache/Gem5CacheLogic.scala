@@ -109,7 +109,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     val stateMem = new StateMemIO()
   })
 
-
   val decoder = Module(new Decoder)
 
   io.cpu <> DontCare

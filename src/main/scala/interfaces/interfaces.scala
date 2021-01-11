@@ -3,7 +3,7 @@ package dandelion.interfaces
 
 
 import chisel3._
-import chisel3.util.Decoupled
+import chisel3.util.{Decoupled, log2Ceil}
 import chipsalliance.rocketchip.config._
 import utility.Constants._
 import dandelion.config._
@@ -234,6 +234,7 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
   val iswrite = Bool()
   val tile = UInt(xlen.W)
   val command = UInt(nSigs.W)
+  val way = UInt((log2Ceil(accelParams.nways) + 1).W)
 //  val state = UInt(4.W)
 
 
@@ -248,6 +249,7 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
     wire.taskID := this.taskID
     wire.iswrite := this.iswrite
     wire.command := this.command
+    wire.way := this.way
     wire.tile := tile
 //    wire.state := this.state
     wire
@@ -265,6 +267,7 @@ object MemReq {
     wire.iswrite := false.B
     wire.tile := 0.U
     wire.command := 0.U
+    wire.way := 0.U
     wire
   }
 }
@@ -274,14 +277,18 @@ class MemResp(implicit p: Parameters) extends AccelBundle()(p) with ValidT {
   val tag = UInt((List(1, mshrLen).max).W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
-//  val state = UInt(4.W)
+  val way = UInt((log2Ceil(accelParams.nways) + 1).W)
+
+  //  val state = UInt(4.W)
 
   def clone_and_set_tile_id(tile: UInt): MemResp = {
     val wire = Wire(new MemResp())
     wire.data := this.data
     wire.tag := this.tag
     wire.iswrite := this.iswrite
+    wire.way := this.way
     wire.tile := tile
+
     wire
   }
 }
@@ -294,6 +301,8 @@ object MemResp {
     wire.tag := 0.U
     wire.iswrite := false.B
     wire.tile := 0.U
+    wire.way := 0.U
+
 //    wire.state := 0.U
     wire
   }
