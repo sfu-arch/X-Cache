@@ -500,17 +500,16 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   when(findInSetSig & loadWaysMeta) { // probing way
-    targetWayReg := findAddrInSet(set,tag)
-  }.otherwise{
+    targetWayWire := findAddrInSet(set,tag)
+    targetWayReg := targetWayWire  }.otherwise{
     targetWayReg := targetWayReg
   }
 
-  when(findInSetSig & loadWaysMeta) { // probing lock
-    targetWayWire := findAddrInSet(set,tag)
-    targetWayReg := targetWayWire
-  }.otherwise{
-    targetWayReg := targetWayReg
-  }
+//  when(findInSetSig & loadWaysMeta) { // probing lock
+//    targetWayReg := targetWayWire
+//  }.otherwise{
+//    targetWayReg := targetWayReg
+//  }
 
 
 //  when(allocate | deallocate){
