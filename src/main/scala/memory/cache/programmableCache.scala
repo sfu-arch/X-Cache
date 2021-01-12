@@ -33,9 +33,6 @@ with HasAccelShellParams{
 
     val inputTBE = WireInit(TBE.default)
 
-
-
-
     val routineAddr = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
     val (rombits, dstStateBits) = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
 
@@ -74,7 +71,9 @@ with HasAccelShellParams{
 
     val (probeHandled, _) = Counter(isProbe, 2)
 
-    val targetWay = RegInit(nWays.U((wayLen+1).W))
+    val probeWay = RegInit(nWays.U((wayLen+1).W))
+    val way = Wire(UInt((wayLen+1).W))
+    val tbeWay = RegInit(nWays.U((wayLen+1).W))
 
     defaultState := State.default
     io.instruction.ready := true.B
@@ -86,14 +85,14 @@ with HasAccelShellParams{
     }
 
     when (cache.io.cpu.resp.fire()){
-        targetWay := cache.io.cpu.resp.bits.way
+        probeWay := cache.io.cpu.resp.bits.way
     }
 
     readTBE := io.instruction.fire()
 
     dstState.state := dstStateRom(routine)
     inputTBE.state.state :=  Mux(actionResValid & !isCacheAction, dstState.state, State.default.state)  // @todo should be changed
-    inputTBE.way := targetWay //@todo should be changed to the way calculated by the same logic which is in charge of probing and resource chekcing
+    inputTBE.way := probeWay //@todo should be changed to the way calculated by the same logic which is in charge of probing and resource chekcing
 
     tbe.io.command := Mux (readTBE, tbe.read, tbeAction )
     tbe.io.addr := addr
@@ -111,7 +110,13 @@ with HasAccelShellParams{
 
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, defaultState.state )
 
+    when(tbe.io.outputTBE.fire()){
+        tbeWay := tbe.io.outputTBE.bits.way
+    }
+
     pc := Mux(routineStart, uCodedNextPtr(routine), Mux(startOfRoutine, pc,  Mux(isProbe, pc + probeHandled.asUInt(), pc+ 1.U  )))
+
+    way := Mux( tbeWay === nWays.U , probeWay, tbeWay )
 
     action.signals := actionRom(pc)(nSigs -1,0)
     action.isCacheAction := actionRom(pc)(nSigs)
@@ -125,7 +130,8 @@ with HasAccelShellParams{
     cache.io.cpu <> DontCare
     cache.io.mem <> DontCare
 
-    cache.io.cpu.req.bits.command := cacheAction
+    cache.io.cpu.req.bits.way := way
+    cache.io.cpu.req.bits.command := Mux(io.instruction.fire(), ActionList.actions("Probe").asUInt()(nSigs-1 , 0), cacheAction)
     cache.io.cpu.req.bits.addr := addr
     cache.io.cpu.req.valid := actionResValid
 
