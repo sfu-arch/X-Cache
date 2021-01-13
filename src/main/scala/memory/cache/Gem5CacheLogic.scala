@@ -56,9 +56,7 @@ class Decoder (implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams {
 
-
     val io = IO(new DecoderIO(nSigs))
-
     io.outSignals := io.inAction.asBools()
 }
 
@@ -74,7 +72,6 @@ class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBu
 class CacheBankedMemIO[T <: Data](D: T, nInput :Int) (implicit val p: Parameters) extends Bundle
   with HasCacheAccelParams
   with HasAccelShellParams {
-
 
   val bank = Output(UInt(wayLen.W))
   val address = Output(UInt(setLen.W))
@@ -206,7 +203,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   }
 
-
   val signals = Wire(Vec(nSigs, Bool()))
 
   decoder.io.inAction := cpu_command
@@ -316,7 +312,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     tag.asUInt()
   }
 
-
   def addrToWay(set: UInt): (UInt) = {
 
     val way = Wire(UInt((nWays + 1).W))
@@ -338,7 +333,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     validTag(set).bitSet(way, false.B)
     true.B
   }
-
 
   def prepForRead[T <: Data](D: CacheBankedMemIO[T]): Unit = {
     D.isRead := true.B
@@ -372,7 +366,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       }
     }
   }
-
 
   def findAddrInSet(set: UInt, tag: UInt): UInt = {
     MD.tag := tag
@@ -464,7 +457,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   printf(p"signals  ${signals}\n")
 //  printf(p"loadMeta  ${loadWaysMeta}\n")
 //  printf(p"findInSet ${findInSetSig}\n")
-//  printf(p"targetWay ${targetWay} \n")
 //  printf(p"prepMDWrite ${prepMDWrite} \n")
 //  printf(p"way ${way}\n")
 

@@ -13,7 +13,6 @@ import chisel3.util.experimental.loadMemoryFromFile
 //import dandelion.memory.TBE.{ TBETable, TBE}
 
 
-
 class programmableCacheIO (implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
 with HasAccelShellParams {
@@ -24,7 +23,6 @@ with HasAccelShellParams {
 class programmableCache (implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams{
-
 
     val io = IO(new programmableCacheIO())
 
@@ -57,7 +55,6 @@ with HasAccelShellParams{
     val pc = Reg(UInt())
     val action = Wire(new ActionBundle())
 
-//    val tbeRdRdy = Wire(Bool())
     val tbeResValid = Wire(Bool())
     val routineAddrResValid = Reg(Bool())
     val actionResValid = Reg(Bool())
@@ -86,8 +83,8 @@ with HasAccelShellParams{
 
     cache.io.cpu.resp.ready := true.B
 
+    // latching
     when(io.instruction.fire()){
-        // latching
         addr := io.instruction.bits.addr
         event := io.instruction.bits.event
     }
