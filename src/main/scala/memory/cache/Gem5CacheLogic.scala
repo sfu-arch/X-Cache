@@ -68,7 +68,7 @@ class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBu
   val flush = Input(Bool())
   val flush_done = Output(Bool())
   val req = Flipped(Decoupled(new MemReq))
-  val resp = Output(Valid(new MemResp))
+  val resp = (Decoupled(new MemResp))
 }
 
 class CacheBankedMemIO[T <: Data](D: T, nInput :Int) (implicit val p: Parameters) extends Bundle
@@ -399,6 +399,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   def ReadInternal(set: UInt, way: UInt): Unit = {
     findInSetSig := true.B
+
     prepForRead(io.dataMem)
   }
 
@@ -536,8 +537,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     lock(set * nWays.U + way) := false.B
   }
 
-  io.cpu.resp.bits.way := targetWayReg
-  io.cpu.resp.valid := true.B
+  io.cpu.resp.bits.way := targetWayWire
+  io.cpu.resp.valid := addrToWaySig // @todo should be changed to sth more generic
 
 //  switch(stAlReg){
 //    is (stAlIdle){

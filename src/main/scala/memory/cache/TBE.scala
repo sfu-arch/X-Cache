@@ -2,7 +2,7 @@ package dandelion.memory.cache
 
 import chipsalliance.rocketchip.config._
 import chisel3._
-import dandelion.config._
+import dandelion.config.{WithAccelConfig, _}
 import dandelion.memory.cache.{HasCacheAccelParams, State}
 import chisel3.util._
 import chisel3.util.Enum
@@ -11,19 +11,20 @@ import chisel3.util.Enum
 class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelParams {
   val state = new State()
 //  val data = UInt (xlen.W)
-  val way = UInt (wayLen.W)
+  val way = UInt ((wayLen + 1).W)
 //  val addr = UInt (addrLen.W)
 //  val cmdPtr = UInt (nCom.W)
 
 }
 object TBE {
 
+
   def default (implicit p: Parameters): TBE = {
     val tbe = Wire(new TBE)
     tbe.state := State.default
 //    tbe.data := 0.U
 //    tbe.addr := 0.U
-    tbe.way := 0.U
+    tbe.way := tbe.nWays.U
 //    tbe.cmdPtr := 0.U
     tbe
   }
