@@ -13,7 +13,7 @@ object RoutineROM {
 
 
     // @todo should be fixed
-    Routine ("LOAD_I") , Actions(Seq( "Allocate","AllocateTBE", "DataRQ")),
+    Routine ("LOAD_I") , Actions(Seq( "AllocateTBE","Allocate", "DataRQ")),
     Routine ("LOAD_M"), Actions(Seq ("DataRQ")),
     Routine("STORE_I"), Actions(Seq("Allocate", "DataRQ")),
     Routine ("LOAD_ID") , Actions(Seq( "ReadInt", "DeallocateTBE")),
