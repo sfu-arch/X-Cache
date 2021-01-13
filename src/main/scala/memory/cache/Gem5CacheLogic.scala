@@ -166,6 +166,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val tag = RegInit(0.U(taglen.W))
   val set = RegInit(0.U(setLen.W))
+  val wayInput = RegInit(0.U((nWays + 1).W))
   val offset = RegInit(0.U(byteOffsetBits.W))
   val way = WireInit(0.U((nWays + 1).W))
   val state = RegInit(State.default)
@@ -201,6 +202,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     tag := addrToTag(io.cpu.req.bits.addr)
     set := addrToSet(io.cpu.req.bits.addr)
     offset := addrToOffset(io.cpu.req.bits.addr)
+    wayInput := io.cpu.req.bits.way
+
   }
 
 
@@ -429,7 +432,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val MD = Wire(new MetaData())
   MD.tag := tag
 
-  wayInvalid := (targetWayReg === nWays.U)
+  wayInvalid := (wayInput === nWays.U)
 
 
   val allocate = WireInit(signals(sigAllocate))
@@ -445,13 +448,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val hit = Wire(Bool())
   hit := (readSig & !wayInvalid)
 
-  val (missCount, _) = Counter(!hit, 1000)
+  val (missCount, _) = Counter( !hit, 1000)
   val (hitCount,  _) = Counter( hit , 1000)
 
   readMetaData := !(sigAllocate | sigDeallocate)
 
   when (!wayInvalid) {
-    way := targetWayReg
+    way := wayInput
   }.elsewhen(addrToWaySig){
     way := addrToWay(set)
   }.otherwise{
