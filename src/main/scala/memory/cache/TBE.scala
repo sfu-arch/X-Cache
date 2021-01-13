@@ -36,6 +36,7 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
 
   val addr = Input(UInt(xlen.W))
   val command = Input(UInt())
+  val mask = Input(UInt())
   val inputTBE= Input(new TBE)
   val outputTBE = Decoupled(new TBE)
 
@@ -47,7 +48,8 @@ class   TBETable(implicit  val p: Parameters) extends Module
   with HasAccelParams {
 
 
-  val (idle:: alloc :: dealloc :: read :: Nil) = Enum(4)
+  val (idle:: alloc :: dealloc :: read :: write :: Nil) = Enum(5)
+  val (maskAll :: maskState :: maskWay :: Nil) = Enum(3)
 
   val io = IO(new TBETableIO())
 
@@ -59,6 +61,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val isAlloc = Wire(Bool())
   val isDealloc = Wire(Bool())
   val isRead = Wire(Bool())
+  val isWrite = Wire(Bool())
 //  val inc = Wire(Bool())
 
 
@@ -73,7 +76,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
   idx := tbeDepth.U
   idxValid := !(idx === tbeDepth.U )
 
-  when(isAlloc){
+  when(isAlloc | isWrite){
     inputTBEReg := io.inputTBE
     inputAddrReg := io.addr
   }
@@ -85,7 +88,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
       }
     }
 
-  }.elsewhen(isDealloc | isRead) {
+  }.elsewhen(isDealloc | isRead | isWrite) {
     for (i <- 0 until tbeDepth) yield {
       when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
         idx := i.asUInt()
@@ -102,9 +105,18 @@ class   TBETable(implicit  val p: Parameters) extends Module
     TBEValid(idxReg) := false.B
     TBEMemory(idxReg) := TBE.default
     TBEAddr(idxReg) := 0.U
+  }.elsewhen(RegNext(isWrite)){
+    when(RegNext(io.mask === maskWay)) {
+      TBEMemory(idxReg).way := inputTBEReg.way
+    }.elsewhen(RegNext(io.mask === maskState)){
+      TBEMemory(idxReg).state := inputTBEReg.state
+    }.otherwise{
+      TBEMemory(idxReg) := inputTBEReg
+    }
+//    TBEValid(idxReg) := true.B
   }
 
-  io.outputTBE.valid := idxValid
+  io.outputTBE.valid := (idxValid & isRead)
   io.outputTBE.bits := Mux(idxValid , TBEMemory(idx), TBE.default)
 
 
@@ -112,6 +124,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
   isAlloc := Mux( io.command === alloc, true.B, false.B)
   isDealloc :=  Mux(io.command === dealloc, true.B, false.B)
   isRead := Mux(io.command === read, true.B, false.B)
+  isWrite := Mux(io.command === write, true.B, false.B)
 
 
 }
