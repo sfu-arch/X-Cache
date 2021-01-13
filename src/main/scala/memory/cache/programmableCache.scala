@@ -25,11 +25,15 @@ class programmableCache (implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams{
 
+
     val io = IO(new programmableCacheIO())
 
     val cache = Module(new Gem5Cache())
     val tbe = Module(new TBETable())
     val state = Wire(UInt(stateLen.W))
+
+    cache.io.cpu <> DontCare
+    cache.io.mem <> DontCare
 
     val inputTBE = WireInit(TBE.default)
 
