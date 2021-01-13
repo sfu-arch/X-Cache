@@ -62,22 +62,24 @@ with HasAccelShellParams{
     val routineAddrResValid = Reg(Bool())
     val actionResValid = Reg(Bool())
 
-    val routineStart = Wire(Bool())
+    val routineStart = Reg(Bool())
 
     val defaultState = Wire(new State())
-    val dstState = Wire(new State())
+    val dstState = Reg(new State())
 
     val startOfRoutine = Wire(Bool())
-
 
     val isProbe = Wire(Bool())
     val routine = WireInit( Cat (event, state))
 
     val (probeHandled, _) = Counter(isProbe, 2)
 
-    val probeWay = RegInit(nWays.U((wayLen+1).W))
+    val cacheWay = RegInit(nWays.U((wayLen+1).W))
     val way = Wire(UInt((wayLen+1).W))
     val tbeWay = RegInit(nWays.U((wayLen+1).W))
+
+    val routineReg = RegInit(0.U((eventLen + stateLen).W))
+    val actionReg = RegInit(0.U((nSigs + 1).W))
 
     defaultState := State.default
     io.instruction.ready := true.B
