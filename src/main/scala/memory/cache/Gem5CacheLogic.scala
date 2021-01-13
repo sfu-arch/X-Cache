@@ -503,13 +503,17 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       io.metaMem.outputValue := DontCare
   }
 
-  when(findInSetSig & loadWaysMeta) { // probing way
+  when((findInSetSig & loadWaysMeta)) { // probing way
     targetWayWire := findAddrInSet(set,tag)
-    targetWayReg := targetWayWire  }.otherwise{
+  }.elsewhen(addrToWaySig) { // allocate
+    targetWayWire := way
+  }.otherwise{
     targetWayReg := targetWayReg
   }
+  targetWayReg := targetWayWire
 
-//  when(findInSetSig & loadWaysMeta) { // probing lock
+
+  //  when(findInSetSig & loadWaysMeta) { // probing lock
 //    targetWayReg := targetWayWire
 //  }.otherwise{
 //    targetWayReg := targetWayReg
