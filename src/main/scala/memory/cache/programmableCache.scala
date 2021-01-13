@@ -84,6 +84,8 @@ with HasAccelShellParams{
     defaultState := State.default
     io.instruction.ready := true.B
 
+    cache.io.cpu.resp.ready := true.B
+
     when(io.instruction.fire()){
         // latching
         addr := io.instruction.bits.addr
@@ -91,18 +93,26 @@ with HasAccelShellParams{
     }
 
     when (cache.io.cpu.resp.fire()){
-        probeWay := cache.io.cpu.resp.bits.way
+        cacheWay := cache.io.cpu.resp.bits.way
+    }
+
+    when(tbe.io.outputTBE.fire()){
+        tbeWay := tbe.io.outputTBE.bits.way
     }
 
     readTBE := io.instruction.fire()
 
-    dstState.state := dstStateRom(routine)
-    inputTBE.state.state :=  Mux(actionResValid & !isCacheAction, dstState.state, State.default.state)  // @todo should be changed
-    inputTBE.way := probeWay //@todo should be changed to the way calculated by the same logic which is in charge of probing and resource chekcing
+    val tbeActionInRom = WireInit(actionResValid & !isCacheAction)
+    val updateTBEWay = WireInit(RegNext(cache.io.cpu.resp.fire()) & (cacheWay =/= nWays.U))
 
-    tbe.io.command := Mux (readTBE, tbe.read, tbeAction )
+    dstState.state := dstStateRom(routine)
+    inputTBE.state.state :=  Mux(tbeActionInRom, dstState.state, DontCare)
+    inputTBE.way := Mux(updateTBEWay , cacheWay, DontCare)
+
+    tbe.io.command := Mux (readTBE, tbe.read, Mux( updateTBEWay, tbe.write, tbeAction))
     tbe.io.addr := addr
     tbe.io.inputTBE := inputTBE
+    tbe.io.mask := Mux(updateTBEWay, tbe.maskWay, Mux(tbeActionInRom, tbe.maskState, tbe.maskAll))
 
     tbe.io.outputTBE.ready := true.B
 
@@ -116,31 +126,25 @@ with HasAccelShellParams{
 
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, defaultState.state )
 
-    when(tbe.io.outputTBE.fire()){
-        tbeWay := tbe.io.outputTBE.bits.way
-    }
+    routineReg := uCodedNextPtr(routine)
+    actionReg := actionRom(pc)
 
-    pc := Mux(routineStart, uCodedNextPtr(routine), Mux(startOfRoutine, pc,  Mux(isProbe, pc + probeHandled.asUInt(), pc+ 1.U  )))
+    pc := Mux(routineStart, routineReg, Mux(startOfRoutine, pc,  Mux(isProbe, pc + probeHandled.asUInt(), pc+ 1.U  )))
 
-    way := Mux( tbeWay === nWays.U , probeWay, tbeWay )
+    way := Mux( tbeWay === nWays.U , cacheWay, tbeWay )
 
-    action.signals := actionRom(pc)(nSigs -1,0)
-    action.isCacheAction := actionRom(pc)(nSigs)
+    printf(p"way ${way}\n")
+    action.signals := actionReg(nSigs -1,0)
+    action.isCacheAction := actionReg(nSigs)
 
-    startOfRoutine := (action.signals === 0.U & action.isCacheAction === 0.U)
+    startOfRoutine := (actionRom(pc)(nSigs -1,0) === 0.U & actionRom(pc)(nSigs) === 0.U)
     isCacheAction := (action.isCacheAction === true.B)
 
     tbeAction := Mux(!isCacheAction, action.signals, tbe.idle )
     cacheAction := Mux(isCacheAction, action.signals, 0.U(nSigs.W))
-
-    cache.io.cpu <> DontCare
-    cache.io.mem <> DontCare
-
+    
     cache.io.cpu.req.bits.way := way
     cache.io.cpu.req.bits.command := Mux(io.instruction.fire(), ActionList.actions("Probe").asUInt()(nSigs-1 , 0), cacheAction)
     cache.io.cpu.req.bits.addr := addr
     cache.io.cpu.req.valid := actionResValid
-
-
-
 }
