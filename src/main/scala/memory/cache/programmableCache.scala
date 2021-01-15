@@ -28,6 +28,8 @@ with HasAccelShellParams{
 
     val cache = Module(new Gem5Cache())
     val tbe = Module(new TBETable())
+    val lock = Module(new lockVector())
+
     val state = Wire(UInt(stateLen.W))
 
     cache.io.cpu <> DontCare
@@ -52,6 +54,9 @@ with HasAccelShellParams{
     val isCacheAction = Wire(Bool())
 
     val readTBE = Reg(Bool())
+    val checkLock = Reg(Bool())
+    val isLocked = Wire(Bool())
+
     val pc = Reg(UInt())
     val action = Wire(new ActionBundle())
 
@@ -98,6 +103,13 @@ with HasAccelShellParams{
     }
 
     readTBE := io.instruction.fire()
+    checkLock := io.instruction.fire()
+
+    lock.io.inAddress.bits := addr
+    lock.io.inAddress.valid := checkLock
+    lock.io.lockCMD := true.B
+    isLocked := Mux(lock.io.isLocked.valid, lock.io.isLocked.bits, false.B)
+
 
     val tbeActionInRom = WireInit(actionResValid & !isCacheAction)
     val updateTBEWay = WireInit(RegNext(cache.io.cpu.resp.fire()) & (cacheWay =/= nWays.U))
