@@ -63,9 +63,18 @@ with HasCacheAccelParams {
     val erase =   WireInit(isLocked && io.inAddress.fire() && (io.lockCMD === false.B))
 
     bitmapProbe := (Cat( addrVec.map( addr => (addr === io.inAddress.bits)).reverse))
-    idxProbe := OHToUInt((bitmapProbe & valid.asUInt()))
+    idxProbe := OHToUInt((bitmapProbe & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
     val idxUnlocking = WireInit(idxProbe)
-    idxLocking := OHToUInt(valid)
+
+    idxLocking := lockVecDepth.U
+
+    (0 until lockVecDepth).foldLeft(when(false.B) {}) {
+        case (whenContext, line) =>
+            whenContext.elsewhen(valid(line) === false.B) {
+                idxLocking := line.U
+            }
+    }
+
 
     printf(p"checkLock ${idxProbe}\n")
 
