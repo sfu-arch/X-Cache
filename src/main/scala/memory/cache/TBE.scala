@@ -7,7 +7,6 @@ import dandelion.memory.cache.{HasCacheAccelParams, State}
 import chisel3.util._
 import chisel3.util.Enum
 
-
 class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelParams {
   val state = new State()
 //  val data = UInt (xlen.W)
@@ -17,7 +16,6 @@ class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelPar
 
 }
 object TBE {
-
 
   def default (implicit p: Parameters): TBE = {
     val tbe = Wire(new TBE)
@@ -39,7 +37,6 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
   val mask = Input(UInt())
   val inputTBE= Input(new TBE)
   val outputTBE = Decoupled(new TBE)
-
 
 }
 
@@ -119,12 +116,10 @@ class   TBETable(implicit  val p: Parameters) extends Module
   io.outputTBE.valid := (idxValid & isRead)
   io.outputTBE.bits := Mux(idxValid , TBEMemory(idx), TBE.default)
 
-
-
   isAlloc := Mux( io.command === alloc, true.B, false.B)
   isDealloc :=  Mux(io.command === dealloc, true.B, false.B)
   isRead := Mux(io.command === read, true.B, false.B)
   isWrite := Mux(io.command === write, true.B, false.B)
 
-
 }
+

@@ -45,21 +45,6 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
 }
 
-class DecoderIO (nSigs: Int)(implicit val p:Parameters) extends Bundle {
-
-    val inAction = Input(UInt(nSigs.W))
-    val outSignals = Output(Vec(nSigs, Bool()))
-
-}
-
-class Decoder (implicit val p:Parameters) extends Module
-with HasCacheAccelParams
-with HasAccelShellParams {
-
-    val io = IO(new DecoderIO(nSigs))
-    io.outSignals := io.inAction.asBools()
-}
-
 
 class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBundle(p) {
   val abort = Input(Bool())
@@ -273,7 +258,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   //val block_addr_tag_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
-  //  val dirty_cache_block = Cat((dataMem map (_.read(set_count - 1.U).asUInt)).reverse)
+//    val dirty_cache_block = Cat((dataMem map (_.read(set_count - 1.U).asUInt)).reverse)
   //  val block_rmeta = RegInit(init = MetaData.default)
   //  val flush_mode = RegInit(false.B)
 
