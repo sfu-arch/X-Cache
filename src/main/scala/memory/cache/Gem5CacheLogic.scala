@@ -163,7 +163,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val dataBuffer = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
 
-  val findInSetSig = Reg(Bool())
+  val findInSetSig = Wire(Bool())
   val addrToLocSig = Wire(Bool())
   val dataValidCheckSig = Wire(Bool())
 
@@ -365,7 +365,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     val wayWire = Wire(UInt((nWays + 1).W))
     wayWire := nWays.U
     for (i <- 0 until nWays) yield {
-      when(validTag(set * nWays.U + i.U) === true.B && waysInASet(i).tag.asUInt() === MD.tag) {
+      when(validTag(set * nWays.U + i.U) === true.B && io.metaMem.inputValue(i).tag.asUInt() === MD.tag) {
         wayWire := i.asUInt()
       }
     }
