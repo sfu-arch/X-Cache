@@ -17,7 +17,7 @@ class MemBankIO[T <: Data] (D: T)(val dataLen:Int, val addrLen : Int, val banks:
   val isRead = Input(Bool())
   val inputValue = Input( D.cloneType)
   val outputValue = Output(Vec(banks, D.cloneType))
-  val valid = Output (Bool())
+  val valid = Input (Bool())
 }
 
 
@@ -32,15 +32,14 @@ class MemBank[T <: Data] (D:T) (val dataLen:Int, val addrLen : Int, val banks: I
 //  printf(p" MetaData(0)(0) ${mems(0).read(0.U)} , #Bank: ${banks}\n")
 
   io.outputValue := DontCare
-  io.valid := DontCare
   when(io.isRead) {
     (0 until banks).foldLeft() {
       case (_, bankIndex) => {
           io.outputValue(bankIndex.U) := mems(bankIndex)(io.address)
         }
-        io.valid := true.B
+//        io.valid := true.B
     }
-  }.otherwise {
+  }.elsewhen(!io.isRead & io.valid ) {
     (0 until banks).foldLeft(when(false.B) {}) {
       case (whenContext, bankIndex) =>
         whenContext.elsewhen(io.bank === bankIndex.U) {

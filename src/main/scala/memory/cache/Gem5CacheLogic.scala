@@ -71,7 +71,7 @@ class CacheBankedMemIO[T <: Data](D: T, nInput :Int) (implicit val p: Parameters
   val isRead = Output(Bool())
   val outputValue = Output(D.cloneType)
   val inputValue = Input(Vec(nInput, D.cloneType))
-  val valid = Input(Bool())
+  val valid = Output(Bool())
 }
 
 class StateMemIO() (implicit val p: Parameters) extends Bundle
@@ -339,8 +339,12 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       }
     }
   }
+
+  //@todo valid sig must be added
   def prepForWrite[T <: Data](D: CacheBankedMemIO[T]): Unit = {
     D.isRead := false.B
+    D.valid := true.B
+
 
     D match {
       case io.dataMem => {

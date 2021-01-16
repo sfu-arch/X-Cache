@@ -10,9 +10,6 @@ import dandelion.interfaces.axi._
 import dandelion.junctions._
 import dandelion.shell._
 
-
-
-
 class MetaData(implicit p: Parameters) extends AXIAccelBundle with HasCacheAccelParams {
   val tag = UInt(taglen.W)
 }
@@ -91,8 +88,8 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   cacheLogic.io.metaMem.bank <> metaMemory.io.bank
   cacheLogic.io.metaMem.address <> metaMemory.io.address
   cacheLogic.io.metaMem.isRead <>metaMemory.io.isRead
-  cacheLogic.io.dataMem.valid := dataMemory.io.valid
-  cacheLogic.io.metaMem.valid := metaMemory.io.valid
+   dataMemory.io.valid :=cacheLogic.io.dataMem.valid
+  metaMemory.io.valid := cacheLogic.io.metaMem.valid
 
 
 //  when (cacheLogic.io.stateMem.isSet){
