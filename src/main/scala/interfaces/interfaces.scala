@@ -36,6 +36,7 @@ class InstBundle (implicit p: Parameters) extends Event with Addr{
 class ActionBundle(implicit p:Parameters) extends CoreBundle{
   val signals = UInt(nSigs.W)
   val isCacheAction = Bool()
+  val isStateAction = Bool()
 
   override def cloneType: this.type = new ActionBundle().asInstanceOf[this.type]
 

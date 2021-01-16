@@ -9,19 +9,20 @@ import chisel3.util.Enum
 
 object ActionList {
 
+    val actionLen = 12
     val actions = Map[String, Bits](
 
-        ("Allocate" ,   "b10000110100".U) ,
-        ("ReadInt" ,    "b10100000000".U),
-        ("Probe",       "b10000001011".U),
-        ("Aloc" ,       "b10000110100".U),
-        ("DAloc",       "b10001000000".U),
-        ("WrInt",       "b10010000000".U),
-        ("RdInt",       "b10100000000".U),
-        ("DataRQ",      "b11000000000".U),
-        ("Nop",         "b10000000000".U),
-        ("AllocateTBE", "b00000000001".U),
-        ("DeallocateTBE","b00000000010".U)/*,*/
+        ("Allocate" ,   "b010000110100".U(actionLen.W)) ,
+        ("ReadInt" ,    "b010100000000".U),
+        ("Probe",       "b010000001011".U),
+        ("Aloc" ,       "b010000110100".U),
+        ("DAloc",       "b010001000000".U),
+        ("WrInt",       "b010010000000".U),
+        ("RdInt",       "b010100000000".U),
+        ("DataRQ",      "b011000000000".U),
+        ("Nop",         "b010000000000".U),
+        ("AllocateTBE", "b000000000001".U),
+        ("DeallocateTBE", "b000000000010".U)/*,*/
 //        ("ReadTBE",     "b00000000011".U)
 
 

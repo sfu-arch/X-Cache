@@ -91,9 +91,39 @@ with HasCacheAccelParams {
     }.elsewhen(erase){
         valid(idxUnlocking) := false.B
     }
-
-
-
-
-
 }
+
+class stateMemIO (implicit val p: Parameters) extends Bundle
+with HasCacheAccelParams{
+
+    val in = Flipped(Valid(new Bundle() {
+        val state = new State()
+        val addr = UInt(addrLen.W)
+        val way  = UInt(wayLen.W)
+        val isSet = Bool()
+    } ))
+    val out = Valid(new State())
+}
+
+class stateMem (implicit val p: Parameters) extends Module
+  with HasCacheAccelParams{
+
+    val io = IO (new stateMemIO())
+
+    val states = RegInit(VecInit(Seq.fill(nSets*nWays)( (State.default))))
+
+    val isSet = io.in.fire() & io.in.bits.isSet & io.in.bits.way =/= nWays.U
+    val isGet = io.in.fire() & !io.in.bits.isSet & io.in.bits.way =/= nWays.U // third one might be unnecessary
+    val idx = Wire(UInt(cacheLen.W))
+
+    idx :=  Mux(io.in.bits.way =/= nWays.U, addrToSet(io.in.bits.addr) * nWays.U + io.in.bits.way, 0.U)
+
+    io.out.bits := states(idx)
+    io.out.valid := isGet
+
+
+    when(isSet){
+        states(idx) := io.in.bits.state
+    }
+
+  }

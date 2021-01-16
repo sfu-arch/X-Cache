@@ -34,6 +34,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val setLen = log2Ceil(nSets)
   val wayLen = log2Ceil(nWays)
 
+  val cacheLen = log2Ceil(nSets*nWays)
+
   val nWords = bBits / xlen
   val wordLen = log2Ceil(nWords)
   //val taglen = xlen - (setLen + blen)
@@ -42,6 +44,12 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val byteOffsetBits = log2Ceil(wBytes)
   override val nSigs = accelParams.nSigs
   //
+
+
+  def addrToSet(addr: UInt): UInt = {
+    val set = addr(setLen + blen + byteOffsetBits, blen + byteOffsetBits)
+    set.asUInt()
+  }
 
 }
 
@@ -281,10 +289,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   //  hit := (valid(set) & rmeta.tag === tag)
 
-  def addrToSet(addr: UInt): UInt = {
-    val set = addr(setLen + blen + byteOffsetBits, blen + byteOffsetBits)
-    set.asUInt()
-  }
 
   def addrToOffset(addr: UInt): UInt = {
     val offset = addr(blen - 1, byteOffsetBits)

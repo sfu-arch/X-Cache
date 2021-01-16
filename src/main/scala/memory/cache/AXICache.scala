@@ -76,7 +76,6 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val dataMemory = Module(new MemBank( UInt(xlen.W)) (xlen, addrLen, nWords, nSets * nWays, wordLen))
   val cacheLogic = Module(new Gem5CacheLogic())
   //@todo generic state
-  val stateBit = VecInit(Seq.fill(nSets*nWays)( (State.default)))
   this.cacheLogic.io.stateMem.stateIn := DontCare
 
 //  cacheLogic.io.metaMem.inputValue <> metaMemory.io.outputValue
@@ -96,11 +95,11 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   cacheLogic.io.metaMem.valid := metaMemory.io.valid
 
 
-  when (cacheLogic.io.stateMem.isSet){
-    stateBit(cacheLogic.io.stateMem.addr) := cacheLogic.io.stateMem.stateOut
-  }.otherwise{
-    cacheLogic.io.stateMem.stateIn := stateBit(cacheLogic.io.stateMem.addr)
-  }
+//  when (cacheLogic.io.stateMem.isSet){
+//    stateBit(cacheLogic.io.stateMem.addr) := cacheLogic.io.stateMem.stateOut
+//  }.otherwise{
+//    cacheLogic.io.stateMem.stateIn := stateBit(cacheLogic.io.stateMem.addr)
+//  }
 
   dataMemory.io <> DontCare
   cacheLogic.io.dataMem <> DontCare
