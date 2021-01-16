@@ -146,7 +146,7 @@ with HasAccelShellParams{
     routineAddrResValid := (tbeResValid)
     routineStart := tbeResValid
 
-    isProbe := (action.signals === ActionList.actions("Probe").asUInt()(nSigs-1 , 0))
+    isProbe := (action.signals === sigToAction(ActionList.actions("Probe")))
 
     actionResValid := Mux(routineAddrResValid, true.B , Mux (startOfRoutine, false.B, Mux(isProbe, (probeHandled.asBool()), true.B)))
 
@@ -157,10 +157,10 @@ with HasAccelShellParams{
 
     pc := Mux(routineStart, routineReg, Mux(startOfRoutine, pc,  Mux(isProbe, pc + probeHandled.asUInt(), pc+ 1.U  )))
 
-    way := Mux( tbeWay === nWays.U , cacheWay, tbeWay )
+    way := Mux( tbeWay === nWays.U , cacheWayReg, tbeWay )
 
     printf(p"way ${way}\n")
-    action.signals := actionReg(nSigs -1,0)
+    action.signals := sigToAction(actionReg)
     action.isCacheAction := actionReg(nSigs)
     action.isStateAction := actionReg(nSigs + 1)
 
@@ -183,7 +183,7 @@ with HasAccelShellParams{
     stateMemOutput := stateMem.io.out.bits
     
     cache.io.cpu.req.bits.way := way
-    cache.io.cpu.req.bits.command := Mux(io.instruction.fire(), ActionList.actions("Probe").asUInt()(nSigs-1 , 0), cacheAction)
-    cache.io.cpu.req.bits.addr := addr
-    cache.io.cpu.req.valid := actionResValid
+    cache.io.cpu.req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), cacheAction)
+    cache.io.cpu.req.bits.addr    := Mux(probeStart, addrWire, addr)
+    cache.io.cpu.req.valid := actionResValid | io.instruction.fire()
 }

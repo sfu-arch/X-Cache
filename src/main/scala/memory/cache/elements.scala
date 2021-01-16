@@ -6,7 +6,6 @@ import chisel3.util.{Valid, _}
 import dandelion.config.HasAccelShellParams
 import dandelion.memory.cache.HasCacheAccelParams
 
-
 class DecoderIO (nSigs: Int)(implicit val p:Parameters) extends Bundle {
 
     val inAction = Input(UInt(nSigs.W))
@@ -28,12 +27,10 @@ with HasCacheAccelParams {
     val inAddress = Flipped(Valid(UInt(addrLen.W)))
     val lockCMD = Input(Bool())
     val isLocked  = Valid(Bool())
-
 }
 
 class lockVector (lockVecDepth :Int = 8)(implicit val p :Parameters) extends Module
 with HasCacheAccelParams {
-
 
     val io = IO (new lockVectorIO())
     val addrVec = RegInit(VecInit(Seq.fill(lockVecDepth)(0.U(addrLen.W))))
@@ -48,7 +45,6 @@ with HasCacheAccelParams {
     when(io.inAddress.fire()){
         addrReg := io.inAddress.bits
     }
-//    io.isLocked.bits :=Mux(io.inAddress.fire(), OHToUInt(addrVec.map((_ === io.inAddress.bits))), 0.U)
 //    io.isLocked.bits := addrVec.map( addr => (io.inAddress.bits === addr)).foldLeft(0.U)({
 //        case (res, bit) =>
 //         Cat(res,bit)
@@ -74,9 +70,7 @@ with HasCacheAccelParams {
                 idxLocking := line.U
             }
     }
-
-
-    printf(p"checkLock ${idxProbe}\n")
+    printf(p"idxProbe ${idxProbe}\n")
 
     isLocked := (bitmapProbe =/= 0.U) && (valid(idxProbe) === true.B)
     io.isLocked.bits := isLocked
