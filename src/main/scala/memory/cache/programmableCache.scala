@@ -84,8 +84,10 @@ with HasAccelShellParams{
 
     val (probeHandled, _) = Counter(isProbe, 2)
 
-    val cacheWay = RegInit(nWays.U((wayLen+1).W))
-    val way = Wire(UInt((wayLen+1).W))
+    val cacheWayReg = RegInit(nWays.U((wayLen+1).W))
+    val cacheWayWire = Wire(UInt((wayLen+1).W))
+
+    val wayInputCache = Reg(UInt((wayLen+1).W))
     val tbeWay = RegInit(nWays.U((wayLen+1).W))
 
     val routineReg = RegInit(0.U((eventLen + stateLen).W))
@@ -96,26 +98,26 @@ with HasAccelShellParams{
     val stateMemOutput = Wire((new State()))
 
     val probeStart = WireInit(io.instruction.fire())
-    val addrWire   = WireInit(io.instruction.bits.addr)
 
-    def sigToAction(sigs : Bits) :UInt = sigs.asUInt()(nSigs - 1, 0)
-    def sigToState (sigs :Bits) : UInt = sigs.asUInt()(States.stateLen - 1, 0)
+    val addrWire   = WireInit(io.instruction.bits.addr)
+    val addrCapturedReg  = RegNext(RegNext(addr))
 
     defaultState := State.default
     io.instruction.ready := true.B
 
     cache.io.cpu.resp.ready := true.B
 
-    // latching
+    //latching
     when(io.instruction.fire()){
         addr := io.instruction.bits.addr
         event := io.instruction.bits.event
     }
 
     when (cache.io.cpu.resp.fire()){
-        cacheWay := cache.io.cpu.resp.bits.way
+        cacheWayReg := cache.io.cpu.resp.bits.way
     }
 
+    cacheWayWire := cache.io.cpu.resp.bits.way
     when(tbe.io.outputTBE.fire()){
         tbeWay := tbe.io.outputTBE.bits.way
     }
@@ -139,12 +141,12 @@ with HasAccelShellParams{
     lockMem.io.unLock.in.valid     := endOfRoutine
 
 
-    val tbeActionInRom = WireInit(actionResValid & !isCacheAction)
-    val updateTBEWay = WireInit(RegNext(cache.io.cpu.resp.fire()) & (cacheWay =/= nWays.U))
+    val tbeActionInRom = WireInit(actionResValid & isTBEAction)
+    val updateTBEWay = WireInit(RegNext(cache.io.cpu.resp.fire()) & (cacheWayReg =/= nWays.U))
 
     dstState.state := dstStateRom(routine)
     inputTBE.state.state :=  Mux(tbeActionInRom, dstState.state, DontCare)
-    inputTBE.way := Mux(updateTBEWay , cacheWay, DontCare)
+    inputTBE.way := Mux(updateTBEWay , cacheWayReg, DontCare)
 
     tbe.io.command := Mux (readTBE, tbe.read, Mux( updateTBEWay, tbe.write, tbeAction))
     tbe.io.addr := addr
@@ -161,40 +163,45 @@ with HasAccelShellParams{
 
     actionResValid := Mux(routineAddrResValid, true.B , Mux (startOfRoutine, false.B, Mux(isProbe, (probeHandled.asBool()), true.B)))
 
-    state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits, defaultState.state )) // stateMem should be added
+    state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state )) // stateMem should be added
 
     routineReg := uCodedNextPtr(routine)
     actionReg := actionRom(pc)
 
     pc := Mux(routineStart, routineReg, Mux(startOfRoutine, pc,  Mux(isProbe, pc + probeHandled.asUInt(), pc+ 1.U  )))
 
-    way := Mux( tbeWay === nWays.U , cacheWayReg, tbeWay )
+    wayInputCache := Mux( tbeWay === nWays.U , cacheWayReg, tbeWay )
 
-    printf(p"way ${way}\n")
+    printf(p"way ${wayInputCache}\n")
     action.signals := sigToAction(actionReg)
-    action.isCacheAction := actionReg(nSigs)
-    action.isStateAction := actionReg(nSigs + 1)
+    action.actionType := actionReg(nSigs+ 1, nSigs)
 
-    actionState.state := sigToState (actionReg)
 
     startOfRoutine := (sigToAction(actionRom(pc)) === 0.U & actionRom(pc)(nSigs) === 0.U & actionRom(pc)(nSigs + 1) === 0.U)
-    isTBEAction := (action.isCacheAction === false.B)
-    isStateAction := (action.isStateAction === true.B)
+    endOfRoutine   := isStateAction
+
+    isTBEAction   := (action.actionType === 0.U)
+    isStateAction := (action.actionType === 2.U | action.actionType === 3.U )
+    isCacheAction := (action.actionType === 1.U)
+
 
 
     tbeAction := Mux(isTBEAction, action.signals, tbe.idle )
-    cacheAction := Mux(!isTBEAction & !isStateAction, action.signals, 0.U(nSigs.W))
+    cacheAction := Mux(isCacheAction, action.signals, 0.U(nSigs.W))
+    stateAction := isStateAction
 
-    stateMem.io.in.bits.isSet := Mux(getState, false.B, isStateAction)
+    actionState.state := sigToState (actionReg)
+
+    stateMem.io.in.bits.isSet := Mux(getState, false.B, stateAction)
     stateMem.io.in.bits.addr := addr
     stateMem.io.in.bits.state := actionState
     stateMem.io.in.bits.way := cacheWayWire
-//    stateMem.io.in.valid := ...
+    stateMem.io.in.valid := isStateAction | getState
 
     stateMemOutput := stateMem.io.out.bits
     
-    cache.io.cpu.req.bits.way := way
+    cache.io.cpu.req.bits.way := RegNext(wayInputCache)
     cache.io.cpu.req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), cacheAction)
-    cache.io.cpu.req.bits.addr    := Mux(probeStart, addrWire, addr)
+    cache.io.cpu.req.bits.addr    := Mux(probeStart, addrWire, RegNext(addrCapturedReg))
     cache.io.cpu.req.valid := actionResValid | io.instruction.fire()
 }

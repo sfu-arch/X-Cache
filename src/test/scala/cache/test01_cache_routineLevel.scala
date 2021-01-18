@@ -211,7 +211,7 @@ class test_cache01Test01_routineLevel(c: programmableCache)(implicit p: Paramete
     poke(c.io.instruction.bits.addr,"b10".U)
     step(1)
     poke(c.io.instruction.valid, false.B)
-    step(10)
+    step(5)
     poke(c.io.instruction.valid,true.B)
     poke(c.io.instruction.bits.event,0.U)
     poke(c.io.instruction.bits.addr,"b10".U)
