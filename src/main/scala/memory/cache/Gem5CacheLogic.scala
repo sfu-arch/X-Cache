@@ -51,6 +51,10 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
     set.asUInt()
   }
 
+    def sigToAction(sigs : Bits) :UInt = sigs.asUInt()(nSigs - 1, 0)
+    def sigToState (sigs :Bits) : UInt = sigs.asUInt()(States.stateLen - 1, 0)
+
+
 }
 
 

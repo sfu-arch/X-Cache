@@ -54,9 +54,11 @@ with HasAccelShellParams{
 
     val tbeAction = Wire(UInt(nSigs.W))
     val cacheAction = Wire(UInt(nSigs.W))
+    val stateAction = Wire(Bool())
 
     val isTBEAction = Wire(Bool())
     val isStateAction = Wire(Bool())
+    val isCacheAction = Wire(Bool())
 
     val readTBE = Reg(Bool())
     val checkLock = Reg(Bool())
@@ -75,6 +77,7 @@ with HasAccelShellParams{
     val dstState = Reg(new State())
 
     val startOfRoutine = Wire(Bool())
+    val endOfRoutine = Wire(Bool())
 
     val isProbe = Wire(Bool())
     val routine = WireInit( Cat (event, state))
