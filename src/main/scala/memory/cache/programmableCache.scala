@@ -102,6 +102,9 @@ with HasAccelShellParams{
     val addrWire   = WireInit(io.instruction.bits.addr)
     val addrCapturedReg  = RegNext(RegNext(addr))
 
+    val updateTBEWay = Wire(Bool())
+    val updateTBEState = Wire(Bool())
+
     defaultState := State.default
     io.instruction.ready := true.B
 
@@ -116,8 +119,8 @@ with HasAccelShellParams{
     when (cache.io.cpu.resp.fire()){
         cacheWayReg := cache.io.cpu.resp.bits.way
     }
-
     cacheWayWire := cache.io.cpu.resp.bits.way
+
     when(tbe.io.outputTBE.fire()){
         tbeWay := tbe.io.outputTBE.bits.way
     }
@@ -155,6 +158,9 @@ with HasAccelShellParams{
 
     tbe.io.outputTBE.ready := true.B
 
+    updateTBEWay   := (RegNext(cache.io.cpu.resp.fire()) & (cacheWayReg =/= nWays.U))
+    updateTBEState := isStateAction
+//    dstState.state := dstStateRom(routine)
     tbeResValid := (readTBE)
     routineAddrResValid := (tbeResValid)
     routineStart := tbeResValid
