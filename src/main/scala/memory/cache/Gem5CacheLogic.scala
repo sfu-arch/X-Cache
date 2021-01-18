@@ -63,7 +63,7 @@ class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBu
   val flush = Input(Bool())
   val flush_done = Output(Bool())
   val req = Flipped(Decoupled(new MemReq))
-  val resp = (Decoupled(new MemResp))
+  val resp = (Valid(new MemResp))
 }
 
 class CacheBankedMemIO[T <: Data](D: T, nInput :Int) (implicit val p: Parameters) extends Bundle
