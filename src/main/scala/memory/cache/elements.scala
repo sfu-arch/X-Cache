@@ -20,31 +20,53 @@ class Decoder (implicit val p:Parameters) extends Module
     val io = IO(new DecoderIO(nSigs))
     io.outSignals := io.inAction.asBools()
 }
+class port[T1 <: Data, T2 <: Data, T3 <: Data] (D: T1, C: T2, O: T3 ) (addrLen: Int) (implicit val p :Parameters) extends Bundle
+with HasCacheAccelParams {
+
+    val in = Flipped(Valid(new Bundle {
+        val addr = UInt(addrLen.W)
+        val data = D.cloneType
+        val cmd = C.cloneType
+    }))
+
+    val out = Valid(O.cloneType)
+
+    override def cloneType: this.type =  new port(D,C,O)(addrLen).asInstanceOf[this.type]
+}
+
 
 class lockVectorIO (implicit val p :Parameters) extends Bundle
 with HasCacheAccelParams {
 
-    val inAddress = Flipped(Valid(UInt(addrLen.W)))
-    val lockCMD = Input(Bool())
-    val isLocked  = Valid(Bool())
+//    val inAddressWrite = Flipped(Valid(UInt(addrLen.W)))
+//
+//    val lockCMD = Input(Bool())
+//    val isLocked  = Valid(Bool())
+
+    val lock = new port(UInt(addrLen.W), Bool(), Bool())(addrLen)
+    val unLock = lock.cloneType
 }
 
 class lockVector (lockVecDepth :Int = 8)(implicit val p :Parameters) extends Module
 with HasCacheAccelParams {
 
+    val LOCK = true
+    val UNLOCK = false
+
     val io = IO (new lockVectorIO())
+
+
     val addrVec = RegInit(VecInit(Seq.fill(lockVecDepth)(0.U(addrLen.W))))
     val valid = RegInit(VecInit(Seq.fill(lockVecDepth)(false.B)))
 
-    val addrReg = Reg(UInt(addrLen.W))
 
     val bitmapProbe =  Wire(UInt(lockVecDepth.W))
-    val idxLocking = Wire(UInt(lockVecDepth.W))
-    val idxProbe = Wire(UInt(lockVecDepth.W))
+    val bitmapUnlock = Wire(bitmapProbe.cloneType)
 
-    when(io.inAddress.fire()){
-        addrReg := io.inAddress.bits
-    }
+    val idxLocking = Wire(UInt(lockVecDepth.W))
+    val idxProbe = Wire(idxLocking.cloneType)
+    val idxUnlock = Wire(idxLocking.cloneType)
+
 //    io.isLocked.bits := addrVec.map( addr => (io.inAddress.bits === addr)).foldLeft(0.U)({
 //        case (res, bit) =>
 //         Cat(res,bit)
@@ -54,13 +76,15 @@ with HasCacheAccelParams {
 
     val isLocked = Wire(Bool())
 
-    val probe =   WireInit(io.inAddress.fire() && (io.lockCMD === true.B))
-    val write =   WireInit(!isLocked && io.inAddress.fire() && (io.lockCMD === true.B))
-    val erase =   WireInit(isLocked && io.inAddress.fire() && (io.lockCMD === false.B))
+    val probe =   WireInit(io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.B))
+    val write =   WireInit(!isLocked && io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.B))
+    val erase =   WireInit(isLocked && io.lock.in.fire() && (io.unLock.in.bits.cmd === UNLOCK.B))
 
-    bitmapProbe := (Cat( addrVec.map( addr => (addr === io.inAddress.bits)).reverse))
+    bitmapProbe := (Cat( addrVec.map( addr => (addr === io.lock.in.bits.addr)).reverse))
+    bitmapUnlock := (Cat( addrVec.map( addr => (addr === io.unLock.in.bits.addr)).reverse))
+
     idxProbe := OHToUInt((bitmapProbe & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
-    val idxUnlocking = WireInit(idxProbe)
+    idxUnlock := OHToUInt((bitmapUnlock & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
 
     idxLocking := lockVecDepth.U
 
@@ -73,17 +97,21 @@ with HasCacheAccelParams {
     printf(p"idxProbe ${idxProbe}\n")
 
     isLocked := (bitmapProbe =/= 0.U) && (valid(idxProbe) === true.B)
-    io.isLocked.bits := isLocked
-    io.isLocked.valid := probe
+    io.lock.out.bits := isLocked
+    io.lock.out.valid := probe
+
+    io.unLock.out := DontCare
 
     when(write) {
-        addrVec(idxLocking) := io.inAddress.bits
+        addrVec(idxLocking) := io.lock.in.bits.addr
     }
 
     when(write){
         valid(idxLocking) := true.B
-    }.elsewhen(erase){
-        valid(idxUnlocking) := false.B
+    }
+
+    when(erase){
+        valid(idxUnlock) := false.B
     }
 }
 
