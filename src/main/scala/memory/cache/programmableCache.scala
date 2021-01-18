@@ -40,13 +40,13 @@ with HasAccelShellParams{
 
     val inputTBE = WireInit(TBE.default)
 
-    val routineAddr = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
+    val (routineAddr,setStateDst) = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
     val (rombits, dstStateBits) = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
 
     val uCodedNextPtr = VecInit(rombits)
     val dstStateRom = VecInit(dstStateBits)
 
-    val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions)
+    val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions, setStateDst)
     val actionRom = VecInit(actions)
 
     val addr = RegInit(0.U(addrLen.W))
@@ -74,7 +74,7 @@ with HasAccelShellParams{
     val routineStart = Reg(Bool())
 
     val defaultState = Wire(new State())
-    val dstState = Reg(new State())
+//    val dstState = Reg(new State())
 
     val startOfRoutine = Wire(Bool())
     val endOfRoutine = Wire(Bool())
@@ -93,7 +93,7 @@ with HasAccelShellParams{
     val routineReg = RegInit(0.U((eventLen + stateLen).W))
     val actionReg = RegInit(0.U((nSigs + 2).W))
 
-    val actionState = Wire(new State())
+    val dstOfSetState = Wire(new State())
     val getState = Reg(Bool())
     val stateMemOutput = Wire((new State()))
 

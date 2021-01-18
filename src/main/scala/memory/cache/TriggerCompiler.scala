@@ -21,10 +21,11 @@ case class DstState(name :String) extends  RoutinePC
 
 object RoutinePtr {
 
-  def generateRoutineAddrMap (routineRom : Array[RoutinePC]  ) : Map[String,Int] = {
+  def generateRoutineAddrMap (routineRom : Array[RoutinePC]  ) : (Map[String,Int], Array[Int])= {
 
       var routineAddr = 0
       var mappedRoutine = Map[String, Int]()
+      var dstStateArray = ArrayBuffer[Int]()
       for (routine <- routineRom) {
           routine match {
               case Actions(actionList) => routineAddr += actionList.length
@@ -32,10 +33,11 @@ object RoutinePtr {
                   routineAddr += 1
                   mappedRoutine += ((name, routineAddr))
               }
+              case DstState(state) => dstStateArray += States.StateArray(state)
           }
 
       }
-      mappedRoutine
+      (mappedRoutine, dstStateArray.toArray)
 
   }
 
@@ -109,15 +111,27 @@ object RoutinePtr {
   }
 
 
-    def generateActionRom(routineRom: Array[RoutinePC], actions: Map[String, Bits]): Array[Bits] ={
-        var routineAddr = 0
+    def generateActionRom(routineRom: Array[RoutinePC], actions: Map[String, Bits], dstState: Array[Int]): Array[Bits] ={
+        var stateIdx = 0
         var actionBits = new ArrayBuffer[Bits]
         for (elem <- routineRom) {
             elem match {
-                case Actions(actionList) =>  actionList.map{ case action => actionBits += actions(action)}
+                case Actions(actionList) =>
+                    for (action <- actionList) {
+                        action match {
+                            case "SetState" => {
+                                actionBits += (actions(action).asUInt() + dstState(stateIdx).asUInt())
+                                stateIdx += 1
+                            }
+
+                            case default => actionBits += (actions(action))
+                        }
+                    }
+
 //                case Actions(actionList) => for (action <- actionList) actionBits += 0.U
 
                 case Routine(name) => actionBits += (0.U)
+                case default => {}
             }
         }
 

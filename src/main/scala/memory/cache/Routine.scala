@@ -13,12 +13,12 @@ object RoutineROM {
 
 
     // @todo should be fixed
-    Routine ("LOAD_I") , Actions(Seq( "AllocateTBE","Allocate", "DataRQ")),
-    Routine ("LOAD_M"), Actions(Seq ("DataRQ")),
-    Routine("STORE_I"), Actions(Seq("Allocate", "DataRQ")),
-    Routine ("LOAD_ID") , Actions(Seq( "ReadInt", "DeallocateTBE")),
-    Routine ("LOAD_IM") , Actions(Seq( "ReadInt","DeallocateTBE")),
-    Routine ("STORE_IS") , Actions(Seq( "WrInt"))
+    Routine ("LOAD_I") , Actions(Seq( "AllocateTBE","Allocate", "DataRQ", "SetState")),DstState("ID"),
+    Routine ("LOAD_M"), Actions(Seq ("DataRQ", "SetState")),  DstState("M"),
+    Routine("STORE_I"), Actions(Seq("Allocate", "DataRQ", "SetState")),DstState("IM"),
+    Routine ("LOAD_ID") , Actions(Seq( "ReadInt", "DeallocateTBE", "SetState")), DstState("I"),
+    Routine ("LOAD_IM") , Actions(Seq( "ReadInt","DeallocateTBE", "SetState")), DstState("M"),
+    Routine ("STORE_IS") , Actions(Seq( "WrInt", "SetState")), DstState("S")
 
 
 

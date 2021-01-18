@@ -22,8 +22,8 @@ object ActionList {
         ("DataRQ",      "b011000000000".U),
         ("Nop",         "b010000000000".U),
         ("AllocateTBE", "b000000000001".U),
-        ("DeallocateTBE", "b000000000010".U)/*,*/
-          ("SetState"),   "b110000000000".U
+        ("DeallocateTBE", "b000000000010".U),
+          ("SetState",   "b110000000000".U)
 //        ("ReadTBE",     "b00000000011".U)
 
 
