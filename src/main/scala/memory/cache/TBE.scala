@@ -94,21 +94,21 @@ class   TBETable(implicit  val p: Parameters) extends Module
   }
 
 
-  when (RegNext(isAlloc)){
-    TBEMemory(idxReg) := inputTBEReg
-    TBEAddr(idxReg) := inputAddrReg
-    TBEValid(idxReg) := true.B
-  }.elsewhen(RegNext(isDealloc)){
-    TBEValid(idxReg) := false.B
-    TBEMemory(idxReg) := TBE.default
-    TBEAddr(idxReg) := 0.U
-  }.elsewhen(RegNext(isWrite)){
-    when(RegNext(io.mask === maskWay)) {
-      TBEMemory(idxReg).way := inputTBEReg.way
-    }.elsewhen(RegNext(io.mask === maskState)){
-      TBEMemory(idxReg).state := inputTBEReg.state
+  when ((isAlloc)){
+    TBEMemory(idx) := io.inputTBE
+    TBEAddr(idx) := io.addr
+    TBEValid(idx) := true.B
+  }.elsewhen((isDealloc)){
+    TBEValid(idx) := false.B
+    TBEMemory(idx) := TBE.default
+    TBEAddr(idx) := 0.U
+  }.elsewhen((isWrite)){
+    when((io.mask === maskWay)) {
+      TBEMemory(idx).way := io.inputTBE.way
+    }.elsewhen((io.mask === maskState)){
+      TBEMemory(idx).state := io.inputTBE.state
     }.otherwise{
-      TBEMemory(idxReg) := inputTBEReg
+      TBEMemory(idx) := io.inputTBE
     }
 //    TBEValid(idxReg) := true.B
   }

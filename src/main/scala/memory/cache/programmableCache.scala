@@ -178,7 +178,16 @@ with HasAccelShellParams{
     tbe.io.command := Mux (readTBE, tbe.read, Mux( updateTBEWay | updateTBEState, tbe.write, tbeAction))
     tbe.io.addr := addr
     tbe.io.inputTBE := inputTBE
-    tbe.io.mask := Mux(updateTBEWay, tbe.maskWay, Mux(tbeActionInRom, tbe.maskState, tbe.maskAll))
+
+    tbe.io.mask := tbe.maskAll
+    when (updateTBEState & updateTBEWay){
+        tbe.io.mask := tbe.maskAll
+    }.elsewhen(updateTBEWay & !updateTBEState){
+        tbe.io.mask := tbe.maskWay
+    }.elsewhen(updateTBEState & !updateTBEWay){
+        tbe.io.mask := tbe.maskState
+    }
+
     tbe.io.outputTBE.ready := true.B
 
 
