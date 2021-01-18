@@ -130,33 +130,7 @@ with HasAccelShellParams{
     getState := io.instruction.fire()
 
 
-
-    lockMem.io.lock.in.bits.data := DontCare
-    lockMem.io.unLock.in.bits.data := DontCare
-
-    lockMem.io.lock.in.bits.addr  := addr
-    lockMem.io.lock.in.valid := checkLock
-    lockMem.io.lock.in.bits.cmd := true.B // checking and locking
-    isLocked := Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B)
-
-    lockMem.io.unLock.in.bits.addr := addrCapturedReg
-    lockMem.io.unLock.in.bits.cmd  := false.B   //unlock
-    lockMem.io.unLock.in.valid     := endOfRoutine
-
-
     val tbeActionInRom = WireInit(actionResValid & isTBEAction)
-    val updateTBEWay = WireInit(RegNext(cache.io.cpu.resp.fire()) & (cacheWayReg =/= nWays.U))
-
-    dstState.state := dstStateRom(routine)
-    inputTBE.state.state :=  Mux(tbeActionInRom, dstState.state, DontCare)
-    inputTBE.way := Mux(updateTBEWay , cacheWayReg, DontCare)
-
-    tbe.io.command := Mux (readTBE, tbe.read, Mux( updateTBEWay, tbe.write, tbeAction))
-    tbe.io.addr := addr
-    tbe.io.inputTBE := inputTBE
-    tbe.io.mask := Mux(updateTBEWay, tbe.maskWay, Mux(tbeActionInRom, tbe.maskState, tbe.maskAll))
-
-    tbe.io.outputTBE.ready := true.B
 
     updateTBEWay   := (RegNext(cache.io.cpu.resp.fire()) & (cacheWayReg =/= nWays.U))
     updateTBEState := isStateAction
@@ -187,23 +161,45 @@ with HasAccelShellParams{
     endOfRoutine   := isStateAction
 
     isTBEAction   := (action.actionType === 0.U)
-    isStateAction := (action.actionType === 2.U | action.actionType === 3.U )
     isCacheAction := (action.actionType === 1.U)
-
+    isStateAction := (action.actionType === 2.U | action.actionType === 3.U )
 
 
     tbeAction := Mux(isTBEAction, action.signals, tbe.idle )
     cacheAction := Mux(isCacheAction, action.signals, 0.U(nSigs.W))
     stateAction := isStateAction
 
-    actionState.state := sigToState (actionReg)
+    dstOfSetState.state := Mux( isStateAction, sigToState (actionReg), State.default.state)
 
-    stateMem.io.in.bits.isSet := Mux(getState, false.B, stateAction)
+    // TBE
+    inputTBE.state.state :=  Mux(updateTBEState, dstOfSetState.state, DontCare)
+    inputTBE.way := Mux(updateTBEWay , cacheWayReg, DontCare)
+
+    tbe.io.command := Mux (readTBE, tbe.read, Mux( updateTBEWay | updateTBEState, tbe.write, tbeAction))
+    tbe.io.addr := addr
+    tbe.io.inputTBE := inputTBE
+    tbe.io.mask := Mux(updateTBEWay, tbe.maskWay, Mux(tbeActionInRom, tbe.maskState, tbe.maskAll))
+    tbe.io.outputTBE.ready := true.B
+
+
+    // lock Mem
+    lockMem.io.lock.in.bits.data := DontCare
+    lockMem.io.unLock.in.bits.data := DontCare
+    lockMem.io.lock.in.bits.addr  := addr
+    lockMem.io.lock.in.valid := checkLock
+    lockMem.io.lock.in.bits.cmd := true.B // checking and locking
+    isLocked := Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B)
+    lockMem.io.unLock.in.bits.addr := addrCapturedReg
+    lockMem.io.unLock.in.bits.cmd  := false.B   //unlock
+    lockMem.io.unLock.in.valid     := endOfRoutine
+
+
+    // @todo tbe should have a higher priority for saving dst state
+    stateMem.io.in.bits.isSet := Mux(getState, false.B, stateAction) // have conflict when an inst comes in and prev one is ending
     stateMem.io.in.bits.addr := addr
-    stateMem.io.in.bits.state := actionState
-    stateMem.io.in.bits.way := cacheWayWire
+    stateMem.io.in.bits.state := dstOfSetState
+    stateMem.io.in.bits.way := Mux (isStateAction, cacheWayReg, cacheWayWire)
     stateMem.io.in.valid := isStateAction | getState
-
     stateMemOutput := stateMem.io.out.bits
     
     cache.io.cpu.req.bits.way := RegNext(wayInputCache)
