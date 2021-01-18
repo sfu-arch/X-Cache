@@ -78,7 +78,7 @@ with HasCacheAccelParams {
 
     val probe =   WireInit(io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.B))
     val write =   WireInit(!isLocked && io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.B))
-    val erase =   WireInit(isLocked && io.lock.in.fire() && (io.unLock.in.bits.cmd === UNLOCK.B))
+    val erase =   WireInit(isLocked && io.unLock.in.fire() && (io.unLock.in.bits.cmd === UNLOCK.B))
 
     bitmapProbe := (Cat( addrVec.map( addr => (addr === io.lock.in.bits.addr)).reverse))
     bitmapUnlock := (Cat( addrVec.map( addr => (addr === io.unLock.in.bits.addr)).reverse))
