@@ -32,14 +32,11 @@ with HasAccelShellParams{
     val stateMem = Module (new stateMem())
 
     stateMem.io <> DontCare
-
-    val state = Wire(UInt(stateLen.W))
-
     cache.io.cpu <> DontCare
     cache.io.mem <> DontCare
 
-    val inputTBE = WireInit(TBE.default)
-
+    /********************************************************************************/
+    // Building ROMs
     val (routineAddr,setStateDst) = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
     val (rombits, dstStateBits) = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
 
@@ -48,50 +45,59 @@ with HasAccelShellParams{
 
     val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions, setStateDst)
     val actionRom = VecInit(actions)
+    /********************************************************************************/
+
+    val state    = Wire(UInt(stateLen.W))
+    val inputTBE = WireInit(TBE.default)
 
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
+    val pc = Reg(UInt())
 
-    val tbeAction = Wire(UInt(nSigs.W))
+    val tbeAction   = Wire(UInt(nSigs.W))
     val cacheAction = Wire(UInt(nSigs.W))
     val stateAction = Wire(Bool())
 
-    val isTBEAction = Wire(Bool())
+    val isTBEAction   = Wire(Bool())
     val isStateAction = Wire(Bool())
     val isCacheAction = Wire(Bool())
+    val isLocked      = Wire(Bool())
+//    val tbeResValid   = Wire(Bool())
 
-    val readTBE = Reg(Bool())
-    val checkLock = Reg(Bool())
-    val isLocked = Wire(Bool())
+    val updateTBEWay  = Wire(Bool())
+    val updateTBEState = Wire(Bool())
 
-    val pc = Reg(UInt())
+    val stall = WireInit(false.B)
+
+    val readTBE   = Wire(Bool())
+    val checkLock = Wire(Bool())
+    val getState  = Wire(Bool())
+
     val action = Wire(new ActionBundle())
 
-    val tbeResValid = Wire(Bool())
-    val routineAddrResValid = Reg(Bool())
-    val actionResValid = Reg(Bool())
-
-    val routineStart = Reg(Bool())
+    val routineAddrResValid = Wire(Bool())
+    val actionResValid      = Wire(Bool())
+    val startRoutine = Wire(Bool())
 
     val defaultState = Wire(new State())
 //    val dstState = Reg(new State())
 
-    val startOfRoutine = Wire(Bool())
-    val endOfRoutine = Wire(Bool())
+    val firstLineNextRoutine = Wire(Bool())
+    val endOfRoutine   = Wire(Bool())
 //    val isProbe = Wire(Bool())
+
     val routine = WireInit( Cat (event, state))
 //    val (probeHandled, _) = Counter(isProbe, 2)
-    val cacheWayReg = RegInit(nWays.U((wayLen+1).W))
+    val cacheWayReg  = RegInit(nWays.U((wayLen+1).W))
     val cacheWayWire = Wire(UInt((wayLen+1).W))
 
     val wayInputCache = Reg(UInt((wayLen+1).W))
-    val tbeWay = RegInit(nWays.U((wayLen+1).W))
+    val tbeWay        = RegInit(nWays.U((wayLen+1).W))
 
-    val routineReg = RegInit(0.U((eventLen + stateLen).W))
-    val actionReg = RegInit(0.U((nSigs + 2).W))
+    val routineReg = Wire(UInt((eventLen + stateLen).W))
+    val actionReg  = Wire(UInt((nSigs + 2).W))
 
     val dstOfSetState = Wire(new State())
-    val getState = Reg(Bool())
     val stateMemOutput = Wire((new State()))
 
     val probeStart = WireInit(io.instruction.fire())
@@ -99,10 +105,8 @@ with HasAccelShellParams{
     val tbeActionInRom = Wire(Bool())
 
     val addrWire   = WireInit(io.instruction.bits.addr)
-    val addrCapturedReg  = RegNext(RegNext(addr))
 
-    val updateTBEWay = Wire(Bool())
-    val updateTBEState = Wire(Bool())
+    val addrCapturedReg  = RegNext(RegNext(addr))
 
     io.instruction.ready := true.B // @todo should be changed for stalled situations
 //    cache.io.cpu.resp.ready := true.B
@@ -122,49 +126,45 @@ with HasAccelShellParams{
         tbeWay := tbe.io.outputTBE.bits.way
     }
 
-
-    readTBE := io.instruction.fire()
-    checkLock := io.instruction.fire()
-    getState := io.instruction.fire()
-
-
     /*************************************************************************/
     // control signals
 
+    readTBE     := RegEnable(io.instruction.fire(), false.B, !stall)
+    checkLock   := RegEnable(io.instruction.fire(), false.B, !stall)
+    getState    := RegEnable(io.instruction.fire(), false.B, !stall)
 
-    updateTBEWay   := (RegNext(cache.io.cpu.resp.fire()) & (cacheWayReg =/= nWays.U))
-    updateTBEState := isStateAction
+    routineAddrResValid := RegEnable(readTBE, false.B, !stall)
+    startRoutine        := RegEnable(readTBE, false.B, !stall)
+
+//    actionResValid := RegEnable(Mux(routineAddrResValid, true.B , Mux (firstLineRoutine, false.B,  true.B)), false.B , !stall)
+    actionResValid := RegEnable(routineAddrResValid | (!routineAddrResValid & !firstLineNextRoutine) , false.B , !stall)
+    firstLineNextRoutine := (actionRom(pc).asUInt() === 0.U )
     tbeActionInRom := (actionResValid & isTBEAction)
-
-    //    dstState.state := dstStateRom(routine)
-    tbeResValid := (readTBE)
-    routineAddrResValid := (tbeResValid)
-    routineStart := tbeResValid
-//    isProbe := (action.signals === sigToAction(ActionList.actions("Probe")))
-    actionResValid := Mux(routineAddrResValid, true.B , Mux (startOfRoutine, false.B,  true.B))
-
-    startOfRoutine := (sigToAction(actionRom(pc)) === 0.U & actionRom(pc)(nSigs) === 0.U & actionRom(pc)(nSigs + 1) === 0.U)
+    updateTBEState := isStateAction
     endOfRoutine   := isStateAction
 
     isTBEAction   := (action.actionType === 0.U)
     isCacheAction := (action.actionType === 1.U)
     isStateAction := (action.actionType === 2.U | action.actionType === 3.U )
 
+    updateTBEWay   := (RegNext(cache.io.cpu.resp.fire()) & (cacheWayReg =/= nWays.U))
+
+    //    dstState.state := dstStateRom(routine)
+//    isProbe := (action.signals === sigToAction(ActionList.actions("Probe")))
+    
     /*************************************************************************/
-
-
 
     /*************************************************************************/
     // Elements
 
     defaultState := State.default
 
-    state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state )) // stateMem should be added
+    state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
 
-    routineReg := uCodedNextPtr(routine)
-    actionReg := actionRom(pc)
+    routineReg := RegEnable(uCodedNextPtr(routine), 0.U, !stall)
+    actionReg  := RegEnable(actionRom(pc) , 0.U, !stall)
 
-    pc := Mux(routineStart, routineReg, Mux(startOfRoutine, pc, pc+ 1.U  ))
+    pc := Mux(startRoutine, routineReg, Mux(firstLineNextRoutine, pc, pc+ 1.U  ))
 
     wayInputCache := Mux( tbeWay === nWays.U , cacheWayReg, tbeWay )
 
@@ -173,18 +173,16 @@ with HasAccelShellParams{
     action.signals := sigToAction(actionReg)
     action.actionType := actionReg(nSigs+ 1, nSigs)
 
-    tbeAction := Mux(isTBEAction, action.signals, tbe.idle )
+    tbeAction   := Mux(isTBEAction, action.signals, tbe.idle )
     cacheAction := Mux(isCacheAction, action.signals, 0.U(nSigs.W))
     stateAction := isStateAction
 
     dstOfSetState.state := Mux( isStateAction, sigToState (actionReg), State.default.state)
     /*************************************************************************************/
 
-
-
     // TBE
-    inputTBE.state.state :=  Mux(updateTBEState, dstOfSetState.state, DontCare)
-    inputTBE.way := Mux(updateTBEWay , cacheWayReg, DontCare)
+    inputTBE.state.state := Mux(updateTBEState, dstOfSetState.state, DontCare)
+    inputTBE.way         := Mux(updateTBEWay , cacheWayReg, DontCare)
 
     tbe.io.command := Mux (readTBE, tbe.read, Mux( updateTBEWay | updateTBEState, tbe.write, tbeAction))
     tbe.io.addr := addr
