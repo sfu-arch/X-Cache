@@ -3,8 +3,10 @@ package dandelion.memory.cache
 import chipsalliance.rocketchip.config.Parameters
 import chisel3._
 import chisel3.util.{Valid, _}
-import dandelion.config.HasAccelShellParams
+import chisel3.util._
+import dandelion.config.{AXIAccelBundle, HasAccelShellParams}
 import dandelion.memory.cache.HasCacheAccelParams
+
 
 class DecoderIO (nSigs: Int)(implicit val p:Parameters) extends Bundle {
 
@@ -43,7 +45,7 @@ with HasCacheAccelParams {
 //    val lockCMD = Input(Bool())
 //    val isLocked  = Valid(Bool())
 
-    val lock = new port(UInt(addrLen.W), Bool(), Bool())(addrLen)
+    val lock = new portWithCMD(UInt(addrLen.W), Bool(), Bool())(addrLen)
     val unLock = lock.cloneType
 }
 

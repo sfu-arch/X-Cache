@@ -36,7 +36,7 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
   val command = Input(UInt())
   val mask = Input(UInt())
   val inputTBE= Input(new TBE)
-  val outputTBE = Decoupled(new TBE)
+  val outputTBE = Valid(new TBE)
 
 }
 

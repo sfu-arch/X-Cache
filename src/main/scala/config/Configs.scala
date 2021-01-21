@@ -72,6 +72,7 @@ case class DandelionAccelParams(
                                  cacheNState:Int = 16,
                                  cacheAddrLen:Int = 32,
                                  nSigs:Int = 10,
+                                 actionLen: Int = 10 + 2,
                                  tbeSize:Int= 16
 
                                ) extends AccelParams {
