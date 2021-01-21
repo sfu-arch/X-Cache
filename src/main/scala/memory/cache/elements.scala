@@ -22,13 +22,51 @@ class Decoder (implicit val p:Parameters) extends Module
     val io = IO(new DecoderIO(nSigs))
     io.outSignals := io.inAction.asBools()
 }
-class port[T1 <: Data, T2 <: Data, T3 <: Data] (D: T1, C: T2, O: T3 ) (addrLen: Int) (implicit val p :Parameters) extends Bundle
-with HasCacheAccelParams {
+class Find[T1 <: Data , T2 <: Data]( K: T1, D:T2, depth: Int, outLen: Int = 32) (implicit val p:Parameters) extends Module {
+
+    val io = IO(new Bundle {
+        val key = Input(D.cloneType)
+        val data = Input(Vec(depth, D.cloneType))
+        val valid = Input(Vec(depth, Bool()))
+        val value = Valid(UInt(outLen.W))
+    })
+
+    val bitmap = Wire(UInt(depth.W))
+    val idx = Wire(UInt(outLen.W))
+
+    bitmap := Cat(io.data.map(addr => (addr.asUInt() === io.key.asUInt() )).reverse)
+    idx := OHToUInt((bitmap & io.valid.asUInt()))
+
+    io.value.bits := idx
+    io.value.valid := bitmap =/= 0.U
+}
+class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends Module {
+
+    val io = IO(new Bundle {
+        //        val key = Input(D.cloneType)
+        val data = Input(Vec(depth, Bool()))
+        val value = Output(UInt(outLen.W))
+    })
+
+    val idx = Wire(UInt(outLen.W))
+
+    (0 until depth).foldLeft(when(false.B) {}) {
+        case (whenContext, searchIdx) =>
+            whenContext.elsewhen(io.data(searchIdx) === false.B) {
+                idx := searchIdx.U
+            }
+    }
+    io.value := idx
+
+
+}
+
+class port[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit val p :Parameters) extends Bundle
+  with HasCacheAccelParams {
 
     val in = Flipped(Valid(new Bundle {
         val addr = UInt(addrLen.W)
         val data = D.cloneType
-        val cmd = C.cloneType
     }))
 
     val out = Valid(O.cloneType)
