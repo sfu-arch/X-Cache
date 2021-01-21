@@ -203,3 +203,98 @@ class stateMem (implicit val p: Parameters) extends Module
     }
 
   }
+
+
+class PCContent (implicit p:Parameters) extends AXIAccelBundle
+  with HasCacheAccelParams {
+
+    val pc = UInt(pcLen.W)
+    val addr = UInt(addrLen.W)
+    val valid = Bool()
+}
+
+object PCContent {
+
+    def default (implicit p:Parameters): PCContent =  {
+        val pcContent = Wire(new PCContent())
+        pcContent.addr := 0.U
+        pcContent.pc := 0.U
+        pcContent.valid := false.B
+
+        pcContent
+
+    }
+}
+
+class PCIO ( implicit val p:Parameters) extends Bundle
+with HasCacheAccelParams{
+
+    val write = new port(UInt(pcLen.W), Bool())(addrLen)
+//    val read = Vec(nParal , ( new Bundle{
+//        val addr = UInt(addrLen.W)
+//        val out = Valid(UInt(addrLen.W))
+//
+//    }))
+    val read = Vec(nParal , (new Bundle{
+            val content = new port(UInt(pcLen.W), Bool() )(addrLen)
+            val updateValid = Bool()
+
+}))
+
+}
+
+class PC (implicit val p :Parameters) extends Module
+with HasCacheAccelParams{
+
+
+   val io = IO (new PCIO())
+
+    val pcContent =  RegInit(VecInit(Seq.fill(nParal)(PCContent.default)))
+
+    val write = WireInit (io.write.in.fire())
+
+    val findNewLine = Module(new FindEmptyLine(nParal,log2Ceil(nParal)))
+    findNewLine.io.data := pcContent.map(_.valid).toVector
+    val writeIdx = WireInit (findNewLine.io.value)
+
+    val finder = for (i <- 0 until nParal) yield{
+        val Finder = new Find(UInt(addrLen.W), UInt(addrLen.W), nParal, log2Ceil(nParal))
+        Finder
+    }
+
+    for (i <- 0 until nParal){
+
+        finder(i).io.key   := io.read(i).content.in.bits.addr
+        finder(i).io.valid := pcContent.map(_.valid).toVector
+        finder(i).io.data  := pcContent.map(_.addr).toVector
+
+        io.read(i).content.out.bits  := pcContent(finder(i).io.value.bits).pc
+        io.read(i).content.out.valid := finder(i).io.value.valid
+
+    }
+    for (i <- 0 until nParal){
+
+        finder(i).io.key   := io.read(i).content.in.bits.addr
+        finder(i).io.valid := pcContent.map(_.valid).toVector
+        finder(i).io.data  := pcContent.map(_.addr).toVector
+
+        io.read(i).content.out.bits  := pcContent(finder(i).io.value.bits).pc
+        io.read(i).content.out.valid := finder(i).io.value.valid
+    }
+
+    for (i <- 0 until nParal){
+        when(!write){
+            pcContent(finder(i).io.value.bits).pc := io.read(i).content.in.bits.data
+            pcContent(finder(i).io.value.bits).valid := io.read(i).updateValid
+        }
+
+    }
+
+
+    when( write){
+        pcContent(writeIdx).valid := true.B
+        pcContent(writeIdx).pc := io.write.in.bits.data
+        pcContent(writeIdx).addr := io.write.in.bits.addr
+    }
+
+}
