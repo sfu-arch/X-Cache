@@ -68,6 +68,8 @@ with HasAccelShellParams{
     val updateTBEState = Wire(Bool())
 
     val stall = WireInit(false.B)
+    val stallInput = WireInit(false.B)
+    val bubble = WireInit(stallInput)
 
     val readTBE   = Wire(Bool())
     val checkLock = Wire(Bool())
@@ -108,11 +110,11 @@ with HasAccelShellParams{
 
     val addrCapturedReg  = RegNext(RegNext(addr))
 
-    io.instruction.ready := true.B // @todo should be changed for stalled situations
+
 //    cache.io.cpu.resp.ready := true.B
 
     //latching
-    when(io.instruction.fire()){
+    when( io.instruction.fire() ){
         addr := io.instruction.bits.addr
         event := io.instruction.bits.event
     }
@@ -129,15 +131,20 @@ with HasAccelShellParams{
     /*************************************************************************/
     // control signals
 
-    readTBE     := RegEnable(io.instruction.fire(), false.B, !stall)
-    checkLock   := RegEnable(io.instruction.fire(), false.B, !stall)
-    getState    := RegEnable(io.instruction.fire(), false.B, !stall)
+    stallInput := isLocked
 
-    routineAddrResValid := RegEnable(readTBE, false.B, !stall)
-    startRoutine        := RegEnable(readTBE, false.B, !stall)
+    io.instruction.ready := !stallInput // @todo should be changed for stalled situations
+
+    readTBE     := RegEnable(io.instruction.fire(), false.B, !stallInput)
+    checkLock   := RegEnable(io.instruction.fire(), false.B, !stallInput)
+    getState    := RegEnable(io.instruction.fire(), false.B, !stallInput)
+
+
+    routineAddrResValid := RegEnable(readTBE & !stallInput , false.B, !stall)
+    startRoutine        := RegEnable(readTBE & !stallInput , false.B, !stall)
 
 //    actionResValid := RegEnable(Mux(routineAddrResValid, true.B , Mux (firstLineRoutine, false.B,  true.B)), false.B , !stall)
-    actionResValid := RegEnable(routineAddrResValid | (!routineAddrResValid & !firstLineNextRoutine) , false.B , !stall)
+    actionResValid := RegEnable((routineAddrResValid | (!routineAddrResValid & !firstLineNextRoutine)) & !stallInput, false.B , !stall)
     firstLineNextRoutine := (actionRom(pc).asUInt() === 0.U )
     tbeActionInRom := (actionResValid & isTBEAction)
     updateTBEState := isStateAction
@@ -196,7 +203,7 @@ with HasAccelShellParams{
     }.elsewhen(updateTBEState & !updateTBEWay){
         tbe.io.mask := tbe.maskState
     }
-    tbe.io.outputTBE.ready := true.B
+//    tbe.io.outputTBE.ready := true.B
 
 
     // lock Mem
