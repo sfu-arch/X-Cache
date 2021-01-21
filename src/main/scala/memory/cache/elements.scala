@@ -71,8 +71,22 @@ class port[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit val p :
 
     val out = Valid(O.cloneType)
 
-    override def cloneType: this.type =  new port(D,C,O)(addrLen).asInstanceOf[this.type]
+    override def cloneType: this.type =  new port(D,O)(addrLen).asInstanceOf[this.type]
 }
+
+class portWithCMD[T1 <: Data, T2 <: Data, T3 <: Data](D: T1, C: T2, O: T3 )(addrLen: Int)(override implicit val p :Parameters) extends port(D,O)(addrLen)(p)
+with HasCacheAccelParams {
+
+    override val in = Flipped(Valid(new Bundle {
+        val addr = UInt(addrLen.W)
+        val data = D.cloneType
+        val cmd  = C.cloneType
+    }))
+
+
+    override def cloneType: this.type =  new portWithCMD(D,C,O)(addrLen).asInstanceOf[this.type]
+}
+
 
 
 class lockVectorIO (implicit val p :Parameters) extends Bundle
