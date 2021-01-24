@@ -30,6 +30,7 @@ with HasAccelShellParams{
     val tbe = Module(new TBETable())
     val lockMem = Module(new lockVector())
     val stateMem = Module (new stateMem())
+    val pc = Module(new PC())
 
     stateMem.io <> DontCare
     cache.io.cpu <> DontCare
@@ -171,7 +172,29 @@ with HasAccelShellParams{
     routineReg := RegEnable(uCodedNextPtr(routine), 0.U, !stall)
     actionReg  := RegEnable(actionRom(pc) , 0.U, !stall)
 
-    pc := Mux(startRoutine, routineReg, Mux(firstLineNextRoutine, pc, pc+ 1.U  ))
+    //pc := Mux(startRoutine, routineReg, Mux(firstLineNextRoutine, pc, pc+ 1.U  ))
+
+    for (i <- 0 until nParal){
+
+        updatedPC(i) := Mux(firstLineNextRoutine(i), pc, pc+ 1.U  )
+        updatePCValid(i) := !firstLineNextRoutine(i)
+    }
+
+
+    pc.io.write.in.bits.data.addr := addrCapturedReg
+    pc.io.write.in.bits.data.way := wayInputCache
+    pc.io.write.in.bits.data.pc := routineReg
+    pc.io.write.in.bits.data.valid := DontCare
+
+    for (i <- 0 until nParal) {
+        pc.io.read(i).in.bits.data.addr := addr // @todo WRONG
+        pc.io.read(i).in.bits.data.way := DontCare
+        pc.io.read(i).in.bits.data.pc := updatedPC(i) // @todo WRONG
+        pc.io.read(i).in.bits.data.valid := updatedPCValid(i) // @todo WRONG
+
+        cacheAction(i) <> pc.io.read(i).out.bits // @todo Wrong
+    }
+
 
     wayInputCache := Mux( tbeWay === nWays.U , cacheWayReg, tbeWay )
 

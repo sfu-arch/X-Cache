@@ -60,6 +60,17 @@ class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends
 
 
 }
+class portNoAddr[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit val p :Parameters) extends Bundle
+  with HasCacheAccelParams {
+
+    val in = Flipped(Valid(new Bundle {
+        val data = D.cloneType
+    }))
+
+    val out = Valid(O.cloneType)
+
+    override def cloneType: this.type =  new port(D,O)(addrLen).asInstanceOf[this.type]
+}
 
 class port[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit val p :Parameters) extends Bundle
   with HasCacheAccelParams {
@@ -204,19 +215,24 @@ class stateMem (implicit val p: Parameters) extends Module
 
   }
 
+class CacheBundle (implicit p:Parameters) extends AXIAccelBundle
+  with HasCacheAccelParams {
 
-class PCContent (implicit p:Parameters) extends AXIAccelBundle
+    val addr = UInt(addrLen.W)
+    val way  = UInt(wayLen.W)
+}
+
+class PCBundle(implicit p:Parameters) extends CacheBundle
   with HasCacheAccelParams {
 
     val pc = UInt(pcLen.W)
-    val addr = UInt(addrLen.W)
     val valid = Bool()
 }
 
-object PCContent {
+object PCBundle {
 
-    def default (implicit p:Parameters): PCContent =  {
-        val pcContent = Wire(new PCContent())
+    def default (implicit p:Parameters): PCBundle =  {
+        val pcContent = Wire(new PCBundle())
         pcContent.addr := 0.U
         pcContent.pc := 0.U
         pcContent.valid := false.B
@@ -229,17 +245,13 @@ object PCContent {
 class PCIO ( implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams{
 
-    val write = new port(UInt(pcLen.W), Bool())(addrLen)
+    val write = new portNoAddr(new PCBundle, Bool())(addrLen)
 //    val read = Vec(nParal , ( new Bundle{
 //        val addr = UInt(addrLen.W)
 //        val out = Valid(UInt(addrLen.W))
 //
 //    }))
-    val read = Vec(nParal , (new Bundle{
-            val content = new port(UInt(pcLen.W), Bool() )(addrLen)
-            val updateValid = Bool()
-
-}))
+    val read = Vec(nParal ,  new portNoAddr(new PCBundle, Bool())(addrLen))
 
 }
 
@@ -249,7 +261,7 @@ with HasCacheAccelParams{
 
    val io = IO (new PCIO())
 
-    val pcContent =  RegInit(VecInit(Seq.fill(nParal)(PCContent.default)))
+    val pcContent =  RegInit(VecInit(Seq.fill(nParal)(PCBundle.default)))
 
     val write = WireInit (io.write.in.fire())
 
@@ -262,39 +274,32 @@ with HasCacheAccelParams{
         Finder
     }
 
-    for (i <- 0 until nParal){
+//    for (i <- 0 until nParal){
+//
+//        finder(i).io.key   := io.read(i).in.bits.data.addr
+//        finder(i).io.valid := pcContent.map(_.valid).toVector
+//        finder(i).io.data  := pcContent.map(_.addr).toVector
+//
+//    }
 
-        finder(i).io.key   := io.read(i).content.in.bits.addr
-        finder(i).io.valid := pcContent.map(_.valid).toVector
-        finder(i).io.data  := pcContent.map(_.addr).toVector
+    for (i <-  0 until nParal){
 
-        io.read(i).content.out.bits  := pcContent(finder(i).io.value.bits).pc
-        io.read(i).content.out.valid := finder(i).io.value.valid
-
+        io.read(i).out.bits  := pcContent(i).pc
+        io.read(i).out.valid := pcContent(i).valid
     }
-    for (i <- 0 until nParal){
-
-        finder(i).io.key   := io.read(i).content.in.bits.addr
-        finder(i).io.valid := pcContent.map(_.valid).toVector
-        finder(i).io.data  := pcContent.map(_.addr).toVector
-
-        io.read(i).content.out.bits  := pcContent(finder(i).io.value.bits).pc
-        io.read(i).content.out.valid := finder(i).io.value.valid
-    }
-
     for (i <- 0 until nParal){
         when(!write){
-            pcContent(finder(i).io.value.bits).pc := io.read(i).content.in.bits.data
-            pcContent(finder(i).io.value.bits).valid := io.read(i).updateValid
+            pcContent(finder(i).io.value.bits).pc := io.read(i).in.bits.data.pc
+            pcContent(finder(i).io.value.bits).valid := io.read(i).in.bits.data.valid
         }
 
     }
 
-
     when( write){
         pcContent(writeIdx).valid := true.B
-        pcContent(writeIdx).pc := io.write.in.bits.data
-        pcContent(writeIdx).addr := io.write.in.bits.addr
+        pcContent(writeIdx).pc := io.write.in.bits.data.pc
+        pcContent(writeIdx).addr := io.write.in.bits.data.addr
+        pcContent(writeIdx).way := io.write.in.bits.data.way
     }
 
 }
