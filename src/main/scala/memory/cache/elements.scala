@@ -4,6 +4,7 @@ import chipsalliance.rocketchip.config.Parameters
 import chisel3._
 import chisel3.util.{Valid, _}
 import chisel3.util._
+import dandelion.interfaces.Action
 import dandelion.config.{AXIAccelBundle, HasAccelShellParams}
 import dandelion.memory.cache.HasCacheAccelParams
 
@@ -40,6 +41,7 @@ class Find[T1 <: Data , T2 <: Data]( K: T1, D:T2, depth: Int, outLen: Int = 32) 
     io.value.bits := idx
     io.value.valid := bitmap =/= 0.U
 }
+
 class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends Module {
 
     val io = IO(new Bundle {
@@ -222,11 +224,17 @@ class CacheBundle (implicit p:Parameters) extends AXIAccelBundle
     val way  = UInt(wayLen.W)
 }
 
-class PCBundle(implicit p:Parameters) extends CacheBundle
+class PCBundle (implicit p:Parameters) extends CacheBundle
   with HasCacheAccelParams {
 
     val pc = UInt(pcLen.W)
     val valid = Bool()
+}
+
+class ActionBundle (implicit p:Parameters) extends CacheBundle
+  with HasCacheAccelParams {
+
+    val action = new Action()
 }
 
 object PCBundle {

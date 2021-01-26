@@ -33,10 +33,10 @@ class InstBundle (implicit p: Parameters) extends Event with Addr{
   override def cloneType: this.type = new InstBundle().asInstanceOf[this.type]
 }
 
-class ActionBundle(implicit p:Parameters) extends CoreBundle{
+class Action(implicit p:Parameters) extends CoreBundle{
   val signals = UInt(nSigs.W)
   val actionType = UInt(2.W)
-  override def cloneType: this.type = new ActionBundle().asInstanceOf[this.type]
+  override def cloneType: this.type = new Action().asInstanceOf[this.type]
 
 }
 

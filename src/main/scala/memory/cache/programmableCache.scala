@@ -6,7 +6,7 @@ import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.util._
 import dandelion.interfaces._
-import dandelion.interfaces.ActionBundle
+import dandelion.interfaces.Action
 //import dandelion.memory.TBE
 import dandelion.interfaces.axi._
 import chisel3.util.experimental.loadMemoryFromFile
@@ -76,7 +76,7 @@ with HasAccelShellParams{
     val checkLock = Wire(Bool())
     val getState  = Wire(Bool())
 
-    val action = Wire(new ActionBundle())
+    val action = Wire(new Action())
 
     val routineAddrResValid = Wire(Bool())
     val actionResValid      = Wire(Bool())
@@ -98,7 +98,7 @@ with HasAccelShellParams{
     val tbeWay        = RegInit(nWays.U((wayLen+1).W))
 
     val routineReg = Wire(UInt((eventLen + stateLen).W))
-    val actionReg  = Wire(UInt((nSigs + 2).W))
+    val actionReg  = Wire(Vec(nParal, new ActionBundle()))
 
     val dstOfSetState = Wire(new State())
     val stateMemOutput = Wire((new State()))
@@ -146,14 +146,16 @@ with HasAccelShellParams{
 
 //    actionResValid := RegEnable(Mux(routineAddrResValid, true.B , Mux (firstLineRoutine, false.B,  true.B)), false.B , !stall)
     actionResValid := RegEnable((routineAddrResValid | (!routineAddrResValid & !firstLineNextRoutine)) & !stallInput, false.B , !stall)
-    firstLineNextRoutine := (actionRom(pc).asUInt() === 0.U )
+
     tbeActionInRom := (actionResValid & isTBEAction)
     updateTBEState := isStateAction
     endOfRoutine   := isStateAction
 
-    isTBEAction   := (action.actionType === 0.U)
-    isCacheAction := (action.actionType === 1.U)
-    isStateAction := (action.actionType === 2.U | action.actionType === 3.U )
+    for (i <- 0 until nParal) {
+        isTBEAction :=   (actionReg(i).action.actionType === 1.U)
+        isCacheAction := (actionReg(i).action.actionType === 0.U)
+        isStateAction := (actionReg(i).action.actionType === 2.U | actionReg(i).action.actionType === 3.U)
+    }
 
     updateTBEWay   := (RegNext(cache.io.cpu.resp.fire()) & (cacheWayReg =/= nWays.U))
 
