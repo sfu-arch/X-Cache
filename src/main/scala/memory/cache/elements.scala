@@ -279,7 +279,7 @@ with HasCacheAccelParams{
 //        val out = Valid(UInt(addrLen.W))
 //
 //    }))
-    val read = Vec(nParal ,  new portNoAddr(new PCBundle, Bool())(addrLen))
+    val read = Vec(nParal ,  new portNoAddr(new PCBundle, new PCBundle)(addrLen))
 
 }
 
@@ -312,13 +312,15 @@ with HasCacheAccelParams{
 
     for (i <-  0 until nParal){
 
-        io.read(i).out.bits  := pcContent(i).pc
-        io.read(i).out.valid := pcContent(i).valid
+        io.read(i).out.bits.way  := pcContent(i).way
+        io.read(i).out.bits.addr := pcContent(i).addr
+        io.read(i).out.bits.pc   := pcContent(i).pc
+        io.read(i).out.valid     := pcContent(i).valid
     }
     for (i <- 0 until nParal){
         when(!write){
-            pcContent(finder(i).io.value.bits).pc := io.read(i).in.bits.data.pc
-            pcContent(finder(i).io.value.bits).valid := io.read(i).in.bits.data.valid
+            pcContent(i).pc := io.read(i).in.bits.data.pc
+            pcContent(i).valid := io.read(i).in.bits.data.valid
         }
 
     }

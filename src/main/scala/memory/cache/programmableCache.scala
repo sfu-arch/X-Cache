@@ -53,15 +53,18 @@ with HasAccelShellParams{
 
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
-    val pc = Reg(UInt())
+    val pcWire = Wire(Vec(nParal, new PCBundle()))
+    val updatedPC = Wire(Vec(nParal, UInt(pcLen.W)))
+    val updatedPCValid = Wire(Vec(nParal, Bool()))
 
-    val tbeAction   = Wire(UInt(nSigs.W))
-    val cacheAction = Wire(UInt(nSigs.W))
-    val stateAction = Wire(Bool())
+    val tbeAction   = Wire(Vec(nParal, UInt(nSigs.W)))
+    val cacheAction = Wire(Vec(nParal, UInt(nSigs.W)))
+    val stateAction = Wire(Vec(nParal, Bool()))
 
-    val isTBEAction   = Wire(Bool())
-    val isStateAction = Wire(Bool())
-    val isCacheAction = Wire(Bool())
+    val isTBEAction   = Wire(Vec(nParal, Bool()))
+    val isStateAction = Wire(Vec(nParal, Bool()))
+    val isCacheAction = Wire(Vec(nParal, Bool()))
+
     val isLocked      = Wire(Bool())
 //    val tbeResValid   = Wire(Bool())
 
@@ -85,8 +88,8 @@ with HasAccelShellParams{
     val defaultState = Wire(new State())
 //    val dstState = Reg(new State())
 
-    val firstLineNextRoutine = Wire(Bool())
-    val endOfRoutine   = Wire(Bool())
+    val firstLineNextRoutine = Wire(Vec(nParal, Bool()))
+    val endOfRoutine   = Wire(Vec(nParal, Bool()))
 //    val isProbe = Wire(Bool())
 
     val routine = WireInit( Cat (event, state))
@@ -100,7 +103,7 @@ with HasAccelShellParams{
     val routineReg = Wire(UInt((eventLen + stateLen).W))
     val actionReg  = Wire(Vec(nParal, new ActionBundle()))
 
-    val dstOfSetState = Wire(new State())
+    val dstOfSetState = Wire(Vec(nParal, new State()))
     val stateMemOutput = Wire((new State()))
 
     val probeStart = WireInit(io.instruction.fire())
@@ -168,20 +171,22 @@ with HasAccelShellParams{
     // Elements
 
     defaultState := State.default
-
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
-
     routineReg := RegEnable(uCodedNextPtr(routine), 0.U, !stall)
-    actionReg  := RegEnable(actionRom(pc) , 0.U, !stall)
 
-    //pc := Mux(startRoutine, routineReg, Mux(firstLineNextRoutine, pc, pc+ 1.U  ))
+    for (i <- 0 until nParal) {
+        actionReg(i).action.signals := RegEnable(Mux(pcWire(i).valid , sigToAction(actionRom(pcWire(i).pc)), 0.U) , 0.U, !stall )
+        actionReg(i).action.actionType := RegEnable(Mux(pcWire(i).valid ,sigToActType(actionRom(pcWire(i).pc)), 0.U) , 0.U, !stall & pcWire(i).valid)
 
-    for (i <- 0 until nParal){
-
-        updatedPC(i) := Mux(firstLineNextRoutine(i), pc, pc+ 1.U  )
-        updatePCValid(i) := !firstLineNextRoutine(i)
+        actionReg(i).addr := RegEnable(actionRom(pcWire(i).addr), 0.U, !stall & pcWire(i).valid)
+        actionReg(i).way := RegEnable(actionRom(pcWire(i).way), 0.U, !stall   & pcWire(i).valid)
     }
 
+    for (i <- 0 until nParal){
+        firstLineNextRoutine(i) := (sigToAction(actionRom(pcWire(i).pc)).asUInt() === 0.U )
+        updatedPC(i) := Mux(firstLineNextRoutine(i), pcWire(i).pc, pcWire(i).pc + 1.U  )
+        updatedPCValid(i) := !firstLineNextRoutine(i)
+    }
 
     pc.io.write.in.bits.data.addr := addrCapturedReg
     pc.io.write.in.bits.data.way := wayInputCache
@@ -189,27 +194,28 @@ with HasAccelShellParams{
     pc.io.write.in.bits.data.valid := DontCare
 
     for (i <- 0 until nParal) {
-        pc.io.read(i).in.bits.data.addr := addr // @todo WRONG
-        pc.io.read(i).in.bits.data.way := DontCare
-        pc.io.read(i).in.bits.data.pc := updatedPC(i) // @todo WRONG
-        pc.io.read(i).in.bits.data.valid := updatedPCValid(i) // @todo WRONG
+        pc.io.read(i).in.bits.data.addr := DontCare // @todo WRONG
+        pc.io.read(i).in.bits.data.way := DontCare // I guess way and addr are not necessary
+        pc.io.read(i).in.bits.data.pc := updatedPC(i)
+        pc.io.read(i).in.bits.data.valid := updatedPCValid(i)
 
-        cacheAction(i) <> pc.io.read(i).out.bits // @todo Wrong
+        pcWire(i).pc   := pc.io.read(i).out.bits.pc
+        pcWire(i).way  := pc.io.read(i).out.bits.way
+        pcWire(i).addr  := pc.io.read(i).out.bits.addr
+        pcWire(i).valid := pc.io.read(i).out.bits.valid
     }
-
 
     wayInputCache := Mux( tbeWay === nWays.U , cacheWayReg, tbeWay )
 
-    printf(p"way ${wayInputCache}\n")
+    for (i <- 0 until nParal) {
+        tbeAction := Mux(isTBEAction(i), actionReg(i).action.signals, tbe.idle)
+        cacheAction := Mux(isCacheAction(i), actionReg(i).action.signals, 0.U(nSigs.W))
+        stateAction := isStateAction(i)
 
-    action.signals := sigToAction(actionReg)
-    action.actionType := actionReg(nSigs+ 1, nSigs)
+        dstOfSetState(i).state := Mux( isStateAction(i), sigToState (actionReg(i).action.signals), State.default.state)
 
-    tbeAction   := Mux(isTBEAction, action.signals, tbe.idle )
-    cacheAction := Mux(isCacheAction, action.signals, 0.U(nSigs.W))
-    stateAction := isStateAction
+    }
 
-    dstOfSetState.state := Mux( isStateAction, sigToState (actionReg), State.default.state)
     /*************************************************************************************/
 
     // TBE
