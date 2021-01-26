@@ -111,7 +111,7 @@ with HasCacheAccelParams {
 //    val isLocked  = Valid(Bool())
 
     val lock = new portWithCMD(UInt(addrLen.W), Bool(), Bool())(addrLen)
-    val unLock = lock.cloneType
+    val unLock = Vec(nParal, lock.cloneType)
 }
 
 class lockVector (lockVecDepth :Int = 8)(implicit val p :Parameters) extends Module
@@ -128,12 +128,16 @@ with HasCacheAccelParams {
 
 
     val bitmapProbe =  Wire(UInt(lockVecDepth.W))
-    val bitmapUnlock = Wire(bitmapProbe.cloneType)
+    val bitmapUnlock = Wire(Vec(nParal, bitmapProbe.cloneType))
 
     val idxLocking = Wire(UInt(lockVecDepth.W))
     val idxProbe = Wire(idxLocking.cloneType)
     val idxUnlock = Wire(idxLocking.cloneType)
 
+    val finder = for (i <- 0 until nParal) yield{
+        val Finder = new Find(UInt(addrLen.W), UInt(addrLen.W), nParal, log2Ceil(nParal))
+        Finder
+    }
 //    io.isLocked.bits := addrVec.map( addr => (io.inAddress.bits === addr)).foldLeft(0.U)({
 //        case (res, bit) =>
 //         Cat(res,bit)
@@ -145,15 +149,34 @@ with HasCacheAccelParams {
 
     val probe =   WireInit(io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.B))
     val write =   WireInit(!isLocked && io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.B))
-    val erase =   WireInit(isLocked && io.unLock.in.fire() && (io.unLock.in.bits.cmd === UNLOCK.B))
+    val erase =   Wire(Vec(nParal, Bool()))
 
     bitmapProbe := (Cat( addrVec.map( addr => (addr === io.lock.in.bits.addr)).reverse))
-    bitmapUnlock := (Cat( addrVec.map( addr => (addr === io.unLock.in.bits.addr)).reverse))
+//    bitmapUnlock := (Cat( addrVec.map( addr => (addr === io.unLock.in.bits.addr)).reverse))
 
     idxProbe := OHToUInt((bitmapProbe & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
-    idxUnlock := OHToUInt((bitmapUnlock & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
+//    idxUnlock := OHToUInt((bitmapUnlock & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
 
     idxLocking := lockVecDepth.U
+
+
+    for (i <- 0 until nParal) yield {
+        erase(i) := (isLocked && io.unLock(i).in.fire() && (io.unLock(i).in.bits.cmd === UNLOCK.B))
+
+        finder(i).io.data := addrVec
+        finder(i).io.key := io.unLock(i).in.bits.addr
+        finder(i).io.valid := valid
+
+        idxUnlock(i) := finder(i).io.value.bits
+        io.unLock(i).out := DontCare
+
+    }
+    for (i <- 0 until nParal) yield {
+        when(erase(i) & finder(i).io.value.valid) {
+            valid(idxUnlock(i)) := false.B
+        }
+    }
+
 
     (0 until lockVecDepth).foldLeft(when(false.B) {}) {
         case (whenContext, line) =>
@@ -161,14 +184,13 @@ with HasCacheAccelParams {
                 idxLocking := line.U
             }
     }
+
     printf(p"idxProbe ${idxProbe}\n")
 
     isLocked := (bitmapProbe =/= 0.U) && (valid(idxProbe) === true.B)
     io.lock.out.bits := isLocked
     io.lock.out.valid := probe
-
-    io.unLock.out := DontCare
-
+    
     when(write) {
         addrVec(idxLocking) := io.lock.in.bits.addr
     }
@@ -177,9 +199,7 @@ with HasCacheAccelParams {
         valid(idxLocking) := true.B
     }
 
-    when(erase){
-        valid(idxUnlock) := false.B
-    }
+
 }
 
 class stateMemIO (implicit val p: Parameters) extends Bundle
