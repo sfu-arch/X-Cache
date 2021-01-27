@@ -49,7 +49,7 @@ with HasAccelShellParams{
     /********************************************************************************/
 
     val state    = Wire(UInt(stateLen.W))
-    val inputTBE = WireInit(TBE.default)
+    val inputTBE = Wire(Vec(nParal, new TBE))
 
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
@@ -161,9 +161,6 @@ with HasAccelShellParams{
     }
 
     updateTBEWay   := (RegNext(cache.io.cpu.resp.fire()) & (cacheWayReg =/= nWays.U))
-
-    //    dstState.state := dstStateRom(routine)
-//    isProbe := (action.signals === sigToAction(ActionList.actions("Probe")))
 
     /*************************************************************************/
 
