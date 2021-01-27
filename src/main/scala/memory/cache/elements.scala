@@ -87,7 +87,8 @@ class port[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit val p :
     override def cloneType: this.type =  new port(D,O)(addrLen).asInstanceOf[this.type]
 }
 
-class portWithCMD[T1 <: Data, T2 <: Data, T3 <: Data](D: T1, C: T2, O: T3 )(addrLen: Int)(override implicit val p :Parameters) extends port(D,O)(addrLen)(p)
+class portWithCMD[T1 <: Data, T2 <: Data, T3 <: Data](D: T1, C: T2, O: T3 )(addrLen: Int)(override implicit val p :Parameters)
+  extends port(D,O)(addrLen)(p)
 with HasCacheAccelParams {
 
     override val in = Flipped(Valid(new Bundle {
@@ -135,7 +136,7 @@ with HasCacheAccelParams {
     val idxUnlock = Wire(idxLocking.cloneType)
 
     val finder = for (i <- 0 until nParal) yield{
-        val Finder = new Find(UInt(addrLen.W), UInt(addrLen.W), nParal, log2Ceil(nParal))
+        val Finder = new Find(UInt(addrLen.W), UInt(addrLen.W), lockVecDepth, log2Ceil(lockVecDepth))
         Finder
     }
 //    io.isLocked.bits := addrVec.map( addr => (io.inAddress.bits === addr)).foldLeft(0.U)({
@@ -177,7 +178,6 @@ with HasCacheAccelParams {
         }
     }
 
-
     (0 until lockVecDepth).foldLeft(when(false.B) {}) {
         case (whenContext, line) =>
             whenContext.elsewhen(valid(line) === false.B) {
@@ -190,7 +190,7 @@ with HasCacheAccelParams {
     isLocked := (bitmapProbe =/= 0.U) && (valid(idxProbe) === true.B)
     io.lock.out.bits := isLocked
     io.lock.out.valid := probe
-    
+
     when(write) {
         addrVec(idxLocking) := io.lock.in.bits.addr
     }
@@ -205,15 +205,16 @@ with HasCacheAccelParams {
 class stateMemIO (implicit val p: Parameters) extends Bundle
 with HasCacheAccelParams{
 
-    val in = Flipped(Valid(new Bundle() {
+    val in = Vec ((nParal + 1), Flipped(Valid(new Bundle() {
         val state = new State()
         val addr = UInt(addrLen.W)
         val way  = UInt(wayLen.W)
         val isSet = Bool()
-    } ))
+    } )))
     val out = Valid(new State())
 }
 
+/* the last in port is used for getting */
 class stateMem (implicit val p: Parameters) extends Module
   with HasCacheAccelParams{
 
