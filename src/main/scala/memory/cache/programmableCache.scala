@@ -163,11 +163,13 @@ with HasAccelShellParams{
     routineReg := RegEnable(uCodedNextPtr(routine), 0.U, !stall)
 
     for (i <- 0 until nParal) {
+        actionResValid(i):= RegEnable((routineAddrResValid | (!routineAddrResValid & !firstLineNextRoutine(i))) & !stallInput, false.B , !stall)
+        tbeActionInRom(i) := (actionResValid(i) & isTBEAction(i))
+
         actionReg(i).action.signals := RegEnable(Mux(pcWire(i).valid , sigToAction(actionRom(pcWire(i).pc)), 0.U) , 0.U, !stall )
         actionReg(i).action.actionType := RegEnable(Mux(pcWire(i).valid ,sigToActType(actionRom(pcWire(i).pc)), 0.U) , 0.U, !stall & pcWire(i).valid)
-
-        actionReg(i).addr := RegEnable(actionRom(pcWire(i).addr), 0.U, !stall & pcWire(i).valid)
-        actionReg(i).way := RegEnable(actionRom(pcWire(i).way), 0.U, !stall   & pcWire(i).valid)
+        actionReg(i).addr := RegEnable(pcWire(i).addr, 0.U, !stall & pcWire(i).valid)
+        actionReg(i).way := RegEnable(pcWire(i).way, 0.U, !stall   & pcWire(i).valid)
     }
 
     for (i <- 0 until nParal){
@@ -193,12 +195,12 @@ with HasAccelShellParams{
         pcWire(i).valid := pc.io.read(i).out.bits.valid
     }
 
-    wayInputCache := Mux( tbeWay === nWays.U , cacheWayReg, tbeWay )
+    wayInputCache := Reg(RegEnable(Mux( tbeWay === nWays.U , cacheWayReg, tbeWay ), 0.U, !stallInput)) // @todo Double-Check
 
     for (i <- 0 until nParal) {
-        tbeAction := Mux(isTBEAction(i), actionReg(i).action.signals, tbe.idle)
-        cacheAction := Mux(isCacheAction(i), actionReg(i).action.signals, 0.U(nSigs.W))
-        stateAction := isStateAction(i)
+        tbeAction(i) := Mux(isTBEAction(i), actionReg(i).action.signals, tbe.idle)
+        cacheAction(i) := Mux(isCacheAction(i), actionReg(i).action.signals, 0.U(nSigs.W))
+        stateAction(i) := isStateAction(i)
 
         dstOfSetState(i).state := Mux( isStateAction(i), sigToState (actionReg(i).action.signals), State.default.state)
 
@@ -266,8 +268,8 @@ with HasAccelShellParams{
 
 
     // Cache Logic
-    cache.io.cpu.req.bits.way := RegNext(wayInputCache)
-    cache.io.cpu.req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), cacheAction)
-    cache.io.cpu.req.bits.addr    := Mux(probeStart, addrWire, RegNext(addrCapturedReg))
-    cache.io.cpu.req.valid := actionResValid | io.instruction.fire()
+    cache.io.cpu.req.bits.way := actionReg(0).way
+    cache.io.cpu.req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), cacheAction(0))// @todo WRONG
+    cache.io.cpu.req.bits.addr    := Mux(probeStart, addrWire, actionReg(nParal - 1).addr)
+    cache.io.cpu.req.valid := actionResValid(0) | io.instruction.fire()
 }
