@@ -32,20 +32,28 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
   with HasCacheAccelParams
   with HasAccelShellParams {
 
-  val addr = Input(UInt(xlen.W))
-  val command = Input(UInt())
-  val mask = Input(UInt())
-  val inputTBE= Input(new TBE)
+
+  val write = Vec( nParal, Flipped(Valid(new Bundle {
+    val addr = (UInt(xlen.W))
+    val command = (UInt())
+    val mask = (UInt())
+    val inputTBE= (new TBE)
+  })))
+
+  val read = Flipped(Valid(new Bundle {
+    val addr = (UInt(xlen.W))
+  }))
+
   val outputTBE = Valid(new TBE)
 
 }
 
 class   TBETable(implicit  val p: Parameters) extends Module
-  with HasAccelShellParams
+  with HasCacheAccelParams
   with HasAccelParams {
 
 
-  val (idle:: alloc :: dealloc :: read :: write :: Nil) = Enum(5)
+  val (idle :: alloc :: dealloc :: read :: write :: Nil) = Enum(5)
   val (maskAll :: maskState :: maskWay :: Nil) = Enum(3)
 
   val io = IO(new TBETableIO())
@@ -55,71 +63,104 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val TBEAddr = RegInit(VecInit(Seq.fill(tbeDepth)((0.U(accelParams.addrLen.W)))))
 
 
-  val isAlloc = Wire(Bool())
-  val isDealloc = Wire(Bool())
+  val isAlloc = Wire(Vec(nParal, Bool()))
+  val isDealloc = Wire(Vec(nParal, Bool()))
   val isRead = Wire(Bool())
-  val isWrite = Wire(Bool())
-//  val inc = Wire(Bool())
+  val isWrite = Wire(Vec(nParal, Bool()))
 
 
-  //val (idx,full) = Counter (inc, tbetbeDepth)
   val idx = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
+  val idxAlloc = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
+  val idxRead = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
+  val idxDealloc = Wire(Vec(nParal, UInt((log2Ceil(tbeDepth) + 1).W)))
+
+
   val idxReg = Reg(UInt((log2Ceil(tbeDepth) + 1).W))
-  val idxValid = Wire(Bool())
+  val idxReadValid = Wire(Bool())
 
-  val inputTBEReg = Reg (new TBE)
+  val inputTBEReg = Reg(new TBE)
   val inputAddrReg = Reg(UInt())
-  idxReg := idx
-  idx := tbeDepth.U
-  idxValid := !(idx === tbeDepth.U )
 
-  when(isAlloc | isWrite){
-    inputTBEReg := io.inputTBE
-    inputAddrReg := io.addr
+
+
+  val allocLine = new FindEmptyLine(tbeDepth, (log2Ceil(tbeDepth)))
+  allocLine.io.data := TBEValid
+  idxAlloc := allocLine.io.value
+
+  val finder = for (i <- 0 until nParal + 1) yield {
+    val Finder = new Find(UInt(), UInt(addrLen.W), tbeDepth, (log2Ceil(tbeDepth)))
+    Finder
   }
 
-  when(isAlloc) {
-    for (i <- 0 until tbeDepth) {
-      when(TBEValid(i) === false.B) {
-        idx := i.asUInt()
+  finder(nParal).io.key := io.read.bits.addr
+  finder(nParal).io.data := TBEAddr
+  finder(nParal).io.valid := TBEValid
+  idxRead := finder(nParal).io.value.bits
+  idxReadValid := (finder(nParal).io.value.bits === true.B)
+
+
+  for (i <- 0 until nParal) yield {
+    finder(i).io.key := io.write(i).bits.addr
+    finder(i).io.data := TBEAddr
+    finder(i).io.valid := TBEValid
+
+    idxDealloc(i) := finder(i).io.value.bits
+  }
+
+//  when(isAlloc | isWrite) {
+//    inputTBEReg := io.inputTBE
+//    inputAddrReg := io.addr
+//  }
+
+
+//  for (i <- 0 until nParal) yield {
+//    when(isAlloc(i)) {
+//
+//
+//    }
+//
+//
+//    }.elsewhen(isDealloc | isRead | isWrite) {
+//    for (i <- 0 until tbeDepth) yield {
+//      when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
+//        idx := i.asUInt()
+//      }
+//    }
+//  }
+//  for (i <- 0 until nParal) yield {
+
+  for (i <- 0 until nParal) yield {
+
+    when ((isAlloc(i))){
+      TBEMemory(idxAlloc) := io.write(i).bits.inputTBE
+      TBEAddr(idxAlloc) := io.write(i).bits.addr
+      TBEValid(idxAlloc) := true.B
+    }.elsewhen((isDealloc(i))){
+      TBEValid(idxDealloc(i)) := false.B
+      TBEMemory(idxDealloc(i)) := TBE.default
+      TBEAddr(idxDealloc(i)) := 0.U
+    }.elsewhen((isWrite(i))){
+      when((io.write(i).bits.mask=== maskWay)) {
+        TBEMemory(idxDealloc(i)).way := io.write(i).bits.inputTBE.way
+      }.elsewhen((io.write(i).bits.mask === maskState)){
+        TBEMemory(idxDealloc(i)).state := io.write(i).bits.inputTBE.state
+      }.otherwise{
+        TBEMemory(idxDealloc(i)) := io.write(i).bits.inputTBE
       }
-    }
-
-  }.elsewhen(isDealloc | isRead | isWrite) {
-    for (i <- 0 until tbeDepth) yield {
-      when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
-        idx := i.asUInt()
-      }
+  //    TBEValid(idxReg) := true.B
     }
   }
 
+  io.outputTBE.valid := (idxReadValid & isRead)
+  io.outputTBE.bits := Mux(idxReadValid , TBEMemory(idxRead), TBE.default)
 
-  when ((isAlloc)){
-    TBEMemory(idx) := io.inputTBE
-    TBEAddr(idx) := io.addr
-    TBEValid(idx) := true.B
-  }.elsewhen((isDealloc)){
-    TBEValid(idx) := false.B
-    TBEMemory(idx) := TBE.default
-    TBEAddr(idx) := 0.U
-  }.elsewhen((isWrite)){
-    when((io.mask === maskWay)) {
-      TBEMemory(idx).way := io.inputTBE.way
-    }.elsewhen((io.mask === maskState)){
-      TBEMemory(idx).state := io.inputTBE.state
-    }.otherwise{
-      TBEMemory(idx) := io.inputTBE
-    }
-//    TBEValid(idxReg) := true.B
+  for (i <- 0 until nParal) yield {
+
+    isAlloc(i) := Mux(io.write(i).bits.command === alloc, true.B, false.B)
+    isDealloc(i) := Mux(io.write(i).bits.command === dealloc, true.B, false.B)
+    isWrite(i) := Mux(io.write(i).bits.command === write, true.B, false.B)
   }
-
-  io.outputTBE.valid := (idxValid & isRead)
-  io.outputTBE.bits := Mux(idxValid , TBEMemory(idx), TBE.default)
-
-  isAlloc := Mux( io.command === alloc, true.B, false.B)
-  isDealloc :=  Mux(io.command === dealloc, true.B, false.B)
-  isRead := Mux(io.command === read, true.B, false.B)
-  isWrite := Mux(io.command === write, true.B, false.B)
+  isRead := io.read.valid
 
 }
 
