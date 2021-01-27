@@ -216,21 +216,29 @@ with HasAccelShellParams{
     /*************************************************************************************/
 
     // TBE
-    inputTBE.state.state := Mux(updateTBEState, dstOfSetState.state, DontCare)
-    inputTBE.way         := Mux(updateTBEWay , cacheWayReg, DontCare)
 
-    tbe.io.command := Mux (readTBE, tbe.read, Mux( updateTBEWay | updateTBEState, tbe.write, tbeAction))
-    tbe.io.addr := addr
-    tbe.io.inputTBE := inputTBE
+    tbe.io.read.valid := readTBE
+    tbe.io.read.bits.addr := addr
 
-    tbe.io.mask := tbe.maskAll
-    when (updateTBEState & updateTBEWay){
-        tbe.io.mask := tbe.maskAll
-    }.elsewhen(updateTBEWay & !updateTBEState){
-        tbe.io.mask := tbe.maskWay
-    }.elsewhen(updateTBEState & !updateTBEWay){
-        tbe.io.mask := tbe.maskState
+    for (i <- 0 until nParal) {
+
+        inputTBE(i).state.state := dstOfSetState(i).state
+        inputTBE(i).way         := actionReg(i).way // @todo WRONG
+
+        tbe.io.write(i).bits.command := Mux(updateTBEWay | updateTBEState, tbe.write, tbeAction) // @todo Wrong
+        tbe.io.write(i).bits.addr := actionReg(i).addr
+        tbe.io.write(i).bits.inputTBE := inputTBE(i)
+        tbe.io.write(i).bits.mask := tbe.maskAll // @todo Should be double-checked
     }
+
+//    tbe.io.mask := tbe.maskAll
+//    when (updateTBEState & updateTBEWay){
+//        tbe.io.mask := tbe.maskAll
+//    }.elsewhen(updateTBEWay & !updateTBEState){
+//        tbe.io.mask := tbe.maskWay
+//    }.elsewhen(updateTBEState & !updateTBEWay){
+//        tbe.io.mask := tbe.maskState
+//    }
 //    tbe.io.outputTBE.ready := true.B
 
 
