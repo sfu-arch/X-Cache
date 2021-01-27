@@ -222,19 +222,26 @@ class stateMem (implicit val p: Parameters) extends Module
 
     val states = RegInit(VecInit(Seq.fill(nSets*nWays)( (State.default))))
 
-    val isSet = io.in.fire() & io.in.bits.isSet & io.in.bits.way =/= nWays.U
-    val isGet = io.in.fire() & !io.in.bits.isSet & io.in.bits.way =/= nWays.U // third one might be unnecessary
-    val idx = Wire(UInt(cacheLen.W))
+    val isSet = Wire(Vec(nParal, Bool()))
+    val isGet = io.in(nParal).fire() & !io.in(nParal).bits.isSet & io.in(nParal).bits.way =/= nWays.U // third one might be unnecessary
 
-    idx :=  Mux(io.in.bits.way =/= nWays.U, addrToSet(io.in.bits.addr) * nWays.U + io.in.bits.way, 0.U)
+    val idxGet = Wire(UInt(cacheLen.W))
+    val idxSet =  Wire(Vec(nParal, UInt(cacheLen.W)))
 
-    io.out.bits := states(idx)
-    io.out.valid := isGet
+    for (i <- 0 until nParal) yield {
+        isSet  (i) := io.in(i).fire() & io.in(i).bits.isSet & io.in(i).bits.way =/= nWays.U
+        idxSet (i) := Mux(io.in(i).bits.way =/= nWays.U, addrToSet(io.in(i).bits.addr) * nWays.U + io.in(i).bits.way, 0.U)
 
-
-    when(isSet){
-        states(idx) := io.in.bits.state
     }
+    for (i <- 0 until nParal) yield {
+        when(isSet(i)) {
+            states(idxSet(i)) := io.in(i).bits.state
+        }
+    }
+
+    idxGet :=  Mux(io.in(nParal).bits.way =/= nWays.U, addrToSet(io.in(nParal).bits.addr) * nWays.U + io.in(nParal).bits.way, 0.U)
+    io.out.bits := states(idxGet)
+    io.out.valid := isGet
 
   }
 
