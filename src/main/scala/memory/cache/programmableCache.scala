@@ -66,7 +66,6 @@ with HasAccelShellParams{
     val isCacheAction = Wire(Vec(nParal, Bool()))
 
     val isLocked      = Wire(Bool())
-//    val tbeResValid   = Wire(Bool())
 
     val updateTBEWay  = Wire(Bool())
     val updateTBEState = Wire(Bool())
@@ -82,22 +81,19 @@ with HasAccelShellParams{
     val action = Wire(new Action())
 
     val routineAddrResValid = Wire(Bool())
-    val actionResValid      = Wire(Bool())
+    val actionResValid      = Wire(Vec(nParal, Bool()))
     val startRoutine = Wire(Bool())
 
     val defaultState = Wire(new State())
-//    val dstState = Reg(new State())
 
     val firstLineNextRoutine = Wire(Vec(nParal, Bool()))
     val endOfRoutine   = Wire(Vec(nParal, Bool()))
-//    val isProbe = Wire(Bool())
 
     val routine = WireInit( Cat (event, state))
-//    val (probeHandled, _) = Counter(isProbe, 2)
     val cacheWayReg  = RegInit(nWays.U((wayLen+1).W))
     val cacheWayWire = Wire(UInt((wayLen+1).W))
 
-    val wayInputCache = Reg(UInt((wayLen+1).W))
+    val wayInputCache = Wire(UInt((wayLen+1).W))
     val tbeWay        = RegInit(nWays.U((wayLen+1).W))
 
     val routineReg = Wire(UInt((eventLen + stateLen).W))
@@ -108,14 +104,11 @@ with HasAccelShellParams{
 
     val probeStart = WireInit(io.instruction.fire())
 
-    val tbeActionInRom = Wire(Bool())
+    val tbeActionInRom = Wire(Vec(nParal, Bool()))
 
     val addrWire   = WireInit(io.instruction.bits.addr)
 
     val addrCapturedReg  = RegNext(RegNext(addr))
-
-
-//    cache.io.cpu.resp.ready := true.B
 
     //latching
     when( io.instruction.fire() ){
@@ -148,9 +141,7 @@ with HasAccelShellParams{
     startRoutine        := RegEnable(readTBE & !stallInput , false.B, !stall)
 
 //    actionResValid := RegEnable(Mux(routineAddrResValid, true.B , Mux (firstLineRoutine, false.B,  true.B)), false.B , !stall)
-    actionResValid := RegEnable((routineAddrResValid | (!routineAddrResValid & !firstLineNextRoutine)) & !stallInput, false.B , !stall)
 
-    tbeActionInRom := (actionResValid & isTBEAction)
     updateTBEState := isStateAction
     endOfRoutine   := isStateAction
 
