@@ -244,15 +244,17 @@ with HasAccelShellParams{
 
     // lock Mem
     lockMem.io.lock.in.bits.data := DontCare
-    lockMem.io.unLock.in.bits.data := DontCare
     lockMem.io.lock.in.bits.addr  := addr
     lockMem.io.lock.in.valid := checkLock
     lockMem.io.lock.in.bits.cmd := true.B // checking and locking
     isLocked := Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B)
-    lockMem.io.unLock.in.bits.addr := addrCapturedReg
-    lockMem.io.unLock.in.bits.cmd  := false.B   //unlock
-    lockMem.io.unLock.in.valid     := endOfRoutine
 
+    for (i <- 0 until nParal) yield {
+        lockMem.io.unLock(i).in.bits.data := DontCare
+        lockMem.io.unLock(i).in.bits.addr := addrCapturedReg
+        lockMem.io.unLock(i).in.bits.cmd := false.B //unlock
+        lockMem.io.unLock(i).in.valid := endOfRoutine
+    }
 
     // @todo tbe should have a higher priority for saving dst state
     // State Memory
