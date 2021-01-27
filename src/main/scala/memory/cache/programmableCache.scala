@@ -258,11 +258,19 @@ with HasAccelShellParams{
 
     // @todo tbe should have a higher priority for saving dst state
     // State Memory
-    stateMem.io.in.bits.isSet := Mux(getState, false.B, stateAction) // have conflict when an inst comes in and prev one is ending
-    stateMem.io.in.bits.addr := addr
-    stateMem.io.in.bits.state := dstOfSetState
-    stateMem.io.in.bits.way := Mux (isStateAction, cacheWayReg, cacheWayWire)
-    stateMem.io.in.valid := isStateAction | getState
+    for (i <- 0 until nParal) yield {
+        stateMem.io.in(i).bits.isSet := true.B
+        stateMem.io.in(i).bits.addr := addr // @todo Wrong for all ports
+        stateMem.io.in(i).bits.state := dstOfSetState
+        stateMem.io.in(i).bits.way := cacheWayReg
+        stateMem.io.in(i).valid := isStateAction
+    }
+
+    stateMem.io.in(nParal).bits.isSet := false.B // used for getting
+    stateMem.io.in(nParal).bits.addr := addr
+    stateMem.io.in(nParal).bits.state := dstOfSetState
+    stateMem.io.in(nParal).bits.way :=  cacheWayWire
+    stateMem.io.in(nParal).valid := getState
     stateMemOutput := stateMem.io.out.bits
 
 
