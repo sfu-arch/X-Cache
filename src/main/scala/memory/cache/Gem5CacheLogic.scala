@@ -14,7 +14,6 @@ import dandelion.shell._
 
 
 trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
-
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
   val nStates = accelParams.nstates

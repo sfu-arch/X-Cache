@@ -62,7 +62,7 @@ class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends
 
 
 }
-class portNoAddr[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit val p :Parameters) extends Bundle
+class portNoAddr[T1 <: Data, T2 <: Data](D: T1, O: T2 )(implicit val p :Parameters) extends Bundle
   with HasCacheAccelParams {
 
     val in = Flipped(Valid(new Bundle {
@@ -71,7 +71,7 @@ class portNoAddr[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit v
 
     val out = Valid(O.cloneType)
 
-    override def cloneType: this.type =  new port(D,O)(addrLen).asInstanceOf[this.type]
+    override def cloneType: this.type =  new portNoAddr(D,O).asInstanceOf[this.type]
 }
 
 class port[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit val p :Parameters) extends Bundle
@@ -281,13 +281,13 @@ object PCBundle {
 class PCIO ( implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams{
 
-    val write = new portNoAddr(new PCBundle, Bool())(addrLen)
+    val write = new portNoAddr(new PCBundle, Bool())
 //    val read = Vec(nParal , ( new Bundle{
 //        val addr = UInt(addrLen.W)
 //        val out = Valid(UInt(addrLen.W))
 //
 //    }))
-    val read = Vec(nParal ,  new portNoAddr(new PCBundle, new PCBundle)(addrLen))
+    val read = Vec(nParal ,  new portNoAddr(new PCBundle, new PCBundle))
 
 }
 
