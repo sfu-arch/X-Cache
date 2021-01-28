@@ -50,7 +50,7 @@ class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends
         val value = Output(UInt(outLen.W))
     })
 
-    val idx = Wire(UInt(outLen.W))
+    val idx = WireInit(0.U(outLen.W))
 
     (0 until depth).foldLeft(when(false.B) {}) {
         case (whenContext, searchIdx) =>
@@ -123,13 +123,10 @@ with HasCacheAccelParams {
 
     val io = IO (new lockVectorIO())
 
-
     val addrVec = RegInit(VecInit(Seq.fill(lockVecDepth)(0.U(addrLen.W))))
     val valid = RegInit(VecInit(Seq.fill(lockVecDepth)(false.B)))
 
-
     val bitmapProbe =  Wire(UInt(lockVecDepth.W))
-    val bitmapUnlock = Wire(Vec(nParal, bitmapProbe.cloneType))
 
     val idxLocking = Wire(UInt(lockVecDepth.W))
     val idxProbe = Wire(idxLocking.cloneType)
@@ -152,12 +149,9 @@ with HasCacheAccelParams {
     val write =   WireInit(!isLocked && io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.B))
     val erase =   Wire(Vec(nParal, Bool()))
 
+    //
     bitmapProbe := (Cat( addrVec.map( addr => (addr === io.lock.in.bits.addr)).reverse))
-//    bitmapUnlock := (Cat( addrVec.map( addr => (addr === io.unLock.in.bits.addr)).reverse))
-
     idxProbe := OHToUInt((bitmapProbe & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
-//    idxUnlock := OHToUInt((bitmapUnlock & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
-
     idxLocking := lockVecDepth.U
 
 
@@ -272,7 +266,6 @@ object PCBundle {
         pcContent.addr := 0.U
         pcContent.pc := 0.U
         pcContent.valid := false.B
-
         pcContent
 
     }
@@ -305,10 +298,10 @@ with HasCacheAccelParams{
     findNewLine.io.data := pcContent.map(_.valid).toVector
     val writeIdx = WireInit (findNewLine.io.value)
 
-    val finder = for (i <- 0 until nParal) yield{
-        val Finder = Module(new Find(UInt(addrLen.W), UInt(addrLen.W), nParal, log2Ceil(nParal)))
-        Finder
-    }
+//    val finder = for (i <- 0 until nParal) yield{
+//        val Finder = Module(new Find(UInt(addrLen.W), UInt(addrLen.W), nParal, log2Ceil(nParal)))
+//        Finder
+//    }
 
 //    for (i <- 0 until nParal){
 //
