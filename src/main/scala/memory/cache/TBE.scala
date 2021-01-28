@@ -78,17 +78,17 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val idxReg = Reg(UInt((log2Ceil(tbeDepth) + 1).W))
   val idxReadValid = Wire(Bool())
 
-  val inputTBEReg = Reg(new TBE)
-  val inputAddrReg = Reg(UInt())
+//  val inputTBEReg = Reg(new TBE)
+//  val inputAddrReg = Reg(UInt())
 
 
 
-  val allocLine = new FindEmptyLine(tbeDepth, (log2Ceil(tbeDepth)))
+  val allocLine = Module(new FindEmptyLine(tbeDepth, (log2Ceil(tbeDepth))))
   allocLine.io.data := TBEValid
   idxAlloc := allocLine.io.value
 
   val finder = for (i <- 0 until nParal + 1) yield {
-    val Finder = new Find(UInt(), UInt(addrLen.W), tbeDepth, (log2Ceil(tbeDepth)))
+    val Finder = Module(new Find(UInt(), UInt(addrLen.W), tbeDepth, (log2Ceil(tbeDepth))))
     Finder
   }
 

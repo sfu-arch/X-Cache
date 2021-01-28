@@ -133,10 +133,10 @@ with HasCacheAccelParams {
 
     val idxLocking = Wire(UInt(lockVecDepth.W))
     val idxProbe = Wire(idxLocking.cloneType)
-    val idxUnlock = Wire(idxLocking.cloneType)
+    val idxUnlock = Wire(Vec(nParal, idxLocking.cloneType))
 
     val finder = for (i <- 0 until nParal) yield{
-        val Finder = new Find(UInt(addrLen.W), UInt(addrLen.W), lockVecDepth, log2Ceil(lockVecDepth))
+        val Finder = Module(new Find(UInt(addrLen.W), UInt(addrLen.W), lockVecDepth, log2Ceil(lockVecDepth)))
         Finder
     }
 //    io.isLocked.bits := addrVec.map( addr => (io.inAddress.bits === addr)).foldLeft(0.U)({
@@ -306,7 +306,7 @@ with HasCacheAccelParams{
     val writeIdx = WireInit (findNewLine.io.value)
 
     val finder = for (i <- 0 until nParal) yield{
-        val Finder = new Find(UInt(addrLen.W), UInt(addrLen.W), nParal, log2Ceil(nParal))
+        val Finder = Module(new Find(UInt(addrLen.W), UInt(addrLen.W), nParal, log2Ceil(nParal)))
         Finder
     }
 
