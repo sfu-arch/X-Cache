@@ -62,25 +62,16 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val TBEValid = RegInit(VecInit(Seq.fill(tbeDepth)(false.B)))
   val TBEAddr = RegInit(VecInit(Seq.fill(tbeDepth)((0.U(accelParams.addrLen.W)))))
 
-
   val isAlloc = Wire(Vec(nParal, Bool()))
   val isDealloc = Wire(Vec(nParal, Bool()))
   val isRead = Wire(Bool())
   val isWrite = Wire(Vec(nParal, Bool()))
 
-
   val idxAlloc = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
   val idxRead = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
   val idxUpdate = Wire(Vec(nParal, UInt((log2Ceil(tbeDepth) + 1).W)))
 
-
-  val idxReg = Reg(UInt((log2Ceil(tbeDepth) + 1).W))
   val idxReadValid = Wire(Bool())
-
-//  val inputTBEReg = Reg(new TBE)
-//  val inputAddrReg = Reg(UInt())
-
-
 
   val allocLine = Module(new FindEmptyLine(tbeDepth, (log2Ceil(tbeDepth))))
   allocLine.io.data := TBEValid

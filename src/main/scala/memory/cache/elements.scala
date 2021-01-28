@@ -317,6 +317,7 @@ with HasCacheAccelParams{
         io.read(i).out.bits.way  := pcContent(i).way
         io.read(i).out.bits.addr := pcContent(i).addr
         io.read(i).out.bits.pc   := pcContent(i).pc
+        io.read(i).out.bits.valid := DontCare
         io.read(i).out.valid     := pcContent(i).valid
     }
     for (i <- 0 until nParal){
@@ -333,5 +334,7 @@ with HasCacheAccelParams{
         pcContent(writeIdx).addr := io.write.in.bits.data.addr
         pcContent(writeIdx).way := io.write.in.bits.data.way
     }
+    io.write.out.bits := DontCare
+    io.write.out.valid := DontCare // @todo Should be changed
 
 }

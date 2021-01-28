@@ -78,7 +78,7 @@ with HasAccelShellParams{
     val checkLock = Wire(Bool())
     val getState  = Wire(Bool())
 
-    val action = Wire(new Action())
+//    val action = Wire(new Action())
 
     val routineAddrResValid = Wire(Bool())
     val actionResValid      = Wire(Vec(nParal, Bool()))
@@ -108,7 +108,7 @@ with HasAccelShellParams{
 
     val addrWire   = WireInit(io.instruction.bits.addr)
 
-    val addrCapturedReg  = RegNext(RegNext(addr))
+    val addrInputCache  = Wire(UInt(addrLen.W))
 
     //latching
     when( io.instruction.fire() ){
@@ -182,10 +182,11 @@ with HasAccelShellParams{
         updatedPCValid(i) := !firstLineNextRoutine(i)
     }
 
-    pc.io.write.in.bits.data.addr := addrCapturedReg
+    pc.io.write.in.bits.data.addr := addrInputCache
     pc.io.write.in.bits.data.way := wayInputCache
     pc.io.write.in.bits.data.pc := routineReg
     pc.io.write.in.bits.data.valid := DontCare
+    pc.io.write.in.valid := DontCare
 
     for (i <- 0 until nParal) {
         pc.io.read(i).in.bits.data.addr := DontCare // @todo WRONG
@@ -193,13 +194,17 @@ with HasAccelShellParams{
         pc.io.read(i).in.bits.data.pc := updatedPC(i)
         pc.io.read(i).in.bits.data.valid := updatedPCValid(i)
 
+        pc.io.read(i).in.valid := DontCare // @todo Should be changed probably
+
         pcWire(i).pc   := pc.io.read(i).out.bits.pc
         pcWire(i).way  := pc.io.read(i).out.bits.way
         pcWire(i).addr  := pc.io.read(i).out.bits.addr
         pcWire(i).valid := pc.io.read(i).out.bits.valid
+
     }
 
     wayInputCache := RegNext(RegEnable(Mux( tbeWay === nWays.U , cacheWayReg, tbeWay ), 0.U, !stallInput)) // @todo Double-Check
+    addrInputCache := RegNext(RegEnable(addr, 0.U, !stallInput))
 
     for (i <- 0 until nParal) {
         tbeAction(i) := Mux(isTBEAction(i), actionReg(i).action.signals, tbe.idle)
@@ -225,7 +230,9 @@ with HasAccelShellParams{
         tbe.io.write(i).bits.command := Mux(updateTBEWay(i) | updateTBEState(i), tbe.write, tbeAction(i)) // @todo Wrong
         tbe.io.write(i).bits.addr := actionReg(i).addr
         tbe.io.write(i).bits.inputTBE := inputTBE(i)
+        tbe.io.write(i).bits.inputTBE := inputTBE(i)
         tbe.io.write(i).bits.mask := tbe.maskAll // @todo Should be double-checked
+        tbe.io.write(i).valid := DontCare
     }
 
 //    tbe.io.mask := tbe.maskAll
