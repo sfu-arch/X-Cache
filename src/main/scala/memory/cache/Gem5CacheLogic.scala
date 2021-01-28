@@ -33,7 +33,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val dataBeats = nData
 
   val setLen = log2Ceil(nSets)
-  val wayLen = log2Ceil(nWays)
+  val wayLen = log2Ceil(nWays) + 1
 
   val cacheLen = log2Ceil(nSets*nWays)
 

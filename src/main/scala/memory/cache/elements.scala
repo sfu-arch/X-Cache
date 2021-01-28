@@ -266,6 +266,7 @@ object PCBundle {
         pcContent.addr := 0.U
         pcContent.pc := 0.U
         pcContent.valid := false.B
+        pcContent.way := pcContent.nWays.U
         pcContent
 
     }
