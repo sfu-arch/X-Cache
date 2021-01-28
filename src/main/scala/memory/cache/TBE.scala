@@ -69,10 +69,9 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val isWrite = Wire(Vec(nParal, Bool()))
 
 
-  val idx = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
   val idxAlloc = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
   val idxRead = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
-  val idxDealloc = Wire(Vec(nParal, UInt((log2Ceil(tbeDepth) + 1).W)))
+  val idxUpdate = Wire(Vec(nParal, UInt((log2Ceil(tbeDepth) + 1).W)))
 
 
   val idxReg = Reg(UInt((log2Ceil(tbeDepth) + 1).W))
@@ -104,7 +103,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
     finder(i).io.data := TBEAddr
     finder(i).io.valid := TBEValid
 
-    idxDealloc(i) := finder(i).io.value.bits
+    idxUpdate(i) := finder(i).io.value.bits
   }
 
 //  when(isAlloc | isWrite) {
@@ -136,16 +135,16 @@ class   TBETable(implicit  val p: Parameters) extends Module
       TBEAddr(idxAlloc) := io.write(i).bits.addr
       TBEValid(idxAlloc) := true.B
     }.elsewhen((isDealloc(i))){
-      TBEValid(idxDealloc(i)) := false.B
-      TBEMemory(idxDealloc(i)) := TBE.default
-      TBEAddr(idxDealloc(i)) := 0.U
+      TBEValid(idxUpdate(i)) := false.B
+      TBEMemory(idxUpdate(i)) := TBE.default
+      TBEAddr(idxUpdate(i)) := 0.U
     }.elsewhen((isWrite(i))){
       when((io.write(i).bits.mask=== maskWay)) {
-        TBEMemory(idxDealloc(i)).way := io.write(i).bits.inputTBE.way
+        TBEMemory(idxUpdate(i)).way := io.write(i).bits.inputTBE.way
       }.elsewhen((io.write(i).bits.mask === maskState)){
-        TBEMemory(idxDealloc(i)).state := io.write(i).bits.inputTBE.state
+        TBEMemory(idxUpdate(i)).state := io.write(i).bits.inputTBE.state
       }.otherwise{
-        TBEMemory(idxDealloc(i)) := io.write(i).bits.inputTBE
+        TBEMemory(idxUpdate(i)) := io.write(i).bits.inputTBE
       }
   //    TBEValid(idxReg) := true.B
     }
