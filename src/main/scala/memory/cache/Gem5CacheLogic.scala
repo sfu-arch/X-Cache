@@ -89,17 +89,6 @@ class CacheBankedMemIO[T <: Data](D: T, nInput :Int) (implicit val p: Parameters
   val valid = Output(Bool())
 }
 
-class StateMemIO() (implicit val p: Parameters) extends Bundle
-  with HasCacheAccelParams
-  with HasAccelShellParams {
-
-  val isSet = Output(Bool())
-  val stateIn = Input(new State)
-  val stateOut = Output(new State)
-  val addr = Output(UInt(addrLen.W))
-
-}
-
 // @todo bipass for reading
 class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   with HasCacheAccelParams
@@ -111,7 +100,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     val mem = new AXIMaster(memParams)
     val dataMem = new CacheBankedMemIO(UInt(xlen.W), nWords)
     val metaMem = new CacheBankedMemIO(new MetaData(), nWays)
-    val stateMem = new StateMemIO()
   })
 
   val decoder = Module(new Decoder)
@@ -120,7 +108,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.mem <> DontCare
   io.metaMem <> DontCare
   io.dataMem <> DontCare
-  io.stateMem <> DontCare
 
   val Axi_param = memParams
 
@@ -241,9 +228,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     cacheLine := io.dataMem.inputValue
   }
 
-  when(loadState) {
-    state := io.stateMem.stateIn
-  }
 
   when(dataValidCheckSig) {
     dataValid := valid(set * nSets.U + way)
@@ -406,25 +390,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
     prepForRead(io.dataMem)
   }
-
-  def SetState(state: State): Bool = {
-    val addr = Wire(UInt(addrLen.W))
-    addr := set * nSets.U + way
-    io.stateMem.addr := addr
-    io.stateMem.stateOut := state
-    io.stateMem.isSet := true.B
-    true.B
-  }
-
-  def GetState(): Bool = {
-    val addr = Wire(UInt(addrLen.W))
-    addr := set * nSets.U + way
-    io.stateMem.addr := addr
-    io.stateMem.addr := false.B
-    loadState := true.B
-    true.B
-  }
-
 
   val readMetaData = Wire(Bool())
   val targetWayReg = RegInit(nWays.U((wayLen + 1).W))

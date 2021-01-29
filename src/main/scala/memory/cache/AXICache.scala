@@ -72,8 +72,6 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val metaMemory = Module(new MemBank(new MetaData())(xlen, setLen, nWays, nSets, wayLen))
   val dataMemory = Module(new MemBank( UInt(xlen.W)) (xlen, addrLen, nWords, nSets * nWays, wordLen))
   val cacheLogic = Module(new Gem5CacheLogic())
-  //@todo generic state
-  this.cacheLogic.io.stateMem.stateIn := DontCare
 
 //  cacheLogic.io.metaMem.inputValue <> metaMemory.io.outputValue
 //  cacheLogic.io.metaMem.inputValue <> dataMemory.io.outputValue
@@ -88,15 +86,8 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   cacheLogic.io.metaMem.bank <> metaMemory.io.bank
   cacheLogic.io.metaMem.address <> metaMemory.io.address
   cacheLogic.io.metaMem.isRead <>metaMemory.io.isRead
-   dataMemory.io.valid :=cacheLogic.io.dataMem.valid
+  dataMemory.io.valid :=cacheLogic.io.dataMem.valid
   metaMemory.io.valid := cacheLogic.io.metaMem.valid
-
-
-//  when (cacheLogic.io.stateMem.isSet){
-//    stateBit(cacheLogic.io.stateMem.addr) := cacheLogic.io.stateMem.stateOut
-//  }.otherwise{
-//    cacheLogic.io.stateMem.stateIn := stateBit(cacheLogic.io.stateMem.addr)
-//  }
 
   dataMemory.io <> DontCare
   cacheLogic.io.dataMem <> DontCare
