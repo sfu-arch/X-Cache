@@ -63,7 +63,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
     def sigToAction(sigs : Bits) :UInt = sigs.asUInt()(nSigs - 1, 0)
     def sigToActType(sigs : Bits) :UInt = sigs.asUInt()(nSigs+ 1, nSigs)
 
-  def sigToState (sigs :Bits) : UInt = sigs.asUInt()(States.stateLen - 1, 0)
+    def sigToState (sigs :Bits) : UInt = sigs.asUInt()(States.stateLen - 1, 0)
 
 
 }
@@ -154,14 +154,13 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
   val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
   val count_set = RegInit(false.B)
-  val inputState = RegInit(State.default)
+
 
   val tag = RegInit(0.U(taglen.W))
   val set = RegInit(0.U(setLen.W))
   val wayInput = RegInit(0.U((nWays + 1).W))
   val offset = RegInit(0.U(byteOffsetBits.W))
   val way = WireInit(0.U((nWays + 1).W))
-  val state = RegInit(State.default)
 
   val dataBuffer = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
 
@@ -207,7 +206,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val loadWaysMeta = Wire(Bool())
   val loadLineData = Wire(Bool())
-  val loadState = Wire(Bool())
 
   //  val loadFromMemSig = Wire(Bool())
   val loadDataBuffer = Wire(Bool())
@@ -251,7 +249,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   loadLineData := false.B
   addrToLocSig := false.B
   dataValidCheckSig := false.B
-  loadState := false.B
 
   addrWriteValid := false.B
   dataWriteValid := false.B
