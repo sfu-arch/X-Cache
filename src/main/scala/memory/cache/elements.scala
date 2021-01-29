@@ -179,14 +179,12 @@ with HasCacheAccelParams {
             }
     }
 
-    printf(p"idxProbe ${idxProbe}\n")
-
     isLocked := (bitmapProbe =/= 0.U) && (valid(idxProbe) === true.B)
     io.lock.out.bits := isLocked
     io.lock.out.valid := probe
 
     when(write) {
-        addrVec(idxLocking) := io.lock.in.bits.addr
+        addrVec(idxLocking) := addrNoOffset(io.lock.in.bits.addr)
     }
 
     when(write){

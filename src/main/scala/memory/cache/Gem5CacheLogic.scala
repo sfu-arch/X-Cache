@@ -27,8 +27,9 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val stateLen = log2Ceil(nStates)
   val wBytes = xlen / 8
   val bBytes = accelParams.cacheBlockBytes
+  val bWord = bBytes / wBytes
   val bBits = bBytes << 3
-  val blen = log2Ceil(bBytes)
+  val blen = log2Ceil(bWord)
   val nData = bBits / memParams.dataBits
   val dataBeats = nData
 
@@ -40,9 +41,10 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nWords = bBits / xlen
   val wordLen = log2Ceil(nWords)
   //val taglen = xlen - (setLen + blen)
+  val byteOffsetBits = log2Ceil(wBytes)
+
   val taglen = addrLen - (setLen + blen + byteOffsetBits )
 
-  val byteOffsetBits = log2Ceil(wBytes)
   override val nSigs = accelParams.nSigs
   val actionLen = accelParams.actionLen
   //
@@ -51,6 +53,11 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   def addrToSet(addr: UInt): UInt = {
     val set = addr(setLen + blen + byteOffsetBits, blen + byteOffsetBits)
     set.asUInt()
+  }
+
+  def addrNoOffset (addr: UInt) :UInt  ={
+    val addrNoOff = addr >> (blen + byteOffsetBits)
+    addrNoOff.asUInt()
   }
 
     def sigToAction(sigs : Bits) :UInt = sigs.asUInt()(nSigs - 1, 0)
@@ -299,7 +306,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   def addrToOffset(addr: UInt): UInt = {
-    val offset = addr(blen - 1, byteOffsetBits)
+    val offset = addr(blen + byteOffsetBits - 1, byteOffsetBits)
     offset.asUInt()
   }
 

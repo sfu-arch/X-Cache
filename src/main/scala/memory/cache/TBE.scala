@@ -82,15 +82,15 @@ class   TBETable(implicit  val p: Parameters) extends Module
     Finder
   }
 
-  finder(nParal).io.key := io.read.bits.addr
+  finder(nParal).io.key := addrNoOffset(io.read.bits.addr)
   finder(nParal).io.data := TBEAddr
   finder(nParal).io.valid := TBEValid
   idxRead := finder(nParal).io.value.bits
   idxReadValid := (finder(nParal).io.value.bits === true.B)
 
 
-  for (i <- 0 until nParal) yield {
-    finder(i).io.key := io.write(i).bits.addr
+  for (i <- 0 until nParal)  {
+    finder(i).io.key := addrNoOffset(io.write(i).bits.addr)
     finder(i).io.data := TBEAddr
     finder(i).io.valid := TBEValid
 
@@ -119,11 +119,11 @@ class   TBETable(implicit  val p: Parameters) extends Module
 //  }
 //  for (i <- 0 until nParal) yield {
 
-  for (i <- 0 until nParal) yield {
+  for (i <- 0 until nParal)  {
 
     when ((isAlloc(i))){
       TBEMemory(idxAlloc) := io.write(i).bits.inputTBE
-      TBEAddr(idxAlloc) := io.write(i).bits.addr
+      TBEAddr(idxAlloc) := addrNoOffset(io.write(i).bits.addr)
       TBEValid(idxAlloc) := true.B
     }.elsewhen((isDealloc(i))){
       TBEValid(idxUpdate(i)) := false.B
