@@ -88,8 +88,8 @@ with HasAccelShellParams{
     val endOfRoutine   = Wire(Vec(nParal, Bool()))
 
     val routine = WireInit( Cat (event, state))
-    val cacheWayReg  = RegInit(nWays.U((wayLen+1).W))
-    val cacheWayWire = Wire(UInt((wayLen+1).W))
+    val cacheWayReg  = RegInit(VecInit(Seq.fill(nParal + 1)(nWays.U((wayLen+1).W))))
+    val cacheWayWire = Wire(Vec(nParal + 1, (UInt((wayLen+1).W))))
 
     val wayInputCache = Wire(UInt((wayLen+1).W))
     val tbeWay        = RegInit(nWays.U((wayLen+1).W))
@@ -114,10 +114,12 @@ with HasAccelShellParams{
         event := io.instruction.bits.event
     }
 
-    when (cache.io.cpu.resp.fire()){
-        cacheWayReg := cache.io.cpu.resp.bits.way
+    for (i <- 0 until (nParal + 1) ) {
+        when(cache.io.cpu(i).resp.fire()) {
+            cacheWayReg(i) := cache.io.cpu(i).resp.bits.way
+        }
+        cacheWayWire(i) := cache.io.cpu(i).resp.bits.way
     }
-    cacheWayWire := cache.io.cpu.resp.bits.way
 
     when(tbe.io.outputTBE.fire()){
         tbeWay := tbe.io.outputTBE.bits.way
@@ -198,7 +200,7 @@ with HasAccelShellParams{
 
     }
 
-    wayInputCache := (RegEnable(Mux( tbeWay === nWays.U , cacheWayReg, tbeWay ), 0.U, !stallInput)) // @todo Double-Check
+    wayInputCache := (RegEnable(Mux( tbeWay === nWays.U , cacheWayReg(nParal), tbeWay ), 0.U, !stallInput)) // @todo Double-Check
     addrInputCache := (RegEnable(addr, 0.U, !stallInput))
 
     for (i <- 0 until nParal){
@@ -268,14 +270,20 @@ with HasAccelShellParams{
     stateMem.io.in(nParal).bits.isSet := false.B // used for getting
     stateMem.io.in(nParal).bits.addr := addr
     stateMem.io.in(nParal).bits.state := DontCare
-    stateMem.io.in(nParal).bits.way :=  cacheWayWire
+    stateMem.io.in(nParal).bits.way :=  cacheWayWire(nParal)
     stateMem.io.in(nParal).valid := getState
     stateMemOutput := stateMem.io.out.bits
 
-
     // Cache Logic
-    cache.io.cpu.req.bits.way := actionReg(0).way
-    cache.io.cpu.req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), cacheAction(0))// @todo WRONG
-    cache.io.cpu.req.bits.addr    := Mux(probeStart, addrWire, actionReg(0).addr)
-    cache.io.cpu.req.valid := actionResValid(0) | io.instruction.fire()
+    for (i <- 0 until nParal) {
+        cache.io.cpu(i).req.bits.way := actionReg(i).way
+        cache.io.cpu(i).req.bits.command := cacheAction(i) // @todo WRONG
+        cache.io.cpu(i).req.bits.addr := actionReg(i).addr
+        cache.io.cpu(i).req.valid := actionResValid(i)
+    }
+    cache.io.cpu(nParal).req.bits.way := DontCare
+    cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U) // @todo WRONG
+    cache.io.cpu(nParal).req.bits.addr := Mux(probeStart, addrWire, 0.U)
+    cache.io.cpu(nParal).req.valid := io.instruction.fire()
+
 }

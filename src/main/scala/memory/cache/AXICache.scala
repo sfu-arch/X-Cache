@@ -5,6 +5,7 @@ import chisel3.util._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import dandelion.util._
+import chisel3.util.Arbiter
 import dandelion.interfaces._
 import dandelion.interfaces.axi._
 import dandelion.junctions._
@@ -63,40 +64,48 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   val io = IO(new Bundle {
     //@todo ports for state and metadata
-    val cpu = new CacheCPUIO
+    val cpu =  Vec(nParal + 1, new CacheCPUIO) // last line for probing
     val mem = new AXIMaster(memParams)
   })
 
   val Axi_param = memParams
 
   val metaMemory = Module(new MemBank(new MetaData())(xlen, setLen, nWays, nSets, wayLen))
-  val dataMemory = Module(new MemBank( UInt(xlen.W)) (xlen, addrLen, nWords, nSets * nWays, wordLen))
-  val cacheLogic = Module(new Gem5CacheLogic())
+  val dataMemory = Module(new MemBank(UInt(xlen.W))(xlen, addrLen, nWords, nSets * nWays, wordLen))
+  val cacheLogic = for (i <- 0 until nParal + 1) yield {
+    val CacheLogic = Module(new Gem5CacheLogic())
+    CacheLogic
+  }
 
-//  cacheLogic.io.metaMem.inputValue <> metaMemory.io.outputValue
-//  cacheLogic.io.metaMem.inputValue <> dataMemory.io.outputValue
-//
-//  cacheLogic.io.metaMem.outputValue <> metaMemory.io.inputValue
-//  cacheLogic.io.metaMem.outputValue <> dataMemory.io.inputValue
 
-//  cacheLogic.io.dataMem <> dataMemory.io
+  //  val arb = Module (new Arbiter())
 
-  cacheLogic.io.metaMem.inputValue <> metaMemory.io.outputValue
-  metaMemory.io.inputValue <> cacheLogic.io.metaMem.outputValue
-  cacheLogic.io.metaMem.bank <> metaMemory.io.bank
-  cacheLogic.io.metaMem.address <> metaMemory.io.address
-  cacheLogic.io.metaMem.isRead <>metaMemory.io.isRead
-  dataMemory.io.valid :=cacheLogic.io.dataMem.valid
-  metaMemory.io.valid := cacheLogic.io.metaMem.valid
+  //  cacheLogic.io.metaMem.inputValue <> metaMemory.io.outputValue
+  //  cacheLogic.io.metaMem.inputValue <> dataMemory.io.outputValue
+  //
+  //  cacheLogic.io.metaMem.outputValue <> metaMemory.io.inputValue
+  //  cacheLogic.io.metaMem.outputValue <> dataMemory.io.inputValue
 
-  dataMemory.io <> DontCare
-  cacheLogic.io.dataMem <> DontCare
-  this.io.mem <> DontCare
-  this.io.cpu <> DontCare
+  //  cacheLogic.io.dataMem <> dataMemory.io
+  for (i <- 0 until nParal + 1) {
 
-  this.io.cpu <> cacheLogic.io.cpu
-  this.io.mem <> cacheLogic.io.mem
+    cacheLogic(i).io.metaMem.inputValue <> metaMemory.io.outputValue
+    metaMemory.io.inputValue <> cacheLogic(i).io.metaMem.outputValue
+    cacheLogic(i).io.metaMem.bank <> metaMemory.io.bank
+    cacheLogic(i).io.metaMem.address <> metaMemory.io.address
+    cacheLogic(i).io.metaMem.isRead <> metaMemory.io.isRead
+    dataMemory.io.valid := cacheLogic(i).io.dataMem.valid
+    metaMemory.io.valid := cacheLogic(i).io.metaMem.valid
 
+    dataMemory.io <> DontCare
+    cacheLogic(i).io.dataMem <> DontCare
+    this.io.mem <> DontCare
+    this.io.cpu(i) <> DontCare
+
+    this.io.cpu(i) <> cacheLogic(i).io.cpu
+    this.io.mem <> cacheLogic(i).io.mem
+
+  }
 }
 
 /*
