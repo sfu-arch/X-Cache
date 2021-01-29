@@ -150,23 +150,23 @@ with HasCacheAccelParams {
     val erase =   Wire(Vec(nParal, Bool()))
 
     //
-    bitmapProbe := (Cat( addrVec.map( addr => (addr === io.lock.in.bits.addr)).reverse))
+    bitmapProbe := (Cat( addrVec.map( addr => (addr === addrNoOffset(io.lock.in.bits.addr))).reverse))
     idxProbe := OHToUInt((bitmapProbe & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
     idxLocking := lockVecDepth.U
 
 
-    for (i <- 0 until nParal) yield {
+    for (i <- 0 until nParal) {
         erase(i) := (isLocked && io.unLock(i).in.fire() && (io.unLock(i).in.bits.cmd === UNLOCK.B))
 
         finder(i).io.data := addrVec
-        finder(i).io.key := io.unLock(i).in.bits.addr
+        finder(i).io.key := addrNoOffset(io.unLock(i).in.bits.addr)
         finder(i).io.valid := valid
 
         idxUnlock(i) := finder(i).io.value.bits
         io.unLock(i).out := DontCare
 
     }
-    for (i <- 0 until nParal) yield {
+    for (i <- 0 until nParal) {
         when(erase(i) & finder(i).io.value.valid) {
             valid(idxUnlock(i)) := false.B
         }
@@ -220,12 +220,12 @@ class stateMem (implicit val p: Parameters) extends Module
     val idxGet = Wire(UInt(cacheLen.W))
     val idxSet =  Wire(Vec(nParal, UInt(cacheLen.W)))
 
-    for (i <- 0 until nParal) yield {
+    for (i <- 0 until nParal) {
         isSet  (i) := io.in(i).fire() & io.in(i).bits.isSet & io.in(i).bits.way =/= nWays.U
         idxSet (i) := Mux(io.in(i).bits.way =/= nWays.U, addrToSet(io.in(i).bits.addr) * nWays.U + io.in(i).bits.way, 0.U)
 
     }
-    for (i <- 0 until nParal) yield {
+    for (i <- 0 until nParal) {
         when(isSet(i)) {
             states(idxSet(i)) := io.in(i).bits.state
         }
@@ -315,7 +315,7 @@ with HasCacheAccelParams{
         io.read(i).out.bits.way  := pcContent(i).way
         io.read(i).out.bits.addr := pcContent(i).addr
         io.read(i).out.bits.pc   := pcContent(i).pc
-        io.read(i).out.bits.valid := DontCare
+        io.read(i).out.bits.valid := pcContent(i).valid
         io.read(i).out.valid     := pcContent(i).valid
     }
     for (i <- 0 until nParal){

@@ -67,7 +67,7 @@ with HasAccelShellParams{
 
     val isLocked      = Wire(Bool())
 
-    val updateTBEWay  = Wire(Vec(nParal, Bool()))
+    val updateTBEWay   = Wire(Vec(nParal, Bool()))
     val updateTBEState = Wire(Vec(nParal, Bool()))
 
     val stall = WireInit(false.B)
@@ -77,8 +77,6 @@ with HasAccelShellParams{
     val readTBE   = Wire(Bool())
     val checkLock = Wire(Bool())
     val getState  = Wire(Bool())
-
-//    val action = Wire(new Action())
 
     val routineAddrResValid = Wire(Bool())
     val actionResValid      = Wire(Vec(nParal, Bool()))
@@ -136,13 +134,10 @@ with HasAccelShellParams{
     checkLock   := RegEnable(io.instruction.fire(), false.B, !stallInput)
     getState    := RegEnable(io.instruction.fire(), false.B, !stallInput)
 
-
     routineAddrResValid := RegEnable(readTBE & !stallInput , false.B, !stall)
     startRoutine        := RegEnable(readTBE & !stallInput , false.B, !stall)
 
 //    actionResValid := RegEnable(Mux(routineAddrResValid, true.B , Mux (firstLineRoutine, false.B,  true.B)), false.B , !stall)
-
-
     for (i <- 0 until nParal) {
         isTBEAction(i) :=   (actionReg(i).action.actionType === 1.U)
         isCacheAction(i) := (actionReg(i).action.actionType === 0.U)
@@ -160,11 +155,11 @@ with HasAccelShellParams{
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
     routineReg := RegEnable(uCodedNextPtr(routine), 0.U, !stall)
 
+
     for (i <- 0 until nParal) {
 
-
         updateTBEState(i) := isStateAction(i)
-        updateTBEWay(i) :=isStateAction(i)
+        updateTBEWay(i)   := isStateAction(i)
         endOfRoutine(i)   := isStateAction(i)
 
         actionResValid(i):= RegEnable((routineAddrResValid | (!routineAddrResValid & !firstLineNextRoutine(i))) & !stallInput, false.B , !stall)
@@ -176,7 +171,7 @@ with HasAccelShellParams{
         actionReg(i).way := RegEnable(pcWire(i).way, 0.U, !stall   & pcWire(i).valid)
     }
 
-    for (i <- 0 until nParal){
+    for (i <- 0 until nParal) {
         firstLineNextRoutine(i) := (sigToAction(actionRom(pcWire(i).pc)).asUInt() === 0.U )
         updatedPC(i) := Mux(firstLineNextRoutine(i), pcWire(i).pc, pcWire(i).pc + 1.U  )
         updatedPCValid(i) := !firstLineNextRoutine(i)
@@ -185,11 +180,11 @@ with HasAccelShellParams{
     pc.io.write.in.bits.data.addr := addrInputCache
     pc.io.write.in.bits.data.way := wayInputCache
     pc.io.write.in.bits.data.pc := routineReg
-    pc.io.write.in.bits.data.valid := DontCare
-    pc.io.write.in.valid := DontCare
+    pc.io.write.in.bits.data.valid := true.B
+    pc.io.write.in.valid := routineAddrResValid
 
     for (i <- 0 until nParal) {
-        pc.io.read(i).in.bits.data.addr := DontCare // @todo WRONG
+        pc.io.read(i).in.bits.data.addr := DontCare //
         pc.io.read(i).in.bits.data.way := DontCare // I guess way and addr are not necessary
         pc.io.read(i).in.bits.data.pc := updatedPC(i)
         pc.io.read(i).in.bits.data.valid := updatedPCValid(i)
@@ -203,10 +198,10 @@ with HasAccelShellParams{
 
     }
 
-    wayInputCache := RegNext(RegEnable(Mux( tbeWay === nWays.U , cacheWayReg, tbeWay ), 0.U, !stallInput)) // @todo Double-Check
-    addrInputCache := RegNext(RegEnable(addr, 0.U, !stallInput))
+    wayInputCache := (RegEnable(Mux( tbeWay === nWays.U , cacheWayReg, tbeWay ), 0.U, !stallInput)) // @todo Double-Check
+    addrInputCache := (RegEnable(addr, 0.U, !stallInput))
 
-    for (i <- 0 until nParal) {
+    for (i <- 0 until nParal){
         tbeAction(i) := Mux(isTBEAction(i), actionReg(i).action.signals, tbe.idle)
         cacheAction(i) := Mux(isCacheAction(i), actionReg(i).action.signals, 0.U(nSigs.W))
         stateAction(i) := isStateAction(i)
@@ -222,7 +217,7 @@ with HasAccelShellParams{
     tbe.io.read.valid := readTBE
     tbe.io.read.bits.addr := addr
 
-    for (i <- 0 until nParal) {
+    for (i <- 0 until nParal)  {
 
         inputTBE(i).state.state := dstOfSetState(i).state
         inputTBE(i).way         := actionReg(i).way // @todo WRONG
@@ -253,7 +248,7 @@ with HasAccelShellParams{
     lockMem.io.lock.in.bits.cmd := true.B // checking and locking
     isLocked := Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B)
 
-    for (i <- 0 until nParal) yield {
+    for (i <- 0 until nParal)  {
         lockMem.io.unLock(i).in.bits.data := DontCare
         lockMem.io.unLock(i).in.bits.addr := actionReg(i).addr
         lockMem.io.unLock(i).in.bits.cmd := false.B //unlock
@@ -262,7 +257,7 @@ with HasAccelShellParams{
 
     // @todo tbe should have a higher priority for saving dst state
     // State Memory
-    for (i <- 0 until nParal) yield {
+    for (i <- 0 until nParal)  {
         stateMem.io.in(i).bits.isSet := true.B
         stateMem.io.in(i).bits.addr := actionReg(i).addr //
         stateMem.io.in(i).bits.state := dstOfSetState(i)
@@ -281,6 +276,6 @@ with HasAccelShellParams{
     // Cache Logic
     cache.io.cpu.req.bits.way := actionReg(0).way
     cache.io.cpu.req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), cacheAction(0))// @todo WRONG
-    cache.io.cpu.req.bits.addr    := Mux(probeStart, addrWire, actionReg(nParal - 1).addr)
+    cache.io.cpu.req.bits.addr    := Mux(probeStart, addrWire, actionReg(0).addr)
     cache.io.cpu.req.valid := actionResValid(0) | io.instruction.fire()
 }
