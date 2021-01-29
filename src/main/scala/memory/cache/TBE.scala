@@ -144,7 +144,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
   io.outputTBE.valid := (idxReadValid & isRead)
   io.outputTBE.bits := Mux(idxReadValid , TBEMemory(idxRead), TBE.default)
 
-  for (i <- 0 until nParal) yield {
+  for (i <- 0 until nParal)  {
 
     isAlloc(i) := Mux(io.write(i).bits.command === alloc, true.B, false.B)
     isDealloc(i) := Mux(io.write(i).bits.command === dealloc, true.B, false.B)
