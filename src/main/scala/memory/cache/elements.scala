@@ -8,7 +8,6 @@ import dandelion.interfaces.Action
 import dandelion.config.{AXIAccelBundle, HasAccelShellParams}
 import dandelion.memory.cache.HasCacheAccelParams
 
-
 class DecoderIO (nSigs: Int)(implicit val p:Parameters) extends Bundle {
 
     val inAction = Input(UInt(nSigs.W))
@@ -97,19 +96,11 @@ with HasCacheAccelParams {
         val cmd  = C.cloneType
     }))
 
-
     override def cloneType: this.type =  new portWithCMD(D,C,O)(addrLen).asInstanceOf[this.type]
 }
 
-
-
 class lockVectorIO (implicit val p :Parameters) extends Bundle
 with HasCacheAccelParams {
-
-//    val inAddressWrite = Flipped(Valid(UInt(addrLen.W)))
-//
-//    val lockCMD = Input(Bool())
-//    val isLocked  = Valid(Bool())
 
     val lock = new portWithCMD(UInt(addrLen.W), Bool(), Bool())(addrLen)
     val unLock = Vec(nParal, lock.cloneType)
@@ -190,8 +181,6 @@ with HasCacheAccelParams {
     when(write){
         valid(idxLocking) := true.B
     }
-
-
 }
 
 class stateMemIO (implicit val p: Parameters) extends Bundle
@@ -274,18 +263,12 @@ class PCIO ( implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams{
 
     val write = new portNoAddr(new PCBundle, Bool())
-//    val read = Vec(nParal , ( new Bundle{
-//        val addr = UInt(addrLen.W)
-//        val out = Valid(UInt(addrLen.W))
-//
-//    }))
     val read = Vec(nParal ,  new portNoAddr(new PCBundle, new PCBundle))
 
 }
 
 class PC (implicit val p :Parameters) extends Module
 with HasCacheAccelParams{
-
 
    val io = IO (new PCIO())
 
@@ -296,19 +279,6 @@ with HasCacheAccelParams{
     val findNewLine = Module(new FindEmptyLine(nParal,log2Ceil(nParal)))
     findNewLine.io.data := pcContent.map(_.valid).toVector
     val writeIdx = WireInit (findNewLine.io.value)
-
-//    val finder = for (i <- 0 until nParal) yield{
-//        val Finder = Module(new Find(UInt(addrLen.W), UInt(addrLen.W), nParal, log2Ceil(nParal)))
-//        Finder
-//    }
-
-//    for (i <- 0 until nParal){
-//
-//        finder(i).io.key   := io.read(i).in.bits.data.addr
-//        finder(i).io.valid := pcContent.map(_.valid).toVector
-//        finder(i).io.data  := pcContent.map(_.addr).toVector
-//
-//    }
 
     for (i <-  0 until nParal){
 
@@ -323,7 +293,6 @@ with HasCacheAccelParams{
             pcContent(i).pc := io.read(i).in.bits.data.pc
             pcContent(i).valid := io.read(i).in.bits.data.valid
         }
-
     }
 
     when( write){
@@ -334,5 +303,4 @@ with HasCacheAccelParams{
     }
     io.write.out.bits := DontCare
     io.write.out.valid := DontCare // @todo Should be changed
-
 }

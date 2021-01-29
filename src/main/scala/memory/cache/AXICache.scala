@@ -4,7 +4,6 @@ import chisel3._
 import chisel3.util._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
-import dandelion.util._
 import chisel3.util.Arbiter
 import dandelion.interfaces._
 import dandelion.interfaces.axi._
@@ -38,7 +37,6 @@ object MetaData  {
     wire.tag := 0.U
     wire
   }
-
 }
 
 object State {
@@ -54,16 +52,13 @@ object State {
     wire.state := 0.U
     wire
   }
-
 }
-
 
 class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Parameters) extends Module
   with HasCacheAccelParams
   with HasAccelShellParams {
 
   val io = IO(new Bundle {
-    //@todo ports for state and metadata
     val cpu =  Vec(nParal + 1, new CacheCPUIO) // last line for probing
     val mem = new AXIMaster(memParams)
   })
@@ -77,13 +72,9 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     CacheLogic
   }
 
-
   //  val arb = Module (new Arbiter())
 
-  //  cacheLogic.io.metaMem.inputValue <> metaMemory.io.outputValue
   //  cacheLogic.io.metaMem.inputValue <> dataMemory.io.outputValue
-  //
-  //  cacheLogic.io.metaMem.outputValue <> metaMemory.io.inputValue
   //  cacheLogic.io.metaMem.outputValue <> dataMemory.io.inputValue
 
   //  cacheLogic.io.dataMem <> dataMemory.io
@@ -99,12 +90,11 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
     dataMemory.io <> DontCare
     cacheLogic(i).io.dataMem <> DontCare
+
     this.io.mem <> DontCare
     this.io.cpu(i) <> DontCare
-
     this.io.cpu(i) <> cacheLogic(i).io.cpu
     this.io.mem <> cacheLogic(i).io.mem
-
   }
 }
 

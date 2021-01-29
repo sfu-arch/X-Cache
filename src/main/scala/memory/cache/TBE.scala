@@ -11,9 +11,6 @@ class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelPar
   val state = new State()
 //  val data = UInt (xlen.W)
   val way = UInt ((wayLen + 1).W)
-//  val addr = UInt (addrLen.W)
-//  val cmdPtr = UInt (nCom.W)
-
 }
 object TBE {
 
@@ -21,9 +18,7 @@ object TBE {
     val tbe = Wire(new TBE)
     tbe.state := State.default
 //    tbe.data := 0.U
-//    tbe.addr := 0.U
     tbe.way := tbe.nWays.U
-//    tbe.cmdPtr := 0.U
     tbe
   }
 }
@@ -45,7 +40,6 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
   }))
 
   val outputTBE = Valid(new TBE)
-
 }
 
 class   TBETable(implicit  val p: Parameters) extends Module
@@ -97,28 +91,6 @@ class   TBETable(implicit  val p: Parameters) extends Module
     idxUpdate(i) := finder(i).io.value.bits
   }
 
-//  when(isAlloc | isWrite) {
-//    inputTBEReg := io.inputTBE
-//    inputAddrReg := io.addr
-//  }
-
-
-//  for (i <- 0 until nParal) yield {
-//    when(isAlloc(i)) {
-//
-//
-//    }
-//
-//
-//    }.elsewhen(isDealloc | isRead | isWrite) {
-//    for (i <- 0 until tbeDepth) yield {
-//      when(TBEAddr(i) === io.addr & TBEValid(i) === true.B) {
-//        idx := i.asUInt()
-//      }
-//    }
-//  }
-//  for (i <- 0 until nParal) yield {
-
   for (i <- 0 until nParal)  {
 
     when ((isAlloc(i))){
@@ -151,6 +123,5 @@ class   TBETable(implicit  val p: Parameters) extends Module
     isWrite(i) := Mux(io.write(i).bits.command === write, true.B, false.B)
   }
   isRead := io.read.valid
-
 }
 

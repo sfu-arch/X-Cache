@@ -7,10 +7,7 @@ import dandelion.config._
 import dandelion.util._
 import dandelion.interfaces._
 import dandelion.interfaces.Action
-//import dandelion.memory.TBE
 import dandelion.interfaces.axi._
-import chisel3.util.experimental.loadMemoryFromFile
-//import dandelion.memory.TBE.{ TBETable, TBE}
 
 
 class programmableCacheIO (implicit val p:Parameters) extends Bundle
@@ -157,7 +154,6 @@ with HasAccelShellParams{
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
     routineReg := RegEnable(uCodedNextPtr(routine), 0.U, !stall)
 
-
     for (i <- 0 until nParal) {
 
         updateTBEState(i) := isStateAction(i)
@@ -200,7 +196,7 @@ with HasAccelShellParams{
 
     }
 
-    wayInputCache := (RegEnable(Mux( tbeWay === nWays.U , cacheWayReg(nParal), tbeWay ), 0.U, !stallInput)) // @todo Double-Check
+    wayInputCache := (RegEnable(Mux( tbeWay === nWays.U , cacheWayReg(nParal), tbeWay ), 0.U, !stallInput))
     addrInputCache := (RegEnable(addr, 0.U, !stallInput))
 
     for (i <- 0 until nParal){
@@ -242,7 +238,6 @@ with HasAccelShellParams{
 //    }
 //    tbe.io.outputTBE.ready := true.B
 
-
     // lock Mem
     lockMem.io.lock.in.bits.data := DontCare
     lockMem.io.lock.in.bits.addr  := addr
@@ -277,12 +272,12 @@ with HasAccelShellParams{
     // Cache Logic
     for (i <- 0 until nParal) {
         cache.io.cpu(i).req.bits.way := actionReg(i).way
-        cache.io.cpu(i).req.bits.command := cacheAction(i) // @todo WRONG
+        cache.io.cpu(i).req.bits.command := cacheAction(i)
         cache.io.cpu(i).req.bits.addr := actionReg(i).addr
         cache.io.cpu(i).req.valid := actionResValid(i)
     }
     cache.io.cpu(nParal).req.bits.way := DontCare
-    cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U) // @todo WRONG
+    cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U)
     cache.io.cpu(nParal).req.bits.addr := Mux(probeStart, addrWire, 0.U)
     cache.io.cpu(nParal).req.valid := io.instruction.fire()
 
