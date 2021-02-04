@@ -39,7 +39,7 @@ class Find[T1 <: Data , T2 <: Data]( K: T1, D:T2, depth: Int, outLen: Int = 32) 
     idx := OHToUInt((bitmap & io.valid.asUInt()))
 
     io.value.bits := idx
-    io.value.valid := bitmap =/= 0.U
+    io.value.valid := (bitmap & io.valid.asUInt()) =/= 0.U
 }
 
 class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends Module {
@@ -134,7 +134,7 @@ with HasCacheAccelParams {
 
 
         when(readEn(i)) {
-            io.port(i).read.out := (Cat((0 until nRead).map( j => content(io.port(i).read.in.bits.addr + j.asUInt())) )).asTypeOf(Vec(nRead, gen.cloneType))
+            io.port(i).read.out := (Cat((0 until nRead).map( j => content(io.port(i).read.in.bits.addr + j.asUInt())).reverse )).asTypeOf(Vec(nRead, gen.cloneType))
         }.otherwise{
             io.port(i).read.out := (Cat((0 until nRead).map( j => 0.U)).asTypeOf(Vec(nRead, gen.cloneType)))
         }
@@ -323,7 +323,7 @@ with HasCacheAccelParams{
 
     val write = WireInit (io.write.in.fire())
 
-    val findNewLine = Module(new FindEmptyLine(nParal,log2Ceil(nParal)))
+    val findNewLine = Module(new FindEmptyLine(nParal,log2Ceil(nParal + 1)))
     findNewLine.io.data := pcContent.map(_.valid).toVector
     val writeIdx = WireInit (findNewLine.io.value)
 

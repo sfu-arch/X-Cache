@@ -80,7 +80,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
   finder(nParal).io.data := TBEAddr
   finder(nParal).io.valid := TBEValid
   idxRead := finder(nParal).io.value.bits
-  idxReadValid := (finder(nParal).io.value.bits === true.B)
+  idxReadValid := (finder(nParal).io.value.valid && isRead)
 
 
   for (i <- 0 until nParal)  {

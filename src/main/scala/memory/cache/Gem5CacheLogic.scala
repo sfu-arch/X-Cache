@@ -7,6 +7,7 @@ import dandelion.config._
 import dandelion.util._
 import dandelion.interfaces._
 import dandelion.interfaces.axi._
+import dandelion.memory.cache.Gem5Cache._
 import chisel3.util.experimental.loadMemoryFromFile
 
 import dandelion.junctions._
@@ -19,8 +20,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val addrLen = accelParams.addrlen
   val eventLen = 8
   val nCom = 8
-  val dataLen = 512
-  val nParal = 2
+  val dataLen = 128
+  val nParal = 1
   val pcLen = 16
 
   val stateLen = log2Ceil(nStates)
