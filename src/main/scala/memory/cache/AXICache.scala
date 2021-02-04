@@ -72,6 +72,10 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     CacheLogic
   }
 
+  val validBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nRead = 1))
+  val validTagBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
+//  val dirtyBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
+
   //  val arb = Module (new Arbiter())
 
   //  cacheLogic.io.metaMem.inputValue <> dataMemory.io.outputValue
@@ -87,6 +91,11 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     cacheLogic(i).io.metaMem.isRead <> metaMemory.io.isRead
     dataMemory.io.valid := cacheLogic(i).io.dataMem.valid
     metaMemory.io.valid := cacheLogic(i).io.metaMem.valid
+
+    cacheLogic(i).io.validBits <> validBits.io.port(i)
+    cacheLogic(i).io.validTagBits <> validTagBits.io.port(i)
+//    cacheLogic(i).io.dirtyBits <> dirtyBits.io.port(i)
+
 
     dataMemory.io <> DontCare
     cacheLogic(i).io.dataMem <> DontCare

@@ -4,6 +4,7 @@ import chipsalliance.rocketchip.config.Parameters
 import chisel3._
 import chisel3.util.{Valid, _}
 import chisel3.util._
+import chisel3.util.Cat
 import dandelion.interfaces.Action
 import dandelion.config.{AXIAccelBundle, HasAccelShellParams}
 import dandelion.memory.cache.HasCacheAccelParams
@@ -44,7 +45,6 @@ class Find[T1 <: Data , T2 <: Data]( K: T1, D:T2, depth: Int, outLen: Int = 32) 
 class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends Module {
 
     val io = IO(new Bundle {
-        //        val key = Input(D.cloneType)
         val data = Input(Vec(depth, Bool()))
         val value = Output(UInt(outLen.W))
     })
@@ -98,6 +98,53 @@ with HasCacheAccelParams {
 
     override def cloneType: this.type =  new portWithCMD(D,C,O)(addrLen).asInstanceOf[this.type]
 }
+
+class paralRegIO [T <: Data](gen: T, size: Int, pDegree: Int, nRead:Int)(implicit val p: Parameters) extends Bundle
+with HasCacheAccelParams  {
+
+
+    val port = Vec(pDegree, new Bundle {
+        val write = Flipped(Valid(new Bundle {
+            val addr = (UInt(xlen.W))
+            val value = (gen.cloneType)
+        }))
+
+        val read = new Bundle {
+            val in = Flipped(Valid(new Bundle {
+                val addr = (UInt(xlen.W))
+            }))
+            val out = Vec(nRead, Output(gen.cloneType))
+        }
+    })
+}
+
+class paralReg[T <: Data](gen: T, size: Int, pDegree: Int, nRead:Int)(implicit val p: Parameters) extends Module
+with HasCacheAccelParams {
+
+
+    val io = IO( new paralRegIO(gen, size, pDegree, nRead))
+    val content = RegInit(VecInit(Seq.fill(size)(0.U))) // @todo should be generic
+
+    val readEn = Wire(Vec(pDegree, Bool()))
+    val writeEn = Wire(Vec(pDegree, Bool()))
+
+    for (i <- 0 until pDegree) {
+        readEn(i) := io.port(i).read.in.fire()
+        writeEn(i) := io.port(i).write.fire()
+
+
+        when(readEn(i)) {
+            io.port(i).read.out := (Cat((0 until nRead).map( j => content(io.port(i).read.in.bits.addr + j.asUInt())) )).asTypeOf(Vec(nRead, gen.cloneType))
+        }.otherwise{
+            io.port(i).read.out := (Cat((0 until nRead).map( j => 0.U)).asTypeOf(Vec(nRead, gen.cloneType)))
+        }
+
+        when(writeEn(i)) {
+            content(io.port(i).write.bits.addr) := io.port(i).write.bits.value
+        }
+    }
+}
+
 
 class lockVectorIO (implicit val p :Parameters) extends Bundle
 with HasCacheAccelParams {
