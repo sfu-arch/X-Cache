@@ -69,7 +69,8 @@ class   TBETable(implicit  val p: Parameters) extends Module
 
   val allocLine = Module(new FindEmptyLine(tbeDepth, (log2Ceil(tbeDepth))))
   allocLine.io.data := TBEValid
-  idxAlloc := allocLine.io.value
+  idxAlloc := allocLine.io.value.bits
+
 
   val finder = for (i <- 0 until nParal + 1) yield {
     val Finder = Module(new Find(UInt(), UInt(addrLen.W), tbeDepth, (log2Ceil(tbeDepth))))

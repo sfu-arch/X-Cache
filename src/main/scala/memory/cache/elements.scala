@@ -46,18 +46,21 @@ class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends
 
     val io = IO(new Bundle {
         val data = Input(Vec(depth, Bool()))
-        val value = Output(UInt(outLen.W))
+        val value = Valid(UInt(outLen.W))
     })
 
-    val idx = WireInit(0.U(outLen.W))
+    io.value.valid := false.B
+
+    val idx = WireInit(depth.U((outLen + 1).W))
 
     (0 until depth).foldLeft(when(false.B) {}) {
         case (whenContext, searchIdx) =>
             whenContext.elsewhen(io.data(searchIdx) === false.B) {
                 idx := searchIdx.U
+                io.value.valid := true.B
             }
     }
-    io.value := idx
+    io.value.bits := idx
 
 
 }
@@ -309,8 +312,10 @@ object PCBundle {
 class PCIO ( implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams{
 
-    val write = new portNoAddr(new PCBundle, Bool())
+    val write = Flipped(Decoupled(new PCBundle))
+
     val read = Vec(nParal ,  new portNoAddr(new PCBundle, new PCBundle))
+    val isFull = Output(Bool())
 
 }
 
@@ -321,11 +326,11 @@ with HasCacheAccelParams{
 
     val pcContent =  RegInit(VecInit(Seq.fill(nParal)(PCBundle.default)))
 
-    val write = WireInit (io.write.in.fire())
+    val write = WireInit (io.write.fire())
 
     val findNewLine = Module(new FindEmptyLine(nParal,log2Ceil(nParal + 1)))
     findNewLine.io.data := pcContent.map(_.valid).toVector
-    val writeIdx = WireInit (findNewLine.io.value)
+    val writeIdx = WireInit(findNewLine.io.value.bits)
 
     for (i <-  0 until nParal){
 
@@ -342,12 +347,13 @@ with HasCacheAccelParams{
         }
     }
 
-    when( write){
+    when( write & findNewLine.io.value.valid){
         pcContent(writeIdx).valid := true.B
-        pcContent(writeIdx).pc := io.write.in.bits.data.pc
-        pcContent(writeIdx).addr := io.write.in.bits.data.addr
-        pcContent(writeIdx).way := io.write.in.bits.data.way
+        pcContent(writeIdx).pc := io.write.bits.pc
+        pcContent(writeIdx).addr := io.write.bits.addr
+        pcContent(writeIdx).way := io.write.bits.way
     }
-    io.write.out.bits := DontCare
-    io.write.out.valid := DontCare // @todo Should be changed
+
+    io.write.ready := findNewLine.io.value.valid
+    io.isFull := !io.write.ready
 }

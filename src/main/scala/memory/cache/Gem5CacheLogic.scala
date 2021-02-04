@@ -414,7 +414,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   when (!wayInvalid) {
     way := wayInput
   }.elsewhen(addrToWaySig){
-    way := emptyLine.io.value
+    way := emptyLine.io.value.bits
   }.otherwise{
     way := nWays.U
   }

@@ -181,11 +181,11 @@ with HasAccelShellParams{
         updatedPCValid(i) := !firstLineNextRoutine(i)
     }
 
-    pc.io.write.in.bits.data.addr := addrInputCache
-    pc.io.write.in.bits.data.way := wayInputCache
-    pc.io.write.in.bits.data.pc := routineReg
-    pc.io.write.in.bits.data.valid := true.B
-    pc.io.write.in.valid := routineAddrResValid
+    pc.io.write.bits.addr := addrInputCache
+    pc.io.write.bits.way := wayInputCache
+    pc.io.write.bits.pc := routineReg
+    pc.io.write.bits.valid := true.B
+    pc.io.write.valid := routineAddrResValid
 
     for (i <- 0 until nParal) {
         pc.io.read(i).in.bits.data.addr := DontCare //
