@@ -131,15 +131,16 @@ with HasAccelShellParams{
     /*************************************************************************/
     // control signals
 
-    stallInput := isLocked
+    stallInput := isLocked | pc.io.isFull
+//    stall :=
 
     io.instruction.ready := !stallInput // @todo should be changed for stalled situations
 
     readTBE     := RegEnable(io.instruction.fire(), false.B, !stallInput)
-    checkLock   := RegEnable(io.instruction.fire(), false.B, !stallInput)
+    checkLock   := RegEnable(io.instruction.fire(), false.B, true.B)
     getState    := RegEnable(io.instruction.fire(), false.B, !stallInput)
 
-    routineAddrResValid := RegEnable(readTBE & !stallInput , false.B, !stall)
+    routineAddrResValid := RegEnable(readTBE , false.B, !stall)
     startRoutine        := RegEnable(readTBE & !stallInput , false.B, !stall)
 
 //    actionResValid := RegEnable(Mux(routineAddrResValid, true.B , Mux (firstLineRoutine, false.B,  true.B)), false.B , !stall)
@@ -158,7 +159,10 @@ with HasAccelShellParams{
     // Elements
     defaultState := State.default
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
-    routineReg := RegEnable(uCodedNextPtr(routine), 0.U, !stall)
+
+    routineQueue.io.enq.bits := uCodedNextPtr(routine)
+    routineQueue.io.enq.valid := !stallInput & readTBE
+
 
     for (i <- 0 until nParal) {
 
@@ -183,9 +187,10 @@ with HasAccelShellParams{
 
     pc.io.write.bits.addr := addrInputCache
     pc.io.write.bits.way := wayInputCache
-    pc.io.write.bits.pc := routineReg
+    pc.io.write.bits.pc := routineQueue.io.deq.bits
     pc.io.write.bits.valid := true.B
-    pc.io.write.valid := routineAddrResValid
+    pc.io.write.valid := routineQueue.io.deq.fire() & routineAddrResValid
+    routineQueue.io.deq.ready := !pc.io.isFull
 
     for (i <- 0 until nParal) {
         pc.io.read(i).in.bits.data.addr := DontCare //
