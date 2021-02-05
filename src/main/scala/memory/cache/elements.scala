@@ -220,7 +220,7 @@ with HasCacheAccelParams {
             }
     }
 
-    isLocked := (bitmapProbe =/= 0.U) && (valid(idxProbe) === true.B)
+    isLocked := ((bitmapProbe & valid.asUInt()) =/= 0.U)
     io.lock.out.bits := isLocked
     io.lock.out.valid := probe
 
@@ -347,7 +347,7 @@ with HasCacheAccelParams{
         }
     }
 
-    when( write & findNewLine.io.value.valid){
+    when( write){
         pcContent(writeIdx).valid := true.B
         pcContent(writeIdx).pc := io.write.bits.pc
         pcContent(writeIdx).addr := io.write.bits.addr
