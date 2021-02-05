@@ -31,7 +31,7 @@ class test_cache01Main_routineLevel_IO(implicit val p: Parameters) extends Modul
 class test_cache01Main_routineLevel(implicit p: Parameters) extends test_cache01Main_routineLevel_IO {
 
     //val cache = Module(new ReferenceCache()) // Simple Nasti Cache
-    val cacheNode = Module(new programmableCache())
+    val cacheNode = Module(new DUT())
     val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
     val memCopy = Mem(1014, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
@@ -70,7 +70,7 @@ class test_cache01Main_routineLevel(implicit p: Parameters) extends test_cache01
 }
 
 
-class test_cache01Test01_routineLevel(c: programmableCache)(implicit p: Parameters)  extends PeekPokeTester(c) {
+class test_cache01Test01_routineLevel(c: DUT)(implicit p: Parameters)  extends PeekPokeTester(c) {
 
 
     /*                  sigLoadWays | sigFindInSet | sigAddrToWay | sigPrepMDRead | sigPrepMDWrite | sigAllocate | sigDeallocate | sigWrite |  sigRead  | dataReq
@@ -205,35 +205,50 @@ class test_cache01Test01_routineLevel(c: programmableCache)(implicit p: Paramete
 //    testReadInternal (1052676.U)
 
     // validation of connections
-
+    while (peek(c.io.instruction.ready) == 0) {
+        step(1)
+    }
     poke(c.io.instruction.valid,true.B)
     poke(c.io.instruction.bits.event,0.U)
     poke(c.io.instruction.bits.addr,"b10000".U)
     step(1)
     poke(c.io.instruction.valid, false.B)
-    step(10)
+    step(1)
 
+    while (peek(c.io.instruction.ready) == 0) {
+        step(1)
+    }
     poke(c.io.instruction.valid,true.B)
-    poke(c.io.instruction.bits.event,0.U)
+    poke(c.io.instruction.bits.event,1.U)
     poke(c.io.instruction.bits.addr,"b10".U)
     step(1)
     poke(c.io.instruction.valid, false.B)
-    step(10)
-
-    poke(c.io.instruction.valid,true.B)
-    poke(c.io.instruction.bits.event,0.U)
-    poke(c.io.instruction.bits.addr,"b10000".U)
     step(1)
-    poke(c.io.instruction.valid, false.B)
-    step(10)
 
+    while (peek(c.io.instruction.ready) == 0) {
+        step(1)
+    }
+//    poke(c.io.instruction.valid,true.B)
+//    poke(c.io.instruction.bits.event,0.U)
+//    poke(c.io.instruction.bits.addr,"b10000".U)
+//    step(1)
+//    poke(c.io.instruction.valid, false.B)
+//    step(1)
+//
+//    while (peek(c.io.instruction.ready) == 0) {
+//        step(1)
+//    }
     poke(c.io.instruction.valid,true.B)
     poke(c.io.instruction.bits.event,0.U)
     poke(c.io.instruction.bits.addr,"b1000010000".U)
     step(1)
     poke(c.io.instruction.valid, false.B)
-    step(10)
+    step(1)
 
+
+    while (peek(c.io.instruction.ready) == 0) {
+        step(1)
+    }
     poke(c.io.instruction.valid,true.B)
     poke(c.io.instruction.bits.event,0.U)
     poke(c.io.instruction.bits.addr,"b11000010000".U)
@@ -381,7 +396,7 @@ class test_cache01Tester1_routineLevel extends FlatSpec with Matchers {
                 "-td", "test_run_dir/test_cache01",
                 "-tts", "0001",
                 "--generate-vcd-output", "on"),
-            () => new programmableCache()) {
+            () => new DUT()) {
             c => new test_cache01Test01_routineLevel(c)
         } should be(true)
     }
