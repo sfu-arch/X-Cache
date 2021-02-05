@@ -69,7 +69,7 @@ case class DandelionAccelParams(
                                  printCLog: Boolean = false,
                                  cacheNWays: Int = 4,
                                  cacheNSets: Int = 8,
-                                 cacheNState:Int = 16,
+                                 cacheNState:Int = 7,
                                  cacheAddrLen:Int = 32,
                                  nSigs:Int = 10,
                                  actionLen: Int = 10 + 2,
