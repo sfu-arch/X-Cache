@@ -228,16 +228,16 @@ class test_cache01Test01_routineLevel(c: DUT)(implicit p: Parameters)  extends P
     while (peek(c.io.instruction.ready) == 0) {
         step(1)
     }
-//    poke(c.io.instruction.valid,true.B)
-//    poke(c.io.instruction.bits.event,0.U)
-//    poke(c.io.instruction.bits.addr,"b10000".U)
-//    step(1)
-//    poke(c.io.instruction.valid, false.B)
-//    step(1)
-//
-//    while (peek(c.io.instruction.ready) == 0) {
-//        step(1)
-//    }
+        poke(c.io.instruction.valid,true.B)
+        poke(c.io.instruction.bits.event,0.U)
+        poke(c.io.instruction.bits.addr,"b10000".U)
+        step(1)
+        poke(c.io.instruction.valid, false.B)
+        step(1)
+
+        while (peek(c.io.instruction.ready) == 0) {
+            step(1)
+        }
     poke(c.io.instruction.valid,true.B)
     poke(c.io.instruction.bits.event,0.U)
     poke(c.io.instruction.bits.addr,"b1000010000".U)
