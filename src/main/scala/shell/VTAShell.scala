@@ -17,12 +17,12 @@
  * under the License.
  */
 
-package dandelion.shell
+package memGen.shell
 
 import chisel3._
-import dandelion.interfaces.axi._
+import memGen.interfaces.axi._
 import chipsalliance.rocketchip.config._
-import dandelion.config.HasAccelShellParams
+import memGen.config.HasAccelShellParams
 
 /** VTAShell.
   *

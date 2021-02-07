@@ -1,14 +1,14 @@
-package dandelion.memory.cache
+package memGen.memory.cache
 
 import chisel3._
 import chisel3.util._
 import chipsalliance.rocketchip.config._
-import dandelion.config._
+import memGen.config._
 import chisel3.util.Arbiter
-import dandelion.interfaces._
-import dandelion.interfaces.axi._
-import dandelion.junctions._
-import dandelion.shell._
+import memGen.interfaces._
+import memGen.interfaces.axi._
+import memGen.junctions._
+import memGen.shell._
 
 class MetaData(implicit p: Parameters) extends AXIAccelBundle with HasCacheAccelParams {
   val tag = UInt(taglen.W)

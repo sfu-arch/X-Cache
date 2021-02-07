@@ -1,12 +1,12 @@
-package dandelion.config
+package memGen.config
 
 import chisel3._
 import chisel3.util.Enum
 import chipsalliance.rocketchip.config._
-import dandelion.fpu.FType
-import dandelion.interfaces.axi.AXIParams
-import dandelion.junctions.{NastiKey, NastiParameters}
-import dandelion.util.{DandelionGenericParameterizedBundle, DandelionParameterizedBundle}
+import memGen.fpu.FType
+import memGen.interfaces.axi.AXIParams
+import memGen.junctions.{NastiKey, NastiParameters}
+import memGen.util.{DandelionGenericParameterizedBundle, DandelionParameterizedBundle}
 
 
 trait AccelParams {

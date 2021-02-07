@@ -1,10 +1,10 @@
-package dandelion.memory.cache
+package memGen.memory.cache
 
 import chipsalliance.rocketchip.config._
 import chisel3._
 import chisel3.util._
-import dandelion.config._
-import dandelion.interfaces._
+import memGen.config._
+import memGen.interfaces._
 
 
 class DUTIO (implicit val p:Parameters) extends Bundle

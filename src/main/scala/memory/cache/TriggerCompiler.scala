@@ -1,4 +1,4 @@
-package dandelion.memory.cache
+package memGen.memory.cache
 
 import scala.collection.mutable.ArrayBuffer
 import chisel3._

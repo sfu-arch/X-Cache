@@ -1,12 +1,12 @@
-package dandelion.memory.cache
+package memGen.memory.cache
 
 import chipsalliance.rocketchip.config.Parameters
 import chisel3._
 import chisel3.util.{Valid, _}
 import chisel3.util._
 import chisel3.util.Cat
-import dandelion.interfaces.Action
-import dandelion.config.{AXIAccelBundle, HasAccelShellParams}
+import memGen.interfaces.Action
+import memGen.config.{AXIAccelBundle, HasAccelShellParams}
 
 class DecoderIO (nSigs: Int)(implicit val p:Parameters) extends Bundle {
 

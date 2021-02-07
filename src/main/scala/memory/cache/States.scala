@@ -1,5 +1,5 @@
 
-package dandelion.memory.cache
+package memGen.memory.cache
 
 
 import chisel3._

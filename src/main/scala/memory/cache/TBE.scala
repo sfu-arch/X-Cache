@@ -1,8 +1,8 @@
-package dandelion.memory.cache
+package memGen.memory.cache
 
 import chipsalliance.rocketchip.config._
 import chisel3._
-import dandelion.config._
+import memGen.config._
 import chisel3.util._
 import chisel3.util.Enum
 

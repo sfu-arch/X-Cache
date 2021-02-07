@@ -1,16 +1,16 @@
-package dandelion.fpu
+package memGen.fpu
 
 import chisel3._
 import chisel3.Module
 import chipsalliance.rocketchip.config._
-import dandelion.config._
-import dandelion.interfaces._
-import dandelion.arbiters._
+import memGen.config._
+import memGen.interfaces._
+import memGen.arbiters._
 import util._
 import muxes._
 import hardfloat._
 import chipsalliance.rocketchip.config._
-import dandelion.config._
+import memGen.config._
 
 class SharedFPUIO(NumOps: Int, argTypes: Seq[Int])
                  (implicit p: Parameters) extends AccelBundle( )(p) {

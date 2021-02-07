@@ -1,14 +1,14 @@
 
-package dandelion.interfaces
+package memGen.interfaces
 
 
 import chisel3._
 import chisel3.util.{Decoupled, log2Ceil}
 import chipsalliance.rocketchip.config._
 import utility.Constants._
-import dandelion.config._
+import memGen.config._
 import chipsalliance.rocketchip.config._
-import dandelion.memory.cache.HasCacheAccelParams
+import memGen.memory.cache.HasCacheAccelParams
 
 import scala.collection.immutable.ListMap
 

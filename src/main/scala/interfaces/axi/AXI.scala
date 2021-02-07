@@ -1,10 +1,10 @@
-package dandelion.interfaces.axi
+package memGen.interfaces.axi
 
 import chisel3._
 import chisel3.util._
 import chipsalliance.rocketchip.config._
-import dandelion.config._
-import dandelion.util.DandelionGenericParameterizedBundle
+import memGen.config._
+import memGen.util.DandelionGenericParameterizedBundle
 
 case class AXIParams(
                       coherent: Boolean = false,

@@ -1,12 +1,12 @@
-package dandelion.interfaces
+package memGen.interfaces
 
 import chisel3._
 import chisel3.util.experimental.loadMemoryFromFile
 import chisel3.util._
-import dandelion.junctions._
-import dandelion.config._
+import memGen.junctions._
+import memGen.config._
 import chipsalliance.rocketchip.config._
-import dandelion.memory.cache.HasCacheAccelParams
+import memGen.memory.cache.HasCacheAccelParams
 
 class InitParamsMem(implicit p: Parameters) extends AccelBundle()(p) with HasAccelShellParams {
   val addr = UInt(nastiParams.addrBits.W)

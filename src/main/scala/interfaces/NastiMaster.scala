@@ -1,11 +1,11 @@
-package dandelion.interfaces
+package memGen.interfaces
 
 import chisel3._
 import chisel3.util._
 
-import dandelion.junctions._
+import memGen.junctions._
 import chipsalliance.rocketchip.config._
-import dandelion.config._
+import memGen.config._
 
 class NastiMasterReq(implicit p: Parameters) extends AccelBundle()(p) {
   val addr = UInt(xlen.W)

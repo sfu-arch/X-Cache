@@ -1,13 +1,13 @@
-package dandelion.arbiters
+package memGen.arbiters
 
-import dandelion.interfaces._
+import memGen.interfaces._
 import chisel3._
 import chisel3.util._
 import chisel3.Module
 import chipsalliance.rocketchip.config._
-import dandelion.config._
-import dandelion.interfaces._
-import dandelion.config._
+import memGen.config._
+import memGen.interfaces._
+import memGen.config._
 
 abstract class AbstractArbiterTree[T <: Data](Nops: Int, gen: T)(implicit p: Parameters)
   extends Module with HasAccelParams {

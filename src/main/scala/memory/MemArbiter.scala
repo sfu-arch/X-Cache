@@ -1,4 +1,4 @@
-package dandelion.memory
+package memGen.memory
 
 
 import chisel3._
@@ -8,9 +8,9 @@ import chisel3.util._
 
 // Config
 import chipsalliance.rocketchip.config._
-import dandelion.config._
+import memGen.config._
 import utility._
-import dandelion.interfaces._
+import memGen.interfaces._
 
 
 class MemArbiterIO(NumPorts:Int)(implicit val p: Parameters)

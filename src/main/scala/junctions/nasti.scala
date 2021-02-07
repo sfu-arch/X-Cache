@@ -1,7 +1,7 @@
 // See LICENSE.Berkeley for license details.
 // See LICENSE.SiFive for license details.
 
-package dandelion.junctions
+package memGen.junctions
 import Chisel._
 import scala.math.max
 import scala.collection.mutable.ArraySeq

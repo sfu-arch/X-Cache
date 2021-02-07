@@ -1,4 +1,4 @@
-package dandelion.memory.cache
+package memGen.memory.cache
 
 import java.io.PrintWriter
 import java.io.File
@@ -6,10 +6,10 @@ import java.io.File
 import chisel3._
 import chisel3.Module
 import util._
-import dandelion.interfaces._
-import dandelion.memory._
+import memGen.interfaces._
+import memGen.memory._
 import chipsalliance.rocketchip.config._
-import dandelion.config._
+import memGen.config._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 

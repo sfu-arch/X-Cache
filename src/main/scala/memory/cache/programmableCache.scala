@@ -1,13 +1,13 @@
-package dandelion.memory.cache
+package memGen.memory.cache
 
 import chisel3._
 import chisel3.util._
 import chipsalliance.rocketchip.config._
-import dandelion.config._
-import dandelion.util._
-import dandelion.interfaces._
-import dandelion.interfaces.Action
-import dandelion.interfaces.axi._
+import memGen.config._
+import memGen.util._
+import memGen.interfaces._
+import memGen.interfaces.Action
+import memGen.interfaces.axi._
 
 
 class programmableCacheIO (implicit val p:Parameters) extends Bundle
