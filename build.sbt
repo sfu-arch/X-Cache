@@ -1,4 +1,4 @@
-// name := "dandelion-lib"
+// name := "memGen"
 
 import sbt.complete._
 import sbt.complete.DefaultParsers._
@@ -8,7 +8,7 @@ import sys.process._
 enablePlugins(PackPlugin)
 
 lazy val commonSettings = Seq(
-  name := "dandelion-lib",
+  name := "memGen",
   organization := "edu.sfu.cs",
   version      := "1.0-SNAPSHOT",
   scalaVersion := "2.12.10",
@@ -25,15 +25,18 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq("org.scalacheck" %% "scalacheck" % "1.13.4"),
   libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel-iotesters" % "1.3-SNAPSHOT"),
   libraryDependencies ++= Seq("edu.berkeley.cs" %% "dsptools" % "1.2-SNAPSHOT"),
-  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+  libraryDependencies ++= Seq("edu.berkeley.cs" %% "chiseltest" % "0.2.1"),
+  libraryDependencies ++= Seq("edu.berkeley.cs" %% "treadle" % "1.1-SNAPSHOT"),
+
+
+
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("snapshots"),
     Resolver.sonatypeRepo("releases"),
     Resolver.mavenLocal
   )
 )
-
-// lazy val chisel = (project in file("chisel3")).settings(commonSettings)
 
 def dependOnChisel(prj: Project) = {
   prj.settings(
@@ -43,8 +46,11 @@ def dependOnChisel(prj: Project) = {
 
 def dependOnIoTesters(prj: Project) = {
   prj.settings(
-    libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel-iotesters" % "1.3-SNAPSHOT")
+    libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel-iotesters" % "1.3-SNAPSHOT"),
+      libraryDependencies ++= Seq("edu.berkeley.cs" %% "chiseltest" % "0.2.1")
     )
+
+
 }
 
 
@@ -55,7 +61,7 @@ lazy val hardfloat  = dependOnChisel(project)
   .settings(commonSettings)
   .settings(publishArtifact := false)
 
-lazy val dandelion= dependOnChisel(project in file("."))
+lazy val memGen= dependOnChisel(project in file("."))
   .settings(commonSettings, chipSettings)
   .dependsOn(`api-config-chipsalliance` % "compile-internal;test-internal")
   .dependsOn(hardfloat % "compile-internal;test-internal")

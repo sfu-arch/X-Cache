@@ -1,4 +1,4 @@
-package dandelion.util
+package memGen.util
 
 import Chisel._
 import scala.math._

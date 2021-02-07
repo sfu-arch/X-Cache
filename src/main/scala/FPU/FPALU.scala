@@ -1,4 +1,4 @@
-package dandelion.fpu
+package memGen.fpu
 
 import hardfloat._
 import chisel3.Module

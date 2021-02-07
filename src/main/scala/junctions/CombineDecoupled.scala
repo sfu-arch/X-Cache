@@ -1,10 +1,10 @@
-package dandelion.junctions
+package memGen.junctions
 
 import chisel3._
 import chisel3.util._
-import dandelion.interfaces._
+import memGen.interfaces._
 import chipsalliance.rocketchip.config._
-import dandelion.config._
+import memGen.config._
 
 class CombineCustomIO(argTypes: Seq[Bits])(implicit p: Parameters) extends Bundle {
   val In =  Flipped(new VariableDecoupledCustom(argTypes))

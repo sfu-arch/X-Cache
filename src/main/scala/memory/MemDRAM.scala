@@ -1,4 +1,4 @@
-package dandelion.memory
+package memGen.memory
 
 
 import chisel3._
@@ -9,9 +9,9 @@ import chisel3.experimental._
 
 // Config
 import chipsalliance.rocketchip.config._
-import dandelion.config._
+import memGen.config._
 import utility._
-import dandelion.interfaces._
+import memGen.interfaces._
 
 
 class SinglePortDRAM(DATA: Int = 32, ADDR: Int = 32) extends BlackBox with HasBlackBoxResource {

@@ -1,11 +1,12 @@
-package dandelion.config
+package memGen.config
 
 import chisel3._
+import chisel3.util.Enum
 import chipsalliance.rocketchip.config._
-import dandelion.fpu.FType
-import dandelion.interfaces.axi.AXIParams
-import dandelion.junctions.{NastiKey, NastiParameters}
-import dandelion.util.{DandelionGenericParameterizedBundle, DandelionParameterizedBundle}
+import memGen.fpu.FType
+import memGen.interfaces.axi.AXIParams
+import memGen.junctions.{NastiKey, NastiParameters}
+import memGen.util.{DandelionGenericParameterizedBundle, DandelionParameterizedBundle}
 
 
 trait AccelParams {
@@ -66,8 +67,14 @@ case class DandelionAccelParams(
                                  printLog: Boolean = false,
                                  printMemLog: Boolean = false,
                                  printCLog: Boolean = false,
-                                 cacheNWays: Int = 1,
-                                 cacheNSets: Int = 256
+                                 cacheNWays: Int = 4,
+                                 cacheNSets: Int = 8,
+                                 cacheNState:Int = 7,
+                                 cacheAddrLen:Int = 32,
+                                 nSigs:Int = 10,
+                                 actionLen: Int = 10 + 2,
+                                 tbeSize:Int= 4
+
                                ) extends AccelParams {
 
   var xlen: Int = dataLen
@@ -84,11 +91,16 @@ case class DandelionAccelParams(
   }
 
   //Cache
-  val nways = cacheNWays // TODO: set-associative
+  val nways = cacheNWays
   val nsets = cacheNSets
+  val nstates = cacheNState
+  val addrlen = cacheAddrLen
+//  val nCommand = nCom
+//  var comlen:Int = math.ceil(math.log(nCommand)/math.log(2)).toInt
+//  val nSigs = nSigs
 
-  def cacheBlockBytes: Int = 4 * (xlen >> 3) // 4 x 64 bits = 32B
-
+    def cacheBlockBytes: Int = 4 * (xlen >> 3) // 4 x 32 bits = 16B
+//   def cacheBlockBytes: Int = xlen >> 3
   // Debugging dumps
   val log: Boolean = printLog
   val memLog: Boolean = printMemLog
@@ -129,6 +141,19 @@ case class DandelionDMEParams(numRead: Int = 1,
     s"\n\n[Dandelion] [DMEParams] nWriteClients must be larger than 0\n\n")
 }
 
+class ParameterizedBundle(implicit p: Parameters) extends Bundle {
+     override def cloneType = {
+         try {
+             this.getClass.getConstructors.head.newInstance(p).asInstanceOf[this.type]
+           } catch {
+          case e: java.lang.IllegalArgumentException =>
+                throw new Exception("Unable to use ParamaterizedBundle.cloneType on " +
+                 this.getClass + ", probably because " + this.getClass +
+                                "() takes more than one argument.  Consider overriding " +
+                                "cloneType() on " + this.getClass, e)
+      }
+     }
+  }
 
 /** Shell parameters. */
 case class ShellParams(
@@ -206,6 +231,9 @@ trait HasAccelParams {
   val clog = accelParams.clog
   val verb = accelParams.verb
   val comp = accelParams.comp
+  val nSigs = accelParams.nSigs
+  val tbeDepth = accelParams.tbeSize
+
 
 }
 

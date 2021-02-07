@@ -1,46 +1,24 @@
-package dandelion.memory.cache
+package memGen.memory.cache
 
 import chisel3._
 import chisel3.util._
 import chipsalliance.rocketchip.config._
-import dandelion.config._
-import dandelion.util._
-import dandelion.interfaces._
-import dandelion.interfaces.axi._
-import dandelion.junctions._
-import dandelion.shell._
-
-
-trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
-
-  val nWays = accelParams.nways
-  val nSets = accelParams.nsets
-  val bBytes = accelParams.cacheBlockBytes
-  val bBits = bBytes << 3
-  val blen = log2Ceil(bBytes)
-  val slen = log2Ceil(nSets)
-  val taglen = xlen - (slen + blen)
-  val nWords = bBits / xlen
-  val wBytes = xlen / 8
-  val byteOffsetBits = log2Ceil(wBytes)
-  val dataBeats = bBits / memParams.dataBits
-}
-
-
-class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBundle(p) {
-  val abort = Input(Bool())
-  val flush = Input(Bool())
-  val flush_done = Output(Bool())
-  val req = Flipped(Decoupled(new MemReq))
-  val resp = Output(Valid(new MemResp))
-}
-
+import memGen.config._
+import chisel3.util.Arbiter
+import memGen.interfaces._
+import memGen.interfaces.axi._
+import memGen.junctions._
+import memGen.shell._
 
 class MetaData(implicit p: Parameters) extends AXIAccelBundle with HasCacheAccelParams {
   val tag = UInt(taglen.W)
 }
 
-object MetaData {
+class State(implicit p: Parameters) extends AXIAccelBundle with HasCacheAccelParams {
+  val state = UInt(stateLen.W)
+}
+
+object MetaData  {
 
   def apply(tag_len: Int)(implicit p: Parameters): MetaData = {
     val wire = Wire(new MetaData)
@@ -61,6 +39,75 @@ object MetaData {
   }
 }
 
+object State {
+
+  def apply(state_len: Int)(implicit p: Parameters): State = {
+    val wire = Wire(new State)
+    wire.state := state_len.U
+    wire
+  }
+
+  def default(implicit p: Parameters): State= {
+    val wire = Wire(new State)
+    wire.state := 0.U
+    wire
+  }
+}
+
+class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Parameters) extends Module
+  with HasCacheAccelParams
+  with HasAccelShellParams {
+
+  val io = IO(new Bundle {
+    val cpu =  Vec(nParal + 1, new CacheCPUIO) // last line for probing
+    val mem = new AXIMaster(memParams)
+  })
+
+  val Axi_param = memParams
+
+  val metaMemory = Module(new MemBank(new MetaData())(xlen, setLen, nWays, nSets, wayLen))
+  val dataMemory = Module(new MemBank(UInt(xlen.W))(xlen, addrLen, nWords, nSets * nWays, wordLen))
+  val cacheLogic = for (i <- 0 until nParal + 1) yield {
+    val CacheLogic = Module(new Gem5CacheLogic())
+    CacheLogic
+  }
+
+  val validBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nRead = 1))
+  val validTagBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
+//  val dirtyBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
+
+  //  val arb = Module (new Arbiter())
+
+  //  cacheLogic.io.metaMem.inputValue <> dataMemory.io.outputValue
+  //  cacheLogic.io.metaMem.outputValue <> dataMemory.io.inputValue
+
+  //  cacheLogic.io.dataMem <> dataMemory.io
+  for (i <- 0 until nParal + 1) {
+
+    cacheLogic(i).io.metaMem.inputValue <> metaMemory.io.outputValue
+    metaMemory.io.inputValue <> cacheLogic(i).io.metaMem.outputValue
+    cacheLogic(i).io.metaMem.bank <> metaMemory.io.bank
+    cacheLogic(i).io.metaMem.address <> metaMemory.io.address
+    cacheLogic(i).io.metaMem.isRead <> metaMemory.io.isRead
+    dataMemory.io.valid := cacheLogic(i).io.dataMem.valid
+    metaMemory.io.valid := cacheLogic(i).io.metaMem.valid
+
+    cacheLogic(i).io.validBits <> validBits.io.port(i)
+    cacheLogic(i).io.validTagBits <> validTagBits.io.port(i)
+//    cacheLogic(i).io.dirtyBits <> dirtyBits.io.port(i)
+
+
+    dataMemory.io <> DontCare
+    cacheLogic(i).io.dataMem <> DontCare
+
+    this.io.mem <> DontCare
+    this.io.cpu(i) <> DontCare
+    this.io.cpu(i) <> cacheLogic(i).io.cpu
+    this.io.mem <> cacheLogic(i).io.mem
+  }
+}
+
+/*
 class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
   with HasCacheAccelParams
   with HasAccelShellParams {
@@ -404,6 +451,8 @@ class SimpleCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: P
  * @param debug
  * @param p
  */
+
+
 class ReferenceCache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Parameters) extends Module
   with HasAccelParams
   with HasCacheAccelParams
@@ -981,3 +1030,5 @@ class DMECache(val ID: Int = 0, val debug: Boolean = false)(implicit val p: Para
     }
   }
 }
+
+*/

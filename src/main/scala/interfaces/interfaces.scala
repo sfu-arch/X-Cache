@@ -1,12 +1,14 @@
-package dandelion.interfaces
+
+package memGen.interfaces
 
 
 import chisel3._
-import chisel3.util.Decoupled
+import chisel3.util.{Decoupled, log2Ceil}
 import chipsalliance.rocketchip.config._
 import utility.Constants._
-import dandelion.config._
+import memGen.config._
 import chipsalliance.rocketchip.config._
+import memGen.memory.cache.HasCacheAccelParams
 
 import scala.collection.immutable.ListMap
 
@@ -15,6 +17,31 @@ import scala.collection.immutable.ListMap
            1. AVOID DECLARING IOs, DECLARE BUNDLES. Create IOs within your node.
            2.             =
 ==============================================================================*/
+
+abstract class CoreBundle (implicit val p:Parameters) extends ParameterizedBundle()(p) with HasCacheAccelParams
+
+trait Event extends CoreBundle{
+  val event = UInt(eventLen.W)
+}
+trait Addr extends CoreBundle{
+  val addr = UInt(addrLen.W)
+}
+
+class InstBundle (implicit p: Parameters) extends Event with Addr{
+
+  val data = UInt(dataLen.W)
+  override def cloneType: this.type = new InstBundle().asInstanceOf[this.type]
+}
+
+class Action(implicit p:Parameters) extends CoreBundle{
+  val signals = UInt(nSigs.W)
+  val actionType = UInt(2.W)
+  override def cloneType: this.type = new Action().asInstanceOf[this.type]
+
+}
+
+
+
 
 trait ValidT extends AccelBundle {
   val valid = Bool()
@@ -205,6 +232,12 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
   val taskID = UInt(tlen.W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
+  val command = UInt(nSigs.W)
+  val way = UInt((log2Ceil(accelParams.nways) + 1).W)
+//  val state = UInt(4.W)
+
+
+
 
   def clone_and_set_tile_id(tile: UInt): MemReq = {
     val wire = Wire(new MemReq())
@@ -214,7 +247,10 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
     wire.tag := this.tag
     wire.taskID := this.taskID
     wire.iswrite := this.iswrite
+    wire.command := this.command
+    wire.way := this.way
     wire.tile := tile
+//    wire.state := this.state
     wire
   }
 }
@@ -229,6 +265,8 @@ object MemReq {
     wire.taskID := 0.U
     wire.iswrite := false.B
     wire.tile := 0.U
+    wire.command := 0.U
+    wire.way := 0.U
     wire
   }
 }
@@ -238,13 +276,18 @@ class MemResp(implicit p: Parameters) extends AccelBundle()(p) with ValidT {
   val tag = UInt((List(1, mshrLen).max).W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
+  val way = UInt((log2Ceil(accelParams.nways) + 1).W)
+
+  //  val state = UInt(4.W)
 
   def clone_and_set_tile_id(tile: UInt): MemResp = {
     val wire = Wire(new MemResp())
     wire.data := this.data
     wire.tag := this.tag
     wire.iswrite := this.iswrite
+    wire.way := this.way
     wire.tile := tile
+
     wire
   }
 }
@@ -257,9 +300,14 @@ object MemResp {
     wire.tag := 0.U
     wire.iswrite := false.B
     wire.tile := 0.U
+    wire.way := 0.U
+
+//    wire.state := 0.U
     wire
   }
 }
+
+
 
 //class RelayNode output
 class RelayOutput(implicit p: Parameters) extends AccelBundle()(p) {

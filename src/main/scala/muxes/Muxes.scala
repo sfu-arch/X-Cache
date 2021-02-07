@@ -1,14 +1,14 @@
 package muxes
 
 import scala.math._
-import dandelion.interfaces._
+import memGen.interfaces._
 import chisel3._
 import chisel3.util._
 import chisel3.Module
 import chipsalliance.rocketchip.config._
-import dandelion.config._
-import dandelion.interfaces._
-import dandelion.config._
+import memGen.config._
+import memGen.interfaces._
+import memGen.config._
 
 class Demux[T <: ValidT](gen: T, Nops: Int) extends Module {
   val io = IO(new Bundle {
