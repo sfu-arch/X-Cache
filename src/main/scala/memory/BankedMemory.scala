@@ -37,7 +37,6 @@ class MemBank[T <: Data] (D:T) (val dataLen:Int, val addrLen : Int, val banks: I
       case (_, bankIndex) => {
           io.outputValue(bankIndex.U) := mems(bankIndex)(io.address)
         }
-//        io.valid := true.B
     }
   }.elsewhen(!io.isRead & io.valid ) {
     (0 until banks).foldLeft(when(false.B) {}) {

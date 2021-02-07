@@ -7,7 +7,6 @@ import chisel3.util._
 import chisel3.util.Cat
 import dandelion.interfaces.Action
 import dandelion.config.{AXIAccelBundle, HasAccelShellParams}
-import dandelion.memory.cache.HasCacheAccelParams
 
 class DecoderIO (nSigs: Int)(implicit val p:Parameters) extends Bundle {
 

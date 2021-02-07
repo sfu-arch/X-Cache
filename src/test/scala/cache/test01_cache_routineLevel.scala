@@ -11,7 +11,6 @@ import dandelion.memory._
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import chisel3.iotesters._
-import dandelion.memory.cache.{HasCacheAccelParams, Gem5Cache,programmableCache}
 import org.scalatest.{FlatSpec, Matchers}
 
 

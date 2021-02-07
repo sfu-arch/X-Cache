@@ -1,14 +1,8 @@
 package dandelion.memory.cache
 
 import scala.collection.mutable.ArrayBuffer
-import chipsalliance.rocketchip.config._
 import chisel3._
-import dandelion.config._
-import dandelion.memory.cache.{HasCacheAccelParams, State}
 import chisel3.util._
-import chisel3.util.Enum
-//import dandelion.memory.TBE.Events._
-import shapeless.ops.hlist.Length
 
 
 abstract class RoutinePC ()

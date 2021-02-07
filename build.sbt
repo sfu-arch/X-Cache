@@ -1,4 +1,4 @@
-// name := "dandelion-lib"
+// name := "cache-gen"
 
 import sbt.complete._
 import sbt.complete.DefaultParsers._
@@ -8,7 +8,7 @@ import sys.process._
 enablePlugins(PackPlugin)
 
 lazy val commonSettings = Seq(
-  name := "dandelion-lib",
+  name := "cache-gen",
   organization := "edu.sfu.cs",
   version      := "1.0-SNAPSHOT",
   scalaVersion := "2.12.10",
@@ -37,8 +37,6 @@ lazy val commonSettings = Seq(
     Resolver.mavenLocal
   )
 )
-
-// lazy val chisel = (project in file("chisel3")).settings(commonSettings)
 
 def dependOnChisel(prj: Project) = {
   prj.settings(
