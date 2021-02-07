@@ -78,7 +78,6 @@ with HasAccelShellParams{
 
     val routineAddrResValid = Wire(Bool())
     val actionResValid      = Wire(Vec(nParal, Bool()))
-    val startRoutine = Wire(Bool())
 
     val defaultState = Wire(new State())
 
@@ -140,9 +139,7 @@ with HasAccelShellParams{
     getState    := RegEnable(io.instruction.fire(), false.B, !stallInput)
 
     routineAddrResValid := RegEnable(readTBE , false.B, !stall)
-    startRoutine        := RegEnable(readTBE & !stallInput , false.B, !stall)
 
-//    actionResValid := RegEnable(Mux(routineAddrResValid, true.B , Mux (firstLineRoutine, false.B,  true.B)), false.B , !stall)
     for (i <- 0 until nParal) {
         isTBEAction(i) :=   (actionReg(i).io.deq.bits.action.actionType === 1.U)
         isCacheAction(i) := (actionReg(i).io.deq.bits.action.actionType === 0.U)
@@ -160,7 +157,7 @@ with HasAccelShellParams{
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
 
     routineQueue.io.enq.bits := uCodedNextPtr(routine)
-    routineQueue.io.enq.valid := !stallInput & readTBE
+    routineQueue.io.enq.valid := !pc.io.isFull & readTBE
 
 
     for (i <- 0 until nParal) {
