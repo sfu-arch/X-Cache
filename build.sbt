@@ -1,4 +1,4 @@
-// name := "cache-gen"
+// name := "memGen"
 
 import sbt.complete._
 import sbt.complete.DefaultParsers._
@@ -8,7 +8,7 @@ import sys.process._
 enablePlugins(PackPlugin)
 
 lazy val commonSettings = Seq(
-  name := "cache-gen",
+  name := "memGen",
   organization := "edu.sfu.cs",
   version      := "1.0-SNAPSHOT",
   scalaVersion := "2.12.10",
@@ -61,7 +61,7 @@ lazy val hardfloat  = dependOnChisel(project)
   .settings(commonSettings)
   .settings(publishArtifact := false)
 
-lazy val dandelion= dependOnChisel(project in file("."))
+lazy val memGen= dependOnChisel(project in file("."))
   .settings(commonSettings, chipSettings)
   .dependsOn(`api-config-chipsalliance` % "compile-internal;test-internal")
   .dependsOn(hardfloat % "compile-internal;test-internal")
