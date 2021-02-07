@@ -8,7 +8,6 @@ import chisel3.Module
 import util._
 import dandelion.interfaces._
 import dandelion.memory._
-import dandelion.dataflow.cache.test_cache01DF
 import chipsalliance.rocketchip.config._
 import dandelion.config._
 import chisel3.iotesters._
