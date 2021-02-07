@@ -7,7 +7,6 @@ import dandelion.config._
 import dandelion.interfaces._
 import dandelion.arbiters._
 import util._
-import utility.UniformPrintfs
 import muxes._
 import hardfloat._
 import chipsalliance.rocketchip.config._
@@ -26,7 +25,7 @@ class SharedFPU(NumOps: Int, PipeDepth: Int)(t: FType)
                (implicit val p: Parameters,
                 name: sourcecode.Name,
                 file: sourcecode.File)
-  extends Module with HasAccelParams with UniformPrintfs {
+  extends Module with HasAccelParams {
   override lazy val io = IO(new SharedFPUIO(NumOps, argTypes = List(xlen, xlen, xlen)))
 
   // Printf debugging

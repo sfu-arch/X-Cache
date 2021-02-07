@@ -14,7 +14,7 @@ import dandelion.interfaces._
 
 
 class MemArbiterIO(NumPorts:Int)(implicit val p: Parameters)
-  extends Module with HasAccelParams  with UniformPrintfs {
+  extends Module with HasAccelParams{
   val io = IO(new Bundle {
     val cpu = new Bundle {
       val MemReq   = Vec(NumPorts, Flipped(Decoupled(new MemReq)))
