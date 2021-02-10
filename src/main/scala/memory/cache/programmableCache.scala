@@ -44,7 +44,10 @@ with HasAccelShellParams{
     val dstStateRom = VecInit(dstStateBits)
 
     val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions, setStateDst)
-    val actionRom = VecInit(actions)
+    val actionRom = for (i <- 0 until nParal) yield {
+        val actionRom = VecInit(actions)
+        actionRom
+    }
     /********************************************************************************/
 
     val state    = Wire(UInt(stateLen.W))
@@ -173,15 +176,15 @@ with HasAccelShellParams{
         actionResValid(i):= RegEnable((routineAddrResValid | (!routineAddrResValid & !firstLineNextRoutine(i))), false.B , !stall)
         tbeActionInRom(i) := (actionResValid(i) & isTBEAction(i))
 
-        actionReg(i).io.enq.bits.action.signals := sigToAction(actionRom(pcWire(i).pc))
-        actionReg(i).io.enq.bits.action.actionType := sigToActType(actionRom(pcWire(i).pc))
+        actionReg(i).io.enq.bits.action.signals := sigToAction(actionRom(i)(pcWire(i).pc))
+        actionReg(i).io.enq.bits.action.actionType := sigToActType(actionRom(i)(pcWire(i).pc))
         actionReg(i).io.enq.bits.addr := pcWire(i).addr
         actionReg(i).io.enq.bits.way  := Mux(updateWay(i), cacheWayWire(i), pcWire(i).way)
         actionReg(i).io.enq.bits.data := pcWire(i).data
     }
 
     for (i <- 0 until nParal) {
-        firstLineNextRoutine(i) := (sigToAction(actionRom(pcWire(i).pc)).asUInt() === 0.U ) // @todo all of them should be changed for stall
+        firstLineNextRoutine(i) := (sigToAction(actionRom(i)(pcWire(i).pc)).asUInt() === 0.U ) // @todo all of them should be changed for stall
         updatedPC(i) := Mux(firstLineNextRoutine(i), pcWire(i).pc, pcWire(i).pc + 1.U  )
         updatedPCValid(i) := !firstLineNextRoutine(i)
     }
