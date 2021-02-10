@@ -466,7 +466,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   when((findInSetSig & loadWaysMeta)) { // probing way
-    targetWayWire := tagFinder.io.value.bits
+    targetWayWire := Mux(tagFinder.io.value.valid, tagFinder.io.value.bits, nWays.U)
   }.elsewhen(addrToWaySig) { // allocate
     targetWayWire := way
   }.otherwise{
@@ -496,7 +496,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  }
 
   io.cpu.resp.bits.way := targetWayWire
-  io.cpu.resp.valid    := addrToWaySig // @todo should be changed to sth more generic
+  io.cpu.resp.valid    := addrToWaySig | (findInSetSig & loadWaysMeta)  // @todo should be changed to sth more generic
 
 //  switch(stIntRdReg){
 //    is (stIntRdIdle) {

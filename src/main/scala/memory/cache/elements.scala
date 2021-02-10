@@ -271,7 +271,7 @@ class stateMem (implicit val p: Parameters) extends Module
 
     idxGet :=  Mux(io.in(nParal).bits.way =/= nWays.U, addrToSet(io.in(nParal).bits.addr) * nWays.U + io.in(nParal).bits.way, 0.U)
     io.out.bits := states(idxGet)
-    io.out.valid := isGet
+    io.out.valid := (io.in(nParal).bits.way =/= nWays.U) & isGet
 
   }
 
@@ -345,6 +345,7 @@ with HasCacheAccelParams{
         when(!write){
             pcContent(i).pc := io.read(i).in.bits.data.pc
             pcContent(i).valid := io.read(i).in.bits.data.valid
+            pcContent(i).way := io.read(i).in.bits.data.way
         }
     }
 
