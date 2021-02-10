@@ -51,6 +51,8 @@ with HasAccelShellParams{
 
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
+    val data = RegInit(0.U(dataLen.W))
+
     val pcWire = Wire(Vec(nParal, new PCBundle()))
     val updatedPC = Wire(Vec(nParal, UInt(pcLen.W)))
     val updatedPCValid = Wire(Vec(nParal, Bool()))
@@ -108,11 +110,13 @@ with HasAccelShellParams{
     val addrWire   = WireInit(io.instruction.bits.addr)
 
     val addrInputCache  = Wire(UInt(addrLen.W))
+    val dataInputCache = Wire(UInt(dataLen.W))
 
     //latching
     when( io.instruction.fire() ){
         addr := io.instruction.bits.addr
         event := io.instruction.bits.event
+        data := io.instruction.bits.data
     }
 
     for (i <- 0 until (nParal + 1) ) {
@@ -146,8 +150,6 @@ with HasAccelShellParams{
         isStateAction(i) := (actionReg(i).io.deq.bits.action.actionType === 2.U | actionReg(i).io.deq.bits.action.actionType === 3.U)
     }
 
-//    updateTBEWay   := (RegNext(cache.io.cpu.resp.fire()) & (cacheWayReg =/= nWays.U))
-
     /*************************************************************************/
 
 
@@ -158,7 +160,6 @@ with HasAccelShellParams{
 
     routineQueue.io.enq.bits := uCodedNextPtr(routine)
     routineQueue.io.enq.valid := !pc.io.isFull & readTBE
-
 
     for (i <- 0 until nParal) {
 
@@ -172,7 +173,8 @@ with HasAccelShellParams{
         actionReg(i).io.enq.bits.action.signals := sigToAction(actionRom(pcWire(i).pc))
         actionReg(i).io.enq.bits.action.actionType := sigToActType(actionRom(pcWire(i).pc))
         actionReg(i).io.enq.bits.addr := pcWire(i).addr
-        actionReg(i).io.enq.bits.way := pcWire(i).way
+        actionReg(i).io.enq.bits.way  := pcWire(i).way
+        actionReg(i).io.enq.bits.data := pcWire(i).data
     }
 
     for (i <- 0 until nParal) {
@@ -184,6 +186,7 @@ with HasAccelShellParams{
     pc.io.write.bits.addr := addrInputCache
     pc.io.write.bits.way := wayInputCache
     pc.io.write.bits.pc := routineQueue.io.deq.bits
+    pc.io.write.bits.data := dataInputCache
     pc.io.write.bits.valid := true.B
     pc.io.write.valid := routineQueue.io.deq.fire() & routineAddrResValid
     routineQueue.io.deq.ready := !pc.io.isFull
@@ -191,20 +194,22 @@ with HasAccelShellParams{
     for (i <- 0 until nParal) {
         pc.io.read(i).in.bits.data.addr := DontCare //
         pc.io.read(i).in.bits.data.way := DontCare //
+        pc.io.read(i).in.bits.data.data := DontCare //
         pc.io.read(i).in.bits.data.pc := updatedPC(i)
         pc.io.read(i).in.bits.data.valid := updatedPCValid(i) // @todo should be changed for stall
 
         pc.io.read(i).in.valid := DontCare // @todo Should be changed probably
 
-        pcWire(i).pc   := pc.io.read(i).out.bits.pc
-        pcWire(i).way  := pc.io.read(i).out.bits.way
-        pcWire(i).addr  := pc.io.read(i).out.bits.addr
-        pcWire(i).valid := pc.io.read(i).out.bits.valid
+//        pcWire(i).pc   := pc.io.read(i).out.bits.pc
+//        pcWire(i).way  := pc.io.read(i).out.bits.way
+//        pcWire(i).addr  := addr
+        pcWire(i) <> pc.io.read(i).out.bits
 
     }
 
     wayInputCache := (RegEnable(Mux( tbeWay === nWays.U , cacheWayReg(nParal), tbeWay ), 0.U, !stallInput))
     addrInputCache := (RegEnable(addr, 0.U, !stallInput))
+    dataInputCache := (RegEnable(data, 0.U, !stallInput))
 
     for (i <- 0 until nParal){
         tbeAction(i) := Mux(isTBEAction(i), actionReg(i).io.deq.bits.action.signals, tbe.idle)
@@ -218,7 +223,6 @@ with HasAccelShellParams{
 
     }
     /*************************************************************************************/
-
 
 
     // TBE
@@ -275,6 +279,7 @@ with HasAccelShellParams{
         cache.io.cpu(i).req.bits.command := cacheAction(i)
         cache.io.cpu(i).req.bits.addr := actionReg(i).io.deq.bits.addr
         cache.io.cpu(i).req.valid := actionResValid(i) // todo  WRONG for stall
+        cache.io.cpu(i).req.bits.data := actionReg(i).io.deq.bits.data
     }
     cache.io.cpu(nParal).req.bits.way := DontCare
     cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U)

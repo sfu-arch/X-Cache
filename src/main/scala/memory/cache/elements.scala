@@ -280,6 +280,7 @@ class CacheBundle (implicit p:Parameters) extends AXIAccelBundle
 
     val addr = UInt(addrLen.W)
     val way  = UInt(wayLen.W)
+    val data = UInt(dataLen.W)
 }
 
 class PCBundle (implicit p:Parameters) extends CacheBundle
@@ -303,6 +304,7 @@ object PCBundle {
         pcContent.pc := 0.U
         pcContent.valid := false.B
         pcContent.way := pcContent.nWays.U
+        pcContent.data := 0.U
         pcContent
 
     }
@@ -333,10 +335,10 @@ with HasCacheAccelParams{
 
     for (i <-  0 until nParal){
 
-        io.read(i).out.bits.way  := pcContent(i).way
-        io.read(i).out.bits.addr := pcContent(i).addr
-        io.read(i).out.bits.pc   := pcContent(i).pc
-        io.read(i).out.bits.valid := pcContent(i).valid
+//        io.read(i).out.bits.way  := pcContent(i).way
+//        io.read(i).out.bits.addr := pcContent(i).addr
+//        io.read(i).out.bits.pc   := pcContent(i).pc
+        io.read(i).out.bits <> pcContent(i)
         io.read(i).out.valid     := pcContent(i).valid
     }
     for (i <- 0 until nParal){
@@ -347,10 +349,10 @@ with HasCacheAccelParams{
     }
 
     when( write){
-        pcContent(writeIdx).valid := true.B
-        pcContent(writeIdx).pc := io.write.bits.pc
-        pcContent(writeIdx).addr := io.write.bits.addr
-        pcContent(writeIdx).way := io.write.bits.way
+//        pcContent(writeIdx).valid := true.B
+//        pcContent(writeIdx).pc := io.write.bits.pc
+//        pcContent(writeIdx).addr := io.write.bits.addr
+        pcContent(writeIdx)<> io.write.bits
     }
 
     io.write.ready := findNewLine.io.value.valid
