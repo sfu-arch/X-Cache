@@ -65,8 +65,9 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   val Axi_param = memParams
 
-  val metaMemory = Module(new MemBank(new MetaData())(xlen, setLen, nWays, nSets, wayLen))
   val dataMemory = Module(new MemBank(UInt(xlen.W))(xlen, addrLen, nWords, nSets * nWays, wordLen))
+  val metaMemory = Module(new MemBank(new MetaData())(xlen, setLen, nWays, nSets, wayLen))
+
   val cacheLogic = for (i <- 0 until nParal + 1) yield {
     val CacheLogic = Module(new Gem5CacheLogic())
     CacheLogic
@@ -82,15 +83,22 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   //  cacheLogic.io.metaMem.outputValue <> dataMemory.io.inputValue
 
   //  cacheLogic.io.dataMem <> dataMemory.io
-  for (i <- 0 until nParal + 1) {
+  cacheLogic(nParal).io.dataMem.read <> dataMemory.io.read
+  cacheLogic(nParal).io.metaMem.read <> metaMemory.io.read
 
-    cacheLogic(i).io.metaMem.inputValue <> metaMemory.io.outputValue
-    metaMemory.io.inputValue <> cacheLogic(i).io.metaMem.outputValue
-    cacheLogic(i).io.metaMem.bank <> metaMemory.io.bank
-    cacheLogic(i).io.metaMem.address <> metaMemory.io.address
-    cacheLogic(i).io.metaMem.isRead <> metaMemory.io.isRead
-    dataMemory.io.valid := cacheLogic(i).io.dataMem.valid
-    metaMemory.io.valid := cacheLogic(i).io.metaMem.valid
+  for (i <- 0 until nParal) {
+    cacheLogic(i).io.dataMem.read <> DontCare
+    cacheLogic(i).io.metaMem.read <> DontCare
+    dataMemory.io.write <> cacheLogic(i).io.dataMem.write
+    metaMemory.io.write <> cacheLogic(i).io.metaMem.write
+  }
+    //    metaMemory.io.inputValue <> cacheLogic(i).io.metaMem.outputValue
+//    cacheLogic(i).io.metaMem.bank <> metaMemory.io.bank
+//    cacheLogic(i).io.metaMem.address <> metaMemory.io.address
+//    cacheLogic(i).io.metaMem.isRead <> metaMemory.io.isRead
+//    dataMemory.io.valid := cacheLogic(i).io.dataMem.valid
+//    metaMemory.io.valid := cacheLogic(i).io.metaMem.valid
+  for (i <- 0 until nParal + 1) {
 
     cacheLogic(i).io.validBits <> validBits.io.port(i)
     cacheLogic(i).io.validTagBits <> validTagBits.io.port(i)

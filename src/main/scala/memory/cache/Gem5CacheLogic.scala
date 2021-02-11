@@ -7,7 +7,6 @@ import memGen.config._
 import memGen.util._
 import memGen.interfaces._
 import memGen.interfaces.axi._
-import memGen.memory.cache.Gem5Cache._
 import chisel3.util.experimental.loadMemoryFromFile
 
 import memGen.junctions._
@@ -21,7 +20,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val eventLen = 1
   val nCom = 8
   val dataLen = 128
-  val nParal = 2
+  val nParal = 1
   val pcLen = 16
 
   val stateLen = log2Ceil(nStates)
@@ -113,15 +112,15 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
     val cpu = new CacheCPUIO
     val mem = new AXIMaster(memParams)
-    val dataMem = new CacheBankedMemIO(UInt(xlen.W), nWords)
-    val metaMem = new CacheBankedMemIO(new MetaData(), nWays)
+
+    val metaMem =  Flipped (new MemBankIO(new MetaData())(dataLen = xlen, addrLen = setLen, banks = nWays, bankDepth = nSets, bankLen = wayLen))
+    val dataMem =  Flipped (new MemBankIO(UInt(xlen.W)) (dataLen = xlen, addrLen= addrLen, banks =nWords, bankDepth= nSets * nWays, bankLen = wordLen))
 
     val validBits = new RegIO(Bool(), nRead = 1)
     val validTagBits = new RegIO(Bool(), nWays)
 //    val dirtyBits = new RegIO(Bool(), nWays)
 
   })
-
   val decoder = Module(new Decoder)
 
   io.cpu <> DontCare
@@ -329,62 +328,42 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  }
 
 
-  def prepForRead[T <: Data](D: CacheBankedMemIO[T]): Unit = {
-    D.isRead := true.B
+  def prepForRead[T <: Data](D: MemBankIO[T]): Unit = {
+    D.read.in.valid := true.B
 
     D match {
       case io.dataMem => {
-        //        loadLineData := true.B
-        D.address := set * nSets.U + way
-        D.bank := 0.U
+        D.read.in.bits.address := set * nSets.U + way
+        D.read.in.bits.bank := 0.U
       }
       case io.metaMem => {
-        //        loadWaysMeta := true.B
-        D.bank := 0.U
-        D.address := set
+        D.read.in.bits.bank := 0.U
+        D.read.in.bits.address := set
       }
     }
   }
 
-  def prepForWrite[T <: Data](D: CacheBankedMemIO[T]): Unit = {
-    D.isRead := false.B
-    D.valid := true.B
+  def prepForWrite[T <: Data](D: MemBankIO[T]): Unit = {
+    D.write.valid := true.B
 
     D match {
       case io.dataMem => {
-        //        loadLineData := true.B
-        D.address := set * nSets.U + way
-        D.bank := offset
+        D.write.bits.address := set * nSets.U + way
+        D.write.bits.bank := offset
       }
       case io.metaMem => {
-        //        loadWaysMeta := true.B
-        D.bank := way
-        D.address := set
+        D.write.bits.bank := way
+        D.write.bits.address := set
       }
     }
   }
-//
-//  def findAddrInSet(set: UInt, tag: UInt): UInt = {
-//    MD.tag := tag
-//    val wayWire = Wire(UInt((nWays + 1).W))
-//    wayWire := nWays.U
-//    for (i <- 0 until nWays) yield {
-//      when(io.validTagBits.read.out === true.B && io.metaMem.inputValue(i).tag.asUInt() === MD.tag) {
-//        wayWire := i.asUInt()
-//      }
-//    }
-//    wayWire.asUInt()
-//  }
-
-  def ReadInternal(set: UInt, way: UInt): Unit = {
-    findInSetSig := true.B
-
-    prepForRead(io.dataMem)
-  }
-
 
   val MD = Wire(new MetaData())
   MD.tag := tag
+  io.metaMem.write.valid := false.B
+  io.dataMem.write.valid := false.B
+  io.metaMem.read.in.valid := false.B
+  io.metaMem.read.in.valid := false.B
 
   wayInvalid := (wayInput === nWays.U)
 
@@ -399,7 +378,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val tagFinder = Module(new Find(new MetaData(), new MetaData(),nWays, addrLen))
   tagFinder.io.key := MD
-  tagFinder.io.data := io.metaMem.inputValue
+  tagFinder.io.data := io.metaMem.read.outputValue
   tagFinder.io.valid := io.validTagBits.read.out
 
   when(addrToWaySig | (findInSetSig & loadWaysMeta)){
@@ -438,11 +417,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   when(writeSig){
-    io.dataMem.outputValue := cpu_data
+    io.dataMem.write.bits.inputValue := cpu_data
   }.otherwise{
-    io.dataMem.outputValue := DontCare
+    io.dataMem.write.bits.inputValue := DontCare
   }
-
 
   io.validBits.write.valid := writeSig
   io.validBits.write.bits.addr := (set * nWays.U + way)
@@ -453,16 +431,16 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  }
 
   when (readSig){
-    dataBuffer := io.dataMem.inputValue
+    dataBuffer := io.dataMem.read.outputValue
   }.otherwise{
     dataBuffer := dataBuffer
   }
   when(prepMDWrite){
-      io.metaMem.outputValue := MD
+      io.metaMem.write.bits.inputValue := MD
   }.elsewhen(writeSig){
-    io.dataMem.outputValue := cpu_data
+    io.dataMem.write.bits.inputValue := cpu_data
   } .otherwise{
-      io.metaMem.outputValue := DontCare
+      io.metaMem.write.bits.inputValue := DontCare
   }
 
   when((findInSetSig & loadWaysMeta)) { // probing way
@@ -481,7 +459,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  }
 
   when(loadWaysMeta){
-    waysInASet := io.metaMem.inputValue
+    waysInASet := io.metaMem.read.outputValue
   }.otherwise{
     waysInASet := waysInASet
   }

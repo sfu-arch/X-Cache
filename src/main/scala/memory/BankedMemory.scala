@@ -12,37 +12,47 @@ import memGen.interfaces.axi._
 
 class MemBankIO[T <: Data] (D: T)(val dataLen:Int, val addrLen : Int, val banks: Int, val bankDepth:Int, val bankLen:Int)(implicit val p: Parameters) extends Bundle{
 
-  val bank = Input(UInt(bankLen.W))
-  val address = Input(UInt(addrLen.W))
-  val isRead = Input(Bool())
-  val inputValue = Input( D.cloneType)
-  val outputValue = Output(Vec(banks, D.cloneType))
-  val valid = Input (Bool())
+  val read = new Bundle{
+    val in = Flipped(Valid(new Bundle {
+      val bank = (UInt(bankLen.W))
+      val address = (UInt(addrLen.W))
+    }))
+    val outputValue =  Output(Vec(banks, D.cloneType))
+  }
+
+  val write = Flipped(Valid(new Bundle() {
+    val bank = (UInt(bankLen.W))
+    val address = (UInt(addrLen.W))
+    val inputValue = (D.cloneType)
+  }))
+
+  override def cloneType: this.type = new MemBankIO(D)(dataLen,addrLen,banks,bankDepth,bankLen).asInstanceOf[this.type ]
 }
 
 
 class MemBank[T <: Data] (D:T) (val dataLen:Int, val addrLen : Int, val banks: Int, val bankDepth:Int, val bankLen:Int)(implicit val p: Parameters)
     extends Module {
-  //with HasAccelShellParams{
 
   val mt = D.cloneType
   val io = IO (new MemBankIO(mt)(dataLen, addrLen, banks, bankDepth, bankLen))
 
   val mems = Seq.fill(banks) { Mem(bankDepth, mt) }
-//  printf(p" MetaData(0)(0) ${mems(0).read(0.U)} , #Bank: ${banks}\n")
 
-  io.outputValue := DontCare
-  when(io.isRead) {
+  when(io.read.in.fire()) {
     (0 until banks).foldLeft() {
       case (_, bankIndex) => {
-          io.outputValue(bankIndex.U) := mems(bankIndex)(io.address)
+          io.read.outputValue(bankIndex.U) := mems(bankIndex)(io.read.in.bits.address)
         }
     }
-  }.elsewhen(!io.isRead & io.valid ) {
+  }.otherwise{
+    io.read.outputValue := DontCare
+
+  }
+  when(io.write.fire()) {
     (0 until banks).foldLeft(when(false.B) {}) {
       case (whenContext, bankIndex) =>
-        whenContext.elsewhen(io.bank === bankIndex.U) {
-          mems(bankIndex)(io.address) := io.inputValue
+        whenContext.elsewhen(io.write.bits.bank === bankIndex.U) {
+          mems(bankIndex)(io.write.bits.address) := io.write.bits.inputValue
         }
     }
   }
