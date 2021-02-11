@@ -360,31 +360,34 @@ with HasCacheAccelParams{
     io.isFull := !io.write.ready
 }
 
+class bipassLDIO (implicit val p:Parameters) extends  Bundle
+with HasCacheAccelParams{
 
-class bipassLD (implicit val p: Parameters) extends Module
-with HasCacheAccelParams {
-
-    val io = IO( new Bundle{
         val in = Flipped(Valid( new Bundle{
             val addr = (UInt(addrLen.W))
             val way = UInt((wayLen + 1).W)
         }))
-        val mem = new CacheBankedMemIO(UInt(xlen.W), nWords)
+        val dataMem = Flipped (new MemBankIO(UInt(xlen.W)) (dataLen = xlen, addrLen= addrLen, banks =nWords, bankDepth= nSets * nWays, bankLen = wordLen).read)
+
         val out = Valid(UInt((xlen*nWords).W))
 
-    })
+
+}
+class bipassLD (implicit val p: Parameters) extends Module
+with HasCacheAccelParams {
+
+    val io = IO(new bipassLDIO())
     val set = addrToSet(io.in.bits.addr)
-    val dataRead = Reg(Vec(nWords, UInt(xlen.W)))
+    val dataRead = RegInit(VecInit(Seq.fill(nWords)(0.U(xlen.W))))
 
-    io.mem.valid := io.in.fire()
-    io.mem.bank := 0.U
-    io.mem.address := set * nWays.U + io.in.bits.way
-    io.mem.isRead := true.B
+    io.dataMem.in.valid := io.in.fire()
+    io.dataMem.in.bits.bank := 0.U
+    io.dataMem.in.bits.address := set * nWays.U + io.in.bits.way
 
-    dataRead := io.mem.inputValue
+    dataRead := io.dataMem.outputValue
 
     io.out.valid := RegNext(io.in.fire())
-    io.out.bits  := dataRead
+    io.out.bits  := Cat(dataRead).asUInt()
 
 
 }

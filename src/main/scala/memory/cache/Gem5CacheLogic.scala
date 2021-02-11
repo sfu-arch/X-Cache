@@ -189,7 +189,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val loadDataBuffer = Wire(Bool())
 
   val waysInASet = Reg(Vec(nWays, new MetaData()))
-  val cacheLine = Reg(Vec(nWords, UInt(xlen.W)))
+//  val cacheLine = Reg(Vec(nWords, UInt(xlen.W)))
 
   val addrReadValid = Wire(Bool())
   val dataReadReady = Wire(Bool())
@@ -239,10 +239,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     offset := addrToOffset(io.cpu.req.bits.addr)
     wayInput := io.cpu.req.bits.way
   }
-
-  when(loadLineData) {
-    cacheLine := io.dataMem.read.outputValue
-  }
+//
+//  when(loadLineData) {
+//    cacheLine := io.dataMem.read.outputValue
+//  }
 
 //  when(dataValidCheckSig) {
 //    dataValid := validBits(set * nSets.U + way)
@@ -363,7 +363,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.metaMem.write.valid := false.B
   io.dataMem.write.valid := false.B
   io.metaMem.read.in.valid := false.B
-  io.metaMem.read.in.valid := false.B
+  io.dataMem.read.in.valid := false.B
 
   wayInvalid := (wayInput === nWays.U)
 

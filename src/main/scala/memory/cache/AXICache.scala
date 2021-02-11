@@ -60,6 +60,13 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   val io = IO(new Bundle {
     val cpu =  Vec(nParal + 1, new CacheCPUIO) // last line for probing
+    val bipassLD = (new Bundle() {
+      val in = Flipped(Valid( new Bundle{
+        val addr = (UInt(addrLen.W))
+        val way = UInt((wayLen + 1).W)
+      }))
+      val out = Valid(UInt((xlen*nWords).W))
+    })
     val mem = new AXIMaster(memParams)
   })
 
@@ -75,6 +82,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   val validBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nRead = 1))
   val validTagBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
+  val bipassLD = Module(new bipassLD())
 //  val dirtyBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
 
   //  val arb = Module (new Arbiter())
@@ -83,14 +91,18 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   //  cacheLogic.io.metaMem.outputValue <> dataMemory.io.inputValue
 
   //  cacheLogic.io.dataMem <> dataMemory.io
-  cacheLogic(nParal).io.dataMem.read <> dataMemory.io.read
+
+  bipassLD.io.in  <> io.bipassLD.in
+  bipassLD.io.out <> io.bipassLD.out
+
+  bipassLD.io.dataMem                <> dataMemory.io.read
   cacheLogic(nParal).io.metaMem.read <> metaMemory.io.read
 
   for (i <- 0 until nParal) {
     cacheLogic(i).io.dataMem.read <> DontCare
     cacheLogic(i).io.metaMem.read <> DontCare
-    dataMemory.io.write <> cacheLogic(i).io.dataMem.write
-    metaMemory.io.write <> cacheLogic(i).io.metaMem.write
+    dataMemory.io.write           <> cacheLogic(i).io.dataMem.write
+    metaMemory.io.write           <> cacheLogic(i).io.metaMem.write
   }
     //    metaMemory.io.inputValue <> cacheLogic(i).io.metaMem.outputValue
 //    cacheLogic(i).io.metaMem.bank <> metaMemory.io.bank

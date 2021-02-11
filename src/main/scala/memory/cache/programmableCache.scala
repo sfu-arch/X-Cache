@@ -58,6 +58,8 @@ with HasAccelShellParams{
     val pcWire = Wire(Vec(nParal, new PCBundle()))
     val updatedPC = Wire(Vec(nParal, UInt(pcLen.W)))
     val updatedPCValid = Wire(Vec(nParal, Bool()))
+    val dataValid = Wire(Bool())
+
 
     val tbeAction   = Wire(Vec(nParal, UInt(nSigs.W)))
     val cacheAction = Wire(Vec(nParal, UInt(nSigs.W)))
@@ -296,8 +298,12 @@ with HasAccelShellParams{
     cache.io.cpu(nParal).req.valid := probeStart
 
     hitLD :=  (cacheWayWire(nParal) =/= nWays.U) & probeStart & !isLocked
-//    bipassLD.valid := hitLD
-//    bipassLD.addr  := addr
-//    data := bipassLD.data
+
+    cache.io.bipassLD.in.valid := hitLD
+    cache.io.bipassLD.in.bits.addr  := addr
+    cache.io.bipassLD.in.bits.way := cacheWayWire(nParal)
+
+    data := cache.io.bipassLD.out.bits
+    dataValid := cache.io.bipassLD.out.valid
 
 }
