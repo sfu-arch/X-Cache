@@ -6,7 +6,7 @@ object RoutineROM {
 
 
     // @todo should be fixed
-    Routine ("LOAD_I") , Actions(Seq( "AllocateTBE","Allocate", "DataRQ", "SetState")),DstState("ID"),
+    Routine ("LOAD_I") , Actions(Seq( "AllocateTBE","Allocate", "DataRQ", "DeallocateTBE", "SetState")),DstState("ID"),
     Routine ("LOAD_M"), Actions(Seq ("DataRQ", "SetState")),  DstState("M"),
     Routine("STORE_I"), Actions(Seq("AllocateTBE","Allocate", "DataRQ", "SetState")),DstState("IM"),
     Routine ("LOAD_ID") , Actions(Seq( "ReadInt", "DeallocateTBE", "SetState")), DstState("D"),

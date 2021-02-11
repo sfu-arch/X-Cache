@@ -132,6 +132,8 @@ with HasAccelShellParams{
 
     when(tbe.io.outputTBE.fire()){
         tbeWay := tbe.io.outputTBE.bits.way
+    }.otherwise{
+        tbeWay := nWays.U
     }
 
     /*************************************************************************/

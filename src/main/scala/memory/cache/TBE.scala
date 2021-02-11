@@ -113,7 +113,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
     }
   }
 
-  io.outputTBE.valid := (isRead)
+  io.outputTBE.valid := (isRead & idxReadValid)
   io.outputTBE.bits := Mux(idxReadValid , TBEMemory(idxRead), TBE.default)
 
   for (i <- 0 until nParal)  {
