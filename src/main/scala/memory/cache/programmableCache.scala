@@ -23,24 +23,22 @@ with HasAccelShellParams{
 
     val io = IO(new programmableCacheIO())
 
-    val cache = Module(new Gem5Cache())
-    val tbe = Module(new TBETable())
-    val lockMem = Module(new lockVector())
+    val cache    = Module(new Gem5Cache())
+    val tbe      = Module(new TBETable())
+    val lockMem  = Module(new lockVector())
     val stateMem = Module (new stateMem())
+    val pc       = Module(new PC())
 
-    val pc = Module(new PC())
-
-    stateMem.io <> DontCare
+    stateMem.io  <> DontCare
     cache.io.cpu <> DontCare
     cache.io.mem <> DontCare
 
     /********************************************************************************/
     // Building ROMs
     val (routineAddr,setStateDst) = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
-    val (rombits, dstStateBits) = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
+    val (rombits, dstStateBits)   = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
 
     val uCodedNextPtr = VecInit(rombits)
-    printf(p"${uCodedNextPtr}\n")
     val dstStateRom = VecInit(dstStateBits)
 
     val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions, setStateDst)
@@ -70,6 +68,7 @@ with HasAccelShellParams{
     val isCacheAction = Wire(Vec(nParal, Bool()))
 
     val isLocked      = Wire(Bool())
+    val hitLD         = Wire(Bool())
 
     val updateTBEWay   = Wire(Vec(nParal, Bool()))
     val updateTBEState = Wire(Vec(nParal, Bool()))
@@ -88,7 +87,7 @@ with HasAccelShellParams{
     val defaultState = Wire(new State())
 
     val firstLineNextRoutine = Wire(Vec(nParal, Bool()))
-    val endOfRoutine   = Wire(Vec(nParal, Bool()))
+    val endOfRoutine         = Wire(Vec(nParal, Bool()))
 
     val routine = WireInit( Cat (event, state))
     val cacheWayReg  = RegInit(VecInit(Seq.fill(nParal + 1)(nWays.U((wayLen+1).W))))
@@ -292,6 +291,11 @@ with HasAccelShellParams{
     cache.io.cpu(nParal).req.bits.way := DontCare
     cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U)
     cache.io.cpu(nParal).req.bits.addr := Mux(probeStart, addrWire, 0.U)
-    cache.io.cpu(nParal).req.valid := io.instruction.fire()
+    cache.io.cpu(nParal).req.valid := probeStart
+
+    hitLD :=  (cacheWayWire(nParal) =/= nWays.U) & probeStart & !isLocked
+//    bipassLD.valid := hitLD
+//    bipassLD.addr  := addr
+//    data := bipassLD.data
 
 }

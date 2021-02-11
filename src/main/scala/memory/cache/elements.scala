@@ -359,3 +359,32 @@ with HasCacheAccelParams{
     io.write.ready := findNewLine.io.value.valid
     io.isFull := !io.write.ready
 }
+
+
+class bipassLD (implicit val p: Parameters) extends Module
+with HasCacheAccelParams {
+
+    val io = IO( new Bundle{
+        val in = Flipped(Valid( new Bundle{
+            val addr = (UInt(addrLen.W))
+            val way = UInt((wayLen + 1).W)
+        }))
+        val mem = new CacheBankedMemIO(UInt(xlen.W), nWords)
+        val out = Valid(UInt((xlen*nWords).W))
+
+    })
+    val set = addrToSet(io.in.bits.addr)
+    val dataRead = Reg(Vec(nWords, UInt(xlen.W)))
+
+    io.mem.valid := io.in.fire()
+    io.mem.bank := 0.U
+    io.mem.address := set * nWays.U + io.in.bits.way
+    io.mem.isRead := true.B
+
+    dataRead := io.mem.inputValue
+
+    io.out.valid := RegNext(io.in.fire())
+    io.out.bits  := dataRead
+
+
+}
