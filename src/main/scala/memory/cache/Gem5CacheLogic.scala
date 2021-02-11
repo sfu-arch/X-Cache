@@ -161,7 +161,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val tag = RegInit(0.U(taglen.W))
   val set = RegInit(0.U(setLen.W))
-  val wayInput = RegInit(0.U((nWays + 1).W))
+  val wayInput = RegInit(nWays.U((nWays + 1).W))
   val offset = RegInit(0.U(byteOffsetBits.W))
   val way = WireInit(0.U((nWays + 1).W))
 
@@ -241,7 +241,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   when(loadLineData) {
-    cacheLine := io.dataMem.inputValue
+    cacheLine := io.dataMem.read.outputValue
   }
 
 //  when(dataValidCheckSig) {
@@ -397,11 +397,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }.otherwise{
     way := nWays.U
   }
-
-  printf(p"signals  ${signals}\n")
-//  printf(p"loadMeta  ${loadWaysMeta}\n")
-//  printf(p"findInSet ${findInSetSig}\n")
-//  printf(p"prepMDWrite ${prepMDWrite} \n")
   printf(p"way ${way}\n")
 
   when(prepMDRead){
