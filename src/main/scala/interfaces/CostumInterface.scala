@@ -1,11 +1,13 @@
-//package costumInterfaces
+package memGen.memory.cache
 //
 //
-//import chisel3.{Data, _}
-//import chisel3.util.{Decoupled, _}
-//import config._
-//import dnn.memory.TensorParams
-//import utility.Constants._
+import chisel3._
+import chisel3.util._
+import chipsalliance.rocketchip.config._
+import memGen.config._
+import memGen.util._
+import memGen.interfaces._
+import memGen.interfaces.axi._
 //
 //import scala.collection.immutable.ListMap
 //
@@ -15,6 +17,113 @@
 //           2.             =
 //==============================================================================*/
 //
+
+
+class CacheBankedMemIO[T <: Data](D: T, nInput :Int) (implicit val p: Parameters) extends Bundle
+  with HasCacheAccelParams
+  with HasAccelShellParams {
+
+    val bank = Output(UInt(wayLen.W))
+    val address = Output(UInt(setLen.W))
+    val isRead = Output(Bool())
+    val outputValue = Output(D.cloneType)
+    val inputValue = Input(Vec(nInput, D.cloneType))
+    val valid = Output(Bool())
+}
+
+class RegIO [T <: Data](D:T, nRead: Int)(implicit val p: Parameters) extends Bundle
+  with HasCacheAccelParams
+  with HasAccelShellParams {
+
+    val write = Valid(new Bundle {
+        val addr = (UInt(xlen.W))
+        val value = (D.cloneType)
+    })
+
+    val read = new Bundle{
+        val in = (Valid(new Bundle {
+            val addr = (UInt(xlen.W))
+        }))
+        val out = Vec(nRead, Input(D.cloneType))
+    }
+
+}
+
+
+class portNoAddr[T1 <: Data, T2 <: Data](D: T1, O: T2 )(implicit val p :Parameters) extends Bundle
+  with HasCacheAccelParams {
+
+    val in = Flipped(Valid(new Bundle {
+        val data = D.cloneType
+    }))
+
+    val out = Valid(O.cloneType)
+
+    override def cloneType: this.type =  new portNoAddr(D,O).asInstanceOf[this.type]
+}
+
+class port[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit val p :Parameters) extends Bundle
+  with HasCacheAccelParams {
+
+    val in = Flipped(Valid(new Bundle {
+        val addr = UInt(addrLen.W)
+        val data = D.cloneType
+    }))
+
+    val out = Valid(O.cloneType)
+
+    override def cloneType: this.type =  new port(D,O)(addrLen).asInstanceOf[this.type]
+}
+
+class portWithCMD[T1 <: Data, T2 <: Data, T3 <: Data](D: T1, C: T2, O: T3 )(addrLen: Int)(override implicit val p :Parameters)
+  extends port(D,O)(addrLen)(p)
+    with HasCacheAccelParams {
+
+    override val in = Flipped(Valid(new Bundle {
+        val addr = UInt(addrLen.W)
+        val data = D.cloneType
+        val cmd  = C.cloneType
+    }))
+
+    override def cloneType: this.type =  new portWithCMD(D,C,O)(addrLen).asInstanceOf[this.type]
+}
+
+class CacheBundle (implicit p:Parameters) extends AXIAccelBundle
+  with HasCacheAccelParams {
+
+    val addr = UInt(addrLen.W)
+    val way  = UInt(wayLen.W)
+    val data = UInt(dataLen.W)
+    val replaceWay =  UInt(wayLen.W)
+
+}
+
+class PCBundle (implicit p:Parameters) extends CacheBundle
+  with HasCacheAccelParams {
+
+    val pc = UInt(pcLen.W)
+    val valid = Bool()
+}
+
+class ActionBundle (implicit p:Parameters) extends CacheBundle
+  with HasCacheAccelParams {
+    val action = new Action()
+}
+
+object PCBundle {
+
+    def default (implicit p:Parameters): PCBundle =  {
+        val pcContent = Wire(new PCBundle())
+        pcContent.addr := 0.U
+        pcContent.pc := 0.U
+        pcContent.valid := false.B
+        pcContent.way := pcContent.nWays.U
+        pcContent.data := 0.U
+        pcContent.replaceWay := 0.U
+        pcContent
+
+    }
+}
 //trait ValidT extends CoreBundle {
 //  val valid = Bool()
 //}

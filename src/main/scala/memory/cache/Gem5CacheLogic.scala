@@ -74,35 +74,6 @@ class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBu
   val resp = (Valid(new MemResp))
 }
 
-class CacheBankedMemIO[T <: Data](D: T, nInput :Int) (implicit val p: Parameters) extends Bundle
-  with HasCacheAccelParams
-  with HasAccelShellParams {
-
-  val bank = Output(UInt(wayLen.W))
-  val address = Output(UInt(setLen.W))
-  val isRead = Output(Bool())
-  val outputValue = Output(D.cloneType)
-  val inputValue = Input(Vec(nInput, D.cloneType))
-  val valid = Output(Bool())
-}
-
-class RegIO [T <: Data](D:T, nRead: Int)(implicit val p: Parameters) extends Bundle
-  with HasCacheAccelParams
-  with HasAccelShellParams {
-
-  val write = Valid(new Bundle {
-    val addr = (UInt(xlen.W))
-    val value = (D.cloneType)
-  })
-
-  val read = new Bundle{
-    val in = (Valid(new Bundle {
-      val addr = (UInt(xlen.W))
-    }))
-    val out = Vec(nRead, Input(D.cloneType))
-  }
-
-}
 // @todo bipass for reading
 class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   with HasCacheAccelParams

@@ -9,10 +9,8 @@ import memGen.interfaces.Action
 import memGen.config.{AXIAccelBundle, HasAccelShellParams}
 
 class DecoderIO (nSigs: Int)(implicit val p:Parameters) extends Bundle {
-
     val inAction = Input(UInt(nSigs.W))
     val outSignals = Output(Vec(nSigs, Bool()))
-
 }
 
 class Decoder (implicit val p:Parameters) extends Module
@@ -61,48 +59,10 @@ class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends
     }
     io.value.bits := idx
 
-
-}
-class portNoAddr[T1 <: Data, T2 <: Data](D: T1, O: T2 )(implicit val p :Parameters) extends Bundle
-  with HasCacheAccelParams {
-
-    val in = Flipped(Valid(new Bundle {
-        val data = D.cloneType
-    }))
-
-    val out = Valid(O.cloneType)
-
-    override def cloneType: this.type =  new portNoAddr(D,O).asInstanceOf[this.type]
-}
-
-class port[T1 <: Data, T2 <: Data](D: T1, O: T2 )(addrLen: Int)(implicit val p :Parameters) extends Bundle
-  with HasCacheAccelParams {
-
-    val in = Flipped(Valid(new Bundle {
-        val addr = UInt(addrLen.W)
-        val data = D.cloneType
-    }))
-
-    val out = Valid(O.cloneType)
-
-    override def cloneType: this.type =  new port(D,O)(addrLen).asInstanceOf[this.type]
-}
-
-class portWithCMD[T1 <: Data, T2 <: Data, T3 <: Data](D: T1, C: T2, O: T3 )(addrLen: Int)(override implicit val p :Parameters)
-  extends port(D,O)(addrLen)(p)
-with HasCacheAccelParams {
-
-    override val in = Flipped(Valid(new Bundle {
-        val addr = UInt(addrLen.W)
-        val data = D.cloneType
-        val cmd  = C.cloneType
-    }))
-
-    override def cloneType: this.type =  new portWithCMD(D,C,O)(addrLen).asInstanceOf[this.type]
 }
 
 class paralRegIO [T <: Data](gen: T, size: Int, pDegree: Int, nRead:Int)(implicit val p: Parameters) extends Bundle
-with HasCacheAccelParams  {
+  with HasCacheAccelParams  {
 
 
     val port = Vec(pDegree, new Bundle {
@@ -275,41 +235,6 @@ class stateMem (implicit val p: Parameters) extends Module
 
   }
 
-class CacheBundle (implicit p:Parameters) extends AXIAccelBundle
-  with HasCacheAccelParams {
-
-    val addr = UInt(addrLen.W)
-    val way  = UInt(wayLen.W)
-    val data = UInt(dataLen.W)
-}
-
-class PCBundle (implicit p:Parameters) extends CacheBundle
-  with HasCacheAccelParams {
-
-    val pc = UInt(pcLen.W)
-    val valid = Bool()
-}
-
-class ActionBundle (implicit p:Parameters) extends CacheBundle
-  with HasCacheAccelParams {
-
-    val action = new Action()
-}
-
-object PCBundle {
-
-    def default (implicit p:Parameters): PCBundle =  {
-        val pcContent = Wire(new PCBundle())
-        pcContent.addr := 0.U
-        pcContent.pc := 0.U
-        pcContent.valid := false.B
-        pcContent.way := pcContent.nWays.U
-        pcContent.data := 0.U
-        pcContent
-
-    }
-}
-
 class PCIO ( implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams{
 
@@ -388,6 +313,5 @@ with HasCacheAccelParams {
 
     io.out.valid := RegNext(io.in.fire())
     io.out.bits  := Cat(dataRead).asUInt()
-
 
 }

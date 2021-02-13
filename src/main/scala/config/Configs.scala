@@ -235,6 +235,7 @@ trait HasAccelParams {
   val tbeDepth = accelParams.tbeSize
 
 
+
 }
 
 trait HasAccelShellParams {
