@@ -97,6 +97,7 @@ with HasAccelShellParams{
     val updateWay = Wire(Vec(nParal, Bool()))
 
     val wayInputCache = Wire(UInt((wayLen+1).W))
+    val replaceWayInputCache = Wire(UInt((wayLen+1).W))
     val tbeWay        = RegInit(nWays.U((wayLen+1).W))
 
     val routineQueue = Module( new Queue( UInt((eventLen + stateLen).W), pipe = true, entries = 1 ))
@@ -169,6 +170,8 @@ with HasAccelShellParams{
     routineQueue.io.enq.bits := uCodedNextPtr(routine)
     routineQueue.io.enq.valid := !pc.io.isFull & readTBE
 
+    val replacer  =  ReplacementPolicy.fromString(replacementPolicy, nWays)
+    when(probeStart) {replacer.miss}
 
     for (i <- 0 until nParal) {
 
@@ -184,6 +187,8 @@ with HasAccelShellParams{
         actionReg(i).io.enq.bits.addr := pcWire(i).addr
         actionReg(i).io.enq.bits.way  := Mux(updateWay(i), cacheWayWire(i), pcWire(i).way)
         actionReg(i).io.enq.bits.data := pcWire(i).data
+        actionReg(i).io.enq.bits.replaceWay := pcWire(i).replaceWay
+
     }
 
     for (i <- 0 until nParal) {
@@ -194,6 +199,7 @@ with HasAccelShellParams{
 
     pc.io.write.bits.addr := addrInputCache
     pc.io.write.bits.way := wayInputCache
+    pc.io.write.bits.replaceWay := replaceWayInputCache
     pc.io.write.bits.pc := routineQueue.io.deq.bits
     pc.io.write.bits.data := dataInputCache
     pc.io.write.bits.valid := true.B
@@ -207,6 +213,7 @@ with HasAccelShellParams{
         pc.io.read(i).in.bits.data.way := Mux(updateWay(i), cacheWayWire(i), pc.io.read(i).out.bits.way  )
         pc.io.read(i).in.bits.data.data := DontCare //
         pc.io.read(i).in.bits.data.pc := updatedPC(i)
+        pc.io.read(i).in.bits.data.replaceWay := DontCare
         pc.io.read(i).in.bits.data.valid := updatedPCValid(i) // @todo should be changed for stall
 
         pc.io.read(i).in.valid := DontCare // @todo Should be changed probably
@@ -219,6 +226,7 @@ with HasAccelShellParams{
     }
 
     wayInputCache := (RegEnable(Mux( tbeWay === nWays.U , cacheWayReg(nParal), tbeWay ), nWays.U, !stallInput))
+    replaceWayInputCache := RegEnable(replacer.get_replace_way(0.U), 0.U, !stallInput)
     addrInputCache := (RegEnable(addr, 0.U, !stallInput))
     dataInputCache := (RegEnable(data, 0.U, !stallInput))
 
@@ -291,11 +299,15 @@ with HasAccelShellParams{
 //        cache.io.cpu(i).req.valid := actionResValid(i) // todo  WRONG for stall
         cache.io.cpu(i).req.valid := actionReg(i).io.deq.fire()
         cache.io.cpu(i).req.bits.data := actionReg(i).io.deq.bits.data
+        cache.io.cpu(i).req.bits.replaceWay := actionReg(i).io.deq.bits.replaceWay
+
+
     }
     cache.io.cpu(nParal).req.bits.way := DontCare
     cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U)
     cache.io.cpu(nParal).req.bits.addr := Mux(probeStart, addrWire, 0.U)
     cache.io.cpu(nParal).req.valid := probeStart
+    cache.io.cpu(nParal).req.bits.replaceWay := DontCare // should be changed
 
     hitLD :=  (cacheWayWire(nParal) =/= nWays.U) & probeStart & !isLocked
 

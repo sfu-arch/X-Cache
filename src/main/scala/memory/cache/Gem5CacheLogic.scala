@@ -43,6 +43,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   val taglen = addrLen - (setLen + blen + byteOffsetBits )
 
+  val replacementPolicy = "random"
+
   override val nSigs = accelParams.nSigs
   val actionLen = accelParams.actionLen
 
@@ -59,12 +61,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   def sigToAction(sigs : Bits) :UInt = sigs.asUInt()(nSigs - 1, 0)
   def sigToActType(sigs : Bits) :UInt = sigs.asUInt()(nSigs+ 1, nSigs)
-
   def sigToState (sigs :Bits) : UInt = sigs.asUInt()(States.stateLen - 1, 0)
-
-
 }
-
 
 class CacheCPUIO(implicit p: Parameters) extends DandelionGenericParameterizedBundle(p) {
   val abort = Input(Bool())
@@ -132,9 +130,11 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val tag = RegInit(0.U(taglen.W))
   val set = RegInit(0.U(setLen.W))
-  val wayInput = RegInit(nWays.U((nWays + 1).W))
+  val wayInput = RegInit(nWays.U((wayLen + 1).W))
+  val replaceWayInput = RegInit(nWays.U((wayLen + 1).W))
+
   val offset = RegInit(0.U(byteOffsetBits.W))
-  val way = WireInit(0.U((nWays + 1).W))
+  val way = WireInit(0.U((wayLen + 1).W))
 
   val dataBuffer = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
 
@@ -209,6 +209,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     set := addrToSet(io.cpu.req.bits.addr)
     offset := addrToOffset(io.cpu.req.bits.addr)
     wayInput := io.cpu.req.bits.way
+    replaceWayInput := io.cpu.req.bits.replaceWay
   }
 //
 //  when(loadLineData) {
@@ -364,7 +365,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   when (!wayInvalid) {
     way := wayInput
   }.elsewhen(addrToWaySig){
-    way := emptyLine.io.value.bits
+    way := Mux(emptyLine.io.value.valid, emptyLine.io.value.bits, replaceWayInput)
   }.otherwise{
     way := nWays.U
   }
