@@ -67,10 +67,8 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
       }))
       val out = Valid(UInt((xlen*nWords).W))
     })
-    val mem = new AXIMaster(memParams)
   })
 
-  val Axi_param = memParams
 
   val dataMemory = Module(new MemBank(UInt(xlen.W))(xlen, addrLen, nWords, nSets * nWays, wordLen))
   val metaMemory = Module(new MemBank(new MetaData())(xlen, setLen, nWays, nSets, wayLen))
@@ -116,14 +114,11 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     cacheLogic(i).io.validTagBits <> validTagBits.io.port(i)
 //    cacheLogic(i).io.dirtyBits <> dirtyBits.io.port(i)
 
-
     dataMemory.io <> DontCare
     cacheLogic(i).io.dataMem <> DontCare
 
-    this.io.mem <> DontCare
     this.io.cpu(i) <> DontCare
     this.io.cpu(i) <> cacheLogic(i).io.cpu
-    this.io.mem <> cacheLogic(i).io.mem
   }
 }
 

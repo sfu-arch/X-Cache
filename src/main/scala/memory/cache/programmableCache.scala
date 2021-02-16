@@ -31,7 +31,6 @@ with HasAccelShellParams{
 
     stateMem.io  <> DontCare
     cache.io.cpu <> DontCare
-    cache.io.mem <> DontCare
 
     /********************************************************************************/
     // Building ROMs

@@ -5,6 +5,8 @@ import chisel3._
 import chisel3.util._
 import memGen.config._
 import memGen.interfaces._
+import memGen.interfaces.axi._
+
 
 
 class DUTIO (implicit val p:Parameters) extends Bundle
@@ -12,6 +14,7 @@ with HasCacheAccelParams
 with HasAccelShellParams {
 
     val instruction = Flipped(Decoupled(new InstBundle))
+    val mem = new AXIMaster(memParams)
 }
 
 class DUT (implicit val p:Parameters) extends Module

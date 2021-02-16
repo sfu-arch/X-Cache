@@ -80,7 +80,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val io = IO(new Bundle {
 
     val cpu = new CacheCPUIO
-    val mem = new AXIMaster(memParams)
 
     val metaMem =  Flipped (new MemBankIO(new MetaData())(dataLen = xlen, addrLen = setLen, banks = nWays, bankDepth = nSets, bankLen = wayLen))
     val dataMem =  Flipped (new MemBankIO(UInt(xlen.W)) (dataLen = xlen, addrLen= addrLen, banks =nWords, bankDepth= nSets * nWays, bankLen = wordLen))
@@ -93,7 +92,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val decoder = Module(new Decoder)
 
   io.cpu <> DontCare
-  io.mem <> DontCare
   io.metaMem <> DontCare
   io.dataMem <> DontCare
 
@@ -149,8 +147,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   // Counters
   require(nData > 0)
-  val (read_count, read_wrap_out) = Counter(io.mem.r.fire(), nData)
-  val (write_count, write_wrap_out) = Counter(io.mem.w.fire(), nData)
 
   val signals = Wire(Vec(nSigs, Bool()))
 
@@ -173,9 +169,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val is_idle = st === s_IDLE
   val is_read = st === s_READ_CACHE
   val is_write = st === s_WRITE_CACHE
-  val is_alloc = st === s_REFILL && read_wrap_out
+  val is_alloc = st === s_REFILL //&& read_wrap_out
   val is_alloc_reg = RegNext(is_alloc)
-
 
   val readMetaData = Wire(Bool())
   val targetWayReg = RegInit(nWays.U((wayLen + 1).W))
@@ -224,9 +219,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.validBits.read.in.bits.addr := set * nSets.U + way
   io.validBits.read.in.valid := dataValidCheckSig
 
-  when(loadDataBuffer) {
-    dataBuffer(read_count) := io.mem.r.bits.data
-  }
   /********************************************************************************/
 
 
@@ -236,14 +228,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   decoder.io.inAction := cpu_command
   signals := decoder.io.outSignals
   /********************************************************************************/
-
-  io.mem.ar.bits.addr := addr_reg
-  io.mem.ar.valid := addrReadValid
-  io.mem.r.ready := dataReadReady
-
-  io.mem.aw.bits.addr := addr_reg
-  io.mem.aw.valid := addrWriteValid
-  io.mem.w.valid := dataWriteValid
 
   io.cpu.req.ready := true.B
 
