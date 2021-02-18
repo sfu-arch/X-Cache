@@ -16,7 +16,7 @@ lazy val commonSettings = Seq(
   traceLevel   := 15,
   scalacOptions ++= Seq("-deprecation","-unchecked","-Xsource:2.11"),
   libraryDependencies ++= Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value),
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("snapshots"),
     Resolver.sonatypeRepo("releases"),
@@ -29,26 +29,35 @@ lazy val commonSettings = Seq(
 def dependOnChisel(prj: Project) = {
   prj.settings(
     libraryDependencies ++= Seq("edu.berkeley.cs" %% "chisel3" % "3.3-SNAPSHOT")
-    )
+  )
 }
 
 lazy val `api-config-chipsalliance` = (project in file("api-config-chipsalliance/build-rules/sbt"))
   .settings(commonSettings)
   .settings(publishArtifact := false)
+
 lazy val dandelion = dependOnChisel(project).settings(commonSettings)
   .settings(publishArtifact := false)
+
+lazy val `memGen` = (project in file("memGen"))
+  .settings(commonSettings)
+  .settings(publishArtifact := false)
+
 lazy val `dandelionsim` = dependOnChisel(project in file("."))
   .settings(commonSettings, chipSettings)
   .dependsOn(`api-config-chipsalliance` % "compile-internal;test-internal")
   .dependsOn(dandelion % "compile-internal;test-internal")
+  .dependsOn(`memGen` % "compile-internal;test-internal")
   .settings(
-      aggregate := false,
-      // Include macro classes, resources, and sources in main jar.
-      mappings in (Compile, packageBin) ++= (mappings in (`api-config-chipsalliance`, Compile, packageBin)).value,
-      mappings in (Compile, packageSrc) ++= (mappings in (`api-config-chipsalliance`, Compile, packageSrc)).value,
-      mappings in (Compile, packageBin) ++= (mappings in (dandelion, Compile, packageBin)).value,
-      mappings in (Compile, packageSrc) ++= (mappings in (dandelion, Compile, packageSrc)).value,
-      exportJars := true
+    aggregate := false,
+    // Include macro classes, resources, and sources in main jar.
+    mappings in (Compile, packageBin) ++= (mappings in (`api-config-chipsalliance`, Compile, packageBin)).value,
+    mappings in (Compile, packageSrc) ++= (mappings in (`api-config-chipsalliance`, Compile, packageSrc)).value,
+    mappings in (Compile, packageSrc) ++= (mappings in (`memGen`, Compile, packageSrc)).value,
+    mappings in (Compile, packageSrc) ++= (mappings in (`memGen`, Compile, packageSrc)).value,
+    mappings in (Compile, packageBin) ++= (mappings in (dandelion, Compile, packageBin)).value,
+    mappings in (Compile, packageSrc) ++= (mappings in (dandelion, Compile, packageSrc)).value,
+    exportJars := true
   )
 
 lazy val addons = settingKey[Seq[String]]("list of addons used for this build")
