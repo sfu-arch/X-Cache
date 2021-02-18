@@ -23,6 +23,7 @@ with HasAccelShellParams {
 
     val io = IO(new DUTIO())
 
+    io.mem <> DontCare
     val dut = Module(new programmableCache())
     RegNext(io.instruction.bits) <> dut.io.instruction.bits
     dut.io.instruction.valid := RegNext(io.instruction.valid)
