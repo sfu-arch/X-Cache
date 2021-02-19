@@ -29,7 +29,7 @@ class test_cache01Main_routineLevel_IO(implicit val p: Parameters) extends Modul
 class test_cache01Main_routineLevel(implicit p: Parameters) extends test_cache01Main_routineLevel_IO {
 
     //val cache = Module(new ReferenceCache()) // Simple Nasti Cache
-    val cacheNode = Module(new DUT())
+    val cacheNode = Module(new memGenTopLevel())
     val memModel = Module(new NastiMemSlave) // Model of DRAM to connect to Cache
     val memCopy = Mem(1014, UInt(32.W)) // Local memory just to keep track of writes to cache for validation
 
@@ -68,7 +68,7 @@ class test_cache01Main_routineLevel(implicit p: Parameters) extends test_cache01
 }
 
 
-class test_cache01Test01_routineLevel(c: DUT)(implicit p: Parameters)  extends PeekPokeTester(c) {
+class test_cache01Test01_routineLevel(c: memGenTopLevel)(implicit p: Parameters)  extends PeekPokeTester(c) {
 
 
     /*                  sigLoadWays | sigFindInSet | sigAddrToWay | sigPrepMDRead | sigPrepMDWrite | sigAllocate | sigDeallocate | sigWrite |  sigRead  | dataReq
@@ -436,7 +436,7 @@ class test_cache01Tester1_routineLevel extends FlatSpec with Matchers {
                 "-td", "test_run_dir/test_cache01",
                 "-tts", "0001",
                 "--generate-vcd-output", "on"),
-            () => new DUT()) {
+            () => new memGenTopLevel()) {
             c => new test_cache01Test01_routineLevel(c)
         } should be(true)
     }

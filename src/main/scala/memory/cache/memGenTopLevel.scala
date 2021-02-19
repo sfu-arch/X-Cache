@@ -9,7 +9,7 @@ import memGen.interfaces.axi._
 
 
 
-class DUTIO (implicit val p:Parameters) extends Bundle
+class memGenTopLevelIO(implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
 with HasAccelShellParams {
 
@@ -17,14 +17,20 @@ with HasAccelShellParams {
     val mem = new AXIMaster(memParams)
 }
 
-class DUT (implicit val p:Parameters) extends Module
+class memGenTopLevel(implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams {
 
-    val io = IO(new DUTIO())
+    val io = IO(new memGenTopLevelIO())
 
     val dut = Module(new programmableCache())
-    RegNext(io.instruction.bits) <> dut.io.instruction.bits
-    dut.io.instruction.valid := RegNext(io.instruction.valid)
+//    RegNext(io.instruction.bits) <> dut.io.instruction.bits
+//    dut.io.instruction.valid := RegNext(io.instruction.valid)
+//    io.instruction.ready := dut.io.instruction.ready
+
+    (io.instruction.bits) <> dut.io.instruction.bits
+    dut.io.instruction.valid := (io.instruction.valid)
     io.instruction.ready := dut.io.instruction.ready
+
+
 }
