@@ -22,7 +22,6 @@ MessageParams{
     val addr = UInt(addrLen.W)
     val inst = UInt(instLen.W)
     val data = UInt (dataLen.W)
-
 }
 
 class MessageBundle (implicit p :Parameters) extends IntraNodeBundle()(p){

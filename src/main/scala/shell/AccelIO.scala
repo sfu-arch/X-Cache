@@ -19,20 +19,20 @@ class memGenDCRIO[T <: Data](val PtrsIn: Seq[Int],
   override def cloneType = new memGenDCRIO(PtrsIn, ValsIn, RetsOut)(p).asInstanceOf[this.type]
 }
 
-class memGenShellIO[T <: Data]( PtrsIn: Seq[Int],
-                              ValsIn: Seq[Int],
-                              RetsOut: Seq[Int])
-                            (implicit p: Parameters)
+class memGenModuleIO[T <: Data](PtrsIn: Seq[Int],
+                                ValsIn: Seq[Int],
+                                RetsOut: Seq[Int])
+                               (implicit p: Parameters)
   extends memGenDCRIO( PtrsIn: Seq[Int], ValsIn: Seq[Int], RetsOut: Seq[Int]){
 
   val mem = new AXIMaster(memParams)
 
-  override def cloneType = new memGenShellIO(PtrsIn, ValsIn, RetsOut)(p).asInstanceOf[this.type]
+  override def cloneType = new memGenModuleIO(PtrsIn, ValsIn, RetsOut)(p).asInstanceOf[this.type]
 }
 
-abstract class memGenShell(val PtrsIn: Seq[Int],
-                                       val ValsIn: Seq[Int],
-                                       val RetsOut: Seq[Int])
-                                      (implicit val p: Parameters) extends MultiIOModule with HasAccelParams {
-  lazy val io = IO(new memGenShellIO(PtrsIn, ValsIn, RetsOut))
+abstract class memGenModule(val PtrsIn: Seq[Int],
+                            val ValsIn: Seq[Int],
+                            val RetsOut: Seq[Int])
+                           (implicit val p: Parameters) extends MultiIOModule with HasAccelParams {
+  lazy val io = IO(new memGenModuleIO(PtrsIn, ValsIn, RetsOut))
 }
