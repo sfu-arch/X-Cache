@@ -117,7 +117,7 @@ object DandelionSimDCRAccelMain extends App {
     */
   implicit val p =
     new WithSimShellConfig(dLen = data_len, pLog = print_log, cLog = cache_log)(
-      nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls)
+      nPtrs = num_ptrs, nVals = num_vals, nRets = num_returns, nEvents = num_events, nCtrls = num_ctrls) ++ new memGen.config.WithAccelConfig() ++ new WithTestConfig()
   chisel3.Driver.execute(args.take(4),
     () => new DandelionSimDCRAccel(() => DandelionTestDCRAccel(accel_name))(
       numPtrs = num_ptrs, numVals = num_vals, numRets = num_returns, numEvents = num_events, numCtrls = num_ctrls))
