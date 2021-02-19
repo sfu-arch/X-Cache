@@ -1,11 +1,11 @@
 {
     "Accel" : {
-        "nameAccel" : "test01",
+        "nameAccel" : "memGenAccel",
         "numPtrs"  : 0,
         "numDbgs"  : 0,
-        "numVals"  : 2,
-        "numRets"  : 1,
-        "numEnts"  : 1,
+        "numVals"  : 3,
+        "numRets"  : 0,
+        "numEnts"  : 0,
         "numCtrls" : 1,
         "dataLen"  : 64,
         "boreIDs"  : [],
