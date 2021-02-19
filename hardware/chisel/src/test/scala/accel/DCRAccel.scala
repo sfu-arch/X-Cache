@@ -1,3 +1,4 @@
+
 package test
 
 import chisel3._
@@ -10,6 +11,8 @@ import dandelion.generator._
 import dandelion.accel.{DandelionAccelDCRModule, DandelionAccelDebugModule, DandelionAccelModule}
 import sim.shell._
 import dandelion.shell._
+import memGen.shell._
+import memGen.config.{WithAccelConfig, WithTestConfig}
 
 class DandelionSimDebugAccel(accelModule: () => DandelionAccelDCRModule, debugModule: () => DandelionAccelDebugModule)
                             (numPtrs: Int, numDbgs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
@@ -41,13 +44,13 @@ class DandelionSimDebugAccel(accelModule: () => DandelionAccelDCRModule, debugMo
 }
 
 
-class DandelionSimDCRAccel(accelModule: () => DandelionAccelDCRModule)
+class DandelionSimDCRAccel(accelModule: () => memGenModule)
                           (numPtrs: Int, numVals: Int, numRets: Int, numEvents: Int, numCtrls: Int)
                           (implicit val p: Parameters) extends MultiIOModule with HasAccelShellParams {
   val sim_clock = IO(Input(Clock()))
   val sim_wait = IO(Output(Bool()))
   val sim_shell = Module(new AXISimShell)
-  val shell = Module(new DandelionDCRCacheShell(accelModule)(numPtrs = numPtrs, numVals = numVals, numRets = numRets, numEvents = numEvents, numCtrls = numCtrls))
+  val shell = Module(new memGenDCRCacheShell(accelModule)(numPtrs = numPtrs, numVals = numVals, numRets = numRets, numEvents = numEvents, numCtrls = numCtrls))
 
   sim_shell.sim_clock := sim_clock
   sim_wait := sim_shell.sim_wait
@@ -87,7 +90,7 @@ object DandelionSimDCRAccelMain extends App {
   /**
     * Make sure accel name is added to TestDCRAccel class
     */
-  var accel_name = "test09"
+  var accel_name = "memGenAccel"
 
   /**
     * Accel config values
