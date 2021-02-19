@@ -7,8 +7,8 @@ import memGen.config._
 import memGen.util._
 import memGen.interfaces._
 import memGen.interfaces.axi._
+import memGen.memory.message._
 import chisel3.util.experimental.loadMemoryFromFile
-
 import memGen.junctions._
 import memGen.shell._
 
@@ -18,10 +18,9 @@ class memoryWrapperIO (implicit val p:Parameters) extends Bundle
 with HasAccelShellParams
 with HasCacheAccelParams {
 
-    val address = Flipped(Decoupled(UInt(addrLen.W)))
-    val data = Flipped(Decoupled(Vec(nData,UInt(xlen.W))))
+    val in = Flipped(Decoupled( new IntraNodeBundle()))
     val mem = new AXIMaster(memParams)
-    val event = Output(UInt(eventLen.W)) // eventLen should be replaced with proper Parameter which defines length of event
+    val out = Valid(new IntraNodeBundle())
 
     mem.tieoff()
 
@@ -33,44 +32,52 @@ with HasAccelShellParams{
     val io = IO(new memoryWrapperIO)
 
     val addrReg = RegInit(0.U(addrLen.W))
-    val dataReg = Reg(VecInit(Seq.fill(nData)(0.U(xlen.W))))
-
+    val dataRegRead = Reg(VecInit(Seq.fill(nData)(0.U(xlen.W))))
+    val dataRegWrite = Reg(VecInit(Seq.fill(nData)(0.U(xlen.W))))
 
 
     val start = Wire(Bool())
+    start := io.in.fire()
+    start := io.in.fire()
 
-    start := io.address.fire()
-
-    when (io.address.fire()){
-        addrReg := io.address.bits.asUInt()
+    when (start){
+        addrReg := io.in.bits.addr
     }
 
+    val (rd :: wr_back :: Nil ) = Enum(2)
     val (stIdle :: stWriteAddr :: stWriteData :: stReadAddr :: stReadData :: stCmdIssue :: Nil) = Enum(6)
     val stReg = RegInit(stIdle)
+    val writeInst = WireInit(start & io.in.bits.inst === wr_back)
 
     // Reading
     val (readCount, readWrapped) = Counter (io.mem.r.fire(), nData)
+    val (writeCount, writeWrapped) = Counter(io.mem.w.fire(), nData)
 
     io.mem.ar.bits.addr := Mux(stReg === stReadAddr, addrReg , 0.U(addrLen))
 
-    when(io.mem.r.fire()) {
-        dataReg(readCount) := io.mem.r.bits.data
+    when(writeInst){
+        dataRegWrite := io.in.bits.data
     }
 
-
-    // Writing
-    val (writeCount, writeWrapped) = Counter(io.mem.w.fire(), nData)
-    when(io.data.fire()){
-        dataReg := io.data
+    when(io.mem.r.fire()) {
+        dataRegRead(readCount) := io.mem.r.bits.data
     }
     io.mem.aw.bits.addr := Mux(stReg === stWriteAddr, addrReg, 0.U(addrLen.W))
-    io.mem.w.bits.data := Mux(stReg === stWriteData, dataReg(writeCount), 0.U(xlen.W))
+    io.mem.w.bits.data := Mux(stReg === stWriteData, dataRegWrite(writeCount), 0.U(xlen.W))
+
+    val issueCmd = Wire(Bool())
+    issueCmd := false.B
+
+
+    io.out.bits.data := Cat(dataRegRead)
+    io.out.bits.addr := addrReg
+    io.out.bits.inst := Events.EventArray("Data").U
 
 
     switch(stReg){
         is(stIdle){
             when (start){
-                when(io.data.fire()){
+                when(writeInst){
                     stReg := stWriteAddr
                 }.otherwise{
                     stReg := stReadData
@@ -86,7 +93,7 @@ with HasAccelShellParams{
         is(stReadData) {
             io.mem.r.ready := true.B
             when(readWrapped) {
-                stReg := stIdle
+                stReg := stCmdIssue
             }
         }
         is(stWriteAddr){
@@ -101,7 +108,10 @@ with HasAccelShellParams{
                 stReg := stIdle
             }
         }
-        // data must be put on network and issue Data routine event
+        is(stCmdIssue){
+            io.out.valid := true.B
+            stReg := stIdle
+        }
     }
 
 }
