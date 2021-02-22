@@ -59,7 +59,7 @@ with HasAccelShellParams{
     io.mem.ar.bits.addr := Mux(stReg === stReadAddr, addrReg , 0.U(addrLen))
 
     when(writeInst){
-        dataRegWrite := io.in.bits.data
+        dataRegWrite := io.in.bits.data.asTypeOf(Vec(nData, UInt(xlen.W)))
     }
 
     when(io.mem.r.fire()) {
