@@ -17,7 +17,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nSets = accelParams.nsets
   val nStates = accelParams.nstates
   val addrLen = accelParams.addrlen
-  val eventLen = 1
+  val eventLen = 2
   val nCom = 8
   val dataLen = 128
   val nParal = 1
@@ -187,6 +187,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val addrToWaySig = WireInit(signals(sigAddrToWay))
   val writeSig = WireInit(signals(sigWrite))
   val readSig = WireInit(signals(sigRead))
+  val dataReq = WireInit(signals(sigDataReq))
+
   loadWaysMeta := signals(sigLoadWays)
   findInSetSig := signals(sigFindInSet)
   /********************************************************************************/

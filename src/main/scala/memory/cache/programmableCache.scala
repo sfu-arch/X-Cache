@@ -31,6 +31,7 @@ with HasAccelShellParams{
 
     stateMem.io  <> DontCare
     cache.io.cpu <> DontCare
+    io.out.valid := false.B
 
     /********************************************************************************/
     // Building ROMs

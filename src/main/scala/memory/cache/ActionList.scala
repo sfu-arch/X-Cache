@@ -14,7 +14,7 @@ object ActionList {
         ("DAloc",       "b000001000000".U),
         ("WrInt",       "b000010000000".U),
         ("RdInt",       "b000100000000".U),
-        ("DataRQ",      "b001000000000".U),
+        ("DataRQ",      "b001000000000".U), // sending data to mem ctrl should be added
         ("Nop",         "b000000000000".U),
         ("AllocateTBE", "b010000000001".U),
         ("DeallocateTBE", "b010000000010".U),

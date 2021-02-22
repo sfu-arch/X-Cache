@@ -6,6 +6,7 @@ import chisel3.util._
 import memGen.config._
 import memGen.interfaces._
 import memGen.interfaces.axi._
+import memGen.memory.message.IntraNodeBundle
 
 
 

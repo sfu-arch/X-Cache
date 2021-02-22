@@ -22,7 +22,7 @@ with HasCacheAccelParams {
     val mem = new AXIMaster(memParams)
     val out = Valid(new IntraNodeBundle())
 
-    mem.tieoff()
+//    mem.tieoff()
 
 }
 
@@ -30,14 +30,14 @@ class memoryWrapper ()(implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams{
     val io = IO(new memoryWrapperIO)
+    io.mem <> DontCare
 
     val addrReg = RegInit(0.U(addrLen.W))
-    val dataRegRead = Reg(VecInit(Seq.fill(nData)(0.U(xlen.W))))
-    val dataRegWrite = Reg(VecInit(Seq.fill(nData)(0.U(xlen.W))))
+    val dataRegRead = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
+    val dataRegWrite = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
 
 
     val start = Wire(Bool())
-    start := io.in.fire()
     start := io.in.fire()
 
     when (start){
@@ -47,6 +47,9 @@ with HasAccelShellParams{
     val (rd :: wr_back :: Nil ) = Enum(2)
     val (stIdle :: stWriteAddr :: stWriteData :: stReadAddr :: stReadData :: stCmdIssue :: Nil) = Enum(6)
     val stReg = RegInit(stIdle)
+
+    io.in.ready := stReg === stIdle
+
     val writeInst = WireInit(start & io.in.bits.inst === wr_back)
 
     // Reading
@@ -71,7 +74,8 @@ with HasAccelShellParams{
 
     io.out.bits.data := Cat(dataRegRead)
     io.out.bits.addr := addrReg
-    io.out.bits.inst := Events.EventArray("Data").U
+    io.out.bits.inst := Events.EventArray("DATA").U
+    io.out.valid := false.B
 
 
     switch(stReg){
