@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 import chipsalliance.rocketchip.config._
 import memGen.config._
+import memGen.memory.message._
 import memGen.util._
 import memGen.interfaces._
 import memGen.interfaces.Action
@@ -12,9 +13,13 @@ import memGen.interfaces.axi._
 
 class programmableCacheIO (implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
-with HasAccelShellParams {
-
+with HasAccelShellParams
+with MessageParams{
     val instruction = Flipped(Decoupled(new InstBundle))
+    val out = Valid(new Bundle{
+        val dst = UInt(dstLen.W)
+        val req = new IntraNodeBundle()
+    })
 }
 
 class programmableCache (implicit val p:Parameters) extends Module
@@ -64,10 +69,12 @@ with HasAccelShellParams{
     val tbeAction   = Wire(Vec(nParal, UInt(nSigs.W)))
     val cacheAction = Wire(Vec(nParal, UInt(nSigs.W)))
     val stateAction = Wire(Vec(nParal, Bool()))
+//    val memAction = Wire(Vec(nParal, Bool()))
 
     val isTBEAction   = Wire(Vec(nParal, Bool()))
     val isStateAction = Wire(Vec(nParal, Bool()))
     val isCacheAction = Wire(Vec(nParal, Bool()))
+    val isMemAction =   Wire(Vec(nParal, Bool()))
 
     val isLocked      = Wire(Bool())
     val hitLD         = Wire(Bool())
@@ -157,6 +164,7 @@ with HasAccelShellParams{
         isTBEAction(i) :=   (actionReg(i).io.deq.bits.action.actionType === 1.U)
         isCacheAction(i) := (actionReg(i).io.deq.bits.action.actionType === 0.U)
         isStateAction(i) := (actionReg(i).io.deq.bits.action.actionType === 2.U | actionReg(i).io.deq.bits.action.actionType === 3.U)
+        isMemAction(i) := isCacheAction(i) & (actionReg(i).io.deq.bits.action.signals === sigToAction(ActionList.actions("DataRQ")))
     }
 
     /*************************************************************************/
@@ -314,8 +322,15 @@ with HasAccelShellParams{
     cache.io.bipassLD.in.valid := hitLD
     cache.io.bipassLD.in.bits.addr  := addr
     cache.io.bipassLD.in.bits.way := cacheWayWire(nParal)
-
     data := cache.io.bipassLD.out.bits
     dataValid := cache.io.bipassLD.out.valid
 
+
+    for (i <- 0 until nParal) {
+        io.out.bits.req.inst := 0.U // for reading
+        io.out.bits.req.data := DontCare
+        io.out.bits.req.addr := actionReg(i).io.deq.bits.addr
+        io.out.bits.dst := 0.U // 0 for memCtrl
+        io.out.valid := isMemAction(i)
+    }
 }
