@@ -63,8 +63,6 @@ object RoutinePtr {
       val eventLen = if (events.size == 1) 1 else log2Ceil(events.size)
       val stateLen =  if (states.size == 1 ) 1 else log2Ceil(states.size)
 
-      printf (p"${eventLen}  ${math.pow(2, log2Ceil(states.size * events.size)).toInt} \n")
-
     var routineTriggerBit = new ArrayBuffer[Bits]
       var routineDstStBit = new ArrayBuffer[Bits]
       for ( i <- 0 until math.pow(2, log2Ceil(states.size * events.size)).toInt){
