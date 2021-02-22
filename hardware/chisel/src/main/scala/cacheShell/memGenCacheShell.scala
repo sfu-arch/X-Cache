@@ -25,7 +25,7 @@ class memGenAccel ( PtrsIn: Seq[Int] = List(),
 //  val ArgSplitter = Module(new SplitCallDCR(ptrsArgTypes = List(1, 1, 1, 1), valsArgTypes = List()))
 //  ArgSplitter.io.In <> io.in
 
-  accel.io.instruction.bits.event := io.in.bits.dataVals("field0").asUInt()
+  accel.io.instruction.bits.inst := io.in.bits.dataVals("field0").asUInt()
   accel.io.instruction.bits.addr := io.in.bits.dataVals("field1").asUInt()
   accel.io.instruction.bits.data :=io.in.bits.dataVals("field2").asUInt()
 
