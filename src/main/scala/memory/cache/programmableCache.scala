@@ -6,6 +6,7 @@ import chipsalliance.rocketchip.config._
 import memGen.config._
 import memGen.memory.message._
 import chisel3.util.Arbiter
+import dsptools.counters.CounterWithReset
 import memGen.util._
 import memGen.interfaces._
 import memGen.interfaces.Action
@@ -162,10 +163,32 @@ with HasAccelShellParams{
     /*************************************************************************/
     // control signals
 
-    stallInput := isLocked | pc.io.isFull
-//    stall :=
+    val cpuPriority = 1
 
-    instruction.ready := !stallInput // @todo should be changed for stalled situations
+    /**************
+    tempe
+    **************/
+      val (_, timeout) = CounterWithReset(true.B, 100, probeStart)
+
+
+    arbiter.io.in(cpuPriority) <> io.in.cpu
+    arbiter.io.in(0) <> io.in.memCtrl // priority is for lower producer
+    instruction <> arbiter.io.out
+
+    missLD := (cacheWayWire(nParal) === nWays.U) & probeStart & !isLocked & (arbiter.io.chosen === cpuPriority.U) & (instruction.bits.event === Events.EventArray("LOAD").U)
+
+
+    when(probeStart | timeout){
+        missLDReg := missLD
+    }
+    io.in.memCtrl.ready := true.B
+    io.in.cpu.ready := !missLD & !missLDReg
+    io.out.valid := false.B
+
+    stallInput := isLocked | pc.io.isFull
+
+
+    instruction.ready := !stallInput & !missLDReg  // @todo should be changed for stalled situations
 
     readTBE     := RegEnable(instruction.fire(), false.B, !stallInput)
     checkLock   := RegEnable(instruction.fire(), false.B, true.B)
@@ -331,7 +354,6 @@ with HasAccelShellParams{
     cache.io.cpu(nParal).req.bits.replaceWay := DontCare // should be changed
 
     hitLD :=  (cacheWayWire(nParal) =/= nWays.U) & probeStart & !isLocked
-
     cache.io.bipassLD.in.valid := hitLD
     cache.io.bipassLD.in.bits.addr  := addr
     cache.io.bipassLD.in.bits.way := cacheWayWire(nParal)
