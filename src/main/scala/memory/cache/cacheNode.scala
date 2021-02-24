@@ -8,10 +8,14 @@ import memGen.interfaces._
 import memGen.interfaces.axi._
 import memGen.memory.message._
 
+class CacheInputBundle[T <: Bundle ](val gen: T) (implicit val p:Parameters) extends Bundle with HasCacheAccelParams{
+  val cpu = Flipped(Decoupled(gen.cloneType))
+  val memCtrl = Flipped(Decoupled(gen.cloneType))
+}
 
 class CacheNodeIO (implicit val p:Parameters) extends Bundle with HasCacheAccelParams{
 
-  val in = Flipped(Decoupled(new IntraNodeBundle))
+  val in = new CacheInputBundle(new IntraNodeBundle())
   val out = Valid(new MessageBundle())
 }
 
