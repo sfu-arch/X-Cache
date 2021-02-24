@@ -15,7 +15,7 @@ class programmableCacheIO (implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
 with HasAccelShellParams
 with MessageParams{
-    val instruction = Flipped(Decoupled(new InstBundle))
+    val in = new CacheInputBundle(new InstBundle())
     val out = Valid(new Bundle{
         val dst = UInt(dstLen.W)
         val req = new IntraNodeBundle()
@@ -33,6 +33,13 @@ with HasAccelShellParams{
     val lockMem  = Module(new lockVector())
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
+    val arbiter  = Module (new Arbiter(new InstBundle(), n = 2))
+
+    val instruction = Wire(Decoupled(new InstBundle()))
+
+    arbiter.io.in(1) <> io.in.cpu
+    arbiter.io.in(0) <> io.in.memCtrl // priority is for lower producer
+    instruction <> arbiter.io.out
 
     stateMem.io  <> DontCare
     cache.io.cpu <> DontCare
@@ -117,20 +124,20 @@ with HasAccelShellParams{
     val dstOfSetState = Wire(Vec(nParal, new State()))
     val stateMemOutput = Wire((new State()))
 
-    val probeStart = WireInit(io.instruction.fire())
+    val probeStart = WireInit(instruction.fire())
 
     val tbeActionInRom = Wire(Vec(nParal, Bool()))
 
-    val addrWire   = WireInit(io.instruction.bits.addr)
+    val addrWire   = WireInit(instruction.bits.addr)
 
     val addrInputCache  = Wire(UInt(addrLen.W))
     val dataInputCache = Wire(UInt(dataLen.W))
 
     //latching
-    when( io.instruction.fire() ){
-        addr := io.instruction.bits.addr
-        event := io.instruction.bits.event
-        data := io.instruction.bits.data
+    when(instruction.fire() ){
+        addr := instruction.bits.addr
+        event := instruction.bits.event
+        data := instruction.bits.data
     }
 
     for (i <- 0 until (nParal + 1) ) {
@@ -152,11 +159,11 @@ with HasAccelShellParams{
     stallInput := isLocked | pc.io.isFull
 //    stall :=
 
-    io.instruction.ready := !stallInput // @todo should be changed for stalled situations
+    instruction.ready := !stallInput // @todo should be changed for stalled situations
 
-    readTBE     := RegEnable(io.instruction.fire(), false.B, !stallInput)
-    checkLock   := RegEnable(io.instruction.fire(), false.B, true.B)
-    getState    := RegEnable(io.instruction.fire(), false.B, !stallInput)
+    readTBE     := RegEnable(instruction.fire(), false.B, !stallInput)
+    checkLock   := RegEnable(instruction.fire(), false.B, true.B)
+    getState    := RegEnable(instruction.fire(), false.B, !stallInput)
 
     routineAddrResValid := RegEnable(readTBE , false.B, !stall)
 
