@@ -8,14 +8,17 @@ import memGen.interfaces._
 import memGen.interfaces.axi._
 import memGen.memory.message._
 
-class CacheInputBundle[T <: Bundle ](val gen: T) (implicit val p:Parameters) extends Bundle with HasCacheAccelParams{
-  val cpu = Flipped(Decoupled(gen.cloneType))
-  val memCtrl = Flipped(Decoupled(gen.cloneType))
-}
+//class CacheInputBundle[T <: Bundle ](val gen: T) (implicit val p:Parameters) extends Bundle with HasCacheAccelParams{
+//  val cpu = gen.cloneType
+//  val memCtrl = Flipped(Decoupled(gen.cloneType))
+//}
 
 class CacheNodeIO (implicit val p:Parameters) extends Bundle with HasCacheAccelParams{
 
-  val in = new CacheInputBundle(new IntraNodeBundle())
+  val in = new Bundle{
+    val cpu = Flipped(Decoupled((new IntraNodeBundle())))
+    val memCtrl = Flipped(Decoupled((new IntraNodeBundle())))
+  }
   val out = Valid(new MessageBundle())
 }
 
@@ -29,14 +32,14 @@ class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Modu
 
   val cache = Module(new programmableCache())
 
-  val cpuQueue = Module(new Queue(io.in.gen.cloneType, entries = 1, pipe = true))
-  val memCtrlQueue= Module(new Queue(io.in.gen.cloneType, entries = 1, pipe = true))
+  val cpuQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
+  val memCtrlQueue= Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
 
   cpuQueue.io.enq <> io.in.cpu
   memCtrlQueue.io.enq <> io.in.memCtrl
 
   cache.io.in.cpu.bits.event := cpuQueue.io.deq.bits.inst
-  cache.io.in.cpu.bits.addr := cpuQueue.io.deq.bits.addr
+  cache.io.in.cpu.bits.addr  := cpuQueue.io.deq.bits.addr
   cache.io.in.cpu.bits.data  := cpuQueue.io.deq.bits.data
   cache.io.in.cpu.valid := cpuQueue.io.deq.valid
   cpuQueue.io.deq.ready := cache.io.in.cpu.ready

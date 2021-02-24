@@ -16,7 +16,10 @@ class programmableCacheIO (implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
 with HasAccelShellParams
 with MessageParams{
-    val in = new CacheInputBundle(new InstBundle())
+    val in = new Bundle{
+        val cpu     = Flipped(Decoupled((new InstBundle())))
+        val memCtrl = Flipped(Decoupled((new InstBundle())))
+    }
     val out = Valid(new Bundle{
         val dst = UInt(dstLen.W)
         val req = new IntraNodeBundle()
@@ -36,15 +39,10 @@ with HasAccelShellParams{
     val pc       = Module(new PC())
     val arbiter  = Module (new Arbiter(new InstBundle(), n = 2))
 
-    val instruction = Wire(Decoupled(new InstBundle()))
 
-    arbiter.io.in(1) <> io.in.cpu
-    arbiter.io.in(0) <> io.in.memCtrl // priority is for lower producer
-    instruction <> arbiter.io.out
 
     stateMem.io  <> DontCare
     cache.io.cpu <> DontCare
-    io.out.valid := false.B
 
     /********************************************************************************/
     // Building ROMs
@@ -60,6 +58,13 @@ with HasAccelShellParams{
         actionRom
     }
     /********************************************************************************/
+
+
+
+    val instruction = Wire(Decoupled(new InstBundle()))
+
+    val missLD = Wire(Bool())
+    val missLDReg = Reg(Bool())
 
     val state    = Wire(UInt(stateLen.W))
     val inputTBE = Wire(Vec(nParal, new TBE))
