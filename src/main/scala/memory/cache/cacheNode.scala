@@ -29,11 +29,23 @@ class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Modu
 
   val cache = Module(new programmableCache())
 
-  cache.io.instruction.bits.addr := io.in.bits.addr
-  cache.io.instruction.bits.data := io.in.bits.data
-  cache.io.instruction.bits.event:= io.in.bits.inst // shouldn't be mapped directly
-  cache.io.instruction.valid := io.in.valid
-  io.in.ready := cache.io.instruction.ready
+  val cpuQueue = Module(new Queue(io.in.gen.cloneType, entries = 1, pipe = true))
+  val memCtrlQueue= Module(new Queue(io.in.gen.cloneType, entries = 1, pipe = true))
+
+  cpuQueue.io.enq <> io.in.cpu
+  memCtrlQueue.io.enq <> io.in.memCtrl
+
+  cache.io.in.cpu.bits.event := cpuQueue.io.deq.bits.inst
+  cache.io.in.cpu.bits.addr := cpuQueue.io.deq.bits.addr
+  cache.io.in.cpu.bits.data  := cpuQueue.io.deq.bits.data
+  cache.io.in.cpu.valid := cpuQueue.io.deq.valid
+  cpuQueue.io.deq.ready := cache.io.in.cpu.ready
+
+  cache.io.in.memCtrl.bits.event := memCtrlQueue.io.deq.bits.inst
+  cache.io.in.memCtrl.bits.addr  := memCtrlQueue.io.deq.bits.addr
+  cache.io.in.memCtrl.bits.data  := memCtrlQueue.io.deq.bits.data
+  cache.io.in.memCtrl.valid := memCtrlQueue.io.deq.valid
+  memCtrlQueue.io.deq.ready := cache.io.in.memCtrl.ready
 
   io.out.valid := cache.io.out.valid
   io.out.bits.src := ID
