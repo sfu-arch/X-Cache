@@ -82,6 +82,7 @@ with HasAccelShellParams{
     io.out.bits.inst := Events.EventArray("DATA").U
     io.out.valid := false.B
 
+    printf(p"stReg ${stReg} \n")
 
     switch(stReg){
         is(stIdle){

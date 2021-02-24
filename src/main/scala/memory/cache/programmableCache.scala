@@ -5,6 +5,7 @@ import chisel3.util._
 import chipsalliance.rocketchip.config._
 import memGen.config._
 import memGen.memory.message._
+import chisel3.util.Arbiter
 import memGen.util._
 import memGen.interfaces._
 import memGen.interfaces.Action
