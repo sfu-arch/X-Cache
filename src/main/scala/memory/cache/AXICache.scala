@@ -85,9 +85,6 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   //  val arb = Module (new Arbiter())
 
-  //  cacheLogic.io.metaMem.inputValue <> dataMemory.io.outputValue
-  //  cacheLogic.io.metaMem.outputValue <> dataMemory.io.inputValue
-
   //  cacheLogic.io.dataMem <> dataMemory.io
 
   bipassLD.io.in  <> io.bipassLD.in
@@ -95,6 +92,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   bipassLD.io.dataMem                <> dataMemory.io.read
   cacheLogic(nParal).io.metaMem.read <> metaMemory.io.read
+  cacheLogic(nParal).io.dataMem.read <> DontCare // should be connected to bipassLD
 
   for (i <- 0 until nParal) {
     cacheLogic(i).io.dataMem.read <> DontCare
@@ -114,8 +112,8 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     cacheLogic(i).io.validTagBits <> validTagBits.io.port(i)
 //    cacheLogic(i).io.dirtyBits <> dirtyBits.io.port(i)
 
-    dataMemory.io <> DontCare
-    cacheLogic(i).io.dataMem <> DontCare
+//    dataMemory.io <> DontCare
+//    cacheLogic(i).io.dataMem <> DontCare
 
     this.io.cpu(i) <> DontCare
     this.io.cpu(i) <> cacheLogic(i).io.cpu
