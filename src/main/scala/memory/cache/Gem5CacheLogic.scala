@@ -189,6 +189,8 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val readSig = WireInit(signals(sigRead))
   val dataReq = WireInit(signals(sigDataReq))
 
+  printf(p"writeSig ${writeSig} \n")
+
   loadWaysMeta := signals(sigLoadWays)
   findInSetSig := signals(sigFindInSet)
   /********************************************************************************/
@@ -390,9 +392,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
   when(prepMDWrite){
       io.metaMem.write.bits.inputValue := MD
-  }.elsewhen(writeSig){
-    io.dataMem.write.bits.inputValue := cpu_data
-  } .otherwise{
+  }.otherwise{
       io.metaMem.write.bits.inputValue := DontCare
   }
 
