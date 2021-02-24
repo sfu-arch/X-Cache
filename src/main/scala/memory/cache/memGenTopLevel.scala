@@ -26,24 +26,22 @@ with HasAccelShellParams {
 
     io.mem <> DontCare
     val cacheNode = Module(new CacheNode())
-//    val memCtrl = Module(new memoryWrapper())
+    val memCtrl = Module(new memoryWrapper())
 //    RegNext(io.instruction.bits) <> dut.io.instruction.bits
 //    dut.io.instruction.valid := RegNext(io.instruction.valid)
 //    io.instruction.ready := dut.io.instruction.ready
 
-    (io.instruction.bits) <> cacheNode.io.in.bits
-    cacheNode.io.in.valid := (io.instruction.valid)
-    io.instruction.ready := cacheNode.io.in.ready
+    (io.instruction.bits) <> cacheNode.io.in.cpu.bits
+    cacheNode.io.in.cpu.valid:= (io.instruction.valid)
+    io.instruction.ready := cacheNode.io.in.cpu.ready
 
-//    io.mem <> memCtrl.io.mem
-//
-//    memCtrl.io.in.bits.data := cacheNode.io.out.bits.data
-//    memCtrl.io.in.bits.addr := cacheNode.io.out.bits.addr
-//    memCtrl.io.in.bits.inst := cacheNode.io.out.bits.inst
-//    memCtrl.io.in.valid := cacheNode.io.out.valid
+    io.mem <> memCtrl.io.mem
+
+    memCtrl.io.in <> cacheNode.io.out
+    printf(p" valid :${memCtrl.io.in.valid} , addr: ${memCtrl.io.in.bits.addr} \n")
 
 //    memCtrl
-//    memCtrl.io.out <> DontCare // for now
+    memCtrl.io.out <> cacheNode.io.in.memCtrl
 
 //    memCtrl.io.in := cacheNode.
 
