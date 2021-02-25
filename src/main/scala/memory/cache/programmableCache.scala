@@ -177,18 +177,17 @@ with HasAccelShellParams{
 
     missLD := (cacheWayWire(nParal) === nWays.U) & probeStart & !isLocked & (arbiter.io.chosen === cpuPriority.U) & (instruction.bits.event === Events.EventArray("LOAD").U)
 
-
-    when(probeStart | timeout){
+    when(missLD | timeout){
         missLDReg := missLD
     }
+
     io.in.memCtrl.ready := true.B
     io.in.cpu.ready := !missLD & !missLDReg
     io.out.valid := false.B
 
-    stallInput := isLocked | pc.io.isFull
+    stallInput := isLocked | pc.io.isFull | missLDReg
 
-
-    instruction.ready := !stallInput & !missLDReg  // @todo should be changed for stalled situations
+    instruction.ready := !stallInput   // @todo should be changed for stalled situations
 
     readTBE     := RegEnable(instruction.fire(), false.B, !stallInput)
     checkLock   := RegEnable(instruction.fire(), false.B, true.B)
