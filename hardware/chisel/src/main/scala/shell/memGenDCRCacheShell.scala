@@ -63,7 +63,7 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
     val DataReg = Reg(Vec(numVals, new DataBundle))
     val (cycle,stopSim) = Counter(true.B, 100)
 
-  val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i ), init = 0.U(ptrBits.W), enable =  (state === sIdle)) }
+  val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable =  (state === sIdle)) }
 
 
 //  val DataQueue = for (i <- 0 until numInputs) yield {
@@ -72,11 +72,11 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
 //  }
 
   for (i <- 0 until numInputs) {
-    accel.io.in.bits.dataVals(s"field${i}") := DataReg(nextChunk + i.U)
+    accel.io.in.bits.dataVals(s"field${i}") := DataReg(nextChunk * numInputs.U + i.U)
   }
 
   for (i <- 0 until numVals) {
-    DataReg(i%numInputs) := DataBundle(vals(i - numPtrs))
+    DataReg(i) := DataBundle(vals(i - numPtrs))
   }
 
   accel.io.in.bits.enable := ControlBundle.active()
