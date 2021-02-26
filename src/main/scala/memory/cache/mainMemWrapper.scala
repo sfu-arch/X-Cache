@@ -65,8 +65,15 @@ with HasAccelShellParams{
     }
 
     io.mem.aw.bits.addr := Mux(stReg === stWriteAddr, addrReg, 0.U(addrLen.W))
+    io.mem.aw.bits.len := 8.U
+
     io.mem.w.bits.data := Mux(stReg === stWriteData, dataRegWrite(writeCount), 0.U(xlen.W))
+    io.mem.w.bits.last := false.B
+
     io.mem.ar.bits.addr := Mux(stReg === stReadAddr, addrReg , 0.U(addrLen))
+    io.mem.ar.bits.len := 8.U
+    io.mem.b.ready := stReg === stWriteData
+
     io.mem.ar.valid := false.B
     io.mem.aw.valid := false.B
     io.mem.r.ready := false.B
@@ -122,5 +129,8 @@ with HasAccelShellParams{
             stReg := stIdle
         }
     }
+
+    io.mem.setConst()
+
 
 }
