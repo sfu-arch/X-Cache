@@ -185,13 +185,13 @@ with HasAccelShellParams{
     io.in.cpu.ready := !missLD & !missLDReg
     io.out.valid := false.B
 
-    stallInput := isLocked | pc.io.isFull | missLDReg
+    stallInput := isLocked | pc.io.isFull
 
-    instruction.ready := !stallInput   // @todo should be changed for stalled situations
+    instruction.ready := !stallInput & !missLDReg   // @todo should be changed for stalled situations
 
-    readTBE     := RegEnable(instruction.fire(), false.B, !stallInput)
+    readTBE     := RegEnable(instruction.fire(), false.B, instruction.ready)
     checkLock   := RegEnable(instruction.fire(), false.B, true.B)
-    getState    := RegEnable(instruction.fire(), false.B, !stallInput)
+    getState    := RegEnable(instruction.fire(), false.B, instruction.ready)
 
     routineAddrResValid := RegEnable(readTBE , false.B, !stall)
 
