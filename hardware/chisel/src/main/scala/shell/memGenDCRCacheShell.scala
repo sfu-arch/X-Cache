@@ -12,7 +12,7 @@ import memGen.memory._
 import memGen.shell._
 
 class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
-                                             (numPtrs: Int = 0, numVals: Int = 3, numRets: Int = 0, numEvents: Int = 0, numCtrls: Int = 0)
+                                             (numPtrs: Int = 0, numVals: Int = 6, numRets: Int = 0, numEvents: Int = 0, numCtrls: Int = 0)
                                              (implicit val p: Parameters) extends Module with HasAccelShellParams {
   val io = IO(new Bundle {
     val host = new AXILiteClient(hostParams)

@@ -22,7 +22,7 @@ import dandelion.junctions._
 class WithShellConfig(vcrParams: DandelionDCRParams = DandelionDCRParams(),
                       dmeParams: DandelionDMEParams = DandelionDMEParams(),
                       hostParams: AXIParams = AXIParams(
-                        addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
+                        addrBits = 16, dataBits = 64, idBits = 13, lenBits = 4),
                       memParams: AXIParams = AXIParams(
                         addrBits = 32, dataBits = 64, userBits = 5,
                         lenBits = 4, // limit to 16 beats, instead of 256 beats in AXI4
