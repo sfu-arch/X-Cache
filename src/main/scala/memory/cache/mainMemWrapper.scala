@@ -30,7 +30,6 @@ class memoryWrapper ()(implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams{
     val io = IO(new memoryWrapperIO)
-    io.mem <> DontCare
 
     val addrReg = RegInit(0.U(addrLen.W))
     val dataRegRead = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
