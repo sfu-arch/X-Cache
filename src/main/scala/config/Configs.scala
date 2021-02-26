@@ -56,7 +56,7 @@ trait DMEParams {
 
 
 case class DandelionAccelParams(
-                                 dataLen: Int = 32,
+                                 dataLen: Int = 64,
                                  addrLen: Int = 32,
                                  taskLen: Int = 5,
                                  groupLen: Int = 16,
@@ -195,9 +195,9 @@ class WithAccelConfig(inParams: DandelionAccelParams = DandelionAccelParams())
 class WithTestConfig(vcrParams: DandelionDCRParams = DandelionDCRParams(),
                       dmeParams: DandelionDMEParams = DandelionDMEParams(),
                       hostParams: AXIParams = AXIParams(
-                        addrBits = 16, dataBits = 32, idBits = 13, lenBits = 4),
+                        addrBits = 16, dataBits = 64, idBits = 13, lenBits = 4),
                       memParams: AXIParams = AXIParams(
-                        addrBits = 32, dataBits = 32, userBits = 5,
+                        addrBits = 32, dataBits = 64, userBits = 5,
                         lenBits = 4, // limit to 16 beats, instead of 256 beats in AXI4
                         coherent = true),
                       nastiParams: NastiParameters = NastiParameters(dataBits = 32, addrBits = 32, idBits = 13))
