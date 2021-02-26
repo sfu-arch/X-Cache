@@ -38,15 +38,15 @@ BUILD_NAME = build
 USE_TRACE = 1
 LIBNAME = libhw
 
-nameAccel = test09
-numPtrs= 4
-numDbgs= 1
-numVals= 2
+nameAccel = memGenAccel
+numPtrs= 0
+numDbgs= 0
+numVals= 6 
 numRets= 0
-numEnts= 1
+numEnts= 0
 numCtrls= 1
 dataLen= 64
-printLog=true
+printLog=false
 cacheLog=false
 boreIDs = 
 
