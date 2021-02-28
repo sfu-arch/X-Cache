@@ -19,7 +19,9 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
     val mem = new AXIMaster(memParams)
   })
 
+
   val numInputs  = 3
+  // comment test
 
   val regBits = dcrParams.regBits
   val ptrBits = regBits * 2
@@ -46,8 +48,6 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
     * Connecting event controls and return values
     * Event zero always contains the cycle count
     */
-//  vcr.io.dcr.ecnt(0).valid := last
-//  vcr.io.dcr.ecnt(0).bits := cycles
 
   if (accel.RetsOut.size > 0) {
     for (i <- 1 to accel.RetsOut.size) {
@@ -55,6 +55,9 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
       vcr.io.dcr.ecnt(i).valid := accel.io.out.valid
     }
   }
+
+ vcr.io.dcr.ecnt(0).valid := last
+ vcr.io.dcr.ecnt(0).bits := cycles
 
   /**
     * @note This part needs to be changes for each function
@@ -64,6 +67,7 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
     val (cycle,stopSim) = Counter(true.B, 100)
 
   val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable =  (state === sIdle)) }
+  val ptrs = Seq.tabulate(1) { i => RegEnable(next = vcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable =  (state === sIdle)) }
 
 
 //  val DataQueue = for (i <- 0 until numInputs) yield {
@@ -71,12 +75,15 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
 //    DQ
 //  }
 
-  for (i <- 0 until numInputs) {
-    accel.io.in.bits.dataVals(s"field${i}") := DataReg(nextChunk * numInputs.U + i.U)
+  for (i <- 0 until numVals) {
+    if( i % 3 == 1 )
+      DataReg(i) := DataBundle(vals(i) + ptrs(0))
+    else
+     DataReg(i) := DataBundle(vals(i) )
   }
 
-  for (i <- 0 until numVals) {
-    DataReg(i) := DataBundle(vals(i - numPtrs))
+  for (i <- 0 until numInputs) {
+    accel.io.in.bits.dataVals(s"field${i}") := DataReg(nextChunk * numInputs.U + i.U)
   }
 
   accel.io.in.bits.enable := ControlBundle.active()
