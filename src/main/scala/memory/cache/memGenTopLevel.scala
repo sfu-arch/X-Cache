@@ -24,7 +24,7 @@ with HasAccelShellParams {
 
     val io = IO(new memGenTopLevelIO())
 
-    io.mem <> DontCare
+    // io.mem <> DontCare
     val cacheNode = Module(new CacheNode())
     val memCtrl = Module(new memoryWrapper())
 //    RegNext(io.instruction.bits) <> dut.io.instruction.bits
