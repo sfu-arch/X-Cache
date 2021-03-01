@@ -34,18 +34,18 @@ with HasAccelShellParams{
     val addrReg = RegInit(0.U(addrLen.W))
     val dataRegRead = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
     val dataRegWrite = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
-
+    val (rd :: wr_back :: Nil ) = Enum(2)
+    val (stIdle :: stWriteAddr :: stWriteData :: stReadAddr :: stReadData :: stCmdIssue :: Nil) = Enum(6)
+    val stReg = RegInit(stIdle)
 
     val start = Wire(Bool())
-    start := io.in.fire()
+    start := io.in.fire() & stReg === stIdle & io.in.bits.addr =/= 0.U
 
     when (start){
         addrReg := io.in.bits.addr
     }
 
-    val (rd :: wr_back :: Nil ) = Enum(2)
-    val (stIdle :: stWriteAddr :: stWriteData :: stReadAddr :: stReadData :: stCmdIssue :: Nil) = Enum(6)
-    val stReg = RegInit(stIdle)
+
 
     io.in.ready := stReg === stIdle
 
@@ -87,8 +87,11 @@ with HasAccelShellParams{
     io.out.bits.addr := addrReg
     io.out.bits.inst := Events.EventArray("DATA").U
     io.out.valid := false.B
+    
 
-    printf(p"stReg ${stReg} \n")
+    printf(p"data Reg ${addrReg} \n")
+        printf(p"st Reg ${stReg} \n")
+
 
     switch(stReg){
         is(stIdle){

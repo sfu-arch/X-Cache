@@ -25,10 +25,10 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   val stateLen = log2Ceil(nStates)
   val wBytes = xlen / 8
-  val bBytes = accelParams.cacheBlockBytes
-  val bWord = bBytes / wBytes
-  val bBits = bBytes << 3
-  val blen = log2Ceil(bWord)
+  val bBytes = accelParams.cacheBlockBytes // 32 Bytes (  4 * Xlen)
+  val bWord = bBytes / wBytes // xlen / 8
+  val bBits = bBytes << 3 
+  val blen = log2Ceil(bWord) // 2
   val nData = bBits / memParams.dataBits
   val dataBeats = nData
 
@@ -39,9 +39,9 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   val nWords = bBits / xlen
   val wordLen = log2Ceil(nWords)
-  val byteOffsetBits = log2Ceil(wBytes)
+  val byteOffsetBits = log2Ceil(wBytes) //
 
-  val taglen = addrLen - (setLen + blen + byteOffsetBits )
+  val taglen = addrLen - (setLen + blen + byteOffsetBits ) // 3 + 2
 
   val replacementPolicy = "random"
 
@@ -188,8 +188,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val writeSig = WireInit(signals(sigWrite))
   val readSig = WireInit(signals(sigRead))
   val dataReq = WireInit(signals(sigDataReq))
-
-  printf(p"writeSig ${writeSig} \n")
 
   loadWaysMeta := signals(sigLoadWays)
   findInSetSig := signals(sigFindInSet)

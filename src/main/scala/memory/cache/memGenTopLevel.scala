@@ -42,7 +42,7 @@ with HasAccelShellParams {
         memCtrl.io.in.bits.inst := cacheNode.io.out.bits.inst
         memCtrl.io.in.valid := cacheNode.io.out.valid
 //    memCtrl.io.in <> cacheNode.io.out
-    printf(p" valid :${memCtrl.io.in.valid} , addr: ${memCtrl.io.in.bits.addr} \n")
+    // printf(p" valid :${memCtrl.io.in.valid} , addr: ${memCtrl.io.in.bits.addr} \n")
 
 //    memCtrl
       cacheNode.io.in.memCtrl.bits.inst  := memCtrl.io.out.bits.inst
