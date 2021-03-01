@@ -63,15 +63,16 @@ with HasAccelShellParams{
     when(io.mem.r.fire()) {
         dataRegRead(readCount) := io.mem.r.bits.data
     }
-
+// 
+    // val lenBits = 64.U
     io.mem.aw.bits.addr := Mux(stReg === stWriteAddr, addrReg, 0.U(addrLen.W))
-    io.mem.aw.bits.len := 8.U
+    io.mem.aw.bits.len := nData.U
 
     io.mem.w.bits.data := Mux(stReg === stWriteData, dataRegWrite(writeCount), 0.U(xlen.W))
     io.mem.w.bits.last := false.B
 
-    io.mem.ar.bits.addr := Mux(stReg === stReadAddr, addrReg , 0.U(addrLen))
-    io.mem.ar.bits.len := 8.U
+    io.mem.ar.bits.addr := addrReg
+    io.mem.ar.bits.len := nData.U
     io.mem.b.ready := stReg === stWriteData
 
     io.mem.ar.valid := false.B
