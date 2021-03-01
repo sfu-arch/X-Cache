@@ -112,7 +112,7 @@ with HasAccelShellParams{
         }
         is(stReadData) {
             io.mem.r.ready := true.B
-            when(readWrapped) {
+            when(io.mem.r.fire() && io.mem.r.bits.last) {
                 stReg := stCmdIssue
             }
         }
