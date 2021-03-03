@@ -14,7 +14,9 @@ object States{
     (s"ID", 0x03),
     (s"IS", 0x04),
     (s"IM", 0x05),
-    (s"D", 0x06)
+    (s"D", 0x06),
+    (s"E", 0x07)
+
 
   )
   val stateLen =  if (StateArray.size == 1 ) 1 else log2Ceil(StateArray.size)
