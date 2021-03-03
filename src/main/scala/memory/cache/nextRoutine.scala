@@ -9,9 +9,10 @@ object nextRoutine {
                     Routine ("LOAD_M") ,  DstState("I"), Trigger( Seq("LOAD", "M")),
                     Routine ("STORE_I") , DstState("M"), Trigger( Seq("STORE", "I")),
                     Routine ("LOAD_ID") , DstState("ID"),Trigger( Seq ("LOAD" , "ID")),
-                    Routine ("LOAD_IM") ,  DstState("I"), Trigger( Seq("LOAD", "IM")),
+                    Routine ("LOAD_E") ,  DstState("E"), Trigger( Seq("LOAD", "E")),
                     Routine ("STORE_IS") ,  DstState("IM"), Trigger( Seq("STORE", "IS")),
-                    Routine ("DATA_ID"), DstState("D"), Trigger(Seq("DATA", "ID"))
+                    Routine ("DATA_ID"), DstState("D"), Trigger(Seq("DATA", "ID")),
+                    
 
 
 
