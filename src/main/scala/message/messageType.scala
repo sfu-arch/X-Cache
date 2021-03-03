@@ -14,6 +14,7 @@ trait MessageParams extends HasAccelParams with HasCacheAccelParams{
     val srcLen  = 3
     val dstLen  = 3
     val instLen = 8
+    override val dataLen = nData * xlen
 
 }
 

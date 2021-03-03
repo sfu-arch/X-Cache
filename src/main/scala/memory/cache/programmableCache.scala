@@ -67,6 +67,7 @@ with HasAccelShellParams{
 
     val instruction = Wire(Decoupled(new InstBundle()))
 
+
     val missLD = Wire(Bool())
     val missLDReg = Reg(Bool())
 
@@ -76,6 +77,7 @@ with HasAccelShellParams{
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
     val data = RegInit(0.U(dataLen.W))
+    printf(p"data ${data}\n")
 
     val pcWire = Wire(Vec(nParal, new PCBundle()))
     val updatedPC = Wire(Vec(nParal, UInt(pcLen.W)))

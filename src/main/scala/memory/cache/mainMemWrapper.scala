@@ -72,7 +72,7 @@ with HasAccelShellParams{
     io.mem.w.bits.last := false.B
 
     io.mem.ar.bits.addr := addrReg
-    io.mem.ar.bits.len := nData.U
+    io.mem.ar.bits.len := nData.U - 1.U
     io.mem.b.ready := stReg === stWriteData
 
     io.mem.ar.valid := false.B
@@ -90,7 +90,7 @@ with HasAccelShellParams{
     io.out.valid := false.B
     
 
-    printf(p"data Reg ${addrReg} \n")
+    printf(p"data Reg ${io.out.bits.data} \n")
         printf(p"st Reg ${stReg} \n")
 
 
