@@ -85,7 +85,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     val cpu = new CacheCPUIO
 
     val metaMem =  Flipped (new MemBankIO(new MetaData())(dataLen = xlen, addrLen = setLen, banks = nWays, bankDepth = nSets, bankLen = wayLen))
-    val dataMem =  Flipped (new MemBankIO(UInt(xlen.W)) (dataLen = xlen, addrLen= addrLen, banks =nWords, bankDepth= nSets * nWays, bankLen = wordLen))
+    val dataMem =  Flipped (new MemBankIO(UInt(xlen.W)) (dataLen = xlen, addrLen= addrLen, banks =nWords, bankDepth= nSets * nWays, bankLen = nWords))
 
     val validBits = new RegIO(Bool(), nRead = 1)
     val validTagBits = new RegIO(Bool(), nWays)
@@ -310,10 +310,11 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     D match {
       case io.dataMem => {
         D.write.bits.address := set * nSets.U + way
-        D.write.bits.bank := offset
+//        D.write.bits.bank :=
+        D.write.bits.bank := 1.U << nWords.U - 1.U
       }
       case io.metaMem => {
-        D.write.bits.bank := way
+        D.write.bits.bank := 1.U << way
         D.write.bits.address := set
       }
     }
@@ -373,7 +374,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   when(writeSig){
-    io.dataMem.write.bits.inputValue := cpu_data
+    io.dataMem.write.bits.inputValue := cpu_data.asTypeOf(Vec(nWords, UInt(xlen.W)))
   }.otherwise{
     io.dataMem.write.bits.inputValue := DontCare
   }
@@ -391,8 +392,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }.otherwise{
     dataBuffer := dataBuffer
   }
+  io.metaMem.write.bits.inputValue:= DontCare
+
   when(prepMDWrite){
-      io.metaMem.write.bits.inputValue := MD
+      io.metaMem.write.bits.inputValue(way) := MD
   }.otherwise{
       io.metaMem.write.bits.inputValue := DontCare
   }
