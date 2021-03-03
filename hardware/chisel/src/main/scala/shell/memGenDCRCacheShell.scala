@@ -64,7 +64,7 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
     */
     val (nextChunk,_) = Counter(accel.io.in.fire, 1000)
     val DataReg = Reg(Vec(numVals, new DataBundle))
-    val (cycle,stopSim) = Counter(true.B, 100)
+    val (cycle,stopSim) = Counter(true.B, 200)
 
   val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable =  (state === sIdle)) }
   val ptrs = Seq.tabulate(1) { i => RegEnable(next = vcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable =  (state === sIdle)) }
