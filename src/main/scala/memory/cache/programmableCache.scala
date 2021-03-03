@@ -76,7 +76,7 @@ with HasAccelShellParams{
 
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
-    val data = RegInit(0.U(dataLen.W))
+    val data = RegInit(0.U(bBits.W))
     printf(p"data ${data}\n")
 
     val pcWire = Wire(Vec(nParal, new PCBundle()))
@@ -143,7 +143,7 @@ with HasAccelShellParams{
     val addrWire   = WireInit(instruction.bits.addr)
 
     val addrInputCache  = Wire(UInt(addrLen.W))
-    val dataInputCache = Wire(UInt(dataLen.W))
+    val dataInputCache = Wire(UInt(bBits.W))
 
     //latching
     when(instruction.fire() ){
