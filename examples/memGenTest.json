@@ -3,7 +3,7 @@
         "nameAccel" : "memGenAccel",
         "numPtrs"  : 1,
         "numDbgs"  : 0,
-        "numVals"  : 6,
+        "numVals"  : 30,
         "numRets"  : 0,
         "numEnts"  : 1,
         "numCtrls" : 1,
