@@ -10,7 +10,7 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     hw_lib_path = "./hardware/chisel/build/libhw.dylib"
 
-mainMem = dsim.DArray(mainMem ,  dsim.DArray.DType.UInt32)
+mainMem = dsim.DArray(mainMem ,  dsim.DArray.DType.UInt64)
 
 nVals = 10 
 input_inst = np.zeros(nVals, dtype=np.uint64)
