@@ -15,31 +15,34 @@ import memGen.shell._
 trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
-  val nStates = accelParams.nstates
-  val addrLen = accelParams.addrlen
+  override val addrLen = accelParams.addrlen
   val dataLen = accelParams.dataLen
-  val eventLen = 2
+  val eventLen = Events.eventLen
+  val stateLen = States.stateLen
+
+  //  val nStates = States.stateLen
   val nCom = 8
   val nParal = 1
   val pcLen = 16
 
-  val stateLen = log2Ceil(nStates)
-  val wBytes = xlen / 8
-  val bBytes = accelParams.cacheBlockBytes // 32 Bytes (  4 * Xlen)
-  val bWord = bBytes / wBytes // xlen / 8
-  val bBits = bBytes << 3 
-  val blen = log2Ceil(bWord) // 2
+  val wBytes = xlen >> 3
+  val nWords = accelParams.nWords // 4
+
+  val bBytes = accelParams.cacheBlockBytes // 32 Bytes (  nWords * Xlen)
+  val bBits = bSize
+  val blen = log2Ceil(nWords) // 2
+
+  val byteOffsetBits = log2Ceil(wBytes) //
+  val wordLen = byteOffsetBits
+
+
+
   val nData = bBits / memParams.dataBits
   val dataBeats = nData
 
   val setLen = log2Ceil(nSets)
   val wayLen = log2Ceil(nWays) + 1
-
   val cacheLen = log2Ceil(nSets*nWays)
-
-  val nWords = bBits / xlen
-  val wordLen = log2Ceil(nWords)
-  val byteOffsetBits = log2Ceil(wBytes) //
 
   val taglen = addrLen - (setLen + blen + byteOffsetBits ) // 3 + 2
 
