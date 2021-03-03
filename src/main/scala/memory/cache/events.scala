@@ -16,9 +16,12 @@ object Events {
 
   )
 
+  val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
 
 
-//  def LOAD_I = 0x00
+
+
+  //  def LOAD_I = 0x00
 //  def LOAD_M = 0x01
 
 }
