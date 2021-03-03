@@ -37,10 +37,16 @@ with HasAccelShellParams {
 
     io.mem <> memCtrl.io.mem
 
-        memCtrl.io.in.bits.data := cacheNode.io.out.bits.data
-        memCtrl.io.in.bits.addr := cacheNode.io.out.bits.addr
-        memCtrl.io.in.bits.inst := cacheNode.io.out.bits.inst
-        memCtrl.io.in.valid := cacheNode.io.out.valid
+        val memCtrlInputQueue = Module(new Queue(new IntraNodeBundle(), entries = 5))
+        memCtrlInputQueue.io.enq.bits.data <> cacheNode.io.out.bits.data
+        memCtrlInputQueue.io.enq.bits.addr <> cacheNode.io.out.bits.addr
+        memCtrlInputQueue.io.enq.bits.inst <> cacheNode.io.out.bits.inst
+
+        memCtrlInputQueue.io.enq.valid := cacheNode.io.out.valid
+
+        memCtrl.io.in.bits <> memCtrlInputQueue.io.deq.bits
+        memCtrl.io.in.valid := memCtrlInputQueue.io.deq.valid
+        memCtrlInputQueue.io.deq.ready :=  memCtrl.io.in.ready
 //    memCtrl.io.in <> cacheNode.io.out
     // printf(p" valid :${memCtrl.io.in.valid} , addr: ${memCtrl.io.in.bits.addr} \n")
 

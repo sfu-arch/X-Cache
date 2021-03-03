@@ -46,7 +46,7 @@ with HasAccelShellParams{
     }
 
 
-
+    
     io.in.ready := stReg === stIdle
 
     val writeInst = WireInit(start & io.in.bits.inst === wr_back)
