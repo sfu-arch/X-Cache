@@ -58,6 +58,9 @@ with HasAccelShellParams{
         val actionRom = VecInit(actions)
         actionRom
     }
+
+    //  printf(p"actionRom ${actionRom(0)}")
+
     /********************************************************************************/
 
 
@@ -182,15 +185,15 @@ with HasAccelShellParams{
     }
 
     io.in.memCtrl.ready := !stallInput
-    io.in.cpu.ready := !missLD & !missLDReg & instruction.ready
+    io.in.cpu.ready := !stallInput
     io.out.valid := false.B
 
     stallInput := isLocked | pc.io.isFull
 
-    instruction.ready := !stallInput & !(missLDReg & (arbiter.io.chosen === cpuPriority.U))   // @todo should be changed for stalled situations
+    instruction.ready := !stallInput  // @todo should be changed for stalled situations
 
     readTBE     := RegEnable(instruction.fire(), false.B, instruction.ready)
-    checkLock   := RegEnable(instruction.fire(), false.B, true.B)
+    checkLock   := RegEnable(instruction.fire(), false.B, instruction.ready)
     getState    := RegEnable(instruction.fire(), false.B, instruction.ready)
 
     routineAddrResValid := RegEnable(readTBE , false.B, !stall)
@@ -211,7 +214,7 @@ with HasAccelShellParams{
     state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
 
     routineQueue.io.enq.bits := uCodedNextPtr(routine)
-    routineQueue.io.enq.valid := !pc.io.isFull & readTBE
+    routineQueue.io.enq.valid := !pc.io.isFull & readTBE & !isLocked
 
     val replacer  =  ReplacementPolicy.fromString(replacementPolicy, nWays)
     when(probeStart) {replacer.miss}
