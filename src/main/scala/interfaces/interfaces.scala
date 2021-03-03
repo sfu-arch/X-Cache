@@ -225,8 +225,8 @@ object FUResp {
 }
 
 class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
-  val addr = UInt(xlen.W)
-  val data = UInt(xlen.W)
+  val addr = UInt(addrLen.W)
+  val data = UInt(bSize.W)
   val mask = UInt((xlen / 8).W)
   val tag = UInt((List(1, mshrLen).max).W)
   val taskID = UInt(tlen.W)
@@ -275,7 +275,7 @@ object MemReq {
 }
 
 class MemResp(implicit p: Parameters) extends AccelBundle()(p) with ValidT {
-  val data = UInt(xlen.W)
+  val data = UInt(bSize.W)
   val tag = UInt((List(1, mshrLen).max).W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
