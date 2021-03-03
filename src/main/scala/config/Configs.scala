@@ -95,11 +95,14 @@ case class DandelionAccelParams(
   val nsets = cacheNSets
   val nstates = cacheNState
   val addrlen = cacheAddrLen
+  val nWords = 4
+
 //  val nCommand = nCom
 //  var comlen:Int = math.ceil(math.log(nCommand)/math.log(2)).toInt
 //  val nSigs = nSigs
 
-    def cacheBlockBytes: Int = 4 * (xlen >> 3) // 4 x 32 bits = 16B
+    def cacheBlockBytes: Int = nWords * (xlen >> 3) // 4 x 32 bits = 16B
+  val cacheBlockBits = cacheBlockBytes << 3
 //   def cacheBlockBytes: Int = xlen >> 3
   // Debugging dumps
   val log: Boolean = printLog
@@ -219,6 +222,8 @@ trait HasAccelParams {
   def accelParams: DandelionAccelParams = p(DandelionConfigKey)
 
   val xlen = accelParams.xlen
+  val addrLen = accelParams.addrLen
+  val bSize = accelParams.cacheBlockBits
   val ylen = accelParams.ylen
   val tlen = accelParams.tlen
   val glen = accelParams.glen
