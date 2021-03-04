@@ -27,7 +27,7 @@ class memGenAccel ( PtrsIn: Seq[Int] = List(),
 
   accel.io.instruction.bits.inst := io.in.bits.dataVals("field0").asUInt()
   accel.io.instruction.bits.addr := io.in.bits.dataVals("field1").asUInt()
-  accel.io.instruction.bits.data :=io.in.bits.dataVals("field2").asUInt()
+  accel.io.instruction.bits.data := io.in.bits.dataVals("field2").asTypeOf(UInt((accelParams.cacheBlockBits).W))
 
 //  ArgSplitter.io.Out.enable.bits.debug := false.B
 //  ArgSplitter.io.Out.enable.bits.taskID := 0.U
