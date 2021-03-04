@@ -431,7 +431,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //  }
 
   io.cpu.resp.bits.way := targetWayWire
-  io.cpu.resp.valid    := addrToWaySig | (findInSetSig & loadWaysMeta)  // @todo should be changed to sth more generic
+  io.cpu.resp.bits.data := Cat(dataBuffer)
+  io.cpu.resp.bits.iswrite := RegNext(readSig) 
+  io.cpu.resp.valid    := addrToWaySig | (findInSetSig & loadWaysMeta) | RegNext(readSig) // @todo should be changed to sth more generic
 
 //  switch(stIntRdReg){
 //    is (stIntRdIdle) {
