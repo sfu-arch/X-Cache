@@ -25,7 +25,7 @@ print(vals)
 #events = dsim.sim(ptrs = [mainMem ], vars= [0, 4, 2,
  #                                    0,128,2], debugs=[], numRets=0, numEvents=1, hwlib = hw_lib_path)
 
-events = dsim.sim(ptrs = [mainMem, localMem ], vars= vals, debugs=[], numRets=0, numEvents=4, hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [mainMem ], vars= vals, debugs=[], numRets=0, numEvents=4, hwlib = hw_lib_path)
 
 #print("Cycle: " + str(events[0]))
 for i in range(3):
