@@ -93,7 +93,7 @@ class CacheBundle (implicit p:Parameters) extends AXIAccelBundle
 
     val addr = UInt(addrLen.W)
     val way  = UInt(wayLen.W)
-    val data = UInt(dataLen.W)
+    val data = UInt(bBits.W)
     val replaceWay =  UInt(wayLen.W)
 
 }

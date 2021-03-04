@@ -46,7 +46,6 @@ with HasAccelShellParams{
     }
 
 
-    
     io.in.ready := stReg === stIdle
 
     val writeInst = WireInit(start & io.in.bits.inst === wr_back)
@@ -90,7 +89,7 @@ with HasAccelShellParams{
     io.out.valid := false.B
     
 
-    printf(p"data Reg ${io.out.bits.data} \n")
+    printf(p"data Reg ${dataRegRead} \n")
         printf(p"st Reg ${stReg} \n")
 
 

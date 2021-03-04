@@ -67,7 +67,6 @@ with HasAccelShellParams{
 
     val instruction = Wire(Decoupled(new InstBundle()))
 
-
     val missLD = Wire(Bool())
     val missLDReg = Reg(Bool())
 
@@ -77,7 +76,16 @@ with HasAccelShellParams{
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
     val data = RegInit(0.U(bBits.W))
-    printf(p"data ${data}\n")
+    printf(p"memCtrl ${io.in.memCtrl.bits.data}\n")
+    printf(p"instruction data ${ instruction.bits.data}\n")
+    printf(p"inputCache ${ dataInputCache}\n")
+        printf(p"data${ data}\n")
+
+
+
+
+
+
 
     val pcWire = Wire(Vec(nParal, new PCBundle()))
     val updatedPC = Wire(Vec(nParal, UInt(pcLen.W)))
@@ -361,7 +369,7 @@ with HasAccelShellParams{
     cache.io.bipassLD.in.valid := hitLD
     cache.io.bipassLD.in.bits.addr  := addr
     cache.io.bipassLD.in.bits.way := cacheWayWire(nParal)
-    data := cache.io.bipassLD.out.bits
+    // data := cache.io.bipassLD.out.bits
     dataValid := cache.io.bipassLD.out.valid
 
 

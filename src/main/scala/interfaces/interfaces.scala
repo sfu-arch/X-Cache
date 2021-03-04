@@ -29,7 +29,7 @@ trait Addr extends CoreBundle{
 
 class InstBundle (implicit p: Parameters) extends Event with Addr{
 
-  val data = UInt(dataLen.W)
+  val data = UInt(bBits.W)
   override def cloneType: this.type = new InstBundle().asInstanceOf[this.type]
 }
 
