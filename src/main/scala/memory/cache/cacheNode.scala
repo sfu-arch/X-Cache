@@ -53,11 +53,20 @@ class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Modu
   cache.io.in.memCtrl.valid := memCtrlQueue.io.deq.valid
   memCtrlQueue.io.deq.ready := cache.io.in.memCtrl.ready
 
-  io.out.valid := cache.io.out.valid
-  io.out.bits.src := ID
-  io.out.bits.dst := cache.io.out.bits.dst
-  io.out.bits.inst:= cache.io.out.bits.req.inst
-  io.out.bits.data := cache.io.out.bits.req.data
-  io.out.bits.addr := cache.io.out.bits.req.addr
+  io.out.network.valid := cache.io.out.req.valid
+  io.out.network.bits.src := ID
+  io.out.network.bits.dst := cache.io.out.req.bits.dst
+  io.out.network.bits.inst:= cache.io.out.req.bits.req.inst
+  io.out.network.bits.data := cache.io.out.req.bits.req.data
+  io.out.network.bits.addr := cache.io.out.req.bits.req.addr
+
+  io.out.cpu.bits.data := cache.io.out.resp.bits.data
+  io.out.cpu.bits.addr := cache.io.out.resp.bits.addr
+  io.out.cpu.bits.inst := cache.io.out.resp.bits.inst
+  io.out.cpu.valid := cache.io.out.resp.valid
+  cache.io.out.resp.ready := true.B
+
+
+
 
 }
