@@ -85,9 +85,11 @@ case class DandelionAccelParams(
   val beats: Int = 0
   val mshrlen: Int = mshrLen
   val fType = dataLen match {
+
     case 64 => FType.D
     case 32 => FType.S
     case 16 => FType.H
+    case default => FType.D
   }
 
   //Cache
