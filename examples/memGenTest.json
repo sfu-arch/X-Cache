@@ -5,7 +5,7 @@
         "numDbgs"  : 0,
         "numVals"  : 30,
         "numRets"  : 0,
-        "numEnts"  : 1,
+        "numEnts"  : 4,
         "numCtrls" : 1,
         "dataLen"  : 64,
         "boreIDs"  : [],

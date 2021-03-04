@@ -11,6 +11,7 @@ elif platform.system() == 'Darwin':
     hw_lib_path = "./hardware/chisel/build/libhw.dylib"
 
 mainMem = dsim.DArray(mainMem ,  dsim.DArray.DType.UInt64)
+localMem = dsim.DArray(localMem ,  dsim.DArray.DType.UInt64)
 
 nVals = 10 
 input_inst = np.zeros(nVals, dtype=np.uint64)
@@ -24,9 +25,13 @@ print(vals)
 #events = dsim.sim(ptrs = [mainMem ], vars= [0, 4, 2,
  #                                    0,128,2], debugs=[], numRets=0, numEvents=1, hwlib = hw_lib_path)
 
-events = dsim.sim(ptrs = [mainMem ], vars= vals, debugs=[], numRets=0, numEvents=1, hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [mainMem, localMem ], vars= vals, debugs=[], numRets=0, numEvents=4, hwlib = hw_lib_path)
 
 #print("Cycle: " + str(events[0]))
+for i in range(3):
+    print("field{}".foramt(i+1))
+  #  print(events[i+1])
+
 
 #if events[1] == test01(5,3):
 #    print("Success!\nRet: " + str(events[1]))
