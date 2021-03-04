@@ -15,6 +15,7 @@ with HasCacheAccelParams
 with HasAccelShellParams {
 
     val instruction = Flipped(Decoupled(new IntraNodeBundle()))
+    val resp = Decoupled(new IntraNodeBundle())
     val mem = new AXIMaster(memParams)
 }
 
@@ -38,11 +39,16 @@ with HasAccelShellParams {
     io.mem <> memCtrl.io.mem
 
         val memCtrlInputQueue = Module(new Queue(new IntraNodeBundle(), entries = 5))
-        memCtrlInputQueue.io.enq.bits.data <> cacheNode.io.out.bits.data
-        memCtrlInputQueue.io.enq.bits.addr <> cacheNode.io.out.bits.addr
-        memCtrlInputQueue.io.enq.bits.inst <> cacheNode.io.out.bits.inst
+        memCtrlInputQueue.io.enq.bits.data <> cacheNode.io.out.network.bits.data
+        memCtrlInputQueue.io.enq.bits.addr <> cacheNode.io.out.network.bits.addr
+        memCtrlInputQueue.io.enq.bits.inst <> cacheNode.io.out.network.bits.inst
+        memCtrlInputQueue.io.enq.valid := cacheNode.io.out.network.valid
 
-        memCtrlInputQueue.io.enq.valid := cacheNode.io.out.valid
+        io.resp.bits.addr := cacheNode.io.out.cpu.bits.addr
+        io.resp.bits.data := cacheNode.io.out.cpu.bits.data
+        io.resp.bits.inst := cacheNode.io.out.cpu.bits.inst
+        io.resp.valid := cacheNode.io.out.cpu.valid
+        cacheNode.io.out.cpu.ready := io.resp.ready
 
         memCtrl.io.in.bits <> memCtrlInputQueue.io.deq.bits
         memCtrl.io.in.valid := memCtrlInputQueue.io.deq.valid
