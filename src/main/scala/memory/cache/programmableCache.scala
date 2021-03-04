@@ -190,7 +190,7 @@ with HasAccelShellParams{
 
     io.in.memCtrl.ready := !stallInput
     io.in.cpu.ready := !stallInput
-    io.out.req.valid := false.B
+    // io.out.req.valid := false.B
 
     stallInput := isLocked | pc.io.isFull
 
