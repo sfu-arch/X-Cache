@@ -21,10 +21,14 @@ with MessageParams{
         val cpu     = Flipped(Decoupled((new InstBundle())))
         val memCtrl = Flipped(Decoupled((new InstBundle())))
     }
-    val out = Valid(new Bundle{
-        val dst = UInt(dstLen.W)
-        val req = new IntraNodeBundle()
-    })
+    val out = new Bundle{
+        val req = Valid (new Bundle{
+            val dst = UInt(dstLen.W)
+            val req = new IntraNodeBundle()
+        })
+        val resp = Decoupled(new IntraNodeBundle())
+    }
+    
 }
 
 class programmableCache (implicit val p:Parameters) extends Module
@@ -76,16 +80,6 @@ with HasAccelShellParams{
     val addr = RegInit(0.U(addrLen.W))
     val event = RegInit(0.U(eventLen.W))
     val data = RegInit(0.U(bBits.W))
-    printf(p"memCtrl ${io.in.memCtrl.bits.data}\n")
-    printf(p"instruction data ${ instruction.bits.data}\n")
-    printf(p"inputCache ${ dataInputCache}\n")
-        printf(p"data${ data}\n")
-
-
-
-
-
-
 
     val pcWire = Wire(Vec(nParal, new PCBundle()))
     val updatedPC = Wire(Vec(nParal, UInt(pcLen.W)))
@@ -196,7 +190,7 @@ with HasAccelShellParams{
 
     io.in.memCtrl.ready := !stallInput
     io.in.cpu.ready := !stallInput
-    io.out.valid := false.B
+    io.out.req.valid := false.B
 
     stallInput := isLocked | pc.io.isFull
 
@@ -374,10 +368,22 @@ with HasAccelShellParams{
 
 
     for (i <- 0 until nParal) {
-        io.out.bits.req.inst := 0.U // for reading
-        io.out.bits.req.data := DontCare
-        io.out.bits.req.addr := actionReg(i).io.deq.bits.addr
-        io.out.bits.dst := 0.U // 0 for memCtrl
-        io.out.valid := isMemAction(i)
+        io.out.req.bits.req.inst := 0.U // for reading
+        io.out.req.bits.req.data := DontCare
+        io.out.req.bits.req.addr := actionReg(i).io.deq.bits.addr
+        io.out.req.bits.dst := 0.U // 0 for memCtrl
+        io.out.req.valid := isMemAction(i)
     }
+
+
+    for (i <- 0 until nParal) {
+        io.out.resp.bits.inst := 0.U // for reading
+        io.out.resp.bits.data := cache.io.cpu(i).resp.bits.data
+        io.out.resp.bits.addr := actionReg(i).io.deq.bits.addr
+        io.out.resp.valid := cache.io.cpu(i).resp.valid & cache.io.cpu(i).resp.bits.iswrite
+    }
+
+    
+
+
 }
