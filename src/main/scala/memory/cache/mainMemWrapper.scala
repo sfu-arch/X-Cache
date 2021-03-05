@@ -89,8 +89,8 @@ with HasAccelShellParams{
     io.out.valid := false.B
     
 
-    printf(p"data Reg ${dataRegRead} \n")
-        printf(p"st Reg ${stReg} \n")
+    // printf(p"data Reg ${dataRegRead} \n")
+        // printf(p"st Reg ${stReg} \n")
 
 
     switch(stReg){

@@ -359,7 +359,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }.otherwise{
     way := nWays.U
   }
-  printf(p"way ${way}\n")
+  // printf(p"way ${way}\n")
 
   when(prepMDRead){
     prepForRead(io.metaMem)
