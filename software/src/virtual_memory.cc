@@ -52,7 +52,6 @@ void *VirtualMemoryManager::GetAddr(uint64_t phy_addr)
   CHECK_NE(phy_addr, 0) << "trying to get address that is nullptr";
   std::lock_guard<std::mutex> lock(mutex_);
   uint64_t loc = (phy_addr >> kPageBits) - 1 ;
-  printf("pageTABLESize %d \r\n ************** \r\n ", ptable_.size());
   CHECK_LT(loc, ptable_.size()) << "phy_addr=" << phy_addr;
   Page *p = ptable_[loc];
   CHECK(p != nullptr);
