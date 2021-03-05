@@ -40,7 +40,7 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
 
   when(state === sIdle) {
     cycles := 0.U
-  }.elsewhen(state =/= sFlush) {
+  }.elsewhen(state =/= sFlush & (state =/=sIdle)) {
     cycles := cycles + 1.U
   }
 
@@ -56,6 +56,7 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
     }
   }
 
+
  vcr.io.dcr.ecnt(0).valid := last
  vcr.io.dcr.ecnt(0).bits := cycles
 
@@ -64,16 +65,24 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
     */
     val (nextChunk,_) = Counter(accel.io.in.fire, 1000)
     val DataReg = Reg(Vec(numVals, new DataBundle))
-    val (cycle,stopSim) = Counter(true.B, 200)
+    val (cycle,stopSim) = Counter(true.B, 300)
 
   val vals = Seq.tabulate(numVals) { i => RegEnable(next = vcr.io.dcr.vals(i), init = 0.U(ptrBits.W), enable =  (state === sIdle)) }
-  val ptrs = Seq.tabulate(1) { i => RegEnable(next = vcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable =  (state === sIdle)) }
+  val ptrs = Seq.tabulate(2) { i => RegEnable(next = vcr.io.dcr.ptrs(i), init = 0.U(ptrBits.W), enable =  (state === sIdle)) }
+
+  when(accel.io.out.fire()){
+    // when(accel.io.out.bits.data("field0").data === 0.U){
+      printf(p"addr ${accel.io.out.bits.data("field1").data} data ${accel.io.out.bits.data("field2").data} cycle ${cycles} \n") 
+      // DataBundle(accel.io.out.bits.data("field1").data - ptrs(0) + ptrs(1)) := DataBundle(accel.io.out.bits.data("field2").data)
+    //  }
+  }
 
 
 //  val DataQueue = for (i <- 0 until numInputs) yield {
 //    val DQ = Module( new Queue( DataBundle(vals(i-numPtrs)), entries = numVals/numInputs))
 //    DQ
 //  }
+
 
   for (i <- 0 until numVals) {
     if( i % 3 == 1 )
@@ -88,7 +97,7 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
 
   accel.io.in.bits.enable := ControlBundle.active()
   accel.io.in.valid := false.B
-  accel.io.out.ready := is_busy
+  accel.io.out.ready := is_busy | state === sDone
 
 
   switch(state) {
@@ -96,20 +105,22 @@ class memGenDCRCacheShell [T <: memGenModule](accelModule: () => T)
       when(vcr.io.dcr.launch) {
         printf(p"\nVals: ")
         vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): ${t._1}, "))
-        printf(p"\n")
+        printf(p" \n")
         state := sBusy
       }
     }
     is(sBusy) {
-      when(accel.io.in.fire() ){
-        printf(p"\nVals: ")
-        vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): ${t._1}, "))
-        printf(p"\n")
-      }
+      // when(accel.io.in.fire() ){
+      //   printf(p"\nVals: ")
+      //   vals.zipWithIndex.foreach(t => printf(p"val(${t._2}): ${t._1}, "))
+      //   printf(p"\n")
+      // }
+      
         accel.io.in.valid := true.B
-        when(nextChunk * numInputs.U > numVals.U) {
+        when(nextChunk * numInputs.U > numVals.U ) {
           state := sDone
         }
+
     }
 
     is(sDone) {

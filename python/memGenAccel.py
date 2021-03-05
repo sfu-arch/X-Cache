@@ -4,7 +4,7 @@ import dsim
 
 
 mainMem = np.array([i for i in range (100000)], dtype = np.uint64)
-localMem =  np.array([i for i in range (100000)], dtype = np.uint64)
+localMem =  np.array([i for i in range (100)], dtype = np.uint64)
 if platform.system() == 'Linux':
     hw_lib_path = "./hardware/chisel/build/libhw.so"
 elif platform.system() == 'Darwin':
@@ -25,12 +25,13 @@ print(vals)
 #events = dsim.sim(ptrs = [mainMem ], vars= [0, 4, 2,
  #                                    0,128,2], debugs=[], numRets=0, numEvents=1, hwlib = hw_lib_path)
 
-events = dsim.sim(ptrs = [mainMem ], vars= vals, debugs=[], numRets=0, numEvents=4, hwlib = hw_lib_path)
+events = dsim.sim(ptrs = [mainMem, localMem ], vars= vals, debugs=[], numRets=0, numEvents=4, hwlib = hw_lib_path)
 
-#print("Cycle: " + str(events[0]))
-for i in range(3):
-    print("field{}".foramt(i+1))
-  #  print(events[i+1])
+#print(localMem)
+print("Cycle: " + str(events[0]))
+#for i in range(3):
+    #print("field{}".format(i+1))
+    #print(events[i+1])
 
 
 #if events[1] == test01(5,3):
