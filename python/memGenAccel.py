@@ -21,6 +21,20 @@ input_data = np.zeros(nVals, dtype=np.uint64)
 vals = [list(inst) for inst in zip(input_inst, input_addr, input_data)]
 vals = [item  for sublist in vals for item in sublist  ]
 print(vals)
+
+# LD 0x1000
+# LD 0x1020
+# ACK 2 // COMP
+# NOP // because comp takes one cycle
+# ST 0x3000
+# LD 0x1040
+# NOP // for non-vector ops e.g. computing pointer
+# LD 0x1060
+# ACK 2 // wait for data
+# NOP // because comp takes one cycle
+# ST 0x3020
+
+
                             #        inst|addr|data
 #events = dsim.sim(ptrs = [mainMem ], vars= [0, 4, 2,
  #                                    0,128,2], debugs=[], numRets=0, numEvents=1, hwlib = hw_lib_path)
