@@ -189,7 +189,7 @@ with HasAccelShellParams{
     }
 
     io.in.memCtrl.ready := !stallInput
-    io.in.cpu.ready := !stallInput
+    io.in.cpu.ready := !stallInput & arbiter.io.chosen === cpuPriority.U 
     // io.out.req.valid := false.B
 
     stallInput := isLocked | pc.io.isFull
