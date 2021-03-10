@@ -12,6 +12,9 @@ object nextRoutine {
                     Routine ("LOAD_E") ,  DstState("E"), Trigger( Seq("LOAD", "E")),
                     Routine ("STORE_IS") ,  DstState("IM"), Trigger( Seq("STORE", "IS")),
                     Routine ("DATA_ID"), DstState("D"), Trigger(Seq("DATA", "ID")),
+                    Routine ("STORE_E"), DstState("E"), Trigger(Seq("STORE", "E")),
+
+
                     
 
 

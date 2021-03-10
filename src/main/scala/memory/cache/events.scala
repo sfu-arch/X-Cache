@@ -12,7 +12,7 @@ object Events {
   val EventArray = Map(
                         (s"LOAD", 0x00),
                         (s"STORE", 0x01),
-    (s"DATA",0x02)
+    (s"DATA",0x02),
 
   )
 
