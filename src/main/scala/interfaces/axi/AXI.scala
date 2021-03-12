@@ -11,7 +11,7 @@ case class AXIParams(
                       idBits: Int = 16,
                       addrBits: Int = 32,
                       dataBits: Int = 64,
-                      lenBits: Int = 8,
+                      lenBits: Int = 16,
                       userBits: Int = 10
                     ) {
   require(addrBits > 0)
