@@ -12,7 +12,7 @@ object RoutineROM {
     Routine ("LOAD_ID") , Actions(Seq( "SetState")), DstState("ID"),
     Routine ("LOAD_E") , Actions(Seq( "ReadInt","DeallocateTBE", "SetState")), DstState("E"),
     Routine ("STORE_IS") , Actions(Seq( "WrInt", "SetState")), DstState("S"),
-    Routine ("DATA_ID") , Actions(Seq( "WrInt","ReadInt","SetState")), DstState("E"),
+    Routine ("DATA_ID") , Actions(Seq( "WrInt","ReadInt","DeallocateTBE","SetState")), DstState("E"),
     Routine ("STORE_E") , Actions(Seq( "WrInt","SetState")), DstState("E"),
 
     
