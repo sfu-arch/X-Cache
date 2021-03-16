@@ -36,6 +36,8 @@ with HasAccelShellParams {
     cacheNode.io.in.cpu.valid:= (io.instruction.valid)
     io.instruction.ready := cacheNode.io.in.cpu.ready
 
+    cacheNode.io.in.otherNodes := DontCare
+
     io.mem <> memCtrl.io.mem
 
         val memCtrlInputQueue = Module(new Queue(new IntraNodeBundle(), entries = 5))

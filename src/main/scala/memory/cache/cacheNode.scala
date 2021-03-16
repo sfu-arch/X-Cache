@@ -18,6 +18,7 @@ class CacheNodeIO (implicit val p:Parameters) extends Bundle with HasCacheAccelP
   val in = new Bundle{
     val cpu = Flipped(Decoupled((new IntraNodeBundle())))
     val memCtrl = Flipped(Decoupled((new IntraNodeBundle())))
+    val otherNodes = Flipped(Decoupled((new IntraNodeBundle())))
   }
   val out = new Bundle{
     val network = Valid(new MessageBundle())
@@ -36,22 +37,32 @@ class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Modu
   val cache = Module(new programmableCache())
 
   val cpuQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
-  val memCtrlQueue= Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
+  val memCtrlQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
+  val otherNodesQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
 
   cpuQueue.io.enq <> io.in.cpu
   memCtrlQueue.io.enq <> io.in.memCtrl
+  otherNodesQueue.io.enq <> io.in.otherNodes
 
   cache.io.in.cpu.bits.event := cpuQueue.io.deq.bits.inst
   cache.io.in.cpu.bits.addr  := cpuQueue.io.deq.bits.addr
   cache.io.in.cpu.bits.data  := cpuQueue.io.deq.bits.data
-  cache.io.in.cpu.valid := cpuQueue.io.deq.valid
+  cache.io.in.cpu.valid      := cpuQueue.io.deq.valid
   cpuQueue.io.deq.ready := cache.io.in.cpu.ready
 
   cache.io.in.memCtrl.bits.event := memCtrlQueue.io.deq.bits.inst
   cache.io.in.memCtrl.bits.addr  := memCtrlQueue.io.deq.bits.addr
   cache.io.in.memCtrl.bits.data  := memCtrlQueue.io.deq.bits.data
-  cache.io.in.memCtrl.valid := memCtrlQueue.io.deq.valid
+  cache.io.in.memCtrl.valid      := memCtrlQueue.io.deq.valid
   memCtrlQueue.io.deq.ready := cache.io.in.memCtrl.ready
+
+  cache.io.in.otherNodes.bits.event := otherNodesQueue.io.deq.bits.inst
+  cache.io.in.otherNodes.bits.addr  := otherNodesQueue.io.deq.bits.addr
+  cache.io.in.otherNodes.bits.data  := otherNodesQueue.io.deq.bits.data
+  cache.io.in.otherNodes.valid      := otherNodesQueue.io.deq.valid
+  otherNodesQueue.io.deq.ready := cache.io.in.otherNodes.ready
+
+
 
   io.out.network.valid := cache.io.out.req.valid
   io.out.network.bits.src := ID

@@ -20,6 +20,7 @@ with MessageParams{
     val in = new Bundle{
         val cpu     = Flipped(Decoupled((new InstBundle())))
         val memCtrl = Flipped(Decoupled((new InstBundle())))
+        val otherNodes = Flipped(Decoupled((new InstBundle())))
     }
     val out = new Bundle{
         val req = Valid (new Bundle{
@@ -42,7 +43,7 @@ with HasAccelShellParams{
     val lockMem  = Module(new lockVector())
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
-    val arbiter  = Module (new Arbiter(new InstBundle(), n = 2))
+    val arbiter  = Module (new Arbiter(new InstBundle(), n = 3))
 
 
 
@@ -170,16 +171,18 @@ with HasAccelShellParams{
     /*************************************************************************/
     // control signals
 
-    val cpuPriority = 1
+    val cpuPriority = 2
+    val otherNodesPriority  = 1
+    val memCtrlPriority = 0
 
     /**************
     tempe
     **************/
-      val (_, timeout) = CounterWithReset(true.B, 100, probeStart)
+    // val (_, timeout) = CounterWithReset(true.B, 100, probeStart)
 
-
+    arbiter.io.in(otherNodesPriority) <> io.in.otherNodes
     arbiter.io.in(cpuPriority) <> io.in.cpu
-    arbiter.io.in(0) <> io.in.memCtrl // priority is for lower producer
+    arbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
     instruction <> arbiter.io.out
 
     missLD := (cacheWayWire(nParal) === nWays.U) & probeStart & !isLocked & (arbiter.io.chosen === cpuPriority.U) & (instruction.bits.event === Events.EventArray("LOAD").U)
@@ -188,9 +191,9 @@ with HasAccelShellParams{
         missLDReg := missLD
     }
 
-    io.in.memCtrl.ready := !stallInput
-    io.in.cpu.ready := !stallInput & arbiter.io.chosen === cpuPriority.U 
-    // io.out.req.valid := false.B
+    io.in.memCtrl.ready := !stallInput & arbiter.io.chosen === memCtrlPriority.U 
+    io.in.cpu.ready := !stallInput & arbiter.io.chosen === cpuPriority.U
+    io.in.otherNodes.ready :=  !stallInput & arbiter.io.chosen === otherNodesPriority.U
 
     stallInput := isLocked | pc.io.isFull
 
