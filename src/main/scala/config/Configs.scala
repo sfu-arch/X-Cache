@@ -60,7 +60,7 @@ case class DandelionAccelParams(
                                  addrLen: Int = 32,
                                  taskLen: Int = 5,
                                  groupLen: Int = 16,
-                                 mshrLen: Int = 8,
+                                 mshrLen: Int = 16,
                                  tSize: Int = 64,
                                  verbosity: String = "low",
                                  components: String = "",
