@@ -54,7 +54,7 @@ with HasAccelShellParams{
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
     val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 3))
-    val outReqArbiter  = Module (new Arbiter(new InstBundle(), n = nParal))
+    val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType, n = nParal))
     val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal))
 
 
@@ -399,27 +399,28 @@ with HasAccelShellParams{
 
     
     for (i <- 0 until nParal) {
-        io.out.req.bits.req.inst := 0.U // for reading
-        io.out.req.bits.req.data := DontCare
-        io.out.req.bits.req.addr := actionReg(i).io.deq.bits.addr
-        io.out.req.bits.dst := 0.U // 0 for memCtrl
-        io.out.req.valid := isMemAction(i)
+        outReqArbiter.io.in(i).bits.bits.req.data:= 0.U // for reading
+        outReqArbiter.io.in(i).bits.bits.req.data:= DontCare
+        outReqArbiter.io.in(i).bits.bits.req.addr := actionReg(i).io.deq.bits.addr
+        outReqArbiter.io.in(i).bits.bits.req.inst:= 0.U // 0 for memCtrl
+        outReqArbiter.io.in(i).bits.bits.dst:= 0.U
+        outReqArbiter.io.in(i).valid :=  isMemAction(i)
     }
-        io.out.req.bits.req.inst := 0.U // for reading
-        io.out.req.bits.req.data := DontCare
-        io.out.req.bits.req.addr := actionReg(i).io.deq.bits.addr
-        io.out.req.bits.dst := 0.U // 0 for memCtrl
-        io.out.req.valid := isMemAction(i)
+        io.out.req.bits.req.inst := outReqArbiter.io.out.bits.bits.req.inst// for reading
+        io.out.req.bits.req.data := outReqArbiter.io.out.bits.bits.req.data
+        io.out.req.bits.req.addr := outReqArbiter.io.out.bits.bits.req.addr
+        io.out.req.bits.dst := outReqArbiter.io.out.bits.bits.dst
+        io.out.req.valid :=  outReqArbiter.io.out.valid
+
+
 
 
     for (i <- 0 until nParal) {
-        io.out.resp.bits.inst := 0.U // for reading
-        io.out.resp.bits.data := cache.io.cpu(i).resp.bits.data
-        io.out.resp.bits.addr := actionReg(i).io.deq.bits.addr
-        io.out.resp.valid := cache.io.cpu(i).resp.valid & cache.io.cpu(i).resp.bits.iswrite
+        outRespArbiter.io.in(i).bits.data :=cache.io.cpu(i).resp.bits.data
+        outRespArbiter.io.in(i).bits.event := 0.U
+        outRespArbiter.io.in(i).bits.addr := actionReg(i).io.deq.bits.addr
+        outRespArbiter.io.in(i).valid := cache.io.cpu(i).resp.valid & cache.io.cpu(i).resp.bits.iswrite
     }
 
-    
-
-
+    io.out.resp.bits.inst <> outRespArbiter.io.out.bits.data
 }
