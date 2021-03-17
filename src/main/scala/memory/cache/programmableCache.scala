@@ -12,6 +12,16 @@ import memGen.interfaces._
 import memGen.interfaces.Action
 import memGen.interfaces.axi._
 
+  /*                  sigLoadWays | sigFindInSet | sigAddrToWay | sigPrepMDRead | sigPrepMDWrite | sigAllocate | sigDeallocate | sigWrite |  sigRead  | dataReq
+  Probe= 0b0000001011          1             1               0              1                0              0            0               0          0   |   0
+  Aloc = 0b0000110100          0             0               1              0                1              1            0               0          0   |   0
+  DAloc= 0b0001000000          0             0               0              0                0              0            1               0          0   |   0
+  WrInt= 0b0010000000          0             0               0              0                0              0            0               1          0   |   0
+  RdInt= 0b0100000000          0             0               0              0                0              0            0               0          1   |   0
+  DataRQ=0b1000000000          0             0               0              0                0              0            0               0          0   |   1
+
+     */
+
 
 class programmableCacheIO (implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
