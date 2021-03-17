@@ -53,7 +53,11 @@ with HasAccelShellParams{
     val lockMem  = Module(new lockVector())
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
-    val arbiter  = Module (new Arbiter(new InstBundle(), n = 3))
+    val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 3))
+    val outReqArbiter  = Module (new Arbiter(new InstBundle(), n = nParal))
+    val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal))
+
+
 
 
 
@@ -190,20 +194,20 @@ with HasAccelShellParams{
     **************/
     // val (_, timeout) = CounterWithReset(true.B, 100, probeStart)
 
-    arbiter.io.in(otherNodesPriority) <> io.in.otherNodes
-    arbiter.io.in(cpuPriority) <> io.in.cpu
-    arbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
-    instruction <> arbiter.io.out
+    inputArbiter.io.in(otherNodesPriority) <> io.in.otherNodes
+    inputArbiter.io.in(cpuPriority) <> io.in.cpu
+    inputArbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
+    instruction <> inputArbiter.io.out
 
-    missLD := (cacheWayWire(nParal) === nWays.U) & probeStart & !isLocked & (arbiter.io.chosen === cpuPriority.U) & (instruction.bits.event === Events.EventArray("LOAD").U)
+    missLD := (cacheWayWire(nParal) === nWays.U) & probeStart & !isLocked & (inputArbiter.io.chosen === cpuPriority.U) & (instruction.bits.event === Events.EventArray("LOAD").U)
 
-    when(missLD | !missLD & arbiter.io.chosen =/= cpuPriority.U){
+    when(missLD | !missLD & inputArbiter.io.chosen =/= cpuPriority.U){
         missLDReg := missLD
     }
 
-    io.in.memCtrl.ready := !stallInput & arbiter.io.chosen === memCtrlPriority.U 
-    io.in.cpu.ready := !stallInput & arbiter.io.chosen === cpuPriority.U
-    io.in.otherNodes.ready :=  !stallInput & arbiter.io.chosen === otherNodesPriority.U
+    io.in.memCtrl.ready := !stallInput & inputArbiter.io.chosen === memCtrlPriority.U 
+    io.in.cpu.ready      := !stallInput & inputArbiter.io.chosen === cpuPriority.U
+    io.in.otherNodes.ready :=  !stallInput & inputArbiter.io.chosen === otherNodesPriority.U
 
     stallInput := isLocked | pc.io.isFull
 
@@ -364,7 +368,6 @@ with HasAccelShellParams{
         cache.io.cpu(i).req.bits.data := actionReg(i).io.deq.bits.data
         cache.io.cpu(i).req.bits.replaceWay := actionReg(i).io.deq.bits.replaceWay
 
-
     }
     cache.io.cpu(nParal).req.bits.way := DontCare
     cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U)
@@ -372,7 +375,20 @@ with HasAccelShellParams{
     cache.io.cpu(nParal).req.valid := probeStart
     cache.io.cpu(nParal).req.bits.replaceWay := DontCare // should be changed
 
-    hitLD :=  (cacheWayWire(nParal) =/= nWays.U) & probeStart & !isLocked
+    hitLD :=  (cacheWayWire(nParal) =/= nWays.U) & RegNext(probeStart) & !isLocked & (inputArbiter.io.chosen === cpuPriority.U)
+
+    when( RegNext(probeStart)){
+        printf(p"req from ${RegNext(inputArbiter.io.chosen)}\n")
+        when(RegNext(inputArbiter.io.chosen) === cpuPriority.U){
+            when(hitLD){
+                printf(p"hit for addr ${addr}\n")
+            }.elsewhen(isLocked){
+                printf(p"addr ${addr} is locked\n")
+            }.otherwise{
+                printf(p"miss for addr ${addr}\n")
+            }
+        }
+    }
     cache.io.bipassLD.in.valid := hitLD
     cache.io.bipassLD.in.bits.addr  := addr
     cache.io.bipassLD.in.bits.way := cacheWayWire(nParal)
@@ -380,6 +396,8 @@ with HasAccelShellParams{
     dataValid := cache.io.bipassLD.out.valid
 
 
+
+    
     for (i <- 0 until nParal) {
         io.out.req.bits.req.inst := 0.U // for reading
         io.out.req.bits.req.data := DontCare
@@ -387,6 +405,11 @@ with HasAccelShellParams{
         io.out.req.bits.dst := 0.U // 0 for memCtrl
         io.out.req.valid := isMemAction(i)
     }
+        io.out.req.bits.req.inst := 0.U // for reading
+        io.out.req.bits.req.data := DontCare
+        io.out.req.bits.req.addr := actionReg(i).io.deq.bits.addr
+        io.out.req.bits.dst := 0.U // 0 for memCtrl
+        io.out.req.valid := isMemAction(i)
 
 
     for (i <- 0 until nParal) {
