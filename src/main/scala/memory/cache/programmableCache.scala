@@ -54,7 +54,7 @@ with HasAccelShellParams{
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
     val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 3))
-    val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType, n = nParal))
+    val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType.bits, n = nParal))
     val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal))
 
 
@@ -273,7 +273,6 @@ with HasAccelShellParams{
     pc.io.write.valid := routineQueue.io.deq.fire() & routineAddrResValid
     routineQueue.io.deq.ready := !pc.io.isFull
 
-
     for (i <- 0 until nParal) {
         updateWay(i) := pc.io.read(i).out.bits.way === nWays.U & cache.io.cpu(i).resp.fire()
         pc.io.read(i).in.bits.data.addr := DontCare //
@@ -399,18 +398,19 @@ with HasAccelShellParams{
 
     
     for (i <- 0 until nParal) {
-        outReqArbiter.io.in(i).bits.bits.req.data:= 0.U // for reading
-        outReqArbiter.io.in(i).bits.bits.req.data:= DontCare
-        outReqArbiter.io.in(i).bits.bits.req.addr := actionReg(i).io.deq.bits.addr
-        outReqArbiter.io.in(i).bits.bits.req.inst:= 0.U // 0 for memCtrl
-        outReqArbiter.io.in(i).bits.bits.dst:= 0.U
+        outReqArbiter.io.in(i).bits.req.data:= 0.U // for reading
+        outReqArbiter.io.in(i).bits.req.data:= DontCare
+        outReqArbiter.io.in(i).bits.req.addr := actionReg(i).io.deq.bits.addr
+        outReqArbiter.io.in(i).bits.req.inst:= 0.U // 0 for memCtrl
+        outReqArbiter.io.in(i).bits.dst:= 0.U
         outReqArbiter.io.in(i).valid :=  isMemAction(i)
     }
-        io.out.req.bits.req.inst := outReqArbiter.io.out.bits.bits.req.inst// for reading
-        io.out.req.bits.req.data := outReqArbiter.io.out.bits.bits.req.data
-        io.out.req.bits.req.addr := outReqArbiter.io.out.bits.bits.req.addr
-        io.out.req.bits.dst := outReqArbiter.io.out.bits.bits.dst
+        io.out.req.bits.req.inst := outReqArbiter.io.out.bits.req.inst// for reading
+        io.out.req.bits.req.data := outReqArbiter.io.out.bits.req.data
+        io.out.req.bits.req.addr := outReqArbiter.io.out.bits.req.addr
+        io.out.req.bits.dst := outReqArbiter.io.out.bits.dst
         io.out.req.valid :=  outReqArbiter.io.out.valid
+        outReqArbiter.io.out.ready := true.B // @todo Should be connected to NI
 
 
 
@@ -422,5 +422,11 @@ with HasAccelShellParams{
         outRespArbiter.io.in(i).valid := cache.io.cpu(i).resp.valid & cache.io.cpu(i).resp.bits.iswrite
     }
 
-    io.out.resp.bits.inst <> outRespArbiter.io.out.bits.data
+    io.out.resp.bits.inst := outRespArbiter.io.out.bits.event
+    io.out.resp.bits.data := outRespArbiter.io.out.bits.data
+    io.out.resp.bits.addr := outRespArbiter.io.out.bits.addr
+    io.out.resp.valid     := outRespArbiter.io.out.valid
+    outRespArbiter.io.out.ready := true.B
+
+
 }
