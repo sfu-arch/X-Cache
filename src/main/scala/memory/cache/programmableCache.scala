@@ -55,7 +55,7 @@ with HasAccelShellParams{
     val pc       = Module(new PC())
     val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 3))
     val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType.bits, n = nParal))
-    val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal))
+    val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal + 1))
 
 
 
@@ -82,6 +82,10 @@ with HasAccelShellParams{
 
     /********************************************************************************/
 
+        val respPortQueue = for (i <- 0 until nParal + 1) yield{
+            val queue = Module(new Queue(new InstBundle(), entries = 16, pipe = true))
+            queue
+        }
 
 
     val instruction = Wire(Decoupled(new InstBundle()))
@@ -412,14 +416,22 @@ with HasAccelShellParams{
         io.out.req.valid :=  outReqArbiter.io.out.valid
         outReqArbiter.io.out.ready := true.B // @todo Should be connected to NI
 
-
-
-
     for (i <- 0 until nParal) {
-        outRespArbiter.io.in(i).bits.data :=cache.io.cpu(i).resp.bits.data
-        outRespArbiter.io.in(i).bits.event := 0.U
-        outRespArbiter.io.in(i).bits.addr := actionReg(i).io.deq.bits.addr
-        outRespArbiter.io.in(i).valid := cache.io.cpu(i).resp.valid & cache.io.cpu(i).resp.bits.iswrite
+        respPortQueue(i).io.enq.bits.data  :=cache.io.cpu(i).resp.bits.data
+        respPortQueue(i).io.enq.bits.event := 0.U
+        respPortQueue(i).io.enq.bits.addr  := actionReg(i).io.deq.bits.addr
+        respPortQueue(i).io.enq.valid      := cache.io.cpu(i).resp.valid & cache.io.cpu(i).resp.bits.iswrite
+    }
+    respPortQueue(nParal).io.enq.bits.data  := cache.io.bipassLD.out.bits.data
+    respPortQueue(nParal).io.enq.bits.event := 0.U
+    respPortQueue(nParal).io.enq.bits.addr  := RegNext(addr)
+    respPortQueue(nParal).io.enq.valid      := cache.io.bipassLD.out.valid
+
+    for (i <- 0 until nParal + 1) {
+        outRespArbiter.io.in(i).bits.data  := respPortQueue(nParal).io.deq.bits.data
+        outRespArbiter.io.in(i).bits.event := respPortQueue(nParal).io.deq.bits.event
+        outRespArbiter.io.in(i).bits.addr  := respPortQueue(nParal).io.deq.bits.addr
+        outRespArbiter.io.in(i).valid      := respPortQueue(nParal).io.deq.valid
     }
 
     io.out.resp.bits.inst := outRespArbiter.io.out.bits.event
