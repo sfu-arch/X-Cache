@@ -289,7 +289,9 @@ with HasCacheAccelParams{
         }))
         val dataMem = Flipped (new MemBankIO(UInt(xlen.W)) (dataLen = xlen, addrLen= addrLen, banks =nWords, bankDepth= nSets * nWays, bankLen = wordLen).read)
 
-        val out = Valid(UInt((xlen*nWords).W))
+        val out = Valid(new Bundle() {
+            val data = UInt((xlen*nWords).W)
+        })
 
 
 }
@@ -307,6 +309,5 @@ with HasCacheAccelParams {
     dataRead := io.dataMem.outputValue
 
     io.out.valid := RegNext(io.in.fire())
-    io.out.bits  := Cat(dataRead).asUInt()
-
+    io.out.bits.data  := Cat(dataRead).asUInt()
 }
