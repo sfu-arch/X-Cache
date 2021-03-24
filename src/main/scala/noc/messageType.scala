@@ -55,5 +55,20 @@ object MessageBundle {
     }
 }
 
+class Flit(implicit p :Parameters) extends IntraNodeBundle()(p){
+    val payload = UInt(20.W)
+    val src = UInt(srcLen.W)
+    val dst = UInt(dstLen.W)
+}
+object Flit{
+    def default(implicit p: Parameters): Flit = {
+        val flit = Wire(new Flit()(p))
+        IntraNodeBundle.default(flit)
+        flit.payload := 0.U
+        flit.src := 0.U
+        flit.dst := 0.U
+        flit
+    }
+}
 
 
