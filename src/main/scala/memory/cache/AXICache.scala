@@ -82,17 +82,16 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
   val validBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nRead = 1))
   val validTagBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
-  val bipassLD = Module(new bipassLD())
 //  val dirtyBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
 
   //  val arb = Module (new Arbiter())
 
   //  cacheLogic.io.dataMem <> dataMemory.io
 
-  bipassLD.io.in  <> io.bipassLD.in
-  bipassLD.io.out <> io.bipassLD.out
+  biPassModule.io.in  <> io.bipassLD.in
+  biPassModule.io.out <> io.bipassLD.out
 
-  bipassLD.io.dataMem                <> dataMemory.io.read
+  biPassModule.io.dataMem                <> dataMemory.io.read
   cacheLogic(nParal).io.metaMem.read <> metaMemory.io.read
   cacheLogic(nParal).io.dataMem.read <> DontCare // should be connected to bipassLD
 

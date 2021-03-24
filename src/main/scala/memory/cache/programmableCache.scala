@@ -58,9 +58,6 @@ with HasAccelShellParams{
     val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal + 1))
 
 
-
-
-
     stateMem.io  <> DontCare
     cache.io.cpu <> DontCare
 
@@ -117,6 +114,7 @@ with HasAccelShellParams{
     val isMemAction =   Wire(Vec(nParal, Bool()))
 
     val isLocked      = Wire(Bool())
+    val hit           = Wire(Bool())
     val hitLD         = Wire(Bool())
 
     val updateTBEWay   = Wire(Vec(nParal, Bool()))
@@ -372,13 +370,15 @@ with HasAccelShellParams{
         cache.io.cpu(i).req.bits.replaceWay := actionReg(i).io.deq.bits.replaceWay
 
     }
+
     cache.io.cpu(nParal).req.bits.way := DontCare
     cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U)
     cache.io.cpu(nParal).req.bits.addr := Mux(probeStart, addrWire, 0.U)
     cache.io.cpu(nParal).req.valid := probeStart
     cache.io.cpu(nParal).req.bits.replaceWay := DontCare // should be changed
 
-    hitLD :=  (cacheWayWire(nParal) =/= nWays.U) & RegNext(probeStart) & !isLocked & (inputArbiter.io.chosen === cpuPriority.U)
+    hit := (cacheWayWire(nParal) =/= nWays.U) & RegNext(probeStart) & !isLocked
+    hitLD :=   hit & (inputArbiter.io.chosen === cpuPriority.U) & event === Events.EventArray("LOAD").U
 
     when( RegNext(probeStart)){
         printf(p"req from ${RegNext(inputArbiter.io.chosen)}\n")
@@ -395,10 +395,7 @@ with HasAccelShellParams{
     cache.io.bipassLD.in.valid := hitLD
     cache.io.bipassLD.in.bits.addr  := addr
     cache.io.bipassLD.in.bits.way := cacheWayWire(nParal)
-    // data := cache.io.bipassLD.out.bits
     dataValid := cache.io.bipassLD.out.valid
-
-
 
     
     for (i <- 0 until nParal) {
@@ -409,29 +406,33 @@ with HasAccelShellParams{
         outReqArbiter.io.in(i).bits.dst:= 0.U
         outReqArbiter.io.in(i).valid :=  isMemAction(i)
     }
-        io.out.req.bits.req.inst := outReqArbiter.io.out.bits.req.inst// for reading
-        io.out.req.bits.req.data := outReqArbiter.io.out.bits.req.data
-        io.out.req.bits.req.addr := outReqArbiter.io.out.bits.req.addr
-        io.out.req.bits.dst := outReqArbiter.io.out.bits.dst
-        io.out.req.valid :=  outReqArbiter.io.out.valid
-        outReqArbiter.io.out.ready := true.B // @todo Should be connected to NI
+
+    io.out.req.bits.req.inst := outReqArbiter.io.out.bits.req.inst// for reading
+    io.out.req.bits.req.data := outReqArbiter.io.out.bits.req.data
+    io.out.req.bits.req.addr := outReqArbiter.io.out.bits.req.addr
+    io.out.req.bits.dst := outReqArbiter.io.out.bits.dst
+    io.out.req.valid :=  outReqArbiter.io.out.valid
+    outReqArbiter.io.out.ready := true.B // @todo Should be connected to NI
 
     for (i <- 0 until nParal) {
         respPortQueue(i).io.enq.bits.data  :=cache.io.cpu(i).resp.bits.data
         respPortQueue(i).io.enq.bits.event := 0.U
         respPortQueue(i).io.enq.bits.addr  := actionReg(i).io.deq.bits.addr
         respPortQueue(i).io.enq.valid      := cache.io.cpu(i).resp.valid & cache.io.cpu(i).resp.bits.iswrite
+
     }
+
     respPortQueue(nParal).io.enq.bits.data  := cache.io.bipassLD.out.bits.data
     respPortQueue(nParal).io.enq.bits.event := 0.U
     respPortQueue(nParal).io.enq.bits.addr  := RegNext(addr)
     respPortQueue(nParal).io.enq.valid      := cache.io.bipassLD.out.valid
 
     for (i <- 0 until nParal + 1) {
-        outRespArbiter.io.in(i).bits.data  := respPortQueue(nParal).io.deq.bits.data
-        outRespArbiter.io.in(i).bits.event := respPortQueue(nParal).io.deq.bits.event
-        outRespArbiter.io.in(i).bits.addr  := respPortQueue(nParal).io.deq.bits.addr
-        outRespArbiter.io.in(i).valid      := respPortQueue(nParal).io.deq.valid
+        outRespArbiter.io.in(i).bits.data  := respPortQueue(i).io.deq.bits.data
+        outRespArbiter.io.in(i).bits.event := respPortQueue(i).io.deq.bits.event
+        outRespArbiter.io.in(i).bits.addr  := respPortQueue(i).io.deq.bits.addr
+        outRespArbiter.io.in(i).valid      := respPortQueue(i).io.deq.valid
+        respPortQueue(i).io.deq.ready := true.B
     }
 
     io.out.resp.bits.inst := outRespArbiter.io.out.bits.event
