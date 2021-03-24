@@ -26,7 +26,7 @@ with HasCacheAccelParams {
 
 }
 
-class memoryWrapper (val ID:Int, implicit val p:Parameters) extends Module
+class memoryWrapper (val ID:Int)(implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams{
     val io = IO(new memoryWrapperIO)
@@ -90,6 +90,8 @@ with HasAccelShellParams{
     io.out.bits.inst := Events.EventArray("DATA").U
     io.out.bits.src := ID.U
     io.out.bits.dst := srcReg
+    io.out.bits.msgType := memType
+
     io.out.valid := false.B
 
     
