@@ -18,20 +18,21 @@ class memoryWrapperIO (implicit val p:Parameters) extends Bundle
 with HasAccelShellParams
 with HasCacheAccelParams {
 
-    val in = Flipped(Decoupled( new IntraNodeBundle()))
+    val in = Flipped(Decoupled( new Flit()))
     val mem = new AXIMaster(memParams)
-    val out = Valid(new IntraNodeBundle())
+    val out = Valid(new Flit())
 
 //    mem.tieoff()
 
 }
 
-class memoryWrapper ()(implicit val p:Parameters) extends Module
+class memoryWrapper (val ID:Int, implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams{
     val io = IO(new memoryWrapperIO)
 
     val addrReg = RegInit(0.U(addrLen.W))
+    val srcReg = RegInit(0.U)
     val dataRegRead = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
     val dataRegWrite = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
     val (rd :: wr_back :: Nil ) = Enum(2)
@@ -43,6 +44,7 @@ with HasAccelShellParams{
 
     when (start){
         addrReg := io.in.bits.addr
+        srcReg := io.in.bits.src
     }
 
 
@@ -86,7 +88,10 @@ with HasAccelShellParams{
     io.out.bits.data := Cat(dataRegRead)
     io.out.bits.addr := addrReg
     io.out.bits.inst := Events.EventArray("DATA").U
+    io.out.bits.src := ID.U
+    io.out.bits.dst := srcReg
     io.out.valid := false.B
+
     
 
     // printf(p"data Reg ${dataRegRead} \n")
