@@ -138,7 +138,10 @@ with HasAccelShellParams{
         }
         is(stCmdIssue){
             io.out.valid := true.B
-            stReg := stIdle
+            when(io.out.fire()){
+                stReg := stIdle
+            }
+
         }
     }
 
