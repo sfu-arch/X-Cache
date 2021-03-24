@@ -58,6 +58,7 @@ object MessageBundle {
 class Flit(implicit p :Parameters) extends IntraNodeBundle()(p){
     val src = UInt(srcLen.W)
     val dst = UInt(dstLen.W)
+    val msgType = UInt (2.W)
 }
 object Flit{
     def default(implicit p: Parameters): Flit = {
@@ -65,6 +66,7 @@ object Flit{
         IntraNodeBundle.default(flit)
         flit.src := 0.U
         flit.dst := 0.U
+        flit.msgType := 0.U
         flit
     }
 }
