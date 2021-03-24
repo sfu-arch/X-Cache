@@ -25,10 +25,10 @@ class CacheNodeIO (implicit val p:Parameters) extends Bundle with HasCacheAccelP
   }
 }
 
-class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Module with HasCacheAccelParams{
+class CacheNode ( UniqueID : Int = 0)(implicit val p:Parameters) extends Module with HasCacheAccelParams{
 
   val io = IO(new CacheNodeIO())
-  val ID = WireInit(UniqueID.U)
+  
 
 
   val cache = Module(new programmableCache())
@@ -95,8 +95,5 @@ class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Modu
   io.out.cpu.bits.inst := cache.io.out.resp.bits.inst
   io.out.cpu.valid := cache.io.out.resp.valid
   cache.io.out.resp.ready := true.B
-
-
-
 
 }

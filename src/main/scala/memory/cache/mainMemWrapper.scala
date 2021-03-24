@@ -20,19 +20,19 @@ with HasCacheAccelParams {
 
     val in = Flipped(Decoupled( new Flit()))
     val mem = new AXIMaster(memParams)
-    val out = Valid(new Flit())
+    val out = Decoupled(new Flit())
 
 //    mem.tieoff()
 
 }
 
-class memoryWrapper (val ID:Int)(implicit val p:Parameters) extends Module
+class memoryWrapper ( ID:Int = 4)(implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams{
     val io = IO(new memoryWrapperIO)
 
     val addrReg = RegInit(0.U(addrLen.W))
-    val srcReg = RegInit(0.U)
+    val srcReg = RegInit(0.U(io.out.bits.srcLen.W))
     val dataRegRead = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
     val dataRegWrite = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
     val (rd :: wr_back :: Nil ) = Enum(2)
@@ -90,7 +90,9 @@ with HasAccelShellParams{
     io.out.bits.inst := Events.EventArray("DATA").U
     io.out.bits.src := ID.U
     io.out.bits.dst := srcReg
-    io.out.bits.msgType := memType
+  //  io.out.bits.msgType := memType Cause Bug!
+
+    io.out.bits.msgType := 0.U
 
     io.out.valid := false.B
 
