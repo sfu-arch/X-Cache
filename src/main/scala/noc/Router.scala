@@ -1,4 +1,4 @@
-package noc
+package memGen.noc
 
 import chipsalliance.rocketchip.config.Parameters
 import chisel3._
