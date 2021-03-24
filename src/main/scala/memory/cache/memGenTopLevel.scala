@@ -55,14 +55,14 @@ with HasAccelShellParams {
         cacheNode(i).io.in.network <> routerNode(i).io.cacheOut
     }
 
-    memCtrlInputQueue.io.enq <> routerNode(numCache + numMemCtrl).io.cacheOut
+    memCtrlInputQueue.io.enq <> routerNode(numCache + numMemCtrl - 1).io.cacheOut
     memCtrl.io.in <> memCtrlInputQueue.io.deq
-    routerNode(numCache + numMemCtrl).io.cacheIn <> memCtrl.io.out
+    routerNode(numCache + numMemCtrl - 1).io.cacheIn <> memCtrl.io.out
     io.mem <> memCtrl.io.mem
 
     for (i <- 0 until numCache + numMemCtrl - 1){
          routerNode(i+1).io.in <> routerNode(i).io.out
     }
-    routerNode(0).io.in <> routerNode(numCache + numMemCtrl).io.out
+    routerNode(0).io.in <> routerNode(numCache + numMemCtrl - 1).io.out
 
 }
