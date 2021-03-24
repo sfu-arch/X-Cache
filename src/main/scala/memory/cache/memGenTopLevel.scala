@@ -20,22 +20,28 @@ with HasAccelShellParams {
     val mem = new AXIMaster(memParams)
 }
 
-class memGenTopLevel(val numCache:Int =1, val numMemCtrl:Int = 1, implicit val p:Parameters) extends Module
+class memGenTopLevel(val numCache:Int =1, val numMemCtrl:Int = 1) (implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams {
 
-    val io = IO(new memGenTopLevelIO())
+
+    val memCtrl = Module(new memoryWrapper(ID = (numCache + numMemCtrl - 1))(p))
+    val memCtrlInputQueue = Module(new Queue(new Flit(), entries = 16))
+
+    val routerNode = for (i <- 0 until numCache + numMemCtrl) yield {
+        val Router = Module(new Router(ID = i))
+        Router
+    }
 
     val cacheNode = for (i <- 0 until numCache) yield {
         val Cache = Module (new CacheNode(UniqueID = i))
         Cache
     }
-    val routerNode = for (i <- 0 until numCache + numMemCtrl) yield {
-        val Router = Module(new Router(ID = i))
-        Router
-    }
-    val memCtrl = Module(new memoryWrapper(ID = (numCache + numMemCtrl - 1))(p))
-    val memCtrlInputQueue = Module(new Queue(new Flit(), entries = 16))
+
+
+    val io = IO(new memGenTopLevelIO())
+
+
 
     for (i <- 0 until numCache) {
         (io.instruction.bits) <> cacheNode(i).io.in.cpu.bits
