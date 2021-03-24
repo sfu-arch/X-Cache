@@ -58,6 +58,8 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   with HasCacheAccelParams
   with HasAccelShellParams {
 
+  val biPassModule = Module(new bipassLD())
+
   val io = IO(new Bundle {
     val cpu =  Vec(nParal + 1, new CacheCPUIO) // last line for probing
     val bipassLD = (new Bundle() {
@@ -65,7 +67,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
         val addr = (UInt(addrLen.W))
         val way = UInt((wayLen + 1).W)
       }))
-      val out = Valid(UInt((xlen*nWords).W))
+      val out = Valid(biPassModule.io.out.bits.cloneType)
     })
   })
 
