@@ -13,6 +13,9 @@ import memGen.junctions._
 import memGen.shell._
 
 trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
+
+  val (memType :: cacheType :: Nil) = Enum(2)
+
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
   override val addrLen = accelParams.addrlen
