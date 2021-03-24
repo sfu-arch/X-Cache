@@ -48,13 +48,16 @@ class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Modu
   otherNodesQueue.io.enq.bits.data :=  io.in.network.bits.data
   otherNodesQueue.io.enq.bits.inst :=  io.in.network.bits.inst
 
+  io.in.network.ready := memCtrlQueue.io.enq.ready && otherNodesQueue.io.enq.ready
+
   memCtrlQueue.io.enq.valid := false.B
   otherNodesQueue.io.enq.valid := false.B
 
   when(io.in.network.fire()){
-    when(io.in.network.bits.msgType === memType){
+    // should be generic with enum, but it causes bug!
+    when(io.in.network.bits.msgType === 0.U){
       memCtrlQueue.io.enq.valid := true.B
-    }.elsewhen(io.in.network.bits.msgType === cacheType){
+    }.elsewhen(io.in.network.bits.msgType === 1.U){
       otherNodesQueue.io.enq.valid := true.B
     }
   }
@@ -80,11 +83,12 @@ class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Modu
 
 
   io.out.network.valid := cache.io.out.req.valid
-  io.out.network.bits.src := ID
+  io.out.network.bits.src := UniqueID.U
   io.out.network.bits.dst := cache.io.out.req.bits.dst
   io.out.network.bits.inst:= cache.io.out.req.bits.req.inst
   io.out.network.bits.data := cache.io.out.req.bits.req.data
   io.out.network.bits.addr := cache.io.out.req.bits.req.addr
+  io.out.network.bits.msgType := 0.U
 
   io.out.cpu.bits.data := cache.io.out.resp.bits.data
   io.out.cpu.bits.addr := cache.io.out.resp.bits.addr

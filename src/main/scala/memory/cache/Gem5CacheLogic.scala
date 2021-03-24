@@ -14,7 +14,8 @@ import memGen.shell._
 
 trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
-  val (memType :: cacheType :: Nil) = Enum(2)
+  // val (memType :: cacheType :: Nil) = Enum(2)
+  //Caused Weird error!!
 
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
