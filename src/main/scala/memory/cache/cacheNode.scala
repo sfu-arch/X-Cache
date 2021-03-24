@@ -17,8 +17,7 @@ class CacheNodeIO (implicit val p:Parameters) extends Bundle with HasCacheAccelP
 
   val in = new Bundle{
     val cpu = Flipped(Decoupled((new IntraNodeBundle())))
-    val memCtrl = Flipped(Decoupled((new IntraNodeBundle())))
-    val otherNodes = Flipped(Decoupled((new IntraNodeBundle())))
+    val network = Flipped(Decoupled(new Flit()))
   }
   val out = new Bundle{
     val network = Decoupled(new Flit())
@@ -31,8 +30,6 @@ class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Modu
   val io = IO(new CacheNodeIO())
   val ID = WireInit(UniqueID.U)
 
-//  val packetizer = Module(new Packetizer(IntraNodeBundle.default))
-//  val depacketizer = Module(new Depacketizer(IntraNodeBundle.default))
 
   val cache = Module(new programmableCache())
 
@@ -41,8 +38,26 @@ class CacheNode (val UniqueID : Int = 0)(implicit val p:Parameters) extends Modu
   val otherNodesQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
 
   cpuQueue.io.enq <> io.in.cpu
-  memCtrlQueue.io.enq <> io.in.memCtrl
-  otherNodesQueue.io.enq <> io.in.otherNodes
+
+
+  memCtrlQueue.io.enq.bits.addr :=  io.in.network.bits.addr
+  memCtrlQueue.io.enq.bits.data :=  io.in.network.bits.data
+  memCtrlQueue.io.enq.bits.inst :=  io.in.network.bits.inst
+
+  otherNodesQueue.io.enq.bits.addr :=  io.in.network.bits.addr
+  otherNodesQueue.io.enq.bits.data :=  io.in.network.bits.data
+  otherNodesQueue.io.enq.bits.inst :=  io.in.network.bits.inst
+
+  memCtrlQueue.io.enq.valid := false.B
+  otherNodesQueue.io.enq.valid := false.B
+
+  when(io.in.network.fire()){
+    when(io.in.network.bits.msgType === memType){
+      memCtrlQueue.io.enq.valid := true.B
+    }.elsewhen(io.in.network.bits.msgType === cacheType){
+      otherNodesQueue.io.enq.valid := true.B
+    }
+  }
 
   cache.io.in.cpu.bits.event := cpuQueue.io.deq.bits.inst
   cache.io.in.cpu.bits.addr  := cpuQueue.io.deq.bits.addr
