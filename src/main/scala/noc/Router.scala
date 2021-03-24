@@ -7,7 +7,8 @@ import memGen.config.HasAccelParams
 import memGen.memory.message.Flit
 
 
-class Router(ID: Int = 0, Queue_depth: Int = 2)(implicit val p: Parameters) extends Module with HasAccelParams {
+class Router( ID: Int = 0,  Queue_depth: Int = 2)(implicit val p: Parameters) extends Module with HasAccelParams {
+
   val io = IO(new Bundle {
     val cacheIn = Flipped(Decoupled(new Flit()))
     val cacheOut = Decoupled(new Flit())
@@ -17,7 +18,7 @@ class Router(ID: Int = 0, Queue_depth: Int = 2)(implicit val p: Parameters) exte
 
   val cache_in_Q = Module(new Queue(new Flit(), entries = Queue_depth, pipe = true))
   val cache_out_Q = Module(new Queue(new Flit(), entries = Queue_depth, pipe = true))
-  val in_Q = Module(new Queue(new Flit(), entries = Queue_depth, pipe = true))
+  val in_Q = Module(new Queue(new Flit(), entries = Queue_depth, pipe = false))
 
   val arbiter = Module(new RRArbiter(new Flit(), 2))
 
@@ -28,7 +29,6 @@ class Router(ID: Int = 0, Queue_depth: Int = 2)(implicit val p: Parameters) exte
   io.out <> arbiter.io.out
 
   arbiter.io.in(0) <> cache_in_Q.io.deq
-
 
   cache_out_Q.io.enq.bits := in_Q.io.deq.bits
   cache_out_Q.io.enq.valid := in_Q.io.deq.valid && (in_Q.io.deq.bits.dst === ID.U)
