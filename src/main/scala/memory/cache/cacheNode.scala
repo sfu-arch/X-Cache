@@ -21,7 +21,7 @@ class CacheNodeIO (implicit val p:Parameters) extends Bundle with HasCacheAccelP
     val otherNodes = Flipped(Decoupled((new IntraNodeBundle())))
   }
   val out = new Bundle{
-    val network = Valid(new MessageBundle())
+    val network = Decoupled(new Flit())
     val cpu = Decoupled(new IntraNodeBundle())
   }
 }
