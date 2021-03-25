@@ -403,7 +403,7 @@ with HasAccelShellParams{
         outReqArbiter.io.in(i).bits.req.data:= DontCare
         outReqArbiter.io.in(i).bits.req.addr := actionReg(i).io.deq.bits.addr
         outReqArbiter.io.in(i).bits.req.inst:= 0.U // 0 for memCtrl
-        outReqArbiter.io.in(i).bits.dst:= 0.U
+        outReqArbiter.io.in(i).bits.dst:= 1.U
         outReqArbiter.io.in(i).valid :=  isMemAction(i)
     }
 

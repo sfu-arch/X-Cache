@@ -88,7 +88,7 @@ class CacheNode ( UniqueID : Int = 0)(implicit val p:Parameters) extends Module 
   io.out.network.bits.inst:= cache.io.out.req.bits.req.inst
   io.out.network.bits.data := cache.io.out.req.bits.req.data
   io.out.network.bits.addr := cache.io.out.req.bits.req.addr
-  io.out.network.bits.msgType := 0.U
+  io.out.network.bits.msgType := 0.U 
 
   io.out.cpu.bits.data := cache.io.out.resp.bits.data
   io.out.cpu.bits.addr := cache.io.out.resp.bits.addr
