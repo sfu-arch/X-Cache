@@ -276,7 +276,7 @@ with HasAccelShellParams{
     }
 
     pc.io.write.bits.addr := addrInputCache
-    pc.io.write.bits.way := wayInputCache
+    pc.io.write.bits.way := (wayInputCache)
     pc.io.write.bits.replaceWay := replaceWayInputCache
     pc.io.write.bits.pc := routineQueue.io.deq.bits
     pc.io.write.bits.data := dataInputCache
@@ -302,10 +302,10 @@ with HasAccelShellParams{
 
     }
 
-    wayInputCache := (RegEnable(Mux( tbeWay === nWays.U , cacheWayReg(nParal), tbeWay ), nWays.U, !stallInput))
-    replaceWayInputCache := RegEnable(replacer.get_replace_way(0.U), 0.U, !stallInput)
-    addrInputCache := (RegEnable(addr, 0.U, !stallInput))
-    dataInputCache := (RegEnable(data, 0.U, !stallInput))
+    wayInputCache := (Mux( tbeWay === nWays.U , (cacheWayReg(nParal)), tbeWay ))
+    replaceWayInputCache := (RegEnable(replacerWayReg, 0.U, !stallInput))
+    addrInputCache := ((RegEnable(addr, 0.U, !stallInput)))
+    dataInputCache := ((RegEnable(data, 0.U, !stallInput)))
 
     for (i <- 0 until nParal){
         tbeAction(i) := Mux(isTBEAction(i), actionReg(i).io.deq.bits.action.signals, tbe.idle)
