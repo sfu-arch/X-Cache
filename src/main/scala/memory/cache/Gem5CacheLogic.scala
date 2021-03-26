@@ -50,7 +50,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   val taglen = addrLen - (setLen + blen + byteOffsetBits ) // 3 + 2
 
-  val replacementPolicy = "random"
+  val replacementPolicy = "lru"
 
   override val nSigs = accelParams.nSigs
   val actionLen = accelParams.actionLen

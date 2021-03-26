@@ -240,7 +240,16 @@ with HasAccelShellParams{
     routineQueue.io.enq.valid := !pc.io.isFull & readTBE & !isLocked
 
     val replacer  =  ReplacementPolicy.fromString(replacementPolicy, nWays)
-    when(probeStart) {replacer.miss}
+
+    val replStateReg = RegInit(VecInit(Seq.fill(nSets)(0.U(replacer.nBits.W))))
+    val replacerWayWire = Wire(UInt(replacer.nBits.W))
+    val replacerWayReg = Reg(UInt(replacer.nBits.W))
+
+    replacerWayWire := replacer.get_replace_way(replStateReg(addrToSet(instruction.bits.addr)))
+    when(probeStart) {
+        replacerWayReg := replacerWayWire 
+        replStateReg(addrToSet(instruction.bits.addr)) := replacer.get_next_state(replStateReg(addrToSet(instruction.bits.addr)), replacerWayWire)
+    }
 
     for (i <- 0 until nParal) {
 
