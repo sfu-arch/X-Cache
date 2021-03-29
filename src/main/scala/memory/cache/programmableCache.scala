@@ -393,9 +393,11 @@ with HasAccelShellParams{
         printf(p"req from ${RegNext(inputArbiter.io.chosen)}\n")
         when(RegNext(inputArbiter.io.chosen) === cpuPriority.U){
             when(hitLD){
-                printf(p"hit for addr ${addr}\n")
+                printf(p" Load hit for addr ${addr}\n")
             }.elsewhen(isLocked){
                 printf(p"addr ${addr} is locked\n")
+            }.elsewhen(hit){
+                printf(p"Hit for addr ${addr}\n")
             }.otherwise{
                 printf(p"miss for addr ${addr}\n")
             }
