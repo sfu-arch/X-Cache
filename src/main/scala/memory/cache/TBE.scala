@@ -91,17 +91,17 @@ class   TBETable(implicit  val p: Parameters) extends Module
     idxUpdate(i) := finder(i).io.value.bits
   }
 
-  for (i <- 0 until nParal)  {
+  for (i <- 0 until nParal)  {  
 
     when ((isAlloc(i))){
       TBEMemory(idxAlloc) := io.write(i).bits.inputTBE
       TBEAddr(idxAlloc) := addrNoOffset(io.write(i).bits.addr)
       TBEValid(idxAlloc) := true.B
-    }.elsewhen((isDealloc(i))){
+    }.elsewhen((isDealloc(i)) && finder(i).io.value.valid){
       TBEValid(idxUpdate(i)) := false.B
       TBEMemory(idxUpdate(i)) := TBE.default
       TBEAddr(idxUpdate(i)) := 0.U
-    }.elsewhen((isWrite(i))){
+    }.elsewhen((isWrite(i)) && finder(i).io.value.valid){
       when((io.write(i).bits.mask=== maskWay)) {
         TBEMemory(idxUpdate(i)).way := io.write(i).bits.inputTBE.way
       }.elsewhen((io.write(i).bits.mask === maskState)){
