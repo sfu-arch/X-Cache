@@ -88,7 +88,7 @@ with HasAccelShellParams{
     val instruction = Wire(Decoupled(new InstBundle()))
 
     val missLD = Wire(Bool())
-    val missLDReg = Reg(Bool())
+    // val missLDReg = Reg(Bool())
 
     val state    = Wire(UInt(stateLen.W))
     val inputTBE = Wire(Vec(nParal, new TBE))
@@ -201,11 +201,15 @@ with HasAccelShellParams{
     inputArbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
     instruction <> inputArbiter.io.out
 
-    missLD := (cacheWayWire(nParal) === nWays.U) & probeStart & !isLocked & (inputArbiter.io.chosen === cpuPriority.U) & (instruction.bits.event === Events.EventArray("LOAD").U)
+    missLD := (cacheWayWire(nParal) === nWays.U) &  RegNext(probeStart) & !isLocked & RegNext(inputArbiter.io.chosen === cpuPriority.U) & (event === Events.EventArray("LOAD").U)
 
-    when(missLD | !missLD & inputArbiter.io.chosen =/= cpuPriority.U){
-        missLDReg := missLD
-    }
+    // when(missLD | !missLD & inputArbiter.io.chosen =/= cpuPriority.U){
+    //     missLDReg := missLD
+    // }
+
+    hit := (cacheWayWire(nParal) =/= nWays.U) & RegNext(probeStart) & !isLocked
+    hitLD :=   hit && RegNext(inputArbiter.io.chosen === cpuPriority.U) && event === Events.EventArray("LOAD").U
+
 
     io.in.memCtrl.ready := !stallInput & inputArbiter.io.chosen === memCtrlPriority.U 
     io.in.cpu.ready      := !stallInput & inputArbiter.io.chosen === cpuPriority.U
@@ -246,7 +250,7 @@ with HasAccelShellParams{
     val replacerWayReg = Reg(UInt(replacer.nBits.W))
 
     replacerWayWire := replacer.get_replace_way(replStateReg(addrToSet(instruction.bits.addr)))
-    when(probeStart) {
+    when(RegNext(probeStart) && missLD) {
         replacerWayReg := replacerWayWire 
         replStateReg(addrToSet(instruction.bits.addr)) := replacer.get_next_state(replStateReg(addrToSet(instruction.bits.addr)), replacerWayWire)
     }
@@ -377,7 +381,6 @@ with HasAccelShellParams{
         cache.io.cpu(i).req.valid := actionReg(i).io.deq.fire()
         cache.io.cpu(i).req.bits.data := actionReg(i).io.deq.bits.data
         cache.io.cpu(i).req.bits.replaceWay := actionReg(i).io.deq.bits.replaceWay
-
     }
 
     cache.io.cpu(nParal).req.bits.way := DontCare
