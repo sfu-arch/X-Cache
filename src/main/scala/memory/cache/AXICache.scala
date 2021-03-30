@@ -76,7 +76,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val metaMemory = Module(new MemBank(new MetaData())(xlen, setLen, nWays, nSets, wayLen))
 
   val cacheLogic = for (i <- 0 until nParal + 1) yield {
-    val CacheLogic = Module(new Gem5CacheLogic())
+    val CacheLogic = Module(new Gem5CacheLogic(ID = i))
     CacheLogic
   }
 

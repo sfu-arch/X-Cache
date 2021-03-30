@@ -97,6 +97,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   })
   val decoder = Module(new Decoder)
+  val cacheID = WireInit(ID.U(8.W))
 
   io.cpu <> DontCare
   io.metaMem <> DontCare
