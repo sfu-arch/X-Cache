@@ -357,10 +357,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.validTagBits.read.in.valid := addrToWaySig  | (findInSetSig & loadWaysMeta) // probing and allocating
 
 
-  when (!wayInvalid) {
+  when (addrToWaySig) {
+    way := replaceWayInput
+  }.elsewhen(!wayInvalid){
     way := wayInput
-  }.elsewhen(addrToWaySig){
-    way := Mux(emptyLine.io.value.valid, emptyLine.io.value.bits, replaceWayInput)
   }.otherwise{
     way := nWays.U
   }

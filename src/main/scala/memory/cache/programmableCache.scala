@@ -303,7 +303,7 @@ with HasAccelShellParams{
     }
 
     wayInputCache := (Mux( tbeWay === nWays.U , (cacheWayReg(nParal)), tbeWay ))
-    replaceWayInputCache := (RegEnable(replacerWayReg, 0.U, !stallInput))
+    replaceWayInputCache := replacerWayReg
     addrInputCache := ((RegEnable(addr, 0.U, !stallInput)))
     dataInputCache := ((RegEnable(data, 0.U, !stallInput)))
 
