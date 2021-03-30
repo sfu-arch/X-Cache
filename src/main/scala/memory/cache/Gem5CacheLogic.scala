@@ -441,6 +441,19 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.cpu.resp.bits.iswrite := RegNext(readSig) 
   io.cpu.resp.valid    := addrToWaySig | (findInSetSig & loadWaysMeta) | RegNext(readSig) // @todo should be changed to sth more generic
 
+  when(true.B){
+
+    when(addrToWaySig && !emptyLine.io.value.valid ){
+      printf(p"Replacement in Set: ${set}, Way: ${way}, Addr: ${addr_reg}\n")
+    }
+
+    when(cacheID =/= nParal.U && io.cpu.req.fire()){
+      printf(p"Req for Cache_Node: ${cacheID} in Set: ${set}, Way: ${way}, Addr: ${addr_reg}\n")
+    }
+  
+
+  }
+
 //  switch(stIntRdReg){
 //    is (stIntRdIdle) {
 //      when(start(cIntRead)) {
