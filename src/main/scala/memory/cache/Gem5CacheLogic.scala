@@ -445,9 +445,9 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       printf(p"Replacement in Set: ${set}, Way: ${way}, Addr: ${addr_reg}\n")
     }
 
-    when(cacheID =/= nParal.U && io.cpu.req.fire()){
-      printf(p"Req for Cache_Node: ${cacheID} in Set: ${set}, Way: ${way}, Addr: ${addr_reg}\n")
-    }
+    // when(cacheID =/= nParal.U && io.cpu.req.fire()){
+    //   printf(p"Req for Cache_Node: ${cacheID} in Set: ${set}, Way: ${way}, Addr: ${addr_reg}\n")
+    // }
   
 
   }

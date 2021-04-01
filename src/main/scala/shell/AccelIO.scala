@@ -15,6 +15,7 @@ class memGenDCRIO[T <: Data](val PtrsIn: Seq[Int],
   extends AccelBundle()(p) with HasAccelShellParams {
   val in = Flipped(Decoupled(new CallDCR(PtrsIn, ValsIn)))
   val out = Decoupled(new Call(RetsOut))
+  val events = Valid (Vec(16, UInt(32.W)))
 
   override def cloneType = new memGenDCRIO(PtrsIn, ValsIn, RetsOut)(p).asInstanceOf[this.type]
 }

@@ -2,6 +2,7 @@ package memGen.memory.cache
 
 import chisel3._
 import chisel3.util._
+import chisel3.util.experimental._
 import chipsalliance.rocketchip.config._
 import memGen.config._
 import memGen.memory.message._
@@ -201,7 +202,7 @@ with HasAccelShellParams{
     inputArbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
     instruction <> inputArbiter.io.out
 
-    missLD := (cacheWayWire(nParal) === nWays.U) &  RegNext(probeStart) & !isLocked & RegNext(inputArbiter.io.chosen === cpuPriority.U) & (event === Events.EventArray("LOAD").U)
+    missLD := (cacheWayWire(nParal) === nWays.U) &  RegNext(probeStart) & !isLocked & RegNext(inputArbiter.io.chosen === cpuPriority.U) & (event === Events.EventArray("LOAD").U) &&(stateMem.io.out.bits.state === States.StateArray(s"I").U)
 
     // when(missLD | !missLD & inputArbiter.io.chosen =/= cpuPriority.U){
     //     missLDReg := missLD
@@ -454,6 +455,15 @@ with HasAccelShellParams{
     io.out.resp.bits.addr := outRespArbiter.io.out.bits.addr
     io.out.resp.valid     := outRespArbiter.io.out.valid
     outRespArbiter.io.out.ready := true.B
+
+
+    BoringUtils.addSource(missLD, "missLD")
+    BoringUtils.addSource(hitLD,  "hitLD" )
+
+    BoringUtils.addSource(instruction.fire, "InstCount")
+    BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "CPUReq")
+    BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq")
+
 
 
 }
