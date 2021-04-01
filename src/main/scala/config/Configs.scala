@@ -67,13 +67,13 @@ case class DandelionAccelParams(
                                  printLog: Boolean = false,
                                  printMemLog: Boolean = false,
                                  printCLog: Boolean = false,
-                                 cacheNWays: Int = 4,
-                                 cacheNSets: Int = 8,
+                                 cacheNWays: Int = 8,
+                                 cacheNSets: Int = 16,
                                  cacheNState:Int = 8,
                                  cacheAddrLen:Int = 32,
                                  nSigs:Int = 10,
                                  actionLen: Int = 10 + 2,
-                                 tbeSize:Int= 4
+                                 tbeSize:Int= 16
 
                                ) extends AccelParams {
 
@@ -203,7 +203,7 @@ class WithTestConfig(vcrParams: DandelionDCRParams = DandelionDCRParams(),
                         addrBits = 32, dataBits = 64, idBits = 13, lenBits = 4),
                       memParams: AXIParams = AXIParams(
                         addrBits = 32, dataBits = 64, userBits = 5,
-                        lenBits = 8, // limit to 16 beats, instead of 256 beats in AXI4
+                        lenBits = 16, // limit to 16 beats, instead of 256 beats in AXI4
                         coherent = true),
                       nastiParams: NastiParameters = NastiParameters(dataBits = 32, addrBits = 32, idBits = 13))
   extends Config((site, here, up) => {

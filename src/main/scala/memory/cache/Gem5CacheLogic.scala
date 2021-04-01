@@ -26,7 +26,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   //  val nStates = States.stateLen
   val nCom = 8
-  val nParal = 2
+  val nParal = 1 
   val pcLen = 16
 
   val wBytes = xlen >> 3
@@ -38,9 +38,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   val byteOffsetBits = log2Ceil(wBytes) //
   val wordLen = byteOffsetBits
-
-
-
+  
   val nData = bBits / memParams.dataBits
   val dataBeats = nData
 
