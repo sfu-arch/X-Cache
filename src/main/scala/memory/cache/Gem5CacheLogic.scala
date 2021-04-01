@@ -19,6 +19,10 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
+
+  val tbeDepth = accelParams.tbeDepth
+  val lockDepth = accelParams.lockDepth
+
   override val addrLen = accelParams.addrlen
   val dataLen = accelParams.dataLen
   val eventLen = Events.eventLen
@@ -26,7 +30,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   //  val nStates = States.stateLen
   val nCom = 8
-  val nParal = 1 
+  val nParal = 2
   val pcLen = 16
 
   val wBytes = xlen >> 3

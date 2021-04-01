@@ -28,18 +28,13 @@ class CacheNodeIO (implicit val p:Parameters) extends Bundle with HasCacheAccelP
 class CacheNode ( UniqueID : Int = 0)(implicit val p:Parameters) extends Module with HasCacheAccelParams{
 
   val io = IO(new CacheNodeIO())
-  
-
 
   val cache = Module(new programmableCache())
-
   val cpuQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
   val memCtrlQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
   val otherNodesQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
 
   cpuQueue.io.enq <> io.in.cpu
-
-
   memCtrlQueue.io.enq.bits.addr :=  io.in.network.bits.addr
   memCtrlQueue.io.enq.bits.data :=  io.in.network.bits.data
   memCtrlQueue.io.enq.bits.inst :=  io.in.network.bits.inst

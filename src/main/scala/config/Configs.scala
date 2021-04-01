@@ -67,13 +67,14 @@ case class DandelionAccelParams(
                                  printLog: Boolean = false,
                                  printMemLog: Boolean = false,
                                  printCLog: Boolean = false,
-                                 cacheNWays: Int = 8,
-                                 cacheNSets: Int = 16,
                                  cacheNState:Int = 8,
                                  cacheAddrLen:Int = 32,
                                  nSigs:Int = 10,
                                  actionLen: Int = 10 + 2,
-                                 tbeSize:Int= 16
+                                 cacheNWays: Int = 0,
+                                 cacheNSets: Int = 0,
+                                 tbeSize:Int = 0,
+                                 lockSize: Int = 0
 
                                ) extends AccelParams {
 
@@ -95,6 +96,9 @@ case class DandelionAccelParams(
   //Cache
   val nways = cacheNWays
   val nsets = cacheNSets
+  val tbeDepth = tbeSize
+  val lockDepth = lockSize
+
   val nstates = cacheNState
   val addrlen = cacheAddrLen
   val nWords = 4
@@ -239,7 +243,7 @@ trait HasAccelParams {
   val verb = accelParams.verb
   val comp = accelParams.comp
   val nSigs = accelParams.nSigs
-  val tbeDepth = accelParams.tbeSize
+
 
 
 
