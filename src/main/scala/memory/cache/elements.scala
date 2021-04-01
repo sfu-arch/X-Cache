@@ -115,7 +115,7 @@ with HasCacheAccelParams {
     val unLock = Vec(nParal, lock.cloneType)
 }
 
-class lockVector (lockVecDepth :Int = 8)(implicit val p :Parameters) extends Module
+class lockVector (implicit val p :Parameters) extends Module
 with HasCacheAccelParams {
 
     val LOCK = true
@@ -123,17 +123,17 @@ with HasCacheAccelParams {
 
     val io = IO (new lockVectorIO())
 
-    val addrVec = RegInit(VecInit(Seq.fill(lockVecDepth)(0.U(addrLen.W))))
-    val valid = RegInit(VecInit(Seq.fill(lockVecDepth)(false.B)))
+    val addrVec = RegInit(VecInit(Seq.fill(lockDepth)(0.U(addrLen.W))))
+    val valid = RegInit(VecInit(Seq.fill(lockDepth)(false.B)))
 
-    val bitmapProbe =  Wire(UInt(lockVecDepth.W))
+    val bitmapProbe =  Wire(UInt(lockDepth.W))
 
-    val idxLocking = Wire(UInt(lockVecDepth.W))
+    val idxLocking = Wire(UInt(lockDepth.W))
     val idxProbe = Wire(idxLocking.cloneType)
     val idxUnlock = Wire(Vec(nParal, idxLocking.cloneType))
 
     val finder = for (i <- 0 until nParal) yield{
-        val Finder = Module(new Find(UInt(addrLen.W), UInt(addrLen.W), lockVecDepth, log2Ceil(lockVecDepth)))
+        val Finder = Module(new Find(UInt(addrLen.W), UInt(addrLen.W), lockDepth, log2Ceil(lockDepth)))
         Finder
     }
 //    io.isLocked.bits := addrVec.map( addr => (io.inAddress.bits === addr)).foldLeft(0.U)({
@@ -152,7 +152,7 @@ with HasCacheAccelParams {
     //
     bitmapProbe := (Cat( addrVec.map( addr => (addr === addrNoOffset(io.lock.in.bits.addr))).reverse))
     idxProbe := OHToUInt((bitmapProbe & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
-    idxLocking := lockVecDepth.U
+    idxLocking := lockDepth.U
 
 
     for (i <- 0 until nParal) {
@@ -169,7 +169,7 @@ with HasCacheAccelParams {
         }
     }
 
-    (0 until lockVecDepth).foldLeft(when(false.B) {}) {
+    (0 until lockDepth).foldLeft(when(false.B) {}) {
         case (whenContext, line) =>
             whenContext.elsewhen(valid(line) === false.B) {
                 idxLocking := line.U

@@ -20,9 +20,6 @@ trait AccelParams {
   val mshrLen: Int
   val fType: FType
 
-  //Cache
-  val nways: Int
-  val nsets: Int
 
   def cacheBlockBytes: Int
 
