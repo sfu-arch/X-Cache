@@ -40,7 +40,7 @@ with HasAccelShellParams{
     val stReg = RegInit(stIdle)
 
     val start = Wire(Bool())
-    start := io.in.fire() & stReg === stIdle & io.in.bits.addr =/= 0.U & io.in.bits.addr =/= 820685020.U
+    start := io.in.fire() & stReg === stIdle & io.in.bits.addr =/= 0.U & !(io.in.bits.addr > 820685020.U)
 
     when (start){
         addrReg := io.in.bits.addr
