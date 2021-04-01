@@ -207,7 +207,7 @@ with HasAccelShellParams{
     //     missLDReg := missLD
     // }
 
-    hit := (cacheWayWire(nParal) =/= nWays.U) & RegNext(probeStart) & !isLocked
+    hit := (cacheWayWire(nParal) =/= nWays.U) & RegNext(probeStart) & !isLocked && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
     hitLD :=   hit && RegNext(inputArbiter.io.chosen === cpuPriority.U) && event === Events.EventArray("LOAD").U
 
 
@@ -389,8 +389,6 @@ with HasAccelShellParams{
     cache.io.cpu(nParal).req.valid := probeStart
     cache.io.cpu(nParal).req.bits.replaceWay := DontCare // should be changed
 
-    hit := (cacheWayWire(nParal) =/= nWays.U) & RegNext(probeStart) & !isLocked
-    hitLD :=   hit & (inputArbiter.io.chosen === cpuPriority.U) & event === Events.EventArray("LOAD").U
 
     when( RegNext(probeStart)){
         printf(p"req from ${RegNext(inputArbiter.io.chosen)}\n")
