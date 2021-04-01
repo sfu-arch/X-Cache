@@ -156,18 +156,15 @@ with HasCacheAccelParams {
 
 
     for (i <- 0 until nParal) {
-        erase(i) := (isLocked && io.unLock(i).in.fire() && (io.unLock(i).in.bits.cmd === UNLOCK.B))
-
+        erase(i) := (io.unLock(i).in.fire() && (io.unLock(i).in.bits.cmd === UNLOCK.B))
         finder(i).io.data := addrVec
         finder(i).io.key := addrNoOffset(io.unLock(i).in.bits.addr)
         finder(i).io.valid := valid
-
         idxUnlock(i) := finder(i).io.value.bits
         io.unLock(i).out := DontCare
-
     }
     for (i <- 0 until nParal) {
-        when(erase(i) & finder(i).io.value.valid) {
+        when(erase(i) && finder(i).io.value.valid) {
             valid(idxUnlock(i)) := false.B
         }
     }
@@ -259,7 +256,6 @@ with HasCacheAccelParams{
     val writeIdx = WireInit(findNewLine.io.value.bits)
 
     for (i <-  0 until nParal){
-
         io.read(i).out.bits  <> pcContent(i)
         io.read(i).out.valid := pcContent(i).valid
     }
