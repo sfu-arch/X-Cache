@@ -71,7 +71,8 @@ case class DandelionAccelParams(
                                  cacheNWays: Int = 0,
                                  cacheNSets: Int = 0,
                                  tbeSize:Int = 0,
-                                 lockSize: Int = 0
+                                 lockSize: Int = 0,
+                                 nparal: Int = 1
 
                                ) extends AccelParams {
 
@@ -95,6 +96,8 @@ case class DandelionAccelParams(
   val nsets = cacheNSets
   val tbeDepth = tbeSize
   val lockDepth = lockSize
+  val nParal = nparal
+
 
   val nstates = cacheNState
   val addrlen = cacheAddrLen
