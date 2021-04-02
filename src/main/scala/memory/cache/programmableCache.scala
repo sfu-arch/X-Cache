@@ -202,15 +202,19 @@ with HasAccelShellParams{
     inputArbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
     instruction <> inputArbiter.io.out
 
-    missLD := (cacheWayWire(nParal) === nWays.U) &  RegNext(probeStart) & !isLocked & RegNext(inputArbiter.io.chosen === cpuPriority.U) & (event === Events.EventArray("LOAD").U) &&(stateMem.io.out.bits.state === States.StateArray(s"I").U)
 
     // when(missLD | !missLD & inputArbiter.io.chosen =/= cpuPriority.U){
     //     missLDReg := missLD
     // }
 
-    hit := (cacheWayWire(nParal) =/= nWays.U) & RegNext(probeStart) & !isLocked && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
-    hitLD :=   hit && RegNext(inputArbiter.io.chosen === cpuPriority.U) && event === Events.EventArray("LOAD").U
+    val probeHit = Wire(Bool())
+    val recheckLock = Wire(Bool())
+    recheckLock := RegNext(isLocked && endOfRoutine.reduce(_||_))
 
+    probeHit := (RegNext(probeStart)  && !isLocked) || (!isLocked && RegNext(recheckLock)) 
+    hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
+    hitLD :=   hit && event === Events.EventArray("LOAD").U
+    missLD := probeHit & (cacheWayWire(nParal) === nWays.U) &&  (event === Events.EventArray("LOAD").U) && (stateMem.io.out.bits.state =/= States.StateArray(s"E").U)
 
     io.in.memCtrl.ready := !stallInput & inputArbiter.io.chosen === memCtrlPriority.U 
     io.in.cpu.ready      := !stallInput & inputArbiter.io.chosen === cpuPriority.U
