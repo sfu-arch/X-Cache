@@ -460,10 +460,11 @@ with HasAccelShellParams{
 
     BoringUtils.addSource(missLD, "missLD")
     BoringUtils.addSource(hitLD,  "hitLD" )
-
-    BoringUtils.addSource(instruction.fire, "InstCount")
-    BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "CPUReq")
+    BoringUtils.addSource(instruction.fire, "instCount")
+    BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "cpuReq")
     BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq")
+    BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.EventArray("LOAD").U , "ldReq")
+
 
 
 
