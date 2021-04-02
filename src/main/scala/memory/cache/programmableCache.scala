@@ -89,7 +89,6 @@ with HasAccelShellParams{
     val instruction = Wire(Decoupled(new InstBundle()))
 
     val missLD = Wire(Bool())
-    // val missLDReg = Reg(Bool())
 
     val state    = Wire(UInt(stateLen.W))
     val inputTBE = Wire(Vec(nParal, new TBE))
@@ -202,11 +201,6 @@ with HasAccelShellParams{
     inputArbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
     instruction <> inputArbiter.io.out
 
-
-    // when(missLD | !missLD & inputArbiter.io.chosen =/= cpuPriority.U){
-    //     missLDReg := missLD
-    // }
-
     val probeHit = Wire(Bool())
     val recheckLock = Wire(Bool())
     recheckLock := RegNext(isLocked && endOfRoutine.reduce(_||_))
@@ -215,7 +209,7 @@ with HasAccelShellParams{
     hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
     hitLD :=   hit && event === Events.EventArray("LOAD").U
     missLD := probeHit & (cacheWayWire(nParal) === nWays.U) &&  (event === Events.EventArray("LOAD").U) && (stateMem.io.out.bits.state =/= States.StateArray(s"E").U)
-
+    
     io.in.memCtrl.ready := !stallInput & inputArbiter.io.chosen === memCtrlPriority.U 
     io.in.cpu.ready      := !stallInput & inputArbiter.io.chosen === cpuPriority.U
     io.in.otherNodes.ready :=  !stallInput & inputArbiter.io.chosen === otherNodesPriority.U
@@ -224,10 +218,10 @@ with HasAccelShellParams{
 
     instruction.ready := !stallInput  // @todo should be changed for stalled situations
 
-    checkLock :=  probeStart || RegNext(isLocked && endOfRoutine.reduce(_||_))
+    checkLock :=  probeStart || recheckLock
 
-    readTBE     := RegEnable(instruction.fire(), false.B, instruction.ready)
-    getState    := RegEnable(instruction.fire(), false.B, instruction.ready)
+    readTBE     := RegEnable(probeStart, false.B, !stallInput) || (RegNext(RegNext(stallInput && endOfRoutine.reduce(_||_) && !probeStart)&& !probeStart) && !stallInput)
+    getState    := readTBE
 
     routineAddrResValid := RegEnable(readTBE , false.B, !stall)
 
