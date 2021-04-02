@@ -248,11 +248,14 @@ with HasAccelShellParams{
     val replStateReg = RegInit(VecInit(Seq.fill(nSets)(0.U(replacer.nBits.W))))
     val replacerWayWire = Wire(UInt(replacer.nBits.W))
     val replacerWayReg = Reg(UInt(replacer.nBits.W))
+    val addrReplacer = Wire(UInt(addrLen.W))
 
-    replacerWayWire := replacer.get_replace_way(replStateReg(addrToSet(instruction.bits.addr)))
-    when(RegNext(probeStart) && missLD) {
+    addrReplacer := addrToSet(addr)
+
+    replacerWayWire := replacer.get_replace_way(replStateReg(addrReplacer))
+    when(missLD & RegNext(probeStart    )) {
         replacerWayReg := replacerWayWire 
-        replStateReg(addrToSet(instruction.bits.addr)) := replacer.get_next_state(replStateReg(addrToSet(instruction.bits.addr)), replacerWayWire)
+        replStateReg(addrReplacer) := replacer.get_next_state(replStateReg(addrReplacer), replacerWayWire)
     }
 
     for (i <- 0 until nParal) {
