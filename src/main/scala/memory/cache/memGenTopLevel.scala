@@ -20,7 +20,7 @@ class Bore(implicit p: Parameters) extends Module  {
         val events = Output (Vec(nEvents - 1, UInt(32.W)))
     })
 
-    val names = Vector("missLD","hitLD", "InstCount", "CPUReq", "memCtrlReq" )
+    val names = Vector("missLD","hitLD", "instCount", "cpuReq", "memCtrlReq", "ldReq" )
     io.events := DontCare
 
     val boreWire = WireInit(VecInit(Seq.fill(nEvents - 1)(false.B)))
