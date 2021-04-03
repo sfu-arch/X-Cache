@@ -143,7 +143,7 @@ with HasAccelShellParams{
 
     val wayInputCache = Wire(UInt((wayLen+1).W))
     val replaceWayInputCache = Wire(UInt((wayLen+1).W))
-    val tbeWay        = RegInit(nWays.U((wayLen+1).W))
+    val tbeWay        = WireInit(nWays.U((wayLen+1).W))
 
     val routineQueue = Module( new Queue( UInt((eventLen + stateLen).W), pipe = true, entries = 1 ))
 
