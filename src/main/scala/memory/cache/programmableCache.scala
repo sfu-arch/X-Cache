@@ -208,7 +208,7 @@ with HasAccelShellParams{
     probeHit := (RegNext(probeStart)  && !isLocked) || (!isLocked && RegNext(recheckLock)) 
     hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
     hitLD :=   hit && event === Events.EventArray("LOAD").U
-    missLD := probeHit & (cacheWayWire(nParal) === nWays.U) &&  (event === Events.EventArray("LOAD").U) && (stateMem.io.out.bits.state =/= States.StateArray(s"E").U)
+    missLD := probeHit &&  (event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state =/= States.StateArray(s"E").U) || (cacheWayWire(nParal) === nWays.U) )
     
     io.in.memCtrl.ready := !stallInput & inputArbiter.io.chosen === memCtrlPriority.U 
     io.in.cpu.ready      := !stallInput & inputArbiter.io.chosen === cpuPriority.U
@@ -253,7 +253,7 @@ with HasAccelShellParams{
     addrReplacer := addrToSet(addr)
 
     replacerWayWire := replacer.get_replace_way(replStateReg(addrReplacer))
-    when(missLD & RegNext(probeStart    )) {
+    when(missLD & RegNext(probeStart)) {
         replacerWayReg := replacerWayWire 
         replStateReg(addrReplacer) := replacer.get_next_state(replStateReg(addrReplacer), replacerWayWire)
     }
