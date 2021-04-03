@@ -84,7 +84,7 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
   val validTagBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
 //  val dirtyBits = Module(new paralReg(Bool(), nSets * nWays, nParal + 1, nWays))
 
-  //  val arb = Module (new Arbiter())
+   val metaWrArb = Module (new Arbiter(cacheLogic(0).io.metaMem.write.bits.cloneType, n = nParal))
 
   //  cacheLogic.io.dataMem <> dataMemory.io
 
@@ -99,8 +99,18 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
     cacheLogic(i).io.dataMem.read <> DontCare
     cacheLogic(i).io.metaMem.read <> DontCare
     dataMemory.io.write           <> cacheLogic(i).io.dataMem.write
-    metaMemory.io.write           <> cacheLogic(i).io.metaMem.write
+    metaWrArb.io.in(i).bits.bank          := cacheLogic(i).io.metaMem.write.bits.bank
+    metaWrArb.io.in(i).bits.address       := cacheLogic(i).io.metaMem.write.bits.address
+    metaWrArb.io.in(i).bits.inputValue    := cacheLogic(i).io.metaMem.write.bits.inputValue
+    metaWrArb.io.in(i).valid    := cacheLogic(i).io.metaMem.write.valid
+
+
   }
+  metaMemory.io.write.bits.bank    := metaWrArb.io.out.bits.bank 
+  metaMemory.io.write.bits.address    := metaWrArb.io.out.bits.address   
+  metaMemory.io.write.bits.inputValue := metaWrArb.io.out.bits.inputValue
+  metaMemory.io.write.valid := metaWrArb.io.out.valid
+  metaWrArb.io.out.ready := true.B
     //    metaMemory.io.inputValue <> cacheLogic(i).io.metaMem.outputValue
 //    cacheLogic(i).io.metaMem.bank <> metaMemory.io.bank
 //    cacheLogic(i).io.metaMem.address <> metaMemory.io.address
