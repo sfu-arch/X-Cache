@@ -101,7 +101,7 @@ case class DandelionAccelParams(
 
   val nstates = cacheNState
   val addrlen = cacheAddrLen
-  val nWords = 4
+  val nWords = 32
 
 //  val nCommand = nCom
 //  var comlen:Int = math.ceil(math.log(nCommand)/math.log(2)).toInt
