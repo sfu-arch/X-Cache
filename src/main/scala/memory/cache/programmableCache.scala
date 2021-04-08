@@ -172,7 +172,7 @@ with HasAccelShellParams{
     }
     when(instruction.fire() ){
         event := instruction.bits.event
-    }.elsewhen((!isLocked && RegNext(recheckLock))){
+    }.elsewhen((!isLocked && RegNext(recheckLock))& hitLD){
         event := Events.EventArray("NOP").U
     }
 
