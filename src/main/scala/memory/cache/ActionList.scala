@@ -18,7 +18,7 @@ object ActionList {
         ("NOP",         "b000000000000".U),
         ("AllocateTBE", "b010000000001".U),
         ("DeallocateTBE", "b010000000010".U),
-          ("SetState",   "b110000000000".U)
+        ("SetState",   "b110000000000".U)
 //        ("ReadTBE",     "b00000000011".U)
 
 

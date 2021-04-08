@@ -224,9 +224,9 @@ with HasAccelShellParams{
     routineAddrResValid := RegEnable(readTBE , false.B, !stall)
 
     for (i <- 0 until nParal) {
-        isTBEAction(i) :=   (actionReg(i).io.deq.bits.action.actionType === 1.U)
-        isCacheAction(i) := (actionReg(i).io.deq.bits.action.actionType === 0.U)
-        isStateAction(i) := (actionReg(i).io.deq.bits.action.actionType === 2.U | actionReg(i).io.deq.bits.action.actionType === 3.U)
+        isTBEAction(i) :=   (actionReg(i).io.deq.bits.action.actionType === 1.U) && actionReg(i).io.deq.valid
+        isCacheAction(i) := (actionReg(i).io.deq.bits.action.actionType === 0.U) && actionReg(i).io.deq.valid
+        isStateAction(i) := (actionReg(i).io.deq.bits.action.actionType === 3.U) && actionReg(i).io.deq.valid
         isMemAction(i) := isCacheAction(i) & (actionReg(i).io.deq.bits.action.signals === sigToAction(ActionList.actions("DataRQ")))
     }
 
@@ -251,7 +251,7 @@ with HasAccelShellParams{
     addrReplacer := addrToSet(addr)
 
     replacerWayWire := replacer.get_replace_way(replStateReg(addrReplacer))
-    when(missLD & RegNext(probeStart)) {
+    when(missLD & RegNext(probeStart)) { //when a miss happens
         replacerWayReg := replacerWayWire 
         replStateReg(addrReplacer) := replacer.get_next_state(replStateReg(addrReplacer), replacerWayWire)
     }
