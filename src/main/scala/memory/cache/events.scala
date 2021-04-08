@@ -13,6 +13,7 @@ object Events {
                         (s"LOAD", 0x00),
                         (s"STORE", 0x01),
     (s"DATA",0x02),
+    (s"NOP", 0x03)
 
   )
 

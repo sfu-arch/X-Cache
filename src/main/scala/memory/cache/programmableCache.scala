@@ -168,8 +168,12 @@ with HasAccelShellParams{
     //latching
     when(instruction.fire() ){
         addr := instruction.bits.addr
-        event := instruction.bits.event
         data := instruction.bits.data
+    }
+    when(instruction.fire() ){
+        event := instruction.bits.event
+    }.elsewhen((!isLocked && RegNext(recheckLock))){
+        event := Events.EventArray("NOP").U
     }
 
     for (i <- 0 until (nParal + 1) ) {
