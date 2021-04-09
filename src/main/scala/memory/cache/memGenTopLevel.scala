@@ -38,22 +38,22 @@ class Bore(implicit p: Parameters) extends Module  {
 
 }
 
-class memGenTopLevelIO( implicit val p:Parameters) extends Bundle
+class memGenTopLevelIO(numCache:Int = 1)(implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
 with HasAccelShellParams {
 
-    val instruction = Flipped(Decoupled(new IntraNodeBundle()))
-    val resp = Decoupled(new IntraNodeBundle())
+    val instruction = Vec(numCache, Flipped(Decoupled(new IntraNodeBundle())))
+    val resp = Vec(numCache, Decoupled(new IntraNodeBundle()))
     val events = Valid(Vec(16, UInt(32.W)))
     val mem = new AXIMaster(memParams)
 }
 
-class memGenTopLevel(val numCache:Int =1, val numMemCtrl:Int = 1) (implicit val p:Parameters) extends Module
+class memGenTopLevel(val numCache:Int = 1, val numMemCtrl:Int = 1) (implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams {
 
 
-    val io = IO(new memGenTopLevelIO())
+    val io = IO(new memGenTopLevelIO(numCache)(p))
 
     val memCtrl = Module(new memoryWrapper(ID = (numCache + numMemCtrl - 1))(p))
     val memCtrlInputQueue = Module(new Queue(new Flit(), entries = 64))
@@ -73,10 +73,10 @@ with HasAccelShellParams {
 
 
     for (i <- 0 until numCache) {
-        (io.instruction.bits) <> cacheNode(i).io.in.cpu.bits
-        cacheNode(i).io.in.cpu.valid := (io.instruction.valid)
-        io.instruction.ready := cacheNode(i).io.in.cpu.ready
-        io.resp <>  cacheNode(i).io.out.cpu
+        (io.instruction(i).bits) <> cacheNode(i).io.in.cpu.bits
+        cacheNode(i).io.in.cpu.valid := (io.instruction(i).valid)
+        io.instruction(i).ready := cacheNode(i).io.in.cpu.ready
+        io.resp(i) <>  cacheNode(i).io.out.cpu
     }
 
     for (i <- 0 until numCache){
