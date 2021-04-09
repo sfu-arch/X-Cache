@@ -29,7 +29,7 @@ class CacheNode ( UniqueID : Int = 0)(implicit val p:Parameters) extends Module 
 
   val io = IO(new CacheNodeIO())
 
-  val cache = Module(new programmableCache())
+  val cache = Module(new programmableCache(UniqueID))
   val cpuQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
   val memCtrlQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
   val otherNodesQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
