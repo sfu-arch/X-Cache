@@ -440,11 +440,11 @@ with HasAccelShellParams{
     io.out.resp.valid     := outRespArbiter.io.out.valid
     outRespArbiter.io.out.ready := true.B
 
-    BoringUtils.addSource(missLD, "missLD")
-    BoringUtils.addSource(hitLD,  "hitLD" )
-    BoringUtils.addSource(instruction.fire, "instCount")
-    BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "cpuReq")
-    BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq")
-    BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.EventArray("LOAD").U , "ldReq")
+    // BoringUtils.addSource(missLD, "missLD")
+    // BoringUtils.addSource(hitLD,  "hitLD" )
+    // BoringUtils.addSource(instruction.fire, "instCount")
+    // BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "cpuReq")
+    // BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq")
+    // BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.EventArray("LOAD").U , "ldReq")
 
 }

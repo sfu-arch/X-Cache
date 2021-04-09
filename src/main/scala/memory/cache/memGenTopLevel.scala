@@ -38,17 +38,17 @@ class Bore(implicit p: Parameters) extends Module  {
 
 }
 
-class memGenTopLevelIO(numCache:Int = 1)(implicit val p:Parameters) extends Bundle
+class memGenTopLevelIO(numCache:Int = 0)(implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
 with HasAccelShellParams {
 
     val instruction = Vec(numCache, Flipped(Decoupled(new IntraNodeBundle())))
     val resp = Vec(numCache, Decoupled(new IntraNodeBundle()))
-    val events = Vec(numCache, Valid(Vec(16, UInt(32.W))))
+    val events = Valid(Vec(16, UInt(32.W)))
     val mem = new AXIMaster(memParams)
 }
 
-class memGenTopLevel(val numCache:Int = 2, val numMemCtrl:Int = 1) (implicit val p:Parameters) extends Module
+class memGenTopLevel(val numCache:Int = 2 , val numMemCtrl:Int = 1) (implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams {
 
@@ -66,10 +66,10 @@ with HasAccelShellParams {
         Cache
     }
 
-    val bore = Module(new Bore())
+    // val bore = Module(new Bore())
 
     io.events.valid := true.B
-    io.events.bits <> bore.io.events
+    io.events.bits <> DontCare
 
 
     for (i <- 0 until numCache) {
