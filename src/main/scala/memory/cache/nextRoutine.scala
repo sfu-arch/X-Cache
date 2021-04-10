@@ -12,6 +12,7 @@ object nextRoutine {
                     Routine ("DATA_ID"), DstState("D"), Trigger(Seq("DATA", "ID")),
                     Routine ("STORE_E"), DstState("E"), Trigger(Seq("STORE", "E")),
                     Routine("NOP_E"), DstState("E"), Trigger(Seq("NOP", "E")),
+                    Routine("NOP_ID"), DstState("ID"), Trigger(Seq("NOP", "ID")),  
                     Routine("NOP_I"), DstState("I"), Trigger(Seq("NOP", "I")),
                   
 

@@ -20,9 +20,17 @@ class Bore(val ID:Int =0)(implicit p: Parameters) extends Module  {
         val events = Output (Vec(nEvents - 1, UInt(32.W)))
     })
 
-    val names = Vector(s"missLD_$ID","hitLD", "instCount", "cpuReq", "memCtrlReq", "ldReq" )
+    var names = Vector[String]()
+    if(ID == 0){
+        names = Vector("missLD_0", "hitLD_0", "instCount_0", "cpuReq_0", "memCtrlReq_0", "ldReq_0" )
+    }
+
+    // if(ID == 1){
+    //     names = Vector("missLD_1", "hitLD_1", "instCount_1", "cpuReq_1", "memCtrlReq_1", "ldReq_1" )
+    // }
     io.events := DontCare
 
+    println(names)
     val boreWire = WireInit(VecInit(Seq.fill(nEvents - 1)(false.B)))
 
     val cntWire = for (i <- 0 until nEvents - 1) yield {
@@ -57,7 +65,7 @@ with HasAccelShellParams {
     val numCache = nCache
 
     val memCtrl = Module(new memoryWrapper(ID = (nCache + numMemCtrl - 1))(p))
-    val memCtrlInputQueue = Module(new Queue(new Flit(), entries = 256))
+    val memCtrlInputQueue = Module(new Queue(new Flit(), entries = 32))
     val routerNode = for (i <- 0 until nCache + numMemCtrl) yield {
         val Router = Module(new Router(ID = i))
         Router
@@ -71,7 +79,7 @@ with HasAccelShellParams {
 
 
     io.events.valid := true.B
-    io.events.bits <> DontCare
+    io.events.bits <> bore.io.events
 
 
     for (i <- 0 until nCache) {
