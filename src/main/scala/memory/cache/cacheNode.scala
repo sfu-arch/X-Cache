@@ -31,9 +31,9 @@ class CacheNode ( UniqueID : Int = 0)(implicit val p:Parameters) extends Module 
 
   val ID = WireInit (UniqueID.U)
   val cache = Module(new programmableCache(UniqueID))
-  val cpuQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
-  val memCtrlQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
-  val otherNodesQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
+  val cpuQueue = Module(new Queue(new IntraNodeBundle(), entries = 256, pipe = true))
+  val memCtrlQueue = Module(new Queue(new IntraNodeBundle(), entries = 256, pipe = true))
+  val otherNodesQueue = Module(new Queue(new IntraNodeBundle(), entries = 256, pipe = true))
 
   cpuQueue.io.enq <> io.in.cpu
   memCtrlQueue.io.enq.bits.addr :=  io.in.network.bits.addr

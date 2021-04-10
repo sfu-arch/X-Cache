@@ -382,8 +382,9 @@ with HasAccelShellParams{
     cache.io.cpu(nParal).req.bits.replaceWay := DontCare 
 
     when( RegNext(probeStart)){
-        printf(p"req from ${RegNext(inputArbiter.io.chosen)}\n")
+        printf(p"Cache: ${ID} req from ${RegNext(inputArbiter.io.chosen)} Addr: ${RegNext(inputArbiter.io.out.bits.addr)}\n")
         when(RegNext(inputArbiter.io.chosen) === cpuPriority.U){
+            printf(p"Cache: ${ID} ")
             when(hitLD){
                 printf(p" Load hit for addr ${addr}\n")
             }.elsewhen(isLocked){
