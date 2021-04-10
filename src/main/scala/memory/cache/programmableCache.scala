@@ -167,6 +167,9 @@ with HasAccelShellParams{
     val probeHit = Wire(Bool())
     val recheckLock = Wire(Bool())
 
+    val checkTBEFull = RegEnable(tbe.io.isFull, false.B, probeStart | io.in.memCtrl.valid)
+
+
     //latching
     when(instruction.fire() ){
         addr := instruction.bits.addr
