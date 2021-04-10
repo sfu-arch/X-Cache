@@ -71,7 +71,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
   allocLine.io.data := TBEValid
   idxAlloc := allocLine.io.value.bits
 
-  io.isFull := (!allocLine.io.value.valid & isRead & !idxReadValid)
+  io.isFull := (!allocLine.io.value.valid)
 
 
   val finder = for (i <- 0 until nParal + 1) yield {
