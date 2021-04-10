@@ -17,6 +17,7 @@ object RoutineROM {
     Routine ("STORE_E") , Actions(Seq( "WrInt","SetState")), DstState("E"),
     Routine ("NOP_E") , Actions(Seq("SetState")), DstState("E"),
     Routine ("NOP_I") , Actions(Seq("SetState")), DstState("I"),
+    Routine ("NOP_ID") , Actions(Seq("SetState")), DstState("ID"),
     Routine ("STORE_IS") , Actions(Seq( "WrInt", "SetState")), DstState("S"),
 
 
