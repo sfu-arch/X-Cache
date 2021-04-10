@@ -12,7 +12,7 @@ import memGen.noc._
 import memGen.memory.message._
 
 
-class Bore(implicit p: Parameters) extends Module  {
+class Bore(val ID:Int =0)(implicit p: Parameters) extends Module  {
 
     val nEvents = 17
     
@@ -20,7 +20,7 @@ class Bore(implicit p: Parameters) extends Module  {
         val events = Output (Vec(nEvents - 1, UInt(32.W)))
     })
 
-    val names = Vector("missLD","hitLD", "instCount", "cpuReq", "memCtrlReq", "ldReq" )
+    val names = Vector(s"missLD_$ID","hitLD", "instCount", "cpuReq", "memCtrlReq", "ldReq" )
     io.events := DontCare
 
     val boreWire = WireInit(VecInit(Seq.fill(nEvents - 1)(false.B)))
@@ -38,60 +38,62 @@ class Bore(implicit p: Parameters) extends Module  {
 
 }
 
-class memGenTopLevelIO(numCache:Int = 0)(implicit val p:Parameters) extends Bundle
+class memGenTopLevelIO(implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
 with HasAccelShellParams {
 
-    val instruction = Vec(numCache, Flipped(Decoupled(new IntraNodeBundle())))
-    val resp = Vec(numCache, Decoupled(new IntraNodeBundle()))
+    val instruction = Vec(nCache, Flipped(Decoupled(new IntraNodeBundle())))
+    val resp = Vec(nCache, Decoupled(new IntraNodeBundle()))
     val events = Valid(Vec(16, UInt(32.W)))
     val mem = new AXIMaster(memParams)
 }
 
-class memGenTopLevel(val numCache:Int = 2 , val numMemCtrl:Int = 1) (implicit val p:Parameters) extends Module
+class memGenTopLevel(val numMemCtrl:Int = 1) (implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams {
 
 
-    val io = IO(new memGenTopLevelIO(numCache)(p))
+    val io = IO(new memGenTopLevelIO())
+    val numCache = nCache
 
-    val memCtrl = Module(new memoryWrapper(ID = (numCache + numMemCtrl - 1))(p))
-    val memCtrlInputQueue = Module(new Queue(new Flit(), entries = 64))
-    val routerNode = for (i <- 0 until numCache + numMemCtrl) yield {
+    val memCtrl = Module(new memoryWrapper(ID = (nCache + numMemCtrl - 1))(p))
+    val memCtrlInputQueue = Module(new Queue(new Flit(), entries = 256))
+    val routerNode = for (i <- 0 until nCache + numMemCtrl) yield {
         val Router = Module(new Router(ID = i))
         Router
     }
-    val cacheNode = for (i <- 0 until numCache) yield {
+    val cacheNode = for (i <- 0 until nCache) yield {
         val Cache = Module (new CacheNode(UniqueID = i))
         Cache
     }
 
-    // val bore = Module(new Bore())
+    val bore = Module(new Bore())
+
 
     io.events.valid := true.B
     io.events.bits <> DontCare
 
 
-    for (i <- 0 until numCache) {
+    for (i <- 0 until nCache) {
         (io.instruction(i).bits) <> cacheNode(i).io.in.cpu.bits
         cacheNode(i).io.in.cpu.valid := (io.instruction(i).valid)
         io.instruction(i).ready := cacheNode(i).io.in.cpu.ready
         io.resp(i) <>  cacheNode(i).io.out.cpu
     }
 
-    for (i <- 0 until numCache){
+    for (i <- 0 until nCache){
         routerNode(i).io.cacheIn <> cacheNode(i).io.out.network
         cacheNode(i).io.in.network <> routerNode(i).io.cacheOut
     }
 
-    memCtrlInputQueue.io.enq <> routerNode(numCache + numMemCtrl - 1).io.cacheOut
+    memCtrlInputQueue.io.enq <> routerNode(nCache + numMemCtrl - 1).io.cacheOut
     memCtrl.io.in <> memCtrlInputQueue.io.deq
-    routerNode(numCache + numMemCtrl - 1).io.cacheIn <> memCtrl.io.out
+    routerNode(nCache + numMemCtrl - 1).io.cacheIn <> memCtrl.io.out
     io.mem <> memCtrl.io.mem
 
-    for (i <- 0 until numCache + numMemCtrl - 1){
+    for (i <- 0 until nCache + numMemCtrl - 1){
          routerNode(i+1).io.in <> routerNode(i).io.out
     }
-    routerNode(0).io.in <> routerNode(numCache + numMemCtrl - 1).io.out
+    routerNode(0).io.in <> routerNode(nCache + numMemCtrl - 1).io.out
 
 }
