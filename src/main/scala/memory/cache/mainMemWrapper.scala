@@ -11,6 +11,8 @@ import memGen.memory.message._
 import chisel3.util.experimental.loadMemoryFromFile
 import memGen.junctions._
 import memGen.shell._
+import dsptools.counters.CounterWithReset
+
 
 
 

@@ -29,6 +29,7 @@ class CacheNode ( UniqueID : Int = 0)(implicit val p:Parameters) extends Module 
 
   val io = IO(new CacheNodeIO())
 
+  val ID = WireInit (UniqueID.U)
   val cache = Module(new programmableCache(UniqueID))
   val cpuQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
   val memCtrlQueue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
@@ -78,7 +79,7 @@ class CacheNode ( UniqueID : Int = 0)(implicit val p:Parameters) extends Module 
 
 
   io.out.network.valid := cache.io.out.req.valid
-  io.out.network.bits.src := UniqueID.U
+  io.out.network.bits.src := ID
   io.out.network.bits.dst := cache.io.out.req.bits.dst
   io.out.network.bits.inst:= cache.io.out.req.bits.req.inst
   io.out.network.bits.data := cache.io.out.req.bits.req.data

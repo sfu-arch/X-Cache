@@ -49,6 +49,8 @@ with HasAccelShellParams{
 
     val io = IO(new programmableCacheIO())
 
+    val ID = WireInit(cacheID.U)
+
     val cache    = Module(new Gem5Cache(cacheID))
     val tbe      = Module(new TBETable())
     val lockMem  = Module(new lockVector())
@@ -399,11 +401,10 @@ with HasAccelShellParams{
     dataValid := cache.io.bipassLD.out.valid
     
     for (i <- 0 until nParal) {
-        outReqArbiter.io.in(i).bits.req.data:= 0.U // for reading
         outReqArbiter.io.in(i).bits.req.data:= DontCare
         outReqArbiter.io.in(i).bits.req.addr := actionReg(i).io.deq.bits.addr
-        outReqArbiter.io.in(i).bits.req.inst:= 0.U // 0 for memCtrl
-        outReqArbiter.io.in(i).bits.dst:= 1.U
+        outReqArbiter.io.in(i).bits.req.inst:= 0.U // 0 for reading
+        outReqArbiter.io.in(i).bits.dst:= nCache.U  // temp for 2 cache(0-nCache-1) and one memCtrl(2)
         outReqArbiter.io.in(i).valid :=  isMemAction(i)
     }
 
