@@ -177,7 +177,7 @@ with HasAccelShellParams{
     }
     when(instruction.fire() ){
         event := instruction.bits.event
-    }.elsewhen((!isLocked && RegNext(recheckLock))& hitLD){
+    }.elsewhen(((!isLocked && RegNext(recheckLock))&& hitLD)){
         event := Events.EventArray("NOP").U
     }
 
@@ -188,8 +188,8 @@ with HasAccelShellParams{
         cacheWayWire(i) := cache.io.cpu(i).resp.bits.way
     }
 
-    when(tbe.io.outputTBE.fire()){
-        tbeWay := tbe.io.outputTBE.bits.way
+    when(RegNext(tbe.io.outputTBE.fire())){
+        tbeWay := RegNext(tbe.io.outputTBE.bits.way)
     }.otherwise{
         tbeWay := nWays.U
     }
@@ -214,16 +214,17 @@ with HasAccelShellParams{
     missLD := probeHit &&  (event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state =/= States.StateArray(s"E").U) || (cacheWayWire(nParal) === nWays.U) )
     
     io.in.memCtrl.ready := !stallInput & inputArbiter.io.chosen === memCtrlPriority.U 
-    io.in.cpu.ready      := !stallInput & inputArbiter.io.chosen === cpuPriority.U
+    io.in.cpu.ready      := !stallInput & !tbe.io.isFull & inputArbiter.io.chosen === cpuPriority.U 
     io.in.otherNodes.ready :=  !stallInput & inputArbiter.io.chosen === otherNodesPriority.U
 
-    stallInput := isLocked | pc.io.isFull
+    
+    stallInput := isLocked | pc.io.isFull 
 
     instruction.ready := !stallInput  // @todo should be changed for stalled situations
 
     checkLock :=  probeStart || recheckLock
 
-    readTBE     := RegEnable(probeStart, false.B, !stallInput) || (RegNext(RegNext(stallInput && endOfRoutine.reduce(_||_) && !probeStart)&& !probeStart) && !stallInput)
+    readTBE     := RegEnable(probeStart, false.B, !stallInput) || (RegNext(RegNext(stallInput && endOfRoutine.reduce(_||_) && actionReg.map(i => i.io.deq.bits.addr =/= addr).reduce(_&&_) && !probeStart)&& !probeStart) && !stallInput)
     getState    := readTBE
 
     routineAddrResValid := RegEnable(readTBE , false.B, !stall)
@@ -241,7 +242,7 @@ with HasAccelShellParams{
     /*************************************************************************/
     // Elements
     defaultState := State.default
-    state := Mux(tbe.io.outputTBE.valid, tbe.io.outputTBE.bits.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
+    state := Mux(RegNext(tbe.io.outputTBE.valid), RegNext(tbe.io.outputTBE.bits.state.state), Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
 
     routineQueue.io.enq.bits := uCodedNextPtr(routine)
     routineQueue.io.enq.valid := !pc.io.isFull & readTBE & !isLocked
@@ -323,8 +324,8 @@ with HasAccelShellParams{
     /*************************************************************************************/
 
     // TBE
-    tbe.io.read.valid := readTBE
-    tbe.io.read.bits.addr := addr
+    tbe.io.read.valid := probeStart
+    tbe.io.read.bits.addr := instruction.bits.addr
 
     for (i <- 0 until nParal)  {
         inputTBE(i).state.state := dstOfSetState(i).state
@@ -392,6 +393,8 @@ with HasAccelShellParams{
                 printf(p" Load hit for addr ${addr}\n")
             }.elsewhen(isLocked){
                 printf(p"addr ${addr} is locked\n")
+            }.elsewhen(RegNext(tbe.io.isFull)){
+                printf(p"TBE is full addr ${addr}\n")
             }.elsewhen(hit){
                 printf(p"Hit (store probably) for addr ${addr}\n")
             }.otherwise{
