@@ -23,15 +23,15 @@ with HasCacheAccelParams {
     val in = Flipped(Decoupled( new Flit()))
     val mem = new AXIMaster(memParams)
     val out = Decoupled(new Flit())
-
 //    mem.tieoff()
-
 }
 
 class memoryWrapper ( ID:Int = 4)(implicit val p:Parameters) extends Module
 with HasCacheAccelParams
 with HasAccelShellParams{
     val io = IO(new memoryWrapperIO)
+
+    val DRAM_LATENCY = 200
 
     val addrReg = RegInit(0.U(addrLen.W))
     val srcReg = RegInit(0.U(io.out.bits.srcLen.W))
@@ -57,6 +57,9 @@ with HasAccelShellParams{
     // Reading
     val (readCount, readWrapped) = Counter (io.mem.r.fire(), nData)
     val (writeCount, writeWrapped) = Counter(io.mem.w.fire(), nData)
+
+    val (dramLatencyCnt, _) =  CounterWithReset(stReg === stCmdIssue, 1000000, start )
+
 
 
     when(writeInst){
@@ -139,9 +142,11 @@ with HasAccelShellParams{
             }
         }
         is(stCmdIssue){
-            io.out.valid := true.B
-            when(io.out.fire()){
-                stReg := stIdle
+            when (dramLatencyCnt > DRAM_LATENCY.U){
+                io.out.valid := true.B
+                when(io.out.fire()){
+                    stReg := stIdle
+                }
             }
 
         }
