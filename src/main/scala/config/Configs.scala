@@ -72,7 +72,9 @@ case class DandelionAccelParams(
                                  cacheNSets: Int = 0,
                                  tbeSize:Int = 0,
                                  lockSize: Int = 0,
-                                 nparal: Int = 1
+                                 nparal: Int = 1,
+                                 ncache: Int = 0,
+                                 nword: Int = 0
 
                                ) extends AccelParams {
 
@@ -97,11 +99,13 @@ case class DandelionAccelParams(
   val tbeDepth = tbeSize
   val lockDepth = lockSize
   val nParal = nparal
+  val nCache = ncache
+  val nWords = nword
+
 
 
   val nstates = cacheNState
   val addrlen = cacheAddrLen
-  val nWords = 4
 
 //  val nCommand = nCom
 //  var comlen:Int = math.ceil(math.log(nCommand)/math.log(2)).toInt

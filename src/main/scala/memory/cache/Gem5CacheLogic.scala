@@ -20,6 +20,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
+  val nCache = accelParams.nCache
+
 
   val tbeDepth = accelParams.tbeDepth
   val lockDepth = accelParams.lockDepth
