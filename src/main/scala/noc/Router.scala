@@ -7,7 +7,7 @@ import memGen.config.HasAccelParams
 import memGen.memory.message.Flit
 
 
-class Router( ID: Int = 0,  Queue_depth: Int = 16)(implicit val p: Parameters) extends Module with HasAccelParams {
+class Router( ID: Int = 0,  Queue_depth: Int = 2)(implicit val p: Parameters) extends Module with HasAccelParams {
 
   val io = IO(new Bundle {
     val cacheIn = Flipped(Decoupled(new Flit()))

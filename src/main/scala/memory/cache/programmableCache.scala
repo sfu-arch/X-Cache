@@ -448,12 +448,22 @@ with HasAccelShellParams{
     io.out.resp.valid     := outRespArbiter.io.out.valid
     outRespArbiter.io.out.ready := true.B
 
-    
-    // BoringUtils.addSource(missLD, "missLD")
-    // BoringUtils.addSource(hitLD,  "hitLD" )
-    // BoringUtils.addSource(instruction.fire, "instCount")
-    // BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, s"cpuReq_${ID}")
-    // BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq")
-    // BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.EventArray("LOAD").U , "ldReq")
+    if (cacheID == 0){
+        BoringUtils.addSource(missLD, "missLD_0")
+        BoringUtils.addSource(hitLD,  "hitLD_0" )
+        BoringUtils.addSource(instruction.fire, "instCount_0")
+        BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "cpuReq_0")
+        BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq_0")
+        BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.EventArray("LOAD").U , "ldReq_0")
+    }
+
+    // if (cacheID == 1){
+    //     BoringUtils.addSource(missLD, "missLD_1")
+    //     BoringUtils.addSource(hitLD,  "hitLD_1" )
+    //     BoringUtils.addSource(instruction.fire, "instCount_1")
+    //     BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "cpuReq_1")
+    //     BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq_1")
+    //     BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.EventArray("LOAD").U , "ldReq_1")
+    // }
 
 }
