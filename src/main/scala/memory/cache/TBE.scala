@@ -39,6 +39,7 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
   }))
 
   val outputTBE = Valid(new TBE)
+  val isFull = Output(Bool())
 }
 
 class   TBETable(implicit  val p: Parameters) extends Module
@@ -69,6 +70,8 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val allocLine = Module(new FindEmptyLine(tbeDepth, (log2Ceil(tbeDepth))))
   allocLine.io.data := TBEValid
   idxAlloc := allocLine.io.value.bits
+
+  io.isFull := (!allocLine.io.value.valid & isRead & !idxReadValid)
 
 
   val finder = for (i <- 0 until nParal + 1) yield {
