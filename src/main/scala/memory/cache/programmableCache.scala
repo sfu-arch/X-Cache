@@ -23,7 +23,6 @@ import memGen.interfaces.axi._
 
      */
 
-
 class programmableCacheIO (implicit val p:Parameters) extends Bundle
 with HasCacheAccelParams
 with HasAccelShellParams
@@ -40,7 +39,6 @@ with MessageParams{
         })
         val resp = Decoupled(new IntraNodeBundle())
     }
-    
 }
 
 class programmableCache (val cacheID :Int = 0)(implicit val p:Parameters) extends Module
@@ -60,7 +58,6 @@ with HasAccelShellParams{
     val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType.bits, n = nParal))
     val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal + 1))
 
-
     stateMem.io  <> DontCare
     cache.io.cpu <> DontCare
 
@@ -78,14 +75,13 @@ with HasAccelShellParams{
         actionRom
     }
 
-
     /********************************************************************************/
+    val inputInst = Module(new Queue(new InstBundle(), entries = 1, pipe = true))
 
     val respPortQueue = for (i <- 0 until nParal + 1) yield{
         val queue = Module(new Queue(new InstBundle(), entries = 16, pipe = true))
         queue
     }
-
 
     val instruction = Wire(Decoupled(new InstBundle()))
 
@@ -93,10 +89,6 @@ with HasAccelShellParams{
 
     val state    = Wire(UInt(stateLen.W))
     val inputTBE = Wire(Vec(nParal, new TBE))
-
-    val addr = RegInit(0.U(addrLen.W))
-    val event = RegInit(0.U(eventLen.W))
-    val data = RegInit(0.U(bBits.W))
 
     val pcWire = Wire(Vec(nParal, new PCBundle()))
     val updatedPC = Wire(Vec(nParal, UInt(pcLen.W)))
@@ -128,15 +120,12 @@ with HasAccelShellParams{
     val checkLock = Wire(Bool())
     val getState  = Wire(Bool())
 
-    val routineAddrResValid = Wire(Bool())
-    val actionResValid      = Wire(Vec(nParal, Bool()))
-
     val defaultState = Wire(new State())
 
     val firstLineNextRoutine = Wire(Vec(nParal, Bool()))
     val endOfRoutine         = Wire(Vec(nParal, Bool()))
 
-    val routine = WireInit( Cat (event, state))
+    val routine = WireInit( Cat (inputInst.io.deq.bits.event, state))
     val cacheWayReg  = RegInit(VecInit(Seq.fill(nParal + 1)(nWays.U((wayLen+1).W))))
     val cacheWayWire = Wire(Vec(nParal + 1, (UInt((wayLen+1).W))))
     val updateWay = Wire(Vec(nParal, Bool()))
@@ -210,13 +199,12 @@ with HasAccelShellParams{
 
     probeHit := (RegNext(probeStart)  && !isLocked) || (!isLocked && RegNext(recheckLock)) 
     hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
-    hitLD :=   hit && event === Events.EventArray("LOAD").U
-    missLD := probeHit &&  (event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state =/= States.StateArray(s"E").U) || (cacheWayWire(nParal) === nWays.U) )
+    hitLD :=   hit && inputInst.io.deq.bits.event === Events.EventArray("LOAD").U
+    missLD := probeHit &&  (inputInst.io.deq.bits.event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state =/= States.StateArray(s"E").U) || (cacheWayWire(nParal) === nWays.U) )
     
-    io.in.memCtrl.ready := !stallInput & inputArbiter.io.chosen === memCtrlPriority.U 
-    io.in.cpu.ready      := !stallInput & !tbe.io.isFull & inputArbiter.io.chosen === cpuPriority.U 
-    io.in.otherNodes.ready :=  !stallInput & inputArbiter.io.chosen === otherNodesPriority.U
-
+    io.in.memCtrl.ready :=  instruction.fire() & inputArbiter.io.chosen === memCtrlPriority.U 
+    io.in.cpu.ready      := instruction.fire() & inputArbiter.io.chosen === cpuPriority.U 
+    io.in.otherNodes.ready :=  instruction.fire() & inputArbiter.io.chosen === otherNodesPriority.U
     
     stallInput := isLocked | pc.io.isFull 
 
