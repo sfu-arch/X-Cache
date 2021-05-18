@@ -124,6 +124,26 @@ object PCBundle {
 
     }
 }
+
+
+class InputBundle (implicit p:Parameters) extends Event with Addr {
+  val data = UInt(bBits.W)
+  val valid = Bool()
+  override def cloneType: this.type = new InputBundle().asInstanceOf[this.type]
+
+}
+
+object InputBundle {
+  def default(implicit p:Parameters):InputBundle ={
+    val input = Wire(new InputBundle())
+    input.data := 0.U
+    input.valid := false.B
+    input.addr := 0.U
+    input.event := 0.U
+    input
+  }
+}
+
 //trait ValidT extends CoreBundle {
 //  val valid = Bool()
 //}

@@ -33,15 +33,23 @@ class InstBundle (implicit p: Parameters) extends Event with Addr{
   override def cloneType: this.type = new InstBundle().asInstanceOf[this.type]
 }
 
+object InstBundle {
+  def default(implicit p:Parameters):InstBundle={
+    val inst = Wire(new InstBundle())
+    inst.addr  := 0.U
+    inst.event := 0.U
+    inst.data  := 0.U
+    inst
+  }
+}
+
+ 
 class Action(implicit p:Parameters) extends CoreBundle{
   val signals = UInt(nSigs.W)
   val actionType = UInt(2.W)
   override def cloneType: this.type = new Action().asInstanceOf[this.type]
 
 }
-
-
-
 
 trait ValidT extends AccelBundle {
   val valid = Bool()
