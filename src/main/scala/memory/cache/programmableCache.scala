@@ -300,9 +300,6 @@ with HasAccelShellParams{
         updateTBEWay(i)   := isStateAction(i)
         endOfRoutine(i)   := isStateAction(i)
 
-        // actionResValid(i):= RegEnable((routineAddrResValid | (!routineAddrResValid & !firstLineNextRoutine(i))), false.B , !stall)
-        // tbeActionInRom(i) := (actionResValid(i) & isTBEAction(i))
-
         actionReg(i).io.enq.bits.action.signals := sigToAction(actionRom(i)(pcWire(i).pc))
         actionReg(i).io.enq.bits.action.actionType := sigToActType(actionRom(i)(pcWire(i).pc))
         actionReg(i).io.enq.bits.addr := pcWire(i).addr
