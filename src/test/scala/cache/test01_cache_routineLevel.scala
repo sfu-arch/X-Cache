@@ -419,34 +419,61 @@ import org.scalatest.{FlatSpec, Matchers}
 
 // }
 
-class TesterSimple (dut: Computation ) extends PeekPokeTester (dut) {
+class CompTest (dut: Computation ) extends PeekPokeTester (dut) {
     poke(dut.io.operand1.hardCoded, 3.U)
     poke(dut.io.operand2.hardCoded, 2.U)
+    poke(dut.io.read_en1, false.B)
+    poke(dut.io.read_en2, false.B)
     poke(dut.io.operand1.select, 0.U)
     poke(dut.io.operand2.select, 0.U)
+    poke(dut.io.opcode, 0.U)
+    poke(dut.io.write_en, true.B)
+    poke(dut.io.write_addr, 1.U)
+  
+    expect(dut.io.output, 5.U)
+    step(1)
+    poke(dut.io.write_en, false.B)
+    poke(dut.io.read_en1, true.B)
+    poke(dut.io.read_addr1, 1.U)
 
     poke(dut.io.opcode, 0.U)
-    expect(dut.io.output, 5.U)
-
-    poke(dut.io.opcode, 1.U)
-    expect(dut.io.output, 1.U)
-
-    poke(dut.io.opcode, 2.U)
-    expect(dut.io.output, 6.U)
-
-    poke(dut.io.opcode, 3.U)
-    expect(dut.io.output, 0.U)
-
-    poke(dut.io.opcode, 4.U)
-    expect(dut.io.output, 12.U)
-
+    expect(dut.io.output, 7.U)
 }
 
 
-class SSS extends FlatSpec with Matchers {
+class ComputationTest extends FlatSpec with Matchers {
   "Tester" should "pass" in {
     chisel3.iotesters.Driver(() => new Computation(16, 6)) { c =>
-      new TesterSimple(c) 
+      new CompTest(c) 
+    } should be (true)
+  }
+}
+
+
+class RegPokeTest (dut: RegisterFile ) extends PeekPokeTester (dut) {
+    poke(dut.io.write_en, true.B)
+    poke(dut.io.write_addr, 0.U)
+    poke(dut.io.write_data, 1.U)
+    step(1)
+    poke(dut.io.write_en, true.B)
+    poke(dut.io.write_addr, 1.U)
+    poke(dut.io.write_data, 2.U)
+
+    poke(dut.io.read_en1, true.B)
+    poke(dut.io.read_addr1, 0.U)
+    expect(dut.io.output1, 1.U)
+    step(1)
+    poke(dut.io.write_en, false.B)
+    poke(dut.io.read_en2, true.B)
+    poke(dut.io.read_addr2, 1.U)
+    expect(dut.io.output2, 2.U)
+}
+
+
+class RegisterFileTest extends FlatSpec with Matchers {
+  "Tester" should "pass" in {
+    chisel3.iotesters.Driver(() => new RegisterFile(16, 16)) { c =>
+      new RegPokeTest(c) 
     } should be (true)
   }
 }
