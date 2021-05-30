@@ -23,36 +23,6 @@ class Computation (val operandWidth :Int = 16, val addressWidth :Int = 16, val o
         result
     }
 
-    def RegIOConnect(
-        reg_file: RegisterFile, 
-        
-        read_addr1: UInt, 
-        read_en1: Bool, 
-        read_addr2: UInt, 
-        read_en2: Bool, 
-
-        write_addr: UInt,
-        write_data: UInt,
-        write_en: Bool,
-
-        output1: UInt,
-        output2: UInt
-    ) {
-        reg_file.io.read_addr1 <> read_addr1;
-        reg_file.io.read_en1 <> read_en1;
-
-        reg_file.io.read_addr2 <> read_addr2;
-        reg_file.io.read_en2 <> read_en2;
-
-        reg_file.io.write_data <> write_data;
-        reg_file.io.write_addr <> write_addr;
-        reg_file.io.write_en <> write_en;
-
-        reg_file.io.output1 <> output1;
-        reg_file.io.output2 <> output2;
-
-    }
-
     val io = IO (new Bundle {
         val operand1 =  Input(new ComputationALUInput(operandWidth))
         val operand2 =  Input(new ComputationALUInput(operandWidth))
@@ -87,23 +57,18 @@ class Computation (val operandWidth :Int = 16, val addressWidth :Int = 16, val o
     val reg_out2 = Wire(UInt(operandWidth.W));
 
     val reg_file = Module(new RegisterFile());
-    reg_file.io <> DontCare;
     
-    RegIOConnect(
-        reg_file = reg_file, 
+    reg_file.io.read_addr1 <> io.read_addr1; 
+    reg_file.io.read_en1 <> io.read_en1; 
+    reg_file.io.read_addr2 <> io.read_addr2; 
+    reg_file.io.read_en2 <> io.read_en2; 
 
-        read_addr1 = io.read_addr1, 
-        read_en1 = io.read_en1, 
-        read_addr2 = io.read_addr2, 
-        read_en2 = io.read_en2, 
+    reg_file.io.write_addr <> io.write_addr;
+    reg_file.io.write_data <> result;
+    reg_file.io.write_en <> io.write_en;
 
-        write_addr = io.write_addr,
-        write_data = result,
-        write_en = io.write_en,
-
-        output1 = reg_out1,
-        output2 = reg_out2
-    );
+    reg_file.io.output1 <> reg_out1;
+    reg_file.io.output2 <> reg_out2;
 
     operand1_mux.io.in <> io.operand1;
     operand2_mux.io.in <> io.operand2;
