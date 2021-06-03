@@ -38,7 +38,7 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
     val addr = (UInt(xlen.W))
   }))
 
-  val outputTBE = Valid(new TBE)
+  val outputTBE = Decoupled(new TBE)
   val isFull = Output(Bool())
 }
 
@@ -116,7 +116,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
     }
   }
 
-  io.outputTBE.valid := (isRead & idxReadValid)
+  io.outputTBE.valid := (idxReadValid)
   io.outputTBE.bits := Mux(idxReadValid , TBEMemory(idxRead), TBE.default)
 
   for (i <- 0 until nParal)  {
