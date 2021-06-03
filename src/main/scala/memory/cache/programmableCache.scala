@@ -173,19 +173,6 @@ with HasAccelShellParams{
     inputArbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
     instruction <> inputArbiter.io.out
 
-    recheckLock := RegNext(isLocked && endOfRoutine.reduce(_||_))
-
-    probeHit := (RegNext(probeStart)  && !isLocked) || (!isLocked && RegNext(recheckLock)) 
-    hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
-    hitLD :=   hit && input.io.deq.bits.inst.event === Events.EventArray("LOAD").U
-    missLD := probeHit &&  (input.io.deq.bits.inst.event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state =/= States.StateArray(s"E").U) || (cacheWayWire(nParal) === nWays.U) )
-    
-    io.in.memCtrl.ready :=  instruction.fire() && inputArbiter.io.chosen === memCtrlPriority.U 
-    io.in.cpu.ready      := instruction.fire() && inputArbiter.io.chosen === cpuPriority.U 
-    io.in.otherNodes.ready :=  instruction.fire() && inputArbiter.io.chosen === otherNodesPriority.U
-    
-    checkLock :=  probeStart || recheckLock
-
     // readTBE     := RegEnable(probeStart, false.B, !stallInput) || (RegNext(RegNext(stallInput && endOfRoutine.reduce(_||_) && actionReg.map(i => i.io.deq.bits.addr =/= input.bits.addr).reduce(_&&_) && !probeStart)&& !probeStart) && !stallInput)
 
     /*************************************************************************/
@@ -199,6 +186,19 @@ with HasAccelShellParams{
     readTBE    := instruction.valid
     probeStart := instruction.fire()
     getState   := input.io.deq.fire()
+
+    recheckLock := RegNext(isLocked && endOfRoutine.reduce(_||_))
+    checkLock :=  probeStart || recheckLock
+
+    probeHit := (RegNext(probeStart)  && !isLocked) || (!isLocked && RegNext(recheckLock)) 
+    hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
+    hitLD :=   hit && input.io.deq.bits.inst.event === Events.EventArray("LOAD").U
+    missLD := probeHit &&  (input.io.deq.bits.inst.event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state =/= States.StateArray(s"E").U) || (cacheWayWire(nParal) === nWays.U) )
+    
+    io.in.memCtrl.ready    :=  instruction.fire() && inputArbiter.io.chosen === memCtrlPriority.U 
+    io.in.cpu.ready        := instruction.fire() && inputArbiter.io.chosen === cpuPriority.U 
+    io.in.otherNodes.ready :=  instruction.fire() && inputArbiter.io.chosen === otherNodesPriority.U
+    
 
     instruction.ready := input.io.enq.ready && !tbe.io.isFull
 
