@@ -65,19 +65,20 @@ class   TBETable(implicit  val p: Parameters) extends Module
   val idxRead = Wire(UInt((log2Ceil(tbeDepth) + 1).W))
   val idxUpdate = Wire(Vec(nParal, UInt((log2Ceil(tbeDepth) + 1).W)))
 
+  val counter = RegInit(0.U((log2Ceil(tbeDepth) + 2).W))
+
   val idxReadValid = Wire(Bool())
 
   val allocLine = Module(new FindEmptyLine(tbeDepth, (log2Ceil(tbeDepth))))
   allocLine.io.data := TBEValid
   idxAlloc := allocLine.io.value.bits
 
-  io.isFull := (!allocLine.io.value.valid)
-
-
   val finder = for (i <- 0 until nParal + 1) yield {
     val Finder = Module(new Find(UInt(), UInt(addrLen.W), tbeDepth, (log2Ceil(tbeDepth))))
     Finder
   }
+
+  io.isFull := ((counter > (tbeDepth.U - 3.U)) & isRead & !finder(nParal).io.value.valid) 
 
   finder(nParal).io.key := addrNoOffset(io.read.bits.addr)
   finder(nParal).io.data := TBEAddr
@@ -100,10 +101,12 @@ class   TBETable(implicit  val p: Parameters) extends Module
       TBEMemory(idxAlloc) := io.write(i).bits.inputTBE
       TBEAddr(idxAlloc) := addrNoOffset(io.write(i).bits.addr)
       TBEValid(idxAlloc) := true.B
+      counter := counter + 1.U
     }.elsewhen((isDealloc(i)) && finder(i).io.value.valid){
       TBEValid(idxUpdate(i)) := false.B
       TBEMemory(idxUpdate(i)) := TBE.default
       TBEAddr(idxUpdate(i)) := 0.U
+      counter := counter - 1.U
     }.elsewhen((isWrite(i)) && finder(i).io.value.valid){
       when((io.write(i).bits.mask=== maskWay)) {
         TBEMemory(idxUpdate(i)).way := io.write(i).bits.inputTBE.way
