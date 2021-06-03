@@ -76,7 +76,7 @@ with HasAccelShellParams{
     }
 
     /********************************************************************************/
-    val inputInst = Module(new Queue(new InstBundle(), entries = 1, pipe = true))
+    val inputInst = Module(new Queue(new Bundle{ val inst = new InstBundle(); val tbeOut = new TBE() }, entries = 1, pipe = true))
 
     val respPortQueue = for (i <- 0 until nParal + 1) yield{
         val queue = Module(new Queue(new InstBundle(), entries = 16, pipe = true))
