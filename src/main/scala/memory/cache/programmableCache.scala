@@ -151,7 +151,7 @@ with HasAccelShellParams{
     val probeHit = Wire(Bool())
     val recheckLock = Wire(Bool())
 
-    val checkTBEFull = RegEnable(tbe.io.isFull, false.B, probeStart | io.in.memCtrl.valid)
+    // val checkTBEFull = RegEnable(tbe.io.isFull, false.B, probeStart | io.in.memCtrl.valid)
 
     for (i <- 0 until (nParal + 1) ) {
         when(cache.io.cpu(i).resp.fire()) {
@@ -160,11 +160,6 @@ with HasAccelShellParams{
         cacheWayWire(i) := cache.io.cpu(i).resp.bits.way
     }
 
-    when(RegNext(RegNext(tbe.io.outputTBE.fire()))){
-        tbeWay := RegNext(RegNext(tbe.io.outputTBE.bits.way))
-    }.otherwise{
-        tbeWay := nWays.U
-    }
 
     /*************************************************************************/
     // control signals
@@ -185,9 +180,9 @@ with HasAccelShellParams{
     hitLD :=   hit && inputInst.io.deq.bits.inst.event === Events.EventArray("LOAD").U
     missLD := probeHit &&  (inputInst.io.deq.bits.inst.event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state =/= States.StateArray(s"E").U) || (cacheWayWire(nParal) === nWays.U) )
     
-    io.in.memCtrl.ready :=  instruction.fire() & inputArbiter.io.chosen === memCtrlPriority.U 
-    io.in.cpu.ready      := instruction.fire() & inputArbiter.io.chosen === cpuPriority.U 
-    io.in.otherNodes.ready :=  instruction.fire() & inputArbiter.io.chosen === otherNodesPriority.U
+    io.in.memCtrl.ready :=  instruction.fire() && inputArbiter.io.chosen === memCtrlPriority.U 
+    io.in.cpu.ready      := instruction.fire() && inputArbiter.io.chosen === cpuPriority.U 
+    io.in.otherNodes.ready :=  instruction.fire() && inputArbiter.io.chosen === otherNodesPriority.U
     
     checkLock :=  probeStart || recheckLock
 
