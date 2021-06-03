@@ -205,11 +205,17 @@ with HasAccelShellParams{
     probeStart := instruction.fire()
     getState   := inputInst.io.deq.fire()
 
-    inputInst.io.enq.valid := instruction.valid
     instruction.ready := inputInst.io.enq.ready && !tbe.io.isFull
-    inputInst.io.enq.bits.addr := instruction.bits.addr
-    inputInst.io.enq.bits.data := instruction.bits.data
-    inputInst.io.enq.bits.event := instruction.bits.event
+
+    val instUsed = RegInit(false.B)
+    instUsed := (  !instruction.fire() & (inputInst.io.enq.fire() | instUsed))
+    inputInst.io.enq.valid := instruction.valid && !instUsed && !tbe.io.isFull
+    tbe.io.outputTBE.ready := instruction.ready
+    inputInst.io.enq.bits.inst.addr := instruction.bits.addr
+    inputInst.io.enq.bits.inst.data := instruction.bits.data
+    inputInst.io.enq.bits.inst.event := instruction.bits.event
+    inputInst.io.enq.bits.tbeOut :=  tbe.io.outputTBE.bits
+
 
     defaultState := State.default
     
