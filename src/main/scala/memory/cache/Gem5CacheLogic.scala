@@ -62,7 +62,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
 
   def addrToSet(addr: UInt): UInt = {
-    val set = addr(setLen + blen + byteOffsetBits, blen + byteOffsetBits)
+    val set = addr(setLen + blen + byteOffsetBits - 1, blen + byteOffsetBits )
     set.asUInt()
   }
 
