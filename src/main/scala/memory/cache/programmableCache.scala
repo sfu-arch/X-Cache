@@ -241,12 +241,12 @@ with HasAccelShellParams{
 
     // lock Mem
     lockMem.io.lock.in.bits.data := DontCare
-    lockMem.io.lock.in.bits.addr  := input.io.deq.bits.inst.addr
+    lockMem.io.lock.in.bits.addr  := Mux(isLocked, input.io.deq.bits.inst.addr, instruction.bits.addr)
     lockMem.io.lock.in.valid := checkLock
     lockMem.io.lock.in.bits.cmd := true.B // checking and locking
 
-    // isLocked := RegEnable(Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B), false.B, checkLock)
-    isLocked := false.B
+    isLocked := RegEnable(Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B), false.B, checkLock)
+    // isLocked := false.B
     for (i <- 0 until nParal)  {
         lockMem.io.unLock(i).in.bits.data := DontCare
         lockMem.io.unLock(i).in.bits.addr := actionReg(i).io.deq.bits.addr
