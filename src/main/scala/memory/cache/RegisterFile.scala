@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.util.experimental._
 
-class RegisterFileIO(val addressWidth :Int = 16, val operandWidth :Int = 16) extends Bundle {
+class RegisterFileIO[T <: Data] (OperandType: T, val addressWidth :Int = 16) extends Bundle {
     val read_addr1 = Input(UInt(addressWidth.W))
     val read_en1 = Input(Bool())
 
@@ -12,21 +12,21 @@ class RegisterFileIO(val addressWidth :Int = 16, val operandWidth :Int = 16) ext
     val read_en2 = Input(Bool())
 
     val write_addr = Input(UInt(addressWidth.W))
-    val write_data = Input(UInt(operandWidth.W))
+    val write_data = Input(OperandType.cloneType)
     val write_en = Input(Bool())
 
-    val output1 = Output(UInt(operandWidth.W))
-    val output2 = Output(UInt(operandWidth.W))
+    val output1 = Output(OperandType.cloneType)
+    val output2 = Output(OperandType.cloneType)
 
 }
 
-class RegisterFile (val operandWidth :Int = 16, val regFileSize: Int = 16) extends Module {
-    val io = IO (new RegisterFileIO())
+class RegisterFile[T <: Data, T1 <: Data] (OperandType: T, AddressType: T1, val regFileSize: Int = 16) extends Module {
+    val io = IO (new RegisterFileIO(OperandType))
 
-    val result1 = Wire(UInt(operandWidth.W));
-    val result2 = Wire(UInt(operandWidth.W));
+    val result1 = Wire(OperandType.cloneType);
+    val result2 = Wire(OperandType.cloneType);
     
-    val reg_file = Mem(regFileSize, UInt(operandWidth.W));
+    val reg_file = Reg(Vec(regFileSize, OperandType.cloneType));
 
     result1 := 0.U;
     result2 := 0.U;

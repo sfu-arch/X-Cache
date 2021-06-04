@@ -4,13 +4,10 @@ import chisel3._
 import chisel3.util._
 import chisel3.util.experimental._
 
-
 // Opcodes: add: 0, sub: 1, mult: 2, shift_r: 3, shift_l: 4 
-
-
-class Computation (val operandWidth :Int = 16, val addressWidth :Int = 16, val opcodeWidth :Int = 6, val regFileSize: Int = 16) extends Module {
-    def ALU(opcode: UInt, op1: UInt, op2: UInt) = {
-        val result = Wire(UInt(operandWidth.W));
+class Computation [T <: UInt] (val OperandType: T, val addressWidth :Int = 16, val opcodeWidth :Int = 6, val regFileSize: Int = 16) extends Module {
+    def ALU(opcode: UInt, op1: T, op2: T) = {
+        val result = Wire(OperandType.cloneType);
         result := 0.U;
 
         switch (io.opcode) {
@@ -24,8 +21,8 @@ class Computation (val operandWidth :Int = 16, val addressWidth :Int = 16, val o
     }
 
     val io = IO (new Bundle {
-        val operand1 =  Input(new ComputationALUInput(operandWidth))
-        val operand2 =  Input(new ComputationALUInput(operandWidth))
+        val operand1 =  Input(new ComputationALUInput(OperandType))
+        val operand2 =  Input(new ComputationALUInput(OperandType))
         val opcode = Input(UInt(opcodeWidth.W))
         
         val write_addr = Input(UInt(addressWidth.W))
@@ -37,26 +34,17 @@ class Computation (val operandWidth :Int = 16, val addressWidth :Int = 16, val o
         val read_en2 = Input(Bool())
         val read_addr2 = Input(UInt(addressWidth.W))
         
-        val output = Output(UInt(operandWidth.W))
+        val output = Output(OperandType.cloneType)
     })
 
     val add :: sub :: mult :: shift_r :: shift_l :: Nil = Enum (5)
+    val result = Wire(OperandType.cloneType);
 
-    val operand1_mux = Module(new Mux3(operandWidth));
-    val operand2_mux = Module(new Mux3(operandWidth));
+    val reg_out1 = Wire(OperandType.cloneType);
+    val reg_out2 = Wire(OperandType.cloneType);
 
-    val result = Wire(UInt(operandWidth.W));
-    
-    val op1 = Wire(UInt(operandWidth.W));
-    val op2 = Wire(UInt(operandWidth.W));
-    
-    val alu_in1 = Wire(UInt(operandWidth.W));
-    val alu_in2 = Wire(UInt(operandWidth.W));
-
-    val reg_out1 = Wire(UInt(operandWidth.W));
-    val reg_out2 = Wire(UInt(operandWidth.W));
-
-    val reg_file = Module(new RegisterFile());
+    // *******************************************  Register File IO  *******************************************
+    val reg_file = Module(new RegisterFile(UInt(16.W), UInt(16.W)));
     
     reg_file.io.read_addr1 <> io.read_addr1; 
     reg_file.io.read_en1 <> io.read_en1; 
@@ -70,6 +58,16 @@ class Computation (val operandWidth :Int = 16, val addressWidth :Int = 16, val o
     reg_file.io.output1 <> reg_out1;
     reg_file.io.output2 <> reg_out2;
 
+    // *******************************************  ALU IO  *******************************************
+    
+    val operand1_mux = Module(new Mux3(UInt(16.W)));
+    val operand2_mux = Module(new Mux3(UInt(16.W)));
+    
+    val op1 = Wire(OperandType.cloneType);
+    val op2 = Wire(OperandType.cloneType);
+    val alu_in1 = Wire(OperandType.cloneType);
+    val alu_in2 = Wire(OperandType.cloneType);
+    
     operand1_mux.io.in <> io.operand1;
     operand2_mux.io.in <> io.operand2;
 
@@ -90,5 +88,5 @@ class Computation (val operandWidth :Int = 16, val addressWidth :Int = 16, val o
 
 
 object Computation extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new Computation())
+  (new chisel3.stage.ChiselStage).emitVerilog(new Computation(UInt(16.W)))
 }

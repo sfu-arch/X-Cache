@@ -4,10 +4,10 @@ import chisel3._
 import chisel3.util._
 import chisel3.util.experimental._
 
-class ComputationALUInput (val operandWidth:Int = 16) extends Bundle {
-    val hardCoded = UInt(operandWidth.W)
-    val data = UInt(operandWidth.W)
-    val tbe = UInt(operandWidth.W)
+class ComputationALUInput[T <: Data](val OperandType: T) extends Bundle {
+    val hardCoded = OperandType.cloneType
+    val data = OperandType.cloneType
+    val tbe = OperandType.cloneType
     val select = UInt(2.W)
 }
 
@@ -16,13 +16,13 @@ class ComputationMemInput (val addressWidth:Int = 16) extends Bundle {
     val addr2 = UInt(addressWidth.W)
 }
 
-class Mux3 (val operandWidth :Int = 16) extends Module {
+class Mux3 [T <: Data] (val OperandType: T) extends Module {
     val io = IO( new Bundle {
-        val in = Input( new ComputationALUInput(operandWidth))
-        val out = Output(UInt(operandWidth.W))
+        val in = Input(new ComputationALUInput(OperandType))
+        val out = Output(OperandType.cloneType)
     })
 
-    val result = Wire(UInt(operandWidth.W));
+    val result = Wire(OperandType.cloneType);
     result := 0.U;
     when (io.in.select === 0.U) {
         result := io.in.hardCoded;
