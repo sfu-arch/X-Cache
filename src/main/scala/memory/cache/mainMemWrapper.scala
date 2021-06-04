@@ -31,7 +31,7 @@ with HasCacheAccelParams
 with HasAccelShellParams{
     val io = IO(new memoryWrapperIO)
 
-    val DRAM_LATENCY = 200
+    val DRAM_LATENCY = 20
 
     val addrReg = RegInit(0.U(addrLen.W))
     val srcReg = RegInit(0.U(io.out.bits.srcLen.W))
