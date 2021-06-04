@@ -151,6 +151,12 @@ with HasAccelShellParams{
     val probeHit = Wire(Bool())
     val recheckLock = Wire(Bool())
 
+    val replacer  =  ReplacementPolicy.fromString(replacementPolicy, nWays)
+    val replStateReg = RegInit(VecInit(Seq.fill(nSets)(0.U(replacer.nBits.W))))
+    val replacerWayWire = Wire(UInt(replacer.nBits.W))
+    val replacerWayReg = Reg(UInt(replacer.nBits.W))
+    val addrReplacer = Wire(UInt(addrLen.W))
+
     // val checkTBEFull = RegEnable(tbe.io.isFull, false.B, probeStart | io.in.memCtrl.valid)
 
     for (i <- 0 until (nParal + 1) ) {
