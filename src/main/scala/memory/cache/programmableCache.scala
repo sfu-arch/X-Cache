@@ -206,17 +206,18 @@ with HasAccelShellParams{
     io.in.otherNodes.ready :=  instruction.fire() && inputArbiter.io.chosen === otherNodesPriority.U
     
 
-    instruction.ready := input.io.enq.ready && !tbe.io.isFull
 
     val instUsed = RegInit(false.B)
     instUsed := (  !instruction.fire() & (input.io.enq.fire() | instUsed))
-    input.io.enq.valid := instruction.valid && !instUsed && !tbe.io.isFull
+    instruction.ready := input.io.enq.ready && !tbe.io.isFull && !stallInput
+
+    input.io.enq.valid := instruction.valid && !instUsed && !tbe.io.isFull && !stallInput
     tbe.io.outputTBE.ready := instruction.ready
     input.io.enq.bits.inst.addr := instruction.bits.addr
     input.io.enq.bits.inst.data := instruction.bits.data
     input.io.enq.bits.inst.event := instruction.bits.event
     input.io.enq.bits.tbeOut :=  tbe.io.outputTBE.bits
-
+    input.io.enq.bits.replWay := replacerWayWire
 
     defaultState := State.default
     
