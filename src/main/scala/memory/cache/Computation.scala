@@ -44,7 +44,7 @@ class Computation [T <: UInt] (val OperandType: T, val addressWidth :Int = 16, v
     val reg_out2 = Wire(OperandType.cloneType);
 
     // *******************************************  Register File IO  *******************************************
-    val reg_file = Module(new RegisterFile(UInt(16.W), UInt(16.W)));
+    val reg_file = Module(new RegisterFile(OperandType, addressWidth, regFileSize));
     
     reg_file.io.read_addr1 <> io.read_addr1; 
     reg_file.io.read_en1 <> io.read_en1; 
@@ -60,8 +60,8 @@ class Computation [T <: UInt] (val OperandType: T, val addressWidth :Int = 16, v
 
     // *******************************************  ALU IO  *******************************************
     
-    val operand1_mux = Module(new Mux3(UInt(16.W)));
-    val operand2_mux = Module(new Mux3(UInt(16.W)));
+    val operand1_mux = Module(new Mux3(OperandType));
+    val operand2_mux = Module(new Mux3(OperandType));
     
     val op1 = Wire(OperandType.cloneType);
     val op2 = Wire(OperandType.cloneType);
@@ -84,8 +84,6 @@ class Computation [T <: UInt] (val OperandType: T, val addressWidth :Int = 16, v
     
     io.output := result;
 }
-
-
 
 object Computation extends App {
   (new chisel3.stage.ChiselStage).emitVerilog(new Computation(UInt(16.W)))

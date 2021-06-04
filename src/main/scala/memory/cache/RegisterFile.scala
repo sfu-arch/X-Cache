@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.util.experimental._
 
-class RegisterFileIO[T <: Data] (OperandType: T, val addressWidth :Int = 16) extends Bundle {
+class RegisterFileIO[T <: Data] (OperandType: T, val addressWidth :Int) extends Bundle {
     val read_addr1 = Input(UInt(addressWidth.W))
     val read_en1 = Input(Bool())
 
@@ -20,8 +20,10 @@ class RegisterFileIO[T <: Data] (OperandType: T, val addressWidth :Int = 16) ext
 
 }
 
-class RegisterFile[T <: Data, T1 <: Data] (OperandType: T, AddressType: T1, val regFileSize: Int = 16) extends Module {
-    val io = IO (new RegisterFileIO(OperandType))
+class RegisterFile[T <: Data] (OperandType: T, val addressWidth :Int, val regFileSize: Int) 
+    extends Module {
+        
+    val io = IO (new RegisterFileIO(OperandType, addressWidth))
 
     val result1 = Wire(OperandType.cloneType);
     val result2 = Wire(OperandType.cloneType);

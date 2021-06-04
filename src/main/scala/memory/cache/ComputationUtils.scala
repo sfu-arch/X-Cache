@@ -11,11 +11,6 @@ class ComputationALUInput[T <: Data](val OperandType: T) extends Bundle {
     val select = UInt(2.W)
 }
 
-class ComputationMemInput (val addressWidth:Int = 16) extends Bundle {
-    val addr1 = UInt(addressWidth.W)
-    val addr2 = UInt(addressWidth.W)
-}
-
 class Mux3 [T <: Data] (val OperandType: T) extends Module {
     val io = IO( new Bundle {
         val in = Input(new ComputationALUInput(OperandType))

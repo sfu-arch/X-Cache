@@ -450,7 +450,7 @@ class ComputationTest extends FlatSpec with Matchers {
 }
 
 
-class RegPokeTest[+T1 <: RegisterFile[UInt, UInt]] (dut: T1) extends PeekPokeTester(dut: T1) {
+class RegPokeTest[+T1 <: RegisterFile[UInt]] (dut: T1) extends PeekPokeTester(dut: T1) {
     poke(dut.io.write_en, true.B)
     poke(dut.io.write_addr, 0.U)
     poke(dut.io.write_data, 1.U)
@@ -472,7 +472,7 @@ class RegPokeTest[+T1 <: RegisterFile[UInt, UInt]] (dut: T1) extends PeekPokeTes
 
 class RegisterFileTest extends FlatSpec with Matchers {
   "RegosterFile Test" should "pass" in {
-    chisel3.iotesters.Driver(() => new RegisterFile(UInt(16.W), UInt(16.W), 16)) { c =>
+    chisel3.iotesters.Driver(() => new RegisterFile(UInt(16.W), 16, 16)) { c =>
       new RegPokeTest(c) 
     } should be (true)
   }
