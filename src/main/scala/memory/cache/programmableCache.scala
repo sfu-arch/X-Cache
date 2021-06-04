@@ -273,30 +273,25 @@ with HasAccelShellParams{
 
 
     routineQueue.io.enq.bits := uCodedNextPtr(routine)
-    routineQueue.io.enq.valid := input.io.deq.valid & !stallInput
-    input.io.deq.ready := routineQueue.io.enq.ready 
+    routineQueue.io.enq.valid := input.io.deq.valid  & !stallInput
+    input.io.deq.ready := routineQueue.io.enq.ready  & !stallInput
     routineQueue.io.deq.ready := !pc.io.isFull
     // io.deq.bits to PC Vector
     
     
    
     // Replacer 
-    val replacer  =  ReplacementPolicy.fromString(replacementPolicy, nWays)
-    val replStateReg = RegInit(VecInit(Seq.fill(nSets)(0.U(replacer.nBits.W))))
-    val replacerWayWire = Wire(UInt(replacer.nBits.W))
-    val replacerWayReg = Reg(UInt(replacer.nBits.W))
-    val addrReplacer = Wire(UInt(addrLen.W))
 
     addrReplacer := addrToSet(input.io.deq.bits.inst.addr)
     replacerWayWire := replacer.get_replace_way(replStateReg(addrReplacer))
 
-    when(missLD & RegNext(probeStart)) { //when a miss happens
-        replacerWayReg := replacerWayWire 
+    when(missLD) { //when a miss happens
+        // replacerWayReg := replacerWayWire 
         replStateReg(addrReplacer) := replacer.get_next_state(replStateReg(addrReplacer), replacerWayWire)
     }
 
-    wayInputCache := RegEnable(Mux( tbeWay === nWays.U , (cacheWayWire(nParal)), tbeWay ), nWays.U, !stallInput)
-    replaceWayInputCache := replacerWayReg
+    wayInputCache := RegEnable(Mux( tbeWay === nWays.U , (cacheWayWire(nParal)), tbeWay ), nWays.U, input.io.deq.fire())
+    replaceWayInputCache := RegEnable(replacerWayWire, nWays.U, input.io.deq.fire())
     inputToPC := RegEnable(input.io.deq.bits.inst, InstBundle.default, input.io.deq.fire())
 
     for (i <- 0 until nParal) {
