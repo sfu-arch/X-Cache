@@ -196,7 +196,7 @@ with HasAccelShellParams{
     recheckLock := RegNext(isLocked && endOfRoutine.reduce(_||_))
     checkLock :=  probeStart || recheckLock
 
-    probeHit := (RegNext(probeStart)  && !isLocked) || (!isLocked && RegNext(recheckLock)) 
+    probeHit := input.io.deq.fire()
     hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
     hitLD :=   hit && input.io.deq.bits.inst.event === Events.EventArray("LOAD").U
     missLD := probeHit &&  (input.io.deq.bits.inst.event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state =/= States.StateArray(s"E").U) || (cacheWayWire(nParal) === nWays.U) )
