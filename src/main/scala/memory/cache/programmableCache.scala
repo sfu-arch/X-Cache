@@ -156,8 +156,6 @@ with HasAccelShellParams{
     val replacerWayReg = Reg(UInt(replacer.nBits.W))
     val addrReplacer = Wire(UInt(addrLen.W))
 
-    // val checkTBEFull = RegEnable(tbe.io.isFull, false.B, probeStart | io.in.memCtrl.valid)
-
     for (i <- 0 until (nParal + 1) ) {
         when(cache.io.cpu(i).resp.fire()) {
             cacheWayReg(i) := cache.io.cpu(i).resp.bits.way
@@ -176,8 +174,6 @@ with HasAccelShellParams{
     inputArbiter.io.in(cpuPriority) <> io.in.cpu
     inputArbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
     instruction <> inputArbiter.io.out
-
-    // readTBE     := RegEnable(probeStart, false.B, !stallInput) || (RegNext(RegNext(stallInput && endOfRoutine.reduce(_||_) && actionReg.map(i => i.io.deq.bits.addr =/= input.bits.addr).reduce(_&&_) && !probeStart)&& !probeStart) && !stallInput)
 
     /*************************************************************************/
 
@@ -204,8 +200,6 @@ with HasAccelShellParams{
     io.in.cpu.ready        := instruction.fire() && inputArbiter.io.chosen === cpuPriority.U 
     io.in.otherNodes.ready :=  instruction.fire() && inputArbiter.io.chosen === otherNodesPriority.U
     
-
-
     val instUsed = RegInit(false.B)
     instUsed := (  !instruction.fire() & (input.io.enq.fire() | instUsed))
     instruction.ready := input.io.enq.ready && !tbe.io.isFull && !stallInput
@@ -219,7 +213,6 @@ with HasAccelShellParams{
 
     defaultState := State.default
     
-
     state := Mux(input.io.deq.bits.tbeOut.state.state =/= defaultState.state, input.io.deq.bits.tbeOut.state.state, Mux(stateMem.io.out.valid, stateMem.io.out.bits.state, defaultState.state ))
     tbeWay := input.io.deq.bits.tbeOut.way
 
@@ -242,12 +235,12 @@ with HasAccelShellParams{
     lockMem.io.probe.in.bits.data := DontCare
     lockMem.io.probe.in.bits.addr := instruction.bits.addr
     lockMem.io.probe.in.valid     := checkLock
-    lockMem.io.probe.in.bits.cmd  :=lockMem.PROBE.U // checking 
+    lockMem.io.probe.in.bits.cmd  :=lockMem.PROBE.U // Checking 
 
     lockMem.io.lock.in.bits.data  := DontCare
     lockMem.io.lock.in.bits.addr  := instruction.bits.addr
     lockMem.io.lock.in.valid      := setLock
-    lockMem.io.lock.in.bits.cmd   :=lockMem.LOCK.U // checking 
+    lockMem.io.lock.in.bits.cmd   :=lockMem.LOCK.U // Locking 
 
 
     // isLocked := RegEnable(Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B), false.B, checkLock)
@@ -281,16 +274,12 @@ with HasAccelShellParams{
     input.io.deq.ready := routineQueue.io.enq.ready  /*& !stallInput*/
     routineQueue.io.deq.ready := !pc.io.isFull
     // io.deq.bits to PC Vector
-    
-    
    
     // Replacer 
-
     addrReplacer := addrToSet(input.io.deq.bits.inst.addr)
     replacerWayWire := replacer.get_replace_way(replStateReg(addrReplacer))
 
     when(missLD) { //when a miss happens
-        // replacerWayReg := replacerWayWire 
         replStateReg(addrReplacer) := replacer.get_next_state(replStateReg(addrReplacer), replacerWayWire)
     }
 
@@ -346,9 +335,7 @@ with HasAccelShellParams{
         pcWire(i) <> pc.io.read(i).out.bits
 
         sets(i) := addrToSet(pc.io.read(i).out.bits.addr)
-
     }
-
 
     for (i <- 0 until nParal){
         tbeAction(i) := Mux(isTBEAction(i), actionReg(i).io.deq.bits.action.signals, tbe.idle)
@@ -395,6 +382,7 @@ with HasAccelShellParams{
             }
         }
     }
+
     cache.io.bipassLD.in.valid := hitLD
     cache.io.bipassLD.in.bits.addr  := input.io.deq.bits.inst.addr
     cache.io.bipassLD.in.bits.way := cacheWayWire(nParal)
