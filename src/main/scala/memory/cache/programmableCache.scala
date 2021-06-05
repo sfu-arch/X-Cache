@@ -118,6 +118,7 @@ with HasAccelShellParams{
 
     val readTBE   = Wire(Bool())
     val checkLock = Wire(Bool())
+    val setLock   = Wire(Bool())
     val getState  = Wire(Bool())
 
     val defaultState = Wire(new State())
@@ -194,7 +195,8 @@ with HasAccelShellParams{
     getState   := input.io.deq.fire()
 
     recheckLock := RegNext(isLocked && endOfRoutine.reduce(_||_))
-    checkLock :=  probeStart || recheckLock
+    checkLock   := instruction.valid /*|| recheckLock*/
+    setLock     := instruction.fire()
 
     probeHit := input.io.deq.fire()
     hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
@@ -241,17 +243,23 @@ with HasAccelShellParams{
     }
 
     // lock Mem
-    lockMem.io.lock.in.bits.data := DontCare
-    lockMem.io.lock.in.bits.addr  := Mux(isLocked, input.io.deq.bits.inst.addr, instruction.bits.addr)
-    lockMem.io.lock.in.valid := checkLock
-    lockMem.io.lock.in.bits.cmd := true.B // checking and locking
+    lockMem.io.probe.in.bits.data := DontCare
+    lockMem.io.probe.in.bits.addr := instruction.bits.addr
+    lockMem.io.probe.in.valid     := checkLock
+    lockMem.io.probe.in.bits.cmd  :=lockMem.PROBE.U // checking 
 
-    isLocked := RegEnable(Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B), false.B, checkLock)
-    // isLocked := false.B
+    lockMem.io.lock.in.bits.data  := DontCare
+    lockMem.io.lock.in.bits.addr  := instruction.bits.addr
+    lockMem.io.lock.in.valid      := setLock
+    lockMem.io.lock.in.bits.cmd   :=lockMem.LOCK.U // checking 
+
+
+    // isLocked := RegEnable(Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B), false.B, checkLock)
+    isLocked := (Mux(lockMem.io.probe.out.valid, lockMem.io.probe.out.bits, false.B))
     for (i <- 0 until nParal)  {
         lockMem.io.unLock(i).in.bits.data := DontCare
         lockMem.io.unLock(i).in.bits.addr := actionReg(i).io.deq.bits.addr
-        lockMem.io.unLock(i).in.bits.cmd := false.B //unlock
+        lockMem.io.unLock(i).in.bits.cmd := lockMem.UNLOCK.U //unlock
         lockMem.io.unLock(i).in.valid := endOfRoutine(i)
     }
 
