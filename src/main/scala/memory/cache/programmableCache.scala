@@ -188,7 +188,7 @@ with HasAccelShellParams{
     /*************************************************************************/
     // Elements
    
-    stallInput := isLocked
+    stallInput := isLocked || tbe.io.isFull
 
     readTBE    := instruction.valid
     probeStart := instruction.fire()
@@ -281,8 +281,8 @@ with HasAccelShellParams{
 
 
     routineQueue.io.enq.bits := uCodedNextPtr(routine)
-    routineQueue.io.enq.valid := input.io.deq.valid  & !stallInput
-    input.io.deq.ready := routineQueue.io.enq.ready  & !stallInput
+    routineQueue.io.enq.valid := input.io.deq.valid  /*& !stallInput*/
+    input.io.deq.ready := routineQueue.io.enq.ready  /*& !stallInput*/
     routineQueue.io.deq.ready := !pc.io.isFull
     // io.deq.bits to PC Vector
     
