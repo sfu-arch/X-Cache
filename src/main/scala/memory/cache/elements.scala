@@ -111,7 +111,9 @@ with HasCacheAccelParams {
 class lockVectorIO (implicit val p :Parameters) extends Bundle
 with HasCacheAccelParams {
 
-    val lock = new portWithCMD(UInt(addrLen.W), Bool(), Bool())(addrLen)
+
+    val lock = new portWithCMD(UInt(addrLen.W), UInt(2.W), Bool())(addrLen)
+    val probe = lock.cloneType
     val unLock = Vec(nParal, lock.cloneType)
 }
 
