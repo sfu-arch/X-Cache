@@ -201,7 +201,7 @@ with HasAccelShellParams{
     probeHit := input.io.deq.fire()
     hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
     hitLD :=   hit && input.io.deq.bits.inst.event === Events.EventArray("LOAD").U
-    missLD := probeHit &&  (input.io.deq.bits.inst.event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state =/= States.StateArray(s"E").U) || (cacheWayWire(nParal) === nWays.U) )
+    missLD := probeHit &&  (input.io.deq.bits.inst.event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state === States.StateArray(s"I").U) /*|| (cacheWayWire(nParal) === nWays.U)*/ )
     
     io.in.memCtrl.ready    :=  instruction.fire() && inputArbiter.io.chosen === memCtrlPriority.U 
     io.in.cpu.ready        := instruction.fire() && inputArbiter.io.chosen === cpuPriority.U 
