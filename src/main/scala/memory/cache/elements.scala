@@ -120,19 +120,20 @@ with HasCacheAccelParams {
 class lockVector (implicit val p :Parameters) extends Module
 with HasCacheAccelParams {
 
-    val LOCK = true
-    val UNLOCK = false
+    val PROBE = 0
+    val LOCK = 1
+    val UNLOCK = 2
 
     val io = IO (new lockVectorIO())
 
     val addrVec = RegInit(VecInit(Seq.fill(lockDepth)(0.U(addrLen.W))))
-    val valid = RegInit(VecInit(Seq.fill(lockDepth)(false.B)))
+    val valid   = RegInit(VecInit(Seq.fill(lockDepth)(false.B)))
 
     val bitmapProbe =  Wire(UInt(lockDepth.W))
 
     val idxLocking = Wire(UInt(lockDepth.W))
-    val idxProbe = Wire(idxLocking.cloneType)
-    val idxUnlock = Wire(Vec(nParal, idxLocking.cloneType))
+    val idxProbe   = Wire(idxLocking.cloneType)
+    val idxUnlock  = Wire(Vec(nParal, idxLocking.cloneType))
 
     val finder = for (i <- 0 until nParal) yield{
         val Finder = Module(new Find(UInt(addrLen.W), UInt(addrLen.W), lockDepth, log2Ceil(lockDepth)))
@@ -147,18 +148,18 @@ with HasCacheAccelParams {
 
     val isLocked = Wire(Bool())
 
-    val probe =   WireInit(io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.B))
-    val write =   WireInit(!isLocked && io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.B))
+    val probe =   WireInit(io.probe.in.fire() && (io.probe.in.bits.cmd === PROBE.U))
+    val write =   WireInit(!isLocked && io.lock.in.fire() && (io.lock.in.bits.cmd === LOCK.U))
     val erase =   Wire(Vec(nParal, Bool()))
 
     //
-    bitmapProbe := (Cat( addrVec.map( addr => (addr === addrNoOffset(io.lock.in.bits.addr))).reverse))
+    bitmapProbe := (Cat( addrVec.map( addr => (addr === addrNoOffset(io.probe.in.bits.addr))).reverse))
     idxProbe := OHToUInt((bitmapProbe & valid.asUInt())) // exactly one bit should be one otherwise OHToUInt won't work
     idxLocking := lockDepth.U
 
 
     for (i <- 0 until nParal) {
-        erase(i) := (io.unLock(i).in.fire() && (io.unLock(i).in.bits.cmd === UNLOCK.B))
+        erase(i) := (io.unLock(i).in.fire() && (io.unLock(i).in.bits.cmd === UNLOCK.U))
         finder(i).io.data := addrVec
         finder(i).io.key := addrNoOffset(io.unLock(i).in.bits.addr)
         finder(i).io.valid := valid
@@ -179,8 +180,10 @@ with HasCacheAccelParams {
     }
 
     isLocked := ((bitmapProbe & valid.asUInt()) =/= 0.U)
-    io.lock.out.bits := isLocked
-    io.lock.out.valid := probe
+    io.probe.out.bits := isLocked
+    io.probe.out.valid := probe
+
+    io.lock.out := DontCare
 
     when(write) {
         addrVec(idxLocking) := addrNoOffset(io.lock.in.bits.addr)
