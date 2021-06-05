@@ -84,7 +84,6 @@ with HasAccelShellParams{
     }
 
     val instruction = Wire(Decoupled(new InstBundle()))
-
     val missLD = Wire(Bool())
 
     val state    = Wire(UInt(stateLen.W))
@@ -94,7 +93,6 @@ with HasAccelShellParams{
     val updatedPC = Wire(Vec(nParal, UInt(pcLen.W)))
     val updatedPCValid = Wire(Vec(nParal, Bool()))
     val dataValid = Wire(Bool())
-
 
     val tbeAction   = Wire(Vec(nParal, UInt(nSigs.W)))
     val cacheAction = Wire(Vec(nParal, UInt(nSigs.W)))
@@ -167,7 +165,6 @@ with HasAccelShellParams{
         cacheWayWire(i) := cache.io.cpu(i).resp.bits.way
     }
 
-
     /*************************************************************************/
     // control signals
 
@@ -219,7 +216,6 @@ with HasAccelShellParams{
     input.io.enq.bits.inst.data := instruction.bits.data
     input.io.enq.bits.inst.event := instruction.bits.event
     input.io.enq.bits.tbeOut :=  tbe.io.outputTBE.bits
-    input.io.enq.bits.replWay := replacerWayWire
 
     defaultState := State.default
     
@@ -336,6 +332,7 @@ with HasAccelShellParams{
     pc.io.write.bits.valid := true.B
     pc.io.write.valid := routineQueue.io.deq.fire()
 
+    val sets = Wire(Vec(nParal, UInt(32.W)))
     for (i <- 0 until nParal) {
         updateWay(i) := pc.io.read(i).out.bits.way === nWays.U & cache.io.cpu(i).resp.fire()
         pc.io.read(i).in.bits.data.addr := DontCare //
@@ -347,6 +344,9 @@ with HasAccelShellParams{
 
         pc.io.read(i).in.valid := DontCare // @todo Should be changed probably
         pcWire(i) <> pc.io.read(i).out.bits
+
+        sets(i) := addrToSet(pc.io.read(i).out.bits.addr)
+
     }
 
 
