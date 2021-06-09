@@ -1,0 +1,33 @@
+[info] Loading settings for project memgen-build from plugins.sbt ...
+[info] Loading project definition from /local-scratch/localhome/mha157/memGen/project
+[info] Loading settings for project memGen from build.sbt ...
+[info] Loading settings for project hardfloat from build.sbt ...
+[info] Loading settings for project api-config-chipsalliance from build.sbt ...
+Using addons: 
+[info] Set current project to memGen (in build file:/local-scratch/localhome/mha157/memGen/)
+[info] Compiling 1 Scala source to /local-scratch/localhome/mha157/memGen/target/scala-2.12/classes ...
+[error] /local-scratch/localhome/mha157/memGen/src/main/scala/memory/cache/Computation.scala:11:34: not found: value T
+[error]         result := (0.U).asTypeOf(T);
+[error]                                  ^
+[error] /local-scratch/localhome/mha157/memGen/src/main/scala/memory/cache/Computation.scala:14:34: not found: value T
+[error]             is (add) { result := T::op1 + T::op2; }
+[error]                                  ^
+[error] /local-scratch/localhome/mha157/memGen/src/main/scala/memory/cache/Computation.scala:14:43: not found: value T
+[error]             is (add) { result := T::op1 + T::op2; }
+[error]                                           ^
+[error] /local-scratch/localhome/mha157/memGen/src/main/scala/memory/cache/Computation.scala:14:44: value :: is not a member of chisel3.UInt
+[error]             is (add) { result := T::op1 + T::op2; }
+[error]                                            ^
+[error] /local-scratch/localhome/mha157/memGen/src/main/scala/memory/cache/Computation.scala:83:30: type mismatch;
+[error]  found   : T
+[error]  required: chisel3.UInt
+[error]     result := ALU(io.opcode, alu_in1, alu_in2)
+[error]                              ^
+[error] /local-scratch/localhome/mha157/memGen/src/main/scala/memory/cache/Computation.scala:83:39: type mismatch;
+[error]  found   : T
+[error]  required: chisel3.UInt
+[error]     result := ALU(io.opcode, alu_in1, alu_in2)
+[error]                                       ^
+[error] 6 errors found
+[error] (Compile / compileIncremental) Compilation failed
+[error] Total time: 2 s, completed Jun. 3, 2021, 9:57:08 p.m.
