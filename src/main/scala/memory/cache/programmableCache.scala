@@ -107,8 +107,11 @@ with HasAccelShellParams{
     val hit           = Wire(Bool())
     val hitLD         = Wire(Bool())
 
-    val updateTBEWay   = Wire(Vec(nParal, Bool()))
-    val updateTBEState = Wire(Vec(nParal, Bool()))
+    val updateTBEFixedFields   = Wire(Vec(nParal, Bool()))
+    val updateTBEOtherFields = Wire(Vec(nParal, Bool()))
+    val maskField = Wire(Vec(nParal, UInt(TBEFieldWidth.W)))
+
+    val updateTBE = Wire(Vec(nParal, Bool()))
 
     val stall = WireInit(false.B)
     val stallInput = WireInit(false.B)
@@ -222,12 +225,13 @@ with HasAccelShellParams{
 
     for (i <- 0 until nParal)  {
         inputTBE(i).state.state := dstOfSetState(i).state
-        inputTBE(i).way         := actionReg(i).io.deq.bits.way 
+        inputTBE(i).way         := actionReg(i).io.deq.bits.way
+        (0 until nTBEFields ).map( n =>  inputTBE(i).fields(n) := Mux(maskField(i) === n.asUInt(), 0.U, 0.U)) // @todo should be from of action
 
-        tbe.io.write(i).bits.command := Mux(updateTBEWay(i) | updateTBEState(i), tbe.write, tbeAction(i)) // @todo Wrong
+        tbe.io.write(i).bits.command := Mux(updateTBE(i), tbe.write, tbeAction(i)) // @todo Wrong
         tbe.io.write(i).bits.addr := actionReg(i).io.deq.bits.addr
         tbe.io.write(i).bits.inputTBE := inputTBE(i)
-        tbe.io.write(i).bits.mask := tbe.maskAll 
+        tbe.io.write(i).bits.mask := Mux(updateTBEFixedFields(i), tbe.maskFixed.U , maskField(i))
         tbe.io.write(i).valid := DontCare
     }
 
@@ -295,8 +299,12 @@ with HasAccelShellParams{
     }
 
     for (i <- 0 until nParal) {
-        updateTBEState(i) := isStateAction(i)
-        updateTBEWay(i)   := isStateAction(i)
+        updateTBEOtherFields(i) := false.B
+        maskField(i) := 0.U // @todo from actions
+        updateTBEFixedFields(i)   := isStateAction(i)
+
+        updateTBE(i) := updateTBEOtherFields(i) | updateTBEFixedFields(i)
+
         endOfRoutine(i)   := isStateAction(i)
 
         actionReg(i).io.enq.bits.action.signals := sigToAction(actionRom(i)(pcWire(i).pc))

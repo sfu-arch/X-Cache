@@ -8,16 +8,19 @@ import chisel3.util.Enum
 
 class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelParams {
   val state = new State()
-//  val data = UInt (xlen.W)
   val way = UInt ((wayLen + 1).W)
+
+  val fields = Vec(nTBEFields, UInt(TBEFieldWidth.W))
 }
 object TBE {
 
   def default (implicit p: Parameters): TBE = {
     val tbe = Wire(new TBE)
     tbe.state := State.default
-//    tbe.data := 0.U
     tbe.way := tbe.nWays.U
+
+    (0 until tbe.nTBEFields).map(i => tbe.fields(i) := 0.U(tbe.TBEFieldWidth.W))
+
     tbe
   }
 }
@@ -30,7 +33,7 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
   val write = Vec( nParal, Flipped(Valid(new Bundle {
     val addr = (UInt(xlen.W))
     val command = (UInt())
-    val mask = (UInt())
+    val mask = UInt(nTBEFields.W)
     val inputTBE= (new TBE)
   })))
 
@@ -46,9 +49,9 @@ class   TBETable(implicit  val p: Parameters) extends Module
   with HasCacheAccelParams
   with HasAccelParams {
 
+  val maskFixed = nTBEFields
 
   val (idle :: alloc :: dealloc :: read :: write :: Nil) = Enum(5)
-  val (maskAll :: maskState :: maskWay :: Nil) = Enum(3)
 
   val io = IO(new TBETableIO())
 
@@ -108,12 +111,11 @@ class   TBETable(implicit  val p: Parameters) extends Module
       TBEAddr(idxUpdate(i)) := 0.U
       counter := counter - 1.U
     }.elsewhen((isWrite(i)) && finder(i).io.value.valid){
-      when((io.write(i).bits.mask=== maskWay)) {
-        TBEMemory(idxUpdate(i)).way := io.write(i).bits.inputTBE.way
-      }.elsewhen((io.write(i).bits.mask === maskState)){
-        TBEMemory(idxUpdate(i)).state := io.write(i).bits.inputTBE.state
+      when((io.write(i).bits.mask =/= maskFixed.U)) {
+        TBEMemory(idxUpdate(i)).fields(io.write(i).bits.mask) := io.write(i).bits.inputTBE.fields(io.write(i).bits.mask)
       }.otherwise{
-        TBEMemory(idxUpdate(i)) := io.write(i).bits.inputTBE
+        TBEMemory(idxUpdate(i)).way := io.write(i).bits.inputTBE.way
+        TBEMemory(idxUpdate(i)).state := io.write(i).bits.inputTBE.state
       }
   //    TBEValid(idxReg) := true.B
     }
