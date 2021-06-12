@@ -94,7 +94,7 @@ with HasAccelShellParams{
     val updatedPCValid = Wire(Vec(nParal, Bool()))
     val dataValid = Wire(Bool())
 
-    val tbeAction   = Wire(Vec(nParal, UInt(nSigs.W)))
+    val tbeAction   = Wire(Vec(nParal, UInt(TBE.default.cmdLen.W)))
     val cacheAction = Wire(Vec(nParal, UInt(nSigs.W)))
     val stateAction = Wire(Vec(nParal, Bool()))
 
@@ -108,10 +108,11 @@ with HasAccelShellParams{
     val hitLD         = Wire(Bool())
 
     val updateTBEFixedFields   = Wire(Vec(nParal, Bool()))
-    val updateTBEOtherFields = Wire(Vec(nParal, Bool()))
+//    val updateTBEOtherFields = Wire(Vec(nParal, Bool()))
     val maskField = Wire(Vec(nParal, UInt(TBEFieldWidth.W)))
+    val tbeFieldUpdateSrc = Wire(maskField.cloneType)
 
-    val updateTBE = Wire(Vec(nParal, Bool()))
+//    val updateTBE = Wire(Vec(nParal, Bool()))
 
     val stall = WireInit(false.B)
     val stallInput = WireInit(false.B)
@@ -226,9 +227,9 @@ with HasAccelShellParams{
     for (i <- 0 until nParal)  {
         inputTBE(i).state.state := dstOfSetState(i).state
         inputTBE(i).way         := actionReg(i).io.deq.bits.way
-        (0 until nTBEFields ).map( n =>  inputTBE(i).fields(n) := Mux(maskField(i) === n.asUInt(), 0.U, 0.U)) // @todo should be from of action
+        (0 until nTBEFields ).map( n =>  inputTBE(i).fields(n) := Mux(maskField(i) === n.asUInt(), tbeFieldUpdateSrc(i), DontCare)) // @todo should be from of action
 
-        tbe.io.write(i).bits.command := Mux(updateTBE(i), tbe.write, tbeAction(i)) // @todo Wrong
+        tbe.io.write(i).bits.command := Mux(updateTBEFixedFields(i), tbe.write, tbeAction(i))
         tbe.io.write(i).bits.addr := actionReg(i).io.deq.bits.addr
         tbe.io.write(i).bits.inputTBE := inputTBE(i)
         tbe.io.write(i).bits.mask := Mux(updateTBEFixedFields(i), tbe.maskFixed.U , maskField(i))
@@ -299,11 +300,12 @@ with HasAccelShellParams{
     }
 
     for (i <- 0 until nParal) {
-        updateTBEOtherFields(i) := false.B
-        maskField(i) := 0.U // @todo from actions
+        maskField(i) := sigToTBEOp1(actionRom(i)(pcWire(i).pc))// @todo from actions
+        tbeFieldUpdateSrc(i) := 1.U // @todo should be replaced with the one below
+//        tbeFieldUpdateSrc(i) := RegFile(i)(sigToTBEOp2(actionRom(i)(pcWire(i).pc)))
         updateTBEFixedFields(i)   := isStateAction(i)
 
-        updateTBE(i) := updateTBEOtherFields(i) | updateTBEFixedFields(i)
+//        updateTBE(i) := updateTBEFixedFields(i)
 
         endOfRoutine(i)   := isStateAction(i)
 

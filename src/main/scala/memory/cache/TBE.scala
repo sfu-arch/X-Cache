@@ -11,6 +11,10 @@ class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelPar
   val way = UInt ((wayLen + 1).W)
 
   val fields = Vec(nTBEFields, UInt(TBEFieldWidth.W))
+
+  val fieldLen = log2Ceil(nTBEFields + 1)
+  val cmdLen = log2Ceil(nTBECmds)
+
 }
 object TBE {
 
@@ -23,6 +27,7 @@ object TBE {
 
     tbe
   }
+
 }
 
 class TBETableIO (implicit val p: Parameters) extends Bundle
@@ -32,7 +37,7 @@ class TBETableIO (implicit val p: Parameters) extends Bundle
 
   val write = Vec( nParal, Flipped(Valid(new Bundle {
     val addr = (UInt(xlen.W))
-    val command = (UInt())
+    val command = (UInt(TBE.default.cmdLen.W))
     val mask = UInt(nTBEFields.W)
     val inputTBE= (new TBE)
   })))

@@ -27,11 +27,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val lockDepth = accelParams.lockDepth
 
   val nTBEFields = 1
+  val nTBECmds = 4
   val TBEFieldWidth = 32
-
-
-
-
 
   override val addrLen = accelParams.addrlen
   val dataLen = accelParams.dataLen
@@ -79,6 +76,9 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   }
 
   def sigToAction(sigs : Bits) :UInt = sigs.asUInt()(nSigs - 1, 0)
+  def sigToTBEOp2(sigs : Bits) : UInt = sigs.asUInt()(2*TBE.default.fieldLen + TBE.default.cmdLen - 1 , TBE.default.fieldLen + TBE.default.cmdLen)
+  def sigToTBEOp1(sigs : Bits) : UInt = sigs.asUInt()(TBE.default.fieldLen + TBE.default.cmdLen  - 1, TBE.default.cmdLen)
+  def sigToTBECmd(sigs : Bits) : UInt = sigs.asUInt()(TBE.default.cmdLen - 1, 0)
   def sigToActType(sigs : Bits) :UInt = sigs.asUInt()(nSigs+ 1, nSigs)
   def sigToState (sigs :Bits) : UInt = sigs.asUInt()(States.stateLen - 1, 0)
 }
