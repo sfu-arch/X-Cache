@@ -51,7 +51,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
 
   val maskFixed = nTBEFields
 
-  val (idle :: alloc :: dealloc :: read :: write :: Nil) = Enum(5)
+  val ( write :: alloc :: dealloc :: read :: Nil) = Enum(4)
 
   val io = IO(new TBETableIO())
 
@@ -126,9 +126,9 @@ class   TBETable(implicit  val p: Parameters) extends Module
 
   for (i <- 0 until nParal)  {
 
-    isAlloc(i) := Mux(io.write(i).bits.command === alloc, true.B, false.B)
-    isDealloc(i) := Mux(io.write(i).bits.command === dealloc, true.B, false.B)
-    isWrite(i) := Mux(io.write(i).bits.command === write, true.B, false.B)
+    isAlloc(i) := io.write(i).bits.command === alloc && io.write(i).fire()
+    isDealloc(i) := io.write(i).bits.command === dealloc && io.write(i).fire()
+    isWrite(i) := io.write(i).bits.command === write  && io.write(i).fire()
   }
   isRead := io.read.valid
 }

@@ -232,7 +232,7 @@ with HasAccelShellParams{
         tbe.io.write(i).bits.addr := actionReg(i).io.deq.bits.addr
         tbe.io.write(i).bits.inputTBE := inputTBE(i)
         tbe.io.write(i).bits.mask := Mux(updateTBEFixedFields(i), tbe.maskFixed.U , maskField(i))
-        tbe.io.write(i).valid := DontCare
+        tbe.io.write(i).valid := isTBEAction(i) || updateTBEFixedFields(i)
     }
 
     // lock Mem
@@ -346,7 +346,7 @@ with HasAccelShellParams{
     }
 
     for (i <- 0 until nParal){
-        tbeAction(i) := Mux(isTBEAction(i), actionReg(i).io.deq.bits.action.signals, tbe.idle)
+        tbeAction(i) := sigToTBECmd(actionReg(i).io.deq.bits.action.signals)
         cacheAction(i) := Mux(isCacheAction(i), actionReg(i).io.deq.bits.action.signals, 0.U(nSigs.W))
         stateAction(i) := isStateAction(i)
 
