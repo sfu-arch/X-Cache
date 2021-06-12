@@ -56,7 +56,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
 
   val maskFixed = nTBEFields
 
-  val ( write :: alloc :: dealloc :: read :: Nil) = Enum(4)
+  val ( read :: alloc :: dealloc :: write :: Nil) = Enum(4)
 
   val io = IO(new TBETableIO())
 

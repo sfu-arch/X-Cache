@@ -109,7 +109,7 @@ with HasAccelShellParams{
 
     val updateTBEFixedFields   = Wire(Vec(nParal, Bool()))
 //    val updateTBEOtherFields = Wire(Vec(nParal, Bool()))
-    val maskField = Wire(Vec(nParal, UInt(TBEFieldWidth.W)))
+    val maskField = Wire(Vec(nParal, UInt(TBE.default.fieldLen.W)))
     val tbeFieldUpdateSrc = Wire(maskField.cloneType)
 
 //    val updateTBE = Wire(Vec(nParal, Bool()))
@@ -300,13 +300,8 @@ with HasAccelShellParams{
     }
 
     for (i <- 0 until nParal) {
-        maskField(i) := sigToTBEOp1(actionRom(i)(pcWire(i).pc))// @todo from actions
-        tbeFieldUpdateSrc(i) := 1.U // @todo should be replaced with the one below
-//        tbeFieldUpdateSrc(i) := RegFile(i)(sigToTBEOp2(actionRom(i)(pcWire(i).pc)))
+
         updateTBEFixedFields(i)   := isStateAction(i)
-
-//        updateTBE(i) := updateTBEFixedFields(i)
-
         endOfRoutine(i)   := isStateAction(i)
 
         actionReg(i).io.enq.bits.action.signals := sigToAction(actionRom(i)(pcWire(i).pc))
@@ -353,7 +348,9 @@ with HasAccelShellParams{
         stateAction(i) := isStateAction(i)
 
         dstOfSetState(i).state := Mux( isStateAction(i), sigToState (actionReg(i).io.deq.bits.action.signals), State.default.state)
-
+        maskField(i) := sigToTBEOp1(actionReg(i).io.deq.bits.action.signals)// @todo from actions
+        tbeFieldUpdateSrc(i) := 1.U // @todo should be replaced with the one below
+        // tbeFieldUpdateSrc(i) := RegFile(i)(sigToTBEOp2(actionRom(i)(pcWire(i).pc)))
         actionReg(i).io.deq.ready := !stall
         actionReg(i).io.enq.valid := pcWire(i).valid  // @todo enq ready should be used for controlling  updated pc
     }
