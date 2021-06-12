@@ -9,7 +9,6 @@ import chisel3.util.Enum
 class TBE (implicit p: Parameters)  extends AXIAccelBundle with HasCacheAccelParams {
   val state = new State()
   val way = UInt ((wayLen + 1).W)
-
   val fields = Vec(nTBEFields, UInt(TBEFieldWidth.W))
 
   val fieldLen = log2Ceil(nTBEFields + 1)
@@ -118,6 +117,7 @@ class   TBETable(implicit  val p: Parameters) extends Module
     }.elsewhen((isWrite(i)) && finder(i).io.value.valid){
       when((io.write(i).bits.mask =/= maskFixed.U)) {
         TBEMemory(idxUpdate(i)).fields(io.write(i).bits.mask) := io.write(i).bits.inputTBE.fields(io.write(i).bits.mask)
+        printf(p"TBE Field Check ${ TBEMemory(idxUpdate(i)).fields(io.write(i).bits.mask)}\n")
       }.otherwise{
         TBEMemory(idxUpdate(i)).way := io.write(i).bits.inputTBE.way
         TBEMemory(idxUpdate(i)).state := io.write(i).bits.inputTBE.state
