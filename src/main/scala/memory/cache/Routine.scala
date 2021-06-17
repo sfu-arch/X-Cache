@@ -7,7 +7,7 @@ object RoutineROM {
 
     // @todo should be fixed
     // 0-5
-    Routine ("LOAD_I") , Actions(Seq("AllocateTBE","Allocate", "DataRQ", "UpdateTBE","SetState")),DstState("ID"),
+    Routine ("LOAD_I") , Actions(Seq("AllocateTBE","Allocate", "DataRQ", "UpdateTBE","Feedback","SetState")),DstState("ID"),
     //6-9
     Routine ("STORE_I"), Actions(Seq("Allocate", "WrInt", "SetState")),DstState("E"),
     //10-11

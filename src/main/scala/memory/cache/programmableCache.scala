@@ -337,7 +337,7 @@ with HasAccelShellParams{
     }
 
     for (i <- 0 until nParal) {
-        firstLineNextRoutine(i) := (sigToAction(actionRom(i)(pcWire(i).pc)).asUInt() === 0.U ) // @todo all of them should be changed for stall
+        firstLineNextRoutine(i) := actionRom(i)(pcWire(i).pc).asUInt() === ActionList.actions("NOP").asUInt()// NOP
         updatedPC(i) := Mux(firstLineNextRoutine(i), pcWire(i).pc, pcWire(i).pc + 1.U  )
         updatedPCValid(i) := !firstLineNextRoutine(i)
     }

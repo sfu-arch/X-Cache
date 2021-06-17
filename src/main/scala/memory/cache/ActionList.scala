@@ -19,7 +19,8 @@ object ActionList {
         ("AllocateTBE", "b010000000001".U),
         ("DeallocateTBE", "b010000000010".U),
         ("UpdateTBE", "b010000000011".U), // should update field 0
-        ("SetState",   "b110000000000".U)
+        ("SetState",   "b110000000000".U),
+        ("Feedback", "b100000000000".U )
 //        ("ReadTBE",     "b00000000011".U)
 
 
