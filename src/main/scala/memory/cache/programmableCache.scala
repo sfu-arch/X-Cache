@@ -54,9 +54,10 @@ with HasAccelShellParams{
     val lockMem  = Module(new lockVector())
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
-    val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 3))
+    val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 4))
     val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType.bits, n = nParal))
     val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal + 1))
+    val feedbackArbiter = Module (new Arbiter(new InstBundle(), n = nParal))
 
     stateMem.io  <> DontCare
     cache.io.cpu <> DontCare
@@ -83,6 +84,11 @@ with HasAccelShellParams{
         queue
     }
 
+    val feedbackInQueue = for (i <- 0 until nParal) yield{
+        val queue = Module(new Queue(new InstBundle(), entries = 16, pipe = true))
+        queue
+    }
+
     val instruction = Wire(Decoupled(new InstBundle()))
     val missLD = Wire(Bool())
 
@@ -100,6 +106,7 @@ with HasAccelShellParams{
 
     val isTBEAction   = Wire(Vec(nParal, Bool()))
     val isStateAction = Wire(Vec(nParal, Bool()))
+    val isFeedbackAction = Wire(Vec(nParal, Bool()))
     val isCacheAction = Wire(Vec(nParal, Bool()))
     val isMemAction =   Wire(Vec(nParal, Bool()))
 
@@ -137,6 +144,7 @@ with HasAccelShellParams{
     val replaceWayInputCache = Wire(UInt((wayLen+1).W))
     val tbeWay        = WireInit(nWays.U((wayLen+1).W))
 
+    val feedbackOutQueue = Module(new Queue(new InstBundle, entries = 16, pipe = true))
     val routineQueue = Module( new Queue( UInt((eventLen + stateLen).W), pipe = true, entries = 1 ))
 
     val actionReg  = for (i <- 0 until nParal) yield {
@@ -170,13 +178,27 @@ with HasAccelShellParams{
     /*************************************************************************/
     // control signals
 
-    val cpuPriority = 2
-    val otherNodesPriority  = 1
+    val cpuPriority = 3
+    val otherNodesPriority  = 2
+    val feedbackPriority  = 1
     val memCtrlPriority = 0
+
+
 
     inputArbiter.io.in(otherNodesPriority) <> io.in.otherNodes
     inputArbiter.io.in(cpuPriority) <> io.in.cpu
     inputArbiter.io.in(memCtrlPriority) <> io.in.memCtrl // priority is for lower producer
+    inputArbiter.io.in(feedbackPriority) <> feedbackOutQueue.io.deq
+
+    feedbackOutQueue.io.enq <> feedbackArbiter.io.out
+    for ( i <- 0 until nParal){
+        feedbackArbiter.io.in(i) <> feedbackInQueue(i).io.deq
+        feedbackInQueue(i).io.enq.bits.addr := actionReg(i).io.deq.bits.addr
+        feedbackInQueue(i).io.enq.bits.event := actionReg(i).io.deq.bits.event
+        feedbackInQueue(i).io.enq.bits.data := actionReg(i).io.deq.bits.data
+        feedbackInQueue(i).io.enq.valid := isFeedbackAction(i)
+    }
+
     instruction <> inputArbiter.io.out
 
     /*************************************************************************/
@@ -295,6 +317,7 @@ with HasAccelShellParams{
     for (i <- 0 until nParal) {
         isTBEAction(i) :=   (actionReg(i).io.deq.bits.action.actionType === 1.U) && actionReg(i).io.deq.valid
         isCacheAction(i) := (actionReg(i).io.deq.bits.action.actionType === 0.U) && actionReg(i).io.deq.valid
+        isFeedbackAction(i) := ((actionReg(i).io.deq.bits.action.actionType === 2.U)) && actionReg(i).io.deq.valid
         isStateAction(i) := (actionReg(i).io.deq.bits.action.actionType === 3.U) && actionReg(i).io.deq.valid
         isMemAction(i) := isCacheAction(i) & (actionReg(i).io.deq.bits.action.signals === sigToAction(ActionList.actions("DataRQ")))
     }
