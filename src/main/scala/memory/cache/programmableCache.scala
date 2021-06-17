@@ -46,7 +46,6 @@ with HasCacheAccelParams
 with HasAccelShellParams{
 
     val io = IO(new programmableCacheIO())
-
     val ID = WireInit(cacheID.U)
 
     val cache    = Module(new Gem5Cache(cacheID))
@@ -115,15 +114,11 @@ with HasAccelShellParams{
     val hitLD         = Wire(Bool())
 
     val updateTBEFixedFields   = Wire(Vec(nParal, Bool()))
-//    val updateTBEOtherFields = Wire(Vec(nParal, Bool()))
     val maskField = Wire(Vec(nParal, UInt(TBE.default.fieldLen.W)))
     val tbeFieldUpdateSrc = Wire(maskField.cloneType)
 
-//    val updateTBE = Wire(Vec(nParal, Bool()))
-
     val stall = WireInit(false.B)
     val stallInput = WireInit(false.B)
-    val bubble = WireInit(stallInput)
 
     val readTBE   = Wire(Bool())
     val checkLock = Wire(Bool())
@@ -136,9 +131,11 @@ with HasAccelShellParams{
     val endOfRoutine         = Wire(Vec(nParal, Bool()))
 
     val routine = WireInit( Cat (input.io.deq.bits.inst.event, state))
-    val cacheWayReg  = RegInit(VecInit(Seq.fill(nParal + 1)(nWays.U((wayLen+1).W))))
     val cacheWayWire = Wire(Vec(nParal + 1, (UInt((wayLen+1).W))))
     val updateWay = Wire(Vec(nParal, Bool()))
+
+    val sets = Wire(Vec(nParal, UInt(32.W)))
+
 
     val wayInputCache = Wire(UInt((wayLen+1).W))
     val replaceWayInputCache = Wire(UInt((wayLen+1).W))
@@ -157,10 +154,12 @@ with HasAccelShellParams{
 
     val probeStart = Wire(Bool())
 
+    val instUsed = RegInit(false.B)
+
+
     val inputToPC  = Wire(new InstBundle())
 
     val probeHit = Wire(Bool())
-    val recheckLock = Wire(Bool())
 
     val replacer  =  ReplacementPolicy.fromString(replacementPolicy, nWays)
     val replStateReg = RegInit(VecInit(Seq.fill(nSets)(0.U(replacer.nBits.W))))
@@ -169,9 +168,6 @@ with HasAccelShellParams{
     val addrReplacer = Wire(UInt(addrLen.W))
 
     for (i <- 0 until (nParal + 1) ) {
-        when(cache.io.cpu(i).resp.fire()) {
-            cacheWayReg(i) := cache.io.cpu(i).resp.bits.way
-        }
         cacheWayWire(i) := cache.io.cpu(i).resp.bits.way
     }
 
@@ -182,8 +178,6 @@ with HasAccelShellParams{
     val otherNodesPriority  = 2
     val feedbackPriority  = 1
     val memCtrlPriority = 0
-
-
 
     inputArbiter.io.in(otherNodesPriority) <> io.in.otherNodes
     inputArbiter.io.in(cpuPriority) <> io.in.cpu
@@ -198,7 +192,6 @@ with HasAccelShellParams{
         feedbackInQueue(i).io.enq.bits.data := actionReg(i).io.deq.bits.data
         feedbackInQueue(i).io.enq.valid := isFeedbackAction(i)
     }
-
     instruction <> inputArbiter.io.out
 
     /*************************************************************************/
@@ -213,8 +206,7 @@ with HasAccelShellParams{
     probeStart := instruction.fire()
     getState   := input.io.deq.fire()
 
-    recheckLock := RegNext(isLocked && endOfRoutine.reduce(_||_))
-    checkLock   := instruction.valid /*|| recheckLock*/
+    checkLock   := instruction.valid
     setLock     := instruction.fire()
 
     probeHit := input.io.deq.fire()
@@ -226,7 +218,6 @@ with HasAccelShellParams{
     io.in.cpu.ready        := instruction.fire() && inputArbiter.io.chosen === cpuPriority.U
     io.in.otherNodes.ready :=  instruction.fire() && inputArbiter.io.chosen === otherNodesPriority.U
 
-    val instUsed = RegInit(false.B)
     instUsed := (  !instruction.fire() & (input.io.enq.fire() | instUsed))
     instruction.ready := input.io.enq.ready && !tbe.io.isFull && !stallInput
 
@@ -269,8 +260,6 @@ with HasAccelShellParams{
     lockMem.io.lock.in.valid      := setLock
     lockMem.io.lock.in.bits.cmd   :=lockMem.LOCK.U // Locking
 
-
-    // isLocked := RegEnable(Mux(lockMem.io.lock.out.valid, lockMem.io.lock.out.bits, false.B), false.B, checkLock)
     isLocked := (Mux(lockMem.io.probe.out.valid, lockMem.io.probe.out.bits, false.B))
     for (i <- 0 until nParal)  {
         lockMem.io.unLock(i).in.bits.data := DontCare
@@ -320,9 +309,6 @@ with HasAccelShellParams{
         isFeedbackAction(i) := ((actionReg(i).io.deq.bits.action.actionType === 2.U)) && actionReg(i).io.deq.valid
         isStateAction(i) := (actionReg(i).io.deq.bits.action.actionType === 3.U) && actionReg(i).io.deq.valid
         isMemAction(i) := isCacheAction(i) & (actionReg(i).io.deq.bits.action.signals === sigToAction(ActionList.actions("DataRQ")))
-    }
-
-    for (i <- 0 until nParal) {
 
         updateTBEFixedFields(i)   := isStateAction(i)
         endOfRoutine(i)   := isStateAction(i)
@@ -334,25 +320,11 @@ with HasAccelShellParams{
         actionReg(i).io.enq.bits.data := pcWire(i).data
         actionReg(i).io.enq.bits.replaceWay := pcWire(i).replaceWay
         actionReg(i).io.enq.bits.event := pcWire(i).event
-    }
 
-    for (i <- 0 until nParal) {
         firstLineNextRoutine(i) := actionRom(i)(pcWire(i).pc).asUInt() === ActionList.actions("NOP").asUInt()// NOP
         updatedPC(i) := Mux(firstLineNextRoutine(i), pcWire(i).pc, pcWire(i).pc + 1.U  )
         updatedPCValid(i) := !firstLineNextRoutine(i)
-    }
 
-    pc.io.write.bits.addr := inputToPC.addr
-    pc.io.write.bits.way := wayInputCache
-    pc.io.write.bits.replaceWay := replaceWayInputCache
-    pc.io.write.bits.pc := routineQueue.io.deq.bits
-    pc.io.write.bits.data := inputToPC.data
-    pc.io.write.bits.event := inputToPC.event
-    pc.io.write.bits.valid := true.B
-    pc.io.write.valid := routineQueue.io.deq.fire()
-
-    val sets = Wire(Vec(nParal, UInt(32.W)))
-    for (i <- 0 until nParal) {
         updateWay(i) := pc.io.read(i).out.bits.way === nWays.U & cache.io.cpu(i).resp.fire()
         pc.io.read(i).in.bits.data.addr := DontCare //
         pc.io.read(i).in.bits.data.way := Mux(updateWay(i), cacheWayWire(i), pc.io.read(i).out.bits.way  )
@@ -365,21 +337,31 @@ with HasAccelShellParams{
         pc.io.read(i).in.valid := DontCare // @todo Should be changed probably
         pcWire(i) <> pc.io.read(i).out.bits
 
-        sets(i) := addrToSet(pc.io.read(i).out.bits.addr)
-    }
-
-    for (i <- 0 until nParal){
         tbeAction(i) := sigToTBECmd(actionReg(i).io.deq.bits.action.signals)
         cacheAction(i) := Mux(isCacheAction(i), actionReg(i).io.deq.bits.action.signals, 0.U(nSigs.W))
         stateAction(i) := isStateAction(i)
 
         dstOfSetState(i).state := Mux( isStateAction(i), sigToState (actionReg(i).io.deq.bits.action.signals), State.default.state)
+
         maskField(i) := sigToTBEOp1(actionReg(i).io.deq.bits.action.signals)// @todo from actions
         tbeFieldUpdateSrc(i) := 1.U // @todo should be replaced with the one below
         // tbeFieldUpdateSrc(i) := RegFile(i)(sigToTBEOp2(actionRom(i)(pcWire(i).pc)))
+
         actionReg(i).io.deq.ready := !stall
         actionReg(i).io.enq.valid := pcWire(i).valid  // @todo enq ready should be used for controlling  updated pc
+
+        sets(i) := addrToSet(pc.io.read(i).out.bits.addr)
     }
+
+    pc.io.write.bits.addr := inputToPC.addr
+    pc.io.write.bits.way := wayInputCache
+    pc.io.write.bits.replaceWay := replaceWayInputCache
+    pc.io.write.bits.pc := routineQueue.io.deq.bits
+    pc.io.write.bits.data := inputToPC.data
+    pc.io.write.bits.event := inputToPC.event
+    pc.io.write.bits.valid := true.B
+    pc.io.write.valid := routineQueue.io.deq.fire()
+
     /*************************************************************************************/
 
     // Cache Logic
@@ -396,25 +378,7 @@ with HasAccelShellParams{
     cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U)
     cache.io.cpu(nParal).req.bits.addr := Mux(probeStart, instruction.bits.addr, 0.U)
     cache.io.cpu(nParal).req.valid := probeStart
-    cache.io.cpu(nParal).req.bits.replaceWay := DontCare 
-
-    when( RegNext(probeStart)){
-        printf(p"Cache: ${ID} req from ${RegNext(inputArbiter.io.chosen)} Addr: ${RegNext(inputArbiter.io.out.bits.addr)}\n")
-        when(RegNext(inputArbiter.io.chosen) === cpuPriority.U){
-            printf(p"Cache: ${ID} ")
-            when(hitLD){
-                printf(p" Load hit for addr ${input.io.deq.bits.inst.addr}\n")
-            }.elsewhen(isLocked){
-                printf(p"addr ${input.io.deq.bits.inst.addr} is locked\n")
-            }.elsewhen(RegNext(tbe.io.isFull)){
-                printf(p"TBE is full addr ${input.io.deq.bits.inst.addr}\n")
-            }.elsewhen(hit){
-                printf(p"Hit (store probably) for addr ${input.io.deq.bits.inst.addr}\n")
-            }.otherwise{
-                printf(p"miss for addr ${input.io.deq.bits.inst.addr}\n")
-            }
-        }
-    }
+    cache.io.cpu(nParal).req.bits.replaceWay := DontCare
 
     cache.io.bipassLD.in.valid := hitLD
     cache.io.bipassLD.in.bits.addr  := input.io.deq.bits.inst.addr
@@ -461,6 +425,26 @@ with HasAccelShellParams{
     io.out.resp.bits.addr := outRespArbiter.io.out.bits.addr
     io.out.resp.valid     := outRespArbiter.io.out.valid
     outRespArbiter.io.out.ready := true.B
+
+
+
+    when( RegNext(probeStart)){
+        printf(p"Cache: ${ID} req from ${RegNext(inputArbiter.io.chosen)} Addr: ${RegNext(inputArbiter.io.out.bits.addr)}\n")
+        when(RegNext(inputArbiter.io.chosen) === cpuPriority.U){
+            printf(p"Cache: ${ID} ")
+            when(hitLD){
+                printf(p" Load hit for addr ${input.io.deq.bits.inst.addr}\n")
+            }.elsewhen(isLocked){
+                printf(p"addr ${input.io.deq.bits.inst.addr} is locked\n")
+            }.elsewhen(RegNext(tbe.io.isFull)){
+                printf(p"TBE is full addr ${input.io.deq.bits.inst.addr}\n")
+            }.elsewhen(hit){
+                printf(p"Hit (store probably) for addr ${input.io.deq.bits.inst.addr}\n")
+            }.otherwise{
+                printf(p"miss for addr ${input.io.deq.bits.inst.addr}\n")
+            }
+        }
+    }
 
     if (cacheID == 0){
         BoringUtils.addSource(missLD, "missLD_0")
