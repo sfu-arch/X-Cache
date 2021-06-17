@@ -310,6 +310,7 @@ with HasAccelShellParams{
         actionReg(i).io.enq.bits.way  := Mux(updateWay(i), cacheWayWire(i), pcWire(i).way)
         actionReg(i).io.enq.bits.data := pcWire(i).data
         actionReg(i).io.enq.bits.replaceWay := pcWire(i).replaceWay
+        actionReg(i).io.enq.bits.event := pcWire(i).event
     }
 
     for (i <- 0 until nParal) {
@@ -323,6 +324,7 @@ with HasAccelShellParams{
     pc.io.write.bits.replaceWay := replaceWayInputCache
     pc.io.write.bits.pc := routineQueue.io.deq.bits
     pc.io.write.bits.data := inputToPC.data
+    pc.io.write.bits.event := inputToPC.event
     pc.io.write.bits.valid := true.B
     pc.io.write.valid := routineQueue.io.deq.fire()
 
@@ -334,6 +336,7 @@ with HasAccelShellParams{
         pc.io.read(i).in.bits.data.data := DontCare //
         pc.io.read(i).in.bits.data.pc := updatedPC(i)
         pc.io.read(i).in.bits.data.replaceWay := DontCare
+        pc.io.read(i).in.bits.data.event := DontCare
         pc.io.read(i).in.bits.data.valid := updatedPCValid(i) // @todo should be changed for stall
 
         pc.io.read(i).in.valid := DontCare // @todo Should be changed probably

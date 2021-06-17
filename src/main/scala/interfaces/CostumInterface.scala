@@ -95,6 +95,8 @@ class CacheBundle (implicit p:Parameters) extends AXIAccelBundle
     val way  = UInt(wayLen.W)
     val data = UInt(bBits.W)
     val replaceWay =  UInt(wayLen.W)
+    val event = UInt(eventLen.W)
+
 
 }
 
@@ -120,6 +122,7 @@ object PCBundle {
         pcContent.way := pcContent.nWays.U
         pcContent.data := 0.U
         pcContent.replaceWay := 0.U
+        pcContent.event := 0.U
         pcContent
 
     }
