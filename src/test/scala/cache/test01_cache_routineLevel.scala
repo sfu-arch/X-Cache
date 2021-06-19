@@ -427,17 +427,18 @@ class CompTest [+T1 <: Computation[UInt]] (dut: T1 ) extends PeekPokeTester (dut
     poke(dut.io.operand1.select, 0.U)
     poke(dut.io.operand2.select, 0.U)
     poke(dut.io.opcode, 0.U)
-    poke(dut.io.write_en, true.B)
-    poke(dut.io.write_addr, 1.U)
+    poke(dut.io.write.bits, 1.U)
+    poke(dut.io.write.valid, true.B)
   
     expect(dut.io.output, 5.U)
     step(1)
-    poke(dut.io.write_en, false.B)
+    poke(dut.io.write.valid, true.B)
     poke(dut.io.read_en1, true.B)
     poke(dut.io.read_addr1, 1.U)
 
     poke(dut.io.opcode, 0.U)
     expect(dut.io.output, 7.U)
+    println("sssssssssssssssssssssssss"  + peek(dut.io.reg_file(1)) + "\n")
 }
 
 
@@ -445,35 +446,6 @@ class ComputationTest extends FlatSpec with Matchers {
   "Tester" should "pass" in {
     chisel3.iotesters.Driver(() => new Computation(UInt(16.W))) { c =>
       new CompTest(c) 
-    } should be (true)
-  }
-}
-
-
-class RegPokeTest[+T1 <: RegisterFile[UInt]] (dut: T1) extends PeekPokeTester(dut: T1) {
-    poke(dut.io.write_en, true.B)
-    poke(dut.io.write_addr, 0.U)
-    poke(dut.io.write_data, 1.U)
-    step(1)
-    poke(dut.io.write_en, true.B)
-    poke(dut.io.write_addr, 1.U)
-    poke(dut.io.write_data, 2.U)
-
-    poke(dut.io.read_en1, true.B)
-    poke(dut.io.read_addr1, 0.U)
-    expect(dut.io.output1, 1.U)
-    step(1)
-    poke(dut.io.write_en, false.B)
-    poke(dut.io.read_en2, true.B)
-    poke(dut.io.read_addr2, 1.U)
-    expect(dut.io.output2, 2.U)
-}
-
-
-class RegisterFileTest extends FlatSpec with Matchers {
-  "RegosterFile Test" should "pass" in {
-    chisel3.iotesters.Driver(() => new RegisterFile(UInt(16.W), 16, 16)) { c =>
-      new RegPokeTest(c) 
     } should be (true)
   }
 }

@@ -25,9 +25,8 @@ class Computation [T <: UInt] (val OperandType: T, val addressWidth :Int = 16, v
         val operand2 =  Input(new ComputationALUInput(OperandType))
         val opcode = Input(UInt(opcodeWidth.W))
         
-        val write_addr = Input(UInt(addressWidth.W))
-        val write_en = Input(Bool())
-
+        val write = Input(Valid(OperandType.cloneType))
+        
         val read_en1 = Input(Bool())
         val read_addr1 = Input(UInt(addressWidth.W))
         
@@ -35,29 +34,22 @@ class Computation [T <: UInt] (val OperandType: T, val addressWidth :Int = 16, v
         val read_addr2 = Input(UInt(addressWidth.W))
         
         val output = Output(OperandType.cloneType)
+        val reg_file = Output(Vec(regFileSize, OperandType.cloneType))
     })
 
     val add :: sub :: mult :: shift_r :: shift_l :: Nil = Enum (5)
     val result = Wire(OperandType.cloneType);
 
-    val reg_out1 = Wire(OperandType.cloneType);
-    val reg_out2 = Wire(OperandType.cloneType);
 
     // *******************************************  Register File IO  *******************************************
-    val reg_file = Module(new RegisterFile(OperandType, addressWidth, regFileSize));
+    val reg_out1 = Wire(OperandType.cloneType);
+    val reg_out2 = Wire(OperandType.cloneType);
+    val reg_file = Reg(Vec(regFileSize, OperandType.cloneType));
+    when (io.write.fire()) { reg_file(io.write.bits) := result; }
+    reg_out1 := reg_file(io.read_addr1);
+    reg_out2 := reg_file(io.read_addr2);
+    io.reg_file := reg_file;
     
-    reg_file.io.read_addr1 <> io.read_addr1; 
-    reg_file.io.read_en1 <> io.read_en1; 
-    reg_file.io.read_addr2 <> io.read_addr2; 
-    reg_file.io.read_en2 <> io.read_en2; 
-
-    reg_file.io.write_addr <> io.write_addr;
-    reg_file.io.write_data <> result;
-    reg_file.io.write_en <> io.write_en;
-
-    reg_file.io.output1 <> reg_out1;
-    reg_file.io.output2 <> reg_out2;
-
     // *******************************************  ALU IO  *******************************************
     
     val operand1_mux = Module(new Mux3(OperandType));
