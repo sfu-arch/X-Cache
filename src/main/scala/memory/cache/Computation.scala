@@ -4,14 +4,28 @@ import chisel3._
 import chisel3.util._
 import chisel3.util.experimental._
 
-// Opcodes: add: 0, sub: 1, mult: 2, shift_r: 3, shift_l: 4 
+// functions: add: 0, sub: 1, mult: 2, shift_r: 3, shift_l: 4 
+//
+// opcodes: 
+//  ---------------------------
+// | 00 | operand1, operand2   |
+// | 01 | operand1, address_2  |
+// | 10 | address_1, address_2 |
+//  ---------------------------
+//
+// Instruction:
+//  ----------------------- ---------------------- ------------ ---------- -------
+// |  address_2/ operand_2 | address_1/ operand1 | write_addr | function | opcode |
+//  ----------------------- ---------------------- ------------ ---------- -------
+// 
+
 class Computation [T <: UInt] (
     val OperandType: T, 
-    val addressWidth :Int = 16, 
     val opcodeWidth :Int = 2, 
-    val regFileSize: Int = 16,
-    val instructionWidth: Int = 41,
     val funcWidth: Int = 3
+    val regFileSize: Int = 16,
+    val addressWidth :Int = 16, 
+    val instructionWidth: Int = 41,
 ) 
 extends Module {
     def ALU(function: UInt, op1: T, op2: T) = {
