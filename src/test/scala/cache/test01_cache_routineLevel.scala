@@ -12,8 +12,9 @@ import chipsalliance.rocketchip.config._
 import memGen.config._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-
-
+import chisel3.util._
+import chisel3.util.experimental._
+import chisel3.util.Cat
 // class test_cache01Main_routineLevel_IO(implicit val p: Parameters) extends Module with HasAccelParams
 //   with HasAccelShellParams with HasCacheAccelParams{
 //     val io = IO(new Bundle {
@@ -420,25 +421,19 @@ import org.scalatest.{FlatSpec, Matchers}
 // }
 
 class CompTest [+T1 <: Computation[UInt]] (dut: T1 ) extends PeekPokeTester (dut: T1) {
-    poke(dut.io.operand1.hardCoded, 3.U)
-    poke(dut.io.operand2.hardCoded, 2.U)
-    poke(dut.io.read_en1, false.B)
-    poke(dut.io.read_en2, false.B)
-    poke(dut.io.operand1.select, 0.U)
-    poke(dut.io.operand2.select, 0.U)
-    poke(dut.io.opcode, 0.U)
-    poke(dut.io.write.bits, 1.U)
-    poke(dut.io.write.valid, true.B)
-  
-    expect(dut.io.output, 5.U)
-    step(1)
-    poke(dut.io.write.valid, true.B)
-    poke(dut.io.read_en1, true.B)
-    poke(dut.io.read_addr1, 1.U)
+    // val instruction = 201327104.U(41.W);
+    poke(dut.io.instruction, "b000000000000001100000000000000001000000000".U)
+    step(1);
+    poke(dut.io.instruction, "b000000000000001100000000000000001000100000".U)
+    println("result " + peek(dut.io.output) + "\n")
+    
+    step(1);
+    println("reg[1]: " + peek(dut.io.reg_file(1)) + "\n")
+    poke(dut.io.instruction, "b000000000000000010000000000000001000100001".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
 
-    poke(dut.io.opcode, 0.U)
-    expect(dut.io.output, 7.U)
-    println("sssssssssssssssssssssssss"  + peek(dut.io.reg_file(1)) + "\n")
+
 }
 
 
