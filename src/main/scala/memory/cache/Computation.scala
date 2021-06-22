@@ -4,28 +4,30 @@ import chisel3._
 import chisel3.util._
 import chisel3.util.experimental._
 
-// functions: add: 0, sub: 1, mult: 2, shift_r: 3, shift_l: 4 
-//
-// opcodes: 
-//  ---------------------------
-// | 00 | operand1, operand2   |
-// | 01 | operand1, address_2  |
-// | 10 | address_1, address_2 |
-//  ---------------------------
-//
-// Instruction:
-//  ----------------------- ---------------------- ------------ ---------- -------
-// |  address_2/ operand_2 | address_1/ operand1 | write_addr | function | opcode |
-//  ----------------------- ---------------------- ------------ ---------- -------
-// 
+/*
+ functions: add: 0, sub: 1, mult: 2, shift_r: 3, shift_l: 4, xor: 5 
+
+ opcodes: 
+  ---------------------------
+ | 00 | operand1, operand2   |
+ | 01 | operand1, address_2  |
+ | 10 | address_1, address_2 |
+  ---------------------------
+
+ Instruction:
+  ----------------------- --------------------- ------------ ---------- --------
+ |  address_2/ operand_2 | address_1/ operand1 | write_addr | function | opcode |
+  ----------------------- --------------------- ------------ ---------- --------
+
+*/ 
 
 class Computation [T <: UInt] (
     val OperandType: T, 
     val opcodeWidth :Int = 2, 
-    val funcWidth: Int = 3
+    val funcWidth: Int = 3,
     val regFileSize: Int = 16,
     val addressWidth :Int = 16, 
-    val instructionWidth: Int = 41,
+    val instructionWidth: Int = 41
 ) 
 extends Module {
     def ALU(function: UInt, op1: T, op2: T) = {
@@ -38,6 +40,7 @@ extends Module {
             is (mult) { result := op1 * op2; }
             is (shift_r) { result := op1 >> op2; }
             is (shift_l) { result := op1 << op2; }
+            is (xor) { result := op1 ^ op2; }
         }
         result
     }
@@ -55,7 +58,7 @@ extends Module {
         val reg_file = Output(Vec(regFileSize, OperandType.cloneType))
     })
 
-    val add :: sub :: mult :: shift_r :: shift_l :: Nil = Enum (5)
+    val add :: sub :: mult :: shift_r :: shift_l :: xor :: Nil = Enum (6)
     val result = Wire(OperandType.cloneType);
     val reg_out1 = Wire(OperandType.cloneType);
     val reg_out2 = Wire(OperandType.cloneType);
@@ -69,7 +72,8 @@ extends Module {
     val read_addr1  = io.instruction(Addr1End()-1, DestEnd());
     val read_addr2  = io.instruction(instructionWidth-1, instructionWidth - addressWidth);
     printf(s"opcode: %d\nfunction: %d\nwrite_addr: %d\noperand1: %d\n, operand2: %d\n, read_addr1: %d\n, read_addr2: %d\n",
-     opcode, function, write_addr, operand1, operand2, read_addr1, read_addr2);
+             opcode, function, write_addr, operand1, operand2, read_addr1, read_addr2);
+    
     val alu_in1 = Wire(OperandType.cloneType);
     val alu_in2 = Wire(OperandType.cloneType);
 
@@ -83,7 +87,6 @@ extends Module {
         alu_in1 := reg_out1; 
         alu_in2 := reg_out2; 
     }
-
     // *******************************************  Register File IO  *******************************************
     val reg_file = Reg(Vec(regFileSize, OperandType.cloneType));
     val write_en = write_addr =/= 0.U;

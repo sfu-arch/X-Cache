@@ -421,19 +421,35 @@ import chisel3.util.Cat
 // }
 
 class CompTest [+T1 <: Computation[UInt]] (dut: T1 ) extends PeekPokeTester (dut: T1) {
-    // val instruction = 201327104.U(41.W);
-    poke(dut.io.instruction, "b000000000000001100000000000000001000000000".U)
-    step(1);
-    poke(dut.io.instruction, "b000000000000001100000000000000001000100000".U)
-    println("result " + peek(dut.io.output) + "\n")
-    
-    step(1);
-    println("reg[1]: " + peek(dut.io.reg_file(1)) + "\n")
-    poke(dut.io.instruction, "b000000000000000010000000000000001000100001".U)
+    // reg[1] = 2000 >> 7
+    poke(dut.io.instruction, "b00000000000001110000011111010000000101100".U)
     println("result " + peek(dut.io.output) + "\n")
     step(1);
 
+    // reg[2] = 2000 >> 3
+    poke(dut.io.instruction, "b00000000000000110000011111010000001001100".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
 
+    // reg[3] = 2000 >> 21
+    poke(dut.io.instruction, "b00000000000101010000011111010000001101100".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
+
+    // reg[1] = reg[1] ^ reg[2]
+    poke(dut.io.instruction, "b00000000000000100000000000000001000110110".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
+
+    // reg[1] = reg[1] ^ reg[3]
+    poke(dut.io.instruction, "b00000000000000110000000000000001000110110".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
+
+    // reg[1] = reg[1] ^ 2000
+    poke(dut.io.instruction, "b00000000000000010000011111010000000110101".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
 }
 
 
