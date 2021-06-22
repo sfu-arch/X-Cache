@@ -92,30 +92,8 @@ extends Module {
     reg_out2 := reg_file(read_addr2);
     io.reg_file := reg_file;
     
-    // *******************************************  ALU IO  *******************************************
-    
-    // val operand1_mux = Module(new Mux3(OperandType));
-    // val operand2_mux = Module(new Mux3(OperandType));
-    
-    // val op1 = Wire(OperandType.cloneType);
-    // val op2 = Wire(OperandType.cloneType);
-    // val alu_in1 = Wire(OperandType.cloneType);
-    // val alu_in2 = Wire(OperandType.cloneType);
-    
-    // operand1_mux.io.in <> io.operand1;
-    // operand2_mux.io.in <> io.operand2;
-
-    // op1 <> operand1_mux.io.out;
-    // op2 <> operand2_mux.io.out;
-
-    // alu_in1 := op1;
-    // alu_in2 := op2;
-
-    // when (io.read_en1) { alu_in1 := reg_out1; }
-    // when (io.read_en2) { alu_in2 := reg_out2; }
-
+    // *******************************************  ALU  *******************************************
     result := ALU(function, alu_in1, alu_in2)
-    
     io.output := result;
 
 }
