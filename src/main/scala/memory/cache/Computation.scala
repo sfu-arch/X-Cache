@@ -53,8 +53,10 @@ extends Module {
     def Addr1End() =  DestEnd() + addressWidth;
 
     val io = IO (new Bundle {
-        val instruction = Input(UInt(instructionWidth.W))        
-        val output = Output(OperandType.cloneType)
+        val instruction = Flipped(Valid(UInt(instructionWidth.W)))
+        val op1 = Flipped(Valid(OperandType.cloneType))
+        val op2 = Flipped(Valid(OperandType.cloneType))
+//        val output = Output(OperandType.cloneType)
         val reg_file = Output(Vec(regFileSize, OperandType.cloneType))
     })
 
@@ -64,32 +66,25 @@ extends Module {
     val reg_out2 = Wire(OperandType.cloneType);
     
     // *******************************************  FETCH  *******************************************
-    val opcode      = io.instruction(OpcodeEnd()-1, 0);
-    val function    = io.instruction(FunctionEnd()-1, OpcodeEnd());
-    val write_addr  = io.instruction(DestEnd()-1, FunctionEnd());
-    val operand1    = io.instruction(Operand1End()-1, DestEnd());
-    val operand2    = io.instruction(Operand2End()-1, Operand1End());
-    val read_addr1  = io.instruction(Addr1End()-1, DestEnd());
-    val read_addr2  = io.instruction(instructionWidth-1, instructionWidth - addressWidth);
+    val opcode      = io.instruction.bits(OpcodeEnd()-1, 0);
+    val function    = io.instruction.bits(FunctionEnd()-1, OpcodeEnd());
+    val write_addr  = io.instruction.bits(DestEnd()-1, FunctionEnd());
+//    val operand1    = io.instruction(Operand1End()-1, DestEnd());
+//    val operand2    = io.instruction(Operand2End()-1, Operand1End());
+    val read_addr1  = io.instruction.bits(Addr1End()-1, DestEnd());
+    val read_addr2  = io.instruction.bits(instructionWidth-1, instructionWidth - addressWidth);
     printf(s"opcode: %d\nfunction: %d\nwrite_addr: %d\noperand1: %d\n, operand2: %d\n, read_addr1: %d\n, read_addr2: %d\n",
-             opcode, function, write_addr, operand1, operand2, read_addr1, read_addr2);
+             opcode, function, write_addr, io.op1.bits, io.op2.bits, read_addr1, read_addr2);
     
     val alu_in1 = Wire(OperandType.cloneType);
     val alu_in2 = Wire(OperandType.cloneType);
 
-    alu_in1 := operand1;
-    alu_in2 := operand2;
+    alu_in1 := Mux(io.op1.fire(), io.op1.bits, reg_out1)
+    alu_in2 := Mux(io.op2.fire(), io.op2.bits, reg_out2)
 
-    when (opcode === 1.U) { 
-        alu_in1 := operand1; 
-        alu_in2 := reg_out2; 
-    } .elsewhen (opcode === 2.U) {
-        alu_in1 := reg_out1; 
-        alu_in2 := reg_out2; 
-    }
     // *******************************************  Register File IO  *******************************************
-    val reg_file = Reg(Vec(regFileSize, OperandType.cloneType));
-    val write_en = write_addr =/= 0.U;
+    val reg_file = Reg(Vec(regFileSize, OperandType.cloneType))
+    val write_en = io.instruction.fire()
     when (write_en) { reg_file(write_addr) := result; }
     reg_out1 := reg_file(read_addr1);
     reg_out2 := reg_file(read_addr2);
@@ -97,7 +92,7 @@ extends Module {
     
     // *******************************************  ALU  *******************************************
     result := ALU(function, alu_in1, alu_in2)
-    io.output := result;
+//    io.output := result;
 
 }
 
