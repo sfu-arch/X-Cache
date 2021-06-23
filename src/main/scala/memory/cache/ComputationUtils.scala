@@ -4,29 +4,34 @@ import chisel3._
 import chisel3.util._
 import chisel3.util.experimental._
 
-class ComputationALUInput[T <: Data](val OperandType: T) extends Bundle {
+class ComputationALUInput[T <: UInt](val OperandType: T) extends Bundle {
     val hardCoded = OperandType.cloneType
     val data = OperandType.cloneType
     val tbe = OperandType.cloneType
     val select = UInt(2.W)
 }
 
-class Mux3 [T <: Data] (val OperandType: T) extends Module {
+
+// reg = 0, tbe = 1, data = 2, hard = 3
+class Mux3 [T <: UInt] (OperandType: T) extends Module {
     val io = IO( new Bundle {
         val in = Input(new ComputationALUInput(OperandType))
-        val out = Output(OperandType.cloneType)
+        val out = Valid(OperandType.cloneType)
     })
 
+
     val result = Wire(OperandType.cloneType);
-    result := 0.U;
-    when (io.in.select === 0.U) {
+    when (io.in.select === 3.U) {
         result := io.in.hardCoded;
-    } .elsewhen (io.in.select === 1.U) {
-        result := io.in.data;
     } .elsewhen (io.in.select === 2.U) {
+        result := io.in.data;
+    } .elsewhen (io.in.select === 1.U) {
         result := io.in.tbe;
+    }.otherwise{
+        result := 0.U
     }
 
-    io.out := result;
+    io.out.bits := result
+    io.out.valid := (result =/= 0.U)
 }
 
