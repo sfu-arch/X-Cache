@@ -8,7 +8,7 @@ import chipsalliance.rocketchip.config._
 import utility.Constants._
 import memGen.config._
 import chipsalliance.rocketchip.config._
-import memGen.memory.cache.HasCacheAccelParams
+import memGen.memory.cache.{ActionList, HasCacheAccelParams}
 
 import scala.collection.immutable.ListMap
 
@@ -46,7 +46,7 @@ object InstBundle {
  
 class Action(implicit p:Parameters) extends CoreBundle{
   val signals = UInt(nSigs.W)
-  val actionType = UInt(2.W)
+  val actionType = UInt(actionTypeLen.W)
   override def cloneType: this.type = new Action().asInstanceOf[this.type]
 
 }
@@ -240,7 +240,7 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
   val taskID = UInt(tlen.W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
-  val command = UInt(nSigs.W)
+  val command = UInt(ActionList.nSigs.W)
   val way = UInt((log2Ceil(accelParams.nways) + 1).W)
   val replaceWay = way.cloneType
 //  val state = UInt(4.W)

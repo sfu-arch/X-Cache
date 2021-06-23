@@ -66,8 +66,6 @@ case class DandelionAccelParams(
                                  printCLog: Boolean = false,
                                  cacheNState:Int = 8,
                                  cacheAddrLen:Int = 32,
-                                 nSigs:Int = 10,
-                                 actionLen: Int = 10 + 2,
                                  cacheNWays: Int = 0,
                                  cacheNSets: Int = 0,
                                  tbeSize:Int = 0,
@@ -246,7 +244,6 @@ trait HasAccelParams {
   val clog = accelParams.clog
   val verb = accelParams.verb
   val comp = accelParams.comp
-  val nSigs = accelParams.nSigs
 
 
 
