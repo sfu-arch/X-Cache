@@ -148,6 +148,12 @@ with HasAccelShellParams{
         val ActionReg =  Module(new Queue( new ActionBundle(), pipe = true, entries = 1))
         ActionReg
     }
+    val compUnit  = for (i <- 0 until nParal) yield {
+        val Comp =  Module(new Computation(UInt(32.W)))
+        Comp
+    }
+
+    op1 := compUnit(i).regFile(regAddr)
 
     val dstOfSetState = Wire(Vec(nParal, new State()))
     val stateMemOutput = Wire((new State()))
