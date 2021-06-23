@@ -54,6 +54,7 @@ with HasAccelShellParams{
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
     val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 4))
+    val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 4))
     val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType.bits, n = nParal))
     val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal + 1))
     val feedbackArbiter = Module (new Arbiter(new InstBundle(), n = nParal))
@@ -104,10 +105,11 @@ with HasAccelShellParams{
     val stateAction = Wire(Vec(nParal, Bool()))
 
     val isTBEAction   = Wire(Vec(nParal, Bool()))
-    val isStateAction = Wire(Vec(nParal, Bool()))
-    val isFeedbackAction = Wire(Vec(nParal, Bool()))
-    val isCacheAction = Wire(Vec(nParal, Bool()))
-    val isMemAction =   Wire(Vec(nParal, Bool()))
+    val isStateAction = Wire(isTBEAction.cloneType)
+    val isFeedbackAction = Wire(isTBEAction.cloneType)
+    val isCacheAction = Wire(isTBEAction.cloneType)
+    val isMemAction =   Wire(isTBEAction.cloneType)
+    val isCompAction = Wire(isTBEAction.cloneType)
 
     val isLocked      = Wire(Bool())
     val hit           = Wire(Bool())
@@ -136,7 +138,6 @@ with HasAccelShellParams{
 
     val sets = Wire(Vec(nParal, UInt(32.W)))
 
-
     val wayInputCache = Wire(UInt((wayLen+1).W))
     val replaceWayInputCache = Wire(UInt((wayLen+1).W))
     val tbeWay        = WireInit(nWays.U((wayLen+1).W))
@@ -153,7 +154,14 @@ with HasAccelShellParams{
         Comp
     }
 
-    op1 := compUnit(i).regFile(regAddr)
+    val compUnitInput1  = for (i <- 0 until nParal) yield {
+        val CompIO1 =  Module(new Mux3(UInt(32.W)))
+        CompIO1
+    }
+    val compUnitInput2  = for (i <- 0 until nParal) yield {
+        val CompIO2 =  Module(new Mux3(UInt(32.W)))
+        CompIO2
+    }
 
     val dstOfSetState = Wire(Vec(nParal, new State()))
     val stateMemOutput = Wire((new State()))
@@ -161,7 +169,6 @@ with HasAccelShellParams{
     val probeStart = Wire(Bool())
 
     val instUsed = RegInit(false.B)
-
 
     val inputToPC  = Wire(new InstBundle())
 
@@ -314,6 +321,9 @@ with HasAccelShellParams{
         isCacheAction(i) := (actionReg(i).io.deq.bits.action.actionType === 0.U) && actionReg(i).io.deq.valid
         isFeedbackAction(i) := ((actionReg(i).io.deq.bits.action.actionType === 2.U)) && actionReg(i).io.deq.valid
         isStateAction(i) := (actionReg(i).io.deq.bits.action.actionType === 3.U) && actionReg(i).io.deq.valid
+        isCompAction(i) :=  (actionReg(i).io.deq.bits.action.actionType === 4.U) && actionReg(i).io.deq.valid
+
+
         isMemAction(i) := isCacheAction(i) & (actionReg(i).io.deq.bits.action.signals === sigToAction(ActionList.actions("DataRQ")))
 
         updateTBEFixedFields(i)   := isStateAction(i)
@@ -350,8 +360,26 @@ with HasAccelShellParams{
         dstOfSetState(i).state := Mux( isStateAction(i), sigToState (actionReg(i).io.deq.bits.action.signals), State.default.state)
 
         maskField(i) := sigToTBEOp1(actionReg(i).io.deq.bits.action.signals)// @todo from actions
-        tbeFieldUpdateSrc(i) := 1.U // @todo should be replaced with the one below
-        // tbeFieldUpdateSrc(i) := RegFile(i)(sigToTBEOp2(actionRom(i)(pcWire(i).pc)))
+//        tbeFieldUpdateSrc(i) := 1.U // @todo should be replaced with the one below
+         tbeFieldUpdateSrc(i) := compUnit(i).io.reg_file(sigToTBEOp2(actionRom(i)(pcWire(i).pc)))
+
+
+        /************Computation*****************************/
+        compUnitInput1(i).io.in.data := actionReg(i).io.deq.bits.data
+        compUnitInput1(i).io.in.tbe  := DontCare // @todo should be connected to tbe?
+        compUnitInput1(i).io.in.hardCoded := DontCare // @todo should be connected to action
+        compUnitInput1(i).io.in.select := sigToCompOpSel1(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1:TBE, 2: Data, 3: hardcoded
+        compUnit(i).io.op1 <> compUnitInput1(i).io.out
+
+
+        compUnitInput2(i).io.in.data := DontCare //   Real Dont Care, no data for second opcode
+        compUnitInput2(i).io.in.tbe  := DontCare // @todo should be connected to tbe?
+        compUnitInput2(i).io.in.hardCoded := DontCare // Real Dont Care, no hardcoded for second opcode
+        compUnitInput2(i).io.in.select := sigToCompOpSel2(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1: TBE
+        compUnit(i).io.op2 <> compUnitInput2(i).io.out
+
+        compUnit(i).io.instruction.bits := actionReg(i).io.deq.bits.action.signals
+        compUnit(i).io.instruction.valid := isCompAction(i)
 
         actionReg(i).io.deq.ready := !stall
         actionReg(i).io.enq.valid := pcWire(i).valid  // @todo enq ready should be used for controlling  updated pc
