@@ -29,3 +29,4 @@ class Mux3 [T <: Data] (val OperandType: T) extends Module {
 
     io.out := result;
 }
+

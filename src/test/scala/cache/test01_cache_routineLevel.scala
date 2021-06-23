@@ -12,8 +12,9 @@ import chipsalliance.rocketchip.config._
 import memGen.config._
 import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
-
-
+import chisel3.util._
+import chisel3.util.experimental._
+import chisel3.util.Cat
 // class test_cache01Main_routineLevel_IO(implicit val p: Parameters) extends Module with HasAccelParams
 //   with HasAccelShellParams with HasCacheAccelParams{
 //     val io = IO(new Bundle {
@@ -420,24 +421,35 @@ import org.scalatest.{FlatSpec, Matchers}
 // }
 
 class CompTest [+T1 <: Computation[UInt]] (dut: T1 ) extends PeekPokeTester (dut: T1) {
-    poke(dut.io.operand1.hardCoded, 3.U)
-    poke(dut.io.operand2.hardCoded, 2.U)
-    poke(dut.io.read_en1, false.B)
-    poke(dut.io.read_en2, false.B)
-    poke(dut.io.operand1.select, 0.U)
-    poke(dut.io.operand2.select, 0.U)
-    poke(dut.io.opcode, 0.U)
-    poke(dut.io.write_en, true.B)
-    poke(dut.io.write_addr, 1.U)
-  
-    expect(dut.io.output, 5.U)
-    step(1)
-    poke(dut.io.write_en, false.B)
-    poke(dut.io.read_en1, true.B)
-    poke(dut.io.read_addr1, 1.U)
+    // reg[1] = 2000 >> 7
+    poke(dut.io.instruction, "b00000000000001110000011111010000000101100".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
 
-    poke(dut.io.opcode, 0.U)
-    expect(dut.io.output, 7.U)
+    // reg[2] = 2000 >> 3
+    poke(dut.io.instruction, "b00000000000000110000011111010000001001100".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
+
+    // reg[3] = 2000 >> 21
+    poke(dut.io.instruction, "b00000000000101010000011111010000001101100".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
+
+    // reg[1] = reg[1] ^ reg[2]
+    poke(dut.io.instruction, "b00000000000000100000000000000001000110110".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
+
+    // reg[1] = reg[1] ^ reg[3]
+    poke(dut.io.instruction, "b00000000000000110000000000000001000110110".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
+
+    // reg[1] = reg[1] ^ 2000
+    poke(dut.io.instruction, "b00000000000000010000011111010000000110101".U)
+    println("result " + peek(dut.io.output) + "\n")
+    step(1);
 }
 
 
@@ -445,35 +457,6 @@ class ComputationTest extends FlatSpec with Matchers {
   "Tester" should "pass" in {
     chisel3.iotesters.Driver(() => new Computation(UInt(16.W))) { c =>
       new CompTest(c) 
-    } should be (true)
-  }
-}
-
-
-class RegPokeTest[+T1 <: RegisterFile[UInt]] (dut: T1) extends PeekPokeTester(dut: T1) {
-    poke(dut.io.write_en, true.B)
-    poke(dut.io.write_addr, 0.U)
-    poke(dut.io.write_data, 1.U)
-    step(1)
-    poke(dut.io.write_en, true.B)
-    poke(dut.io.write_addr, 1.U)
-    poke(dut.io.write_data, 2.U)
-
-    poke(dut.io.read_en1, true.B)
-    poke(dut.io.read_addr1, 0.U)
-    expect(dut.io.output1, 1.U)
-    step(1)
-    poke(dut.io.write_en, false.B)
-    poke(dut.io.read_en2, true.B)
-    poke(dut.io.read_addr2, 1.U)
-    expect(dut.io.output2, 2.U)
-}
-
-
-class RegisterFileTest extends FlatSpec with Matchers {
-  "RegosterFile Test" should "pass" in {
-    chisel3.iotesters.Driver(() => new RegisterFile(UInt(16.W), 16, 16)) { c =>
-      new RegPokeTest(c) 
     } should be (true)
   }
 }
