@@ -39,7 +39,7 @@ extends Module {
             is (sub) { result := op1 - op2; }
             is (mult) { result := op1 * op2; }
             is (shift_r) { result := op1 >> op2; }
-            is (shift_l) { result := op1 << op2; }
+            is (shift_l) { result := op1 << op2(7,0); }
             is (xor) { result := op1 ^ op2; }
         }
         result
