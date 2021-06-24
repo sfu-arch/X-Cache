@@ -54,7 +54,6 @@ with HasAccelShellParams{
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
     val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 4))
-    val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 4))
     val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType.bits, n = nParal))
     val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal + 1))
     val feedbackArbiter = Module (new Arbiter(new InstBundle(), n = nParal))
