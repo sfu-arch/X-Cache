@@ -63,13 +63,14 @@ with HasAccelShellParams{
 
     /********************************************************************************/
     // Building ROMs
-    val (routineAddr,setStateDst) = RoutinePtr.generateRoutineAddrMap(RoutineROM.routineActions)
-    val (rombits, dstStateBits)   = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutine.routineTriggerList)
+    val RoutinePtr = new RoutinePtr
+    val (routineAddr,setStateDst) = RoutinePtr.generateRoutineAddrMap(RoutineROMWalker.routineActions)
+    val (rombits, dstStateBits)   = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutineWalker.routineTriggerList)
 
     val uCodedNextPtr = VecInit(rombits)
     val dstStateRom = VecInit(dstStateBits)
 
-    val actions = RoutinePtr.generateActionRom(RoutineROM.routineActions, ActionList.actions, setStateDst)
+    val actions = RoutinePtr.generateActionRom(RoutineROMWalker.routineActions, ActionList.actions, setStateDst)
     val actionRom = for (i <- 0 until nParal) yield {
         val actionRom = VecInit(actions)
         actionRom

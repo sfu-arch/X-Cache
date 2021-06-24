@@ -1,8 +1,11 @@
 package memGen.memory.cache
 
+import chipsalliance.rocketchip.config._
+
 import scala.collection.mutable.ArrayBuffer
 import chisel3._
 import chisel3.util._
+import memGen.config._
 
 
 abstract class RoutinePC ()
@@ -13,9 +16,9 @@ case class DstState(name :String) extends  RoutinePC
 
 
 
-object RoutinePtr {
+class RoutinePtr (implicit val p: Parameters) extends HasAccelParams {
 
-  def generateRoutineAddrMap (routineRom : Array[RoutinePC]  ) : (Map[String,Int], Array[Int])= {
+  def generateRoutineAddrMap (routineRom : Array[RoutinePC]  ): (Map[String,Int], Array[Int])= {
 
       var routineAddr = 0
       var mappedRoutine = Map[String, Int]()
@@ -27,7 +30,7 @@ object RoutinePtr {
                   routineAddr += 1
                   mappedRoutine += ((name, routineAddr))
               }
-              case DstState(state) => dstStateArray += States.StateArray(state)
+              case DstState(state) => dstStateArray += accelParams.States.StateArray(state)
           }
 
       }
@@ -58,8 +61,8 @@ object RoutinePtr {
 
   def generateTriggerRoutineBit (routineAddrMap : Map[String, Int], routineTrigger: Array[RoutinePC]) : (Array[Bits] , Array[Bits]) = {
 
-    val events = Events.EventArray
-    val states = States.StateArray
+    val events = accelParams.Events.EventArray
+    val states = accelParams.States.StateArray
       val eventLen = if (events.size == 1) 1 else log2Ceil(events.size)
       val stateLen =  if (states.size == 1 ) 1 else log2Ceil(states.size)
 

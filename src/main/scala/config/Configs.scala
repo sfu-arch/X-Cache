@@ -100,6 +100,10 @@ case class DandelionAccelParams(
   val nCache = ncache
   val nWords = nword
 
+  val Events = EventsWalker
+  val States = StatesWalker
+
+
 
 
   val nstates = cacheNState

@@ -18,6 +18,9 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   // val (memType :: cacheType :: Nil) = Enum(2)
   //Caused Weird error!!
 
+  val Events = accelParams.Events
+  val States = accelParams.States
+
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
   val nCache = accelParams.nCache
