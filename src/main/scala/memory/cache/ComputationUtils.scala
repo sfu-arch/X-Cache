@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.util.experimental._
 
-class ComputationALUInput[T <: Data](OperandType: T = UInt(32.W)) extends Bundle {
+class ComputationALUInput[T <: Data](OperandType: T) extends Bundle {
     val hardCoded = OperandType.cloneType
     val data = OperandType.cloneType
     val tbe = OperandType.cloneType

@@ -73,8 +73,8 @@ extends Module {
 //    val operand2    = io.instruction(Operand2End()-1, Operand1End());
     val read_addr1  = io.instruction.bits(Addr1End()-1, DestEnd());
     val read_addr2  = io.instruction.bits(instructionWidth-1, instructionWidth - addressWidth);
-    printf(s"opcode: %d\nfunction: %d\nwrite_addr: %d\noperand1: %d\n, operand2: %d\n, read_addr1: %d\n, read_addr2: %d\n",
-             opcode, function, write_addr, io.op1.bits, io.op2.bits, read_addr1, read_addr2);
+//    printf(s"opcode: %d\nfunction: %d\nwrite_addr: %d\noperand1: %d\n, operand2: %d\n, read_addr1: %d\n, read_addr2: %d\n",
+//             opcode, function, write_addr, io.op1.bits, io.op2.bits, read_addr1, read_addr2);
     
     val alu_in1 = Wire(OperandType.cloneType);
     val alu_in2 = Wire(OperandType.cloneType);
