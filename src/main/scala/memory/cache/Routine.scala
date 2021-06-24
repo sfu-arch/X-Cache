@@ -32,24 +32,10 @@ object RoutineROMLDST {
     // node: 1
     // WideLoad_I : AllocateTBE, Allocate, SetState("WL")
 
+  )
 
-    
+}
 
-
-    
-
-
-
-
-
-
-
-    /*
-    Allocate
-    Beq allocPassed PASSED
-    replace
-    PASSED :
-    ReadExt
 
 object RoutineROMWalker {
 
@@ -71,7 +57,5 @@ object RoutineROMWalker {
     Routine ("NOP_ID") , Actions(Seq("SetState")), DstState("ID"),
     Routine ("STORE_IS") , Actions(Seq( "WrInt", "SetState")), DstState("S"),
   )
-
-
-  // fill the input table
 }
+
