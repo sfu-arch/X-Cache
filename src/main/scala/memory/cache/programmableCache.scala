@@ -157,6 +157,7 @@ with HasAccelShellParams{
         val CompIO1 =  Module(new Mux3(UInt(32.W)))
         CompIO1
     }
+
     val compUnitInput2  = for (i <- 0 until nParal) yield {
         val CompIO2 =  Module(new Mux3(UInt(32.W)))
         CompIO2
