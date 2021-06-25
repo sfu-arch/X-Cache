@@ -25,7 +25,7 @@ object ActionList {
         ("UpdateTBE",     "b0001_0000000011".U), // should update field 0
         ("SetState",      "b0011_0000000000".U),
         ("Feedback",      "b0010_0000000000".U ),
-        ("Add",           "b1000_0000000000".U ) // add with reg reg
+        ("AddWalker",     "b1000_0000000000".U ) // add with reg reg
 //        ("ReadTBE",     "b00000000011".U)
 
 

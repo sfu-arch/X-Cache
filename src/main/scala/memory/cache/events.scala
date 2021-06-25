@@ -21,10 +21,9 @@ object EventsLDST {
 object EventsWalker {
 
   val EventArray = Map(
-    (s"LOAD", 0x00),
-    (s"STORE", 0x01),
-    (s"DATA",0x02),
-    (s"NOP", 0x03)
+    (s"FIND", 0x00),
+    (s"DATA",0x01),
+    (s"NOP", 0x02)
 
   )
   val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
