@@ -23,9 +23,9 @@ import chisel3.util.experimental._
 
 class Computation [T <: UInt] (
     val OperandType: T, 
-    val opcodeWidth :Int = 2, 
+    val opcodeWidth :Int = 0,
     val funcWidth: Int = 3,
-    val regFileSize: Int = 16,
+    val regFileSize: Int = 4,
     val addressWidth :Int = 16, 
     val instructionWidth: Int = 41
 ) 
@@ -48,9 +48,9 @@ extends Module {
     def OpcodeEnd() = opcodeWidth;
     def FunctionEnd() = OpcodeEnd() + funcWidth;
     def DestEnd() = FunctionEnd() + log2Ceil(regFileSize);
-    def Operand1End() = DestEnd() + OperandType.cloneType.getWidth;
-    def Operand2End() = Operand1End() + OperandType.cloneType.getWidth;
-    def Addr1End() =  DestEnd() + addressWidth;
+//    def Operand1End() = DestEnd() + OperandType.cloneType.getWidth;
+//    def Operand2End() = Operand1End() + OperandType.cloneType.getWidth;
+    def Op1End() =  DestEnd() + log2Ceil(regFileSize);
 
     val io = IO (new Bundle {
         val instruction = Flipped(Valid(UInt(instructionWidth.W)))
@@ -66,13 +66,14 @@ extends Module {
     val reg_out2 = Wire(OperandType.cloneType);
     
     // *******************************************  FETCH  *******************************************
-    val opcode      = io.instruction.bits(OpcodeEnd()-1, 0);
+//    val opcode      = io.instruction.bits(OpcodeEnd()-1, 0);
     val function    = io.instruction.bits(FunctionEnd()-1, OpcodeEnd());
     val write_addr  = io.instruction.bits(DestEnd()-1, FunctionEnd());
 //    val operand1    = io.instruction(Operand1End()-1, DestEnd());
 //    val operand2    = io.instruction(Operand2End()-1, Operand1End());
-    val read_addr1  = io.instruction.bits(Addr1End()-1, DestEnd());
-    val read_addr2  = io.instruction.bits(instructionWidth-1, instructionWidth - addressWidth);
+    val read_addr1  = io.instruction.bits(Op1End()-1, DestEnd());
+    val read_addr2  = io.instruction.bits(instructionWidth-1, Op1End()); // second op larger for imm value
+
 //    printf(s"opcode: %d\nfunction: %d\nwrite_addr: %d\noperand1: %d\n, operand2: %d\n, read_addr1: %d\n, read_addr2: %d\n",
 //             opcode, function, write_addr, io.op1.bits, io.op2.bits, read_addr1, read_addr2);
     
