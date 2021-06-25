@@ -44,18 +44,9 @@ object RoutineROMWalker {
   val routineActions = Array [RoutinePC](
 
     // 0-5
-    Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate") ++  HASH ++ Seq("DataRQWalker", "")),DstState("ID"),
-    //6-9
-    Routine ("STORE_I"), Actions(Seq("Allocate", "WrInt", "SetState")),DstState("E"),
-    //10-11
-    Routine ("LOAD_ID") , Actions(Seq( "SetState")), DstState("ID"),
-    Routine ("LOAD_E") , Actions(Seq( "SetState")), DstState("E"),
+    Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate") ++  HASH ++ Seq("DataRQWalker", "SetState")),DstState("ID"),
     Routine ("DATA_ID") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("E"),
-    Routine ("STORE_E") , Actions(Seq( "WrInt","SetState")), DstState("E"),
-    Routine ("NOP_E") , Actions(Seq("SetState")), DstState("E"),
-    Routine ("NOP_I") , Actions(Seq("SetState")), DstState("I"),
-    Routine ("NOP_ID") , Actions(Seq("SetState")), DstState("ID"),
-    Routine ("STORE_IS") , Actions(Seq( "WrInt", "SetState")), DstState("S"),
+
   )
 }
 
