@@ -367,17 +367,17 @@ with HasAccelShellParams{
 
 
         /************Computation*****************************/
-        compUnitInput1(i).io.in.data := actionReg(i).io.deq.bits.data
-        compUnitInput1(i).io.in.tbe  := DontCare // @todo should be connected to tbe?
-        compUnitInput1(i).io.in.hardCoded := DontCare // @todo should be connected to action
-        compUnitInput1(i).io.in.select := sigToCompOpSel1(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1:TBE, 2: Data, 3: hardcoded
+        compUnitInput1(i).io.in.data := DontCare //   Real Dont Care, no data for the first operand
+        compUnitInput1(i).io.in.tbe  := DontCare // @todo should be connected to tbe mux
+        compUnitInput1(i).io.in.hardCoded := DontCare // Real Dont Care, no hardcoded for the first operand
+        compUnitInput1(i).io.in.select := sigToCompOpSel1(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1:TBE
         compUnit(i).io.op1 <> compUnitInput1(i).io.out
 
 
-        compUnitInput2(i).io.in.data := DontCare //   Real Dont Care, no data for second opcode
+        compUnitInput2(i).io.in.data :=  actionReg(i).io.deq.bits.data
         compUnitInput2(i).io.in.tbe  := DontCare // @todo should be connected to tbe?
-        compUnitInput2(i).io.in.hardCoded := DontCare // Real Dont Care, no hardcoded for second opcode
-        compUnitInput2(i).io.in.select := sigToCompOpSel2(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1: TBE
+        compUnitInput2(i).io.in.hardCoded := DontCare // @todo should be connected to action
+        compUnitInput2(i).io.in.select := sigToCompOpSel2(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1:TBE, 2: Data, 3: hardcoded
         compUnit(i).io.op2 <> compUnitInput2(i).io.out
 
         compUnit(i).io.instruction.bits := actionReg(i).io.deq.bits.action.signals

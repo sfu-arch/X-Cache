@@ -85,8 +85,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   def sigToTBECmd(sigs : Bits) : UInt = sigs.asUInt()(TBE.default.cmdLen - 1, 0)
   def sigToActType(sigs : Bits) :UInt = sigs.asUInt()(nSigs + actionTypeLen - 1, nSigs)
   def sigToState (sigs :Bits) : UInt = sigs.asUInt()(States.stateLen - 1, 0)
-  def sigToCompOpSel1(sigs:Bits): UInt = sigs.asUInt()(1,0)
-  def sigToCompOpSel2(sigs:Bits): UInt = sigs.asUInt()(2,2)
+  def sigToCompOpSel1(sigs:Bits): UInt = sigs.asUInt()(0,0)
+  def sigToCompOpSel2(sigs:Bits): UInt = sigs.asUInt()(2,1)
 
 
 }
