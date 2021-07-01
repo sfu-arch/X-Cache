@@ -8,29 +8,22 @@ import chisel3.util.experimental._
 /*
  functions: add: 0, sub: 1, mult: 2, shift_r: 3, shift_l: 4, xor: 5 
 
- opcodes: 
-  ---------------------------
- | 00 | operand1, operand2   |
- | 01 | operand1, address_2  |
- | 10 | address_1, address_2 |
-  ---------------------------
+// opcodes:
+//  ---------------------------
+// | 00 | operand1, operand2   |
+// | 01 | operand1, address_2  |
+// | 10 | address_1, address_2 |
+//  ---------------------------
 
  Instruction:
   ----------------------- --------------------- ------------ ---------- --------
- |  address_2/ operand_2 | address_1/ operand1 | write_addr | function | opcode |
+ |  tbe_field/imm/ operand_2 | tbe_field/ operand_1 | write_addr | function |
   ----------------------- --------------------- ------------ ---------- --------
 
 */ 
 
-class Computation [T <: UInt] (
-    val OperandType: T, 
-    val opcodeWidth :Int = 0,
-    val funcWidth: Int = 3,
-    val regFileSize: Int = 4,
-    val addressWidth :Int = 16, 
-    val instructionWidth: Int = 41
-) 
-extends Module {
+class Computation [T <: UInt] (  val OperandType: T)(implicit val p:Parameters)
+extends Module with HasCacheAccelParams {
     def ALU(function: UInt, op1: T, op2: T) = {
         val result = Wire(OperandType.cloneType);
         result := 0.U;
@@ -98,6 +91,6 @@ extends Module {
 
 }
 
-object Computation extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new Computation(UInt(16.W)))
-}
+//object Computation extends App {
+//  (new chisel3.stage.ChiselStage).emitVerilog(new Computation(UInt(16.W)))
+//}
