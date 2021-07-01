@@ -57,11 +57,11 @@ trait ValidT extends AccelBundle {
 
 
 trait RouteID extends AccelBundle {
-  val RouteID = UInt(glen.W)
+  val RouteID = UInt(1.W)
 }
 
 trait TaskID extends AccelBundle {
-  val taskID = UInt(tlen.W)
+  val taskID = UInt(1.W)
 }
 
 trait PredicateT extends AccelBundle {
@@ -128,7 +128,6 @@ object AllocaResp {
 class ReadReq(implicit p: Parameters)
   extends RouteID {
   val address = UInt(xlen.W)
-  val taskID = UInt(tlen.W)
   val Typ = UInt(8.W)
 
 }
@@ -137,7 +136,6 @@ object ReadReq {
   def default(implicit p: Parameters): ReadReq = {
     val wire = Wire(new ReadReq)
     wire.address := 0.U
-    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire.Typ := MT_D
     wire
@@ -184,7 +182,6 @@ class WriteReq(implicit p: Parameters)
   val address = UInt((xlen - 10).W)
   val data = UInt(xlen.W)
   val mask = UInt((xlen / 8).W)
-  val taskID = UInt(tlen.W)
   val Typ = UInt(8.W)
 }
 
@@ -194,7 +191,6 @@ object WriteReq {
     wire.address := 0.U
     wire.data := 0.U
     wire.mask := 0.U
-    wire.taskID := 0.U
     wire.RouteID := 0.U
     wire.Typ := MT_D
     wire
@@ -236,8 +232,6 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
   val addr = UInt(addrLen.W)
   val data = UInt(bSize.W)
   val mask = UInt((xlen / 8).W)
-  val tag = UInt((List(1, mshrLen).max).W)
-  val taskID = UInt(tlen.W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
   val command = UInt(ActionList.nSigs.W)
@@ -253,8 +247,6 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
     wire.addr := this.addr
     wire.data := this.data
     wire.mask := this.mask
-    wire.tag := this.tag
-    wire.taskID := this.taskID
     wire.iswrite := this.iswrite
     wire.command := this.command
     wire.way := this.way
@@ -271,8 +263,6 @@ object MemReq {
     wire.addr := 0.U
     wire.data := 0.U
     wire.mask := 0.U
-    wire.tag := 0.U
-    wire.taskID := 0.U
     wire.iswrite := false.B
     wire.tile := 0.U
     wire.command := 0.U
@@ -284,7 +274,6 @@ object MemReq {
 
 class MemResp(implicit p: Parameters) extends AccelBundle()(p) with ValidT {
   val data = UInt(bSize.W)
-  val tag = UInt((List(1, mshrLen).max).W)
   val iswrite = Bool()
   val tile = UInt(xlen.W)
   val way = UInt((log2Ceil(accelParams.nways) + 1).W)
@@ -294,7 +283,6 @@ class MemResp(implicit p: Parameters) extends AccelBundle()(p) with ValidT {
   def clone_and_set_tile_id(tile: UInt): MemResp = {
     val wire = Wire(new MemResp())
     wire.data := this.data
-    wire.tag := this.tag
     wire.iswrite := this.iswrite
     wire.way := this.way
     wire.tile := tile
@@ -308,7 +296,6 @@ object MemResp {
     val wire = Wire(new MemResp())
     wire.valid := false.B
     wire.data := 0.U
-    wire.tag := 0.U
     wire.iswrite := false.B
     wire.tile := 0.U
     wire.way := 0.U
@@ -325,7 +312,6 @@ class RelayOutput(implicit p: Parameters) extends AccelBundle()(p) {
   override def cloneType = new RelayOutput().asInstanceOf[this.type]
 
   val DataNode = Decoupled(UInt(xlen.W))
-  val TokenNode = Input(UInt(tlen.W))
 }
 
 /**
@@ -345,7 +331,6 @@ class DataBundle(implicit p: Parameters) extends PredicateT with TaskID {
   def asControlBundle(): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := this.predicate
-    wire.taskID := this.taskID
     wire
   }
 }
@@ -357,7 +342,6 @@ object DataBundle {
     val wire = Wire(new DataBundle)
     wire.data := data
     wire.predicate := true.B
-    wire.taskID := taskID
     wire
   }
 
@@ -365,7 +349,6 @@ object DataBundle {
     val wire = Wire(new DataBundle)
     wire.data := data
     wire.predicate := predicate
-    wire.taskID := taskID
     wire
   }
 
@@ -374,7 +357,6 @@ object DataBundle {
     val wire = Wire(new DataBundle)
     wire.data := 0.U
     wire.predicate := false.B
-    wire.taskID := 0.U
     wire
   }
 
@@ -382,7 +364,6 @@ object DataBundle {
     val wire = Wire(new DataBundle)
     wire.data := data
     wire.predicate := true.B
-    wire.taskID := 0.U
     wire
   }
 
@@ -395,22 +376,6 @@ object DataBundle {
   }
 }
 
-class TypBundle(implicit p: Parameters) extends ValidT with PredicateT with TaskID {
-  // Type Packet
-  val data = UInt(typeSize.W)
-}
-
-
-object TypBundle {
-  def default(implicit p: Parameters): TypBundle = {
-    val wire = Wire(new TypBundle)
-    wire.data := 0.U
-    wire.predicate := false.B
-    wire.taskID := 0.U
-    wire.valid := false.B
-    wire
-  }
-}
 
 /**
   * Control bundle between branch and
@@ -420,14 +385,12 @@ object TypBundle {
   */
 class ControlBundle(implicit p: Parameters) extends AccelBundle()(p) {
   //Control packet
-  val taskID = UInt(tlen.W)
   val control = Bool()
 
   def asDataBundle(): DataBundle = {
     val wire = Wire(new DataBundle)
     wire.data := this.control.asUInt()
     wire.predicate := this.control
-    wire.taskID := this.taskID
     wire
   }
 }
@@ -436,28 +399,24 @@ object ControlBundle {
   def default(implicit p: Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := false.B
-    wire.taskID := 0.U
     wire
   }
 
   def default(control: Bool, task: UInt)(implicit p: Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := control
-    wire.taskID := task
     wire
   }
 
   def active(taskID: UInt = 0.U)(implicit p: Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := true.B
-    wire.taskID := taskID
     wire
   }
 
   def deactivate(taskID: UInt = 0.U)(implicit p: Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := false.B
-    wire.taskID := taskID
     wire
   }
 
@@ -465,7 +424,6 @@ object ControlBundle {
   def apply(control: Bool = false.B, taskID: UInt = 0.U)(implicit p: Parameters): ControlBundle = {
     val wire = Wire(new ControlBundle)
     wire.control := control
-    wire.taskID := taskID
     wire
   }
 
@@ -484,7 +442,6 @@ class CustomDataBundle[T <: Data](gen: T = UInt(32.W))(implicit p: Parameters) e
   // Data packet
   val data = gen.cloneType
   val predicate = Bool()
-  val taskID = UInt(tlen.W)
 
   override def cloneType: this.type = new CustomDataBundle(gen).asInstanceOf[this.type]
 }
@@ -496,7 +453,6 @@ object CustomDataBundle {
     val wire = Wire(new CustomDataBundle(gen))
     wire.data := 0.U.asTypeOf(gen)
     wire.predicate := false.B
-    wire.taskID := 0.U
     wire
   }
 }

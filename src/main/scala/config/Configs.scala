@@ -3,7 +3,6 @@ package memGen.config
 import chisel3._
 import chisel3.util.Enum
 import chipsalliance.rocketchip.config._
-import memGen.fpu.FType
 import memGen.interfaces.axi.AXIParams
 import memGen.junctions.{NastiKey, NastiParameters}
 import memGen.util.{DandelionGenericParameterizedBundle, DandelionParameterizedBundle}
@@ -12,22 +11,9 @@ import memGen.util.{DandelionGenericParameterizedBundle, DandelionParameterizedB
 trait AccelParams {
 
   var xlen: Int
-  var ylen: Int
-  val tlen: Int
-  val glen: Int
-  val typeSize: Int
-  val beats: Int
-  val mshrLen: Int
-  val fType: FType
-
 
   def cacheBlockBytes: Int
 
-  // Debugging dumps
-  val log: Boolean
-  val clog: Boolean
-  val verb: String
-  val comp: String
 }
 
 /**
@@ -77,19 +63,6 @@ case class DandelionAccelParams(
                                ) extends AccelParams {
 
   var xlen: Int = dataLen
-  var ylen: Int = addrLen
-  val tlen: Int = taskLen
-  val glen: Int = groupLen
-  val typeSize: Int = tSize
-  val beats: Int = 0
-  val mshrlen: Int = mshrLen
-  val fType = dataLen match {
-
-    case 64 => FType.D
-    case 32 => FType.S
-    case 16 => FType.H
-    case default => FType.D
-  }
 
   //Cache
   val nways = cacheNWays
@@ -236,21 +209,6 @@ trait HasAccelParams {
   val xlen = accelParams.xlen
   val addrLen = accelParams.addrLen
   val bSize = accelParams.cacheBlockBits
-  val ylen = accelParams.ylen
-  val tlen = accelParams.tlen
-  val glen = accelParams.glen
-  val mshrLen = accelParams.mshrLen
-  val typeSize = accelParams.typeSize
-  val beats = typeSize / xlen
-  val fType = accelParams.fType
-  val log = accelParams.log
-  val memLog = accelParams.memLog
-  val clog = accelParams.clog
-  val verb = accelParams.verb
-  val comp = accelParams.comp
-
-
-
 
 }
 
