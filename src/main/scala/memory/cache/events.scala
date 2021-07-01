@@ -28,6 +28,8 @@ object EventsWalker {
   )
   val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
 
+  val HitEvent = EventArray("FIND")
+
 }
 
 

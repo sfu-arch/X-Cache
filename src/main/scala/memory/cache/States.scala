@@ -32,6 +32,9 @@ object StatesWalker{
   )
   val stateLen =  if (StateArray.size == 1 ) 1 else log2Ceil(StateArray.size)
 
+  val ValidState = StateArray("V")   // for hit
+  val InvalidState = StateArray("I") // for miss
+
 }
 
 

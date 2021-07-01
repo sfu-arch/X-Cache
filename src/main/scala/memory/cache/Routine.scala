@@ -40,12 +40,12 @@ object RoutineROMLDST {
 object RoutineROMWalker {
 
   //
-  val HASH = Seq("XORWalker", "ADDWalker")
+  val HASH = Seq("XorWalker", "AddWalker")
   val routineActions = Array [RoutinePC](
 
     // 0-5
     Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate") ++  HASH ++ Seq("DataRQWalker", "SetState")),DstState("ID"),
-    Routine ("DATA_ID") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("E"),
+    Routine ("DATA_ID") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
 
   )
 }
