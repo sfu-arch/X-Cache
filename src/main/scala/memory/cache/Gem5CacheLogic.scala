@@ -68,6 +68,12 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nSigs = ActionList.actionLen - actionTypeLen
   val actionLen = ActionList.actionLen
 
+  val opcodeWidth :Int = 0
+  val funcWidth: Int = 3
+  val regFileSize: Int = 4
+  val regFileLen = log2Ceil(regFileSize)
+  val instructionWidth: Int = nSigs
+
 
   def addrToSet(addr: UInt): UInt = {
     val set = addr(setLen + blen + byteOffsetBits - 1, blen + byteOffsetBits )
@@ -80,14 +86,19 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   }
 
   def sigToAction(sigs : Bits) :UInt = sigs.asUInt()(nSigs - 1, 0)
+  def sigToActType(sigs : Bits) :UInt = sigs.asUInt()(nSigs + actionTypeLen - 1, nSigs)
+
   def sigToTBEOp2(sigs : Bits) : UInt = sigs.asUInt()(2*TBE.default.fieldLen + TBE.default.cmdLen - 1 , TBE.default.fieldLen + TBE.default.cmdLen)
   def sigToTBEOp1(sigs : Bits) : UInt = sigs.asUInt()(TBE.default.fieldLen + TBE.default.cmdLen  - 1, TBE.default.cmdLen)
   def sigToTBECmd(sigs : Bits) : UInt = sigs.asUInt()(TBE.default.cmdLen - 1, 0)
-  def sigToActType(sigs : Bits) :UInt = sigs.asUInt()(nSigs + actionTypeLen - 1, nSigs)
+
   def sigToState (sigs :Bits) : UInt = sigs.asUInt()(States.stateLen - 1, 0)
+
   def sigToCompOpSel1(sigs:Bits): UInt = sigs.asUInt()(0,0)
   def sigToCompOpSel2(sigs:Bits): UInt = sigs.asUInt()(2,1)
 
+  def sigToDQSrc(sigs:Bits): UInt = sigs.asUInt()(0,0)
+  def sigToDQRegSrc(sigs:Bits): UInt = sigs.asUInt()(regFileLen,1)
 
 }
 
