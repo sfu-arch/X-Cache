@@ -225,9 +225,9 @@ with HasAccelShellParams{
     setLock     := instruction.fire()
 
     probeHit := input.io.deq.fire()
-    hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.StateArray(s"E").U)
-    hitLD :=   hit && input.io.deq.bits.inst.event === Events.EventArray("LOAD").U
-    missLD := probeHit &&  (input.io.deq.bits.inst.event === Events.EventArray("LOAD").U) && ((stateMem.io.out.bits.state === States.StateArray(s"I").U) /*|| (cacheWayWire(nParal) === nWays.U)*/ )
+    hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.ValidState.U)
+    hitLD :=   hit && input.io.deq.bits.inst.event === Events.HitEvent.U
+    missLD := probeHit &&  (input.io.deq.bits.inst.event === Events.HitEvent.U) && ((stateMem.io.out.bits.state === States.InvalidState.U) /*|| (cacheWayWire(nParal) === nWays.U)*/ )
 
     io.in.memCtrl.ready    :=  instruction.fire() && inputArbiter.io.chosen === memCtrlPriority.U
     io.in.cpu.ready        := instruction.fire() && inputArbiter.io.chosen === cpuPriority.U
@@ -323,10 +323,10 @@ with HasAccelShellParams{
         isCacheAction(i) := (actionReg(i).io.deq.bits.action.actionType === 0.U) && actionReg(i).io.deq.valid
         isFeedbackAction(i) := ((actionReg(i).io.deq.bits.action.actionType === 2.U)) && actionReg(i).io.deq.valid
         isStateAction(i) := (actionReg(i).io.deq.bits.action.actionType === 3.U) && actionReg(i).io.deq.valid
-        isCompAction(i) :=  (actionReg(i).io.deq.bits.action.actionType === 4.U) && actionReg(i).io.deq.valid
+        isMemAction(i) := (actionReg(i).io.deq.bits.action.actionType  === 4.U) && actionReg(i).io.deq.valid
+        isCompAction(i) :=  (actionReg(i).io.deq.bits.action.actionType >= 8.U) && actionReg(i).io.deq.valid
 
 
-        isMemAction(i) := isCacheAction(i) & (actionReg(i).io.deq.bits.action.signals === sigToAction(ActionList.actions("DataRQ")))
 
         updateTBEFixedFields(i)   := isStateAction(i)
         endOfRoutine(i)   := isStateAction(i)
@@ -376,7 +376,7 @@ with HasAccelShellParams{
 
         compUnitInput2(i).io.in.data :=  actionReg(i).io.deq.bits.data
         compUnitInput2(i).io.in.tbe  := DontCare // @todo should be connected to tbe?
-        compUnitInput2(i).io.in.hardCoded := DontCare // @todo should be connected to action
+        compUnitInput2(i).io.in.hardCoded := actionReg(i).io.deq.bits.action.signals(instructionWidth - 1, compUnit(i).Op1End())
         compUnitInput2(i).io.in.select := sigToCompOpSel2(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1:TBE, 2: Data, 3: hardcoded
         compUnit(i).io.op2 <> compUnitInput2(i).io.out
 
@@ -423,7 +423,7 @@ with HasAccelShellParams{
     
     for (i <- 0 until nParal) {
         outReqArbiter.io.in(i).bits.req.data:= DontCare
-        outReqArbiter.io.in(i).bits.req.addr := actionReg(i).io.deq.bits.addr
+        outReqArbiter.io.in(i).bits.req.addr := Mux(sigToDQSrc(actionReg(i).io.deq.bits.action.signals).asBool(), compUnit(i).io.reg_file(sigToDQRegSrc(actionReg(i).io.deq.bits.action.signals)), actionReg(i).io.deq.bits.addr)
         outReqArbiter.io.in(i).bits.req.inst:= 0.U // 0 for reading
         outReqArbiter.io.in(i).bits.dst:= nCache.U  // temp for 2 cache(0-nCache-1) and one memCtrl(2)
         outReqArbiter.io.in(i).valid :=  isMemAction(i)
@@ -488,7 +488,7 @@ with HasAccelShellParams{
         BoringUtils.addSource(instruction.fire, "instCount_0")
         BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "cpuReq_0")
         BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq_0")
-        BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.EventArray("LOAD").U , "ldReq_0")
+        BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.HitEvent.U , "ldReq_0")
     }
 
     // if (cacheID == 1){
@@ -497,7 +497,7 @@ with HasAccelShellParams{
     //     BoringUtils.addSource(instruction.fire, "instCount_1")
     //     BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "cpuReq_1")
     //     BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq_1")
-    //     BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.EventArray("LOAD").U , "ldReq_1")
+    //     BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.HitEvent.U , "ldReq_1")
     // }
 
 }
