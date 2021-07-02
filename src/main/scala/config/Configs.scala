@@ -41,15 +41,6 @@ trait DMEParams {
 case class DandelionAccelParams(
                                  dataLen: Int = 64,
                                  addrLen: Int = 32,
-                                 taskLen: Int = 5,
-                                 groupLen: Int = 16,
-                                 mshrLen: Int = 16,
-                                 tSize: Int = 64,
-                                 verbosity: String = "low",
-                                 components: String = "",
-                                 printLog: Boolean = false,
-                                 printMemLog: Boolean = false,
-                                 printCLog: Boolean = false,
                                  cacheNState:Int = 8,
                                  cacheAddrLen:Int = 32,
                                  cacheNWays: Int = 0,
@@ -76,25 +67,13 @@ case class DandelionAccelParams(
   val Events = EventsWalker
   val States = StatesWalker
 
-
-
-
   val nstates = cacheNState
   val addrlen = cacheAddrLen
 
-//  val nCommand = nCom
-//  var comlen:Int = math.ceil(math.log(nCommand)/math.log(2)).toInt
-//  val nSigs = nSigs
 
     def cacheBlockBytes: Int = nWords * (xlen >> 3) // 4 x 32 bits = 16B
   val cacheBlockBits = cacheBlockBytes << 3
-//   def cacheBlockBytes: Int = xlen >> 3
-  // Debugging dumps
-  val log: Boolean = printLog
-  val memLog: Boolean = printMemLog
-  val clog: Boolean = printCLog
-  val verb: String = verbosity
-  val comp: String = components
+
 
 }
 
