@@ -46,13 +46,15 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val wBytes = xlen >> 3
   val nWords = accelParams.nWords // 4
 
-  val bBytes = accelParams.cacheBlockBytes // 32 Bytes (  nWords * Xlen)
   val bBits = bSize
   val blen = log2Ceil(nWords) // 2
-
+  
   val byteOffsetBits = log2Ceil(wBytes) //
   val wordLen = byteOffsetBits
-  
+
+  //  val offsetLen = blen + byteOffsetBits
+  val offsetLen = 0 // Walker
+
   val nData = bBits / memParams.dataBits
   val dataBeats = nData
 
@@ -60,7 +62,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val wayLen = log2Ceil(nWays) + 1
   val cacheLen = log2Ceil(nSets*nWays)
 
-  val taglen = addrLen - (setLen + blen + byteOffsetBits ) // 3 + 2
+  val taglen = addrLen - (setLen + offsetLen) // 3 + 2
 
   val replacementPolicy = "lru"
 
@@ -76,14 +78,20 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
 
   def addrToSet(addr: UInt): UInt = {
-    val set = addr(setLen + blen + byteOffsetBits - 1, blen + byteOffsetBits )
+    val set = addr(setLen - 1 + offsetLen , offsetLen)
     set.asUInt()
   }
 
   def addrNoOffset (addr: UInt) :UInt  ={
-    val addrNoOff = addr >> (blen + byteOffsetBits)
+    val addrNoOff = addr >> (offsetLen)
     addrNoOff.asUInt()
   }
+
+  def addrToTag(addr: UInt): UInt = {
+    val tag = (addr(addrLen - 1, setLen + offsetLen))
+    tag.asUInt()
+  }
+
 
   def sigToAction(sigs : Bits) :UInt = sigs.asUInt()(nSigs - 1, 0)
   def sigToActType(sigs : Bits) :UInt = sigs.asUInt()(nSigs + actionTypeLen - 1, nSigs)
@@ -169,7 +177,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val wayInput = RegInit(nWays.U((wayLen + 1).W))
   val replaceWayInput = RegInit(nWays.U((wayLen + 1).W))
 
-  val offset = RegInit(0.U(byteOffsetBits.W))
   val way = WireInit(0.U((wayLen + 1).W))
 
   val dataBuffer = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
@@ -241,7 +248,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     cpu_iswrite := io.cpu.req.bits.iswrite
     tag := addrToTag(io.cpu.req.bits.addr)
     set := addrToSet(io.cpu.req.bits.addr)
-    offset := addrToOffset(io.cpu.req.bits.addr)
     wayInput := io.cpu.req.bits.way
     replaceWayInput := io.cpu.req.bits.replaceWay
   }
@@ -300,16 +306,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   //  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
   //  hit := (valid(set) & rmeta.tag === tag)
 
-  def addrToOffset(addr: UInt): UInt = {
-    val offset = addr(blen + byteOffsetBits - 1, byteOffsetBits)
-    offset.asUInt()
-  }
-
-  def addrToTag(addr: UInt): UInt = {
-    val tag = Wire(UInt(taglen.W))
-    tag := (addr(addrLen - 1, setLen + blen + byteOffsetBits))
-    tag.asUInt()
-  }
 
 //  def addrToWay(set: UInt): (UInt) = {
 //    val way = Wire(UInt((nWays + 1).W))
