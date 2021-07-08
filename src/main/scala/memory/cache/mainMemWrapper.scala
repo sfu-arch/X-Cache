@@ -35,6 +35,7 @@ with HasAccelShellParams{
 
     val addrReg = RegInit(0.U(addrLen.W))
     val srcReg = RegInit(0.U(io.out.bits.srcLen.W))
+    val returnAddr = RegInit(0.U(addrLen.W))
     val dataRegRead = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
     val dataRegWrite = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
     val (rd :: wr_back :: Nil ) = Enum(2)
@@ -42,10 +43,11 @@ with HasAccelShellParams{
     val stReg = RegInit(stIdle)
 
     val start = Wire(Bool())
-    start := io.in.fire() & stReg === stIdle & io.in.bits.addr =/= 0.U & !(io.in.bits.addr > 820685020.U)
+    start := io.in.fire() & stReg === stIdle & io.in.bits.data(addrLen -1 , 0) =/= 0.U
 
     when (start){
-        addrReg := io.in.bits.addr
+        addrReg := io.in.bits.data(addrLen -1 , 0) // use the data of the package for its requests
+        returnAddr := io.in.bits.addr
         srcReg := io.in.bits.src
     }
 
@@ -91,7 +93,7 @@ with HasAccelShellParams{
 
 
     io.out.bits.data := Cat(dataRegRead)
-    io.out.bits.addr := addrReg
+    io.out.bits.addr := returnAddr
     io.out.bits.inst := Events.EventArray("DATA").U
     io.out.bits.src := ID.U
     io.out.bits.dst := srcReg

@@ -422,8 +422,8 @@ with HasAccelShellParams{
     dataValid := cache.io.bipassLD.out.valid
     
     for (i <- 0 until nParal) {
-        outReqArbiter.io.in(i).bits.req.data:= DontCare
-        outReqArbiter.io.in(i).bits.req.addr := Mux(sigToDQSrc(actionReg(i).io.deq.bits.action.signals).asBool(), compUnit(i).io.reg_file(sigToDQRegSrc(actionReg(i).io.deq.bits.action.signals)), actionReg(i).io.deq.bits.addr)
+        outReqArbiter.io.in(i).bits.req.data:= Mux(sigToDQSrc(actionReg(i).io.deq.bits.action.signals).asBool(), compUnit(i).io.reg_file(sigToDQRegSrc(actionReg(i).io.deq.bits.action.signals)), actionReg(i).io.deq.bits.addr)
+        outReqArbiter.io.in(i).bits.req.addr := actionReg(i).io.deq.bits.addr
         outReqArbiter.io.in(i).bits.req.inst:= 0.U // 0 for reading
         outReqArbiter.io.in(i).bits.dst:= nCache.U  // temp for 2 cache(0-nCache-1) and one memCtrl(2)
         outReqArbiter.io.in(i).valid :=  isMemAction(i)
