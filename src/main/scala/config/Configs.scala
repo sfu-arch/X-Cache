@@ -70,8 +70,7 @@ case class DandelionAccelParams(
   val nstates = cacheNState
   val addrlen = cacheAddrLen
 
-
-    def cacheBlockBytes: Int = nWords * (xlen >> 3) // 4 x 32 bits = 16B
+  def cacheBlockBytes: Int = nWords * (xlen >> 3) // 4 x 32 bits = 16B
   val cacheBlockBits = cacheBlockBytes << 3
 
 

@@ -24,6 +24,7 @@ import chisel3.util.experimental._
 
 class Computation [T <: UInt] (  val OperandType: T)(implicit val p:Parameters)
 extends Module with HasCacheAccelParams {
+
     def ALU(function: UInt, op1: T, op2: T) = {
         val result = Wire(OperandType.cloneType);
         result := 0.U;
