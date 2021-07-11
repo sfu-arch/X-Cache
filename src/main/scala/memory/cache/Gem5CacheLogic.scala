@@ -286,39 +286,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   dataReadReady := false.B
   loadDataBuffer := false.B
 
-
-  //  val (block_count, block_wrap) = Counter(flush_state === s_flush_BLOCK, nWords)
-  //  val (way_count, way_wrap) = Counter(flush_state === s_flush_START, nWays)
-  //  val (set_count, set_wrap) = Counter(flush_state === s_flush_START && way_wrap , nSets)
-  //  val block_addr_tag_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
-  //  val dirty_cache_block = Cat((dataMem map (_.read(set_count - 1.U).asUInt)).reverse)
-  //  val block_rmeta = RegInit(init = MetaData.default)
-  //  val flush_mode = RegInit(false.B)
-
-
-  //  val wen = is_write && (hit || is_alloc_reg) && !io.cpu.abort || is_alloc
-  //  val ren = !wen && (is_idle || is_read) && io.cpu.req.valid
-  //  val ren_reg = RegNext(ren)
-  //  val rmeta = RegNext(next = metaMem.read(addrToSet(io.cpu.req.bits.addr))(0), init = MetaData.default)
-  //  val rdata = RegNext(next = cache_block, init = 0.U(cache_block_size.W))
-  //  val rdata_buf = RegEnable(rdata, ren_reg)
-  //  val refill_buf = RegInit(VecInit(Seq.fill(nData)(0.U(Axi_param.dataBits.W))))
-  //  val read = Mux(is_alloc_reg, refill_buf.asUInt, Mux(ren_reg, rdata, rdata_buf))
-  //  hit := (valid(set) & rmeta.tag === tag)
-
-
-//  def addrToWay(set: UInt): (UInt) = {
-//    val way = Wire(UInt((nWays + 1).W))
-//    way := nWays.U
-//    for (i <- 0 until nWays) {
-//      when(validTag(set * nWays.U + i.U) === false.B) {
-//        way := i.asUInt()
-//      }
-//    }
-//    (way.asUInt())
-//  }
-
-
   def prepForRead[T <: Data](D: MemBankIO[T]): Unit = {
     D.read.in.valid := true.B
 
@@ -340,7 +307,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     D match {
       case io.dataMem => {
         D.write.bits.address := set * nSets.U + way
-//        D.write.bits.bank :=
         D.write.bits.bank := 1.U << nWords.U - 1.U
       }
       case io.metaMem => {
@@ -389,8 +355,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }.otherwise{
     way := nWays.U
   }
-  // when(io.in)
-  // printf(p"way ${way}\n")
 
   when(prepMDRead){
     prepForRead(io.metaMem)
@@ -463,7 +427,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   io.cpu.resp.bits.way := targetWayWire
   io.cpu.resp.bits.data := Cat(dataBuffer)
-  io.cpu.resp.bits.iswrite := RegNext(readSig) 
+  io.cpu.resp.bits.iswrite := RegNext(readSig)
   io.cpu.resp.valid    := addrToWaySig | (findInSetSig & loadWaysMeta) | RegNext(readSig) // @todo should be changed to sth more generic
 
   when(true.B){

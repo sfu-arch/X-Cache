@@ -33,7 +33,7 @@ object ActionList {
 //        |  tbe_field/imm/ operand_2 | tbe_field/ operand_1 | write_addr | function |
 
         ("AddWalker",     "b1_10_0_000_01_01_000".U ), // add with op1: reg op2: data
-        ("XorWalker",     "b1_11_0_111_01_01_101".U )  // Xor with op1: reg op2: hardcode = 7
+        ("XorWalker",     "b1_11_0_000_01_01_101".U )  // Xor with op1: reg op2: hardcode = 7
 
 
 
