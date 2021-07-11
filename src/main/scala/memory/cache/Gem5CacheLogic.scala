@@ -148,28 +148,10 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val (sigLoadWays :: sigFindInSet ::sigAddrToWay :: sigPrepMDRead ::sigPrepMDWrite:: sigAllocate :: sigDeallocate :: sigWrite :: sigRead :: sigDataReq:: Nil) = Enum(nSigs)
 
-  val (s_IDLE :: s_READ_CACHE :: s_WRITE_CACHE :: s_WRITE_BACK :: s_WRITE_ACK :: s_REFILL_READY :: s_REFILL :: Nil) = Enum(7)
-  val st = RegInit(s_IDLE)
-
-  val s_flush_IDLE :: s_flush_START :: s_flush_ADDR :: s_flush_WRITE :: s_flush_WRITE_BACK :: s_flush_WRITE_ACK :: Nil = Enum(6)
-  val flush_state = RegInit(s_flush_IDLE)
-
-  val cNone :: cProbe :: cAlloc :: cDeAlloc :: cIntRead :: cExtRead :: cSetState :: cIntWrite :: Nil = Enum(nCom)
-
-  val (stIntRdIdle :: stIntRdLookMeta :: stIntRdPassData :: Nil) = Enum(3)
-  val stIntRdReg = RegInit(stIntRdIdle)
-
-  val (stIntWrIdle :: stIntWrAddr :: stIntWrData :: Nil) = Enum(3)
-  val stIntWrReg = RegInit(stIntWrIdle)
-
-  //Flush Logic
-  val dirty_block = nSets
-
   val addr_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
   val cpu_data = RegInit(0.U(io.cpu.req.bits.data.getWidth.W))
   val cpu_mask = RegInit(0.U(io.cpu.req.bits.mask.getWidth.W))
   val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
-  val count_set = RegInit(false.B)
 
   val tag = RegInit(0.U(taglen.W))
   val set = RegInit(0.U(setLen.W))
@@ -209,12 +191,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val dataWriteValid = Wire(Bool())
 
   val wayInvalid = Wire(Bool())
-
-  val is_idle = st === s_IDLE
-  val is_read = st === s_READ_CACHE
-  val is_write = st === s_WRITE_CACHE
-  val is_alloc = st === s_REFILL //&& read_wrap_out
-  val is_alloc_reg = RegNext(is_alloc)
 
   val readMetaData = Wire(Bool())
   val targetWayReg = RegInit(nWays.U((wayLen + 1).W))
