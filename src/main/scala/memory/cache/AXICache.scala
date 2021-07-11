@@ -90,7 +90,6 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
    val metaWrArb = Module (new Arbiter(cacheLogic(0).io.metaMem.write.bits.cloneType, n = nParal))
 
-  //  cacheLogic.io.dataMem <> dataMemory.io
 
   biPassModule.io.in  <> io.bipassLD.in
   biPassModule.io.out <> io.bipassLD.out
@@ -126,15 +125,11 @@ class Gem5Cache (val ID:Int = 0, val debug: Boolean = false)(implicit  val p: Pa
 
     cacheLogic(i).io.validBits <> validBits.io.port(i)
     cacheLogic(i).io.validTagBits <> validTagBits.io.port(i)
-
-//    this.io.cpu(i) <> DontCare
     this.io.cpu(i) <> cacheLogic(i).io.cpu
   }
 
   probeUnit.io.validBits <> validBits.io.port(nParal)
   probeUnit.io.validTagBits <> validTagBits.io.port(nParal)
-
-//  this.io.probe <> DontCare
   this.io.probe <> probeUnit.io.cpu
 
 }

@@ -135,7 +135,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 //    val dirtyBits = new RegIO(Bool(), nWays)
 
   })
-  val decoder = Module(new Decoder)
+  val decoder = Module(new Decoder(nSigs))
   val cacheID = WireInit(ID.U(8.W))
 
   io.cpu <> DontCare

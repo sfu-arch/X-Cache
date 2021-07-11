@@ -13,7 +13,7 @@ class DecoderIO (nSigs: Int)(implicit val p:Parameters) extends Bundle {
     val outSignals = Output(Vec(nSigs, Bool()))
 }
 
-class Decoder (implicit val p:Parameters) extends Module
+class Decoder (nSigs:Int) (implicit val p:Parameters) extends Module
   with HasCacheAccelParams
   with HasAccelShellParams {
 
