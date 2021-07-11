@@ -244,10 +244,6 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.validBits.write.valid := writeSig
   io.validBits.write.bits.addr := (set * nWays.U + way)
   io.validBits.write.bits.value := writeSig
-//
-//  when(writeSig){
-//    io.validBits.write.bits.value := true.B
-//  }
 
   when (readSig){
     dataBuffer := io.dataMem.read.outputValue
@@ -271,12 +267,6 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
   targetWayReg := targetWayWire
 
-//  when(allocate | deallocate){
-//    io.metaMem.isRead := false.B
-//  }.otherwise{
-//    io.metaMem.isRead := true.B
-//  }
-
   when(loadWaysMeta){
     waysInASet := io.metaMem.read.outputValue
   }.otherwise{
@@ -286,11 +276,7 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.validTagBits.write.bits.addr := (set * nWays.U + way)
   io.validTagBits.write.valid := allocate | deallocate
   io.validTagBits.write.bits.value := allocate | !deallocate
-//  when(allocate ) {
-//    validTagBits := true.B
-//  }.elsewhen(deallocate){
-//    validTagBits(set * nWays.U + way) := false.B
-//  }
+
 
   io.cpu.resp.bits.way := targetWayWire
   io.cpu.resp.bits.data := Cat(dataBuffer)
