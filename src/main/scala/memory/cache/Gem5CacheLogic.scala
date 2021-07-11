@@ -168,7 +168,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val addr_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
   val cpu_data = RegInit(0.U(io.cpu.req.bits.data.getWidth.W))
   val cpu_mask = RegInit(0.U(io.cpu.req.bits.mask.getWidth.W))
-  val cpu_iswrite = RegInit(0.U(io.cpu.req.bits.iswrite.getWidth.W))
   val cpu_command = RegInit(0.U(io.cpu.req.bits.command.getWidth.W))
   val count_set = RegInit(false.B)
 
@@ -245,7 +244,6 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     cpu_data := io.cpu.req.bits.data
     cpu_mask := io.cpu.req.bits.mask
     cpu_command := io.cpu.req.bits.command
-    cpu_iswrite := io.cpu.req.bits.iswrite
     tag := addrToTag(io.cpu.req.bits.addr)
     set := addrToSet(io.cpu.req.bits.addr)
     wayInput := io.cpu.req.bits.way

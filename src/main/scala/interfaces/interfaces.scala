@@ -58,8 +58,6 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
   val addr = UInt(addrLen.W)
   val data = UInt(bSize.W)
   val mask = UInt((xlen / 8).W)
-  val iswrite = Bool()
-  val tile = UInt(xlen.W)
   val command = UInt(ActionList.nSigs.W)
   val way = UInt((log2Ceil(accelParams.nways) + 1).W)
   val replaceWay = way.cloneType
@@ -69,11 +67,9 @@ class MemReq(implicit p: Parameters) extends AccelBundle()(p) {
     wire.addr := this.addr
     wire.data := this.data
     wire.mask := this.mask
-    wire.iswrite := this.iswrite
     wire.command := this.command
     wire.way := this.way
     wire.replaceWay := this.replaceWay
-    wire.tile := tile
     wire
   }
 }
@@ -84,8 +80,6 @@ object MemReq {
     wire.addr := 0.U
     wire.data := 0.U
     wire.mask := 0.U
-    wire.iswrite := false.B
-    wire.tile := 0.U
     wire.command := 0.U
     wire.way := 0.U
     wire.replaceWay := 0.U

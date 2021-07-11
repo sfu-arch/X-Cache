@@ -60,6 +60,7 @@ with HasAccelShellParams{
 
     stateMem.io  <> DontCare
     cache.io.cpu <> DontCare
+    cache.io.probe <> DontCare
 
     /********************************************************************************/
     // Building ROMs
@@ -182,9 +183,12 @@ with HasAccelShellParams{
     val replacerWayReg = Reg(UInt(replacer.nBits.W))
     val addrReplacer = Wire(UInt(addrLen.W))
 
-    for (i <- 0 until (nParal + 1) ) {
+    for (i <- 0 until nParal) {
         cacheWayWire(i) := cache.io.cpu(i).resp.bits.way
     }
+
+      cacheWayWire(nParal) := cache.io.probe.resp.bits.way
+
 
     /*************************************************************************/
     // control signals
@@ -327,7 +331,6 @@ with HasAccelShellParams{
         isCompAction(i) :=  (actionReg(i).io.deq.bits.action.actionType >= 8.U) && actionReg(i).io.deq.valid
 
 
-
         updateTBEFixedFields(i)   := isStateAction(i)
         endOfRoutine(i)   := isStateAction(i)
 
@@ -410,11 +413,11 @@ with HasAccelShellParams{
         cache.io.cpu(i).req.bits.replaceWay := actionReg(i).io.deq.bits.replaceWay
     }
 
-    cache.io.cpu(nParal).req.bits.way := DontCare
-    cache.io.cpu(nParal).req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U)
-    cache.io.cpu(nParal).req.bits.addr := Mux(probeStart, instruction.bits.addr, 0.U)
-    cache.io.cpu(nParal).req.valid := probeStart
-    cache.io.cpu(nParal).req.bits.replaceWay := DontCare
+    cache.io.probe.req.bits.command := Mux(probeStart, sigToAction(ActionList.actions("Probe")), 0.U)
+    cache.io.probe.req.bits.addr := Mux(probeStart, instruction.bits.addr, 0.U)
+    cache.io.probe.req.bits.way := DontCare
+    cache.io.probe.req.valid := probeStart
+    cache.io.probe.req.bits.replaceWay := DontCare
 
     cache.io.bipassLD.in.valid := hitLD
     cache.io.bipassLD.in.bits.addr  := input.io.deq.bits.inst.addr
