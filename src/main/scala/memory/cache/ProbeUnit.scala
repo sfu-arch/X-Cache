@@ -201,10 +201,12 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val emptyLine = Module(new FindEmptyLine(nWays, addrLen))
   emptyLine.io.data := io.validTagBits.read.out
 
-  val tagFinder = Module(new Find(new MetaData(), new MetaData(),nWays, addrLen))
+  val tagFinder = Module(new FindMultiLine(new MetaData(), new MetaData(),nWays, addrLen))
   tagFinder.io.key := MD
   tagFinder.io.data := io.metaMem.read.outputValue
   tagFinder.io.valid := io.validTagBits.read.out
+
+
 
   when(addrToWaySig | (findInSetSig & loadWaysMeta)){
     io.validTagBits.read.in.bits.addr := set * nWays.U

@@ -39,6 +39,25 @@ class Find[T1 <: Data , T2 <: Data]( K: T1, D:T2, depth: Int, outLen: Int = 32) 
     io.value.valid := (bitmap & io.valid.asUInt()) =/= 0.U
 }
 
+class FindMultiLine[T1 <: Data , T2 <: Data]( K: T1, D:T2, depth: Int, outLen: Int = 32) (implicit val p:Parameters) extends Module {
+
+    val io = IO(new Bundle {
+        val key = Input(D.cloneType)
+        val data = Input(Vec(depth, D.cloneType))
+        val valid = Input(Vec(depth, Bool()))
+        val value = Valid(Vec(depth, Bool()))
+    })
+
+    val bitmap = Wire(UInt(depth.W))
+    val idx = Wire(UInt(outLen.W))
+
+    bitmap := Cat(io.data.map(addr => (addr.asUInt() === io.key.asUInt() )).reverse)
+    idx := OHToUInt((bitmap & io.valid.asUInt()))
+
+    io.value.bits := bitmap.asTypeOf(Vec(depth, Bool()))
+    io.value.valid := (bitmap & io.valid.asUInt()) =/= 0.U
+}
+
 class FindEmptyLine(depth: Int, outLen: Int) (implicit val p:Parameters) extends Module {
 
     val io = IO(new Bundle {
