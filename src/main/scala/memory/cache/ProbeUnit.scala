@@ -9,7 +9,7 @@ import memGen.interfaces._
 import chisel3.util.experimental._
 import memGen.interfaces.axi._
 import chisel3.util.experimental.loadMemoryFromFile
-
+import interfaces.MIMOQueue
 import memGen.junctions._
 import memGen.shell._
 
@@ -19,6 +19,10 @@ class ProbeUnitIO(implicit p: Parameters) extends DandelionGenericParameterizedB
 
   val req = Flipped(Decoupled(new MemReq))
   val resp = (Valid(new MemResp))
+  val multiWay = Valid (new Bundle {
+    val way = UInt(32.W)
+    val addr = UInt(32.W)
+  })
 }
 
 // @todo bipass for reading
@@ -94,8 +98,9 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   val readMetaData = Wire(Bool())
-  val targetWayReg = RegInit(nWays.U((wayLen + 1).W))
   val targetWayWire = WireInit(nWays.U((wayLen + 1).W))
+  val targetMultiWayWire = WireInit(VecInit(Seq.fill(nWays)(0.U(wayLen.W))))
+
 
   val hit = Wire(Bool())
 
@@ -120,14 +125,20 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     addr_reg := io.cpu.req.bits.addr
     cpu_data := io.cpu.req.bits.data
     cpu_mask := io.cpu.req.bits.mask
-    cpu_command := io.cpu.req.bits.command
     tag := addrToTag(io.cpu.req.bits.addr)
     set := addrToSet(io.cpu.req.bits.addr)
     wayInput := io.cpu.req.bits.way
     replaceWayInput := io.cpu.req.bits.replaceWay
   }
 
-  dataValid := io.validBits.read.out.asUInt()
+  when(io.cpu.req.fire()) {
+    cpu_command := io.cpu.req.bits.command
+  }.otherwise{
+    cpu_command := 0.U
+  }
+
+
+    dataValid := io.validBits.read.out.asUInt()
   io.validBits.read.in.bits.addr := set * nSets.U + way
   io.validBits.read.in.valid := dataValidCheckSig
 
@@ -184,6 +195,7 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   }
 
   val MD = Wire(new MetaData())
+
   MD.tag := tag
   io.metaMem.write.valid := false.B
   io.dataMem.write.valid := false.B
@@ -201,10 +213,17 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   val emptyLine = Module(new FindEmptyLine(nWays, addrLen))
   emptyLine.io.data := io.validTagBits.read.out
 
-  val tagFinder = Module(new FindMultiLine(new MetaData(), new MetaData(),nWays, addrLen))
+  val multiTagFinder = Module(new FindMultiLine(new MetaData(), new MetaData(),nWays, addrLen))
+  val tagFinder = Module(new Find(new MetaData(), new MetaData(),nWays, addrLen))
+
   tagFinder.io.key := MD
   tagFinder.io.data := io.metaMem.read.outputValue
   tagFinder.io.valid := io.validTagBits.read.out
+
+  multiTagFinder.io.key := MD
+  multiTagFinder.io.data := io.metaMem.read.outputValue
+  multiTagFinder.io.valid := io.validTagBits.read.out
+
 
 
 
@@ -264,10 +283,18 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
     targetWayWire := Mux(tagFinder.io.value.valid, tagFinder.io.value.bits, nWays.U)
   }.elsewhen(addrToWaySig) { // allocate
     targetWayWire := way
-  }.otherwise{
-    targetWayReg := targetWayReg // @todo no completed
   }
-  targetWayReg := targetWayWire
+
+  when((findInSetSig & loadWaysMeta)) { // probing way
+    for (i <- 0 until nWays) yield {
+      targetMultiWayWire(i) := Mux(multiTagFinder.io.value.bits(i).asBool(), i.asUInt(), nWays.U)
+    }
+  }.otherwise{
+    targetMultiWayWire := ((0 until nWays) map(i => 0.U))
+  }
+
+
+
 
   when(loadWaysMeta){
     waysInASet := io.metaMem.read.outputValue
@@ -281,17 +308,15 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
 
   io.cpu.resp.bits.way := targetWayWire
+
+  io.cpu.multiWay.bits.way := targetWayWire
+  io.cpu.multiWay.bits.addr := RegNext(addr_reg)
+
   io.cpu.resp.bits.data := Cat(dataBuffer)
   io.cpu.resp.bits.iswrite := RegNext(readSig)
-  io.cpu.resp.valid    := addrToWaySig | (findInSetSig & loadWaysMeta) | RegNext(readSig) // @todo should be changed to sth more generic
+  io.cpu.resp.valid    := RegNext(findInSetSig & loadWaysMeta) // @todo should be changed to sth more generic
+  io.cpu.multiWay.valid := io.cpu.resp.valid
 
-  when(true.B){
-
-    when(addrToWaySig && !emptyLine.io.value.valid ){
-      printf(p"Replacement in Set: ${set}, Way: ${way}, Addr: ${addr_reg}\n")
-    }
-
-  }
   val boreWire = WireInit((addrToWaySig && !emptyLine.io.value.valid))
       // BoringUtils.addSource(boreWire, "numRepl")
 

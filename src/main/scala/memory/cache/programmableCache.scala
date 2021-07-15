@@ -8,6 +8,7 @@ import memGen.config._
 import memGen.memory.message._
 import chisel3.util.Arbiter
 import dsptools.counters.CounterWithReset
+import interfaces.MIMOQueue
 import memGen.util._
 import memGen.interfaces._
 import memGen.interfaces.Action
@@ -90,6 +91,8 @@ with HasAccelShellParams{
         queue
     }
 
+    val probeWay = Module(new Queue( UInt(wayLen.W) , entries = 16, pipe =true , flow = true))
+
     val instruction = Wire(Decoupled(new InstBundle()))
     val missLD = Wire(Bool())
 
@@ -134,7 +137,7 @@ with HasAccelShellParams{
     val endOfRoutine         = Wire(Vec(nParal, Bool()))
 
     val routine = WireInit( Cat (input.io.deq.bits.inst.event, state))
-    val cacheWayWire = Wire(Vec(nParal + 1, (UInt((wayLen+1).W))))
+    val cacheWayWire = Wire(Vec(nParal, (UInt((wayLen+1).W))))
     val updateWay = Wire(Vec(nParal, Bool()))
 
     val sets = Wire(Vec(nParal, UInt(32.W)))
@@ -150,6 +153,10 @@ with HasAccelShellParams{
         val ActionReg =  Module(new Queue( new ActionBundle(), pipe = true, entries = 1))
         ActionReg
     }
+
+    val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 64, NumOuts = 1, NumIns = nWays, pipe = true ))
+    mimoQ.io.clear := false.B
+    
     val compUnit  = for (i <- 0 until nParal) yield {
         val Comp =  Module(new Computation(UInt(32.W)))
         Comp
@@ -183,11 +190,24 @@ with HasAccelShellParams{
     val replacerWayReg = Reg(UInt(replacer.nBits.W))
     val addrReplacer = Wire(UInt(addrLen.W))
 
+
     for (i <- 0 until nParal) {
         cacheWayWire(i) := cache.io.cpu(i).resp.bits.way
     }
 
-      cacheWayWire(nParal) := cache.io.probe.resp.bits.way
+      probeWay.io.enq.bits := cache.io.probe.resp.bits.way
+      probeWay.io.enq.valid := cache.io.probe.resp.valid
+
+    (0 until nWays).map (i => mimoQ.io.enq.bits(i).way := cache.io.probe.multiWay.bits.way)
+    (0 until nWays).map (i => mimoQ.io.enq.bits(i).addr := cache.io.probe.multiWay.bits.addr)
+
+    mimoQ.io.enq.valid := cache.io.probe.multiWay.valid
+
+
+
+
+      probeWay.io.deq.ready := getState
+
 
 
     /*************************************************************************/
@@ -225,11 +245,12 @@ with HasAccelShellParams{
     probeStart := instruction.fire()
     getState   := input.io.deq.fire()
 
+
     checkLock   := instruction.valid
     setLock     := instruction.fire()
 
     probeHit := input.io.deq.fire()
-    hit := probeHit && (cacheWayWire(nParal) =/= nWays.U) && (stateMem.io.out.bits.state === States.ValidState.U)
+    hit := probeHit && (probeWay.io.deq.bits =/= nWays.U) && (stateMem.io.out.bits.state === States.ValidState.U)
     hitLD :=   hit && input.io.deq.bits.inst.event === Events.HitEvent.U
     missLD := probeHit &&  (input.io.deq.bits.inst.event === Events.HitEvent.U) && ((stateMem.io.out.bits.state === States.InvalidState.U) /*|| (cacheWayWire(nParal) === nWays.U)*/ )
 
@@ -242,9 +263,7 @@ with HasAccelShellParams{
 
     input.io.enq.valid := instruction.valid && !instUsed && !tbe.io.isFull && !stallInput
     tbe.io.outputTBE.ready := instruction.ready
-    input.io.enq.bits.inst.addr := instruction.bits.addr
-    input.io.enq.bits.inst.data := instruction.bits.data
-    input.io.enq.bits.inst.event := instruction.bits.event
+    input.io.enq.bits.inst <> instruction.bits
     input.io.enq.bits.tbeOut :=  tbe.io.outputTBE.bits
 
     defaultState := State.default
@@ -299,7 +318,7 @@ with HasAccelShellParams{
     stateMem.io.in(nParal).bits.isSet := false.B // used for getting
     stateMem.io.in(nParal).bits.addr := input.io.deq.bits.inst.addr
     stateMem.io.in(nParal).bits.state := DontCare
-    stateMem.io.in(nParal).bits.way :=  cacheWayWire(nParal)
+    stateMem.io.in(nParal).bits.way :=  probeWay.io.deq.bits
     stateMem.io.in(nParal).valid := getState
     stateMemOutput := stateMem.io.out.bits
 
@@ -318,9 +337,10 @@ with HasAccelShellParams{
         replStateReg(addrReplacer) := replacer.get_next_state(replStateReg(addrReplacer), replacerWayWire)
     }
 
-    wayInputCache := RegEnable(Mux( tbeWay === nWays.U , (cacheWayWire(nParal)), tbeWay ), nWays.U, input.io.deq.fire())
+    wayInputCache := RegEnable(Mux( tbeWay === nWays.U , probeWay.io.deq.bits, tbeWay ), nWays.U, input.io.deq.fire())
     replaceWayInputCache := RegEnable(replacerWayWire, nWays.U, input.io.deq.fire())
     inputToPC := RegEnable(input.io.deq.bits.inst, InstBundle.default, input.io.deq.fire())
+
 
     for (i <- 0 until nParal) {
         isTBEAction(i) :=   (actionReg(i).io.deq.bits.action.actionType === 1.U) && actionReg(i).io.deq.valid
@@ -419,11 +439,13 @@ with HasAccelShellParams{
     cache.io.probe.req.valid := probeStart
     cache.io.probe.req.bits.replaceWay := DontCare
 
-    cache.io.bipassLD.in.valid := hitLD
-    cache.io.bipassLD.in.bits.addr  := input.io.deq.bits.inst.addr
-    cache.io.bipassLD.in.bits.way := cacheWayWire(nParal)
+    cache.io.bipassLD.in.valid := mimoQ.io.deq.valid && (mimoQ.io.deq.bits(0).way =/= nWays.U)
+    cache.io.bipassLD.in.bits.addr  := mimoQ.io.deq.bits(0).addr
+    cache.io.bipassLD.in.bits.way := mimoQ.io.deq.bits(0).way
     dataValid := cache.io.bipassLD.out.valid
-    
+
+    mimoQ.io.deq.ready := true.B
+
     for (i <- 0 until nParal) {
         outReqArbiter.io.in(i).bits.req.data:= Mux(sigToDQSrc(actionReg(i).io.deq.bits.action.signals).asBool(), compUnit(i).io.reg_file(sigToDQRegSrc(actionReg(i).io.deq.bits.action.signals)), actionReg(i).io.deq.bits.addr)
         outReqArbiter.io.in(i).bits.req.addr := actionReg(i).io.deq.bits.addr
