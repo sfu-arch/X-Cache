@@ -49,6 +49,7 @@ extends Module with HasCacheAccelParams {
 
     val io = IO (new Bundle {
         val instruction = Flipped(Valid(UInt(instructionWidth.W)))
+        val clear = Input(Bool())
         val op1 = Flipped(Valid(OperandType.cloneType))
         val op2 = Flipped(Valid(OperandType.cloneType))
 //        val output = Output(OperandType.cloneType)
@@ -79,9 +80,11 @@ extends Module with HasCacheAccelParams {
     alu_in2 := Mux(io.op2.fire(), io.op2.bits, reg_out2)
 
     // *******************************************  Register File IO  *******************************************
-    val reg_file = Reg(Vec(regFileSize, OperandType.cloneType))
+    val reg_file = RegInit(VecInit(Seq.fill(regFileSize)(0.U(OperandType.cloneType.getWidth.W))))
     val write_en = io.instruction.fire()
+
     when (write_en) { reg_file(write_addr) := result; }
+    when (io.clear){(0 until regFileSize) map (i => reg_file(i) := 0.U(OperandType.cloneType.getWidth.W))}
     reg_out1 := reg_file(read_addr1);
     reg_out2 := reg_file(read_addr2);
     io.reg_file := reg_file;

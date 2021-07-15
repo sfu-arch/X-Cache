@@ -355,6 +355,8 @@ with HasAccelShellParams{
         updateTBEFixedFields(i)   := isStateAction(i)
         endOfRoutine(i)   := isStateAction(i)
 
+        compUnit(i).io.clear := endOfRoutine(i)
+
         actionReg(i).io.enq.bits.action.signals := sigToAction(actionRom(i)(pcWire(i).pc))
         actionReg(i).io.enq.bits.action.actionType := sigToActType(actionRom(i)(pcWire(i).pc))
         actionReg(i).io.enq.bits.addr := pcWire(i).addr
