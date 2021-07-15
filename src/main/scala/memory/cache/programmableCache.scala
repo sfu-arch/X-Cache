@@ -156,7 +156,7 @@ with HasAccelShellParams{
 
     val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 64, NumOuts = 1, NumIns = nWays, pipe = true ))
     mimoQ.io.clear := false.B
-    
+
     val compUnit  = for (i <- 0 until nParal) yield {
         val Comp =  Module(new Computation(UInt(32.W)))
         Comp

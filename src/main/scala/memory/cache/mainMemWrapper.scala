@@ -43,7 +43,7 @@ with HasAccelShellParams{
     val stReg = RegInit(stIdle)
 
     val start = Wire(Bool())
-    start := io.in.fire() & stReg === stIdle & io.in.bits.data(addrLen -1 , 0) =/= 0.U
+    start := io.in.fire() && stReg === stIdle && io.in.bits.data(addrLen -1 , 0) =/= 0.U
 
     when (start){
         addrReg := io.in.bits.data(addrLen -1 , 0) // use the data of the package for its requests
