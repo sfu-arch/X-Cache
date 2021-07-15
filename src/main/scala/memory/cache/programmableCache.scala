@@ -242,7 +242,7 @@ with HasAccelShellParams{
     stallInput := isLocked || tbe.io.isFull
 
     readTBE    := instruction.valid
-    probeStart := instruction.fire()
+    probeStart := instruction.fire() && instruction.bits.event === Events.HitEvent.U
     getState   := input.io.deq.fire()
 
 
@@ -305,6 +305,7 @@ with HasAccelShellParams{
         lockMem.io.unLock(i).in.bits.cmd := lockMem.UNLOCK.U //unlock
         lockMem.io.unLock(i).in.valid := endOfRoutine(i)
     }
+
 
     // State Memory
     for (i <- 0 until nParal)  {
