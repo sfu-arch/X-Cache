@@ -26,8 +26,8 @@ object ActionList {
         ("SetState",      "b0011_0000000000".U),
         ("Feedback",      "b0010_0000000000".U ),
 
-        ("DataRQ",        "b0100_1000000_00_0".U),  // addrSrcForMemReq = action(0,0) ? action(2,1) : addrOfTheInputInstToXMU
-        ("DataRQWalker",  "b0100_1000000_01_1".U),  // addrSrcForMemReq = action(0,0) ? action(2,1) : addrOfTheInputInstToXMU
+        ("DataRQ",        "b0100_1000000_00_0".U),  // addrSrcForMemReq = action(0,0) ? src(action(2,1)) : addrOfTheInputInstToXMU
+        ("DataRQWalker",  "b0100_1000000_01_1".U),  // addrSrcForMemReq = action(0,0) ? src(action(2,1)) : addrOfTheInputInstToXMU
 
 //        functions: add: 0, sub: 1, mult: 2, shift_r: 3, shift_l: 4, xor: 5
 //        |  tbe_field/imm/ operand_2 | tbe_field/ operand_1 | write_addr | function |
