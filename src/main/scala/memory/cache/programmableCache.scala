@@ -154,7 +154,7 @@ with HasAccelShellParams{
         ActionReg
     }
 
-    val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 64, NumOuts = 1, NumIns = nWays, pipe = true ))
+    val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 64, MaxNumOuts = 1, MaxNumIns = nWays, pipe = true ))
     mimoQ.io.clear := false.B
 
     val compUnit  = for (i <- 0 until nParal) yield {
@@ -198,8 +198,8 @@ with HasAccelShellParams{
       probeWay.io.enq.bits := cache.io.probe.resp.bits.way
       probeWay.io.enq.valid := cache.io.probe.resp.valid
 
-    (0 until nWays).map (i => mimoQ.io.enq.bits(i).way := cache.io.probe.multiWay.bits.way)
-    (0 until nWays).map (i => mimoQ.io.enq.bits(i).addr := cache.io.probe.multiWay.bits.addr)
+    (0 until nWays).map (i => mimoQ.io.enq.bits(i).way := cache.io.probe.multiWay.bits.way(i))
+    (0 until nWays).map (i => mimoQ.io.enq.bits(i).addr := (cache.io.probe.multiWay.bits.addr))
 
     mimoQ.io.enq.valid := cache.io.probe.multiWay.valid
 
@@ -473,7 +473,7 @@ with HasAccelShellParams{
 
     respPortQueue(nParal).io.enq.bits.data  := cache.io.bipassLD.out.bits.data
     respPortQueue(nParal).io.enq.bits.event := 0.U
-    respPortQueue(nParal).io.enq.bits.addr  := RegNext(input.io.deq.bits.inst.addr)
+    respPortQueue(nParal).io.enq.bits.addr  := RegNext(cache.io.bipassLD.in.bits.addr)
     respPortQueue(nParal).io.enq.valid      := cache.io.bipassLD.out.valid
 
     for (i <- 0 until nParal + 1) {
@@ -492,7 +492,7 @@ with HasAccelShellParams{
 
 
 
-    when( RegNext(probeStart)){
+    when( probeWay.io.deq.fire()){
         printf(p"Cache: ${ID} req from ${RegNext(inputArbiter.io.chosen)} Addr: ${RegNext(inputArbiter.io.out.bits.addr)}\n")
         when(RegNext(inputArbiter.io.chosen) === cpuPriority.U){
             printf(p"Cache: ${ID} ")

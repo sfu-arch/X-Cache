@@ -15,20 +15,24 @@ import memGen.shell._
 
 
 
-class ProbeUnitIO(implicit p: Parameters) extends DandelionGenericParameterizedBundle(p) {
+class ProbeUnitIO(implicit val p: Parameters) extends DandelionGenericParameterizedBundle(p)
+  with HasAccelShellParams
+  with HasCacheAccelParams
+{
 
   val req = Flipped(Decoupled(new MemReq))
   val resp = (Valid(new MemResp))
   val multiWay = Valid (new Bundle {
-    val way = UInt(32.W)
-    val addr = UInt(32.W)
+    val way = Vec(nWays, UInt(wayLen.W))
+    val addr = UInt(addrLen.W)
   })
 }
 
 // @todo bipass for reading
 class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
+  with HasAccelShellParams
   with HasCacheAccelParams
-  with HasAccelShellParams {
+{
 
   val io = IO(new Bundle {
 
@@ -290,7 +294,7 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
       targetMultiWayWire(i) := Mux(multiTagFinder.io.value.bits(i).asBool(), i.asUInt(), nWays.U)
     }
   }.otherwise{
-    targetMultiWayWire := ((0 until nWays) map(i => 0.U))
+    ((0 until nWays) map(i => targetMultiWayWire(i) := 0.U(wayLen.W)))
   }
 
 
@@ -307,14 +311,14 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.validTagBits.write.bits.value := allocate | !deallocate
 
 
+
+  io.cpu.multiWay.bits.way := (targetMultiWayWire)
+  io.cpu.multiWay.bits.addr :=  (addr_reg)
+
   io.cpu.resp.bits.way := targetWayWire
-
-  io.cpu.multiWay.bits.way := targetWayWire
-  io.cpu.multiWay.bits.addr := RegNext(addr_reg)
-
   io.cpu.resp.bits.data := Cat(dataBuffer)
   io.cpu.resp.bits.iswrite := RegNext(readSig)
-  io.cpu.resp.valid    := RegNext(findInSetSig & loadWaysMeta) // @todo should be changed to sth more generic
+  io.cpu.resp.valid    := (findInSetSig & loadWaysMeta) // @todo should be changed to sth more generic
   io.cpu.multiWay.valid := io.cpu.resp.valid
 
   val boreWire = WireInit((addrToWaySig && !emptyLine.io.value.valid))
