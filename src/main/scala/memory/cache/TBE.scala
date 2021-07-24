@@ -85,7 +85,9 @@ class   TBETable(implicit  val p: Parameters) extends Module
     Finder
   }
 
-  io.isFull := ((counter > (tbeDepth.U - 3.U)) & isRead & !finder(nParal).io.value.valid) 
+  //@todo should be more logical
+  val tbeLimiter =  Mux(nParal == 1.U , 3.U , 5.U )
+  io.isFull := ((counter > (tbeDepth.U - tbeLimiter )) & isRead & !finder(nParal).io.value.valid)
 
   finder(nParal).io.key := addrNoOffset(io.read.bits.addr)
   finder(nParal).io.data := TBEAddr
