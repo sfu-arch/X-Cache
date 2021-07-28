@@ -366,7 +366,7 @@ with HasAccelShellParams{
         actionReg(i).io.enq.bits.event := pcWire(i).event
 
         firstLineNextRoutine(i) := actionRom(i)(pcWire(i).pc).asUInt() === ActionList.actions("NOP").asUInt()// NOP
-        updatedPC(i) := Mux(firstLineNextRoutine(i), pcWire(i).pc, pcWire(i).pc + 1.U  )
+        updatedPC(i) := Mux(firstLineNextRoutine(i), pcWire(i).pc, pcWire(i).pc + 1.U + compUnit(i).io.pc )
         updatedPCValid(i) := !firstLineNextRoutine(i)
 
         updateWay(i) := pc.io.read(i).out.bits.way === nWays.U & cache.io.cpu(i).resp.fire()
