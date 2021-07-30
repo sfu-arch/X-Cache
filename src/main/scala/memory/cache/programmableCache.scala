@@ -398,9 +398,9 @@ with HasAccelShellParams{
 
         /************Computation*****************************/
         compUnitInput1(i).io.in.data := DontCare //   Real Dont Care, no data for the first operand
-        compUnitInput1(i).io.in.tbe  := DontCare // @todo should be connected to tbe mux
+        compUnitInput1(i).io.in.tbe  := actionReg(i).io.deq.bits.addr
         compUnitInput1(i).io.in.hardCoded := DontCare // Real Dont Care, no hardcoded for the first operand
-        compUnitInput1(i).io.in.select := sigToCompOpSel1(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1:TBE
+        compUnitInput1(i).io.in.select := sigToCompOpSel1(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1:Addr
         compUnit(i).io.op1 <> compUnitInput1(i).io.out
 
 
