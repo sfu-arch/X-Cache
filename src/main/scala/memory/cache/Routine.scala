@@ -40,7 +40,8 @@ object RoutineROMLDST {
 object RoutineROMWalker {
 
   //
-  val HASH = Seq(/*"XorWalker",*/ "AddWalker")
+  val HASH = Seq("ShiftWalker7", "ShiftWalker13", "XorWalker", "ShiftWalker21", "XorWalker", "XorWalkerAddr",
+                  "AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023", "AddWalker")
   val routineActions = Array [RoutinePC](
 
     // 0-5
@@ -53,3 +54,25 @@ object RoutineROMWalker {
   )
 }
 
+
+object RoutineROMDasxArray {
+
+  val MASK22 = Seq("AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023")
+  val MASK20 = Seq("AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023")
+
+  //
+  val HASH = Seq("ShiftWalker7", "ShiftWalker13", "XorWalker", "ShiftWalker21", "XorWalker", "XorWalkerAddr") ++
+    MASK22 ++ Seq("AddWalker")
+
+
+  val routineActions = Array [RoutinePC](
+
+    // 0-5
+    Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate") ++  HASH ++ Seq("DataRQWalker", "SetState")),DstState("ID"),
+    Routine ("DATA_ID") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
+    Routine ("FIND_ID") , Actions(Seq("SetState")),DstState("ID"),
+    Routine ("FIND_V") , Actions(Seq( "SetState")), DstState("V"),
+
+
+  )
+}
