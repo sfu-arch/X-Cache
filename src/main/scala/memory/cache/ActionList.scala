@@ -34,17 +34,15 @@ object ActionList {
 //        functions: add: 0, sub: 1, mult: 2, shift_r: 3, shift_l: 4, xor: 5
 //        |  tbe_field/imm/ operand_2 -> 0: Reg, 1:TBE, 2: Data, 3: hardcoded | addr/ operand_1 | write_addr | function |
 
-        ("AddWalker",       "b1_10_0_000000000000000000000_00_01_000".U ), // add with op1: reg op2: data
-
-        ("ShiftWalker7",    "b1_11_1_000000000000000000111_00_00_011".U ),  // Xor with op1: reg op2: hardcode = 0
-        ("ShiftWalker13",   "b1_11_1_000000000000000001101_00_01_011".U ),  // Xor with op1: reg op2: hardcode = 0
-        ("ShiftWalker21",   "b1_11_1_000000000000000010101_00_01_011".U ),  // Xor with op1: reg op2: hardcode = 0
-        ("XorWalker",       "b1_00_0_000000000000000000000_01_00_101".U ),  // Xor with op1: reg op2: hardcode = 0
-        ("XorWalkerAddr",   "b1_00_1_000000000000000000000_00_00_101".U ),  // Xor with op1: reg op2: hardcode = 0
-
-        ("AndWalker1023",   "b1_11_0_000000000001111111111_00_00_001".U ),  // Xor with op1: reg op2: hardcode = 0
-        ("AndWalker2047",   "b1_11_0_000000000011111111111_00_00_001".U ),  // Xor with op1: reg op2: hardcode = 0
-        ("BLTWalker1714",   "b1_11_0_000000000011010110010_00_00_110".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("AddWalker",       "b1_10_0_00000000000000000_00_000001_000".U ), // add with op1: reg op2: data
+        ("ShiftWalker7",    "b1_11_1_00000000000000111_00_000000_011".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("ShiftWalker13",   "b1_11_1_00000000000001101_00_000001_011".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("ShiftWalker21",   "b1_11_1_00000000000010101_00_000001_011".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("XorWalker",       "b1_00_0_00000000000000000_01_000000_101".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("XorWalkerAddr",   "b1_00_1_00000000000000000_00_000000_101".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("AndWalker1023",   "b1_11_0_00000001111111111_00_000000_001".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("AndWalker2047",   "b1_11_0_00000011111111111_00_000000_001".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("BLTWalker1714",   "b1_11_0_00000011010110010_00_000001_110".U ),  // Xor with op1: reg op2: hardcode = 0
 
 
 

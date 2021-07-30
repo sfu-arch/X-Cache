@@ -25,7 +25,7 @@ import chisel3.util.experimental._
 class Computation [T <: UInt] (  val OperandType: T)(implicit val p:Parameters)
 extends Module with HasCacheAccelParams {
 
-    def ALU(function: UInt, op1: T, op2: T) = {
+    def ALU(function: UInt, op1: T, op2: T, jump: T) = {
         val result = Wire(OperandType.cloneType);
         result := 0.U;
 
@@ -36,14 +36,14 @@ extends Module with HasCacheAccelParams {
             is (shift_r) { result := op1 >> op2; }
             is (shift_l) { result := op1 << op2(7,0); }
             is (xor) { result := op1 ^ op2; }
-            is (blt) { result := Mux(op1 < op2, 1.U, 0.U)}
+            is (blt) { result := Mux(op1 < op2, jump, 0.U)}
         }
         result
     }
 
     def OpcodeEnd() = opcodeWidth;
     def FunctionEnd() = OpcodeEnd() + funcWidth;
-    def DestEnd() = FunctionEnd() + log2Ceil(regFileSize);
+    def DestEnd() = FunctionEnd() + log2Ceil(regFileSize) + 4
 //    def Operand1End() = DestEnd() + OperandType.cloneType.getWidth;
 //    def Operand2End() = Operand1End() + OperandType.cloneType.getWidth;
     def Op1End() =  DestEnd() + log2Ceil(regFileSize);
@@ -92,7 +92,7 @@ extends Module with HasCacheAccelParams {
     io.reg_file := reg_file;
     
     // *******************************************  ALU  *******************************************
-    result := ALU(function, alu_in1, alu_in2)
+    result := ALU(function, alu_in1, alu_in2, write_addr.asTypeOf(OperandType.cloneType))
     io.pc := Mux(function =/= blt, 0.U, result(pcLen - 1, 0))
 //    io.output := result;
 

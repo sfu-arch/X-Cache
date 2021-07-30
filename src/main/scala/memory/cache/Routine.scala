@@ -70,6 +70,7 @@ object RoutineROMDasxArray {
     // 0-5
     Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate") ++  HASH ++ Seq("DataRQWalker", "SetState")),DstState("ID"),
     Routine ("DATA_ID") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
+    Routine ("DATA_I") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
     Routine ("FIND_ID") , Actions(Seq("SetState")),DstState("ID"),
     Routine ("FIND_V") , Actions(Seq( "SetState")), DstState("V"),
 
