@@ -69,8 +69,12 @@ with HasAccelShellParams{
     val (routineAddr,setStateDst) = RoutinePtr.generateRoutineAddrMap(RoutineROMWalker.routineActions)
     val (rombits, dstStateBits)   = RoutinePtr.generateTriggerRoutineBit(routineAddr, nextRoutineWalker.routineTriggerList)
 
+
     val uCodedNextPtr = VecInit(rombits)
     val dstStateRom = VecInit(dstStateBits)
+
+//    printf(p"rombits ${uCodedNextPtr} \n")
+
 
     val actions = RoutinePtr.generateActionRom(RoutineROMWalker.routineActions, ActionList.actions, setStateDst)
     val actionRom = for (i <- 0 until nParal) yield {
@@ -147,7 +151,7 @@ with HasAccelShellParams{
     val tbeWay        = WireInit(nWays.U((wayLen+1).W))
 
     val feedbackOutQueue = Module(new Queue(new InstBundle, entries = 16, pipe = true))
-    val routineQueue = Module( new Queue( UInt((eventLen + stateLen).W), pipe = true, entries = 1 ))
+    val routineQueue = Module( new Queue( UInt(pcLen.W), pipe = true, entries = 1 ))
 
     val actionReg  = for (i <- 0 until nParal) yield {
         val ActionReg =  Module(new Queue( new ActionBundle(), pipe = true, entries = 1))

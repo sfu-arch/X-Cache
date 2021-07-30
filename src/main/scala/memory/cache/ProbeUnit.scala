@@ -56,7 +56,7 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   // cache states
 
-  val (sigLoadWays :: sigFindInSet ::sigAddrToWay :: sigPrepMDRead ::sigPrepMDWrite:: sigAllocate :: sigDeallocate :: sigWrite :: sigRead :: sigDataReq:: Nil) = Enum(nSigs)
+  val (sigLoadWays :: sigFindInSet ::sigAddrToWay :: sigPrepMDRead ::sigPrepMDWrite:: sigAllocate :: sigDeallocate :: sigWrite :: sigRead :: sigDataReq:: Nil) = Enum(10)
 
   val addr_reg = RegInit(0.U(io.cpu.req.bits.addr.getWidth.W))
   val cpu_data = RegInit(0.U(io.cpu.req.bits.data.getWidth.W))
