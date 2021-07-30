@@ -74,7 +74,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val funcWidth: Int = 3
   val regFileSize: Int = 4
   val regFileLen = log2Ceil(regFileSize)
-  val instructionWidth: Int = nSigs
+  val instructionWidth = nSigs
 
 
   def addrToSet(addr: UInt): UInt = {
