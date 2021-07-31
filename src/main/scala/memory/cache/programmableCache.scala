@@ -503,7 +503,7 @@ with HasAccelShellParams{
 
 
     when( probeWay.io.deq.fire()){
-        printf(p"Cache: ${ID} req from ${RegNext(inputArbiter.io.chosen)} Addr: ${RegNext(inputArbiter.io.out.bits.addr)}\n")
+        printf(p"Cache: ${ID} req from ${RegNext(inputArbiter.io.chosen)} Addr: ${RegNext(inputArbiter.io.out.bits.addr)} Data: ${RegNext(inputArbiter.io.out.bits.data)}\n")
         when(RegNext(inputArbiter.io.chosen) === cpuPriority.U){
             printf(p"Cache: ${ID} ")
             when(hitLD){
@@ -518,6 +518,11 @@ with HasAccelShellParams{
                 printf(p"miss for addr ${input.io.deq.bits.inst.addr}\n")
             }
         }
+    }
+
+    when (input.io.deq.fire()){
+        printf(p"Event ${input.io.deq.bits.inst.event} Addr: ${input.io.deq.bits.inst.addr} Data: ${input.io.deq.bits.inst.data}\n")
+
     }
 
     if (cacheID == 0){

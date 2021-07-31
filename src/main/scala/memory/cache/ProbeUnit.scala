@@ -70,7 +70,7 @@ class ProbeUnit(val ID:Int = 0)(implicit  val p: Parameters) extends Module
 
   val way = WireInit(0.U((wayLen + 1).W))
 
-  val dataBuffer = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
+  val dataBuffer = RegInit(VecInit(Seq.fill(nWords)(0.U(xlen.W))))
 
   val findInSetSig = Wire(Bool())
   val addrToLocSig = Wire(Bool())

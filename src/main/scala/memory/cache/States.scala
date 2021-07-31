@@ -27,8 +27,9 @@ object StatesWalker{
 
   val StateArray = Map(
     (s"I", 0x00),
-    (s"ID", 0x01),
-    (s"V", 0x02)
+    (s"IB", 0x01),
+    (s"ID", 0x02),
+    (s"V", 0x03)
   )
   val stateLen =  if (StateArray.size == 1 ) 1 else log2Ceil(StateArray.size)
 
