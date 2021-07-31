@@ -164,18 +164,18 @@ with HasAccelShellParams{
     mimoQ.io.clear := false.B
 
     val compUnit  = for (i <- 0 until nParal) yield {
-        val Comp =  Module(new Computation(UInt(32.W)))
+        val Comp =  Module(new Computation(UInt(CompLen.W)))
         Comp
     }
 
     val compUnitInput1  = for (i <- 0 until nParal) yield {
-        val CompIO1 =  Module(new Mux3(UInt(32.W)))
+        val CompIO1 =  Module(new Mux3(UInt(CompLen.W)))
 
         CompIO1
     }
 
     val compUnitInput2  = for (i <- 0 until nParal) yield {
-        val CompIO2 =  Module(new Mux3(UInt(32.W)))
+        val CompIO2 =  Module(new Mux3(UInt(CompLen.W)))
         CompIO2
     }
 

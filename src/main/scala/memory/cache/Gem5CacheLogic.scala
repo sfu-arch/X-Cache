@@ -33,6 +33,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val nTBECmds = 4
   val TBEFieldWidth = 32
 
+  val CompLen = 64
   override val addrLen = accelParams.addrlen
   val dataLen = accelParams.dataLen
   val eventLen = Events.eventLen
@@ -71,7 +72,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val actionLen = ActionList.actionLen
 
   val opcodeWidth :Int = 0
-  val funcWidth: Int = 3
+  val funcWidth: Int = 4
   val regFileSize: Int = 4
   val regFileLen = log2Ceil(regFileSize)
   val instructionWidth = nSigs
@@ -96,7 +97,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   def sigToAction(sigs : Bits) :UInt = sigs.asUInt()(nSigs - 1, 0)
   def sigToActType(sigs : Bits) :UInt = sigs.asUInt()(nSigs + actionTypeLen - 1, nSigs)
 
-  def sigToTBEOp2(sigs : Bits) : UInt = sigs.asUInt()(2*TBE.default.fieldLen + TBE.default.cmdLen - 1 , TBE.default.fieldLen + TBE.default.cmdLen)
+  def sigToTBEOp2(sigs : Bits) : UInt = sigs.asUInt()(log2Ceil(regFileSize) +TBE.default.fieldLen + TBE.default.cmdLen - 1 , TBE.default.fieldLen + TBE.default.cmdLen)
   def sigToTBEOp1(sigs : Bits) : UInt = sigs.asUInt()(TBE.default.fieldLen + TBE.default.cmdLen  - 1, TBE.default.cmdLen)
   def sigToTBECmd(sigs : Bits) : UInt = sigs.asUInt()(TBE.default.cmdLen - 1, 0)
 
