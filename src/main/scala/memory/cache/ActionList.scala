@@ -24,7 +24,7 @@ object ActionList {
 
         ("AllocateTBE",   "b0001_000000000000000000_00000000_01".U),
         ("DeallocateTBE", "b0001_000000000000000000_00000000_10".U),
-        ("UpdateTBE",     "b0001_000000000000000000_00000000_11".U), // should update field 0
+        ("UpdateTBE",     "b0001_000000000000000000_00000_01_0_11".U), // should update field 0 with src(1)
         ("SetState",      "b0011_000000000000000000_0000000000".U),
         ("Feedback",      "b0010_000000000000000000_0000000000".U ),
 

@@ -125,7 +125,7 @@ with HasAccelShellParams{
 
     val updateTBEFixedFields   = Wire(Vec(nParal, Bool()))
     val maskField = Wire(Vec(nParal, UInt(TBE.default.fieldLen.W)))
-    val tbeFieldUpdateSrc = Wire(maskField.cloneType)
+    val tbeFieldUpdateSrc = Wire(Vec(nParal,TBE.default.fields(0).cloneType))
 
     val stall = WireInit(false.B)
     val stallInput = WireInit(false.B)
@@ -147,6 +147,8 @@ with HasAccelShellParams{
     val sets = Wire(Vec(nParal, UInt(32.W)))
 
     val wayInputCache = Wire(UInt((wayLen+1).W))
+    val tbeFields = Wire(TBE.default.fields.cloneType)
+
     val replaceWayInputCache = Wire(UInt((wayLen+1).W))
     val tbeWay        = WireInit(nWays.U((wayLen+1).W))
 
@@ -343,6 +345,7 @@ with HasAccelShellParams{
     }
 
     wayInputCache := RegEnable(Mux( tbeWay === nWays.U , probeWay.io.deq.bits, tbeWay ), nWays.U, input.io.deq.fire())
+    (0 until nTBEFields ).map( n =>  tbeFields(n) := RegEnable( input.io.deq.bits.tbeOut.fields(n), 0.U,  input.io.deq.fire())) // @todo should be from of action
     replaceWayInputCache := RegEnable(replacerWayWire, nWays.U, input.io.deq.fire())
     inputToPC := RegEnable(input.io.deq.bits.inst, InstBundle.default, input.io.deq.fire())
 
@@ -368,6 +371,7 @@ with HasAccelShellParams{
         actionReg(i).io.enq.bits.data := pcWire(i).data
         actionReg(i).io.enq.bits.replaceWay := pcWire(i).replaceWay
         actionReg(i).io.enq.bits.event := pcWire(i).event
+        actionReg(i).io.enq.bits.tbeFields := pcWire(i).tbeFields
 
         firstLineNextRoutine(i) := actionRom(i)(pcWire(i).pc).asUInt() === ActionList.actions("NOP").asUInt()// NOP
         updatedPC(i) := Mux(firstLineNextRoutine(i), pcWire(i).pc, pcWire(i).pc + 1.U + compUnit(i).io.pc )
@@ -381,6 +385,7 @@ with HasAccelShellParams{
         pc.io.read(i).in.bits.data.replaceWay := DontCare
         pc.io.read(i).in.bits.data.event := DontCare
         pc.io.read(i).in.bits.data.valid := updatedPCValid(i) // @todo should be changed for stall
+        pc.io.read(i).in.bits.data.tbeFields := DontCare
 
         pc.io.read(i).in.valid := DontCare // @todo Should be changed probably
         pcWire(i) <> pc.io.read(i).out.bits
@@ -393,7 +398,7 @@ with HasAccelShellParams{
 
         maskField(i) := sigToTBEOp1(actionReg(i).io.deq.bits.action.signals)// @todo from actions
 //        tbeFieldUpdateSrc(i) := 1.U // @todo should be replaced with the one below
-         tbeFieldUpdateSrc(i) := compUnit(i).io.reg_file(sigToTBEOp2(actionRom(i)(pcWire(i).pc)))
+         tbeFieldUpdateSrc(i) := compUnit(i).io.reg_file(sigToTBEOp2(actionReg(i).io.deq.bits.action.signals))
 
 
         /************Computation*****************************/
@@ -405,7 +410,7 @@ with HasAccelShellParams{
 
 
         compUnitInput2(i).io.in.data :=  actionReg(i).io.deq.bits.data
-        compUnitInput2(i).io.in.tbe  := DontCare // @todo should be connected to tbe?
+        compUnitInput2(i).io.in.tbe  := actionReg(i).io.deq.bits.tbeFields(0) // @todo should be connected to tbe field index
         compUnitInput2(i).io.in.hardCoded := actionReg(i).io.deq.bits.action.signals(instructionWidth - 1, compUnit(i).Op1End())
         compUnitInput2(i).io.in.select := sigToCompOpSel2(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1:TBE, 2: Data, 3: hardcoded
         compUnit(i).io.op2 <> compUnitInput2(i).io.out
@@ -421,6 +426,7 @@ with HasAccelShellParams{
 
     pc.io.write.bits.addr := inputToPC.addr
     pc.io.write.bits.way := wayInputCache
+    pc.io.write.bits.tbeFields := tbeFields
     pc.io.write.bits.replaceWay := replaceWayInputCache
     pc.io.write.bits.pc := routineQueue.io.deq.bits
     pc.io.write.bits.data := inputToPC.data

@@ -96,6 +96,7 @@ class CacheBundle (implicit p:Parameters) extends AXIAccelBundle
     val data = UInt(bBits.W)
     val replaceWay =  UInt(wayLen.W)
     val event = UInt(eventLen.W)
+    val tbeFields = TBE.default.fields.cloneType
 
 
 }
@@ -123,6 +124,7 @@ object PCBundle {
         pcContent.data := 0.U
         pcContent.replaceWay := 0.U
         pcContent.event := 0.U
+        pcContent.tbeFields := TBE.default.fields
         pcContent
 
     }

@@ -29,7 +29,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val tbeDepth = accelParams.tbeDepth
   val lockDepth = accelParams.lockDepth
 
-  val nTBEFields = 3
+  val nTBEFields = 1
   val nTBECmds = 4
   val TBEFieldWidth = 32
 
