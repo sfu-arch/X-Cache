@@ -49,11 +49,11 @@ object ActionList {
         ("AndWalker1023",     "b1_11_0_00000011_11111111_00_000001_0001".U ),  // Xor with op1: reg op2: hardcode = 0
         ("AndWalker2047",     "b1_11_0_00000111_11111111_00_000001_0001".U ),  // Xor with op1: reg op2: hardcode = 0
         ("BLTWalker1714",     "b1_11_0_00000110_10110010_00_000001_0110".U ),  // Xor with op1: reg op2: hardcode = 0
-        ("BNEQWalkerDataAddr","b1_10_1_00000000_00000000_00_000011_1000".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("BNEQWalkerDataAddr","b1_00_1_00000000_00000001_00_000011_0111".U ),  // Xor with op1: reg op2: hardcode = 0
 
         ("RightOnes",         "b1_11_0_11111111_11111111_00_000000_0000".U ),  // Add with op1: reg op2: hardcode = 0
         ("ShiftLeft16",       "b1_11_0_00000000_00010000_00_000001_0100".U ),  // Shift_l with op1: reg op2: hardcode = 0
-        ("OrOnes",            "b1_00_0_00000000_00000001_00_000000_1001".U ),  // Or with op1: reg op2: hardcode = 0
+        ("OrOnes",            "b1_00_0_00000000_00000001_00_000000_1000".U ),  // Or with op1: reg op2: hardcode = 0
 
         ("MaskWalkerData",    "b1_10_0_00000000_00000000_00_000001_0001".U ),  // And with op1: reg op2: hardcode = 0
 

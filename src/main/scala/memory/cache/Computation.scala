@@ -36,7 +36,7 @@ extends Module with HasCacheAccelParams {
             is (shift_r) { result := op1 >> op2; }
             is (shift_l) { result := op1 << op2(7,0); }
             is (xor) { result := op1 ^ op2; }
-            is (blt) { result := Mux(op1 < op2, jump, 0.U)}
+            is (blt) { result  := Mux(op1 < op2, jump, 0.U)}
             is (bneq) { result := Mux(op1 =/= op2, jump, 0.U)}
             is (or) { result := op1 | op2; }
         }
