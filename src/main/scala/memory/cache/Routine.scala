@@ -39,15 +39,30 @@ object RoutineROMLDST {
 
 object RoutineROMWalker {
 
-  //
-  val HASH = Seq("ShiftWalker7", "ShiftWalker13", "XorWalker", "ShiftWalker21", "XorWalker", "XorWalkerAddr",
-                  "AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023", "ShiftLeftWalker", "AddWalker", "AddBucket")
+  val MASK22 = Seq("AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023")
+  val MASK20 = Seq("AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023")
+  val BUCK256 = Seq("AddBucket256" )
+
+  val HASH = Seq("ShiftWalker7", "ShiftWalker13", "XorWalker", "ShiftWalker21", "XorWalker", "XorWalkerAddr") ++
+    MASK22 ++ Seq("ShiftLeftWalker", "AddWalker") ++ BUCK256
+
+//  val COMP = Seq ("MaskWalkerData","BEQWalkerDataAddr", "WAIT", "")
+  val COMP = Seq ("BNEQWalkerDataAddr", "WAIT", "WrInt","RdInt", "DeallocateTBE")
+  val ReqNext = Seq()
+
+  val Make32Ones = Seq("RightOnes","ShiftLeft16", "OrOnes")
+
   val routineActions = Array [RoutinePC](
 
     // 0-5
-    Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate", "AddWalker" , "UpdateTBE") ++  HASH ++ Seq("DataRQWalker", "SetState")),DstState("IB"),
+    Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate", "AddWalker" , "UpdateTBE") ++  HASH ++
+                                 Seq("DataRQWalker", "SetState")),DstState("IB"),
+
     Routine ("DATA_IB") , Actions(Seq( "AddWalker", "ShiftLeftWalker", "AddWalkerWithTBE", "DataRQWalker","SetState")), DstState("ID"),
-    Routine ("DATA_ID") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
+    Routine ("DATA_ID") , Actions(COMP ++ Seq("SetState")), DstState("V"),
+//    Routine ("DATA_I") ,  Actions(Seq( "AddWalker", "ShiftLeftWalker", "AddWalkerWithTBE", "DataRQWalker","SetState")), DstState("ID"),
+
+
     Routine ("FIND_ID") , Actions(Seq("SetState")),DstState("ID"),
     Routine ("FIND_V") , Actions(Seq( "SetState")), DstState("V"),
 
@@ -58,22 +73,17 @@ object RoutineROMWalker {
 
 object RoutineROMDasxArray {
 
-  val MASK22 = Seq("AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023")
-  val MASK20 = Seq("AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023")
+
 
   //
-  val HASH = Seq("ShiftWalker7", "ShiftWalker13", "XorWalker", "ShiftWalker21", "XorWalker", "XorWalkerAddr") ++
-    MASK22 ++ Seq("AddWalker")
 
-  val COMP = Seq ("MaskWalkerData","BEQWalkerDataAddr", "WAIT", "")
-  val Make32Ones = Seq("RightOnes","ShiftLeft16", "OrOnes")
 
 
 
   val routineActions = Array [RoutinePC](
 
     // 0-5
-    Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate") ++  HASH ++ Seq("DataRQWalker", "SetState")),DstState("ID"),
+    Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate")  ++ Seq("DataRQWalker", "SetState")),DstState("ID"),
     Routine ("DATA_ID") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
     Routine ("DATA_I") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
     Routine ("FIND_ID") , Actions(Seq("SetState")),DstState("ID"),

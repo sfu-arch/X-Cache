@@ -37,7 +37,7 @@ extends Module with HasCacheAccelParams {
             is (shift_l) { result := op1 << op2(7,0); }
             is (xor) { result := op1 ^ op2; }
             is (blt) { result := Mux(op1 < op2, jump, 0.U)}
-            is (beq) { result := Mux(op1 === op2, jump, 0.U)}
+            is (bneq) { result := Mux(op1 =/= op2, jump, 0.U)}
             is (or) { result := op1 | op2; }
         }
         result
@@ -59,7 +59,7 @@ extends Module with HasCacheAccelParams {
         val reg_file = Output(Vec(regFileSize, OperandType.cloneType))
     })
 
-    val add :: and :: sub :: shift_r :: shift_l :: xor ::blt :: beq  :: or :: Nil = Enum (9)
+    val add :: and :: sub :: shift_r :: shift_l :: xor ::blt :: bneq  :: or :: Nil = Enum (9)
     val result = Wire(OperandType.cloneType);
     val reg_out1 = Wire(OperandType.cloneType);
     val reg_out2 = Wire(OperandType.cloneType);
@@ -85,7 +85,7 @@ extends Module with HasCacheAccelParams {
     // *******************************************  Register File IO  *******************************************
     val reg_file = RegInit(VecInit(Seq.fill(regFileSize)(0.U(OperandType.cloneType.getWidth.W))))
 
-    val write_en = io.instruction.fire() && function =/= blt
+    val write_en = io.instruction.fire() && (function =/= blt && function =/= bneq)
 
     when (write_en) { reg_file(write_addr) := result; }
     when (io.clear){(0 until regFileSize) map (i => reg_file(i) := 0.U(OperandType.cloneType.getWidth.W))}
@@ -95,7 +95,7 @@ extends Module with HasCacheAccelParams {
     
     // *******************************************  ALU  *******************************************
     result := ALU(function, alu_in1, alu_in2, write_addr.asTypeOf(OperandType.cloneType))
-    io.pc := Mux(function =/= blt, 0.U, result(pcLen - 1, 0))
+    io.pc := Mux(function =/= blt && function =/= bneq, 0.U, result(pcLen - 1, 0))
 //    io.output := result;
 
 }
