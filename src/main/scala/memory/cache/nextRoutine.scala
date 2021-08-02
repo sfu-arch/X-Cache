@@ -25,6 +25,8 @@ object nextRoutineWalker {
     Routine ("FIND_I") ,DstState("ID"), Trigger(Seq("FIND" , "I")),
     Routine ("DATA_ID"), DstState("V"), Trigger(Seq("DATA", "ID")),
     Routine ("DATA_IB"), DstState("ID"), Trigger(Seq("DATA", "IB")),
+    Routine ("DATA_I"), DstState("I"), Trigger(Seq("DATA", "I")),
+
     Routine ("FIND_V"), DstState("V"), Trigger(Seq("FIND", "V")),
     Routine ("FIND_ID"), DstState("ID"), Trigger(Seq("FIND", "ID")),
 
