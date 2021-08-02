@@ -66,7 +66,7 @@ object RoutineROMWalker {
 
 
 
-    Routine ("DATA_IB") , Actions(Seq( "AddWalker", "ShiftLeftWalker", "AddWalkerWithTBE", "DataRQWalker","SetState")), DstState("ID"),
+    Routine ("DATA_IB") , Actions(Seq( "BNEQIfDataNotZero", "WAIT", "DeallocateTBE", "SetState","NOP", "AddWalker", "ShiftLeftWalker", "AddWalkerWithTBE", "DataRQWalker","SetState")), DstState("I"), DstState("ID"),
     Routine ("DATA_ID") , Actions(MASKData ++ COMP ++ ReqNext ++ Seq("DeallocateTBE", "SetState")), DstState("V"),
     Routine ("DATA_I") ,  Actions(Seq( "Allocate","WrInt" ,"RdInt","SetState")), DstState("ID"),
 

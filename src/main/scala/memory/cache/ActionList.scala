@@ -57,7 +57,10 @@ object ActionList {
         ("BNEQWalkerDataAddr","b1_00_1_00000000_00000001_00_000010_0111".U ),  // Xor with op1: reg op2: hardcode = 0
 
         ("OneOne",            "b1_11_0_00000000_00000001_10_000010_0000".U ),  // Add with op1: reg op2: hardcode = 0
+
         ("BLTIfZero",         "b1_00_0_00000000_00000010_01_000011_0110".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("BNEQIfDataNotZero", "b1_10_0_00000000_00000000_00_000011_0111".U ),  // Xor with op1: reg op2: hardcode = 0
+
 
 
 
