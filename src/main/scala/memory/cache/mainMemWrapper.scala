@@ -34,33 +34,39 @@ with HasAccelShellParams{
     val DRAM_LATENCY = 200
 
     val addrReg = RegInit(0.U(addrLen.W))
+    val numberOfLines = RegInit(0.U(3.W))
     val srcReg = RegInit(0.U(io.out.bits.srcLen.W))
     val returnAddr = RegInit(0.U(addrLen.W))
-    val dataRegRead = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
+    val dataRegRead = RegInit(VecInit(Seq.fill(nData * 7)(0.U(xlen.W))))
     val dataRegWrite = RegInit(VecInit(Seq.fill(nData)(0.U(xlen.W))))
     val (rd :: wr_back :: Nil ) = Enum(2)
     val (stIdle :: stWriteAddr :: stWriteData :: stReadAddr :: stReadData :: stCmdIssue :: Nil) = Enum(6)
     val stReg = RegInit(stIdle)
 
     val start = Wire(Bool())
-    start := io.in.fire() && stReg === stIdle && io.in.bits.data(addrLen -1 , 0) =/= 0.U
+    start := io.in.fire() & stReg === stIdle & io.in.bits.data(addrLen -1 , 0) =/= 0.U
 
     when (start){
-        addrReg := io.in.bits.data(addrLen -1 , 0) // use the data of the package for its requests
-        returnAddr := io.in.bits.addr
-        srcReg := io.in.bits.src
+        addrReg       := io.in.bits.data(addrLen -1 , 3) << 3 // use the data of the package for its requests
+        numberOfLines := Mux(io.in.bits.data(2,0) === 0.U(3.W), 1.U, io.in.bits.data(2,0))
+        returnAddr    := io.in.bits.addr
+        srcReg        := io.in.bits.src
     }
-
 
     io.in.ready := stReg === stIdle
 
     val writeInst = WireInit(start & io.in.bits.inst === wr_back)
 
     // Reading
-    val (readCount, readWrapped) = Counter (io.mem.r.fire(), nData)
-    val (writeCount, writeWrapped) = Counter(io.mem.w.fire(), nData)
+    val (readCount, readWrapped)   = CounterWithReset (io.mem.r.fire(), nData * 7, start)
+
+    val (writeCount, writeWrapped) = CounterWithReset (io.mem.w.fire(), nData, start)
 
     val (dramLatencyCnt, _) =  CounterWithReset(stReg === stCmdIssue, 1000000, start )
+    val (nextPacket, _) =  CounterWithReset(io.out.fire(), 1000000, start )
+
+    val packetsDone = WireInit((nextPacket === numberOfLines - 1.U))
+
 
 
 
@@ -80,7 +86,7 @@ with HasAccelShellParams{
     io.mem.w.bits.last := false.B
 
     io.mem.ar.bits.addr := addrReg
-    io.mem.ar.bits.len := nData.U - 1.U
+    io.mem.ar.bits.len := nData.U * numberOfLines - 1.U
     io.mem.b.ready := stReg === stWriteData
 
     io.mem.ar.valid := false.B
@@ -92,7 +98,7 @@ with HasAccelShellParams{
     issueCmd := false.B
 
 
-    io.out.bits.data := Cat(dataRegRead)
+    io.out.bits.data := Cat((0 until nData).map (i => dataRegRead(nextPacket * nData.U + i.U)))
     io.out.bits.addr := returnAddr
     io.out.bits.inst := Events.EventArray("DATA").U
     io.out.bits.src := ID.U
@@ -146,7 +152,7 @@ with HasAccelShellParams{
         is(stCmdIssue){
             when (dramLatencyCnt > DRAM_LATENCY.U){
                 io.out.valid := true.B
-                when(io.out.fire()){
+                when(packetsDone && io.out.fire()){
                     stReg := stIdle
                 }
             }

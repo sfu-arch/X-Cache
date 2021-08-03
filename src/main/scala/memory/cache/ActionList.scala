@@ -56,10 +56,8 @@ object ActionList {
         ("OneOne",            "b1_11_0_00000000_00000001_10_000010_0000".U ),  // Add with op1: reg op2: hardcode = 0
 
         ("BLTIfZero",         "b1_00_0_00000000_00000010_01_000011_0110".U ),  // Xor with op1: reg op2: hardcode = 0
+
         ("BNEQIfDataNotZero", "b1_10_0_00000000_00000000_00_000011_0111".U ),  // Xor with op1: reg op2: hardcode = 0
-
-
-
 
         ("RightOnes",         "b1_11_0_11111111_11111111_00_000000_0000".U ),  // Add with op1: reg op2: hardcode = 0
         ("ShiftLeft16",       "b1_11_0_00000000_00010000_00_000001_0100".U ),  // Shift_l with op1: reg op2: hardcode = 0
@@ -76,11 +74,16 @@ object ActionList {
 
 
 
+        ("AddFive",            "b1_11_1_00000000_00000101_00_000001_0000".U ),  // Add with op1: reg op2: hardcode = 0
+        ("BLTIfDataZero",      "b1_10_0_00000000_00000000_10_000011_0110".U ),  // Xor with op1: reg op2: hardcode = 0
 
 
 
 
-    )
+
+
+
+          )
 
 
     // fill the input table
