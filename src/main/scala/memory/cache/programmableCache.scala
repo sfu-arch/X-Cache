@@ -236,9 +236,9 @@ with HasAccelShellParams{
     feedbackOutQueue.io.enq <> feedbackArbiter.io.out
     for ( i <- 0 until nParal){
         feedbackArbiter.io.in(i) <> feedbackInQueue(i).io.deq
-        feedbackInQueue(i).io.enq.bits.addr := actionReg(i).io.deq.bits.addr
-        feedbackInQueue(i).io.enq.bits.event := actionReg(i).io.deq.bits.event
-        feedbackInQueue(i).io.enq.bits.data := actionReg(i).io.deq.bits.data
+        feedbackInQueue(i).io.enq.bits.addr := actionReg(i).io.deq.bits.addr + sigToFeedbackInc(actionReg(i).io.deq.bits.action.signals)
+        feedbackInQueue(i).io.enq.bits.event :=  sigToFeedbackEvent(actionReg(i).io.deq.bits.action.signals)
+        feedbackInQueue(i).io.enq.bits.data := actionReg(i).io.deq.bits.data - sigToFeedbackData(actionReg(i).io.deq.bits.action.signals)
         feedbackInQueue(i).io.enq.valid := isFeedbackAction(i)
     }
     instruction <> inputArbiter.io.out
