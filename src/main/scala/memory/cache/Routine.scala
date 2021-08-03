@@ -1,8 +1,13 @@
 package memGen.memory.cache
 
-object RoutineROMLDST {
 
-  val routineActions = Array [RoutinePC](
+abstract class RoutineRom{
+    val routineActions = Array [RoutinePC]()
+}
+
+object RoutineROMLDST extends RoutineRom{
+
+  override val routineActions = Array [RoutinePC](
 
     // 0-5
     Routine ("LOAD_I") , Actions(Seq("AllocateTBE","Allocate", "DataRQ", "UpdateTBE", "SetState")),DstState("ID"),
@@ -37,7 +42,7 @@ object RoutineROMLDST {
 }
 
 
-object RoutineROMWalker {
+object RoutineROMWalker extends RoutineRom{
 
   val MASK22 = Seq("AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023")
   val MASK20 = Seq("AndWalker2047", "BLTWalker1714", "WAIT", "AndWalker1023")
@@ -58,13 +63,11 @@ object RoutineROMWalker {
 
 
 
-  val routineActions = Array [RoutinePC](
+  override val routineActions = Array [RoutinePC](
 
     // 0-5
     Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate", "AddWalker" , "UpdateTBE") ++  HASH ++
                                  Seq("DataRQWalker", "SetState")),DstState("IB"),
-
-
 
     Routine ("DATA_IB") , Actions(Seq( "BNEQIfDataNotZero", "WAIT", "DeallocateTBE", "SetState","NOP", "AddWalker", "ShiftLeftWalker", "AddWalkerWithTBE", "DataRQWalker","SetState")), DstState("I"), DstState("ID"),
     Routine ("DATA_ID") , Actions(MASKData ++ COMP ++ ReqNext ++ Seq("DeallocateTBE", "SetState")), DstState("V"),
@@ -79,23 +82,21 @@ object RoutineROMWalker {
 }
 
 
-object RoutineROMDasxArray {
+object RoutineROMDasxArray extends RoutineRom{
 
+  val ReqForFiveLines = Seq("AddFive","DataRQWalker")
 
+  override val routineActions = Array [RoutinePC](
 
-  //
-
-
-
-
-  val routineActions = Array [RoutinePC](
-
-    // 0-5
-    Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate")  ++ Seq("DataRQWalker", "SetState")),DstState("ID"),
-    Routine ("DATA_ID") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
+    Routine ("COLLECT_I") , Actions(Seq("AllocateTBE","Allocate") ++ ReqForFiveLines ++ Seq("FeedbackPrep","SetState")), DstState("IC"),
+    Routine ("DATA_IC") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
     Routine ("DATA_I") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
-    Routine ("FIND_ID") , Actions(Seq("SetState")),DstState("ID"),
-    Routine ("FIND_V") , Actions(Seq( "SetState")), DstState("V"),
+    Routine ("PREP_I") , Actions(Seq("BLTIfDataZero", "WAIT", "AllocateTBE","Allocate")  ++ Seq("FeedbackPrep","SetState")), DstState("IC"),
+
+    Routine ("STORE_I"), Actions(Seq("Allocate", "WrInt", "SetState")),DstState("E"),
+    Routine ("STORE_E") , Actions(Seq( "WrInt","SetState")), DstState("E"),
+
+
 
 
   )

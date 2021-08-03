@@ -3,32 +3,53 @@ import chisel3._
 import chisel3.util._
 
 
-
-object EventsLDST {
+abstract class EventList  {
+  val EventArray = Map[String,Int] ()
+  val eventLen = 0
+  val HitEvent = 0
+}
+object EventsLDST extends EventList {
 
 //  val EventArray = Map[String, Int]()
-  val EventArray = Map(
+  override val EventArray = Map(
                         (s"LOAD", 0x00),
                         (s"STORE", 0x01),
     (s"DATA",0x02),
     (s"NOP", 0x03)
 
   )
-  val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
+  override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
 
 }
 
-object EventsWalker {
+object EventsWalker extends EventList {
 
-  val EventArray = Map(
+  override val EventArray = Map(
     (s"FIND", 0x00),
     (s"DATA",0x01),
     (s"NOP", 0x02)
 
   )
-  val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
+  override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
 
-  val HitEvent = EventArray("FIND")
+  override val HitEvent = EventArray("FIND")
+
+}
+
+object EventsDasx extends EventList {
+
+  override val EventArray = Map(
+    (s"LOAD", 0x00),
+    (s"STORE", 0x01),
+    (s"DATA",0x02),
+    (s"COLLECT", 0x03),
+    (s"PREP",0x04),
+    (s"NOP", 0x5)
+
+  )
+  override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
+
+  override val HitEvent = EventArray("LOAD")
 
 }
 

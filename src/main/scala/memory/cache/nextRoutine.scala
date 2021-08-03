@@ -1,9 +1,11 @@
 package memGen.memory.cache
 
+abstract class NextRoutine{
+  val routineTriggerList = Array [RoutinePC] ()
+}
+object nextRoutineLDST extends NextRoutine{
 
-object nextRoutineLDST {
-
-    val routineTriggerList = Array [RoutinePC](
+    override val routineTriggerList = Array [RoutinePC](
 
                     Routine ("LOAD_I") ,DstState("ID"), Trigger( Seq ("LOAD" , "I")),
                     Routine ("STORE_I") , DstState("M"), Trigger( Seq("STORE", "I")),
@@ -18,9 +20,9 @@ object nextRoutineLDST {
 
 }
 
-object nextRoutineWalker {
+object nextRoutineWalker extends NextRoutine{
 
-  val routineTriggerList = Array [RoutinePC](
+  override val routineTriggerList = Array [RoutinePC](
 
     Routine ("FIND_I") ,DstState("ID"), Trigger(Seq("FIND" , "I")),
     Routine ("DATA_ID"), DstState("V"), Trigger(Seq("DATA", "ID")),
@@ -29,6 +31,27 @@ object nextRoutineWalker {
 
     Routine ("FIND_V"), DstState("V"), Trigger(Seq("FIND", "V")),
     Routine ("FIND_ID"), DstState("ID"), Trigger(Seq("FIND", "ID")),
+
+
+
+  )
+
+}
+
+
+object nextRoutineDASX extends NextRoutine{
+
+  override val routineTriggerList = Array [RoutinePC](
+
+    Routine ("COLLECT_I") ,DstState("IC"), Trigger(Seq("COLLECT" , "I")),
+
+    Routine ("DATA_IC"), DstState("V"), Trigger(Seq("DATA", "IC")),
+    Routine ("DATA_I"), DstState("V"), Trigger(Seq("DATA", "I")),
+
+    Routine ("PREP_I"), DstState("IC"), Trigger(Seq("PREP", "IC")),
+
+    Routine ("STORE_I"), DstState("E"), Trigger(Seq("STORE", "I")),
+    Routine ("STORE_E"), DstState("E"), Trigger(Seq("STORE", "E")),
 
 
 

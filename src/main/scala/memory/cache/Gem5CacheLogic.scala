@@ -18,9 +18,12 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   // val (memType :: cacheType :: Nil) = Enum(2)
   //Caused Weird error!!
 
-  val Events = accelParams.Events
-  val States = accelParams.States
 
+
+  val States = accelParams.States
+  val Events = accelParams.Events
+  val BM = accelParams.benchmark
+  
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
   val nCache = accelParams.nCache
@@ -108,6 +111,31 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
 
   def sigToDQSrc(sigs:Bits): UInt = sigs.asUInt()(0,0)
   def sigToDQRegSrc(sigs:Bits): UInt = sigs.asUInt()(regFileLen,1)
+
+  def sigToFeedbackInc (sigs:Bits): UInt = sigs.asUInt()(7,0)
+  def sigToFeedbackEvent (sigs:Bits): UInt = sigs.asUInt()(12 + eventLen - 1,12)
+  def sigToFeedbackData (sigs:Bits): UInt = sigs.asUInt()(11,8)
+
+  def SelectROM(BM : String): RoutineRom ={
+    BM.toLowerCase() match {
+      case "walker" =>
+        RoutineROMWalker
+      case "dasxarray" =>
+        RoutineROMDasxArray
+    }
+  }
+
+  def SelectNextRoutine (BM : String): NextRoutine ={
+    BM.toLowerCase() match {
+      case "walker" =>
+        nextRoutineWalker
+      case "dasxarray" =>
+        nextRoutineDASX
+    }
+  }
+
+
+
 
 }
 

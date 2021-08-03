@@ -5,6 +5,7 @@ import chisel3.util.Enum
 import chipsalliance.rocketchip.config._
 import memGen.interfaces.axi.AXIParams
 import memGen.junctions.{NastiKey, NastiParameters}
+import memGen.memory.cache.{NextRoutine, RoutineROMDasxArray, RoutineROMWalker, RoutineRom, nextRoutineDASX, nextRoutineWalker}
 import memGen.util.{DandelionGenericParameterizedBundle, DandelionParameterizedBundle}
 
 
@@ -49,7 +50,8 @@ case class DandelionAccelParams(
                                  lockSize: Int = 0,
                                  nparal: Int = 1,
                                  ncache: Int = 0,
-                                 nword: Int = 0
+                                 nword: Int = 0,
+                                 bm: String =""
 
                                ) extends AccelParams {
 
@@ -64,14 +66,40 @@ case class DandelionAccelParams(
   val nCache = ncache
   val nWords = nword
 
-  val Events = EventsWalker
-  val States = StatesWalker
+  val benchmark = bm
+
+  val Events = SelectEvents(benchmark)
+  val States = SelectStates(benchmark)
 
   val nstates = cacheNState
   val addrlen = cacheAddrLen
 
   def cacheBlockBytes: Int = nWords * (xlen >> 3) // 2 x 32 bits = 8B
   val cacheBlockBits = cacheBlockBytes << 3
+
+
+
+
+  def SelectEvents (BM : String): EventList ={
+    BM.toLowerCase() match {
+      case "walker" =>
+        EventsWalker
+      case "dasxarray" =>
+        EventsDasx
+    }
+  }
+
+  def SelectStates (BM : String): StateList ={
+    BM.toLowerCase() match {
+      case "walker" =>
+        StatesWalker
+      case "dasxarray" =>
+        StatesDasx
+    }
+  }
+
+
+
 
 
 }
