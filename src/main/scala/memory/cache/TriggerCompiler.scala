@@ -68,7 +68,7 @@ class RoutinePtr (implicit val p: Parameters) extends HasAccelParams {
 
     var routineTriggerBit = new ArrayBuffer[Bits]
       var routineDstStBit = new ArrayBuffer[Bits]
-      for ( i <- 0 until math.pow(2, log2Ceil(states.size * events.size)).toInt){
+      for ( i <- 0 until math.pow(2, (stateLen * eventLen)).toInt){
           routineTriggerBit += 0.U
           routineDstStBit += 0.U
 

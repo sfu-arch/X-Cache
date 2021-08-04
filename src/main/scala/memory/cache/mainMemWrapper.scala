@@ -104,16 +104,9 @@ with HasAccelShellParams{
     io.out.bits.src := ID.U
     io.out.bits.dst := srcReg
   //  io.out.bits.msgType := memType Cause Bug!
-
     io.out.bits.msgType := 0.U
 
     io.out.valid := false.B
-
-    
-
-    // printf(p"data Reg ${dataRegRead} \n")
-        // printf(p"st Reg ${stReg} \n")
-
 
     switch(stReg){
         is(stIdle){

@@ -69,13 +69,8 @@ object ActionList {
 
 
 
-
-
-
-
-
         ("AddFive",            "b1_11_1_00000000_00000101_00_000001_0000".U ),  // Add with op1: reg op2: hardcode = 0
-        ("BLTIfDataZero",      "b1_10_0_00000000_00000000_10_000011_0110".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("BIfDataNotZero",     "b1_10_0_00000000_00000000_10_000010_0111".U )  // Xor with op1: reg op2: hardcode = 0
 
 
 

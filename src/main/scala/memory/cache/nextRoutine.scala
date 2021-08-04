@@ -47,8 +47,13 @@ object nextRoutineDASX extends NextRoutine{
 
     Routine ("DATA_IC"), DstState("V"), Trigger(Seq("DATA", "IC")),
     Routine ("DATA_I"), DstState("V"), Trigger(Seq("DATA", "I")),
+    Routine ("DATA_IP"), DstState("V"), Trigger(Seq("DATA", "IP")),
 
-    Routine ("PREP_I"), DstState("IC"), Trigger(Seq("PREP", "IC")),
+    Routine ("LOAD_V"), DstState("V"), Trigger(Seq("LOAD", "V")),
+    Routine ("LOAD_E"), DstState("E"), Trigger(Seq("LOAD", "E")),
+
+
+    Routine ("PREP_I"), DstState("IP"), Trigger(Seq("PREP", "I")),
 
     Routine ("STORE_I"), DstState("E"), Trigger(Seq("STORE", "I")),
     Routine ("STORE_E"), DstState("E"), Trigger(Seq("STORE", "E")),

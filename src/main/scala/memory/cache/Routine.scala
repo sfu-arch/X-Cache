@@ -89,15 +89,36 @@ object RoutineROMDasxArray extends RoutineRom{
   override val routineActions = Array [RoutinePC](
 
     Routine ("COLLECT_I") , Actions(Seq("AllocateTBE","Allocate") ++ ReqForFiveLines ++ Seq("FeedbackPrep","SetState")), DstState("IC"),
+
     Routine ("DATA_IC") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
-    Routine ("DATA_I") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
-    Routine ("PREP_I") , Actions(Seq("BLTIfDataZero", "WAIT", "AllocateTBE","Allocate")  ++ Seq("FeedbackPrep","SetState")), DstState("IC"),
+    Routine ("DATA_IP") , Actions(Seq( "DeallocateTBE","WrInt","SetState")), DstState("V"),
+
+    Routine ("LOAD_E") , Actions(Seq( "SetState")), DstState("E"),
+    Routine ("LOAD_V") , Actions(Seq( "SetState")), DstState("V"),
+
+
+    Routine ("DATA_I") ,  Actions(Seq( "Allocate", "WrInt","RdInt","SetState")), DstState("V"),
+    Routine ("PREP_I") , Actions(Seq("BIfDataNotZero", "WAIT","SetState","NOP", "AllocateTBE","Allocate")  ++ Seq("FeedbackPrep","SetState")), DstState("IC") ,DstState("IP"),
 
     Routine ("STORE_I"), Actions(Seq("Allocate", "WrInt", "SetState")),DstState("E"),
     Routine ("STORE_E") , Actions(Seq( "WrInt","SetState")), DstState("E"),
 
+  )
+}
 
+object RoutineROMGraphPulse extends RoutineRom{
 
+  val ReqForFiveLines = Seq("AddFive","DataRQWalker")
+
+  override val routineActions = Array [RoutinePC](
+
+    Routine ("INIT_I") ,  Actions(Seq("Allocate") ++ Seq("WrInt","SetState")), DstState("V"),
+    Routine ("DATA_IC") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
+    Routine ("DATA_I") ,  Actions(Seq( "Allocate", "WrInt","RdInt","SetState")), DstState("V"),
+    Routine ("PREP_I") ,  Actions(Seq("BLTIfDataZero", "WAIT", "AllocateTBE","Allocate")  ++ Seq("FeedbackPrep","SetState")), DstState("IC"),
+
+    Routine ("STORE_I"),  Actions(Seq("Allocate", "WrInt", "SetState")),DstState("E"),
+    Routine ("STORE_E") , Actions(Seq( "WrInt","SetState")), DstState("E"),
 
   )
 }

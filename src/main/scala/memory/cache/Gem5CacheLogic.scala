@@ -23,7 +23,7 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val States = accelParams.States
   val Events = accelParams.Events
   val BM = accelParams.benchmark
-  
+
   val nWays = accelParams.nways
   val nSets = accelParams.nsets
   val nCache = accelParams.nCache
@@ -56,8 +56,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val byteOffsetBits = log2Ceil(wBytes) //
   val wordLen = byteOffsetBits
 
-  //  val offsetLen = blen + byteOffsetBits
-  val offsetLen = 0 // Walker
+  val offsetLen = blen + byteOffsetBits
+//  val offsetLen = 0 // Walker
 
   val nData = bBits / memParams.dataBits
   val dataBeats = nData
@@ -172,6 +172,7 @@ class Gem5CacheLogic(val ID:Int = 0)(implicit  val p: Parameters) extends Module
   io.dataMem <> DontCare
 
   val Axi_param = memParams
+
 
   // cache states
 
