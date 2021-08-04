@@ -419,7 +419,7 @@ with HasAccelShellParams{
         compUnit(i).io.op1 <> compUnitInput1(i).io.out
 
 
-        compUnitInput2(i).io.in.data :=  actionReg(i).io.deq.bits.data
+        compUnitInput2(i).io.in.data :=  actionReg(i).io.deq.bits.data(CompLen - 1, 0)
         compUnitInput2(i).io.in.tbe  := actionReg(i).io.deq.bits.tbeFields(0) // @todo should be connected to tbe field index
         compUnitInput2(i).io.in.hardCoded := actionReg(i).io.deq.bits.action.signals(instructionWidth - 1, compUnit(i).Op1End())
         compUnitInput2(i).io.in.select := sigToCompOpSel2(actionReg(i).io.deq.bits.action.actionType) // 0: Reg, 1:TBE, 2: Data, 3: hardcoded

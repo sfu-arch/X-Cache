@@ -64,11 +64,11 @@ with HasAccelShellParams{
 
     val (dramLatencyCnt, _) =  CounterWithReset(stReg === stCmdIssue, 1000000, start )
     val (nextPacket, _) =  CounterWithReset(io.out.fire(), 1000000, start )
-
     val packetsDone = WireInit((nextPacket === numberOfLines - 1.U))
 
-
-
+    when(io.out.fire()) {
+        returnAddr := returnAddr + (nData.U << 3)
+    }
 
     when(writeInst){
         dataRegWrite := io.in.bits.data.asTypeOf(Vec(nData, UInt(xlen.W)))
