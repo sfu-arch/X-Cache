@@ -200,6 +200,8 @@ with HasAccelShellParams{
     val replacerWayReg = Reg(UInt(replacer.nBits.W))
     val addrReplacer = Wire(UInt(addrLen.W))
 
+    val hitEvent =  Wire(Bool())
+
 
     for (i <- 0 until nParal) {
         cacheWayWire(i) := cache.io.cpu(i).resp.bits.way
@@ -251,8 +253,12 @@ with HasAccelShellParams{
 
     stallInput := isLocked || tbe.io.isFull
 
+    val eventList = VecInit(Events.HitEvent.map(i => i.asUInt()).toSeq)
+
+    hitEvent := eventList.contains(input.io.deq.bits.inst.event).asBool()
+
     readTBE    := instruction.valid
-    probeStart := instruction.fire() && instruction.bits.event === Events.HitEvent.U
+    probeStart := instruction.fire() && eventList.contains(instruction.bits.event).asBool()
     getState   := input.io.deq.fire()
 
 
@@ -261,8 +267,8 @@ with HasAccelShellParams{
 
     probeHit := input.io.deq.fire()
     hit := probeHit && (probeWay.io.deq.bits =/= nWays.U) && (stateMem.io.out.bits.state === States.ValidState.U)
-    hitLD :=   hit && input.io.deq.bits.inst.event === Events.HitEvent.U
-    missLD := probeHit &&  (input.io.deq.bits.inst.event === Events.HitEvent.U) && ((stateMem.io.out.bits.state === States.InvalidState.U) /*|| (cacheWayWire(nParal) === nWays.U)*/ )
+    hitLD :=   hit && hitEvent
+    missLD := probeHit &&  (hitEvent) && ((stateMem.io.out.bits.state === States.InvalidState.U) /*|| (cacheWayWire(nParal) === nWays.U)*/ )
 
     io.in.memCtrl.ready    :=  instruction.fire() && inputArbiter.io.chosen === memCtrlPriority.U
     io.in.cpu.ready        := instruction.fire() && inputArbiter.io.chosen === cpuPriority.U
@@ -535,7 +541,7 @@ with HasAccelShellParams{
         BoringUtils.addSource(instruction.fire, "instCount_0")
         BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === cpuPriority.U, "cpuReq_0")
         BoringUtils.addSource(instruction.fire && inputArbiter.io.chosen === memCtrlPriority.U, "memCtrlReq_0")
-        BoringUtils.addSource(instruction.fire && instruction.bits.event === Events.HitEvent.U , "ldReq_0")
+        BoringUtils.addSource(instruction.fire && eventList.contains(instruction.bits.event).asBool(), "ldReq_0")
     }
 
     // if (cacheID == 1){

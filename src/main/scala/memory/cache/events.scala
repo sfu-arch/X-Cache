@@ -6,7 +6,7 @@ import chisel3.util._
 abstract class EventList  {
   val EventArray = Map[String,Int] ()
   val eventLen = 0
-  val HitEvent = 0
+  val HitEvent = Array[Int]()
 }
 object EventsLDST extends EventList {
 
@@ -32,7 +32,7 @@ object EventsWalker extends EventList {
   )
   override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
 
-  override val HitEvent = EventArray("FIND")
+  override val HitEvent = Array(EventArray("FIND"))
 
 }
 
@@ -49,7 +49,7 @@ object EventsDasx extends EventList {
   )
   override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
 
-  override val HitEvent = EventArray("LOAD")
+  override val HitEvent = Array(EventArray("LOAD"), EventArray("PREP"), EventArray("COLLECT"), EventArray("STORE"))
 
 }
 
