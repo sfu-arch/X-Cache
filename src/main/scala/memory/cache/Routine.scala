@@ -93,9 +93,18 @@ object RoutineROMDasxArray extends RoutineRom{
     Routine ("DATA_IC") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
     Routine ("DATA_IP") , Actions(Seq( "DeallocateTBE","WrInt","SetState")), DstState("V"),
 
+
     Routine ("LOAD_E") , Actions(Seq( "SetState")), DstState("E"),
+    Routine ("LOAD_IC") , Actions(Seq( "FeedbackLoad", "SetState")), DstState("IC"),
+    Routine ("LOAD_IP") , Actions(Seq( "FeedbackLoad", "SetState")), DstState("IP"),
+    Routine ("LOAD_I") , Actions(Seq(  "SetState")), DstState("I"),
+
     Routine ("LOAD_V") , Actions(Seq( "SetState")), DstState("V"),
 
+    Routine ("COLLECT_V") , Actions(Seq("AllocateTBE","Allocate") ++ ReqForFiveLines ++ Seq("FeedbackPrep","SetState")), DstState("IC"),
+    Routine ("PREP_V") , Actions(Seq("BIfDataNotZero", "WAIT","SetState","NOP", "AllocateTBE","Allocate")  ++ Seq("FeedbackPrep","SetState")), DstState("IC") ,DstState("IP"),
+    Routine ("COLLECT_E") , Actions(Seq("AllocateTBE","Allocate") ++ ReqForFiveLines ++ Seq("FeedbackPrep","SetState")), DstState("IC"),
+    Routine ("PREP_E") , Actions(Seq("BIfDataNotZero", "WAIT","SetState","NOP", "AllocateTBE","Allocate")  ++ Seq("FeedbackPrep","SetState")), DstState("IC") ,DstState("IP"),
 
     Routine ("DATA_I") ,  Actions(Seq( "Allocate", "WrInt","RdInt","SetState")), DstState("V"),
     Routine ("PREP_I") , Actions(Seq("BIfDataNotZero", "WAIT","SetState","NOP", "AllocateTBE","Allocate")  ++ Seq("FeedbackPrep","SetState")), DstState("IC") ,DstState("IP"),
