@@ -62,4 +62,33 @@ object StatesDasx extends StateList{
 
 }
 
+object StatesGP extends StateList{
+
+  override val StateArray = Map(
+    (s"I", 0x00),
+    (s"IC", 0x01),
+    (s"V", 0x02),
+    (s"E", 0x03),
+    (s"IP", 0x04)
+
+  )
+  override val stateLen =  if (StateArray.size == 1 ) 1 else log2Ceil(StateArray.size)
+  override val ValidState = StateArray("V")   // for hit
+  override val InvalidState = StateArray("I") // for miss
+
+}
+object StatesSpArch extends StateList{
+
+  override val StateArray = Map(
+    (s"I", 0x00),
+    (s"IC", 0x01),
+    (s"V", 0x02),
+    (s"IP", 0x04)
+
+  )
+  override val stateLen =  if (StateArray.size == 1 ) 1 else log2Ceil(StateArray.size)
+  override val ValidState = StateArray("V")   // for hit
+  override val InvalidState = StateArray("I") // for miss
+
+}
 

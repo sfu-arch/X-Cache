@@ -26,7 +26,7 @@ object ActionList {
         ("DeallocateTBE", "b0001_000000000000000000_00000000_10".U),
         ("UpdateTBE",     "b0001_000000000000000000_00000_01_0_11".U), // should update field 0 with src(1)
         ("SetState",      "b0011_000000000000000000_0000000000".U),
-        ("FeedbackPrep",  "b0010_0000000000000_100_1000_01000000".U ), // Feedback for Prep
+        ("FeedbackPrep",  "b0010_0000000000000_100_1000_10000000".U ), // Feedback for Prep
 
         ("DataRQ",        "b0100_000000000000000000_1000000_00_0".U),  // addrSrcForMemReq = action(0,0) ? src(action(2,1)) : addrOfTheInputInstToXMU
         ("DataRQWalker",  "b0100_000000000000000000_1000000_01_1".U),  // addrSrcForMemReq = action(0,0) ? src(action(2,1)) : addrOfTheInputInstToXMU
@@ -70,7 +70,14 @@ object ActionList {
 
 
         ("AddFive",            "b1_11_1_00000000_00000101_00_000001_0000".U ),  // Add with op1: reg op2: hardcode = 0
-        ("BIfDataNotZero",     "b1_10_0_00000000_00000000_10_000010_0111".U )  // Xor with op1: reg op2: hardcode = 0
+        ("BIfDataNotZero",     "b1_10_0_00000000_00000000_10_000010_0111".U ),  // Xor with op1: reg op2: hardcode = 0
+        ("FeedbackLoad",       "b0_01_0_0000000000000_000_0000_00000000".U ), // Feedback for LOAD
+        ("FeedbackData",       "b0_01_0_0000000000000_010_0000_00000000".U ), // Feedback for DATA
+
+
+        ("OrSparchAddr",       "b1_00_1_00000000_00000001_00_000001_1000".U ),  // Or with op1: reg op2: hardcode = 0
+        ("FeedbackSparch",     "b0010_0000000000000_001_0001_00001000".U ), // Feedback for Prep
+        ("FeedbackCollect",    "b0010_0000000000000_000_0001_00001000".U ), // Feedback for Collect
 
 
 
@@ -78,7 +85,7 @@ object ActionList {
 
 
 
-          )
+    )
 
 
     // fill the input table

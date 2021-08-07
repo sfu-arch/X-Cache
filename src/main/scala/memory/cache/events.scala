@@ -49,9 +49,37 @@ object EventsDasx extends EventList {
   )
   override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
 
-  override val HitEvent = Array(EventArray("LOAD"), EventArray("PREP"), EventArray("COLLECT"), EventArray("STORE"))
+  override val HitEvent = Array(EventArray("LOAD"), EventArray("PREP"), EventArray("COLLECT"))
 
 }
+object EventsGP extends EventList {
+
+  override val EventArray = Map(
+    (s"INIT", 0x00),
+    (s"UPDATE", 0x01),
+    (s"DATA",0x02),
+
+  )
+  override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
+
+  override val HitEvent = Array(EventArray("INIT"))
+
+}
+object EventsSpArch extends EventList {
+
+  override val EventArray = Map(
+    (s"COLLECT", 0x00),
+    (s"PREP", 0x01),
+    (s"DATA",0x02),
+
+  )
+  override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
+
+  override val HitEvent = Array(EventArray("PREP"), EventArray("COLLECT"))
+
+}
+
+
 
 
 

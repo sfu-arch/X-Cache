@@ -122,6 +122,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
         RoutineROMWalker
       case "dasxarray" =>
         RoutineROMDasxArray
+      case "sparch" =>
+        RoutineROMSpArch
     }
   }
 
@@ -131,6 +133,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
         nextRoutineWalker
       case "dasxarray" =>
         nextRoutineDASX
+      case "sparch" =>
+        nextRoutineSpArch
     }
   }
 

@@ -54,7 +54,7 @@ with HasAccelShellParams{
     val lockMem  = Module(new lockVector())
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
-    val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 4))
+    val inputArbiter   = Module (new RRArbiter(new InstBundle(), n = 4))
     val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType.bits, n = nParal))
     val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal + 1))
     val feedbackArbiter = Module (new Arbiter(new InstBundle(), n = nParal))
@@ -164,7 +164,7 @@ with HasAccelShellParams{
         ActionReg
     }
 
-    val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 64, NumOuts = 1, NumIns = nWays, pipe = true ))
+    val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 128, NumOuts = 1, NumIns = nWays, pipe = true ))
     mimoQ.io.clear := false.B
 
     val compUnit  = for (i <- 0 until nParal) yield {

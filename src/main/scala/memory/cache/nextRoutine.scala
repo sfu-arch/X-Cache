@@ -63,3 +63,24 @@ object nextRoutineDASX extends NextRoutine{
   )
 
 }
+
+object nextRoutineSpArch extends NextRoutine{
+
+  override val routineTriggerList = Array [RoutinePC](
+
+    Routine ("COLLECT_I") ,DstState("IC"), Trigger(Seq("COLLECT" , "I")),
+
+    Routine ("DATA_IC"), DstState("V"), Trigger(Seq("DATA", "IC")),
+    Routine ("DATA_I"), DstState("V"), Trigger(Seq("DATA", "I")),
+    Routine ("DATA_IP"), DstState("V"), Trigger(Seq("DATA", "IP")),
+
+    Routine ("COLLECT_V") ,DstState("IC"), Trigger(Seq("COLLECT" , "V")),
+
+//    Routine ("PREP_V"), DstState("IP"), Trigger(Seq("PREP", "V")),
+
+    Routine ("PREP_I"), DstState("IP"), Trigger(Seq("PREP", "I")),
+
+
+  )
+
+}

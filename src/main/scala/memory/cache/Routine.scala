@@ -108,17 +108,36 @@ object RoutineROMDasxArray extends RoutineRom{
 
 object RoutineROMGraphPulse extends RoutineRom{
 
-  val ReqForFiveLines = Seq("AddFive","DataRQWalker")
-
   override val routineActions = Array [RoutinePC](
 
-    Routine ("INIT_I") ,  Actions(Seq("Allocate") ++ Seq("WrInt","SetState")), DstState("V"),
-    Routine ("DATA_IC") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
+    Routine ("INIT_I")  ,  Actions(Seq("Allocate") ++ Seq("WrInt","SetState")), DstState("V"),
+    Routine ("UPDATE_V"),  Actions(Seq( "WrInt","RdInt","SetState")), DstState("V"),
     Routine ("DATA_I") ,  Actions(Seq( "Allocate", "WrInt","RdInt","SetState")), DstState("V"),
     Routine ("PREP_I") ,  Actions(Seq("BLTIfDataZero", "WAIT", "AllocateTBE","Allocate")  ++ Seq("FeedbackPrep","SetState")), DstState("IC"),
 
     Routine ("STORE_I"),  Actions(Seq("Allocate", "WrInt", "SetState")),DstState("E"),
     Routine ("STORE_E") , Actions(Seq( "WrInt","SetState")), DstState("E"),
+
+  )
+}
+
+
+object RoutineROMSpArch extends RoutineRom{
+
+  val ReqForMultiLines = Seq("AddWalker","DataRQWalker") // copy data to src 1
+
+  override val routineActions = Array [RoutinePC](
+
+    Routine ("COLLECT_I") , Actions(Seq("AllocateTBE","Allocate") ++ ReqForMultiLines ++ Seq("FeedbackSparch","SetState")), DstState("IC"),
+    Routine ("PREP_I") , Actions(Seq("BIfDataNotZero", "WAIT","SetState","NOP", "AllocateTBE","Allocate")  ++ Seq("FeedbackSparch","SetState")), DstState("IC") ,DstState("IP"),
+
+    Routine ("DATA_IC") , Actions(Seq( "DeallocateTBE","WrInt","RdInt","SetState")), DstState("V"),
+    Routine ("DATA_IP") , Actions(Seq( "DeallocateTBE","WrInt","SetState")), DstState("V"),
+
+    Routine ("COLLECT_V") , Actions(Seq("FeedbackCollect", "SetState")), DstState("V"),
+
+    Routine ("DATA_I") ,  Actions(Seq( "Allocate", "WrInt","RdInt","SetState")), DstState("V"),
+
 
   )
 }

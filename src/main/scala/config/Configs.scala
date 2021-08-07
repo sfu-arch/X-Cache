@@ -86,6 +86,8 @@ case class DandelionAccelParams(
         EventsWalker
       case "dasxarray" =>
         EventsDasx
+      case "sparch" =>
+        EventsSpArch
     }
   }
 
@@ -95,6 +97,8 @@ case class DandelionAccelParams(
         StatesWalker
       case "dasxarray" =>
         StatesDasx
+      case "sparch" =>
+        StatesSpArch
     }
   }
 
