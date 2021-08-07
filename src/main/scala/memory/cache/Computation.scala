@@ -94,8 +94,8 @@ extends Module with HasCacheAccelParams {
     io.reg_file := reg_file;
     
     // *******************************************  ALU  *******************************************
-    result := ALU(function, alu_in1, alu_in2, write_addr.asTypeOf(OperandType.cloneType))
-    io.pc := Mux(function =/= blt && function =/= bneq, 0.U, result(pcLen - 1, 0))
+    result := Mux(io.instruction.fire(), ALU(function, alu_in1, alu_in2, write_addr.asTypeOf(OperandType.cloneType)), 0.U)
+    io.pc :=  Mux(function =/= blt && function =/= bneq , 0.U, result(pcLen - 1, 0))
 //    io.output := result;
 
 }
