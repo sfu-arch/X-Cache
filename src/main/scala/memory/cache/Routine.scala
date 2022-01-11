@@ -130,7 +130,7 @@ object RoutineROMGP extends RoutineRom{
 
 object RoutineROMSpArch extends RoutineRom{
 
-  val ReqForMultiLines = Seq("AddWalker","DataRQWalker") // copy data to src 1
+  val ReqForMultiLines = Seq("AddGP","DataRQWalker") // copy data to src 1
 
   override val routineActions = Array [RoutinePC](
 
