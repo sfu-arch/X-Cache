@@ -90,3 +90,19 @@ object StatesSpArch extends StateList{
 
 }
 
+
+}
+object StatesSyn extends StateList{
+
+  override val StateArray = Map(
+    (s"I", 0x00),
+    (s"IV", 0x01),
+    (s"VD", 0x02),
+    (s"D", 0x03)
+
+  )
+  override val stateLen =  if (StateArray.size == 1 ) 1 else log2Ceil(StateArray.size)
+  override val ValidState = StateArray("D")   // for hit
+  override val InvalidState = StateArray("I") // for miss
+
+}

@@ -147,3 +147,22 @@ object RoutineROMSpArch extends RoutineRom{
 
   )
 }
+
+object RoutineROMSyn extends RoutineRom{
+
+
+  override val routineActions = Array [RoutinePC](
+
+
+
+    Routine ("IND_I") , Actions(Seq("NOP", "AllocateTBE")), DstState("IV"),
+
+    Routine ("DRAM_IV") ,  Actions(Seq( "WrInt")), DstState("VD"),
+
+    Routine ("PROD_VD") ,  Actions(Seq( "RdInt", "DeallocateTBE")), DstState("D"),
+
+
+
+  )
+}
+

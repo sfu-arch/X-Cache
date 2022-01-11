@@ -79,7 +79,19 @@ object EventsSpArch extends EventList {
 
 }
 
+object EventsSyn extends EventList {
 
+  override val EventArray = Map(
+    (s"IND", 0x00),
+    (s"DRAM", 0x01),
+    (s"PROD",0x03),
+
+  )
+  override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
+
+  override val HitEvent = Array(EventArray("IND"))
+
+}
 
 
 
