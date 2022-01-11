@@ -76,10 +76,12 @@ object ActionList {
 
 
         ("OrSparchAddr",       "b1_00_1_00000000_00000001_00_000001_1000".U ),  // Or with op1: reg op2: hardcode = 0
-        ("FeedbackSparch",     "b0010_0000000000000_001_0001_00001000".U ), // Feedback for Prep
+        ("FeedbackSparch",     "b0010_0000000000000_001_0001_00001000".U ), // Feedback for Pre
         ("FeedbackCollect",    "b0010_0000000000000_000_0001_00001000".U ), // Feedback for Collect
 
 
+        ("FeedbackGP",    "b0010_0000000000000_001_0001_00000001".U ), // Feedback for Collect
+        ("AddGP",         "b1_11_0_00100000_00000000_00_000001_0000".U ), // add with op1: reg op2: data
 
 
 

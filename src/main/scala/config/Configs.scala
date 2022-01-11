@@ -88,6 +88,10 @@ case class DandelionAccelParams(
         EventsDasx
       case "sparch" =>
         EventsSpArch
+      case "gp" =>
+        EventsGP
+      case "syn" =>
+        EventsSyn
     }
   }
 
@@ -99,6 +103,10 @@ case class DandelionAccelParams(
         StatesDasx
       case "sparch" =>
         StatesSpArch
+      case "gp" =>
+        StatesGP
+      case "syn" =>
+        StatesSyn
     }
   }
 

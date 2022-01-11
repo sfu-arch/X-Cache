@@ -62,7 +62,7 @@ object EventsGP extends EventList {
   )
   override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)
 
-  override val HitEvent = Array(EventArray("INIT"))
+  override val HitEvent = Array(EventArray("INIT"),EventArray("UPDATE"))
 
 }
 object EventsSpArch extends EventList {

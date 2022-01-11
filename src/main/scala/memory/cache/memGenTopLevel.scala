@@ -65,7 +65,7 @@ with HasAccelShellParams {
     val numCache = nCache
 
     val memCtrl = Module(new memoryWrapper(ID = (nCache + numMemCtrl - 1))(p))
-    val memCtrlInputQueue = Module(new Queue(new Flit(), entries = 32))
+    val memCtrlInputQueue = Module(new Queue(new Flit(), entries = 1))
     val routerNode = for (i <- 0 until nCache + numMemCtrl) yield {
         val Router = Module(new Router(ID = i))
         Router

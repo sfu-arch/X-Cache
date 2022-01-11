@@ -115,17 +115,14 @@ object RoutineROMDasxArray extends RoutineRom{
   )
 }
 
-object RoutineROMGraphPulse extends RoutineRom{
+object RoutineROMGP extends RoutineRom{
 
   override val routineActions = Array [RoutinePC](
 
-    Routine ("INIT_I")  ,  Actions(Seq("Allocate") ++ Seq("WrInt","SetState")), DstState("V"),
-    Routine ("UPDATE_V"),  Actions(Seq( "WrInt","RdInt","SetState")), DstState("V"),
-    Routine ("DATA_I") ,  Actions(Seq( "Allocate", "WrInt","RdInt","SetState")), DstState("V"),
-    Routine ("PREP_I") ,  Actions(Seq("BLTIfDataZero", "WAIT", "AllocateTBE","Allocate")  ++ Seq("FeedbackPrep","SetState")), DstState("IC"),
-
-    Routine ("STORE_I"),  Actions(Seq("Allocate", "WrInt", "SetState")),DstState("E"),
-    Routine ("STORE_E") , Actions(Seq( "WrInt","SetState")), DstState("E"),
+      Routine ("INIT_I")  ,  Actions( Seq("Allocate") ++ Seq("WrInt","SetState")), DstState("IU"),
+    Routine ("UPDATE_I"),  Actions(Seq("BIfDataNotZero" , "WAIT", "SetState", "NOP","AllocateTBE", "Allocate","AddGP", "DataRQWalker", "FeedbackGP", "SetState" )), DstState("IU"),DstState("IU"),
+    Routine ("UPDATE_IU"),  Actions(Seq("BIfDataNotZero" , "WAIT", "SetState", "NOP","AllocateTBE", "AddGP", "DataRQWalker", "FeedbackGP", "SetState" )), DstState("IU"),DstState("IU"),
+    Routine ("DATA_IU") ,  Actions(Seq( "DeallocateTBE", "WrInt","RdInt","SetState")), DstState("IU"),
 
   )
 }

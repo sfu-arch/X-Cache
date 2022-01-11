@@ -54,8 +54,8 @@ with HasAccelShellParams{
     val lockMem  = Module(new lockVector())
     val stateMem = Module (new stateMem())
     val pc       = Module(new PC())
-    val inputArbiter   = Module (new RRArbiter(new InstBundle(), n = 4))
-    val outReqArbiter  = Module (new Arbiter(io.out.req.cloneType.bits, n = nParal))
+    val inputArbiter   = Module (new Arbiter(new InstBundle(), n = 4))
+    val outReqArbiter  = Module (new RRArbiter(io.out.req.cloneType.bits, n = nParal))
     val outRespArbiter = Module (new Arbiter(new InstBundle(), n = nParal + 1))
     val feedbackArbiter = Module (new Arbiter(new InstBundle(), n = nParal))
 
@@ -90,16 +90,22 @@ with HasAccelShellParams{
     val input = Module(new Queue(new Bundle{ val inst = new InstBundle(); val tbeOut = new TBE() }, entries = 1, pipe = true))
 
     val respPortQueue = for (i <- 0 until nParal + 1) yield{
-        val queue = Module(new Queue(new InstBundle(), entries = 16, pipe = true))
+        val queue = Module(new Queue(new InstBundle(), entries = 1, pipe = true))
         queue
     }
+
+    val reqPortQueue = for (i <- 0 until nParal) yield{
+        val queue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
+        queue
+    }
+
 
     val feedbackInQueue = for (i <- 0 until nParal) yield{
-        val queue = Module(new Queue(new InstBundle(), entries = 16, pipe = true))
+        val queue = Module(new Queue(new InstBundle(), entries = 1, pipe = true))
         queue
     }
 
-    val probeWay = Module(new Queue( UInt(wayLen.W) , entries = 16, pipe =true , flow = true))
+    val probeWay = Module(new Queue( UInt(wayLen.W) , entries = 1, pipe =true , flow = true))
 
     val instruction = Wire(Decoupled(new InstBundle()))
     val missLD = Wire(Bool())
@@ -156,7 +162,7 @@ with HasAccelShellParams{
     val replaceWayInputCache = Wire(UInt((wayLen+1).W))
     val tbeWay        = WireInit(nWays.U((wayLen+1).W))
 
-    val feedbackOutQueue = Module(new Queue(new InstBundle, entries = 16, pipe = true))
+    val feedbackOutQueue = Module(new Queue(new InstBundle, entries = 1, pipe = true))
     val routineQueue = Module( new Queue( UInt(pcLen.W), pipe = true, entries = 1 ))
 
     val actionReg  = for (i <- 0 until nParal) yield {
@@ -164,7 +170,7 @@ with HasAccelShellParams{
         ActionReg
     }
 
-    val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 128, NumOuts = 1, NumIns = nWays, pipe = true ))
+    val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 8 , NumOuts = 1, NumIns = nWays, pipe = true ))
     mimoQ.io.clear := false.B
 
     val compUnit  = for (i <- 0 until nParal) yield {
@@ -470,11 +476,20 @@ with HasAccelShellParams{
     mimoQ.io.deq.ready := true.B
 
     for (i <- 0 until nParal) {
-        outReqArbiter.io.in(i).bits.req.data:= Mux(sigToDQSrc(actionReg(i).io.deq.bits.action.signals).asBool(), compUnit(i).io.reg_file(sigToDQRegSrc(actionReg(i).io.deq.bits.action.signals)), actionReg(i).io.deq.bits.addr)
-        outReqArbiter.io.in(i).bits.req.addr := actionReg(i).io.deq.bits.addr
-        outReqArbiter.io.in(i).bits.req.inst:= 0.U // 0 for reading
-        outReqArbiter.io.in(i).bits.dst:= nCache.U  // temp for 2 cache(0-nCache-1) and one memCtrl(2)
-        outReqArbiter.io.in(i).valid :=  isMemAction(i)
+        outReqArbiter.io.in(i).bits.req <> reqPortQueue(i).io.deq.bits
+        outReqArbiter.io.in(i).bits.dst := nCache.U
+        outReqArbiter.io.in(i).valid    := reqPortQueue(i).io.deq.valid
+        reqPortQueue(i).io.deq.ready := outReqArbiter.io.in(i).ready
+    }
+
+
+    for (i <- 0 until nParal) {
+        reqPortQueue(i).io.enq.bits.data:= Mux(sigToDQSrc(actionReg(i).io.deq.bits.action.signals).asBool(), compUnit(i).io.reg_file(sigToDQRegSrc(actionReg(i).io.deq.bits.action.signals)), actionReg(i).io.deq.bits.addr)
+        reqPortQueue(i).io.enq.bits.addr := actionReg(i).io.deq.bits.addr
+        reqPortQueue(i).io.enq.bits.inst:= 0.U // 0 for reading
+        reqPortQueue(i).io.enq.valid :=  isMemAction(i)
+
+
     }
 
     io.out.req.bits.req.inst := outReqArbiter.io.out.bits.req.inst// for reading

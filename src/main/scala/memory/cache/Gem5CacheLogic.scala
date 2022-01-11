@@ -56,8 +56,18 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   val byteOffsetBits = log2Ceil(wBytes) //
   val wordLen = byteOffsetBits
 
-  val offsetLen = blen + byteOffsetBits
-//  val offsetLen = 0 // Walker
+//  val offsetLen = blen + byteOffsetBits
+  def getOffsetLen: Int = BM.toLowerCase() match {
+    case "walker" =>
+      0
+    case "dasxarray" =>
+      blen + byteOffsetBits
+    case "gp" =>
+      0
+    case "sparch" =>
+      blen + byteOffsetBits
+  }
+  val offsetLen = getOffsetLen
 
   val nData = bBits / memParams.dataBits
   val dataBeats = nData
@@ -124,17 +134,27 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
         RoutineROMDasxArray
       case "sparch" =>
         RoutineROMSpArch
+      case "gp" =>
+        RoutineROMGP
+      case "syn" =>
+        RoutineROMSyn
     }
+
+
   }
 
-  def SelectNextRoutine (BM : String): NextRoutine ={
+  def SelectNextRoutine (BM : String): NextRoutine = {
     BM.toLowerCase() match {
       case "walker" =>
         nextRoutineWalker
       case "dasxarray" =>
         nextRoutineDASX
+      case "gp" =>
+        nextRoutineGP
       case "sparch" =>
         nextRoutineSpArch
+      case "syn" =>
+        nextRoutineSyn
     }
   }
 

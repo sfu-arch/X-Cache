@@ -94,3 +94,31 @@ object nextRoutineSpArch extends NextRoutine{
   )
 
 }
+
+object nextRoutineGP extends NextRoutine{
+
+  override val routineTriggerList = Array [RoutinePC](
+
+    Routine ("INIT_I") ,DstState("IU"), Trigger(Seq("INIT" , "I")),
+    Routine ("UPDATE_I"), DstState("IU"), Trigger(Seq("UPDATE", "I")),
+
+    Routine ("UPDATE_IU"), DstState("IU"), Trigger(Seq("UPDATE", "IU")),
+    Routine ("DATA_IU"), DstState("IU"), Trigger(Seq("DATA", "IU")),
+
+
+
+  )
+
+}
+
+object nextRoutineSyn extends NextRoutine{
+
+  override val routineTriggerList = Array [RoutinePC](
+
+    Routine ("IND_I") ,DstState("ID"), Trigger(Seq("IND" , "I")),
+    Routine ("DRAM_ID"), DstState("VD"), Trigger(Seq("DRAM", "ID")),
+    Routine ("PROD_VD"), DstState("D"), Trigger(Seq("PROD", "VD")),
+
+  )
+
+}
