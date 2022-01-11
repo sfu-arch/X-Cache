@@ -51,7 +51,7 @@ object RoutineROMWalker extends RoutineRom{
   val MakeAddr = Seq("ShiftLeftWalker", "AddWalker")
 
   val HASH = Seq("ShiftWalker7", "ShiftWalker13", "XorWalker", "ShiftWalker21", "XorWalker", "XorWalkerAddr") ++
-    MASK22 ++ MakeAddr ++ BUCK256
+    MASK22 ++ MakeAddr ++ BUCK256 // 24
 
   val Make32Ones = Seq("RightOnes","ShiftLeft16", "OrOnes")
   val MASKData = Make32Ones ++ Seq("MaskWalkerData")
@@ -67,15 +67,15 @@ object RoutineROMWalker extends RoutineRom{
 
     // 0-5
     Routine ("FIND_I") , Actions(Seq("AllocateTBE","Allocate", "AddWalker" , "UpdateTBE") ++  HASH ++
-                                 Seq("DataRQWalker", "SetState")),DstState("IB"),
+                                 Seq("DataRQWalker", "SetState")),DstState("IB"), // 40
 
     Routine ("DATA_IB") , Actions(Seq( "BNEQIfDataNotZero", "WAIT", "DeallocateTBE", "SetState","NOP", "AddWalker", "ShiftLeftWalker", "AddWalkerWithTBE", "DataRQWalker","SetState")), DstState("I"), DstState("ID"),
     Routine ("DATA_ID") , Actions(MASKData ++ COMP ++ ReqNext ++ Seq("DeallocateTBE", "SetState")), DstState("V"),
-    Routine ("DATA_I") ,  Actions(Seq( "Allocate","WrInt" ,"RdInt","SetState")), DstState("ID"),
+    Routine ("DATA_I") ,  Actions(Seq( "Allocate","WrInt" ,"RdInt","SetState")), DstState("ID"), // 65
 
 
     Routine ("FIND_ID") , Actions(Seq("SetState")),DstState("ID"),
-    Routine ("FIND_V") , Actions(Seq( "SetState")), DstState("V"),
+    Routine ("FIND_V") , Actions(Seq( "SetState")), DstState("V"),//80
 
 
   )
