@@ -66,6 +66,9 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
       0
     case "sparch" =>
       blen + byteOffsetBits
+
+    case "syn" =>
+      blen + byteOffsetBits
   }
   val offsetLen = getOffsetLen
 
@@ -123,8 +126,8 @@ trait HasCacheAccelParams extends HasAccelParams with HasAccelShellParams {
   def sigToDQRegSrc(sigs:Bits): UInt = sigs.asUInt()(regFileLen,1)
 
   def sigToFeedbackInc (sigs:Bits): UInt = sigs.asUInt()(7,0)
-  def sigToFeedbackEvent (sigs:Bits): UInt = sigs.asUInt()(12 + eventLen - 1,12)
   def sigToFeedbackData (sigs:Bits): UInt = sigs.asUInt()(11,8)
+  def sigToFeedbackEvent (sigs:Bits): UInt = sigs.asUInt()(12 + eventLen - 1,12)
 
   def SelectROM(BM : String): RoutineRom ={
     BM.toLowerCase() match {
