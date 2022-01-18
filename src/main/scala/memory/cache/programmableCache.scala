@@ -90,22 +90,22 @@ with HasAccelShellParams{
     val input = Module(new Queue(new Bundle{ val inst = new InstBundle(); val tbeOut = new TBE() }, entries = 1, pipe = true))
 
     val respPortQueue = for (i <- 0 until nParal + 1) yield{
-        val queue = Module(new Queue(new InstBundle(), entries = 1, pipe = true))
+        val queue = Module(new Queue(new InstBundle(), entries = 16, pipe = true))
         queue
     }
 
     val reqPortQueue = for (i <- 0 until nParal) yield{
-        val queue = Module(new Queue(new IntraNodeBundle(), entries = 1, pipe = true))
+        val queue = Module(new Queue(new IntraNodeBundle(), entries = 32, pipe = true))
         queue
     }
 
 
     val feedbackInQueue = for (i <- 0 until nParal) yield{
-        val queue = Module(new Queue(new InstBundle(), entries = 1, pipe = true))
+        val queue = Module(new Queue(new InstBundle(), entries = 16, pipe = true))
         queue
     }
 
-    val probeWay = Module(new Queue( UInt(wayLen.W) , entries = 1, pipe =true , flow = true))
+    val probeWay = Module(new Queue( UInt(wayLen.W) , entries = 16, pipe =true , flow = true))
 
     val instruction = Wire(Decoupled(new InstBundle()))
     val missLD = Wire(Bool())
@@ -162,7 +162,7 @@ with HasAccelShellParams{
     val replaceWayInputCache = Wire(UInt((wayLen+1).W))
     val tbeWay        = WireInit(nWays.U((wayLen+1).W))
 
-    val feedbackOutQueue = Module(new Queue(new InstBundle, entries = 1, pipe = true))
+    val feedbackOutQueue = Module(new Queue(new InstBundle, entries = 16, pipe = true))
     val routineQueue = Module( new Queue( UInt(pcLen.W), pipe = true, entries = 1 ))
 
     val actionReg  = for (i <- 0 until nParal) yield {
@@ -170,7 +170,7 @@ with HasAccelShellParams{
         ActionReg
     }
 
-    val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 8 , NumOuts = 1, NumIns = nWays, pipe = true ))
+    val mimoQ = Module (new MIMOQueue(new Bundle { val way =UInt(wayLen.W); val addr = UInt(addrLen.W)}, entries = 128, NumOuts = 1, NumIns = nWays, pipe = true ))
     mimoQ.io.clear := false.B
 
     val compUnit  = for (i <- 0 until nParal) yield {
@@ -224,7 +224,7 @@ with HasAccelShellParams{
 
 
 
-      probeWay.io.deq.ready := getState
+    probeWay.io.deq.ready := getState
 
 
 
@@ -272,9 +272,9 @@ with HasAccelShellParams{
     setLock     := instruction.fire()
 
     probeHit := input.io.deq.fire()
-    hit := probeHit && (probeWay.io.deq.bits =/= nWays.U) && (stateMem.io.out.bits.state === States.ValidState.U)
+    hit := probeHit && (probeWay.io.deq.bits =/= nWays.U) && (stateMem.io.out.bits.state === States.ValidState.U) && stateMem.io.out.valid === true.B
     hitLD :=   hit && hitEvent
-    missLD := probeHit &&  (hitEvent) && ((stateMem.io.out.bits.state === States.InvalidState.U) /*|| (cacheWayWire(nParal) === nWays.U)*/ )
+    missLD := probeHit &&  (hitEvent) && ((stateMem.io.out.bits.state === States.InvalidState.U) || stateMem.io.out.valid === false.B) /* || (cacheWayWire(nParal) === nWays.U) ) */
 
     io.in.memCtrl.ready    :=  instruction.fire() && inputArbiter.io.chosen === memCtrlPriority.U
     io.in.cpu.ready        := instruction.fire() && inputArbiter.io.chosen === cpuPriority.U
