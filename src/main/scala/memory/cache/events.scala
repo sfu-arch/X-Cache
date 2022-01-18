@@ -84,7 +84,10 @@ object EventsSyn extends EventList {
   override val EventArray = Map(
     (s"IND", 0x00),
     (s"DRAM", 0x01),
+    (s"DATA",0x02),
     (s"PROD",0x03),
+    (s"AGEN",0x05),
+
 
   )
   override val eventLen =  if (EventArray.size == 1 ) 1 else log2Ceil(EventArray.size)

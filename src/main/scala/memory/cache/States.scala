@@ -91,14 +91,16 @@ object StatesSpArch extends StateList{
 }
 
 
-}
+
 object StatesSyn extends StateList{
 
   override val StateArray = Map(
     (s"I", 0x00),
-    (s"IV", 0x01),
-    (s"VD", 0x02),
-    (s"D", 0x03)
+    (s"DReq", 0x01),
+    (s"DWait", 0x02),
+    (s"VD", 0x03),
+    (s"D", 0x04)
+
 
   )
   override val stateLen =  if (StateArray.size == 1 ) 1 else log2Ceil(StateArray.size)

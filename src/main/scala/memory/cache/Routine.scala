@@ -155,11 +155,28 @@ object RoutineROMSyn extends RoutineRom{
 
 
 
-    Routine ("IND_I") , Actions(Seq("NOP", "AllocateTBE")), DstState("IV"),
+    Routine ("IND_I") , Actions(Seq("AllocateTBE", "Allocate", "CopyData", "SubSyn", "BneqIfZero","WAIT", "SetState" )), DstState("DReq"),
 
-    Routine ("DRAM_IV") ,  Actions(Seq( "WrInt")), DstState("VD"),
+//    Routine ("DRAM_IV") ,  Actions(Seq( "CopyData", "SubSyn", "BneqIfZero","WAIT", "SetState")), DstState("VD"),
+    Routine ("DRAM_DReq") ,  Actions(Seq( "DataRQ", "SetState")), DstState("DWait"),
 
-    Routine ("PROD_VD") ,  Actions(Seq( "RdInt", "DeallocateTBE")), DstState("D"),
+
+    Routine ("DATA_DWait") ,  Actions(Seq( "WrInt", "SetState")), DstState("VD"),
+
+    Routine ("AGEN_VD") , Actions(Seq("CopyData", "SubSyn", "BneqIfZero","WAIT", "SetState" )), DstState("DReq"),
+
+    Routine ("AGEN_DWait") , Actions(Seq("FeedbackAgen", "SetState" )), DstState("DWait"),
+    Routine ("PROD_DWait") ,  Actions(Seq( "FeedbackProd", "SetState")), DstState("DWait"),
+
+
+//    Routine ("DRAM_DReq") ,  Actions(Seq( "CopyData", "SubSyn", "BneqIfZero","WAIT", "SetState")), DstState("VD"),
+
+    Routine ("PROD_VD") ,  Actions(Seq( "RdInt", "DeallocateTBE", "WAIT","SetState")), DstState("D"),
+
+    Routine ("IND_D") ,  Actions (Seq (  "WAIT","SetState")), DstState("D"),
+    Routine ("PROD_I") ,  Actions(Seq( "SetState")), DstState("I"),
+    Routine ("AGEN_I") ,  Actions(Seq( "SetState")), DstState("I"),
+    Routine ("DRAM_I") ,  Actions(Seq( "SetState")), DstState("I"),
 
 
 
