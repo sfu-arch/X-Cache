@@ -34,6 +34,14 @@ object ActionList {
 //        functions: add: 0, sub: 1, mult: 2, shift_r: 3, shift_l: 4, xor: 5
 //        |  tbe_field/imm/ operand_2 -> 0: Reg, 1:TBE, 2: Data, 3: hardcoded | addr/ operand_1 | write_addr | function |
 
+        ("CopyData",          "b1_10_0_00000000_00000000_00_000001_0000".U ),  // Add with op1: reg op2: hardcode = 0
+        ("SubSyn",            "b1_11_0_00000000_00000001_01_000001_0010".U ), // add with op1: reg op2: data
+        ("BneqIfZero",        "b1_11_0_00000000_00000000_01_000011_0111".U ),  // beq with op1: reg op2: reg = 0 jump = -2
+        ("FeedbackAgen",       "b0010_0000000000000_101_0000_00000000".U ), // Feedback for AGEN
+        ("FeedbackProd",      "b0010_0000000000000_011_0000_00000000".U ), // Feedback for Collect
+
+
+
         ("AddWalker",         "b1_10_0_00000000_00000000_00_000001_0000".U ), // add with op1: reg op2: data
         ("AddBucket256",      "b1_11_0_00001000_00000000_01_000001_0000".U ), // add with op1: reg op2: data
 
