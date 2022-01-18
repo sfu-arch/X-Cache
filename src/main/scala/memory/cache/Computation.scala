@@ -39,6 +39,8 @@ extends Module with HasCacheAccelParams {
             is (blt) { result  := Mux(op1 < op2, jump, 0.U)}
             is (bneq) { result := Mux(op1 =/= op2, jump, 0.U)}
             is (or) { result := op1 | op2; }
+            is (beq) { result := Mux(op1 === op2, jump, 0.U)}
+
         }
         result
     }
@@ -59,7 +61,7 @@ extends Module with HasCacheAccelParams {
         val reg_file = Output(Vec(regFileSize, OperandType.cloneType))
     })
 
-    val add :: and :: sub :: shift_r :: shift_l :: xor ::blt :: bneq  :: or :: Nil = Enum (9)
+    val add :: and :: sub :: shift_r :: shift_l :: xor ::blt :: bneq  :: or :: beq :: Nil = Enum (10)
     val result = Wire(OperandType.cloneType);
     val reg_out1 = Wire(OperandType.cloneType);
     val reg_out2 = Wire(OperandType.cloneType);
@@ -95,7 +97,7 @@ extends Module with HasCacheAccelParams {
     
     // *******************************************  ALU  *******************************************
     result := Mux(io.instruction.fire(), ALU(function, alu_in1, alu_in2, write_addr.asTypeOf(OperandType.cloneType)), 0.U)
-    io.pc :=  Mux(function =/= blt && function =/= bneq , 0.U, result(pcLen - 1, 0))
+    io.pc :=  Mux(function =/= blt && function =/= bneq && function =/= beq , 0.U, result(pcLen - 1, 0))
 //    io.output := result;
 
 }
