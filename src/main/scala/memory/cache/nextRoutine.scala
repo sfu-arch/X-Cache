@@ -115,9 +115,23 @@ object nextRoutineSyn extends NextRoutine{
 
   override val routineTriggerList = Array [RoutinePC](
 
-    Routine ("IND_I") ,DstState("ID"), Trigger(Seq("IND" , "I")),
-    Routine ("DRAM_ID"), DstState("VD"), Trigger(Seq("DRAM", "ID")),
+    Routine ("IND_I") ,DstState("DReq"), Trigger(Seq("IND" , "I")),
+
+    Routine ("DRAM_DReq"), DstState("DWait"), Trigger(Seq("DRAM", "DReq")),
+    Routine ("DATA_DWait"), DstState("VD"), Trigger(Seq("DATA", "DWait")),
+
+    Routine ("AGEN_DWait") ,DstState("DWait"), Trigger(Seq("AGEN" , "DWait")),
+    Routine ("AGEN_VD") ,DstState("DReq"), Trigger(Seq("AGEN" , "VD")),
+
+    Routine ("PROD_DWait"), DstState("DWait"), Trigger(Seq("PROD", "DWait")),
+
     Routine ("PROD_VD"), DstState("D"), Trigger(Seq("PROD", "VD")),
+
+
+    Routine ("IND_D"), DstState("D"), Trigger(Seq("IND", "D")),
+    Routine ("DRAM_I"), DstState("I"), Trigger(Seq("DRAM", "I")),
+    Routine ("PROD_I"), DstState("I"), Trigger(Seq("PROD", "I")),
+    Routine ("AGEN_I"), DstState("I"), Trigger(Seq("AGEN", "I")),
 
   )
 

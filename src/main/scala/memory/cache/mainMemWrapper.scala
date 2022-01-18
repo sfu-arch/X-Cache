@@ -47,6 +47,8 @@ with HasAccelShellParams{
     start := io.in.fire() & stReg === stIdle & io.in.bits.data(addrLen -1 , 0) =/= 0.U
 
     when (start){
+        printf(p"Memory Ctrl started Addr: ${(io.in.bits.data(addrLen -1 , 3) << 3)} Data: ${Mux(io.in.bits.data(2,0) === 0.U(3.W), 1.U, io.in.bits.data(2,0))}\n")
+
         addrReg       := io.in.bits.data(addrLen -1 , 3) << 3 // use the data of the package for its requests
         numberOfLines := Mux(io.in.bits.data(2,0) === 0.U(3.W), 1.U, io.in.bits.data(2,0))
         returnAddr    := io.in.bits.addr
