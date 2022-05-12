@@ -78,8 +78,8 @@ Follow these instructions to compile it from source.
 ## Recursive cloning
 
 
-
-``` git clone --recurse-submodules
+```
+ git clone --recurse-submodules
 ```
 
 ## Defining Routines, Actions and Transitions
@@ -120,7 +120,7 @@ Recursively clone:
  ```
  ./test.sh [TRACE_FILE]
  ```
- 
+
 
 
 
