@@ -1,16 +1,4 @@
-# muIR - Library
 
-[![CircleCI](https://circleci.com/gh/sfu-arch/muir-lib.svg?style=svg)](https://circleci.com/gh/sfu-arch/muir-lib)
-[![](https://tokei.rs/b1/github/sfu-arch/muir-lib)](https://github.com/sfu-arch/muir-lib)
-
-
-muIR is a library of hardware components for auto generating highly configurable parallel dataflow accelerator.
-muIR provides the implementation of the following hardware units:
-
-1. A set of highly configurable and parameterizable computation nodes.
-2. A set of control units to support arbitrary control path.
-3. A collection configurable Memory structures like Cache, Scratchpad memory, and such.
-4. A set of standard flexible set of junctions and interfaces to connect different pieces of the design.
 
 
 ## Getting Started on a Local Ubuntu Machine
